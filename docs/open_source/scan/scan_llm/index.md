@@ -214,6 +214,594 @@ For further examples, check out the [tutorials section]().
 ::::::
 :::::::
 
+[//]: # (TODO: UPDATED VERSION OF CODE SNIPPETS ARE HERE)
+
+[//]: # (:::::::{tab-set})
+
+[//]: # (::::::{tab-item} Wrap a prediction function)
+
+[//]: # (:::::{tab-set})
+
+[//]: # (::::{tab-item} Classification)
+
+[//]: # (Prediction function is any Python function that takes  input as <b>raw</b> pandas dataframe and returns the <b>probabilities</b> for each classification label.)
+
+[//]: # ()
+[//]: # (<b><u>Make sure that:</b></u>)
+
+[//]: # ()
+[//]: # (1. `prediction_function` encapsulates all the <b>data pre-processing steps</b> &#40;categorical encoding, numerical scaling,)
+
+[//]: # (   etc.&#41;.)
+
+[//]: # (2. `prediction_function&#40;df[feature_names]&#41;` <b>does not return an error message</b>.)
+
+[//]: # ()
+[//]: # (```python)
+
+[//]: # (from giskard import demo, Model)
+
+[//]: # ()
+[//]: # (demo_data_processing_function, demo_sklearn_model = demo.titanic_pipeline&#40;&#41;)
+
+[//]: # ()
+[//]: # (def prediction_function&#40;df&#41;:)
+
+[//]: # (    # The pre-processor can be a pipeline of one-hot encoding, imputer, scaler, etc.)
+
+[//]: # (    preprocessed_df = demo_data_processing_function&#40;df&#41;)
+
+[//]: # (    return demo_sklearn_model.predict_proba&#40;preprocessed_df&#41;)
+
+[//]: # ()
+[//]: # (wrapped_model = Model&#40;)
+
+[//]: # (    model=prediction_function,)
+
+[//]: # (    model_type="classification",)
+
+[//]: # (    classification_labels=demo_sklearn_model.classes_,  # Their order MUST be identical to the prediction_function's output order)
+
+[//]: # (    feature_names=['PassengerId', 'Pclass', 'Name', 'Sex', 'Age', 'SibSp', 'Parch', 'Fare', 'Embarked'],  # Default: all columns of your dataset)
+
+[//]: # (    # name="titanic_model", # Optional)
+
+[//]: # (    # classification_threshold=0.5, # Default: 0.5)
+
+[//]: # (&#41;)
+
+[//]: # (```)
+
+[//]: # ()
+[//]: # (* <mark style="color:red;">**`Mandatory parameters`**</mark>)
+
+[//]: # (    * `model`: A prediction function that takes a `pandas.DataFrame` as input and returns an array &#40;$n\times m$&#41; of)
+
+[//]: # (      probabilities corresponding)
+
+[//]: # (      to $n$ data entries &#40;rows of `pandas.DataFrame`&#41; and $m$ `classification_labels`. In the case of binary)
+
+[//]: # (      classification, an array  )
+
+[//]: # (      &#40;$n\times 1$&#41; of probabilities is also accepted.)
+
+[//]: # (    * `model_type`: The type of model, either `regression`, `classification` or `text_generation`.)
+
+[//]: # (    * `classification_labels`: The list of unique categories contained in your dataset target variable.)
+
+[//]: # (      If `classification_labels`)
+
+[//]: # (      is a list of $m$ elements, make sure that:)
+
+[//]: # (        * `prediction_function` is returning a &#40;$n\times m$&#41; array of probabilities.)
+
+[//]: # (        * `classification_labels` have the same order as the output of `prediction_function`.)
+
+[//]: # ()
+[//]: # (* <mark style="color:red;">**`Optional parameters`**</mark>)
+
+[//]: # (    * `name`: Name of the wrapped model.)
+
+[//]: # (    * `feature_names`: An optional list of the feature names. By default, `feature_names` are all the columns in your)
+
+[//]: # (      dataset.)
+
+[//]: # (      Make sure these features are in the same order as they are in your training dataset.)
+
+[//]: # (    * `classification_threshold`: Model threshold for binary classification problems.)
+
+[//]: # ()
+[//]: # (::::)
+
+[//]: # (::::{tab-item} Regression)
+
+[//]: # (Prediction function is any Python function that takes the input as <b>raw</b> pandas dataframe and returns the <b>predictions</b> for your regression task.)
+
+[//]: # ()
+[//]: # (<b><u>Make sure that:</b></u>)
+
+[//]: # ()
+[//]: # (1. `prediction_function` encapsulates all the <b>data pre-processing steps</b> &#40;categorical encoding, numerical scaling,)
+
+[//]: # (   etc.&#41;.)
+
+[//]: # (2. `prediction_function&#40;df[feature_names]&#41;` <b>does not return an error message</b>.)
+
+[//]: # ()
+[//]: # (```python)
+
+[//]: # (import numpy as np)
+
+[//]: # (from giskard import demo, Model)
+
+[//]: # ()
+[//]: # (demo_data_processing_function, reg = demo.linear_pipeline&#40;&#41;)
+
+[//]: # ()
+[//]: # (def prediction_function&#40;df&#41;:)
+
+[//]: # (    preprocessed_df = demo_data_processing_function&#40;df&#41;)
+
+[//]: # (    return np.squeeze&#40;reg.predict&#40;preprocessed_df&#41;&#41;)
+
+[//]: # ()
+[//]: # (wrapped_model = Model&#40;)
+
+[//]: # (    model=prediction_function,)
+
+[//]: # (    model_type="regression",)
+
+[//]: # (    feature_names=['x'],  # Default: all columns of your dataset)
+
+[//]: # (    # name="linear_model", # Optional)
+
+[//]: # (&#41;)
+
+[//]: # (```)
+
+[//]: # ()
+[//]: # (* <mark style="color:red;">**`Mandatory parameters`**</mark>)
+
+[//]: # (    * `model`: A prediction function that takes `pandas.DataFrame` as input and returns an array $n$ of predictions)
+
+[//]: # (      corresponding)
+
+[//]: # (      to $n$ data entries &#40;rows of `pandas.DataFrame`&#41;.)
+
+[//]: # (    * `model_type`: The type of model, either `regression`, `classification` or `text_generation`.)
+
+[//]: # ()
+[//]: # (* <mark style="color:red;">**`Optional parameters`**</mark>)
+
+[//]: # (    * `name`: Name of the wrapped model.)
+
+[//]: # (    * `feature_names`: An optional list of the feature names. By default, `feature_names` are all the columns in your)
+
+[//]: # (      dataset.)
+
+[//]: # (      Make sure these features are in the same order as they are in your training dataset.)
+
+[//]: # ()
+[//]: # (::::)
+
+[//]: # (::::{tab-item} Text generation)
+
+[//]: # (Prediction function is any Python function that takes the input as <b>raw</b> pandas dataframe and returns the <b>predictions</b> for your text generation task.)
+
+[//]: # ()
+[//]: # (<b><u>Make sure that:</b></u>)
+
+[//]: # ()
+[//]: # (1. `prediction_function` encapsulates all the <b>data pre-processing steps</b> &#40;categorical encoding, numerical scaling,)
+
+[//]: # (   etc.&#41;.)
+
+[//]: # (2. `prediction_function&#40;df[feature_names]&#41;` <b>does not return an error message</b>.)
+
+[//]: # ()
+[//]: # (```python)
+
+[//]: # (import openai)
+
+[//]: # (import giskard)
+
+[//]: # (import pandas as pd)
+
+[//]: # ()
+[//]: # ()
+[//]: # (# Define your text generation function)
+
+[//]: # (def text_summarizer&#40;content: str&#41; -> str:)
+
+[//]: # (    return openai.ChatCompletion.create&#40;)
+
+[//]: # (        model="gpt-3.5-turbo",)
+
+[//]: # (        messages=[)
+
+[//]: # (            {"role": "system",)
+
+[//]: # (             "content": "Summarize the text below as a bullet point list of the most important points."},)
+
+[//]: # (            {"role": "user", "content": content})
+
+[//]: # (        ])
+
+[//]: # (    &#41;.choices[0].message.content)
+
+[//]: # ()
+[//]: # ()
+[//]: # (# Wrap your function so that it takes a pandas DataFrame as an input and return a Series of generated text)
+
+[//]: # (def prediction_function&#40;df: pd.DataFrame&#41; -> pd.Series:)
+
+[//]: # (    return df['content'].map&#40;text_summarizer&#41;)
+
+[//]: # ()
+[//]: # ()
+[//]: # (# Wrap your prediction_function into giskard)
+
+[//]: # (# The model name and description MUST be explicit enough for the scan feature to work efficiently)
+
+[//]: # (model = giskard.Model&#40;prediction_function, model_type='text_generation',)
+
+[//]: # (                      name="Text summarizer",)
+
+[//]: # (                      description="Summarize text by giving a bullet point list of the most important points found in the text",)
+
+[//]: # (                      feature_names=['content']&#41;)
+
+[//]: # (```)
+
+[//]: # ()
+[//]: # (```python)
+
+[//]: # (from langchain.chains import LLMChain)
+
+[//]: # (from langchain.llms.fake import FakeListLLM)
+
+[//]: # (from langchain.prompts import PromptTemplate)
+
+[//]: # (from giskard import Model)
+
+[//]: # ()
+[//]: # (responses = [)
+
+[//]: # (    "\n\nHueFoots.", "\n\nEcoDrive Motors.", )
+
+[//]: # (    "\n\nRainbow Socks.", "\n\nNoOil Motors."])
+
+[//]: # ()
+[//]: # (llm = FakeListLLM&#40;responses=responses&#41;)
+
+[//]: # (prompt = PromptTemplate&#40;)
+
+[//]: # (    input_variables=["product"],)
+
+[//]: # (    template="What is a good name for a company that makes {product}?",)
+
+[//]: # (&#41;)
+
+[//]: # (chain = LLMChain&#40;llm=llm, prompt=prompt&#41;)
+
+[//]: # ()
+[//]: # (def prediction_function&#40;df&#41;:)
+
+[//]: # (    return [chain.predict&#40;**data&#41; for data in df.to_dict&#40;'records'&#41;])
+
+[//]: # ()
+[//]: # (wrapped_model = Model&#40;prediction_function, model_type='text_generation'&#41;)
+
+[//]: # (```)
+
+[//]: # ()
+[//]: # (* <mark style="color:red;">**`Mandatory parameters`**</mark>)
+
+[//]: # (    * `model`: A prediction function that takes `pandas.DataFrame` as input and returns an array $n$ of predictions)
+
+[//]: # (      corresponding)
+
+[//]: # (      to $n$ data entries &#40;rows of `pandas.DataFrame`&#41;.)
+
+[//]: # (    * `model_type`: The type of model, either `regression`, `classification` or `text_generation`.)
+
+[//]: # ()
+[//]: # (* <mark style="color:red;">**`Optional parameters`**</mark>)
+
+[//]: # (    * `name`: Name of the wrapped model.)
+
+[//]: # (    * `feature_names`: An optional list of the feature names. By default, `feature_names` are all the columns in your)
+
+[//]: # (      dataset.)
+
+[//]: # (      Make sure these features are in the same order as they are in your training dataset.)
+
+[//]: # ()
+[//]: # (::::)
+
+[//]: # (:::::)
+
+[//]: # (::::::)
+
+[//]: # (::::::{tab-item} Wrap a model object)
+
+[//]: # (Providing the model object to `Model` allows us to automatically infer the ML library of your `model`)
+
+[//]: # (object and provide a suitable serialization method &#40;provided by `save_model` and `load_model` methods&#41;.)
+
+[//]: # ()
+[//]: # (This requires:)
+
+[//]: # ()
+[//]: # (- <b><u>Mandatory</u></b>: Overriding the `model_predict` method which should take the input as <b>raw</b> pandas dataframe)
+
+[//]: # (  and return the <b>probabilities</b> for each classification labels &#40;classification&#41; or predictions &#40;regression or text_generation&#41;.)
+
+[//]: # (- <b><u>Optional</u></b>: Our pre-defined serialization and prediction methods cover the `sklearn`, `catboost`, `pytorch`,)
+
+[//]: # (  `tensorflow`, `huggingface` and `langchain` libraries. If none of these libraries are detected, `cloudpickle`)
+
+[//]: # (  is used as the default for serialization. If this fails, we will ask you to also override the `save_model` and `load_model`)
+
+[//]: # (  methods where you provide your own serialization of the `model` object.)
+
+[//]: # ()
+[//]: # (:::::{tab-set})
+
+[//]: # (::::{tab-item} Classification)
+
+[//]: # ()
+[//]: # (```python)
+
+[//]: # (from giskard import demo, Model)
+
+[//]: # ()
+[//]: # (demo_data_processing_function, demo_sklearn_model = demo.titanic_pipeline&#40;&#41;)
+
+[//]: # ()
+[//]: # (class MyCustomModel&#40;Model&#41;:)
+
+[//]: # (    def model_predict&#40;self, df&#41;:)
+
+[//]: # (        preprocessed_df = demo_data_processing_function&#40;df&#41;)
+
+[//]: # (        return self.model.predict_proba&#40;preprocessed_df&#41;)
+
+[//]: # ()
+[//]: # (wrapped_model = MyCustomModel&#40;)
+
+[//]: # (    model=demo_sklearn_model,)
+
+[//]: # (    model_type="classification",)
+
+[//]: # (    classification_labels=demo_sklearn_model.classes_,  # Their order MUST be identical to the prediction_function's output order)
+
+[//]: # (    feature_names=['PassengerId', 'Pclass', 'Name', 'Sex', 'Age', 'SibSp', 'Parch', 'Fare',)
+
+[//]: # (                 'Embarked', 'Survived'],  # Default: all columns of your dataset)
+
+[//]: # (    # name="titanic_model", # Optional)
+
+[//]: # (    # classification_threshold=0.5, # Default: 0.5)
+
+[//]: # (    # model_postprocessing_function=None, # Optional)
+
+[//]: # (    # **kwargs # Additional model-specific arguments)
+
+[//]: # (&#41;)
+
+[//]: # (```)
+
+[//]: # ()
+[//]: # (* <mark style="color:red;">**`Mandatory parameters`**</mark>)
+
+[//]: # (    * `model`: Could be any model from `sklearn`, `catboost`, `pytorch`, `tensorflow`, `huggingface` or `langchain` &#40;check)
+
+[//]: # (      the [tutorials]&#40;../../tutorials/index.md&#41;&#41;. If none of these)
+
+[//]: # (      libraries apply to you, we try to serialize your model with `cloudpickle`. If that also does not work, we)
+
+[//]: # (      ask you to provide us with your own serialization method.)
+
+[//]: # (    * `model_type`: The type of the model, either `regression`, `classification` or `text_generation`.)
+
+[//]: # (    * `classification_labels`: The list of unique categories contained in your dataset target variable.)
+
+[//]: # (      If `classification_labels`)
+
+[//]: # (      is a list of $m$ elements, make sure that:)
+
+[//]: # (        * `prediction_function` is returning a &#40;$n\times m$&#41; array of probabilities.)
+
+[//]: # (        * `classification_labels` have the same order as the output of `prediction_function`.)
+
+[//]: # ()
+[//]: # ()
+[//]: # (* <mark style="color:red;">**`Optional parameters`**</mark>)
+
+[//]: # (    * `name`: Name of the wrapped model.)
+
+[//]: # (    * `feature_names`: An optional list of the feature names. By default, `feature_names` are all the columns in your)
+
+[//]: # (      dataset.)
+
+[//]: # (      Make sure these features are in the same order as they are in your training dataset.)
+
+[//]: # (    * `classification_threshold`: Model threshold for binary classification problems.)
+
+[//]: # (    * `data_preprocessing_function`: A function that takes a `pandas.DataFrame` as raw input, applies pre-processing and)
+
+[//]: # (      returns any object that could be directly fed to `model`.)
+
+[//]: # (    * `model_postprocessing_function`: A function that takes a `model` output as input, applies post-processing and returns)
+
+[//]: # (      an object of the same type and shape as the `model` output.)
+
+[//]: # (    * `**kwargs`: Additional model-specific arguments &#40;See [Models]&#40;../../reference/models/index.rst&#41;&#41;.)
+
+[//]: # ()
+[//]: # (::::)
+
+[//]: # (::::{tab-item} Regression)
+
+[//]: # ()
+[//]: # (```python)
+
+[//]: # (import numpy as np)
+
+[//]: # (from giskard import demo, Model)
+
+[//]: # ()
+[//]: # (demo_data_processing_function, reg = demo.linear_pipeline&#40;&#41;)
+
+[//]: # ()
+[//]: # (class MyCustomModel&#40;Model&#41;:)
+
+[//]: # (    def model_predict&#40;self, df&#41;:)
+
+[//]: # (        preprocessed_df = demo_data_processing_function&#40;df&#41;)
+
+[//]: # (        return np.squeeze&#40;self.model.predict&#40;preprocessed_df&#41;&#41;)
+
+[//]: # ()
+[//]: # (wrapped_model = MyCustomModel&#40;)
+
+[//]: # (    model=reg,)
+
+[//]: # (    model_type="regression",)
+
+[//]: # (    feature_names=['x'],  # Default: all columns of your dataset)
+
+[//]: # (    # name="my_regression_model", # Optional)
+
+[//]: # (    # model_postprocessing_function=None, # Optional)
+
+[//]: # (    # **kwargs # Additional model-specific arguments)
+
+[//]: # (&#41;)
+
+[//]: # (```)
+
+[//]: # ()
+[//]: # (* <mark style="color:red;">**`Mandatory parameters`**</mark>)
+
+[//]: # (    * `model`: Could be any model from `sklearn`, `catboost`, `pytorch`, `tensorflow`, `huggingface` or `langchain` &#40;check)
+
+[//]: # (      the [tutorials]&#40;../../tutorials/index.md&#41;&#41;. If none of these)
+
+[//]: # (      libraries apply to you, we try to serialize your model with `cloudpickle`. If that also does not work, we)
+
+[//]: # (      ask you to provide us with your own serialization method.)
+
+[//]: # (    * `model_type`: The type of the model, either `regression`, `classification` or `text_generation`.)
+
+[//]: # ()
+[//]: # (* <mark style="color:red;">**`Optional parameters`**</mark>)
+
+[//]: # (    * `name`: Name of the wrapped model.)
+
+[//]: # (    * `feature_names`: An optional list of the feature names. By default, `feature_names` are all the columns in your)
+
+[//]: # (      dataset.)
+
+[//]: # (      Make sure these features are in the same order as your training dataset.)
+
+[//]: # (    * `data_preprocessing_function`: A function that takes a `pandas.DataFrame` as raw input, applies pre-processing and)
+
+[//]: # (      returns any object that could be directly fed to `model`.)
+
+[//]: # (    * `model_postprocessing_function`: A function that takes a `model` output as input, applies post-processing and returns)
+
+[//]: # (      an object of the same type and shape as the `model` output.)
+
+[//]: # (    * `**kwargs`: Additional model-specific arguments &#40;See [Models]&#40;../../reference/models/index.rst&#41;&#41;.)
+
+[//]: # ()
+[//]: # (::::)
+
+[//]: # (::::{tab-item} Text generation)
+
+[//]: # ()
+[//]: # (```python)
+
+[//]: # (from langchain.chains import LLMChain)
+
+[//]: # (from langchain.llms.fake import FakeListLLM)
+
+[//]: # (from langchain.prompts import PromptTemplate)
+
+[//]: # (import giskard)
+
+[//]: # ()
+[//]: # (responses = [)
+
+[//]: # (    "\n\nHueFoots.", "\n\nEcoDrive Motors.", )
+
+[//]: # (    "\n\nRainbow Socks.", "\n\nNoOil Motors."])
+
+[//]: # ()
+[//]: # (llm = FakeListLLM&#40;responses=responses&#41;)
+
+[//]: # (prompt = PromptTemplate&#40;)
+
+[//]: # (    input_variables=["product"],)
+
+[//]: # (    template="What is a good name for a company that makes {product}?",)
+
+[//]: # (&#41;)
+
+[//]: # (chain = LLMChain&#40;llm=llm, prompt=prompt&#41;)
+
+[//]: # ()
+[//]: # (wrapped_model = giskard.Model&#40;chain, model_type='text_generation'&#41;)
+
+[//]: # (```)
+
+[//]: # ()
+[//]: # (* <mark style="color:red;">**`Mandatory parameters`**</mark>)
+
+[//]: # (    * `model`: Could be any model from `sklearn`, `catboost`, `pytorch`, `tensorflow`, `huggingface` or `langchain` &#40;check)
+
+[//]: # (      the [tutorials]&#40;../../tutorials/index.md&#41;&#41;. If none of these)
+
+[//]: # (      libraries apply to you, we try to serialize your model with `cloudpickle`. If that also does not work, we)
+
+[//]: # (      ask you to provide us with your own serialization method.)
+
+[//]: # (    * `model_type`: The type of the model, either `regression`, `classification` or `text_generation`.)
+
+[//]: # ()
+[//]: # (* <mark style="color:red;">**`Optional parameters`**</mark>)
+
+[//]: # (    * `name`: Name of the wrapped model.)
+
+[//]: # (    * `description`: An optional description of the model)
+
+[//]: # (    * `feature_names`: An optional list of the feature names. By default, `feature_names` are all the columns in your)
+
+[//]: # (      dataset.)
+
+[//]: # (      Make sure these features are in the same order as your training dataset.)
+
+[//]: # (    * `data_preprocessing_function`: A function that takes a `pandas.DataFrame` as raw input, applies pre-processing and)
+
+[//]: # (      returns any object that could be directly fed to `model`.)
+
+[//]: # (    * `model_postprocessing_function`: A function that takes a `model` output as input, applies post-processing and returns)
+
+[//]: # (      an object of the same type and shape as the `model` output.)
+
+[//]: # (    * `**kwargs`: Additional model-specific arguments &#40;See [Models]&#40;../../reference/models/index.rst&#41;&#41;.)
+
+[//]: # ()
+[//]: # (::::)
+
+[//]: # (:::::)
+
+[//]: # (::::::)
+
+[//]: # (:::::::)
+
 ## Step 3: Scan you model
 
 Now you can scan your model and display your scan report:
