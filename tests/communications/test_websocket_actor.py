@@ -143,3 +143,81 @@ def test_websocket_actor_run_model_internal(data, model, sample, request):
     inspection_path = settings.home_dir / "projects" / project_key / "models" / "inspections" / str(inspection_id)
     assert (inspection_path / get_file_name("predictions", "csv", sample)).exists()
     assert (inspection_path / get_file_name("calculated", "csv", sample)).exists()
+
+
+def test_websocket_actor_run_model_for_data_frame_regression_internal(request):
+    dataset: Dataset = request.getfixturevalue("hotel_text_data")
+    model: BaseModel = request.getfixturevalue("hotel_text_model")
+
+    project_key = str(uuid.uuid4()) # Use a UUID to separate the resources used by the tests
+
+    # Prepare model
+    local_path = settings.home_dir / settings.cache_dir / project_key
+    local_path_model = (local_path / "models" / str(model.id))
+    local_path_model.mkdir(parents=True)
+    model.save(local_path=local_path_model)
+
+    # Prepare dataframe
+    dataframe = websocket.DataFrame(
+        rows=[
+            websocket.DataRow(columns={
+                k: v for k, v in row.items()
+            }) for _, row in dataset.df.iterrows()
+        ],
+    )
+
+    # Prepare parameters
+    params = websocket.RunModelForDataFrameParam(
+        model=websocket.ArtifactRef(project_key=project_key, id=str(model.id)),
+        dataframe=dataframe,
+        target=dataset.target,
+        column_types=dataset.column_types,
+        column_dtypes=dataset.column_dtypes,
+    )
+
+    # client
+    reply = listener.run_model_for_data_frame(client=None, params=params)
+    assert isinstance(reply, websocket.RunModelForDataFrame)
+    assert not reply.all_predictions
+    assert reply.prediction
+    assert reply.raw_prediction
+    assert not reply.probabilities
+
+
+def test_websocket_actor_run_model_for_data_frame_classification_internal(request):
+    dataset: Dataset = request.getfixturevalue("enron_data")
+    model: BaseModel = request.getfixturevalue("enron_model")
+
+    project_key = str(uuid.uuid4()) # Use a UUID to separate the resources used by the tests
+
+    # Prepare model
+    local_path = settings.home_dir / settings.cache_dir / project_key
+    local_path_model = (local_path / "models" / str(model.id))
+    local_path_model.mkdir(parents=True)
+    model.save(local_path=local_path_model)
+
+    # Prepare dataframe
+    dataframe = websocket.DataFrame(
+        rows=[
+            websocket.DataRow(columns={
+                k: v for k, v in row.items()
+            }) for _, row in dataset.df.iterrows()
+        ],
+    )
+
+    # Prepare parameters
+    params = websocket.RunModelForDataFrameParam(
+        model=websocket.ArtifactRef(project_key=project_key, id=str(model.id)),
+        dataframe=dataframe,
+        target=dataset.target,
+        column_types=dataset.column_types,
+        column_dtypes=dataset.column_dtypes,
+    )
+
+    # client
+    reply = listener.run_model_for_data_frame(client=None, params=params)
+    assert isinstance(reply, websocket.RunModelForDataFrame)
+    assert reply.all_predictions
+    assert reply.prediction
+    assert not reply.raw_prediction
+    assert not reply.probabilities
