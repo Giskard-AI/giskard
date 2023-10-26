@@ -236,8 +236,9 @@ class BorderlinePush(ExamplePush):
             "push_title": "This example was predicted with very low confidence",
             "details": [
                 {
-                    "action": "Generate a one-sample to automatically test the underconfidence",
-                    "explanation": "This may help you ensure this example is not predicted with low confidence for a new model",
+                    "action": "Generate a one-sample to check for underconfidence",
+                    "explanation": "This may help you ensure this specific example is not predicted with low "
+                                   "confidence for a new model",
                     "button": "Create one-sample test",
                     "cta": CallToActionKind.CREATE_TEST,
                 },
