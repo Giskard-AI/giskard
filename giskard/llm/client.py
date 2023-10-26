@@ -27,7 +27,7 @@ class LLMClient(ABC):
 
 @dataclass
 class LLMOutput:
-    message: str = None
+    message: Optional[str] = None
     function_call: Dict[str, str] = None
 
 
@@ -127,7 +127,7 @@ class OpenAIClient(LLMClient):
         else:
             function_call = None
 
-        return LLMOutput(message=cc.message.content, function_call=function_call)
+        return LLMOutput(message=cc.content, function_call=function_call)
 
 
 # Setup the default client
