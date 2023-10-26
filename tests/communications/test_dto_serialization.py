@@ -1,7 +1,6 @@
-from typing import Dict, List, Optional, Type
-
 import json
 from pathlib import Path
+from typing import Dict, List, Optional, Type
 
 import pydantic
 import pytest
@@ -57,7 +56,7 @@ MANDATORY_FIELDS = {
         "giskardClientVersion",
     ],
     "GetInfoParam": ["list_packages"],
-    "GetPushParam": ["model", "dataset", "target", "column_types", "column_dtypes"],
+    "GetPushParam": ["model", "dataset", "column_types", "column_dtypes"],
     "GetPushResponse": [],
     "IdentifierSingleTestResult": ["id", "result"],
     "ModelMeta": [],
@@ -70,7 +69,7 @@ MANDATORY_FIELDS = {
     "RunAdHocTest": [],
     "RunAdHocTestParam": ["testUuid"],
     "RunModelForDataFrame": [],
-    "RunModelForDataFrameParam": ["model", "dataframe", "target", "column_types", "column_dtypes"],
+    "RunModelForDataFrameParam": ["model", "dataframe", "column_types", "column_dtypes"],
     "RunModelParam": ["model", "dataset", "inspectionId", "project_key"],
     "SingleTestResult": ["passed"],
     "SuiteInput": ["name", "type"],
@@ -147,7 +146,7 @@ OPTIONAL_FIELDS = {
     "GeneratedTestSuite": ["inputs"],
     "GetInfo": [],
     "GetInfoParam": [],
-    "GetPushParam": ["dataframe", "push_kind", "cta_kind"],
+    "GetPushParam": ["dataframe", "push_kind", "cta_kind", "target"],
     "GetPushResponse": ["contribution", "perturbation", "overconfidence", "borderline", "action"],
     "IdentifierSingleTestResult": ["arguments"],
     "ModelMeta": ["model_type"],
@@ -160,7 +159,7 @@ OPTIONAL_FIELDS = {
     "RunAdHocTest": ["results"],
     "RunAdHocTestParam": ["arguments", "debug"],
     "RunModelForDataFrame": ["all_predictions", "prediction", "probabilities", "raw_prediction"],
-    "RunModelForDataFrameParam": [],
+    "RunModelForDataFrameParam": ["target"],
     "RunModelParam": [],
     "SingleTestResult": [
         "is_error",

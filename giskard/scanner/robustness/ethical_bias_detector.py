@@ -1,16 +1,16 @@
 from typing import Sequence
 
-from ...datasets.base import Dataset
-from ...models.base import BaseModel
-from ..decorators import detector
-from ..issues import Ethical
 from .base_detector import BaseTextPerturbationDetector
 from .text_transformations import TextTransformation
+from ..decorators import detector
+from ..issues import Ethical
+from ...datasets.base import Dataset
+from ...models.base import BaseModel
 
 
 @detector(
     name="ethical_bias",
-    tags=["ethical_bias", "robustness", "nlp", "classification", "regression", "generative", "text_generation", "llm"],
+    tags=["ethical_bias", "robustness", "classification", "regression"],
 )
 class EthicalBiasDetector(BaseTextPerturbationDetector):
     _issue_group = Ethical

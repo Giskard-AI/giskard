@@ -198,6 +198,7 @@ class GiskardClient:
                 "id": str(model_id),
                 "project": project_key,
                 "name": meta.name,
+                "description": meta.description,
                 "size": size,
             },
         )
@@ -205,6 +206,7 @@ class GiskardClient:
             "Upload Model",
             {
                 "name": anonymize(meta.name),
+                "description": anonymize(meta.description),
                 "projectKey": anonymize(project_key),
                 "languageVersion": python_version,
                 "modelType": meta.model_type.name,
