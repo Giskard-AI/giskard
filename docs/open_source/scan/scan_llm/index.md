@@ -1,8 +1,8 @@
-# 🔍 Scan a NLP Model
+# 📚 LLM scan
 
 The Giskard python library provides an automatic scan functionality designed to automatically detect [potential vulnerabilities](../../getting-started/key_vulnerabilities/performance_bias/index.md) affecting your ML model. It enables you to proactively identify and address key issues to ensure the reliability, fairness, and robustness of your Machine Learning models.
 
-[//]: # (TODO: adapt whole page to a NLP use-case &#40;all code snippets&#41;)
+[//]: # (TODO: adapt whole page to a LLM use-case &#40;all code snippets&#41;)
 ## Step 1: Wrap your dataset
 
 To scan your model, start by **wrapping your dataset**. This should be a validation or test set in Pandas format, as shown here:
@@ -151,7 +151,7 @@ wrapped_model = MyCustomModel(
 [//]: # (TODO: check if we can put the following under a toggle:)
 * <mark style="color:red;">**`Mandatory parameters`**</mark>
     * `model`: Any model from `sklearn`, `catboost`, `pytorch`, `tensorflow`, `huggingface` (check
-      the [tutorials](../../tutorials/index.md)). If none of these libraries apply to you, we try to serialize your model with `cloudpickle`. If that also does not work, we ask you to provide us with your own serialization method.
+      the [tutorials](../../../tutorials/index.md)). If none of these libraries apply to you, we try to serialize your model with `cloudpickle`. If that also does not work, we ask you to provide us with your own serialization method.
     * `model_type`: The type of model, either `regression`, `classification` or `text_generation`.
     * `classification_labels`: The list of unique categories for your dataset's target variable. If `classification_labels`
       is a list of $m$ elements, make sure that `prediction_function` is returning a ($n\times m$) array of probabilities and `classification_labels` have the same order as the output of the prediction function.
@@ -165,7 +165,7 @@ wrapped_model = MyCustomModel(
       returns any object that could be directly fed to `model`.
     * `model_postprocessing_function`: A function that takes a `model` output as input, applies post-processing and returns
       an object of the same type and shape as the `model` output.
-    * `**kwargs`: Additional model-specific arguments (See [Models](../../reference/models/index.rst)).
+    * `**kwargs`: Additional model-specific arguments (See [Models](../../../reference/models/index.rst)).
 
 For further examples, check out the [tutorials section]().
 
@@ -193,7 +193,7 @@ wrapped_model = MyCustomModel(
 [//]: # (TODO: check if we can put the following under a toggle:)
 * <mark style="color:red;">**`Mandatory parameters`**</mark>
     * `model`: Any model from `sklearn`, `catboost`, `pytorch`, `tensorflow`, `huggingface` (check
-      the [tutorials](../../tutorials/index.md)). If none of these libraries apply to you, we try to serialize your model with `cloudpickle`. If that also does not work, we
+      the [tutorials](../../../tutorials/index.md)). If none of these libraries apply to you, we try to serialize your model with `cloudpickle`. If that also does not work, we
       ask you to provide us with your own serialization method.
     * `model_type`: The type of model, either `regression`, `classification` or `text_generation`.
 
@@ -205,7 +205,7 @@ wrapped_model = MyCustomModel(
       returns any object that could be directly fed to `model`.
     * `model_postprocessing_function`: A function that takes a `model` output as input, applies post-processing and returns
       an object of the same type and shape as the `model` output.
-    * `**kwargs`: Additional model-specific arguments (See [Models](../../reference/models/index.rst)).
+    * `**kwargs`: Additional model-specific arguments (See [Models](../../../reference/models/index.rst)).
 
 For further examples, check out the [tutorials section]().
 
