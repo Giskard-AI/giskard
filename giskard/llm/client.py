@@ -116,6 +116,8 @@ class OpenAIClient(LLMClient):
             max_tokens=max_tokens,
         )
 
+        function_call = None
+
         if fc := cc.get("function_call"):
             try:
                 function_call = LLMFunctionCall(
@@ -124,8 +126,6 @@ class OpenAIClient(LLMClient):
                 )
             except (json.JSONDecodeError, KeyError) as err:
                 raise LLMGenerationError("Could not parse function call") from err
-        else:
-            function_call = None
 
         return LLMOutput(message=cc.content, function_call=function_call)
 
