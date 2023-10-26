@@ -128,8 +128,6 @@ def _generate_underconfidence_tests(issue):
 
     tests = {
         f"Underconfidence on data slice “{issue.slicing_fn}”": test_underconfidence_rate(
-            model=issue.model,
-            dataset=issue.dataset,
             slicing_function=issue.slicing_fn,
             threshold=abs_threshold,
             p_threshold=issue.meta["p_threshold"],

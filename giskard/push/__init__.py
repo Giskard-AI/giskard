@@ -448,6 +448,4 @@ class PerturbationPush(FeaturePush):
         else:
             self.tests = [test_metamorphic_invariance]
             self.test_params = {"transformation_function": self.transformation_functions[0]}
-            self.push_title = (
-                f"""Perturbing `{self.feature}` into "{self.value_perturbed[0]}" makes the prediction change"""
-            )
+            self.push_title = f"""Perturbing `{self.feature}` ({self.transformation_functions[0].meta.display_name}) into "{self.value_perturbed[0]}" makes the prediction change"""
