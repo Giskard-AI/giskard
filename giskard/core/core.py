@@ -169,26 +169,27 @@ class CallableMeta(SavableMeta, ABC):
             self.tags = self.populate_tags(tags)
 
             parameters = self.extract_parameters(callable_obj)
+            for param in parameters:
+                param.default = serialize_parameter(param.default)
 
-            self.args = {
-                parameter.name: FunctionArgument(
-                    name=parameter.name,
-                    type=extract_optional(parameter.annotation).__qualname__,
-                    optional=parameter.default != inspect.Parameter.empty,
-                    default=serialize_parameter(parameter.default),
-                    argOrder=idx,
-                )
-                for idx, parameter in enumerate(parameters.values())
-                if name != "self"
-            }
+            self.args = {param.name: param for param in parameters}
 
-    def extract_parameters(self, callable_obj):
+    def extract_parameters(self, callable_obj) -> List[FunctionArgument]:
         if inspect.isclass(callable_obj):
             parameters = list(inspect.signature(callable_obj.__init__).parameters.values())[1:]
         else:
             parameters = list(inspect.signature(callable_obj).parameters.values())
 
-        return parameters
+        return [
+            FunctionArgument(
+                name=parameter.name,
+                type=extract_optional(parameter.annotation).__qualname__,
+                optional=parameter.default != inspect.Parameter.empty,
+                default=parameter.default,
+                argOrder=idx,
+            )
+            for idx, parameter in enumerate(parameters)
+        ]
 
     @staticmethod
     def extract_module_doc(func_doc):
@@ -293,10 +294,8 @@ class TestFunctionMeta(CallableMeta):
         super().__init__(callable_obj, name, tags, version, type)
         self.debug_description = debug_description
 
-    def extract_parameters(self, callable_obj):
-        parameters = unknown_annotations_to_kwargs(CallableMeta.extract_parameters(self, callable_obj))
-
-        return {p.name: p for p in parameters}
+    def extract_parameters(self, callable_obj) -> List[FunctionArgument]:
+        return unknown_annotations_to_kwargs(CallableMeta.extract_parameters(self, callable_obj))
 
     def to_json(self):
         json = super().to_json()
@@ -346,10 +345,8 @@ class DatasetProcessFunctionMeta(CallableMeta):
         else:
             self.column_type = None
 
-    def extract_parameters(self, callable_obj):
-        parameters = unknown_annotations_to_kwargs(CallableMeta.extract_parameters(self, callable_obj)[1:])
-
-        return {p.name: p for p in parameters}
+    def extract_parameters(self, callable_obj) -> List[FunctionArgument]:
+        return unknown_annotations_to_kwargs(CallableMeta.extract_parameters(self, callable_obj)[1:])
 
     def to_json(self):
         json = super().to_json()
@@ -373,25 +370,37 @@ DT = TypeVar("DT")
 SMT = TypeVar("SMT", bound=SavableMeta)
 
 
-def unknown_annotations_to_kwargs(parameters: List[inspect.Parameter]) -> List[inspect.Parameter]:
+def unknown_annotations_to_kwargs(parameters: List[FunctionArgument]) -> List[FunctionArgument]:
     from giskard.models.base import BaseModel
     from giskard.datasets.base import Dataset
     from giskard.ml_worker.testing.registry.slicing_function import SlicingFunction
     from giskard.ml_worker.testing.registry.transformation_function import TransformationFunction
 
     allowed_types = [str, bool, int, float, BaseModel, Dataset, SlicingFunction, TransformationFunction]
-    allowed_types = allowed_types + list(map(lambda x: Optional[x], allowed_types))
+    allowed_types = list(map(lambda x: x.__qualname__, allowed_types))
 
-    has_kwargs = any(
-        [param for param in parameters if not any([param.annotation == allowed_type for allowed_type in allowed_types])]
-    )
+    kwargs = [param for param in parameters if not any([param.type == allowed_type for allowed_type in allowed_types])]
 
-    parameters = [
-        param for param in parameters if any([param.annotation == allowed_type for allowed_type in allowed_types])
-    ]
+    parameters = [param for param in parameters if any([param.type == allowed_type for allowed_type in allowed_types])]
 
-    if has_kwargs:
-        parameters.append(inspect.Parameter(name="kwargs", kind=4, annotation=Kwargs))
+    for idx, parameter in enumerate(parameters):
+        parameter.argOrder = idx
+
+    if any(kwargs) > 0:
+        kwargs_with_default = [param for param in kwargs if param.default != inspect.Parameter.empty]
+        default_value = (
+            dict({param.name: param.default for param in kwargs_with_default}) if any(kwargs_with_default) else None
+        )
+
+        parameters.append(
+            FunctionArgument(
+                name="kwargs",
+                type="Kwargs",
+                default=default_value,
+                optional=len(kwargs_with_default) == len(kwargs),
+                argOrder=len(parameters),
+            )
+        )
 
     return parameters
 
