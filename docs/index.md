@@ -5,9 +5,7 @@
 :hidden:
 
 getting_started/index
-getting_started/quickstart_llm
-getting_started/quickstart_tabular
-getting_started/quickstart_nlp
+getting_started/quickstart/index
 ```
 
 ```{toctree}
