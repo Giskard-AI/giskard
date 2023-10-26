@@ -114,6 +114,7 @@ class OpenAIClient(LLMClient):
             model=model,
             temperature=temperature,
             functions=functions,
+            function_call=function_call,
             max_tokens=max_tokens,
         )
 
