@@ -113,8 +113,8 @@ def increase_age(row):
     return row
 
 result = testing.test_metamorphic_invariance(
-    model=wrapped_model, 
-    dataset=wrapped_dataset, 
+    model=wrapped_model,
+    dataset=wrapped_dataset,
     transformation_function=increase_age
 ).execute()
 
@@ -152,7 +152,7 @@ print(f"result: {result.passed} with metric {result.metric}")
 
 If the test you want to create is not in the Giskard catalog, you can easily write it and add it to a test suite. To do so, you just need to **decorate** a Python function to turn it into a Giskard test. Make sure that the Python function you're decorating:
 * Has typed inputs: types can be Giskard `Model`, `Dataset`, `SlicingFunction` & `TransformationFunction` or any primitive
-* Returns a `TestResult` object containing all the resulting information of the test: 
+* Returns a `TestResult` object containing all the resulting information of the test:
     * This object must have the `passed` argument: a boolean that is `true` if the test passes, `false` otherwise
     * Provide the `metric` argument: a `float` that reflects the test output. This is key to compare tests results
 
@@ -169,8 +169,8 @@ def uniqueness_test_function(dataset: Dataset,
     passed = freq_of_cat < threshold
 
     return TestResult(passed=passed, metric=freq_of_cat)
-    
-#Now let's run this test to check if the frequency of "female" is under 70% 
+
+#Now let's run this test to check if the frequency of "female" is under 70%
 _, df = demo.titanic()
 
 wrapped_dataset = Dataset(
@@ -178,9 +178,9 @@ wrapped_dataset = Dataset(
     target="Survived",
     cat_columns=["Pclass", "Sex", "SibSp", "Parch", "Embarked"],
 )
-uniqueness_test_function(dataset=wrapped_dataset, 
-                         column_name = "Sex", 
-                         category="female", 
+uniqueness_test_function(dataset=wrapped_dataset,
+                         column_name = "Sex",
+                         category="female",
                          threshold =0.7
                         ).execute()
 ```
@@ -197,7 +197,7 @@ Test suites are a key feature of Giskard. Executing test suites can be useful fo
 
 :::{hint}
 * When adding the tests to your suite, you can choose to **not specify** some of the parameters of your test function. In this case, you will need to specify these missing parameters **when you execute** the test suite.
-* You can also choose to share some input of your test. This is useful if some tests are sharing the same inputs (ex: the same slicing function). In this case you'll need 
+* You can also choose to share some input of your test. This is useful if some tests are sharing the same inputs (ex: the same slicing function). In this case you'll need
 :::
 
 ::::{tab-set}
@@ -334,7 +334,7 @@ passed_2, results_2 = suite.run(actual_dataset=batch_2)
 
 For advanced cases, you may need to define some test inputs that are shared between different tests inside your suite. In this case, you should use the `SuiteInput` whose parameter are:
 * The name of the test input (a string)
-* The type of the test input (`Model`, `Dataset`, `SlicingFunction`, `TransformationFunction` or any other primitive. 
+* The type of the test input (`Model`, `Dataset`, `SlicingFunction`, `TransformationFunction` or any other primitive.
 
 In the example below, the data slice `female` is shared between two performance tests:
 
@@ -380,14 +380,14 @@ suite.run(model=wrapped_model, dataset=wrapped_dataset, female_slice=slice_femal
 :::
 ::::
 
-## Upload the suite to the Giskard server
-Upload your suite to the Giskard server to:
+## Upload the suite to the Giskard hub
+Upload your suite to the Giskard hub to:
 * Compare models to decide which one to use
 * Debug your tests to further diagnose issues
 * Create more domain-specific tests that integrate business feedback
 * Share the test results with your team
 
-To upload your test suite to the Giskard server, go to the [Upload object](../../guides/upload/index.md) page.
+To upload your test suite to the Giskard hub, go to the [Upload object](../../guides/upload/index.md) page.
 
 <br>
 

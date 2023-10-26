@@ -39,12 +39,12 @@ wrapped_dataset = Dataset(
 You can easily revert your Giskard dataset back to a pandas DataFrame. To do so, use the `.df` method. For more information about Dataset methods, see the [API Reference](../../reference/datasets/index.rst).
 :::
 
-## Upload your Dataset to the Giskard server
+## Upload your Dataset to the Giskard hub
 
-Uploading your dataset to the Giskard server enables you to:
+Uploading your dataset to the Giskard hub enables you to:
 
 * Inspect and debug your dataset
 * Use your dataset as the input for your tests (unit datasets)
 
-To upload your dataset to the Giskard server, go to the page [Upload an object to the Giskard server](../upload/index.md).
+To upload your dataset to the Giskard hub, go to the page [Upload an object to the Giskard hub](../upload/index.md).
 

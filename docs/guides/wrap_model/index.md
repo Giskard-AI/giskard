@@ -45,7 +45,7 @@ wrapped_model = Model(
     * `model`: A prediction function that takes a `pandas.DataFrame` as input and returns an array ($n\times m$) of
       probabilities corresponding
       to $n$ data entries (rows of `pandas.DataFrame`) and $m$ `classification_labels`. In the case of binary
-      classification, an array  
+      classification, an array
       ($n\times 1$) of probabilities is also accepted.
     * `model_type`: The type of model, either `regression`, `classification` or `text_generation`.
     * `classification_labels`: The list of unique categories contained in your dataset target variable.
@@ -149,7 +149,7 @@ from langchain.prompts import PromptTemplate
 from giskard import Model
 
 responses = [
-    "\n\nHueFoots.", "\n\nEcoDrive Motors.", 
+    "\n\nHueFoots.", "\n\nEcoDrive Motors.",
     "\n\nRainbow Socks.", "\n\nNoOil Motors."]
 
 llm = FakeListLLM(responses=responses)
@@ -296,7 +296,7 @@ from langchain.prompts import PromptTemplate
 import giskard
 
 responses = [
-    "\n\nHueFoots.", "\n\nEcoDrive Motors.", 
+    "\n\nHueFoots.", "\n\nEcoDrive Motors.",
     "\n\nRainbow Socks.", "\n\nNoOil Motors."]
 
 llm = FakeListLLM(responses=responses)
@@ -340,13 +340,13 @@ To check some **examples** of model wrapping, have a look at our tutorial sectio
 * [**ML task**](../../tutorials/tasks/index.md): Classification, Regression and Text generation
 * [**Data types**](../../tutorials/data-types/index.md): Tabular, Text and Text generataion
 
-## Upload your model to the Giskard server
+## Upload your model to the Giskard hub
 
-Uploading the model to the Giskard server enables you to:
+Uploading the model to the Giskard hub enables you to:
 * Compare your model with others using a test suite.
 * Gather feedback from your colleagues regarding your model.
 * Debug your model effectively in case of test failures.
 * Develop new tests that incorporate additional domain knowledge.
 
-To upload your model to the Giskard server, go to [Upload an object to the Giskard server](../upload/index.md).
+To upload your model to the Giskard hub, go to [Upload an object to the Giskard hub](../upload/index.md).
 :::

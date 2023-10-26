@@ -132,9 +132,7 @@ class MLWorker:
             if isinstance(e, WebSocketBadStatusException):
                 if e.status_code == 404:
                     # Backend may need upgrade or private HF Spaces
-                    logger.error(
-                        f"Please make sure that the version of Giskard server is above '{giskard.__version__}'"
-                    )
+                    logger.error(f"Please make sure that the version of Giskard hub is above '{giskard.__version__}'")
                 else:
                     logger.error(
                         f"WebSocket connection error {e.status_code}: "

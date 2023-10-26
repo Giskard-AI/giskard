@@ -69,10 +69,10 @@ ml_runtime = [
     "requests-mock>=1.10.0",
     "tensorflow-hub>=0.12.0",
     "transformers>=4.34.1",
-    "sentencepiece", # needed for some transformers stuff with tokenizer
+    "sentencepiece",                                                                      # needed for some transformers stuff with tokenizer
     "torch>=2.0.0",
     "torchdata>=0.6.0",
-    "portalocker>=2.0.0", # Needed by torchdata for test_newspaper_classification_pytorch_dataset
+    "portalocker>=2.0.0",                                                                 # Needed by torchdata for test_newspaper_classification_pytorch_dataset
     "torchtext>=0.15.1",
     "tensorflow-macos==2.14.0; sys_platform == 'darwin' and platform_machine == 'arm64'",
     "tensorflow==2.14.0",
@@ -80,7 +80,7 @@ ml_runtime = [
     "tensorflow-text==2.14.0; python_version < '3.11' and (sys_platform == 'linux' or sys_platform == 'darwin') and platform_machine == 'x86_64'",
     "mlflow>2",
     "wandb",
-    "tensorflow-io-gcs-filesystem<0.32; platform_machine != 'arm64'", # Tensorflow io does not work for windows from 0.32, but does not work for arm64 before...
+    "tensorflow-io-gcs-filesystem<0.32; platform_machine != 'arm64'",                                                                              # Tensorflow io does not work for windows from 0.32, but does not work for arm64 before...
 ]
 test = [
     "pytest-cov>=4.0.0",
@@ -149,7 +149,7 @@ dependencies = [
     "cloudpickle>=1.1.1",
     "zstandard>=0.10.0",
     "mlflow-skinny>=2",
-    "protobuf<3.21", # Not compatible with transformers/tensorflow
+    "protobuf<3.21",            # Not compatible with transformers/tensorflow
     "numpy>=1.22.0",
     "scikit-learn>=1.0",
     "scipy>=1.7.3",
@@ -159,17 +159,17 @@ dependencies = [
     "pandas>=1.3.4",
     "xxhash>=3.2.0",
     "langdetect>=1.0.9",
-    "chardet", # text metadata
-    "jinja2>=3", # scan template
+    "chardet",                  # text metadata
+    "jinja2>=3",                # scan template
     "requests-toolbelt>=0.9.1",
     "stomp-py>=8.1.0",
-    "setuptools", # used in ml worker for pkg_resources
-    "typing_extensions", # used in registry/decorators, for python <3.10
-    "websocket-client", # used in worker, to get exception from stomp
-    "pyyaml", # cli_server
-    "packaging", # cli_server
-    "markdown", # needed for display of scan results in notebook
-    "colorama",  # needed for the scan
+    "setuptools",               # used in ml worker for pkg_resources
+    "typing_extensions",        # used in registry/decorators, for python <3.10
+    "websocket-client",         # used in worker, to get exception from stomp
+    "pyyaml",                   # cli_hub
+    "packaging",                # cli_hub
+    "markdown",                 # needed for display of scan results in notebook
+    "colorama",                 # needed for the scan
 
 ]
 
@@ -181,14 +181,14 @@ llm = [
     "bert-score>=0.3.13",
 ]
 
-server = [
+hub = [
     "tenacity>=4.11.0",
     "psutil>=5.4.6",
     "click>=7.0",
     "docker>=6.0.0",
     "shap>=0.41.0",
-    "llvmlite>=0.40.0", # Needed to be installable for Poetry
-    "numba>=0.50.0", # Needed to be installable for Poetry
+    "llvmlite>=0.40.0",        # Needed to be installable for Poetry
+    "numba>=0.50.0",           # Needed to be installable for Poetry
     "lockfile>=0.12.2",
     "python-daemon>=2.2.2,<3",
     "pycryptodome>=3.6.1",

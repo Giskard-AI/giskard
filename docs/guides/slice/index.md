@@ -97,7 +97,7 @@ def _sentiment_analysis(x, column_name, threshold, model, emotion):
     sentences = list(map(lambda txt: txt[:512], list(x[column_name])))
     return x.iloc[list(
         map(lambda s: s['label'] == emotion and s['score'] >= threshold, sentiment_pipeline(sentences)))]
-        
+
 @slicing_function(name="Emotion sentiment", row_level=False, tags=["sentiment", "text"])
 def emotion_sentiment_analysis(x: pd.DataFrame, column_name: str, emotion: str, threshold: float = 0.9) -> pd.DataFrame:
     """
@@ -121,14 +121,14 @@ test_suite = scan_result.generate_test_suite("My first test suite")
 test_suite.run()[1]
 ```
 
-## Upload your slicing function to the Giskard server
+## Upload your slicing function to the Giskard hub
 
-Saving your slicing functions to the Giskard server will enable you to:
+Saving your slicing functions to the Giskard hub will enable you to:
 * Use them for testing purposes: your slices can be used as fixtures of your test suite
 * Further debug the examples inside your data slices using explanation
 * Apply the saved slicing functions to other datasets (new production data, etc.)
 
-To upload your slicing function to the Giskard server, go to [upload objects](../upload/index.md).
+To upload your slicing function to the Giskard hub, go to [upload objects](../upload/index.md).
 
 <br>
 

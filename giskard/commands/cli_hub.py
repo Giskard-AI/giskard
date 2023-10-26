@@ -1,15 +1,16 @@
+from typing import Optional
+
 import logging
 import os
 import time
 from pathlib import Path
-from typing import Optional
 
 import click
 import docker
 import requests
 import yaml
 from docker import DockerClient
-from docker.errors import NotFound, DockerException
+from docker.errors import DockerException, NotFound
 from docker.models.containers import Container
 from packaging import version
 from packaging.version import InvalidVersion, Version
@@ -40,8 +41,8 @@ For an easy installation of Docker you can execute:
         exit(1)
 
 
-@click.group("server", help="Giskard UI management", context_settings={"show_default": True})
-def server() -> None:
+@click.group("hub", help="Giskard UI management", context_settings={"show_default": True})
+def hub() -> None:
     """
     Giskard UI management
     """
@@ -60,7 +61,7 @@ def get_version(version=None):
             version = giskard.get_version()
             _write_settings({"version": version})
             latest_version = _fetch_latest_tag()
-            message = f"Giskard Server not installed. Using version {version}."
+            message = f"Giskard Hub not installed. Using version {version}."
             if latest_version and version != latest_version:
                 message += f" Latest available version is {latest_version}. To use it pass a --version argument"
             logger.info(message)
@@ -85,7 +86,7 @@ def get_container(version=None, quit_if_not_exists=True) -> Optional[Container]:
         return create_docker_client().containers.get(name)
     except NotFound:
         if quit_if_not_exists:
-            logger.error(f"Container {name} could not be found. Run `giskard server start` to create the container")
+            logger.error(f"Container {name} could not be found. Run `giskard hub start` to create the container")
             raise click.Abort()
         else:
             return None
@@ -121,7 +122,7 @@ def wait_backend_ready(port: int, host="localhost", is_cli=True, wait_sec=3 * 60
 
 
 def _start(attached=False, skip_version_check=False, version=None):
-    logger.info("Starting Giskard Server")
+    logger.info("Starting Giskard Hub")
 
     settings = _get_settings() or {}
     port = settings.get("port", 19000)
@@ -132,11 +133,11 @@ def _start(attached=False, skip_version_check=False, version=None):
         logger.error(
             f"""
 You're trying to start the server with version '{version}' while currently using Giskard '{giskard.get_version()}'
-        
+
 This might lead to incompatibility issues!
 If you want to proceed please add `--skip-version-check` to the start command.
-        
-We recommend you to upgrade giskard by running `giskard server stop && giskard server upgrade` in order to fix this issue.
+
+We recommend you to upgrade giskard by running `giskard hub stop && giskard hub upgrade` in order to fix this issue.
 """
         )
         return
@@ -160,11 +161,11 @@ We recommend you to upgrade giskard by running `giskard server stop && giskard s
     up = wait_backend_ready(port)
 
     if up:
-        logger.info(f"Giskard Server {version} started. You can access it at http://localhost:{port}")
+        logger.info(f"Giskard Hub {version} started. You can access it at http://localhost:{port}")
     else:
         logger.warning(
             "Giskard backend takes unusually long time to start, "
-            "please check the logs with `giskard server logs backend`"
+            "please check the logs with `giskard hub logs backend`"
         )
 
 
@@ -204,7 +205,7 @@ def _fetch_latest_tag() -> str:
     latest = next(i for i in json_response["results"] if i["name"] == latest_tag)
     latest_version_image = next(
         (i for i in json_response["results"] if ((i["name"] != latest_tag) and (i["digest"] == latest["digest"]))),
-        { "name": giskard.__version__ } # Create a dictionary containing the current version as default value
+        {"name": giskard.__version__},  # Create a dictionary containing the current version as default value
     )
 
     tag = latest_version_image["name"]
@@ -240,11 +241,11 @@ def _expose(token):
     container = get_container()
     if container:
         if container.status != "running":
-            print("Error: Giskard server is not running. Please start it using `giskard server start`")
+            print("Error: Giskard hub is not running. Please start it using `giskard hub start`")
             raise click.Abort()
     else:
         raise click.Abort()
-    print("Exposing Giskard Server to the internet...")
+    print("Exposing Giskard Hub to the internet...")
     from pyngrok import ngrok
     from pyngrok.conf import PyngrokConfig
 
@@ -253,14 +254,14 @@ def _expose(token):
 
     http_tunnel = ngrok.connect(19000, "http", pyngrok_config=None if token else PyngrokConfig(region="us"))
 
-    print("Giskard Server is now exposed to the internet.")
-    print("You can now upload objects to the Giskard Server using the following client: \n")
+    print("Giskard Hub is now exposed to the internet.")
+    print("You can now upload objects to the Giskard Hub using the following client: \n")
 
     print(
         f"""token=...
 client = giskard.GiskardClient(\"{http_tunnel.public_url}\", token)
 
-# To run your model with the Giskard Server, execute these three lines on Google Colab:
+# To run your model with the Giskard Hub, execute these three lines on Google Colab:
 
 %env GSK_API_KEY=...
 !giskard worker start -d -u {http_tunnel.public_url}"""
@@ -275,7 +276,7 @@ client = giskard.GiskardClient(\"{http_tunnel.public_url}\", token)
         ngrok.kill()
 
 
-@server.command("start")
+@hub.command("start")
 @click.option(
     "--attach",
     "-a",
@@ -292,11 +293,11 @@ client = giskard.GiskardClient(\"{http_tunnel.public_url}\", token)
     default=False,
     help="Force the server to start with a different version of the giskard python library.",
 )
-@click.option("--version", "version", required=False, help="Version of Giskard server to start")
+@click.option("--version", "version", required=False, help="Version of Giskard hub to start")
 @common_options
 def start(attached, skip_version_check, version):
     """\b
-    Start Giskard Server.
+    Start Giskard Hub.
 
     By default, the server starts detached and will run in the background.
     You can attach to it by using -a
@@ -312,25 +313,25 @@ def start(attached, skip_version_check, version):
     _start(attached, skip_version_check, version)
 
 
-@server.command("stop")
+@hub.command("stop")
 @common_options
 def stop():
     """\b
-    Stop Giskard Server.
+    Stop Giskard Hub.
 
-    Stops a running Giskard server. Does nothing if Giskard server is not running.
+    Stops a running Giskard hub. Does nothing if Giskard hub is not running.
     """
-    analytics.track("giskard-server:stop")
+    analytics.track("giskard-hub:stop")
     container = get_container()
     if container.status != "exited":
-        logger.info("Stopping Giskard Server")
+        logger.info("Stopping Giskard Hub")
         container.stop()
-        logger.info("Giskard Server stopped")
+        logger.info("Giskard Hub stopped")
     else:
         logger.info(f"Giskard container {container.name} is not running")
 
 
-@server.command("restart")
+@hub.command("restart")
 @click.argument(
     "service",
     type=click.Choice(["backend", "frontend", "worker", "db"]),
@@ -346,9 +347,9 @@ def stop():
 @common_options
 def restart(service, hard):
     """\b
-    Restart Giskard Server.
+    Restart Giskard Hub.
 
-    Stops any running Giskard server and starts it again.
+    Stops any running Giskard hub and starts it again.
     """
     analytics.track(
         "giskard-server:restart",
@@ -359,7 +360,7 @@ def restart(service, hard):
     )
     container = get_container()
     if container.status != "running":
-        logger.info("Giskard server isn't running")
+        logger.info("Giskard hub isn't running")
         _start()
     else:
         if hard:
@@ -379,7 +380,7 @@ def restart(service, hard):
                 print(res.decode())
 
 
-@server.command("logs")
+@hub.command("logs")
 @click.argument(
     "service",
     type=click.Choice(["backend", "frontend", "worker", "db"]),
@@ -404,7 +405,7 @@ def restart(service, hard):
 @common_options
 def logs(service, nb_lines, follow):
     """\b
-    Prints logs of server services
+    Prints logs of hub services
     """
     analytics.track(
         "giskard-server:logs",
@@ -431,7 +432,7 @@ def logs(service, nb_lines, follow):
             print(out.decode())
 
 
-@server.command("diagnose")
+@hub.command("diagnose")
 @click.option(
     "--out_path",
     "-o",
@@ -443,7 +444,7 @@ def logs(service, nb_lines, follow):
 @common_options
 def diagnose(local_dir):
     """\b
-    Save server logs to a local archive (Useful for support).
+    Save hub logs to a local archive (Useful for support).
     """
     analytics.track("giskard-server:diagnose")
     out_dir = Path(local_dir)
@@ -459,12 +460,12 @@ def diagnose(local_dir):
     logger.info(f"Wrote diagnose info to {out_file}")
 
 
-@server.command("upgrade")
+@hub.command("upgrade")
 @common_options
 @click.argument("version", required=False, default=None)
 def upgrade(version):
     """\b
-    Update Giskard Server. Uses the latest available version if not specified.
+    Update Giskard Hub. Uses the latest available version if not specified.
     """
     analytics.track(
         "giskard-server:upgrade",
@@ -478,16 +479,16 @@ def upgrade(version):
 
     installed_version = _get_settings().get("version") if _get_settings() else None
     if installed_version == version:
-        logger.info(f"Giskard server is already running version {version}")
+        logger.info(f"Giskard hub is already running version {version}")
         return
 
-    logger.info(f"Updating Giskard Server {installed_version} -> {version}")
+    logger.info(f"Updating Giskard Hub {installed_version} -> {version}")
     _pull_image(version)
     if _get_settings():
         _write_settings({**_get_settings(), **{"version": version}})
     else:
         _write_settings({**{"version": version}})
-    logger.info(f"Giskard Server upgraded to {version}")
+    logger.info(f"Giskard Hub upgraded to {version}")
 
 
 def read_version(version_str: str) -> Version:
@@ -497,7 +498,7 @@ def read_version(version_str: str) -> Version:
         return version.NegativeInfinity
 
 
-@server.command("status")
+@hub.command("status")
 @common_options
 def status():
     """\b
@@ -506,12 +507,12 @@ def status():
     analytics.track("giskard-server:status")
     app_settings = _get_settings()
     if not app_settings:
-        logger.info("Giskard Server is not installed. Install using `giskard server start`")
+        logger.info("Giskard Hub is not installed. Install using `giskard hub start`")
         return
     else:
         version = app_settings["version"]
 
-    logger.info(f"Giskard Server version is set to {version}")
+    logger.info(f"Giskard Hub version is set to {version}")
 
     latest = _fetch_latest_tag()
 
@@ -527,12 +528,12 @@ def status():
             logger.info(f"Container {container.name} isn't running ({container.status})")
 
 
-@server.command("clean")
+@hub.command("clean")
 @click.option("--data", "delete_data", is_flag=True, help="Delete user data (giskard-home volume)")
 @common_options
 def clean(delete_data):
     """\b
-    Delete Docker container, container (and possibly a volume) associated with the current version of Giskard Server
+    Delete Docker container, container (and possibly a volume) associated with the current version of Giskard Hub
     """
     analytics.track("giskard-server:clean", {"delete_data": delete_data})
     data_deletion_confirmed = delete_data and click.confirm(
@@ -567,7 +568,7 @@ def clean(delete_data):
             logger.info("Volume 'giskard-home' does not exist")
 
 
-@server.command("expose")
+@hub.command("expose")
 @click.option(
     "--ngrok-token",
     "token",
@@ -578,7 +579,7 @@ def clean(delete_data):
 @common_options
 def expose(token):
     """\b
-    Expose your local Giskard Server to the outside world using ngrok to use in notebooks like Google Colab
+    Expose your local Giskard Hub to the outside world using ngrok to use in notebooks like Google Colab
     """
     analytics.track("giskard-server:expose")
     _expose(token)

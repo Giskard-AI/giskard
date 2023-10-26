@@ -381,10 +381,10 @@ class BaseModel(ABC):
     @classmethod
     def download(cls, client: Optional[GiskardClient], project_key, model_id):
         """
-        Downloads the specified model from the Giskard server and loads it into memory.
+        Downloads the specified model from the Giskard hub and loads it into memory.
 
         Args:
-            client (GiskardClient): The client instance that will connect to the Giskard server.
+            client (GiskardClient): The client instance that will connect to the Giskard hub.
             project_key (str): The key for the project that the model belongs to.
             model_id (str): The ID of the model to download.
 

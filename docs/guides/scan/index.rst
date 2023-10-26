@@ -105,10 +105,10 @@ Generating a test suite from your scan results will enable you to:
     test_suite.run()
 
 
-Upload your test suite to the Giskard server
+Upload your test suite to the Giskard hub
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-You can then upload the test suite to the local Giskard server. This will enable you to:
+You can then upload the test suite to the local Giskard hub. This will enable you to:
 
 * Compare the quality of different models to decide which one to promote
 * Debug your tests to diagnose the identified issues
@@ -117,12 +117,12 @@ You can then upload the test suite to the local Giskard server. This will enable
 
 .. code-block:: python
 
-    # Uploading the test suite will automatically save the model, dataset, tests, slicing & transformation functions inside the Giskard server that you previously installed locally, or on your internal servers.
-    # Create a Giskard client after having installed the Giskard server (see documentation)
+    # Uploading the test suite will automatically save the model, dataset, tests, slicing & transformation functions inside the Giskard hub that you previously installed locally, or on your internal hubs.
+    # Create a Giskard client after having installed the Giskard hub (see documentation)
 
     from giskard import GiskardClient
 
-    key = "API_KEY"  # Find it in Settings in the Giskard server
+    key = "API_KEY"  # Find it in Settings in the Giskard hub
     client = GiskardClient(
         url="http://localhost:19000",  # URL of your Giskard instance
         key=key
@@ -145,10 +145,10 @@ You can then upload the test suite to the local Giskard server. This will enable
             hf_token=hf_token,
         )
 
-For more information on uploading to your local Giskard server, go to the `Upload an object to the Giskard server <../../guides/upload/index.md>`_ page.
+For more information on uploading to your local Giskard hub, go to the `Upload an object to the Giskard hub <../../guides/upload/index.md>`_ page.
 
 .. note::
-   Uploading the test suite will automatically save the model, dataset, tests, slicing & transformation functions inside the Giskard server that you previously installed locally, or on your internal servers.
+   Uploading the test suite will automatically save the model, dataset, tests, slicing & transformation functions inside the Giskard hub that you previously installed locally, or on your internal servers.
 
 
 Troubleshooting

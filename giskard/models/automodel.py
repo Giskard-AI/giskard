@@ -1,13 +1,14 @@
+from typing import Any, Callable, Iterable, Optional
+
 import inspect
 import logging
 from importlib import import_module
-from typing import Any, Callable, Iterable, Optional
 
 import pandas as pd
 
+from ..core.core import ModelType, SupportedModelTypes
 from .base.serialization import CloudpickleSerializableModel
 from .function import PredictionFunctionModel
-from ..core.core import ModelType, SupportedModelTypes
 
 logger = logging.getLogger(__name__)
 
@@ -145,7 +146,7 @@ class Model(CloudpickleSerializableModel):
                     "\n- Pass a prediction_function to the Model class "
                     '(we will try to serialize it with "cloudpickle").'
                     "\n- Extend the Model class and override "
-                    'the abstract "model_predict" method. Upon upload to the Giskard server, we will try to serialise'
+                    'the abstract "model_predict" method. Upon upload to the Giskard hub, we will try to serialise'
                     'it with "cloudpickle", if that does not work, we will ask you to override the "save_model" and'
                     '"load_model" with your own serialization methods.'
                     "\nWe recommend that you follow our documentation page: "
