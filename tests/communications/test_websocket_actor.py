@@ -302,9 +302,14 @@ def test_websocket_actor_dataset_processing_empty_internal(request):
     # Prepare dataset
     utils.local_save_dataset_under_giskard_home_cache(dataset, project_key)
 
+    # FIXME: functions can be None from the protocol, but not iterable
+    # params = websocket.DatasetProcessingParam(
+    #     dataset=websocket.ArtifactRef(project_key=project_key, id=str(dataset.id), sample=False),
+    #     functions=None,
+    # )
     params = websocket.DatasetProcessingParam(
         dataset=websocket.ArtifactRef(project_key=project_key, id=str(dataset.id), sample=False),
-        functions=None,
+        functions=[],
     )
     reply = listener.dataset_processing(client=None, params=params)
     assert isinstance(reply, websocket.DatasetProcessing)
