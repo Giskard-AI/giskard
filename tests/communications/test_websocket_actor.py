@@ -212,3 +212,83 @@ def test_websocket_actor_run_model_for_data_frame_classification_internal(reques
     assert reply.prediction
     assert not reply.raw_prediction
     assert not reply.probabilities
+
+
+@pytest.mark.parametrize("data,model", [
+    ("enron_data", "enron_model"),
+    ("hotel_text_data", "hotel_text_model")
+])
+def test_websocket_actor_explain_ws_internal(data, model, request):
+    dataset: Dataset = request.getfixturevalue(data)
+    model: BaseModel = request.getfixturevalue(model)
+
+    project_key = str(uuid.uuid4()) # Use a UUID to separate the resources used by the tests
+
+    # Prepare model and dataset
+    utils.local_save_model_under_giskard_home_cache(model, project_key)
+    utils.local_save_dataset_under_giskard_home_cache(dataset, project_key)
+
+    params = websocket.ExplainParam(
+        model=websocket.ArtifactRef(project_key=project_key, id=str(model.id)),
+        dataset=websocket.ArtifactRef(project_key=project_key, id=str(dataset.id)),
+        columns={k: v for k, v in next(dataset.df.iterrows())[1].items()},  # Pick the first row
+    )
+    reply = listener.explain_ws(client=None, params=params)
+    assert isinstance(reply, websocket.Explain)
+
+
+def test_websocket_actor_explain_text_ws_regression_internal(request):
+    dataset: Dataset = request.getfixturevalue("hotel_text_data")
+    model: BaseModel = request.getfixturevalue("hotel_text_model")
+
+    project_key = str(uuid.uuid4()) # Use a UUID to separate the resources used by the tests
+
+    # Prepare model and dataset
+    utils.local_save_model_under_giskard_home_cache(model, project_key)
+
+    text_feature_name = None
+    for col_name, col_type in dataset.column_types.items():
+        if col_type == "text":
+            text_feature_name = col_name
+            break
+    assert text_feature_name
+
+    params = websocket.ExplainTextParam(
+        model=websocket.ArtifactRef(project_key=project_key, id=str(model.id)),
+        feature_name=text_feature_name,
+        columns={k: v for k, v in next(dataset.df.iterrows())[1].items()},  # Pick the first row
+        column_types=dataset.column_types,
+    )
+    reply = listener.explain_text_ws(client=None, params=params)
+    assert isinstance(reply, websocket.ExplainText)
+    # Regression text explaining: Giskard Hub uses "WEIGHTS" to show it
+    assert "WEIGHTS" in reply.weights.keys()
+
+
+def test_websocket_actor_explain_text_ws_classification_internal(request):
+    dataset: Dataset = request.getfixturevalue("enron_data")
+    model: BaseModel = request.getfixturevalue("enron_model")
+
+    project_key = str(uuid.uuid4()) # Use a UUID to separate the resources used by the tests
+
+    # Prepare model and dataset
+    utils.local_save_model_under_giskard_home_cache(model, project_key)
+
+    text_feature_name = None
+    for col_name, col_type in dataset.column_types.items():
+        if col_type == "text":
+            text_feature_name = col_name
+            break
+    assert text_feature_name
+
+    params = websocket.ExplainTextParam(
+        model=websocket.ArtifactRef(project_key=project_key, id=str(model.id)),
+        feature_name=text_feature_name,
+        columns={k: v for k, v in next(dataset.df.iterrows())[1].items()},  # Pick the first row
+        column_types=dataset.column_types,
+    )
+    reply = listener.explain_text_ws(client=None, params=params)
+    assert isinstance(reply, websocket.ExplainText)
+    # Classification labels
+    for label in model.meta.classification_labels:
+        assert label in reply.weights.keys()
