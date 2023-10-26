@@ -673,7 +673,7 @@ def echo(params: websocket.EchoMsg, *args, **kwargs) -> websocket.EchoMsg:
     return params
 
 
-@websocket_actor(MLWorkerAction.getPush, timeout=30, ignore_timeout=True, execute_in_pool=False)
+@websocket_actor(MLWorkerAction.getPush, timeout=30, ignore_timeout=True)
 def get_push(
     client: Optional[GiskardClient], params: websocket.GetPushParam, *args, **kwargs
 ) -> websocket.GetPushResponse:
