@@ -50,7 +50,7 @@ from giskard.ml_worker.websocket.utils import (
 from giskard.models.base import BaseModel
 from giskard.models.model_explanation import explain, explain_text
 from giskard.push import Push
-from giskard.utils import call_in_pool, log_pool_stats, shutdown_pool
+from giskard.utils import call_in_pool, shutdown_pool
 from giskard.utils.analytics_collector import analytics
 
 logger = logging.getLogger(__name__)
@@ -82,8 +82,6 @@ def wrapped_handle_result(
     action: MLWorkerAction, ml_worker: MLWorker, start: float, rep_id: Optional[str], ignore_timeout: bool
 ):
     def handle_result(future: Union[Future, Callable[..., websocket.WorkerReply]]):
-        log_pool_stats()
-
         info = None  # Needs to be defined in case of cancellation
 
         try:
@@ -211,17 +209,19 @@ def dispatch_action(callback, ml_worker, action, req, execute_in_pool, timeout=N
     # If execution should be done in a pool
     if execute_in_pool:
         logger.debug("Submitting for action %s '%s' into the pool", action.name, callback.__name__)
+        kwargs = {
+            "callback": callback,
+            "action": action,
+            "params": params,
+            "ml_worker": MLWorkerInfo(ml_worker),
+            "client_params": client_params,
+        }
         future = call_in_pool(
             parse_and_execute,
-            callback=callback,
-            action=action,
-            params=params,
-            ml_worker=MLWorkerInfo(ml_worker),
-            client_params=client_params,
+            kwargs=kwargs,
             timeout=timeout,
         )
         future.add_done_callback(result_handler)
-        log_pool_stats()
         return
 
     result_handler(

@@ -3,10 +3,9 @@
 
 [metadata]
 groups = ["default", "dev", "doc", "llm", "ml_runtime", "server", "test"]
-cross_platform = true
-static_urls = false
-lock_version = "4.3"
-content_hash = "sha256:8ff0b91745da2639c74332dedaed4d484c5d0c0ab8f349dd27861ec776614468"
+strategy = ["cross_platform"]
+lock_version = "4.4"
+content_hash = "sha256:330e88c27e27fddb9bb4c366f47b42f38c4d1b938be16f1f4a90ca7da8fba02f"
 
 [[package]]
 name = "absl-py"
@@ -2086,7 +2085,7 @@ files = [
 
 [[package]]
 name = "langsmith"
-version = "0.0.51"
+version = "0.0.52"
 requires_python = ">=3.8.1,<4.0"
 summary = "Client library to connect to the LangSmith LLM Tracing and Evaluation Platform."
 dependencies = [
@@ -2094,8 +2093,8 @@ dependencies = [
     "requests<3,>=2",
 ]
 files = [
-    {file = "langsmith-0.0.51-py3-none-any.whl", hash = "sha256:6d65d038f8410344fba13a67437d1d7644a728983ca22ccf2c40dc32b8ba0368"},
-    {file = "langsmith-0.0.51.tar.gz", hash = "sha256:b014e16d95c48797e6ed7a053c952bbd23d3034883df4bca13cc958334332a7f"},
+    {file = "langsmith-0.0.52-py3-none-any.whl", hash = "sha256:d02a0ade5a53b36143084e57003ed38ccbdf5fc15a5a0eb14f8989ceaee0b807"},
+    {file = "langsmith-0.0.52.tar.gz", hash = "sha256:1dc29082d257deea1859cb22c53d9481ca5c4a37f3af40c0f9d300fb8adc91db"},
 ]
 
 [[package]]
@@ -3079,7 +3078,7 @@ files = [
 
 [[package]]
 name = "plotly"
-version = "5.17.0"
+version = "5.18.0"
 requires_python = ">=3.6"
 summary = "An open-source, interactive data visualization library for Python"
 dependencies = [
@@ -3087,8 +3086,8 @@ dependencies = [
     "tenacity>=6.2.0",
 ]
 files = [
-    {file = "plotly-5.17.0-py2.py3-none-any.whl", hash = "sha256:7c84cdf11da162423da957bb093287134f2d6f170eb9a74f1459f825892247c3"},
-    {file = "plotly-5.17.0.tar.gz", hash = "sha256:290d796bf7bab87aad184fe24b86096234c4c95dcca6ecbca02d02bdf17d3d97"},
+    {file = "plotly-5.18.0-py3-none-any.whl", hash = "sha256:23aa8ea2f4fb364a20d34ad38235524bd9d691bf5299e800bca608c31e8db8de"},
+    {file = "plotly-5.18.0.tar.gz", hash = "sha256:360a31e6fbb49d12b007036eb6929521343d6bee2236f8459915821baefa2cbb"},
 ]
 
 [[package]]
