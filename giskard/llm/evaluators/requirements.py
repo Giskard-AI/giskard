@@ -70,14 +70,10 @@ class RequirementEvaluator:
                     function_call={"name": "evaluate_model"},
                     temperature=0.1,
                 )
-                if (
-                    out.function_call is None
-                    or out.function_call.function != "evaluate_model"
-                    or "passed_test" not in out.function_call.args
-                ):
-                    raise LLMGenerationError("Invalid function call")
-            except LLMGenerationError:
-                errored.append(sample)
+                if out.function_call is None or "passed_test" not in out.function_call.args:
+                    raise LLMGenerationError("Invalid function call arguments received")
+            except LLMGenerationError as err:
+                errored.append({"message": str(err), "sample": sample})
                 continue
 
             args = out.function_call.args

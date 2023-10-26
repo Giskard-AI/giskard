@@ -68,7 +68,7 @@ def test_requirements_evaluator_handles_generation_errors():
     client.complete.side_effect = [
         LLMOutput(
             function_call=LLMFunctionCall(
-                function="invalid_function",
+                function="evaluate_model",
                 args={"passed_test": True},
             )
         ),
@@ -86,6 +86,7 @@ def test_requirements_evaluator_handles_generation_errors():
 
     result = evaluator.evaluate(model, eval_dataset)
 
-    assert len(result.success_examples) == 0
+    assert len(result.success_examples) == 1
     assert len(result.failure_examples) == 0
-    assert len(result.errors) == 2
+    assert len(result.errors) == 1
+    assert result.errors[0]["message"] == "Invalid function call arguments received"
