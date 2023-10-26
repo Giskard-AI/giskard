@@ -102,7 +102,7 @@ def _generate_char_injection_tests(issue: Issue):
             model=issue.model,
             dataset=issue.dataset,
             characters=[issue.meta["special_char"]],
-            feature=issue.features,
+            features=issue.features,
             threshold=issue.meta["threshold"],
             output_sensitivity=issue.meta["output_sensitivity"],
             max_repetitions=issue.meta["max_repetitions"],
