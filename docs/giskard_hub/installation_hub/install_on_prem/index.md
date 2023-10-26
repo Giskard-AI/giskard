@@ -1,4 +1,4 @@
-🌐 Run the Giskard Server
+🌐 Run the Giskard Server (on-premise)
 ===============
 
 [//]: # (TODO: remove anything that is not related to local installation)

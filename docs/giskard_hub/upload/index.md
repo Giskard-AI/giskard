@@ -1,7 +1,9 @@
-# ↕️ Upload an object to the Giskard server
+# ⬆️ Log datasets & models in the Giskard server
 
 [//]: # (TODO: review content and make sure flow is ok)
 You can easily upload to the Giskard server objects, such as **model**, **dataset**, **slicing & transformation functions** and **test suite**.
+
+The Giskard server is installed on your infrastructure. Giskard as a company does not have access to your datasets and models, so you can keep everything private.
 
 Uploading objects to the Giskard server will help you:
 

@@ -10,10 +10,10 @@ import yaml
 from torch.utils.data import DataLoader
 from torch.utils.data import Dataset as torch_dataset
 
-from ..client.python_utils import warning
-from ..core.core import ModelType
 from .base.serialization import MLFlowSerializableModel
 from .utils import map_to_tuples
+from ..client.python_utils import warning
+from ..core.core import ModelType
 
 TorchDType = Literal[
     "float32",
@@ -60,21 +60,21 @@ class TorchMinimalDataset(torch_dataset):
 
 class PyTorchModel(MLFlowSerializableModel):
     def __init__(
-            self,
-            model,
-            model_type: ModelType,
-            torch_dtype: TorchDType = "float32",
-            device="cpu",
-            name: Optional[str] = None,
-            data_preprocessing_function=None,
-            model_postprocessing_function=None,
-            feature_names=None,
-            classification_threshold=0.5,
-            classification_labels=None,
-            iterate_dataset: bool = True,
-            id: Optional[str] = None,
-            batch_size: Optional[int] = None,
-            **kwargs,
+        self,
+        model,
+        model_type: ModelType,
+        torch_dtype: TorchDType = "float32",
+        device="cpu",
+        name: Optional[str] = None,
+        data_preprocessing_function=None,
+        model_postprocessing_function=None,
+        feature_names=None,
+        classification_threshold=0.5,
+        classification_labels=None,
+        iterate_dataset: bool = True,
+        id: Optional[str] = None,
+        batch_size: Optional[int] = None,
+        **kwargs,
     ) -> None:
         """Automatically wraps a PyTorch model.
 

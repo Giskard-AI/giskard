@@ -36,7 +36,7 @@ You can install the latest version of Giskard from PyPi using pip :
 ```sh
 pip install "giskard[server]>=2.0.0b" -U
 ```
-We officially support Python 3.8, 3.9, 3.10 and 3.11.
+We officially support Python 3.9, 3.10 and 3.11.
 ## Try in Colab 📙
 [Open Colab notebook](https://colab.research.google.com/github/giskard-ai/giskard/blob/main/docs/getting-started/quickstart.ipynb)
 
@@ -196,6 +196,10 @@ You can then **upload the test suite** created using the `giskard` Python librar
     # Upload to the current project
     test_suite.upload(client, "my_project")
     ```
+
+> **The Giskard server is installed on your infrastructure.**
+>
+> Giskard as a company does not have access to your datasets and models, so you can keep everything private.
 
 # ❓ Where can I get more help?
 

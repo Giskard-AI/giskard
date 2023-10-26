@@ -1,16 +1,20 @@
+from typing import Optional
+
 import logging
 import random
 import secrets
-import stomp
 import time
+
+import stomp
 from pydantic import AnyHttpUrl
-from websocket._exceptions import WebSocketException, WebSocketBadStatusException
+from websocket._exceptions import WebSocketBadStatusException, WebSocketException
 
 import giskard
+from giskard.cli_utils import validate_url
 from giskard.client.giskard_client import GiskardClient
 from giskard.ml_worker.testing.registry.registry import load_plugins
 from giskard.settings import settings
-from giskard.cli_utils import validate_url
+from giskard.utils import shutdown_pool, start_pool
 
 logger = logging.getLogger(__name__)
 
@@ -32,7 +36,7 @@ class MLWorker:
     ws_conn: stomp.WSStompConnection
     ws_stopping: bool = False
     ws_attempts: int = 0
-    ws_max_attemps: int = 10
+    ws_max_attemps: int = settings.worker_ws_max_attemps
     ws_max_reply_payload_size: int = 8192
     ml_worker_id: str
     client: GiskardClient
@@ -60,8 +64,9 @@ class MLWorker:
             self.ml_worker_id = EXTERNAL_WORKER_ID
             # Use the URL path component provided by settings
 
-            port = backend_url.port
-            # Use 443 port if https and no given port
+            # Use 80 port by default
+            port = backend_url.port if backend_url.port else 80
+            # Fix 443 port if https and no given port
             if backend_url.scheme == "https" and backend_url.port is None:
                 port = 443
             backend_url = validate_url(
@@ -82,7 +87,7 @@ class MLWorker:
 
     def connect_websocket_client(self):
         if self.ws_attempts >= self.ws_max_attemps:
-            logger.warn("Maximum reconnection attemps reached, please retry.")
+            logger.warning("Maximum reconnection attempts reached, please retry.")
             # Exit the process
             self.stop()
             return
@@ -140,9 +145,9 @@ class MLWorker:
     def is_remote_worker(self):
         return self.ml_worker_id is not INTERNAL_WORKER_ID
 
-    async def start(self):
+    async def start(self, nb_workers: Optional[int] = None):
         load_plugins()
-
+        start_pool(nb_workers)
         if self.ws_conn:
             self.ws_stopping = False
             self.connect_websocket_client()
@@ -157,8 +162,10 @@ class MLWorker:
                 # as described in https://github.com/jasonrbriggs/stomp.py/issues/424
                 # and https://github.com/websocket-client/websocket-client/issues/930
                 logger.warn(f"WebSocket connection may not be properly closed: {e}")
+                logger.exception(e)
 
     def stop(self):
         if self.ws_conn:
             self.ws_stopping = True
             self.ws_conn.disconnect()
+        shutdown_pool()

@@ -1,14 +1,15 @@
+from typing import Any, Callable, Dict, List
+
 import logging
 import warnings
-from typing import Callable, Dict, List, Any
 
 import numpy as np
 import pandas as pd
 
-from giskard.datasets.base import Dataset
-from giskard.models.base import BaseModel
-from giskard.ml_worker.utils.logging import timer
 from giskard.core.errors import GiskardImportError
+from giskard.datasets.base import Dataset
+from giskard.ml_worker.utils.logging import timer
+from giskard.models.base import BaseModel
 
 warnings.filterwarnings("ignore", message=".*The 'nopython' keyword.*")
 logger = logging.getLogger(__name__)
@@ -189,6 +190,7 @@ def explain_with_shap(model: BaseModel, dataset: Dataset, only_highest_proba: bo
 
     try:
         from shap import Explanation
+
         from giskard.models.shap_result import ShapResult
     except ImportError as e:
         raise GiskardImportError("shap") from e
@@ -244,8 +246,8 @@ def explain(model: BaseModel, dataset: Dataset, input_data: Dict):
 @timer()
 def explain_text(model: BaseModel, input_df: pd.DataFrame, text_column: str, text_document: str):
     try:
-        from shap.maskers import Text
         from shap import Explainer
+        from shap.maskers import Text
     except ImportError as e:
         raise GiskardImportError("shap") from e
     try:
@@ -259,7 +261,8 @@ def explain_text(model: BaseModel, input_df: pd.DataFrame, text_column: str, tex
             else (shap_values[0].data, shap_values[0].values)
         )
     except Exception as e:
-        logger.exception(f"Failed to explain text: {text_document}", e)
+        logger.error("Failed to explain text %s", text_document)
+        logger.exception(e)
         raise Exception("Failed to create text explanation") from e
 
 
@@ -303,9 +306,12 @@ def text_explanation_prediction_wrapper(
 ) -> Callable:
     def text_predict(text_documents: List[str]):
         num_documents = len(text_documents)
-
-        df_with_text_documents = input_example.append([input_example] * (num_documents - 1), ignore_index=True)
-        df_with_text_documents[text_column] = pd.DataFrame(text_documents)
+        df_with_text_documents = (
+            input_example.copy()
+            if num_documents == 1
+            else pd.concat([input_example] * num_documents, ignore_index=True)
+        )
+        df_with_text_documents[text_column] = text_documents
         return prediction_function(df_with_text_documents)
 
     return text_predict
