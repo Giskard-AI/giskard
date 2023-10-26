@@ -395,7 +395,7 @@ def run_other_model(dataset, prediction_results):
 
 
 @websocket_actor(MLWorkerAction.runModel)
-def run_model(client: GiskardClient, params: websocket.RunModelParam, *args, **kwargs) -> websocket.Empty:
+def run_model(client: Optional[GiskardClient], params: websocket.RunModelParam, *args, **kwargs) -> websocket.Empty:
     try:
         model = BaseModel.download(client, params.model.project_key, params.model.id)
         dataset = Dataset.download(
