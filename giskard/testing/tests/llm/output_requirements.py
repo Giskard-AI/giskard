@@ -21,7 +21,7 @@ class EvalTestResult(PydanticBaseModel):
     )
     reason: str = Field(description="A text that clearly explains the given score")
     tip: Optional[str] = Field(
-        description="A text that offers a clear and descriptive suggestion on how to enhance the model"
+        description="A text that offers a clear and descriptive suggestion on how to enhance the model", default=None
     )
 
 
