@@ -255,7 +255,18 @@ def build_test_input_dto(client, p, pname, ptype, project_key, uploaded_uuids):
     elif issubclass(type(p), Artifact):
         if str(p.meta.uuid) not in uploaded_uuids:
             p.upload(client, None if "giskard" in p.meta.tags else project_key)
+
         uploaded_uuids.append(str(p.meta.uuid))
+
+        kwargs_params = [
+            f"kwargs[{pname}] = {repr(value)}" for pname, value in p.params.items() if pname not in p.meta.args
+        ]
+        kwargs_param = (
+            []
+            if len(kwargs_params) == 0
+            else (TestInputDTO(name="kwargs", value="\n".join(kwargs_params), type="Kwargs"))
+        )
+
         return TestInputDTO(
             name=pname,
             value=str(p.meta.uuid),
@@ -270,7 +281,9 @@ def build_test_input_dto(client, p, pname, ptype, project_key, uploaded_uuids):
                     uploaded_uuids,
                 )
                 for pname, value in p.params.items()
-            ],
+                if pname in p.meta.args
+            ]
+            + kwargs_param,
         )
     elif isinstance(p, SuiteInput):
         return TestInputDTO(name=pname, value=p.name, is_alias=True, type=ptype)
@@ -429,7 +442,7 @@ class Suite:
         """
         if self.name is None:
             self.name = "Unnamed test suite"
-        
+
         # Upload the default parameters if they are model or dataset
         for arg in self.default_params.values():
             if isinstance(arg, BaseModel) or isinstance(arg, Dataset):
@@ -447,20 +460,33 @@ class Suite:
         uploaded_uuids: List[str] = []
 
         for t in self.tests:
+            params = dict(
+                {
+                    pname: build_test_input_dto(
+                        client,
+                        p,
+                        pname,
+                        t.giskard_test.meta.args[pname].type,
+                        project_key,
+                        uploaded_uuids,
+                    )
+                    for pname, p in t.provided_inputs.items()
+                    if pname in t.giskard_test.meta.args
+                }
+            )
+
+            kwargs_params = [
+                f"kwargs[{repr(pname)}] = {repr(value)}"
+                for pname, value in t.provided_inputs.items()
+                if pname not in t.giskard_test.meta.args
+            ]
+            if len(kwargs_params) > 0:
+                params["kwargs"] = TestInputDTO(name="kwargs", value="\n".join(kwargs_params), type="Kwargs")
+
             suite_tests.append(
                 SuiteTestDTO(
                     testUuid=t.giskard_test.upload(client),
-                    functionInputs={
-                        pname: build_test_input_dto(
-                            client,
-                            p,
-                            pname,
-                            t.giskard_test.meta.args[pname].type,
-                            project_key,
-                            uploaded_uuids,
-                        )
-                        for pname, p in t.provided_inputs.items()
-                    },
+                    functionInputs=params,
                     displayName=t.display_name,
                 )
             )

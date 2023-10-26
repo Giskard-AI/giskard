@@ -7,13 +7,12 @@ from pydantic import BaseModel as PydanticBaseModel
 from pydantic import Field
 
 from giskard.llm import utils
-
+from .. import debug_description_prefix, debug_prefix
 from ....datasets.base import Dataset
 from ....llm.evaluators import RequirementEvaluator
 from ....ml_worker.testing.registry.decorators import test
 from ....ml_worker.testing.test_result import TestMessage, TestMessageLevel, TestResult
 from ....models.base import BaseModel
-from .. import debug_description_prefix, debug_prefix
 
 
 class EvalTestResult(PydanticBaseModel):
@@ -22,7 +21,7 @@ class EvalTestResult(PydanticBaseModel):
     )
     reason: str = Field(description="A text that clearly explains the given score")
     tip: Optional[str] = Field(
-        description="A text that offers a clear and descriptive suggestion on how to enhance the model"
+        description="A text that offers a clear and descriptive suggestion on how to enhance the model", default=None
     )
 
 
@@ -146,8 +145,6 @@ def test_llm_response_validation(
             If True and the test fails,
             a dataset will be provided containing the rows that have failed the evaluation criteria
     """
-    from ...llm.utils.validate_test_case import validate_test_case_with_reason
-
     predictions = model.predict(dataset).prediction
 
     results = validate_test_case_with_reason(model, evaluation_criteria, dataset.df, predictions)
