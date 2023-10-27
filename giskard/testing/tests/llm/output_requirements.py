@@ -1,14 +1,13 @@
 import inspect
-import json
 from typing import List, Optional
 
 import pandas as pd
 from pydantic import BaseModel as PydanticBaseModel
 from pydantic import Field
 
-from giskard.llm import utils
-
 from ....datasets.base import Dataset
+from ....llm.client import llm_client
+from ....llm.errors import LLMGenerationError
 from ....llm.evaluators import RequirementEvaluator
 from ....ml_worker.testing.registry.decorators import test
 from ....ml_worker.testing.test_result import TestMessage, TestMessageLevel, TestResult
@@ -100,19 +99,20 @@ def validate_test_case_with_reason(
             model_output=data["model_output"],
             requirements=data["requirements"],
         )
-        out = utils.llm_fn_call([{"role": "system", "content": prompt}], functions=EVALUATE_FUNCTIONS, temperature=0.1)
-
         try:
-            args = json.loads(out.function_call.arguments)
+            out = llm_client.complete(
+                messages=[{"role": "system", "content": prompt}], functions=EVALUATE_FUNCTIONS, temperature=0.1
+            )
 
-            if args["passed_test"]:
-                results.append(EvalTestResult(score=5, reason="The answer is correct"))
-            else:
-                print("EVAL", args)
-                results.append(EvalTestResult(score=0, reason=args.get("reason")))
-
-        except (AttributeError, json.JSONDecodeError, KeyError):
+            if out.function_call is None or "passed_test" not in out.function_call.args:
+                raise LLMGenerationError("Could not parse the function call")
+        except LLMGenerationError:
             results.append(EvalTestResult(score=5, reason=""))
+
+        if out.function_call.args["passed_test"]:
+            results.append(EvalTestResult(score=5, reason="The answer is correct"))
+        else:
+            results.append(EvalTestResult(score=0, reason=out.function_call.args.get("reason")))
 
     return results
 
