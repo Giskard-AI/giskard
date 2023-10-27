@@ -4,6 +4,7 @@ import os
 import re
 import tarfile
 from pathlib import Path
+from typing import Optional
 
 import requests
 import requests_mock
@@ -136,15 +137,25 @@ class MockedWebSocketMLWorker:
         return self.ml_worker_id is not ml_worker.INTERNAL_WORKER_ID
 
 
+def get_local_cache_base():
+    return settings.home_dir / settings.cache_dir
+
+
+def get_local_cache_project(project_key: Optional[str]):
+    return get_local_cache_base() / (project_key or "global")
+
+
+def get_local_cache_artifact(project_key: Optional[str], name: str, uuid: str):
+    return get_local_cache_project(project_key) / name / uuid
+
+
 def local_save_model_under_giskard_home_cache(model: BaseModel, project_key: str):
-    local_path = settings.home_dir / settings.cache_dir / project_key
-    local_path_model = (local_path / "models" / str(model.id))
+    local_path_model = get_local_cache_artifact(project_key, "models", str(model.id))
     local_path_model.mkdir(parents=True)
     model.save(local_path=local_path_model)
 
 
 def local_save_dataset_under_giskard_home_cache(dataset: Dataset, project_key: str):
-    local_path = settings.home_dir / settings.cache_dir / project_key
-    local_path_dataset = (local_path / "datasets" / str(dataset.id))
+    local_path_dataset = get_local_cache_artifact(project_key, "datasets", str(dataset.id))
     local_path_dataset.mkdir(parents=True)
     dataset.save(local_path=local_path_dataset, dataset_id=dataset.id)
