@@ -1,4 +1,3 @@
-from abc import abstractmethod
 from typing import Sequence
 
 import pandas as pd
@@ -36,9 +35,7 @@ class RequirementBasedDetector:
 
             if eval_result.failed:
                 issues.append(
-                    self.make_issue(
-                        model, eval_dataset, requirement, requirements, pd.DataFrame(eval_result.failure_examples)
-                    )
+                    self.make_issue(model, eval_dataset, requirement, pd.DataFrame(eval_result.failure_examples))
                 )
                 logger.info(
                     f"{self.__class__.__name__}: Test case failed ({len(eval_result.failure_examples)} failed examples)"
@@ -48,13 +45,7 @@ class RequirementBasedDetector:
 
         return issues
 
-    @abstractmethod
-    def get_issue_description(self) -> str:
-        ...
-
-    def make_issue(
-        self, model: BaseModel, dataset: Dataset, requirement: str, requirements: Sequence[str], examples: pd.DataFrame
-    ) -> Issue:
+    def make_issue(self, model: BaseModel, dataset: Dataset, requirement: str, examples: pd.DataFrame) -> Issue:
         return Issue(
             model,
             dataset,
