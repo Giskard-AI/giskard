@@ -5,7 +5,6 @@ from typing import List, Optional, Sequence
 import numpy as np
 import pandas as pd
 
-from .. import debug_description_prefix, debug_prefix
 from ....datasets.base import Dataset
 from ....llm import LLMImportError
 from ....llm.prompt_injection.data import Prompt, StringMatchingMethod
@@ -13,6 +12,7 @@ from ....llm.prompt_injection.evaluator import evaluate as evaluate_pi
 from ....ml_worker.testing.registry.decorators import test
 from ....ml_worker.testing.test_result import TestResult
 from ....models.base import BaseModel
+from .. import debug_description_prefix, debug_prefix
 
 
 def _add_suffix_to_df(df: pd.DataFrame, col: str, char: str, num_repetitions: int):
@@ -62,9 +62,9 @@ class LLMCharInjector:
 
         for feature in features:
             for char in self.chars:
-                yield self._test_single_injection(model, dataset, ref_predictions, char, feature)
+                yield self.run_single_injection(model, dataset, ref_predictions, char, feature)
 
-    def _test_single_injection(
+    def run_single_injection(
         self,
         model: BaseModel,
         dataset: Dataset,
