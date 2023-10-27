@@ -4,7 +4,7 @@ import pandas as pd
 
 from ...datasets.base import Dataset
 from ...llm.evaluators import RequirementEvaluator
-from ...llm.generators.adversarial import AdversarialExamplesGenerator
+from ...llm.generators import AdversarialExamplesGenerator
 from ...llm.testcase import TestcaseRequirementsGenerator
 from ...models.base.model import BaseModel
 from ...testing.tests.llm.output_requirements import test_llm_output_requirement
