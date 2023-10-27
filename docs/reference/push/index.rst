@@ -1,4 +1,4 @@
-Push feature
+Automated model insights
 ============
 
 .. automodule:: giskard.push
@@ -18,7 +18,7 @@ Push feature
 .. autoclass:: giskard.push.PerturbationPush
 
 
-Push tests catalog
+Automated model insights catalog
 -----------
 
 .. autofunction:: giskard.push.push_test_catalog.catalog.test_diff_rmse_push
