@@ -12,7 +12,7 @@ except ImportError as e:
     raise GiskardImportError("wandb") from e
 
 
-def get_wandb_run(run: Optional[wandb.wandb_sdk.wandb_run.Run] = None):
+def get_wandb_run(run: Optional["wandb.wandb_sdk.wandb_run.Run"] = None):
     if run is not None:
         return run
 
