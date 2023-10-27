@@ -2,7 +2,7 @@ from unittest.mock import patch
 
 import openai
 
-from giskard.llm.client import LLMFunctionCall, LLMOutput, llm_client
+from giskard.llm.client import LLMFunctionCall, LLMOutput, get_default_client
 
 RAW_DEMO_OPENAI_RESPONSE = {
     "id": "chatcmpl-abc123",
@@ -39,10 +39,10 @@ DEMO_OPENAI_RESPONSE = openai.openai_object.OpenAIObject.construct_from(RAW_DEMO
 DEMO_OPENAI_RESPONSE_FC = openai.openai_object.OpenAIObject.construct_from(RAW_DEMO_OPENAI_RESPONSE_WITH_FUNCTION_CALL)
 
 
-@patch("giskard.llm.client.openai")
+@patch("giskard.llm.client.openai.openai")
 def test_llm_complete_message(openai):
     openai.ChatCompletion.create.return_value = DEMO_OPENAI_RESPONSE
-    res = llm_client.complete([{"role": "system", "content": "Hello"}], temperature=0.11, max_tokens=1)
+    res = get_default_client().complete([{"role": "system", "content": "Hello"}], temperature=0.11, max_tokens=1)
 
     openai.ChatCompletion.create.assert_called_once()
     assert openai.ChatCompletion.create.call_args[1]["messages"] == [{"role": "system", "content": "Hello"}]
@@ -54,11 +54,11 @@ def test_llm_complete_message(openai):
     assert res.function_call is None
 
 
-@patch("giskard.llm.client.openai")
+@patch("giskard.llm.client.openai.openai")
 def test_llm_function_call(openai):
     openai.ChatCompletion.create.return_value = DEMO_OPENAI_RESPONSE_FC
 
-    res = llm_client.complete(
+    res = get_default_client().complete(
         [{"role": "system", "content": "Hello"}], functions=[{"name": "demo"}], temperature=0.11, max_tokens=1
     )
 
