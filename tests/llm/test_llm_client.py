@@ -54,7 +54,7 @@ def test_llm_complete_message(openai):
     assert res.function_call is None
 
 
-@patch("giskard.llm.utils.openai")
+@patch("giskard.llm.client.openai")
 def test_llm_function_call(openai):
     openai.ChatCompletion.create.return_value = DEMO_OPENAI_RESPONSE_FC
 
@@ -72,4 +72,4 @@ def test_llm_function_call(openai):
     assert res.message == "This is a test!"
     assert isinstance(res.function_call, LLMFunctionCall)
     assert res.function_call.function == "my_test_function"
-    assert res.function_call.arguments == {"my_parameter": "Parameter Value"}
+    assert res.function_call.args == {"my_parameter": "Parameter Value"}
