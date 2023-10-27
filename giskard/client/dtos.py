@@ -1,9 +1,9 @@
-from typing import List, Dict, Optional
+from typing import Dict, List, Optional
 
-from pydantic import BaseModel
+from giskard.core.validation import ConfiguredBaseModel
 
 
-class TestInputDTO(BaseModel):
+class TestInputDTO(ConfiguredBaseModel):
     name: str
     value: str
     type: str
@@ -11,13 +11,13 @@ class TestInputDTO(BaseModel):
     is_alias: bool = False
 
 
-class SuiteTestDTO(BaseModel):
+class SuiteTestDTO(ConfiguredBaseModel):
     testUuid: str
     functionInputs: Dict[str, TestInputDTO]
     displayName: Optional[str] = None
 
 
-class TestSuiteDTO(BaseModel):
+class TestSuiteDTO(ConfiguredBaseModel):
     name: Optional[str]
     project_key: str
     tests: List[SuiteTestDTO]

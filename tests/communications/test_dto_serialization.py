@@ -1,6 +1,7 @@
+from typing import Dict, List, Optional, Type
+
 import json
 from pathlib import Path
-from typing import Dict, List, Optional, Type
 
 import pydantic
 import pytest
@@ -10,6 +11,7 @@ from pydantic import BaseModel
 
 import giskard
 import giskard.ml_worker.websocket
+from giskard.core.validation import ConfiguredBaseModel
 
 IS_PYDANTIC_V2 = version.parse(pydantic.version.VERSION) >= version.parse("2.0")
 if IS_PYDANTIC_V2:
@@ -221,6 +223,18 @@ def is_required(field: ModelField) -> bool:
 
 
 ALL_DTOS = [pytest.param((klass), id=klass.__name__) for klass in get_all_dto_classes()]
+
+
+# Goal is to ensure every DTO is tested properly
+def test_all_dtos_are_configured():
+    missing_classes: List[Type[BaseModel]] = []
+    for param_set in ALL_DTOS:
+        klass = param_set.values[0]
+        if not issubclass(klass, ConfiguredBaseModel):
+            missing_classes.append(klass)
+    output = "\n  -".join([elt.__qualname__ for elt in missing_classes])
+    if len(missing_classes) > 0:
+        raise ValueError(f"All dtos should use ConfiguredBaseModel as base class, one not using are :\n  -{output}")
 
 
 # Goal is to ensure every DTO is tested properly

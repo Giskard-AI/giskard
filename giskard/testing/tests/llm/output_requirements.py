@@ -1,21 +1,23 @@
-import inspect
-import json
 from typing import List, Optional
 
+import inspect
+import json
+
 import pandas as pd
-from pydantic import BaseModel as PydanticBaseModel
 from pydantic import Field
 
+from giskard.core.validation import ConfiguredBaseModel
 from giskard.llm import utils
-from .. import debug_description_prefix, debug_prefix
+
 from ....datasets.base import Dataset
 from ....llm.evaluators import RequirementEvaluator
 from ....ml_worker.testing.registry.decorators import test
 from ....ml_worker.testing.test_result import TestMessage, TestMessageLevel, TestResult
 from ....models.base import BaseModel
+from .. import debug_description_prefix, debug_prefix
 
 
-class EvalTestResult(PydanticBaseModel):
+class EvalTestResult(ConfiguredBaseModel):
     score: int = Field(
         description="A number ranging from 1 to 5: 1 indicates that the answer does not meet the criteria at all, 3 indicates that the answer can be improved, 5 indicates that the answer completely meets the criteria"
     )
@@ -170,11 +172,11 @@ def test_llm_response_validation(
                 type=TestMessageLevel.INFO,
                 text=f"""
 Prompt intput: {dataset.df.iloc[i].to_dict()}
-                
+
 LLM response: {predictions[i]}
-                
+
 Score: {results[i].score}/5
-                
+
 Reason: {results[i].reason}
                 """,
             )
