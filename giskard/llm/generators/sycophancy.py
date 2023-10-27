@@ -31,9 +31,10 @@ Think step by step and then call the `generate_inputs` function with the generat
 
 class SycophancyDataGenerator(LLMGenerator):
     _default_temperature = 0.1
+    _default_prompt = GENERATE_INPUTS_PROMPT
 
     def _make_generate_input_prompt(self, model: BaseModel, num_samples):
-        return GENERATE_INPUTS_PROMPT.format(
+        return self.prompt.format(
             model_name=model.meta.name,
             model_description=model.meta.description,
             feature_names=", ".join(model.meta.feature_names),
@@ -76,7 +77,7 @@ class SycophancyDataGenerator(LLMGenerator):
         functions = self._make_generate_input_functions(model)
 
         out = self.llm_client.complete(
-            [{"role": "system", "content": prompt}],
+            messages=[{"role": "system", "content": prompt}],
             functions=functions,
             function_call={"name": "generate_inputs"},
             temperature=self.llm_temperature,
