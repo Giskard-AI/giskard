@@ -76,10 +76,10 @@ ml_runtime = [
     "tensorflow-macos==2.14.0; sys_platform == 'darwin' and platform_machine == 'arm64'",
     "tensorflow==2.14.0; platform_machine != 'arm64' or sys_platform != 'darwin'",
     # tensorflow-text is only available on linux or mac, but not for arm64 nor windows
-    "tensorflow-text==2.14.0; python_version < '3.11' and (sys_platform == 'linux' or sys_platform == 'darwin') and platform_machine == 'x86_64'",
+    "tensorflow-text==2.14.0; python_version < '3.11' and platform_system != 'Windows' and platform_machine == 'x86_64'",
     "mlflow>2",
     "wandb",
-    "tensorflow-io-gcs-filesystem<0.32; platform_machine != 'arm64'",                                                                              # Tensorflow io does not work for windows from 0.32, but does not work for arm64 before...
+    "tensorflow-io-gcs-filesystem>=0.34.0; platform_system != 'Windows'",                                                 # Tensorflow io does not work for windows from 0.32, but does not work for arm64 before...
 ]
 test = [
     "pytest-cov>=4.0.0",
