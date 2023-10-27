@@ -5,7 +5,7 @@ import pandas as pd
 from ...datasets.base import Dataset
 from ...llm.evaluators import RequirementEvaluator
 from ...llm.generators.adversarial import AdversarialExamplesGenerator
-from ...llm.testcase import RequirementsGenerator
+from ...llm.testcase import TestcaseRequirementsGenerator
 from ...models.base.model import BaseModel
 from ...testing.tests.llm.output_requirements import test_llm_output_requirement
 from ..issues import Issue
@@ -21,7 +21,7 @@ class RequirementBasedDetector:
         issue_description = self.get_issue_description()
 
         logger.info(f"{self.__class__.__name__}: Generating test case requirements")
-        requirements_gen = RequirementsGenerator(issue_description)
+        requirements_gen = TestcaseRequirementsGenerator(issue_description)
         requirements = requirements_gen.generate_requirements(model, self.num_requirements)
 
         logger.info(f"{self.__class__.__name__}: Evaluating test cases")
