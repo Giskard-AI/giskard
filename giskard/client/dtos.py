@@ -1,4 +1,4 @@
-from typing import Dict, List, Optional
+from typing import Any, Dict, List, Optional
 
 from giskard.core.validation import ConfiguredBaseModel
 
@@ -22,3 +22,36 @@ class TestSuiteDTO(ConfiguredBaseModel):
     project_key: str
     tests: List[SuiteTestDTO]
     function_inputs: List[TestInputDTO]
+
+
+class ServerInfo(ConfiguredBaseModel):
+    instanceId: Optional[str] = None
+    serverVersion: Optional[str] = None
+    instanceLicenseId: Optional[str] = None
+    user: Optional[str] = None
+
+
+class TestInfo(ConfiguredBaseModel):
+    testUuid: str
+    functionInputs: Dict[str, Any]
+
+
+class SuiteInfo(ConfiguredBaseModel):
+    name: str
+    tests: List[TestInfo]
+
+
+class ModelMetaInfo(ConfiguredBaseModel):
+    id: str
+    name: str
+    modelType: str
+    featureNames: List[str]
+    threshold: Optional[float] = None
+    description: Optional[str] = None
+    classificationLabels: Optional[List[str]] = None
+    classificationLabelsDtype: Optional[str] = None
+    languageVersion: str
+    language: str
+    createdDate: str
+    size: int
+    projectId: int

@@ -8,7 +8,7 @@ from functools import singledispatchmethod
 
 from mlflow import MlflowClient
 
-from giskard.client.dtos import SuiteTestDTO, TestInputDTO, TestSuiteDTO
+from giskard.client.dtos import SuiteInfo, SuiteTestDTO, TestInputDTO, TestSuiteDTO
 from giskard.client.giskard_client import GiskardClient
 from giskard.core.core import TestFunctionMeta
 from giskard.datasets.base import Dataset
@@ -647,14 +647,14 @@ class Suite:
 
     @classmethod
     def download(cls, client: GiskardClient, project_key: str, suite_id: int) -> "Suite":
-        suite_json = client.get_suite(client.get_project(project_key).project_id, suite_id)
+        suite_json: SuiteInfo = client.get_suite(client.get_project(project_key).project_id, suite_id)
 
-        suite = Suite(name=suite_json["name"])
+        suite = Suite(name=suite_json.name)
         suite.id = suite_id
 
-        for test_json in suite_json["tests"]:
-            test = GiskardTest.download(test_json["testUuid"], client, None)
-            test_arguments = parse_function_arguments(client, project_key, test_json["functionInputs"].values())
+        for test_json in suite_json.tests:
+            test = GiskardTest.download(test_json.testUuid, client, None)
+            test_arguments = parse_function_arguments(client, project_key, test_json.functionInputs.values())
             suite.add_test(test.get_builder()(**test_arguments))
 
         return suite

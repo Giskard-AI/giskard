@@ -350,6 +350,7 @@ class GetPushParam(ConfiguredBaseModel):
     column_dtypes: Dict[str, str]
     push_kind: Optional[PushKind] = None
     cta_kind: Optional[CallToActionKind] = None
+    rowIdx: int
 
 
 class PushDetails(ConfiguredBaseModel):
