@@ -169,12 +169,13 @@ dependencies = [
     "pyyaml", # cli_server
     "packaging", # cli_server
     "markdown", # needed for display of scan results in notebook
+    "colorama",  # needed for the scan
+
 ]
 
 [project.optional-dependencies]
 llm = [
     "langchain<=0.0.301", # Weirdly fails with newer version, see https://linear.app/giskard/issue/GSK-1853/updating-lanchain-version-over-00301-weirdly-fails
-    "colorama",           # needed for garak
     "openai>=0.28.1",
     "evaluate>=0.4.1",
     "bert-score>=0.3.13",
