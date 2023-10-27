@@ -7,11 +7,6 @@ from ..utils.analytics_collector import analytics
 from giskard.client.python_utils import warning
 from giskard.core.errors import GiskardImportError
 
-try:
-    import wandb  # noqa
-except ImportError:
-    pass
-
 
 class PanelNames(str, Enum):
     """Enumeration to store WandB UI panel names for different charts."""
@@ -65,7 +60,7 @@ class ShapResult:
                 "classification models."
             )
 
-    def to_wandb(self, run: Optional[wandb.wandb_sdk.wandb_run.Run] = None) -> None:
+    def to_wandb(self, run: Optional["wandb.wandb_sdk.wandb_run.Run"] = None) -> None:  # noqa
         """Create and log the SHAP charts to the WandB run.
 
         For the active WandB run, logs SHAP charts, which include:
@@ -79,6 +74,10 @@ class ShapResult:
         run :
             WandB run.
         """
+        try:
+            import wandb  # noqa
+        except ImportError as e:
+            raise GiskardImportError("wandb") from e
         from ..integrations.wandb.wandb_utils import get_wandb_run
         from ..integrations.wandb.wandb_utils import _wandb_bar_plot, _wandb_general_bar_plot, _wandb_scatter_plot
 

@@ -20,11 +20,7 @@ from giskard.ml_worker.testing.registry.slicing_function import SlicingFunction
 from giskard.ml_worker.testing.registry.transformation_function import TransformationFunction
 from giskard.ml_worker.testing.test_result import TestMessage, TestMessageLevel, TestResult
 from giskard.models.base import BaseModel
-
-try:
-    import wandb  # noqa
-except ImportError:
-    pass
+from giskard.core.errors import GiskardImportError
 
 
 logger = logging.getLogger(__name__)
@@ -109,7 +105,7 @@ class TestSuiteResult:
 
         return metrics
 
-    def to_wandb(self, run: Optional[wandb.wandb_sdk.wandb_run.Run] = None) -> None:
+    def to_wandb(self, run: Optional["wandb.wandb_sdk.wandb_run.Run"] = None) -> None:  # noqa
         """Log the test-suite result to the WandB run.
 
         Log the current test-suite result in a table format to the active WandB run.
@@ -119,6 +115,10 @@ class TestSuiteResult:
         run :
             WandB run.
         """
+        try:
+            import wandb  # noqa
+        except ImportError as e:
+            raise GiskardImportError("wandb") from e
         from ..integrations.wandb.wandb_utils import get_wandb_run, _parse_test_name
         from ..utils.analytics_collector import analytics
 
