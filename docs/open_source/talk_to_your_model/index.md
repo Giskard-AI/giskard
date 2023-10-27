@@ -1,4 +1,4 @@
-# 🗣️Talk to your model
+# 🗣️ Talk to your model
 
 [//]: # (TODO: review page to make it flow well with other pages)
 The **Talk to Your Model** feature allows you to engage in a *conversation* with your ML model. Using natural language, you can:
@@ -119,4 +119,3 @@ llm = Cohere()
 # Set your llm globally
 giskard.llm_config.set_default_llm(llm)
 ```
-
