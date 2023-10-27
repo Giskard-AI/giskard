@@ -1,30 +1,6 @@
 # NLP Tutorials
 
 [//]: # (TODO: reformat page for this section)
-New split to implement within this tutorial section:
-1. By ML Use case (churn, comment generation, etc.)
-2. By ML Libraries (Hugging Face, PyTorch, etc.)
-
-```{toctree}
-:caption: Table of Contents
-:name: mastertoc
-:maxdepth: 2
-:hidden:
-
-libraries/scikit-learn/index
-libraries/xgboost/index
-libraries/lightgbm/index
-libraries/tensorflow/index
-libraries/pytorch/index
-libraries/huggingface/index
-libraries/langchain/index
-libraries/api/index
-tasks/classification/index
-tasks/regression/index
-tasks/text-generation/index
-data-types/tabular/index
-data-types/text/index
-```
 
 <div>
 <h2>Libraries</h2>
