@@ -190,7 +190,7 @@ jobs:
           PYTEST_XDIST_AUTO_NUM_WORKERS: 2
         run: pdm run test -m 'slow'
   install-poetry:
-    name: "Check if wheel is able to be installed using Poetry"
+    name: "Check if wheel can be installed with using Poetry"
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
@@ -218,7 +218,7 @@ jobs:
           poetry add "$(ls ../dist/*.whl)"
           poetry run python -c "import giskard"
   install-pip:
-    name: "Check if wheel is able to be installed using pip"
+    name: "Check if wheel can be installed with pip"
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
@@ -232,12 +232,12 @@ jobs:
         run: pdm build
       - name: Create new project, install wheel and import (Pip)
         run: |
-          pdm venv create --name test-install
-          eval $(pdm venv activate test-install)
-          pip install "$(ls ./dist/*.whl)"
+          python -m venv .venv-test-pip
+          source .venv-test-pip/bin/activate
+          python -m pip install "$(ls ./dist/*.whl)"
           python -c "import giskard"
   install-pdm:
-    name: "Check if wheel is able to be installed using PDM"
+    name: "Check if wheel can be installed with PDM"
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
