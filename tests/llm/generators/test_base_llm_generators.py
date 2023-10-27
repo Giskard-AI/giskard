@@ -5,6 +5,7 @@ import pytest
 from giskard.datasets.base import Dataset
 from giskard.llm.client import LLMFunctionCall, LLMOutput
 from giskard.llm.errors import LLMGenerationError
+from giskard.llm.generators.adversarial import AdversarialExamplesGenerator
 from giskard.llm.generators.base import BaseDataGenerator
 from giskard.llm.generators.implausible import ImplausibleDataGenerator
 from giskard.llm.generators.sycophancy import SycophancyDataGenerator
@@ -15,6 +16,7 @@ from giskard.llm.generators.sycophancy import SycophancyDataGenerator
     [
         (BaseDataGenerator, [], {}),
         (ImplausibleDataGenerator, [], {}),
+        (AdversarialExamplesGenerator, ["demo", "demo"], {}),
     ],
 )
 def test_generator_returns_dataset(Generator, args, kwargs):
@@ -78,6 +80,7 @@ def test_generator_returns_dataset(Generator, args, kwargs):
         (BaseDataGenerator, [], {}),
         (ImplausibleDataGenerator, [], {}),
         (SycophancyDataGenerator, [], {}),
+        (AdversarialExamplesGenerator, ["demo", "demo"], {}),
     ],
 )
 def test_generator_raises_generation_error_if_function_call_fails(Generator, args, kwargs):
