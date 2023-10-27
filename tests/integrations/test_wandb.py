@@ -84,3 +84,15 @@ def _to_wandb(model, dataset):
 
     assert re.match("^[0-9a-z]{8}$", str(run.id))
     run.finish()
+
+
+@pytest.mark.parametrize(
+    "dataset_name", ["german_credit_data"],)
+def test_error(dataset_name, request):
+    dataset = request.getfixturevalue(dataset_name)
+
+    with pytest.raises(ValueError) as e:
+        dataset.to_wandb()
+    assert e.match(
+        r"There are currently no active wandb runs available.*"
+    )
