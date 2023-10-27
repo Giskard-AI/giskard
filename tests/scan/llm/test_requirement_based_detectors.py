@@ -26,9 +26,11 @@ def test_requirement_based_detector_flow(Detector, issue_match):
         patch("giskard.scanner.llm.base.TestcaseRequirementsGenerator") as TestcaseRequirementsGenerator,
         patch("giskard.scanner.llm.base.AdversarialExamplesGenerator") as AdversarialExamplesGenerator,
         patch("giskard.scanner.llm.base.RequirementEvaluator") as RequirementEvaluator,
-        patch("giskard.scanner.llm.llm_output_format_detector.llm_client") as llm_client,
+        patch("giskard.scanner.llm.llm_output_format_detector.get_default_client") as get_default_client,
     ):
         # For output format detector
+        llm_client = Mock()
+        get_default_client.return_value = llm_client
         llm_client.complete.return_value = LLMOutput(message="y")
 
         model = Mock()
