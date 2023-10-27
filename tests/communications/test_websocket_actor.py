@@ -1,5 +1,8 @@
+import posixpath
 import uuid
 import pytest
+import pandas as pd
+import requests_mock
 
 from giskard.datasets.base import Dataset
 from giskard.ml_worker import ml_worker, websocket
@@ -8,8 +11,9 @@ from giskard.ml_worker.websocket import listener
 from giskard.ml_worker.websocket.action import MLWorkerAction
 from giskard.models.base.model import BaseModel
 from giskard.settings import settings
+from giskard import slicing_function, transformation_function
 
-from tests.utils import MockedWebSocketMLWorker
+from tests.utils import MockedWebSocketMLWorker, fixup_mocked_artifact_meta_version
 from tests import utils
 
 
@@ -319,3 +323,237 @@ def test_websocket_actor_dataset_processing_empty_internal(request):
     assert reply.filteredRows is not None and 0 == len(reply.filteredRows)
     # No line modified
     assert reply.modifications is not None and 0 == len(reply.modifications)
+
+
+# Define a slicing function
+@slicing_function(row_level=False)
+def head_slice(df: pd.DataFrame) -> pd.DataFrame:
+    return df.head(1)
+
+
+def test_websocket_actor_dataset_processing_head_slicing_with_cache(request):
+    dataset: Dataset = request.getfixturevalue("enron_data")
+
+    project_key = str(uuid.uuid4()) # Use a UUID to separate the resources used by the tests
+
+    # Prepare dataset
+    utils.local_save_dataset_under_giskard_home_cache(dataset, project_key)
+
+    head_slice.meta.uuid = str(uuid.uuid4())
+
+    params = websocket.DatasetProcessingParam(
+        dataset=websocket.ArtifactRef(project_key=project_key, id=str(dataset.id), sample=False),
+        functions=[
+            websocket.DatasetProcessingFunction(
+                slicingFunction=websocket.ArtifactRef(
+                    project_key=None,
+                    id=head_slice.meta.uuid,
+                )
+            )
+        ],
+    )
+    with utils.MockedClient(mock_all=False) as (client, mr):
+        # Prepare URL for meta info
+        cf = head_slice
+        url = posixpath.join("http://giskard-host:12345/api/v2", cf._get_name(), cf.meta.uuid)
+        artifact_info_url = posixpath.join("http://giskard-host:12345/api/v2", "artifact-info", "global", cf._get_name(), cf.meta.uuid)
+        meta_info = head_slice.meta.to_json()
+        artifacts = [
+            utils.CALLABLE_FUNCTION_PKL_CACHE, utils.CALLABLE_FUNCTION_META_CACHE,
+        ]
+        # Fixup the differences from Backend
+        meta_info = fixup_mocked_artifact_meta_version(meta_info)
+
+        mr.register_uri(method=requests_mock.GET, url=url, json=meta_info)
+        mr.register_uri(method=requests_mock.GET, url=artifact_info_url, json=artifacts)
+
+        # The slicing function will be loaded from the current module, without further requests
+        mr.register_uri(method=requests_mock.GET, url=url, json=meta_info)
+
+        dataset_url = posixpath.join("http://giskard-host:12345/api/v2", "project", project_key, "datasets", str(dataset.id))
+        dataset_meta_info = utils.mock_dataset_meta_info(dataset)
+
+        # The dataset can be then loaded from the cache, without further requests
+        mr.register_uri(method=requests_mock.GET, url=dataset_url, json=dataset_meta_info)
+
+        reply = listener.dataset_processing(client=client, params=params)
+        assert isinstance(reply, websocket.DatasetProcessing)
+        assert reply.datasetId == str(dataset.id)
+        assert reply.totalRows == len(list(dataset.df.index))   
+        # One line not filtered
+        assert reply.filteredRows is not None and reply.totalRows - 1 == len(reply.filteredRows)
+        # No line modified
+        assert reply.modifications is not None and 0 == len(reply.modifications)
+
+
+def test_websocket_actor_dataset_processing_head_slicing_with_cache_in_project(request):
+    dataset: Dataset = request.getfixturevalue("enron_data")
+
+    project_key = str(uuid.uuid4()) # Use a UUID to separate the resources used by the tests
+
+    # Prepare dataset
+    utils.local_save_dataset_under_giskard_home_cache(dataset, project_key)
+
+    head_slice.meta.uuid = str(uuid.uuid4())
+
+    params = websocket.DatasetProcessingParam(
+        dataset=websocket.ArtifactRef(project_key=project_key, id=str(dataset.id), sample=False),
+        functions=[
+            websocket.DatasetProcessingFunction(
+                slicingFunction=websocket.ArtifactRef(
+                    project_key=project_key,
+                    id=head_slice.meta.uuid,
+                )
+            )
+        ],
+    )
+    with utils.MockedClient(mock_all=False) as (client, mr):
+        # Prepare URL for meta info
+        cf = head_slice
+        url = posixpath.join("http://giskard-host:12345/api/v2", "project", project_key, cf._get_name(), cf.meta.uuid)
+        artifact_info_url = posixpath.join("http://giskard-host:12345/api/v2", "artifact-info", "global", cf._get_name(), cf.meta.uuid)
+        meta_info = head_slice.meta.to_json()
+        artifacts = [
+            utils.CALLABLE_FUNCTION_PKL_CACHE, utils.CALLABLE_FUNCTION_META_CACHE,
+        ]
+        # Fixup the differences from Backend
+        meta_info = fixup_mocked_artifact_meta_version(meta_info)
+
+        mr.register_uri(method=requests_mock.GET, url=url, json=meta_info)
+        mr.register_uri(method=requests_mock.GET, url=artifact_info_url, json=artifacts)
+
+        # The slicing function will be loaded from the current module, without further requests
+        mr.register_uri(method=requests_mock.GET, url=url, json=meta_info)
+
+        dataset_url = posixpath.join("http://giskard-host:12345/api/v2", "project", project_key, "datasets", str(dataset.id))
+        dataset_meta_info = utils.mock_dataset_meta_info(dataset)
+
+        # The dataset can be then loaded from the cache, without further requests
+        mr.register_uri(method=requests_mock.GET, url=dataset_url, json=dataset_meta_info)
+
+        reply = listener.dataset_processing(client=client, params=params)
+        assert isinstance(reply, websocket.DatasetProcessing)
+        assert reply.datasetId == str(dataset.id)
+        assert reply.totalRows == len(list(dataset.df.index))   
+        # One line not filtered
+        assert reply.filteredRows is not None and reply.totalRows - 1 == len(reply.filteredRows)
+        # No line modified
+        assert reply.modifications is not None and 0 == len(reply.modifications)
+
+
+
+# Define a transformation function
+@transformation_function()
+def do_nothing(row):
+    return row
+
+
+def test_websocket_actor_dataset_processing_do_nothing_transform_with_cache(request):
+    dataset: Dataset = request.getfixturevalue("enron_data")
+
+    project_key = str(uuid.uuid4()) # Use a UUID to separate the resources used by the tests
+
+    # Prepare dataset
+    utils.local_save_dataset_under_giskard_home_cache(dataset, project_key)
+
+    do_nothing.meta.uuid = str(uuid.uuid4())
+
+    params = websocket.DatasetProcessingParam(
+        dataset=websocket.ArtifactRef(project_key=project_key, id=str(dataset.id), sample=False),
+        functions=[
+            websocket.DatasetProcessingFunction(
+                transformationFunction=websocket.ArtifactRef(
+                    project_key=None,
+                    id=do_nothing.meta.uuid,
+                )
+            )
+        ],
+    )
+    with utils.MockedClient(mock_all=False) as (client, mr):
+        # Prepare URL for meta info
+        cf = do_nothing
+        url = posixpath.join("http://giskard-host:12345/api/v2", cf._get_name(), cf.meta.uuid)
+        artifact_info_url = posixpath.join("http://giskard-host:12345/api/v2", "artifact-info", "global", cf._get_name(), cf.meta.uuid)
+        meta_info = cf.meta.to_json()
+        artifacts = [
+            utils.CALLABLE_FUNCTION_PKL_CACHE, utils.CALLABLE_FUNCTION_META_CACHE,
+        ]
+        # Fixup the differences from Backend
+        meta_info = fixup_mocked_artifact_meta_version(meta_info)
+
+        mr.register_uri(method=requests_mock.GET, url=url, json=meta_info)
+        mr.register_uri(method=requests_mock.GET, url=artifact_info_url, json=artifacts)
+
+        # The slicing function will be loaded from the current module, without further requests
+        mr.register_uri(method=requests_mock.GET, url=url, json=meta_info)
+
+        dataset_url = posixpath.join("http://giskard-host:12345/api/v2", "project", project_key, "datasets", str(dataset.id))
+        dataset_meta_info = utils.mock_dataset_meta_info(dataset)
+
+        # The dataset can be then loaded from the cache, without further requests
+        mr.register_uri(method=requests_mock.GET, url=dataset_url, json=dataset_meta_info)
+
+        reply = listener.dataset_processing(client=client, params=params)
+        assert isinstance(reply, websocket.DatasetProcessing)
+        assert reply.datasetId == str(dataset.id)
+        assert reply.totalRows == len(list(dataset.df.index))   
+        # No line filtered
+        assert reply.filteredRows is not None and 0 == len(reply.filteredRows)
+        # No line modified
+        assert reply.modifications is not None and 0 == len(reply.modifications)
+
+
+def test_websocket_actor_dataset_processing_do_nothing_transform_with_cache_in_project(request):
+    dataset: Dataset = request.getfixturevalue("enron_data")
+
+    project_key = str(uuid.uuid4()) # Use a UUID to separate the resources used by the tests
+
+    # Prepare dataset
+    utils.local_save_dataset_under_giskard_home_cache(dataset, project_key)
+
+    do_nothing.meta.uuid = str(uuid.uuid4())
+
+    params = websocket.DatasetProcessingParam(
+        dataset=websocket.ArtifactRef(project_key=project_key, id=str(dataset.id), sample=False),
+        functions=[
+            websocket.DatasetProcessingFunction(
+                transformationFunction=websocket.ArtifactRef(
+                    project_key=project_key,
+                    id=do_nothing.meta.uuid,
+                )
+            )
+        ],
+    )
+    with utils.MockedClient(mock_all=False) as (client, mr):
+        # Prepare URL for meta info
+        cf = do_nothing
+        url = posixpath.join("http://giskard-host:12345/api/v2", "project", project_key, cf._get_name(), cf.meta.uuid)
+        artifact_info_url = posixpath.join("http://giskard-host:12345/api/v2", "artifact-info", project_key, cf._get_name(), cf.meta.uuid)
+        meta_info = cf.meta.to_json()
+        artifacts = [
+            utils.CALLABLE_FUNCTION_PKL_CACHE, utils.CALLABLE_FUNCTION_META_CACHE,
+        ]
+        # Fixup the differences from Backend
+        meta_info = fixup_mocked_artifact_meta_version(meta_info)
+
+        mr.register_uri(method=requests_mock.GET, url=url, json=meta_info)
+        mr.register_uri(method=requests_mock.GET, url=artifact_info_url, json=artifacts)
+
+        # The slicing function will be loaded from the current module, without further requests
+        mr.register_uri(method=requests_mock.GET, url=url, json=meta_info)
+
+        dataset_url = posixpath.join("http://giskard-host:12345/api/v2", "project", project_key, "datasets", str(dataset.id))
+        dataset_meta_info = utils.mock_dataset_meta_info(dataset)
+
+        # The dataset can be then loaded from the cache, without further requests
+        mr.register_uri(method=requests_mock.GET, url=dataset_url, json=dataset_meta_info)
+
+        reply = listener.dataset_processing(client=client, params=params)
+        assert isinstance(reply, websocket.DatasetProcessing)
+        assert reply.datasetId == str(dataset.id)
+        assert reply.totalRows == len(list(dataset.df.index))   
+        # No line filtered
+        assert reply.filteredRows is not None and 0 == len(reply.filteredRows)
+        # No line modified
+        assert reply.modifications is not None and 0 == len(reply.modifications)
+
