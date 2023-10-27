@@ -5,7 +5,7 @@ import pytest
 
 from giskard import Dataset, slicing_function, transformation_function
 from giskard.models.sklearn import SKLearnModel
-from tests.utils import MockedClient, match_model_id, match_url_patterns,  get_local_cache_callable_artifact
+from tests.utils import *
 
 model_name = "uploaded model"
 
@@ -128,8 +128,8 @@ def test_upload_slicing_function():
         head_slice.upload(client=client, project_key=None)
         # Check local cache
         cache_dir = get_local_cache_callable_artifact(project_key=None, artifact=head_slice)
-        assert (cache_dir / "data.pkl").exists()
-        assert (cache_dir / "meta.yaml").exists()
+        assert (cache_dir / SLICING_FUNCTION_PKL_CACHE).exists()
+        assert (cache_dir / SLICING_FUNCTION_META_CACHE).exists()
         # Check requested URL
         match_url_patterns(mr.request_history, artifact_url_pattern)
         match_url_patterns(mr.request_history, slices_url_pattern)
@@ -149,8 +149,8 @@ def test_upload_slicing_function_to_project():
         head_slice.upload(client=client, project_key="test-project")
         # Check local cache
         cache_dir = get_local_cache_callable_artifact(project_key="test-project", artifact=head_slice)
-        assert (cache_dir / "data.pkl").exists()
-        assert (cache_dir / "meta.yaml").exists()
+        assert (cache_dir / SLICING_FUNCTION_PKL_CACHE).exists()
+        assert (cache_dir / SLICING_FUNCTION_META_CACHE).exists()
         # Check requested URL
         match_url_patterns(mr.request_history, artifact_url_pattern)
         match_url_patterns(mr.request_history, slices_url_pattern)
@@ -170,8 +170,8 @@ def test_upload_transformation_function():
         do_nothing.upload(client=client, project_key=None)
         # Check local cache
         cache_dir = get_local_cache_callable_artifact(project_key=None, artifact=do_nothing)
-        assert (cache_dir / "data.pkl").exists()
-        assert (cache_dir / "meta.yaml").exists()
+        assert (cache_dir / TRANSFORMATION_FUNCTION_PKL_CACHE).exists()
+        assert (cache_dir / TRANSFORMATION_FUNCTION_META_CACHE).exists()
         # Check requested URL
         match_url_patterns(mr.request_history, artifact_url_pattern)
         match_url_patterns(mr.request_history, slices_url_pattern)
@@ -191,8 +191,8 @@ def test_upload_transformation_function_to_project():
         do_nothing.upload(client=client, project_key="test-project")
         # Check local cache
         cache_dir = get_local_cache_callable_artifact(project_key="test-project", artifact=do_nothing)
-        assert (cache_dir / "data.pkl").exists()
-        assert (cache_dir / "meta.yaml").exists()
+        assert (cache_dir / TRANSFORMATION_FUNCTION_PKL_CACHE).exists()
+        assert (cache_dir / TRANSFORMATION_FUNCTION_META_CACHE).exists()
         # Check requested URL
         match_url_patterns(mr.request_history, artifact_url_pattern)
         match_url_patterns(mr.request_history, slices_url_pattern)
