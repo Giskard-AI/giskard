@@ -1,11 +1,10 @@
-import wandb
-import pytest
 import re
+
+import pytest
+import wandb
 
 from giskard import scan
 from giskard.models.model_explanation import explain_with_shap
-
-wandb.setup(wandb.Settings(mode="disabled", program=__name__, program_relpath=__name__, disable_code=True))
 
 NOT_SUPP_TEXT_WARNING_MSG = r"We do not support the wandb logging of ShapResult for text features yet.*"
 
@@ -64,7 +63,6 @@ def test_slow(dataset_name, model_name, request):
 
 
 def _to_wandb(model, dataset):
-
     run = wandb.init(project="tests")
 
     # verify that the logging of a dataset works
