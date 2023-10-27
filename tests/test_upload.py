@@ -1,10 +1,11 @@
 import re
+import pandas as pd
 
 import pytest
 
-from giskard import Dataset
+from giskard import Dataset, slicing_function, transformation_function
 from giskard.models.sklearn import SKLearnModel
-from tests.utils import MockedClient, match_model_id, match_url_patterns
+from tests.utils import MockedClient, match_model_id, match_url_patterns,  get_local_cache_callable_artifact
 
 model_name = "uploaded model"
 
@@ -111,3 +112,87 @@ def test_upload_models_exceptions(data, model, request):
     data = request.getfixturevalue(data)
     model = request.getfixturevalue(model)
     _test_upload_model_exceptions(model, data)
+
+
+def test_upload_slicing_function():
+    # Define a slicing function
+    @slicing_function(row_level=False)
+    def head_slice(df: pd.DataFrame) -> pd.DataFrame:
+        return df.head(10)
+
+    artifact_url_pattern = re.compile(
+        "http://giskard-host:12345/api/v2/artifacts/global/" + head_slice._get_name() + "/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/.*"
+    )
+    slices_url_pattern = re.compile("http://giskard-host:12345/api/v2/artifacts/global/" + head_slice._get_name())
+    with MockedClient() as (client, mr):
+        head_slice.upload(client=client, project_key=None)
+        # Check local cache
+        cache_dir = get_local_cache_callable_artifact(project_key=None, artifact=head_slice)
+        assert (cache_dir / "data.pkl").exists()
+        assert (cache_dir / "meta.yaml").exists()
+        # Check requested URL
+        match_url_patterns(mr.request_history, artifact_url_pattern)
+        match_url_patterns(mr.request_history, slices_url_pattern)
+
+
+def test_upload_slicing_function_to_project():
+    # Define a slicing function
+    @slicing_function(row_level=False)
+    def head_slice(df: pd.DataFrame) -> pd.DataFrame:
+        return df.head(10)
+
+    artifact_url_pattern = re.compile(
+        "http://giskard-host:12345/api/v2/artifacts/test-project/" + head_slice._get_name() + "/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/.*"
+    )
+    slices_url_pattern = re.compile("http://giskard-host:12345/api/v2/artifacts/test-project/" + head_slice._get_name())
+    with MockedClient() as (client, mr):
+        head_slice.upload(client=client, project_key="test-project")
+        # Check local cache
+        cache_dir = get_local_cache_callable_artifact(project_key="test-project", artifact=head_slice)
+        assert (cache_dir / "data.pkl").exists()
+        assert (cache_dir / "meta.yaml").exists()
+        # Check requested URL
+        match_url_patterns(mr.request_history, artifact_url_pattern)
+        match_url_patterns(mr.request_history, slices_url_pattern)
+
+
+def test_upload_transformation_function():
+    # Define a transformation function
+    @transformation_function()
+    def do_nothing(row):
+        return row
+
+    artifact_url_pattern = re.compile(
+        "http://giskard-host:12345/api/v2/artifacts/global/" + do_nothing._get_name() + "/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/.*"
+    )
+    slices_url_pattern = re.compile("http://giskard-host:12345/api/v2/artifacts/global/" + do_nothing._get_name())
+    with MockedClient() as (client, mr):
+        do_nothing.upload(client=client, project_key=None)
+        # Check local cache
+        cache_dir = get_local_cache_callable_artifact(project_key=None, artifact=do_nothing)
+        assert (cache_dir / "data.pkl").exists()
+        assert (cache_dir / "meta.yaml").exists()
+        # Check requested URL
+        match_url_patterns(mr.request_history, artifact_url_pattern)
+        match_url_patterns(mr.request_history, slices_url_pattern)
+
+
+def test_upload_transformation_function_to_project():
+    # Define a transformation function
+    @transformation_function()
+    def do_nothing(row):
+        return row
+
+    artifact_url_pattern = re.compile(
+        "http://giskard-host:12345/api/v2/artifacts/test-project/" + do_nothing._get_name() + "/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/.*"
+    )
+    slices_url_pattern = re.compile("http://giskard-host:12345/api/v2/artifacts/test-project/" + do_nothing._get_name())
+    with MockedClient() as (client, mr):
+        do_nothing.upload(client=client, project_key="test-project")
+        # Check local cache
+        cache_dir = get_local_cache_callable_artifact(project_key="test-project", artifact=do_nothing)
+        assert (cache_dir / "data.pkl").exists()
+        assert (cache_dir / "meta.yaml").exists()
+        # Check requested URL
+        match_url_patterns(mr.request_history, artifact_url_pattern)
+        match_url_patterns(mr.request_history, slices_url_pattern)

@@ -8,6 +8,7 @@ from typing import Optional
 
 import requests
 import requests_mock
+from giskard.ml_worker.core.savable import Artifact
 
 import tests.utils
 from giskard.client.giskard_client import GiskardClient
@@ -147,6 +148,10 @@ def get_local_cache_project(project_key: Optional[str]):
 
 def get_local_cache_artifact(project_key: Optional[str], name: str, uuid: str):
     return get_local_cache_project(project_key) / name / uuid
+
+
+def get_local_cache_callable_artifact(project_key: Optional[str], artifact: Artifact):
+    return get_local_cache_artifact(project_key, artifact._get_name(), artifact.meta.uuid)
 
 
 def local_save_model_under_giskard_home_cache(model: BaseModel, project_key: str):
