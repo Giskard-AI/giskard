@@ -1,5 +1,3 @@
-import re
-
 import pytest
 import wandb
 
@@ -84,7 +82,9 @@ def _to_wandb(model, dataset):
 
 
 @pytest.mark.parametrize(
-    "dataset_name", ["german_credit_data"],)
+    "dataset_name",
+    ["german_credit_data"],
+)
 def test_error(dataset_name, request):
     dataset = request.getfixturevalue(dataset_name)
 
