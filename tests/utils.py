@@ -174,3 +174,15 @@ def local_save_artifact_under_giskard_home_cache(artifact: Artifact, project_key
     local_path.mkdir(parents=True)
     artifact.save(local_dir=local_path)
 
+
+def fixup_mocked_artifact_meta_version(meta_info):
+    meta_info.update({
+        "displayName": meta_info.pop("display_name"),
+        "moduleDoc": meta_info.pop("module_doc"),
+        "version": 1,
+    })
+    for arg in meta_info["args"] if meta_info["args"] else []:
+        arg.update({
+            "defaultValue": arg.pop("default")
+        })
+    return meta_info

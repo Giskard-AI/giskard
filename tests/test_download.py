@@ -14,7 +14,14 @@ from giskard.ml_worker.core.savable import Artifact
 from giskard.ml_worker.testing.test_result import TestResult as GiskardTestResult
 from giskard import test
 
-from tests.utils import CALLABLE_FUNCTION_META_CACHE, CALLABLE_FUNCTION_PKL_CACHE, get_local_cache_callable_artifact, MockedClient, local_save_artifact_under_giskard_home_cache
+from tests.utils import (
+    CALLABLE_FUNCTION_META_CACHE,
+    CALLABLE_FUNCTION_PKL_CACHE,
+    get_local_cache_callable_artifact,
+    MockedClient,
+    local_save_artifact_under_giskard_home_cache,
+    fixup_mocked_artifact_meta_version,
+)
 
 
 BASE_CLIENT_URL = "http://giskard-host:12345/api/v2"
@@ -72,15 +79,8 @@ def test_download_callable_function(cf: Artifact):
                 "name": f"fake_{cf._get_name()}",
             })
             # Fixup the differences from Backend
-            meta_info.update({
-                "displayName": meta_info.pop("display_name"),
-                "moduleDoc": meta_info.pop("module_doc"),
-                "version": 1,
-            })
-            for arg in meta_info["args"] if meta_info["args"] else []:
-                arg.update({
-                    "defaultValue": arg.pop("default")
-                })
+            meta_info = fixup_mocked_artifact_meta_version(meta_info)
+
             mr.register_uri(method=requests_mock.GET, url=url, json=meta_info)
             mr.register_uri(method=requests_mock.GET, url=artifact_info_url, json=artifacts)
             mr.register_uri(
@@ -125,15 +125,8 @@ def test_download_callable_function_from_module(cf: Artifact):
         ]
         meta_info = cf.meta.to_json()
         # Fixup the differences from Backend
-        meta_info.update({
-            "displayName": meta_info.pop("display_name"),
-            "moduleDoc": meta_info.pop("module_doc"),
-            "version": 1,
-        })
-        for arg in meta_info["args"] if meta_info["args"] else []:
-            arg.update({
-                "defaultValue": arg.pop("default")
-            })
+        meta_info = fixup_mocked_artifact_meta_version(meta_info)
+
         mr.register_uri(method=requests_mock.GET, url=url, json=meta_info)
         mr.register_uri(method=requests_mock.GET, url=artifact_info_url, json=artifacts)
 
@@ -173,15 +166,8 @@ def test_download_callable_function_from_cache(cf: Artifact):
         ]
         meta_info = cf.meta.to_json()
         # Fixup the differences from Backend
-        meta_info.update({
-            "displayName": meta_info.pop("display_name"),
-            "moduleDoc": meta_info.pop("module_doc"),
-            "version": 1,
-        })
-        for arg in meta_info["args"] if meta_info["args"] else []:
-            arg.update({
-                "defaultValue": arg.pop("default")
-            })
+        meta_info = fixup_mocked_artifact_meta_version(meta_info)
+
         mr.register_uri(method=requests_mock.GET, url=url, json=meta_info)
         mr.register_uri(method=requests_mock.GET, url=artifact_info_url, json=artifacts)
 
@@ -228,15 +214,8 @@ def test_download_callable_function_in_project(cf: Artifact):
                 "name": f"fake_{cf._get_name()}",
             })
             # Fixup the differences from Backend
-            meta_info.update({
-                "displayName": meta_info.pop("display_name"),
-                "moduleDoc": meta_info.pop("module_doc"),
-                "version": 1,
-            })
-            for arg in meta_info["args"] if meta_info["args"] else []:
-                arg.update({
-                    "defaultValue": arg.pop("default")
-                })
+            meta_info = fixup_mocked_artifact_meta_version(meta_info)
+
             mr.register_uri(method=requests_mock.GET, url=url, json=meta_info)
             mr.register_uri(method=requests_mock.GET, url=artifact_info_url, json=artifacts)
             mr.register_uri(
@@ -282,15 +261,8 @@ def test_download_callable_function_from_module_in_project(cf: Artifact):
         ]
         meta_info = cf.meta.to_json()
         # Fixup the differences from Backend
-        meta_info.update({
-            "displayName": meta_info.pop("display_name"),
-            "moduleDoc": meta_info.pop("module_doc"),
-            "version": 1,
-        })
-        for arg in meta_info["args"] if meta_info["args"] else []:
-            arg.update({
-                "defaultValue": arg.pop("default")
-            })
+        meta_info = fixup_mocked_artifact_meta_version(meta_info)
+
         mr.register_uri(method=requests_mock.GET, url=url, json=meta_info)
         mr.register_uri(method=requests_mock.GET, url=artifact_info_url, json=artifacts)
 
@@ -331,15 +303,8 @@ def test_download_callable_function_from_cache_in_project(cf: Artifact):
         ]
         meta_info = cf.meta.to_json()
         # Fixup the differences from Backend
-        meta_info.update({
-            "displayName": meta_info.pop("display_name"),
-            "moduleDoc": meta_info.pop("module_doc"),
-            "version": 1,
-        })
-        for arg in meta_info["args"] if meta_info["args"] else []:
-            arg.update({
-                "defaultValue": arg.pop("default")
-            })
+        meta_info = fixup_mocked_artifact_meta_version(meta_info)
+
         mr.register_uri(method=requests_mock.GET, url=url, json=meta_info)
         mr.register_uri(method=requests_mock.GET, url=artifact_info_url, json=artifacts)
 
