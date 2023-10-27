@@ -1,4 +1,5 @@
 from .base import LLMClient, LLMFunctionCall, LLMOutput
+from .logger import LLMLogger
 
 _default_client = None
 
@@ -21,4 +22,4 @@ def get_default_client():
     return _default_client
 
 
-__all__ = ["LLMClient", "LLMFunctionCall", "LLMOutput", "get_default_client"]
+__all__ = ["LLMClient", "LLMFunctionCall", "LLMOutput", "LLMLogger", "get_default_client"]
