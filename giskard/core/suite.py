@@ -21,6 +21,12 @@ from giskard.ml_worker.testing.registry.transformation_function import Transform
 from giskard.ml_worker.testing.test_result import TestMessage, TestMessageLevel, TestResult
 from giskard.models.base import BaseModel
 
+try:
+    import wandb  # noqa
+except ImportError:
+    pass
+
+
 logger = logging.getLogger(__name__)
 
 suite_input_types: List[type] = [
@@ -103,49 +109,45 @@ class TestSuiteResult:
 
         return metrics
 
-    def to_wandb(self, **kwargs) -> None:
+    def to_wandb(self, run: Optional[wandb.wandb_sdk.wandb_run.Run] = None) -> None:
         """Log the test-suite result to the WandB run.
 
         Log the current test-suite result in a table format to the active WandB run.
 
         Parameters
         ----------
-        **kwargs :
-            Additional keyword arguments
-            (see https://docs.wandb.ai/ref/python/init) to be added to the active WandB run.
+        run :
+            WandB run.
         """
-        import wandb
-
-        from giskard.integrations.wandb.wandb_utils import _parse_test_name, wandb_run
-
+        from ..integrations.wandb.wandb_utils import get_wandb_run, _parse_test_name
         from ..utils.analytics_collector import analytics
 
-        with wandb_run(**kwargs) as run:
-            # Log just a test description and a metric.
-            columns = ["Metric name", "Data slice", "Metric value", "Passed"]
-            try:
-                data = [[*_parse_test_name(result[0]), result[1].metric, result[1].passed] for result in self.results]
-                analytics.track(
-                    "wandb_integration:test_suite",
-                    {
-                        "wandb_run_id": run.id,
-                        "tests_cnt": len(data),
-                    },
-                )
-            except Exception as e:
-                analytics.track(
-                    "wandb_integration:test_suite:error:unknown",
-                    {
-                        "wandb_run_id": wandb.run.id,
-                        "error": str(e),
-                    },
-                )
-                raise ValueError(
-                    "An error occurred while logging the test suite into wandb. "
-                    "Please submit the traceback as a GitHub issue in the following "
-                    "repository for further assistance: https://github.com/Giskard-AI/giskard."
-                ) from e
-            run.log({"Test suite results/Test-Suite Results": wandb.Table(columns=columns, data=data)})
+        run = get_wandb_run(run)
+        # Log just a test description and a metric.
+        columns = ["Metric name", "Data slice", "Metric value", "Passed"]
+        try:
+            data = [[*_parse_test_name(result[0]), result[1].metric, result[1].passed] for result in self.results]
+            analytics.track(
+                "wandb_integration:test_suite",
+                {
+                    "wandb_run_id": run.id,
+                    "tests_cnt": len(data),
+                },
+            )
+        except Exception as e:
+            analytics.track(
+                "wandb_integration:test_suite:error:unknown",
+                {
+                    "wandb_run_id": wandb.run.id,
+                    "error": str(e),
+                },
+            )
+            raise RuntimeError(
+                "An error occurred while logging the test suite into wandb. "
+                "Please submit the traceback as a GitHub issue in the following "
+                "repository for further assistance: https://github.com/Giskard-AI/giskard."
+            ) from e
+        run.log({"Test suite results/Test-Suite Results": wandb.Table(columns=columns, data=data)})
 
 
 class SuiteInput:
