@@ -1,8 +1,7 @@
-import json
-import logging
-
 from ..models.base.model import BaseModel
-from . import utils
+from .client import LLMClient
+from .client import llm_client as default_llm_client
+from .errors import LLMGenerationError
 
 GENERATE_REQUIREMENTS_PROMPT = """
 You are auditing AI models. Your task is to generate a set of requirements on which the AI model will be tested.
@@ -49,9 +48,12 @@ GENERATE_REQUIREMENTS_FUNCTIONS = [
 ]
 
 
-class RequirementsGenerator:
-    def __init__(self, issue_description: str):
+class TestcaseRequirementsGenerator:
+    def __init__(self, issue_description: str, llm_model="gpt-4", llm_temperature=0.1, llm_client: LLMClient = None):
         self.issue_description = issue_description
+        self.llm_model = llm_model
+        self.llm_temperature = llm_temperature
+        self.llm_client = llm_client or default_llm_client
 
     def _make_generate_requirements_prompt(self, model: BaseModel, num_requirements: int):
         return GENERATE_REQUIREMENTS_PROMPT.format(
@@ -67,14 +69,14 @@ class RequirementsGenerator:
     def generate_requirements(self, model: BaseModel, max_requirements: int = 5):
         """Generates a set of requirements for a given a model."""
         prompt = self._make_generate_requirements_prompt(model, max_requirements)
-        out = utils.llm_fn_call(
-            [{"role": "system", "content": prompt}],
+        out = self.llm_client.complete(
+            messages=[{"role": "system", "content": prompt}],
             functions=self._make_generate_requirements_functions(),
-            temperature=0.1,
+            model=self.llm_model,
+            temperature=self.llm_temperature,
         )
-        try:
-            return json.loads(out.function_call.arguments)["requirements"]
-        except (AttributeError, json.JSONDecodeError, KeyError):
-            logging.warning("Could not generate test case requirements.")
 
-        return []
+        if out.function_call is None or "requirements" not in out.function_call.args:
+            raise LLMGenerationError("Could not parse test case requirements.")
+
+        return out.function_call.args["requirements"]
