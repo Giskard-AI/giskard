@@ -2,6 +2,7 @@ import random
 import string
 import tempfile
 from pathlib import Path
+from typing import Optional
 
 import mlflow
 import pandas as pd
@@ -11,7 +12,7 @@ from giskard.utils.analytics_collector import analytics, anonymize
 
 try:
     import wandb  # noqa
-except ImportError as e:
+except ImportError:
     pass
 
 
@@ -183,7 +184,7 @@ class ScanReport:
 
         return scan_results_artifact_name, scan_summary_artifact_name
 
-    def to_wandb(self, run: wandb.wandb_sdk.wandb_run.Run = None):
+    def to_wandb(self, run: Optional[wandb.wandb_sdk.wandb_run.Run] = None):
         """Log the scan results to the WandB run.
 
         Log the current scan results in an HTML format to the active WandB run.
@@ -199,12 +200,8 @@ class ScanReport:
         run = get_wandb_run(run)
         try:
             html = self.to_html()
-            suffix = "".join(
-                random.choices(string.ascii_lowercase + string.digits, k=8)
-            )
-            wandb_artifact_name = (
-                f"Vulnerability scan results/giskard-scan-results-{suffix}"
-            )
+            suffix = "".join(random.choices(string.ascii_lowercase + string.digits, k=8))
+            wandb_artifact_name = f"Vulnerability scan results/giskard-scan-results-{suffix}"
             analytics.track(
                 "wandb_integration:scan_result",
                 {

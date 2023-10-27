@@ -9,7 +9,7 @@ from giskard.core.errors import GiskardImportError
 
 try:
     import wandb  # noqa
-except ImportError as e:
+except ImportError:
     pass
 
 
@@ -65,7 +65,7 @@ class ShapResult:
                 "classification models."
             )
 
-    def to_wandb(self, run: wandb.wandb_sdk.wandb_run.Run = None) -> None:
+    def to_wandb(self, run: Optional[wandb.wandb_sdk.wandb_run.Run] = None) -> None:
         """Create and log the SHAP charts to the WandB run.
 
         For the active WandB run, logs SHAP charts, which include:

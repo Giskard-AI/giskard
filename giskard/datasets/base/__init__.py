@@ -34,7 +34,7 @@ from ..metadata.indexing import ColumnMetadataMixin
 
 try:
     import wandb  # noqa
-except ImportError as e:
+except ImportError:
     pass
 
 
@@ -687,7 +687,7 @@ class Dataset(ColumnMetadataMixin):
 
         return artifact_name
 
-    def to_wandb(self, run: wandb.wandb_sdk.wandb_run.Run = None) -> None:
+    def to_wandb(self, run: Optional[wandb.wandb_sdk.wandb_run.Run] = None) -> None:
         """Log the dataset to the WandB run.
 
         Log the current dataset in a table format to the active WandB run.
