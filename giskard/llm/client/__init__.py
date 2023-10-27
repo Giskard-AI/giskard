@@ -9,7 +9,7 @@ def set_default_client(client: LLMClient):
     _default_client = client
 
 
-def get_default_client():
+def get_default_client() -> LLMClient:
     global _default_client
 
     if _default_client is not None:
