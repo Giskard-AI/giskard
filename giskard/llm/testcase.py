@@ -69,9 +69,11 @@ class TestcaseRequirementsGenerator:
     def generate_requirements(self, model: BaseModel, max_requirements: int = 5):
         """Generates a set of requirements for a given a model."""
         prompt = self._make_generate_requirements_prompt(model, max_requirements)
+        functions = self._make_generate_requirements_functions()
         out = self.llm_client.complete(
             messages=[{"role": "system", "content": prompt}],
-            functions=self._make_generate_requirements_functions(),
+            functions=functions,
+            function_call={"name": "generate_requirements"},
             model=self.llm_model,
             temperature=self.llm_temperature,
         )
