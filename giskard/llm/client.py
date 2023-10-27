@@ -77,14 +77,19 @@ class OpenAIClient(LLMClient):
         function_call: Optional[Dict] = None,
         max_tokens=None,
     ):
+        extra_params = dict()
+        if function_call is not None:
+            extra_params["function_call"] = function_call
+        if functions is not None:
+            extra_params["functions"] = functions
+
         try:
             completion = openai.ChatCompletion.create(
                 model=model,
                 messages=messages,
-                functions=functions,
-                function_call=function_call,
                 temperature=temperature,
                 max_tokens=max_tokens,
+                **extra_params,
                 api_key=self.openai_api_key,
                 organization=self.openai_organization,
             )
