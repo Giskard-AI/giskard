@@ -167,3 +167,10 @@ def local_save_dataset_under_giskard_home_cache(dataset: Dataset, project_key: s
     local_path_dataset = get_local_cache_artifact(project_key, "datasets", str(dataset.id))
     local_path_dataset.mkdir(parents=True)
     dataset.save(local_path=local_path_dataset, dataset_id=dataset.id)
+
+
+def local_save_artifact_under_giskard_home_cache(artifact: Artifact, project_key: Optional[str]):
+    local_path = get_local_cache_callable_artifact(project_key, artifact)
+    local_path.mkdir(parents=True)
+    artifact.save(local_dir=local_path)
+
