@@ -44,7 +44,7 @@ class LLMGenerator(ABC):
 
 
 class BaseDataGenerator(LLMGenerator):
-    def _make_generate_input_prompt(self, model: BaseModel, num_samples):
+    def _make_generate_input_prompt(self, model: BaseModel, num_samples: int):
         return self.prompt.format(
             model_name=model.meta.name,
             model_description=model.meta.description,
@@ -52,7 +52,7 @@ class BaseDataGenerator(LLMGenerator):
             num_samples=num_samples,
         )
 
-    def _make_generate_input_functions(self, model: BaseModel, num_samples):
+    def _make_generate_input_functions(self, model: BaseModel, num_samples: int):
         return [
             {
                 "name": "generate_inputs",

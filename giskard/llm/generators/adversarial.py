@@ -42,12 +42,12 @@ class AdversarialExamplesGenerator(BaseDataGenerator):
         self.issue_description = issue_description
         self.requirement = requirement
 
-    def _make_generate_inputs_prompt(self, model: BaseModel, num_inputs: int = 5):
+    def _make_generate_input_prompt(self, model: BaseModel, num_inputs: int):
         return self.prompt.format(
             issue_description=self.issue_description,
             model_name=model.meta.name,
             model_description=model.meta.description,
-            feature_names=model.meta.feature_names,
+            feature_names=", ".join(model.meta.feature_names),
             num_samples=num_inputs,
             requirement=self.requirement,
         )
