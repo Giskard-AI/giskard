@@ -19,7 +19,7 @@ if IS_PYDANTIC_V2:
 else:
     from pydantic.fields import ModelField
 
-FILTERED_CLASSES = [BaseModel]
+FILTERED_CLASSES = [BaseModel, ConfiguredBaseModel]
 
 MANDATORY_FIELDS = {
     "ArtifactRef": ["id"],
@@ -243,7 +243,7 @@ def test_list_mandatory_all_classes():
     for param_set in ALL_DTOS:
         klass = param_set.values[0]
         if klass.__name__ not in MANDATORY_FIELDS.keys():
-            missing_classes.append(klass.__name__)
+            missing_classes.append(klass)
     output = "\n  -".join([elt.__qualname__ for elt in missing_classes])
     if len(missing_classes) > 0:
         raise ValueError(f"All dtos should be tested here, missing ones are :\n  -{output}")
@@ -254,7 +254,7 @@ def test_list_optional_all_classes():
     for param_set in ALL_DTOS:
         klass = param_set.values[0]
         if klass.__name__ not in OPTIONAL_FIELDS.keys():
-            missing_classes.append(klass.__name__)
+            missing_classes.append(klass)
     output = "\n  -".join([elt.__qualname__ for elt in missing_classes])
     if len(missing_classes) > 0:
         raise ValueError(f"All dtos should be tested here, missing ones are :\n  -{output}")
