@@ -20,6 +20,8 @@ from giskard.ml_worker.testing.registry.slicing_function import SlicingFunction
 from giskard.ml_worker.testing.registry.transformation_function import TransformationFunction
 from giskard.ml_worker.testing.test_result import TestMessage, TestMessageLevel, TestResult
 from giskard.models.base import BaseModel
+from giskard.core.errors import GiskardImportError
+
 
 logger = logging.getLogger(__name__)
 
@@ -103,49 +105,49 @@ class TestSuiteResult:
 
         return metrics
 
-    def to_wandb(self, **kwargs) -> None:
-        """Log the test_suite result to the WandB run.
+    def to_wandb(self, run: Optional["wandb.wandb_sdk.wandb_run.Run"] = None) -> None:  # noqa
+        """Log the test-suite result to the WandB run.
 
-        Log the current test_suite result in a table format to the active WandB run.
+        Log the current test-suite result in a table format to the active WandB run.
 
         Parameters
         ----------
-        **kwargs :
-            Additional keyword arguments
-            (see https://docs.wandb.ai/ref/python/init) to be added to the active WandB run.
+        run :
+            WandB run.
         """
-        import wandb
-
-        from giskard.integrations.wandb.wandb_utils import _parse_test_name, wandb_run
-
+        try:
+            import wandb  # noqa
+        except ImportError as e:
+            raise GiskardImportError("wandb") from e
+        from ..integrations.wandb.wandb_utils import get_wandb_run, _parse_test_name
         from ..utils.analytics_collector import analytics
 
-        with wandb_run(**kwargs) as run:
-            # Log just a test description and a metric.
-            columns = ["Metric name", "Data slice", "Metric value", "Passed"]
-            try:
-                data = [[*_parse_test_name(result[0]), result[1].metric, result[1].passed] for result in self.results]
-                analytics.track(
-                    "wandb_integration:test_suite",
-                    {
-                        "wandb_run_id": run.id,
-                        "tests_cnt": len(data),
-                    },
-                )
-            except Exception as e:
-                analytics.track(
-                    "wandb_integration:test_suite:error:unknown",
-                    {
-                        "wandb_run_id": wandb.run.id,
-                        "error": str(e),
-                    },
-                )
-                raise ValueError(
-                    "An error occurred while logging the test suite into wandb. "
-                    "Please submit the traceback as a GitHub issue in the following "
-                    "repository for further assistance: https://github.com/Giskard-AI/giskard."
-                ) from e
-            run.log({"Test suite results/Test-Suite Results": wandb.Table(columns=columns, data=data)})
+        run = get_wandb_run(run)
+        # Log just a test description and a metric.
+        columns = ["Metric name", "Data slice", "Metric value", "Passed"]
+        try:
+            data = [[*_parse_test_name(result[0]), result[1].metric, result[1].passed] for result in self.results]
+            analytics.track(
+                "wandb_integration:test_suite",
+                {
+                    "wandb_run_id": run.id,
+                    "tests_cnt": len(data),
+                },
+            )
+        except Exception as e:
+            analytics.track(
+                "wandb_integration:test_suite:error:unknown",
+                {
+                    "wandb_run_id": wandb.run.id,
+                    "error": str(e),
+                },
+            )
+            raise RuntimeError(
+                "An error occurred while logging the test suite into wandb. "
+                "Please submit the traceback as a GitHub issue in the following "
+                "repository for further assistance: https://github.com/Giskard-AI/giskard."
+            ) from e
+        run.log({"Test suite results/Test-Suite Results": wandb.Table(columns=columns, data=data)})
 
 
 class SuiteInput:
@@ -447,7 +449,7 @@ class Suite:
 
         self.id = client.save_test_suite(self.to_dto(client, project_key, uploaded_uuids))
         project_id = client.get_project(project_key).project_id
-        print(f"Test suite has been saved: {client.host_url}/main/projects/{project_id}/test_suite/{self.id}/overview")
+        print(f"Test suite has been saved: {client.host_url}/main/projects/{project_id}/test-suite/{self.id}/overview")
         return self
 
     def to_dto(self, client: GiskardClient, project_key: str, uploaded_uuids: Optional[List[str]] = None):
