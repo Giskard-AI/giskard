@@ -87,6 +87,7 @@ test = [
     "pytest>=7.1.2",
     "pytest-xdist>=3.3.1",
     "polyfactory",
+    "pytest-env>=1.1.0",
 ]
 doc = [
     "furo>=2023.5.20",
@@ -308,6 +309,8 @@ addopts = [
     "--doctest-modules",
     "--doctest-continue-on-failure",
 ]
+
+env = ["WANDB_MODE=disabled"]
 
 [tool.deptry]
 extend_exclude = [".history"]

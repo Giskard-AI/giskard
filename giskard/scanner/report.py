@@ -2,12 +2,18 @@ import random
 import string
 import tempfile
 from pathlib import Path
+from typing import Optional
 
 import mlflow
 import pandas as pd
 from mlflow import MlflowClient
 
 from giskard.utils.analytics_collector import analytics, anonymize
+
+try:
+    import wandb  # noqa
+except ImportError:
+    pass
 
 
 class ScanReport:
@@ -178,48 +184,44 @@ class ScanReport:
 
         return scan_results_artifact_name, scan_summary_artifact_name
 
-    def to_wandb(self, **kwargs):
+    def to_wandb(self, run: Optional[wandb.wandb_sdk.wandb_run.Run] = None):
         """Log the scan results to the WandB run.
 
         Log the current scan results in an HTML format to the active WandB run.
 
         Parameters
         ----------
-        **kwargs :
-            Additional keyword arguments
-            (see https://docs.wandb.ai/ref/python/init) to be added to the active WandB run.
+        run :
+            WandB run.
         """
-        import wandb  # noqa library import already checked in wandb_run
-
-        from giskard.integrations.wandb.wandb_utils import wandb_run
-
+        from ..integrations.wandb.wandb_utils import get_wandb_run
         from ..utils.analytics_collector import analytics
 
-        with wandb_run(**kwargs) as run:
-            try:
-                html = self.to_html()
-                suffix = "".join(random.choices(string.ascii_lowercase + string.digits, k=8))
-                wandb_artifact_name = f"Vulnerability scan results/giskard-scan-results-{suffix}"
-                analytics.track(
-                    "wandb_integration:scan_result",
-                    {
-                        "wandb_run_id": run.id,
-                        "has_issues": self.has_issues(),
-                        "issues_cnt": len(self.issues),
-                    },
-                )
-            except Exception as e:
-                analytics.track(
-                    "wandb_integration:scan_result:error:unknown",
-                    {
-                        "wandb_run_id": run.id,
-                        "error": str(e),
-                    },
-                )
-                raise ValueError(
-                    "An error occurred while logging the scan results into wandb. "
-                    "Please submit the traceback as a GitHub issue in the following "
-                    "repository for further assistance: https://github.com/Giskard-AI/giskard."
-                ) from e
+        run = get_wandb_run(run)
+        try:
+            html = self.to_html()
+            suffix = "".join(random.choices(string.ascii_lowercase + string.digits, k=8))
+            wandb_artifact_name = f"Vulnerability scan results/giskard-scan-results-{suffix}"
+            analytics.track(
+                "wandb_integration:scan_result",
+                {
+                    "wandb_run_id": run.id,
+                    "has_issues": self.has_issues(),
+                    "issues_cnt": len(self.issues),
+                },
+            )
+        except Exception as e:
+            analytics.track(
+                "wandb_integration:scan_result:error:unknown",
+                {
+                    "wandb_run_id": run.id,
+                    "error": str(e),
+                },
+            )
+            raise RuntimeError(
+                "An error occurred while logging the scan results into wandb. "
+                "Please submit the traceback as a GitHub issue in the following "
+                "repository for further assistance: https://github.com/Giskard-AI/giskard."
+            ) from e
 
-            run.log({wandb_artifact_name: wandb.Html(html, inject=False)})
+        run.log({wandb_artifact_name: wandb.Html(html, inject=False)})

@@ -1,5 +1,4 @@
-import contextlib
-from typing import Optional, Tuple, Generator, Any, Iterable
+from typing import Tuple, Any, Iterable, Optional
 
 import numpy as np
 import pandas as pd
@@ -9,16 +8,23 @@ from giskard.core.errors import GiskardImportError
 
 try:
     import wandb  # noqa
-    from wandb.wandb_run import Run
 except ImportError as e:
     raise GiskardImportError("wandb") from e
 
 
-@contextlib.contextmanager
-def wandb_run(project: Optional[str] = None, **kwargs) -> Generator[Run, None, None]:
-    wandb.run = wandb.run or wandb.init(project=project or "giskard", **kwargs)
-    wandb.run._label(repo="Giskard")  # noqa
-    yield wandb.run
+def get_wandb_run(run: Optional[wandb.wandb_sdk.wandb_run.Run] = None):
+    if run is not None:
+        return run
+
+    if wandb.run is not None:
+        return wandb.run
+
+    raise ValueError(
+        "There are currently no active wandb runs available. Please follow the following "
+        "documentation: https://docs.wandb.ai/ref/python/run to initiate a run. Once initiated, "
+        "you can choose to pass is as follows 'to_wandb(run)', if not we will retrieve internally "
+        "the 'wandb.run'."
+    )
 
 
 def _parse_test_name(test_name: str) -> Tuple[str, str]:
