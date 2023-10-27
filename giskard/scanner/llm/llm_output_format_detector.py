@@ -3,7 +3,7 @@ from typing import Sequence
 from giskard.scanner import logger
 
 from ...datasets.base import Dataset
-from ...llm.client import llm_client
+from ...llm.client import get_default_client
 from ...models.base.model import BaseModel
 from ..decorators import detector
 from ..issues import Issue, IssueLevel, OutputFormatting
@@ -39,6 +39,7 @@ class LLMOutputFormattingDetector(RequirementBasedDetector):
 
     def run(self, model: BaseModel, dataset: Dataset) -> Sequence[Issue]:
         # Let’s check whether the model description provides information about the output format.
+        llm_client = get_default_client()
         out = llm_client.complete(
             [
                 {"role": "system", "content": BREAKER_PROMPT},

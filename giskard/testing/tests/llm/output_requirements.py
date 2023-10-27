@@ -6,7 +6,7 @@ from pydantic import BaseModel as PydanticBaseModel
 from pydantic import Field
 
 from ....datasets.base import Dataset
-from ....llm.client import llm_client
+from ....llm.client import get_default_client
 from ....llm.errors import LLMGenerationError
 from ....llm.evaluators import RequirementEvaluator
 from ....ml_worker.testing.registry.decorators import test
@@ -80,6 +80,7 @@ EVALUATE_FUNCTIONS = [
 def validate_test_case_with_reason(
     model: BaseModel, test_case: str, df, predictions: List[str]
 ) -> List[EvalTestResult]:
+    llm_client = get_default_client()
     inputs = [
         {
             "input_vars": df.iloc[i].to_dict(),

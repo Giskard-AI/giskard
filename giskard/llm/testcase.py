@@ -1,6 +1,5 @@
 from ..models.base.model import BaseModel
-from .client import LLMClient
-from .client import llm_client as default_llm_client
+from .client import LLMClient, get_default_client
 from .errors import LLMGenerationError
 
 GENERATE_REQUIREMENTS_PROMPT = """
@@ -53,7 +52,7 @@ class TestcaseRequirementsGenerator:
         self.issue_description = issue_description
         self.llm_model = llm_model
         self.llm_temperature = llm_temperature
-        self.llm_client = llm_client or default_llm_client
+        self.llm_client = llm_client or get_default_client()
 
     def _make_generate_requirements_prompt(self, model: BaseModel, num_requirements: int):
         return GENERATE_REQUIREMENTS_PROMPT.format(

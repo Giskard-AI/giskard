@@ -1,64 +1,17 @@
 import json
-from abc import ABC, abstractmethod
-from dataclasses import dataclass
-from typing import Any, Dict, Optional
+from typing import Dict, Optional
 
-import openai
 from git import Sequence
 from tenacity import retry, retry_if_exception_type, stop_after_attempt, wait_exponential
 
-from .config import LLMConfigurationError
-from .errors import LLMGenerationError
+from ..config import LLMConfigurationError
+from ..errors import LLMGenerationError, LLMImportError
+from . import LLMClient, LLMFunctionCall, LLMLogger, LLMOutput
 
-
-class LLMClient(ABC):
-    @abstractmethod
-    def complete(
-        self,
-        messages,
-        functions=None,
-        model="gpt-4",
-        temperature=0.5,
-        max_tokens=None,
-        function_call: Optional[Dict] = None,
-    ):
-        ...
-
-
-@dataclass
-class LLMOutput:
-    message: Optional[str] = None
-    function_call: Dict[str, str] = None
-
-
-@dataclass
-class LLMFunctionCall:
-    function: str
-    args: Any
-
-
-class LLMLogger:
-    def __init__(self):
-        self.calls = []
-        self.errors = []
-
-    def log_call(self, prompt_tokens, sampled_tokens):
-        self.calls.append((prompt_tokens, sampled_tokens))
-
-    def log_error(self, error):
-        self.errors.append(error)
-
-    def reset(self):
-        self.calls = []
-
-    def get_num_calls(self):
-        return len(self.calls)
-
-    def get_num_prompt_tokens(self):
-        return sum(c[0] for c in self.calls)
-
-    def get_num_sampled_tokens(self):
-        return sum(c[1] for c in self.calls)
+try:
+    import openai
+except ImportError as err:
+    raise LLMImportError(flavor="llm") from err
 
 
 class OpenAIClient(LLMClient):
@@ -135,7 +88,3 @@ class OpenAIClient(LLMClient):
                 raise LLMGenerationError("Could not parse function call") from err
 
         return LLMOutput(message=cc.content, function_call=function_call)
-
-
-# Setup the default client
-llm_client = OpenAIClient()

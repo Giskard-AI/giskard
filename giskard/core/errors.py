@@ -14,10 +14,8 @@ class GiskardInstallationError(ImportError):
 
             self.msg = (
                 f"It seems that you are using Giskard {self.functionality or self.flavor} functionality "
-                f"but you are "
-                f"missing some required package. Please install Giskard "
-                f"with {self.functionality or self.flavor} support "
-                f"with `pip install giskard[{self.flavor}]`."
+                "but you are missing some required package. Please install Giskard "
+                f"with {self.functionality or self.flavor} support with `pip install giskard[{self.flavor}]`."
             )
 
 

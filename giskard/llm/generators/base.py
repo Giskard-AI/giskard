@@ -5,8 +5,7 @@ import pandas as pd
 from pydantic import BaseModel
 
 from ...datasets.base import Dataset
-from ..client import LLMClient
-from ..client import llm_client as default_llm_client
+from ..client import LLMClient, get_default_client
 from ..errors import LLMGenerationError
 
 DEFAULT_GENERATE_INPUTS_PROMPT = """You are auditing an AI model. Your task is to generate typical but varied inputs for this model.
@@ -35,7 +34,7 @@ class LLMGenerator(ABC):
     ):
         self.llm_model = llm_model if llm_model is not None else self._default_model
         self.llm_temperature = llm_temperature if llm_temperature is not None else self._default_temperature
-        self.llm_client = llm_client or default_llm_client
+        self.llm_client = llm_client or get_default_client()
         self.prompt = prompt if prompt is not None else self._default_prompt
 
     @abstractmethod
