@@ -106,3 +106,55 @@ def test_generator_raises_generation_error_if_function_call_fails(Generator, arg
 
     with pytest.raises(LLMGenerationError):
         generator.generate_dataset(model, num_samples=2)
+
+
+@pytest.mark.parametrize(
+    "Generator,args,kwargs",
+    [
+        (BaseDataGenerator, [], {}),
+        (ImplausibleDataGenerator, [], {}),
+    ],
+)
+def test_generator_casts_based_on_column_types(Generator, args, kwargs):
+    llm_client = Mock()
+    llm_client.complete.side_effect = [
+        LLMOutput(
+            None,
+            LLMFunctionCall(
+                "generate_inputs",
+                {
+                    "inputs": [
+                        {"question": True, "other_feature": 1},
+                        {"question": False, "other_feature": 2},
+                    ]
+                },
+            ),
+        )
+    ] * 2
+
+    model = Mock()
+    model.meta.feature_names = ["question", "other_feature"]
+    model.meta.name = "Mock model for test"
+    model.meta.description = "This is a model for testing purposes"
+
+    generator = Generator(
+        *args,
+        **kwargs,
+        llm_client=llm_client,
+        llm_temperature=1.416,
+        llm_model="gpt-99",
+        prompt="My custom prompt {model_name} {model_description} {feature_names}, with {num_samples} samples",
+    )
+    generator = BaseDataGenerator(llm_client=llm_client)
+
+    dataset = generator.generate_dataset(model, num_samples=2)
+
+    assert dataset.column_types["question"] == "category"
+    assert dataset.column_types["other_feature"] == "category"
+
+    dataset = generator.generate_dataset(
+        model, num_samples=2, column_types={"question": "text", "other_feature": "numeric"}
+    )
+
+    assert dataset.column_types["question"] == "text"
+    assert dataset.column_types["other_feature"] == "numeric"
