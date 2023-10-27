@@ -1,19 +1,19 @@
-# ⬆️ Log datasets & models in the Giskard server
+# ⬆️ Log datasets & models in the Hub
 
 [//]: # (TODO: review content and make sure flow is ok)
-You can easily upload to the Giskard server objects, such as **model**, **dataset**, **slicing & transformation functions** and **test suite**.
+You can easily upload objects to the Hub, such as **model**, **dataset**, **slicing & transformation functions** and **test suite**.
 
-The Giskard server is installed on your infrastructure. Giskard as a company does not have access to your datasets and models, so you can keep everything private.
+The Giskard Hub is installed on your infrastructure. Giskard as a company does not have access to your datasets and models, so you can keep everything private.
 
-Uploading objects to the Giskard server will help you:
+Uploading objects to the Giskard Hub will help you:
 
 * **Debug** your model by inspecting the rows that make your test fail
 * **Compare** the results of your test suite for different models
 * Help you create more **insightful tests** based on domain knowledge
 
-## 1. Run the Giskard server
+## 1. Run the Giskard Hub
 
-To install the Giskard server, please check the [run the Giskard server](../installation_app/index.rst) page.
+To install the Giskard Hub, please check the [Giskard Hub installation page](../installation_app/index.rst) page.
 
 ## 2. Create a Giskard client
 
@@ -23,7 +23,7 @@ To create a Giskard client, please execute the following Python code:
 from giskard import GiskardClient
 
 url = "http://localhost:19000"  # If Giskard is installed locally
-# url = "http://app.giskard.ai" # If you want to upload in a Giskard server
+# url = "http://app.giskard.ai" # If you want to upload in a Giskard Hub
 key = "API_KEY"  # you can generate your API key in the Settings tab of the Giskard application
 project_name = "enron"
 
@@ -61,7 +61,7 @@ client.create_project(project_name, "Project name", "Small description of the pr
 
 ::::{tab-set}
 :::{tab-item} Test suite
-Upload your suite to the Giskard server to:
+Upload your suite to the Giskard Hub to:
 * Compare models to decide which model to promote
 * Debug your tests to diagnose the issues
 * Create more domain-specific tests that are integrating business feedback
@@ -90,7 +90,7 @@ giskard_model = Model(
 )
 
 url = "http://localhost:19000"  # If Giskard is installed locally
-# url = "http://app.giskard.ai" # If you want to upload on a an external Giskard server
+# url = "http://app.giskard.ai" # If you want to upload on a an external Giskard Hub
 key = "API_KEY"  # you can generate your API Acces Key in the Settings tab of the Giskard application
 project_name = "my_project_id"
 
@@ -107,7 +107,7 @@ suite = Suite() \
 
 ```
 
-Then the suite that you uploaded will appear in the test tab of the Giskard server.
+Then the suite that you uploaded will appear in the test tab of the Giskard Hub.
 
 <br>
 
@@ -115,7 +115,7 @@ Then the suite that you uploaded will appear in the test tab of the Giskard serv
 :::
 :::{tab-item} Model
 
-Uploading the model to the Giskard server enables you to:
+Uploading the model to the Giskard Hub enables you to:
 * Compare your model with others using a test suite.
 * Gather feedback from your colleagues regarding your model.
 * Debug your model effectively in case of test failures.
@@ -144,7 +144,7 @@ giskard_model = Model(
 )
 
 url = "http://localhost:19000"  # If Giskard is installed locally
-# url = "http://app.giskard.ai" # If you want to upload on a an external Giskard server
+# url = "http://app.giskard.ai" # If you want to upload on a an external Giskard Hub
 key = "API_KEY"  # you can generate your API Access Key in the Settings tab of the Giskard application
 project_name = "my_project_id"
 
@@ -159,7 +159,7 @@ giskard_model.upload(client, project_name)
 
 :::
 :::{tab-item} Dataset
-Uploading your dataset to the Giskard server enables you to:
+Uploading your dataset to the Giskard Hub enables you to:
 * Inspect and debug your dataset
 * Use your dataset as the input for your tests (unit datasets)
 
@@ -177,7 +177,7 @@ giskard_dataset = Dataset(
 )
 
 url = "http://localhost:19000"  # If Giskard is installed locally
-# url = "http://app.giskard.ai" # If you want to upload on a an external Giskard server
+# url = "http://app.giskard.ai" # If you want to upload on a an external Giskard Hub
 key = "API_KEY"  # you can generate your API Access Key in the Settings tab of the Giskard application
 project_name = "my_project_id"
 
@@ -193,7 +193,7 @@ giskard_dataset.upload(client, project_name)
 :::
 :::{tab-item} Slicing function
 
-Saving your slicing function to the Giskard server will enable you to:
+Saving your slicing function to the Giskard Hub will enable you to:
 * Use your slicing functions for testing purposes: your slices can be used as fixtures of your test suite
 * Further debug the examples inside your data slice using explanation
 * Apply the saved slicing functions to other datasets (new production data, etc.)
@@ -207,7 +207,7 @@ def slice_sex(row: pd.Series):
     return row["Sex"] == "female"
 
 url = "http://localhost:19000"  # If Giskard is installed locally
-# url = "http://app.giskard.ai" # If you want to upload on a an external Giskard server
+# url = "http://app.giskard.ai" # If you want to upload on a an external Giskard Hub
 key = "API_KEY"  # you can generate your API Access Key in the Settings tab of the Giskard application
 project_name = "my_project_id"
 
@@ -226,7 +226,7 @@ slice_sex.upload(client, project_name)
 
 :::{tab-item} Transformation function
 
-Saving your transformation function in the Giskard server will enable you to:
+Saving your transformation function in the Giskard Hub will enable you to:
 * Use your transformations for testing purposes: your transformations can be used as fixtures of your test suite
 * Use the saved transformations to debug your dataset
 * Use the saved transformations to augment your dataset
@@ -240,7 +240,7 @@ def increase_age(row):
     return row
 
 url = "http://localhost:19000"  # If Giskard is installed locally
-# url = "http://app.giskard.ai" # If you want to upload on a an external Giskard server
+# url = "http://app.giskard.ai" # If you want to upload on a an external Giskard Hub
 key = "API_KEY"  # you can generate your API Acces Key in the Settings tab of the Giskard application
 project_name = "my_project_id"
 
