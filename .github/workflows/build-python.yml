@@ -204,9 +204,64 @@ jobs:
         run: pdm build
       - name: Install Poetry
         uses: snok/install-poetry@v1
-      - name: Create new project and install wheel
+      - name: Create new project and install server wheel (Poetry)
         run: |
           poetry new ./install-test
           cd ./install-test
           sed -i 's/^\(python *= *\).*$/\1">=3.10,<3.12"/' pyproject.toml
           poetry add "$(ls ../dist/*.whl)[server]"
+      - name: Create new project, install wheel and import (Poetry)
+        run: |
+          poetry new ./install-run
+          cd ./install-run
+          sed -i 's/^\(python *= *\).*$/\1">=3.10,<3.12"/' pyproject.toml
+          poetry add "$(ls ../dist/*.whl)"
+          poetry run python -c "import giskard"
+  install-pip:
+    name: "Check if wheel is able to be installed using pip"
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4.1.0
+      - name: Setup PDM
+        uses: pdm-project/setup-pdm@v3
+        with:
+          python-version: '3.10'
+          cache: false
+      - name: Build wheel
+        run: pdm build
+      - name: Create new project, install wheel and import (Pip)
+        run: |
+          pdm venv create --name test-install
+          eval $(pdm venv activate test-install)
+          pip install "$(ls ./dist/*.whl)"
+          python -c "import giskard"
+  install-pdm:
+    name: "Check if wheel is able to be installed using PDM"
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4.1.0
+      - name: Setup PDM
+        uses: pdm-project/setup-pdm@v3
+        with:
+          python-version: '3.10'
+          cache: false
+      - name: Build wheel
+        run: pdm build
+      - name: Create new project, install server wheel (PDM)
+        run: |
+          mkdir ./install-test
+          cd ./install-test
+          pdm init --python 3.10 -n .
+          sed -i 's/^\(requires-python *= *\).*$/\1">=3.10,<3.12"/' pyproject.toml
+          pdm add "$(ls ../dist/*.whl)[server]"
+          pdm run python -c "import giskard"
+      - name: Create new project, install wheel and import (PDM)
+        run: |
+          mkdir ./install-run
+          cd ./install-run
+          pdm init --python 3.10 -n .
+          sed -i 's/^\(requires-python *= *\).*$/\1">=3.10,<3.12"/' pyproject.toml
+          pdm add "$(ls ../dist/*.whl)"
+          pdm run python -c "import giskard"
