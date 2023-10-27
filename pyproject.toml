@@ -80,6 +80,7 @@ ml_runtime = [
     "mlflow>2",
     "wandb",
     "tensorflow-io-gcs-filesystem>=0.34.0; platform_system != 'Windows'",                                                 # Tensorflow io does not work for windows from 0.32, but does not work for arm64 before...
+    "tensorflow-io-gcs-filesystem<0.32.0; platform_system == 'Windows'",
 ]
 test = [
     "pytest-cov>=4.0.0",
