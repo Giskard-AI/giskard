@@ -1,4 +1,4 @@
-Test catalog
+Tests
 ============
 
 .. toctree::

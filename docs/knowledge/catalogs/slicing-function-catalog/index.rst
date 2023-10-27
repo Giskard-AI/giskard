@@ -1,4 +1,4 @@
-Slicing function catalog
+Slicing functions
 ============
 
 - **Textual slicing function**
