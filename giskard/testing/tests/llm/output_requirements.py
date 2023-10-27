@@ -228,8 +228,8 @@ def test_llm_individual_response_validation(
     tags=["llm"],
     debug_description=debug_description_prefix + "that are <b>failing the evaluation criteria</b>.",
 )
-def test_llm_output_requirement(model: BaseModel, dataset: Dataset, requirements: str, debug: bool = False):
-    evaluator = RequirementEvaluator(requirements)
+def test_llm_output_requirement(model: BaseModel, dataset: Dataset, requirement: str, debug: bool = False):
+    evaluator = RequirementEvaluator([requirement])
     eval_result = evaluator.evaluate(model, dataset)
 
     output_ds = None

@@ -75,6 +75,6 @@ class RequirementBasedDetector:
 def _generate_output_requirement_tests(issue: Issue):
     return {
         issue.meta["requirement"]: test_llm_output_requirement(
-            model=issue.model, dataset=issue.dataset, requirements="- " + issue.meta["requirement"]
+            model=issue.model, dataset=issue.dataset, requirement=issue.meta["requirement"]
         )
     }
