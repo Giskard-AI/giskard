@@ -41,9 +41,9 @@ giskard_hub/collaborate/index
 :maxdepth: 1
 :hidden:
 
+tutorials/llm_tutorials/index
 tutorials/tabular_tutorials/index
 tutorials/nlp_tutorials/index
-tutorials/llm_tutorials/index
 ```
 
 ```{toctree}
