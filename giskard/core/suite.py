@@ -21,6 +21,12 @@ from giskard.ml_worker.testing.registry.transformation_function import Transform
 from giskard.ml_worker.testing.test_result import TestMessage, TestMessageLevel, TestResult
 from giskard.models.base import BaseModel
 
+try:
+    import wandb  # noqa
+except ImportError as e:
+    pass
+
+
 logger = logging.getLogger(__name__)
 
 suite_input_types: List[type] = [
@@ -103,7 +109,7 @@ class TestSuiteResult:
 
         return metrics
 
-    def to_wandb(self, run) -> None:
+    def to_wandb(self, run: wandb.wandb_sdk.wandb_run.Run = None) -> None:
         """Log the test-suite result to the WandB run.
 
         Log the current test-suite result in a table format to the active WandB run.
@@ -113,7 +119,6 @@ class TestSuiteResult:
         run :
             WandB run.
         """
-        import wandb
         from ..integrations.wandb.wandb_utils import get_wandb_run, _parse_test_name
         from ..utils.analytics_collector import analytics
 
@@ -137,7 +142,7 @@ class TestSuiteResult:
                     "error": str(e),
                 },
             )
-            raise ValueError(
+            raise RuntimeError(
                 "An error occurred while logging the test suite into wandb. "
                 "Please submit the traceback as a GitHub issue in the following "
                 "repository for further assistance: https://github.com/Giskard-AI/giskard."

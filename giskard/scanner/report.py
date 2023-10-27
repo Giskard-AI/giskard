@@ -9,6 +9,11 @@ from mlflow import MlflowClient
 
 from giskard.utils.analytics_collector import analytics, anonymize
 
+try:
+    import wandb  # noqa
+except ImportError as e:
+    pass
+
 
 class ScanReport:
     def __init__(self, issues, model=None, dataset=None, as_html: bool = True):
@@ -178,7 +183,7 @@ class ScanReport:
 
         return scan_results_artifact_name, scan_summary_artifact_name
 
-    def to_wandb(self, run):
+    def to_wandb(self, run: wandb.wandb_sdk.wandb_run.Run = None):
         """Log the scan results to the WandB run.
 
         Log the current scan results in an HTML format to the active WandB run.
@@ -188,7 +193,6 @@ class ScanReport:
         run :
             WandB run.
         """
-        import wandb  # noqa library import already checked in wandb_run
         from ..integrations.wandb.wandb_utils import get_wandb_run
         from ..utils.analytics_collector import analytics
 
@@ -217,7 +221,7 @@ class ScanReport:
                     "error": str(e),
                 },
             )
-            raise ValueError(
+            raise RuntimeError(
                 "An error occurred while logging the scan results into wandb. "
                 "Please submit the traceback as a GitHub issue in the following "
                 "repository for further assistance: https://github.com/Giskard-AI/giskard."

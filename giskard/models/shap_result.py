@@ -7,6 +7,11 @@ from ..utils.analytics_collector import analytics
 from giskard.client.python_utils import warning
 from giskard.core.errors import GiskardImportError
 
+try:
+    import wandb  # noqa
+except ImportError as e:
+    pass
+
 
 class PanelNames(str, Enum):
     """Enumeration to store WandB UI panel names for different charts."""
@@ -60,7 +65,7 @@ class ShapResult:
                 "classification models."
             )
 
-    def to_wandb(self, run) -> None:
+    def to_wandb(self, run: wandb.wandb_sdk.wandb_run.Run = None) -> None:
         """Create and log the SHAP charts to the WandB run.
 
         For the active WandB run, logs SHAP charts, which include:
@@ -130,7 +135,7 @@ class ShapResult:
                     "error": str(e),
                 },
             )
-            raise ValueError(
+            raise RuntimeError(
                 "An error occurred while logging the SHAP results into wandb. "
                 "Please submit the traceback as a GitHub issue in the following "
                 "repository for further assistance: https://github.com/Giskard-AI/giskard."

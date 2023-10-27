@@ -32,6 +32,12 @@ from giskard.settings import settings
 from ...ml_worker.utils.file_utils import get_file_name
 from ..metadata.indexing import ColumnMetadataMixin
 
+try:
+    import wandb  # noqa
+except ImportError as e:
+    pass
+
+
 SAMPLE_SIZE = 1000
 
 logger = logging.getLogger(__name__)
@@ -681,7 +687,7 @@ class Dataset(ColumnMetadataMixin):
 
         return artifact_name
 
-    def to_wandb(self, run=None) -> None:
+    def to_wandb(self, run: wandb.wandb_sdk.wandb_run.Run = None) -> None:
         """Log the dataset to the WandB run.
 
         Log the current dataset in a table format to the active WandB run.
@@ -691,7 +697,6 @@ class Dataset(ColumnMetadataMixin):
         run :
             WandB run.
         """
-        import wandb  # noqa library import already checked in wandb_run
         from ...integrations.wandb.wandb_utils import get_wandb_run
         from ...utils.analytics_collector import analytics
 

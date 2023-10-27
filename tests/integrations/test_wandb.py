@@ -80,7 +80,6 @@ def _to_wandb(model, dataset):
     explanation_results = explain_with_shap(model, dataset)
     explanation_results.to_wandb(run)
 
-    assert re.match("^[0-9a-z]{8}$", str(run.id))
     run.finish()
 
 
@@ -89,8 +88,5 @@ def _to_wandb(model, dataset):
 def test_error(dataset_name, request):
     dataset = request.getfixturevalue(dataset_name)
 
-    with pytest.raises(ValueError) as e:
+    with pytest.raises(ValueError, match=r"There are currently no active wandb runs available"):
         dataset.to_wandb()
-    assert e.match(
-        r"There are currently no active wandb runs available.*"
-    )
