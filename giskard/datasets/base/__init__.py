@@ -28,6 +28,7 @@ from giskard.ml_worker.testing.registry.transformation_function import (
     TransformationFunctionType,
 )
 from giskard.settings import settings
+from giskard.core.errors import GiskardImportError
 
 from ...ml_worker.utils.file_utils import get_file_name
 from ..metadata.indexing import ColumnMetadataMixin
@@ -687,7 +688,7 @@ class Dataset(ColumnMetadataMixin):
 
         return artifact_name
 
-    def to_wandb(self, run: Optional[wandb.wandb_sdk.wandb_run.Run] = None) -> None:
+    def to_wandb(self, run: Optional["wandb.wandb_sdk.wandb_run.Run"] = None) -> None:  # noqa
         """Log the dataset to the WandB run.
 
         Log the current dataset in a table format to the active WandB run.
@@ -697,6 +698,10 @@ class Dataset(ColumnMetadataMixin):
         run :
             WandB run.
         """
+        try:
+            import wandb  # noqa
+        except ImportError as e:
+            raise GiskardImportError("wandb") from e
         from ...integrations.wandb.wandb_utils import get_wandb_run
         from ...utils.analytics_collector import analytics
 
