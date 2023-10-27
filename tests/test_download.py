@@ -14,7 +14,10 @@ from giskard.ml_worker.core.savable import Artifact
 from giskard.ml_worker.testing.test_result import TestResult as GiskardTestResult
 from giskard import test
 
-from tests.utils import CALLABLE_FUNCTION_META_CACHE, CALLABLE_FUNCTION_PKL_CACHE, get_local_cache_callable_artifact, match_url_patterns, MockedClient, local_save_artifact_under_giskard_home_cache
+from tests.utils import CALLABLE_FUNCTION_META_CACHE, CALLABLE_FUNCTION_PKL_CACHE, get_local_cache_callable_artifact, MockedClient, local_save_artifact_under_giskard_home_cache
+
+
+BASE_CLIENT_URL = "http://giskard-host:12345/api/v2"
 
 
 # Define a test function
@@ -57,12 +60,12 @@ def test_download_callable_function(cf: Artifact):
             assert (tmpdir_path / CALLABLE_FUNCTION_META_CACHE).exists()
 
             # Prepare global URL
-            url = posixpath.join("http://giskard-host:12345/api/v2", cf._get_name(), cf.meta.uuid)
-            artifact_info_url = posixpath.join("http://giskard-host:12345/api/v2", "artifact-info", "global", cf._get_name(), cf.meta.uuid)
+            url = posixpath.join(BASE_CLIENT_URL, cf._get_name(), cf.meta.uuid)
+            artifact_info_url = posixpath.join(BASE_CLIENT_URL, "artifact-info", "global", cf._get_name(), cf.meta.uuid)
             artifacts = [
                 CALLABLE_FUNCTION_PKL_CACHE, CALLABLE_FUNCTION_META_CACHE,
             ]
-            artifacts_base_url = posixpath.join("http://giskard-host:12345/api/v2", "artifacts", "global", cf._get_name(), cf.meta.uuid)
+            artifacts_base_url = posixpath.join(BASE_CLIENT_URL, "artifacts", "global", cf._get_name(), cf.meta.uuid)
             meta_info = cf.meta.to_json()
             # Fixup the name to avoid load from module
             meta_info.update({
@@ -115,8 +118,8 @@ def test_download_callable_function_from_module(cf: Artifact):
         cache_dir = get_local_cache_callable_artifact(project_key=None, artifact=cf)
 
         # Prepare global URL
-        url = posixpath.join("http://giskard-host:12345/api/v2", cf._get_name(), cf.meta.uuid)
-        artifact_info_url = posixpath.join("http://giskard-host:12345/api/v2", "artifact-info", "global", cf._get_name(), cf.meta.uuid)
+        url = posixpath.join(BASE_CLIENT_URL, cf._get_name(), cf.meta.uuid)
+        artifact_info_url = posixpath.join(BASE_CLIENT_URL, "artifact-info", "global", cf._get_name(), cf.meta.uuid)
         artifacts = [
             CALLABLE_FUNCTION_PKL_CACHE, CALLABLE_FUNCTION_META_CACHE,
         ]
@@ -163,8 +166,8 @@ def test_download_callable_function_from_cache(cf: Artifact):
         assert (cache_dir / CALLABLE_FUNCTION_META_CACHE).exists()
 
         # Prepare global URL
-        url = posixpath.join("http://giskard-host:12345/api/v2", cf._get_name(), cf.meta.uuid)
-        artifact_info_url = posixpath.join("http://giskard-host:12345/api/v2", "artifact-info", "global", cf._get_name(), cf.meta.uuid)
+        url = posixpath.join(BASE_CLIENT_URL, cf._get_name(), cf.meta.uuid)
+        artifact_info_url = posixpath.join(BASE_CLIENT_URL, "artifact-info", "global", cf._get_name(), cf.meta.uuid)
         artifacts = [
             CALLABLE_FUNCTION_PKL_CACHE, CALLABLE_FUNCTION_META_CACHE,
         ]
@@ -213,12 +216,12 @@ def test_download_callable_function_in_project(cf: Artifact):
             assert (tmpdir_path / CALLABLE_FUNCTION_META_CACHE).exists()
 
             # Prepare global URL
-            url = posixpath.join("http://giskard-host:12345/api/v2", "project", project_key, cf._get_name(), cf.meta.uuid)
-            artifact_info_url = posixpath.join("http://giskard-host:12345/api/v2", "artifact-info", project_key, cf._get_name(), cf.meta.uuid)
+            url = posixpath.join(BASE_CLIENT_URL, "project", project_key, cf._get_name(), cf.meta.uuid)
+            artifact_info_url = posixpath.join(BASE_CLIENT_URL, "artifact-info", project_key, cf._get_name(), cf.meta.uuid)
             artifacts = [
                 CALLABLE_FUNCTION_PKL_CACHE, CALLABLE_FUNCTION_META_CACHE,
             ]
-            artifacts_base_url = posixpath.join("http://giskard-host:12345/api/v2", "artifacts", project_key, cf._get_name(), cf.meta.uuid)
+            artifacts_base_url = posixpath.join(BASE_CLIENT_URL, "artifacts", project_key, cf._get_name(), cf.meta.uuid)
             meta_info = cf.meta.to_json()
             # Fixup the name to avoid load from module
             meta_info.update({
@@ -272,12 +275,11 @@ def test_download_callable_function_from_module_in_project(cf: Artifact):
         cache_dir = get_local_cache_callable_artifact(project_key=project_key, artifact=cf)
 
         # Prepare global URL
-        url = posixpath.join("http://giskard-host:12345/api/v2", "project", project_key, cf._get_name(), cf.meta.uuid)
-        artifact_info_url = posixpath.join("http://giskard-host:12345/api/v2", "artifact-info", "project", project_key, cf.meta.uuid)
+        url = posixpath.join(BASE_CLIENT_URL, "project", project_key, cf._get_name(), cf.meta.uuid)
+        artifact_info_url = posixpath.join(BASE_CLIENT_URL, "artifact-info", "project", project_key, cf.meta.uuid)
         artifacts = [
             CALLABLE_FUNCTION_PKL_CACHE, CALLABLE_FUNCTION_META_CACHE,
         ]
-        artifacts_base_url = posixpath.join("http://giskard-host:12345/api/v2", "artifacts", "project", project_key, cf.meta.uuid)
         meta_info = cf.meta.to_json()
         # Fixup the differences from Backend
         meta_info.update({
@@ -322,8 +324,8 @@ def test_download_callable_function_from_cache_in_project(cf: Artifact):
         assert (cache_dir / CALLABLE_FUNCTION_META_CACHE).exists()
 
         # Prepare global URL
-        url = posixpath.join("http://giskard-host:12345/api/v2", "project", project_key, cf._get_name(), cf.meta.uuid)
-        artifact_info_url = posixpath.join("http://giskard-host:12345/api/v2", "artifact-info", "project", project_key, cf._get_name(), cf.meta.uuid)
+        url = posixpath.join(BASE_CLIENT_URL, "project", project_key, cf._get_name(), cf.meta.uuid)
+        artifact_info_url = posixpath.join(BASE_CLIENT_URL, "artifact-info", "project", project_key, cf._get_name(), cf.meta.uuid)
         artifacts = [
             CALLABLE_FUNCTION_PKL_CACHE, CALLABLE_FUNCTION_META_CACHE,
         ]
