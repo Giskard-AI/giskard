@@ -9,7 +9,7 @@ from giskard.scanner.llm.llm_implausible_output_detector import LLMImplausibleOu
 
 @patch("giskard.scanner.llm.llm_implausible_output_detector.ImplausibleDataGenerator")
 @patch("giskard.scanner.llm.llm_implausible_output_detector.PlausibilityEvaluator")
-def test_requirement_based_detector_flow(PlausibilityEvaluator, ImplausibleDataGenerator):
+def test_implausible_output_detector_flow(PlausibilityEvaluator, ImplausibleDataGenerator):
     model = Mock()
     model.meta.name = "Test Model"
     model.meta.description = "Test Description"
