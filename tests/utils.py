@@ -22,11 +22,8 @@ resource_dir: Path = Path.home() / ".giskard"
 
 headers_to_match = {"Authorization": "Bearer SECRET_TOKEN", "Content-Type": "application/json"}
 
-SLICING_FUNCTION_PKL_CACHE = "data.pkl"
-SLICING_FUNCTION_META_CACHE = "meta.yaml"
-
-TRANSFORMATION_FUNCTION_PKL_CACHE = "data.pkl"
-TRANSFORMATION_FUNCTION_META_CACHE = "meta.yaml"
+CALLABLE_FUNCTION_PKL_CACHE = "data.pkl"
+CALLABLE_FUNCTION_META_CACHE = "meta.yaml"
 
 
 def match_model_id(my_model_id):

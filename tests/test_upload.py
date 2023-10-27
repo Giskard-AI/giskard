@@ -4,8 +4,12 @@ import pandas as pd
 import pytest
 
 from giskard import Dataset, slicing_function, transformation_function
+from giskard.ml_worker.core.savable import Artifact
 from giskard.models.sklearn import SKLearnModel
-from tests.utils import *
+from giskard.ml_worker.testing.test_result import TestResult as GiskardTestResult
+from giskard import test
+
+from tests.utils import CALLABLE_FUNCTION_META_CACHE, CALLABLE_FUNCTION_PKL_CACHE, get_local_cache_callable_artifact, match_model_id, match_url_patterns, MockedClient
 
 model_name = "uploaded model"
 
@@ -114,85 +118,63 @@ def test_upload_models_exceptions(data, model, request):
     _test_upload_model_exceptions(model, data)
 
 
-def test_upload_slicing_function():
-    # Define a slicing function
-    @slicing_function(row_level=False)
-    def head_slice(df: pd.DataFrame) -> pd.DataFrame:
-        return df.head(10)
+# Define a test function
+@test
+def my_custom_test(model, data):
+    return GiskardTestResult(passed=True)
 
+
+# Define a slicing function
+@slicing_function(row_level=False)
+def head_slice(df: pd.DataFrame) -> pd.DataFrame:
+    return df.head(10)
+
+
+# Define a transformation function
+@transformation_function()
+def do_nothing(row):
+    return row
+
+
+@pytest.mark.parametrize(
+    "cf",
+    [
+        my_custom_test, # Test
+        head_slice,     # Slice
+        do_nothing,     # Transformation
+    ],
+)
+def test_upload_callable_function(cf: Artifact):
     artifact_url_pattern = re.compile(
-        "http://giskard-host:12345/api/v2/artifacts/global/" + head_slice._get_name() + "/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/.*"
+        "http://giskard-host:12345/api/v2/artifacts/global/" + cf._get_name() + "/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/.*"
     )
-    slices_url_pattern = re.compile("http://giskard-host:12345/api/v2/artifacts/global/" + head_slice._get_name())
     with MockedClient() as (client, mr):
-        head_slice.upload(client=client, project_key=None)
+        cf.upload(client=client, project_key=None)
         # Check local cache
-        cache_dir = get_local_cache_callable_artifact(project_key=None, artifact=head_slice)
-        assert (cache_dir / SLICING_FUNCTION_PKL_CACHE).exists()
-        assert (cache_dir / SLICING_FUNCTION_META_CACHE).exists()
+        cache_dir = get_local_cache_callable_artifact(project_key=None, artifact=cf)
+        assert (cache_dir / CALLABLE_FUNCTION_PKL_CACHE).exists()
+        assert (cache_dir / CALLABLE_FUNCTION_META_CACHE).exists()
         # Check requested URL
         match_url_patterns(mr.request_history, artifact_url_pattern)
-        match_url_patterns(mr.request_history, slices_url_pattern)
 
 
-def test_upload_slicing_function_to_project():
-    # Define a slicing function
-    @slicing_function(row_level=False)
-    def head_slice(df: pd.DataFrame) -> pd.DataFrame:
-        return df.head(10)
-
+@pytest.mark.parametrize(
+    "cf",
+    [
+        my_custom_test, # Test
+        head_slice,     # Slice
+        do_nothing,     # Transformation
+    ],
+)
+def test_upload_callable_function_to_project(cf: Artifact):
     artifact_url_pattern = re.compile(
-        "http://giskard-host:12345/api/v2/artifacts/test-project/" + head_slice._get_name() + "/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/.*"
+        "http://giskard-host:12345/api/v2/artifacts/test-project/" + cf._get_name() + "/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/.*"
     )
-    slices_url_pattern = re.compile("http://giskard-host:12345/api/v2/artifacts/test-project/" + head_slice._get_name())
     with MockedClient() as (client, mr):
-        head_slice.upload(client=client, project_key="test-project")
+        cf.upload(client=client, project_key="test-project")
         # Check local cache
-        cache_dir = get_local_cache_callable_artifact(project_key="test-project", artifact=head_slice)
-        assert (cache_dir / SLICING_FUNCTION_PKL_CACHE).exists()
-        assert (cache_dir / SLICING_FUNCTION_META_CACHE).exists()
+        cache_dir = get_local_cache_callable_artifact(project_key="test-project", artifact=cf)
+        assert (cache_dir / CALLABLE_FUNCTION_PKL_CACHE).exists()
+        assert (cache_dir / CALLABLE_FUNCTION_META_CACHE).exists()
         # Check requested URL
         match_url_patterns(mr.request_history, artifact_url_pattern)
-        match_url_patterns(mr.request_history, slices_url_pattern)
-
-
-def test_upload_transformation_function():
-    # Define a transformation function
-    @transformation_function()
-    def do_nothing(row):
-        return row
-
-    artifact_url_pattern = re.compile(
-        "http://giskard-host:12345/api/v2/artifacts/global/" + do_nothing._get_name() + "/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/.*"
-    )
-    slices_url_pattern = re.compile("http://giskard-host:12345/api/v2/artifacts/global/" + do_nothing._get_name())
-    with MockedClient() as (client, mr):
-        do_nothing.upload(client=client, project_key=None)
-        # Check local cache
-        cache_dir = get_local_cache_callable_artifact(project_key=None, artifact=do_nothing)
-        assert (cache_dir / TRANSFORMATION_FUNCTION_PKL_CACHE).exists()
-        assert (cache_dir / TRANSFORMATION_FUNCTION_META_CACHE).exists()
-        # Check requested URL
-        match_url_patterns(mr.request_history, artifact_url_pattern)
-        match_url_patterns(mr.request_history, slices_url_pattern)
-
-
-def test_upload_transformation_function_to_project():
-    # Define a transformation function
-    @transformation_function()
-    def do_nothing(row):
-        return row
-
-    artifact_url_pattern = re.compile(
-        "http://giskard-host:12345/api/v2/artifacts/test-project/" + do_nothing._get_name() + "/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/.*"
-    )
-    slices_url_pattern = re.compile("http://giskard-host:12345/api/v2/artifacts/test-project/" + do_nothing._get_name())
-    with MockedClient() as (client, mr):
-        do_nothing.upload(client=client, project_key="test-project")
-        # Check local cache
-        cache_dir = get_local_cache_callable_artifact(project_key="test-project", artifact=do_nothing)
-        assert (cache_dir / TRANSFORMATION_FUNCTION_PKL_CACHE).exists()
-        assert (cache_dir / TRANSFORMATION_FUNCTION_META_CACHE).exists()
-        # Check requested URL
-        match_url_patterns(mr.request_history, artifact_url_pattern)
-        match_url_patterns(mr.request_history, slices_url_pattern)
