@@ -1,5 +1,4 @@
-🌐 Run the Giskard Server (on-premise)
-===============
+# 🏠 On-Premise
 
 [//]: # (TODO: remove anything that is not related to local installation)
 Complementing the `Giskard Python library <../installation_library/index.md>`_, the Giskard server is the app that you can install either **locally**, on your **cloud instance** or on `Hugging Face Spaces <install_hfs/index.md>`_. The Giskard server offers a bunch of features such as:

@@ -1,4 +1,4 @@
-# Installation in AWS
+# AWS
 
 ### 1. Initialize EC2 instance
 

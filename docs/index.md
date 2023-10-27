@@ -28,7 +28,6 @@ open_source/talk_to_your_model/index
 :hidden:
 
 giskard_hub/installation_hub/index
-giskard_hub/upgrade_hub_version/index
 giskard_hub/upload/index
 giskard_hub/write_and_debug_tests/index
 giskard_hub/inspect/index

@@ -1,4 +1,4 @@
-# Installation in Hugging Face Spaces
+# 🤗 HuggingFace Spaces
 
 Hugging Face Spaces is a great start and the easiest approach to explore Giskard's functionalities.
 
