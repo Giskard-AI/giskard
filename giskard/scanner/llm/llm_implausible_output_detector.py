@@ -37,7 +37,7 @@ class LLMImplausibleOutputDetector:
             return [
                 Issue(
                     model,
-                    dataset,
+                    eval_dataset,
                     group=Hallucination,
                     level=IssueLevel.MEDIUM,
                     description="The model produces implausible output.",
