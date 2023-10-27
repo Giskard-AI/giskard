@@ -17,8 +17,11 @@ from threading import Thread, current_thread
 from time import sleep
 from uuid import uuid4
 
+from giskard.ml_worker.utils.cache import SimpleCache
+
 LOGGER = logging.getLogger(__name__)
 
+proxied_cache = None
 
 def _generate_task_id():
     return str(uuid4())
@@ -152,6 +155,7 @@ class WorkerPoolExecutor(Executor):
         self.processes: Dict[int, SpawnProcess] = {}
         # Manager to handle shared object
         self._manager: SyncManager = self._mp_context.Manager()
+        self._manager.register('SimpleCache', SimpleCache)
         # Mapping of the running tasks and worker pids
         self.running_process: Dict[str, str] = self._manager.dict()
         # Mapping of the running tasks and worker pids
@@ -167,8 +171,10 @@ class WorkerPoolExecutor(Executor):
         self.futures_mapping: Dict[str, Future] = dict()
         LOGGER.debug("Starting threads for the WorkerPoolExecutor")
 
+        # This call will break ?!
+        proxied_cache = self._manager.SimpleCache()
         self._threads = [
-            Thread(name=f"{self._prefix}{target.__name__}", target=target, daemon=True, args=[self], kwargs=None)
+            Thread(name=f"{self._prefix}{target.__name__}", target=target, daemon=True, args=[self, proxied_cache], kwargs=None)
             for target in [_killer_thread, _feeder_thread, _results_thread]
         ]
         for t in self._threads:

@@ -53,6 +53,7 @@ from giskard.models.model_explanation import explain, explain_text
 from giskard.push import Push
 from giskard.utils import call_in_pool, shutdown_pool
 from giskard.utils.analytics_collector import analytics
+from giskard.utils.worker_pool import proxied_cache
 
 logger = logging.getLogger(__name__)
 push_cache = SimpleCache(max_results=20)
@@ -681,6 +682,12 @@ def get_push(
     object_params = {}
     project_key = params.model.project_key
 
+    # Save cta_kind and push_kind and remove it from params
+    cta_kind = params.cta_kind
+    push_kind = params.push_kind
+    params.cta_kind = None
+    params.push_kind = None
+
     cached_result_tuple = push_cache.get_result(params)
     if cached_result_tuple is None:
         contribs, perturbs, overconf, borderl = get_push_objects(client, params)
@@ -693,33 +700,33 @@ def get_push(
     overconf_ws = push_to_ws(overconf)
     borderl_ws = push_to_ws(borderl)
 
-    if params.cta_kind is not None and params.push_kind is not None:
-        if params.push_kind == PushKind.PERTURBATION:
+    if cta_kind is not None and push_kind is not None:
+        if push_kind == PushKind.PERTURBATION:
             push = perturbs
-        elif params.push_kind == PushKind.CONTRIBUTION:
+        elif push_kind == PushKind.CONTRIBUTION:
             push = contribs
-        elif params.push_kind == PushKind.OVERCONFIDENCE:
+        elif push_kind == PushKind.OVERCONFIDENCE:
             push = overconf
-        elif params.push_kind == PushKind.BORDERLINE:
+        elif push_kind == PushKind.BORDERLINE:
             push = borderl
         else:
             raise ValueError("Invalid push kind")
 
-        logger.info("Handling push kind: " + str(params.push_kind) + " with cta kind: " + str(params.cta_kind))
+        logger.info("Handling push kind: " + str(push_kind) + " with cta kind: " + str(cta_kind))
 
         # Upload related object depending on CTA type
         if (
-            params.cta_kind == CallToActionKind.CREATE_SLICE
-            or params.cta_kind == CallToActionKind.CREATE_SLICE_OPEN_DEBUGGER
+            cta_kind == CallToActionKind.CREATE_SLICE
+            or cta_kind == CallToActionKind.CREATE_SLICE_OPEN_DEBUGGER
         ):
             push.slicing_function.meta.tags.append("generated")
             object_uuid = push.slicing_function.upload(client, project_key)
-        if params.cta_kind == CallToActionKind.SAVE_PERTURBATION:
+        if cta_kind == CallToActionKind.SAVE_PERTURBATION:
             for perturbation in push.transformation_function:
                 object_uuid = perturbation.upload(client, project_key)
-        if params.cta_kind == CallToActionKind.SAVE_EXAMPLE:
+        if cta_kind == CallToActionKind.SAVE_EXAMPLE:
             object_uuid = push.saved_example.upload(client, project_key)
-        if params.cta_kind == CallToActionKind.CREATE_TEST or params.cta_kind == CallToActionKind.ADD_TEST_TO_CATALOG:
+        if cta_kind == CallToActionKind.CREATE_TEST or cta_kind == CallToActionKind.ADD_TEST_TO_CATALOG:
             for test in push.tests:
                 object_uuid = test.upload(client, project_key)
             # create empty dict
