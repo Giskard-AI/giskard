@@ -184,6 +184,7 @@ def test_websocket_actor_run_model(data, model, sample, request):
             reply = listener.run_model(client=client, params=params)
             assert isinstance(reply, websocket.Empty)
 
+
 @pytest.mark.parametrize("internal", [
     True, False
 ])
@@ -296,15 +297,49 @@ def test_websocket_actor_explain_ws_internal(data, model, request):
         assert isinstance(reply, websocket.Explain)
 
 
-def test_websocket_actor_explain_text_ws_regression_internal(request):
+@pytest.mark.parametrize("data,model", [
+    ("enron_data", "enron_model"),
+    ("hotel_text_data", "hotel_text_model")
+])
+@pytest.mark.slow
+def test_websocket_actor_explain_ws(data, model, request):
+    dataset: Dataset = request.getfixturevalue(data)
+    model: BaseModel = request.getfixturevalue(model)
+
+    project_key = str(uuid.uuid4()) # Use a UUID to separate the resources used by the tests
+
+    with utils.MockedProjectCacheDir(project_key), utils.MockedClient(mock_all=False) as (client, mr):
+        # Prepare model and dataset
+        utils.register_uri_for_model_meta_info(mr, model, project_key)
+        utils.register_uri_for_model_artifact_info(mr, model, project_key, register_file_contents=True)
+        utils.register_uri_for_dataset_meta_info(mr, dataset, project_key)
+        utils.register_uri_for_dataset_artifact_info(mr, dataset, project_key, register_file_contents=True)
+
+        params = websocket.ExplainParam(
+            model=websocket.ArtifactRef(project_key=project_key, id=str(model.id)),
+            dataset=websocket.ArtifactRef(project_key=project_key, id=str(dataset.id)),
+            columns={str(k): str(v) for k, v in next(dataset.df.iterrows())[1].items()},  # Pick the first row
+        )
+        reply = listener.explain_ws(client=client, params=params)
+        assert isinstance(reply, websocket.Explain)
+
+
+@pytest.mark.parametrize("internal", [
+    True, False
+])
+def test_websocket_actor_explain_text_ws_regression(internal, request):
     dataset: Dataset = request.getfixturevalue("hotel_text_data")
     model: BaseModel = request.getfixturevalue("hotel_text_model")
 
     project_key = str(uuid.uuid4()) # Use a UUID to separate the resources used by the tests
 
-    with utils.MockedProjectCacheDir(project_key):
+    with utils.MockedProjectCacheDir(project_key), utils.MockedClient(mock_all=False) as (client, mr):
         # Prepare model and dataset
-        utils.local_save_model_under_giskard_home_cache(model, project_key)
+        if internal:
+            utils.local_save_model_under_giskard_home_cache(model, project_key)
+        else:
+            utils.register_uri_for_model_meta_info(mr, model, project_key)
+            utils.register_uri_for_model_artifact_info(mr, model, project_key, register_file_contents=True)
 
         text_feature_name = None
         for col_name, col_type in dataset.column_types.items():
@@ -319,21 +354,29 @@ def test_websocket_actor_explain_text_ws_regression_internal(request):
             columns={str(k): str(v) for k, v in next(dataset.df.iterrows())[1].items()},  # Pick the first row
             column_types=dataset.column_types,
         )
-        reply = listener.explain_text_ws(client=None, params=params)
+        reply = listener.explain_text_ws(client=None if internal else client, params=params)
         assert isinstance(reply, websocket.ExplainText)
         # Regression text explaining: Giskard Hub uses "WEIGHTS" to show it
         assert "WEIGHTS" in reply.weights.keys()
 
 
-def test_websocket_actor_explain_text_ws_classification_internal(request):
+@pytest.mark.parametrize("internal", [
+    True, False
+])
+def test_websocket_actor_explain_text_ws_classification(internal, request):
     dataset: Dataset = request.getfixturevalue("enron_data")
     model: BaseModel = request.getfixturevalue("enron_model")
 
     project_key = str(uuid.uuid4()) # Use a UUID to separate the resources used by the tests
 
-    with utils.MockedProjectCacheDir(project_key):
+    with utils.MockedProjectCacheDir(project_key), utils.MockedClient(mock_all=False) as (client, mr):
         # Prepare model and dataset
-        utils.local_save_model_under_giskard_home_cache(model, project_key)
+        if internal:
+            utils.local_save_model_under_giskard_home_cache(model, project_key)
+        else:
+            utils.register_uri_for_model_meta_info(mr, model, project_key)
+            utils.register_uri_for_model_artifact_info(mr, model, project_key, register_file_contents=True)
+
 
         text_feature_name = None
         for col_name, col_type in dataset.column_types.items():
@@ -348,7 +391,7 @@ def test_websocket_actor_explain_text_ws_classification_internal(request):
             columns={str(k): str(v) for k, v in next(dataset.df.iterrows())[1].items()},  # Pick the first row
             column_types=dataset.column_types,
         )
-        reply = listener.explain_text_ws(client=None, params=params)
+        reply = listener.explain_text_ws(client=None if internal else client, params=params)
         assert isinstance(reply, websocket.ExplainText)
         # Classification labels
         for label in model.meta.classification_labels:
