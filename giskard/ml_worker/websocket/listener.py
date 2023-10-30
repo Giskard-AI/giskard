@@ -51,6 +51,9 @@ from giskard.ml_worker.websocket.utils import (
 from giskard.models.base import BaseModel
 from giskard.models.model_explanation import explain, explain_text
 from giskard.push import Push
+from giskard.push.contribution import create_contribution_push
+from giskard.push.perturbation import create_perturbation_push
+from giskard.push.prediction import create_borderline_push, create_overconfidence_push
 from giskard.utils import call_in_pool, shutdown_pool
 from giskard.utils.analytics_collector import analytics
 
@@ -678,87 +681,101 @@ def echo(params: websocket.EchoMsg, *args, **kwargs) -> websocket.EchoMsg:
     return params
 
 
-@websocket_actor(MLWorkerAction.getPush, timeout=30, ignore_timeout=True)
+def handle_cta(
+    client: Optional[GiskardClient],
+    params: websocket.GetPushParam,
+    push: Optional[Push],
+    push_kind: PushKind,
+    cta_kind: CallToActionKind,
+):
+    project_key = params.model.project_key
+    object_uuid = ""
+    object_params = {}
+
+    if push is None:
+        push = get_push_objects(client, params)
+    logger.info("Handling push kind: %s with cta kind: %s", str(push_kind), str(cta_kind))
+
+    # Upload related object depending on CTA type
+    if cta_kind == CallToActionKind.CREATE_SLICE or cta_kind == CallToActionKind.CREATE_SLICE_OPEN_DEBUGGER:
+        push.slicing_function.meta.tags.append("generated")
+        object_uuid = push.slicing_function.upload(client, project_key)
+    if cta_kind == CallToActionKind.SAVE_PERTURBATION:
+        for perturbation in push.transformation_function:
+            object_uuid = perturbation.upload(client, project_key)
+    if cta_kind == CallToActionKind.SAVE_EXAMPLE:
+        object_uuid = push.saved_example.upload(client, project_key)
+    if cta_kind == CallToActionKind.CREATE_TEST or cta_kind == CallToActionKind.ADD_TEST_TO_CATALOG:
+        for test in push.tests:
+            object_uuid = test.upload(client, project_key)
+        # create empty dict
+        object_params = {}
+        # for every object in push.test_params, check if they're a subclass of Savable and if yes upload them
+        for test_param_name in push.test_params:
+            test_param = push.test_params[test_param_name]
+            if isinstance(test_param, RegistryArtifact):
+                object_params[test_param_name] = test_param.upload(client, project_key)
+            elif isinstance(test_param, Dataset):
+                object_params[test_param_name] = test_param.upload(client, project_key)
+            else:
+                object_params[test_param_name] = test_param
+
+    if object_uuid != "":
+        logger.info("Uploaded object for CTA with uuid: %s", object_uuid)
+        return websocket.PushAction(object_uuid=object_uuid, arguments=function_argument_to_ws(object_params))
+
+
+@websocket_actor(MLWorkerAction.getPush, timeout=None, ignore_timeout=True)
 def get_push(
     client: Optional[GiskardClient], params: websocket.GetPushParam, *args, **kwargs
 ) -> websocket.GetPushResponse:
-    object_uuid = ""
-    object_params = {}
-    project_key = params.model.project_key
-
     # Save cta_kind and push_kind and remove it from params
     cta_kind = params.cta_kind
     push_kind = params.push_kind
     params.cta_kind = None
     params.push_kind = None
 
-    cached_result_tuple = CACHE.get_result(params)
-    if cached_result_tuple is None:
-        contribs, perturbs, overconf, borderl = get_push_objects(client, params)
-        CACHE.add_result(params, (contribs, perturbs, overconf, borderl))
-    else:
-        contribs, perturbs, overconf, borderl = cached_result_tuple
+    kinds = (
+        [push_kind]
+        if push_kind is not None
+        else [
+            PushKind.CONTRIBUTION,
+            PushKind.OVERCONFIDENCE,
+            PushKind.BORDERLINE,
+            PushKind.PERTURBATION,
+        ]
+    )
+    # all_res = {}
+    all_ws_res = {}
+    push = None
+    for kind in kinds:
+        params.push_kind = kind
+        logger.info("Getting push for %s", kind)
 
-    contrib_ws = push_to_ws(contribs)
-    perturb_ws = push_to_ws(perturbs)
-    overconf_ws = push_to_ws(overconf)
-    borderl_ws = push_to_ws(borderl)
+        # Try to get object
+        _, res = CACHE.get_result(("pushobj", params))
+        cache_hit_ws, res_ws = CACHE.get_result(("pushws", params))
+        if not cache_hit_ws:
+            res = get_push_objects(client, params)
+            CACHE.safe_add_result(("pushobj", params), res)
+            res_ws = push_to_ws(res)
+            CACHE.add_result(("pushws", params), res_ws)
 
+        all_ws_res[kind] = res_ws
+        if push_kind == kind:
+            push = res
+
+    # CTA part
+    action = None
     if cta_kind is not None and push_kind is not None:
-        if push_kind == PushKind.PERTURBATION:
-            push = perturbs
-        elif push_kind == PushKind.CONTRIBUTION:
-            push = contribs
-        elif push_kind == PushKind.OVERCONFIDENCE:
-            push = overconf
-        elif push_kind == PushKind.BORDERLINE:
-            push = borderl
-        else:
-            raise ValueError("Invalid push kind")
-
-        logger.info("Handling push kind: %s with cta kind: %s", str(push_kind), str(cta_kind))
-
-        # Upload related object depending on CTA type
-        if cta_kind == CallToActionKind.CREATE_SLICE or cta_kind == CallToActionKind.CREATE_SLICE_OPEN_DEBUGGER:
-            push.slicing_function.meta.tags.append("generated")
-            object_uuid = push.slicing_function.upload(client, project_key)
-        if cta_kind == CallToActionKind.SAVE_PERTURBATION:
-            for perturbation in push.transformation_function:
-                object_uuid = perturbation.upload(client, project_key)
-        if cta_kind == CallToActionKind.SAVE_EXAMPLE:
-            object_uuid = push.saved_example.upload(client, project_key)
-        if cta_kind == CallToActionKind.CREATE_TEST or cta_kind == CallToActionKind.ADD_TEST_TO_CATALOG:
-            for test in push.tests:
-                object_uuid = test.upload(client, project_key)
-            # create empty dict
-            object_params = {}
-            # for every object in push.test_params, check if they're a subclass of Savable and if yes upload them
-            for test_param_name in push.test_params:
-                test_param = push.test_params[test_param_name]
-                if isinstance(test_param, RegistryArtifact):
-                    object_params[test_param_name] = test_param.upload(client, project_key)
-                elif isinstance(test_param, Dataset):
-                    object_params[test_param_name] = test_param.upload(client, project_key)
-                else:
-                    object_params[test_param_name] = test_param
-
-        if object_uuid != "":
-            logger.info(f"Uploaded object for CTA with uuid: {object_uuid}")
-
-    if object_uuid != "":
-        return websocket.GetPushResponse(
-            contribution=contrib_ws,
-            perturbation=perturb_ws,
-            overconfidence=overconf_ws,
-            borderline=borderl_ws,
-            action=websocket.PushAction(object_uuid=object_uuid, arguments=function_argument_to_ws(object_params)),
-        )
+        action = handle_cta(client, params, push, push_kind, cta_kind)
 
     return websocket.GetPushResponse(
-        contribution=contrib_ws,
-        perturbation=perturb_ws,
-        overconfidence=overconf_ws,
-        borderline=borderl_ws,
+        contribution=all_ws_res.get(PushKind.CONTRIBUTION),
+        perturbation=all_ws_res.get(PushKind.PERTURBATION),
+        overconfidence=all_ws_res.get(PushKind.OVERCONFIDENCE),
+        borderline=all_ws_res.get(PushKind.BORDERLINE),
+        action=action,
     )
 
 
@@ -799,16 +816,12 @@ def get_push_objects(client: Optional[GiskardClient], params: websocket.GetPushP
     if df.empty:
         return None, None, None, None
 
-    from giskard.push.contribution import create_contribution_push
-    from giskard.push.perturbation import create_perturbation_push
-    from giskard.push.prediction import create_borderline_push, create_overconfidence_push
-
     push_functions = {
-        None: (create_contribution_push, create_perturbation_push, create_overconfidence_push, create_borderline_push),
-        PushKind.CONTRIBUTION: (create_contribution_push, None, None, None),
-        PushKind.PERTURBATION: (None, create_perturbation_push, None, None),
-        PushKind.OVERCONFIDENCE: (None, None, create_overconfidence_push, None),
-        PushKind.BORDERLINE: (None, None, None, create_borderline_push),
+        # None: (create_contribution_push, create_perturbation_push, create_overconfidence_push, create_borderline_push),
+        PushKind.CONTRIBUTION: create_contribution_push,
+        PushKind.PERTURBATION: create_perturbation_push,
+        PushKind.OVERCONFIDENCE: create_overconfidence_push,
+        PushKind.BORDERLINE: create_borderline_push,
     }
 
-    return (func(model, dataset, df) if func else None for func in push_functions[params.push_kind])
+    return push_functions[params.push_kind](model, dataset, df)
