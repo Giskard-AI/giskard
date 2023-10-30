@@ -55,4 +55,4 @@ class LLMImplausibleOutputDetector:
 
 
 def _generate_implausible_output_tests(issue: Issue):
-    return {"Output plausibility": test_llm_plausibility(model=issue.model, dataset=issue.dataset)}
+    return {"Output plausibility": test_llm_plausibility(dataset=issue.dataset)}

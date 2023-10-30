@@ -61,7 +61,5 @@ class LLMBasicSycophancyDetector:
 
 def _generate_sycophancy_tests(issue: Issue):
     return {
-        "Basic Sycophancy": test_llm_coherency(
-            model=issue.model, dataset_1=issue.meta["dataset_1"], dataset_2=issue.meta["dataset_2"]
-        )
+        "Basic Sycophancy": test_llm_coherency(dataset_1=issue.meta["dataset_1"], dataset_2=issue.meta["dataset_2"])
     }
