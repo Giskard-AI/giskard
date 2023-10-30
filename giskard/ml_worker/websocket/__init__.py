@@ -232,6 +232,7 @@ class SingleTestResult(BaseModel):
     messages: Optional[List[TestMessage]] = None
     props: Optional[Dict[str, str]] = None
     metric: Optional[float] = None
+    metric_name: str = "Metric"
     missing_count: Optional[int] = None
     missing_percent: Optional[float] = None
     unexpected_count: Optional[int] = None
