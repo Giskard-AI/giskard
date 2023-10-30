@@ -3,6 +3,9 @@ import numpy as np
 import pytest
 from giskard.datasets.base import Dataset
 
+from tests import utils
+
+
 valid_df = pd.DataFrame(
     {
         "categorical_column": ["turtle", "crocodile", "turtle"],
@@ -133,3 +136,32 @@ def test_numeric_column_names():
 
     assert Dataset(df, target=2)
     assert Dataset(df, column_types={1: "numeric"})
+
+
+def test_dataset_download_with_cache(request):
+    dataset: Dataset = request.getfixturevalue("enron_data")
+    project_key = "test-project"
+
+    utils.local_save_dataset_under_giskard_home_cache(dataset=dataset, project_key=project_key)
+
+    with utils.MockedClient(mock_all=False) as (client, mr):
+        # The dataset can be then loaded from the cache, without further requests
+        utils.register_uri_for_dataset_meta_info(mr, dataset, project_key)
+
+        downloaded_dataset = Dataset.download(client=client, project_key=project_key, dataset_id=str(dataset.id))
+
+        assert downloaded_dataset.id == dataset.id
+
+
+def test_dataset_download(request):
+    dataset: Dataset = request.getfixturevalue("enron_data")
+    project_key = "test-project"
+
+    with utils.MockedClient(mock_all=False) as (client, mr):
+        # The dataset needs to request files
+        utils.register_uri_for_dataset_meta_info(mr, dataset, project_key)
+        utils.register_uri_for_dataset_artifact_info(mr, dataset, project_key, register_file_contents=True)
+
+        downloaded_dataset = Dataset.download(client=client, project_key=project_key, dataset_id=str(dataset.id))
+
+        assert downloaded_dataset.id == dataset.id

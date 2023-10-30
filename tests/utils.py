@@ -6,6 +6,7 @@ import tarfile
 from pathlib import Path
 from typing import Optional
 import posixpath
+import tempfile
 
 import requests
 import requests_mock
@@ -225,3 +226,20 @@ def register_uri_for_dataset_meta_info(mr: requests_mock.Mocker, dataset: Datase
     dataset_url = posixpath.join(CLIENT_BASE_URL, "project", project_key, "datasets", str(dataset.id))
     dataset_meta_info = mock_dataset_meta_info(dataset)
     mr.register_uri(method=requests_mock.GET, url=dataset_url, json=dataset_meta_info)
+
+
+def register_uri_for_dataset_artifact_info(mr: requests_mock.Mocker, dataset: Dataset, project_key: str, register_file_contents: bool = False):
+    artifact_info_url = posixpath.join(CLIENT_BASE_URL, "artifact-info", project_key, "datasets", str(dataset.id))
+    artifacts_base_url = posixpath.join(CLIENT_BASE_URL, "artifacts", project_key, "datasets", str(dataset.id))
+    dataset_artifacts = []
+    with tempfile.TemporaryDirectory() as tmpdir:
+        tmpdir_path = Path(tmpdir)
+        dataset.save(Path(tmpdir), dataset.id)  # Save dataset in temp dir
+        for f in tmpdir_path.iterdir():
+            dataset_artifacts.append(f.name)
+            if register_file_contents:
+                with f.open("rb") as content:
+                    # Read the entire file can use a lot of memory
+                    mr.register_uri(method=requests_mock.GET, url=posixpath.join(artifacts_base_url, f.name), content=content.read())
+
+    mr.register_uri(method=requests_mock.GET, url=artifact_info_url, json=dataset_artifacts)
