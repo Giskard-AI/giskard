@@ -398,14 +398,21 @@ def test_websocket_actor_explain_text_ws_classification(internal, request):
             assert label in reply.weights.keys()
 
 
-def test_websocket_actor_dataset_processing_empty_internal(request):
+@pytest.mark.parametrize("internal", [
+    True, False
+])
+def test_websocket_actor_dataset_processing_empty(internal, request):
     dataset: Dataset = request.getfixturevalue("enron_data")
 
     project_key = str(uuid.uuid4()) # Use a UUID to separate the resources used by the tests
 
-    with utils.MockedProjectCacheDir(project_key):
+    with utils.MockedProjectCacheDir(project_key), utils.MockedClient(mock_all=False) as (client, mr):
         # Prepare dataset
-        utils.local_save_dataset_under_giskard_home_cache(dataset, project_key)
+        if internal:
+            utils.local_save_dataset_under_giskard_home_cache(dataset, project_key)
+        else:
+            utils.register_uri_for_dataset_meta_info(mr, dataset, project_key)
+            utils.register_uri_for_dataset_artifact_info(mr, dataset, project_key, register_file_contents=True)
 
         # FIXME: functions can be None from the protocol, but not iterable
         # params = websocket.DatasetProcessingParam(
@@ -416,7 +423,7 @@ def test_websocket_actor_dataset_processing_empty_internal(request):
             dataset=websocket.ArtifactRef(project_key=project_key, id=str(dataset.id), sample=False),
             functions=[],
         )
-        reply = listener.dataset_processing(client=None, params=params)
+        reply = listener.dataset_processing(client=None if internal else client, params=params)
         assert isinstance(reply, websocket.DatasetProcessing)
         assert reply.datasetId == str(dataset.id)
         assert reply.totalRows == len(list(dataset.df.index))   
@@ -432,6 +439,7 @@ def head_slice(df: pd.DataFrame) -> pd.DataFrame:
     return df.head(1)
 
 
+# FIXME: Internal worker cannot yet load callable due to yaml deserialization issue
 @pytest.mark.parametrize("callable_under_project", [
     False, True
 ])
@@ -484,6 +492,7 @@ def do_nothing(row):
     return row
 
 
+# FIXME: Internal worker cannot yet load callable due to yaml deserialization issue
 @pytest.mark.parametrize("callable_under_project", [
     False, True
 ])
@@ -528,3 +537,5 @@ def test_websocket_actor_dataset_processing_do_nothing_transform_with_cache(call
             assert reply.filteredRows is not None and 0 == len(reply.filteredRows)
             # No line modified
             assert reply.modifications is not None and 0 == len(reply.modifications)
+
+
