@@ -217,7 +217,6 @@ def map_result_to_single_test_result_ws(result) -> websocket.SingleTestResult:
             else [],
             props=result.props,
             metric=result.metric,
-            metric_name=result.metric_name,
             missing_count=result.missing_count,
             missing_percent=result.missing_percent,
             unexpected_count=result.unexpected_count,
