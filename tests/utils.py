@@ -208,13 +208,19 @@ def fixup_mocked_artifact_meta_version(meta_info):
     return meta_info
 
 
-def mock_dataset_meta_info(dataset: Dataset):
+def mock_dataset_meta_info(dataset: Dataset, project_key: str):
     dataset_meta_info = dataset.meta.__dict__.copy()
+    with tempfile.TemporaryDirectory() as tmpdir:
+        original_size_bytes, compressed_size_bytes = dataset.save(tmpdir)
     dataset_meta_info.update({
         "columnTypes": dataset_meta_info.pop("column_types"),
         "columnDtypes": dataset_meta_info.pop("column_dtypes"),
         "numberOfRows": dataset_meta_info.pop("number_of_rows"),
         "categoryFeatures": dataset_meta_info.pop("category_features"),
+        "project": project_key,
+        "id": str(dataset.id),
+        "originalSizeBytes": original_size_bytes,
+        "compressedSizeBytes": compressed_size_bytes,
     })
     return dataset_meta_info
 

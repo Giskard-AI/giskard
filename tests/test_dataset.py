@@ -155,6 +155,7 @@ def test_dataset_download_with_cache(request):
             downloaded_dataset = Dataset.download(client=client, project_key=project_key, dataset_id=str(dataset.id))
 
             assert downloaded_dataset.id == dataset.id
+            assert downloaded_dataset.meta == dataset.meta
 
 
 def test_dataset_download(request):
@@ -170,3 +171,4 @@ def test_dataset_download(request):
             downloaded_dataset = Dataset.download(client=client, project_key=project_key, dataset_id=str(dataset.id))
 
             assert downloaded_dataset.id == dataset.id
+            assert downloaded_dataset.meta == dataset.meta
