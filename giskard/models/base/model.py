@@ -1,4 +1,4 @@
-from typing import Iterable, Optional, Union
+from typing import Iterable, List, Optional, Type, Union
 
 import builtins
 import importlib
@@ -15,6 +15,8 @@ import cloudpickle
 import numpy as np
 import pandas as pd
 import yaml
+
+from giskard.client.dtos import ModelMetaInfo
 
 from ...client.giskard_client import GiskardClient
 from ...core.core import ModelMeta, ModelType, SupportedModelTypes
@@ -80,6 +82,7 @@ class BaseModel(ABC):
         self,
         model_type: ModelType,
         name: Optional[str] = None,
+        description: Optional[str] = None,
         feature_names: Optional[Iterable] = None,
         classification_threshold: Optional[float] = 0.5,
         classification_labels: Optional[Iterable] = None,
@@ -128,6 +131,7 @@ class BaseModel(ABC):
 
         self.meta = ModelMeta(
             name=name if name is not None else self.__class__.__name__,
+            description=description if description is not None else "No description",
             model_type=model_type,
             feature_names=list(feature_names) if feature_names is not None else None,
             classification_labels=np_types_to_native(classification_labels),
@@ -177,7 +181,7 @@ class BaseModel(ABC):
             return getattr(importlib.import_module(meta.loader_module), meta.loader_class)
 
     def save_meta(self, local_path):
-        with open(Path(local_path) / META_FILENAME, "w") as f:
+        with (Path(local_path) / META_FILENAME).open(mode="w", encoding="utf-8") as f:
             yaml.dump(
                 {
                     "language_version": platform.python_version(),
@@ -190,6 +194,7 @@ class BaseModel(ABC):
                     "loader_class": self.meta.loader_class,
                     "id": str(self.id),
                     "name": self.meta.name,
+                    "description": self.meta.description,
                     "size": get_size(local_path),
                 },
                 f,
@@ -399,18 +404,20 @@ class BaseModel(ABC):
             _, meta = cls.read_meta_from_local_dir(local_dir)
         else:
             client.load_artifact(local_dir, posixpath.join(project_key, "models", model_id))
-            meta_response = client.load_model_meta(project_key, model_id)
+            meta_response: ModelMetaInfo = client.load_model_meta(project_key, model_id)
             # internal worker case, no token based http client
-            assert local_dir.exists(), f"Cannot find existing model {project_key}.{model_id} in {local_dir}"
-            with open(Path(local_dir) / META_FILENAME) as f:
+            if not local_dir.exists():
+                raise RuntimeError(f"Cannot find existing model {project_key}.{model_id} in {local_dir}")
+            with (Path(local_dir) / META_FILENAME).open(encoding="utf-8") as f:
                 file_meta = yaml.load(f, Loader=yaml.Loader)
                 classification_labels = cls.cast_labels(meta_response)
                 meta = ModelMeta(
-                    name=meta_response["name"],
-                    model_type=SupportedModelTypes[meta_response["modelType"]],
-                    feature_names=meta_response["featureNames"],
+                    name=meta_response.name,
+                    description=meta_response.description,
+                    model_type=SupportedModelTypes[meta_response.modelType],
+                    feature_names=meta_response.featureNames,
                     classification_labels=classification_labels,
-                    classification_threshold=meta_response["threshold"],
+                    classification_threshold=meta_response.threshold,
                     loader_module=file_meta["loader_module"],
                     loader_class=file_meta["loader_class"],
                 )
@@ -428,10 +435,11 @@ class BaseModel(ABC):
 
     @classmethod
     def read_meta_from_local_dir(cls, local_dir):
-        with open(Path(local_dir) / META_FILENAME) as f:
+        with (Path(local_dir) / META_FILENAME).open(encoding="utf-8") as f:
             file_meta = yaml.load(f, Loader=yaml.Loader)
             meta = ModelMeta(
                 name=file_meta["name"],
+                description=None if "description" not in file_meta else file_meta["description"],
                 model_type=SupportedModelTypes[file_meta["model_type"]],
                 feature_names=file_meta["feature_names"],
                 classification_labels=file_meta["classification_labels"],
@@ -443,9 +451,9 @@ class BaseModel(ABC):
         return file_meta["id"], meta
 
     @classmethod
-    def cast_labels(cls, meta_response):
-        labels_ = meta_response["classificationLabels"]
-        labels_dtype = meta_response["classificationLabelsDtype"]
+    def cast_labels(cls, meta_response: ModelMetaInfo) -> List[Union[str, Type]]:
+        labels_ = meta_response.classificationLabels
+        labels_dtype = meta_response.classificationLabelsDtype
         if labels_ and labels_dtype and builtins.hasattr(builtins, labels_dtype):
             dtype = builtins.getattr(builtins, labels_dtype)
             labels_ = [dtype(i) for i in labels_]

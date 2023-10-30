@@ -1,24 +1,26 @@
 """API Client to interact with the Giskard app"""
+from typing import List
+
 import logging
 import os
 import posixpath
-from mlflow.store.artifact.artifact_repo import verify_artifact_path
-from mlflow.utils.file_utils import relative_path_to_artifact_path
-from mlflow.utils.rest_utils import augmented_raise_for_status
 from pathlib import Path
-from requests.adapters import HTTPAdapter
-from requests.auth import AuthBase
-from requests_toolbelt import sessions
-from typing import List
 from urllib.parse import urljoin
 from uuid import UUID
 
+from mlflow.store.artifact.artifact_repo import verify_artifact_path
+from mlflow.utils.file_utils import relative_path_to_artifact_path
+from mlflow.utils.rest_utils import augmented_raise_for_status
+from requests.adapters import HTTPAdapter
+from requests.auth import AuthBase
+from requests_toolbelt import sessions
+
 import giskard
-from giskard.client.dtos import TestSuiteDTO
+from giskard.client.dtos import ModelMetaInfo, ServerInfo, SuiteInfo, TestSuiteDTO
 from giskard.client.project import Project
 from giskard.client.python_utils import warning
-from giskard.core.core import ModelMeta, DatasetMeta, TestFunctionMeta, SMT
-from giskard.utils.analytics_collector import anonymize, analytics
+from giskard.core.core import SMT, DatasetMeta, ModelMeta, TestFunctionMeta
+from giskard.utils.analytics_collector import analytics, anonymize
 
 logger = logging.getLogger(__name__)
 
@@ -84,7 +86,7 @@ class GiskardClient:
         if hf_token:
             self._session.cookies["spaces-jwt"] = hf_token
 
-        server_settings = self.get_server_info()
+        server_settings: ServerInfo = self.get_server_info()
         analytics.init_server_info(server_settings)
 
         analytics.track("Init GiskardClient", {"client version": giskard.__version__})
@@ -98,7 +100,7 @@ class GiskardClient:
         response = self._session.get("projects").json()
         return [Project(self._session, p["key"], p["id"]) for p in response]
 
-    def get_project(self, project_key: str):
+    def get_project(self, project_key: str) -> Project:
         """
         Function to get the project that belongs to the mentioned project key
         Args:
@@ -112,7 +114,7 @@ class GiskardClient:
         response = self._session.get("project", params={"key": project_key}).json()
         return Project(self._session, response["key"], response["id"])
 
-    def create_project(self, project_key: str, name: str, description: str = None):
+    def create_project(self, project_key: str, name: str, description: str = None) -> Project:
         """
         Function to create a project in Giskard
         Args:
@@ -152,13 +154,13 @@ class GiskardClient:
             print(f"Project created with a key : {actual_project_key}")
         return Project(self._session, actual_project_key, actual_project_id)
 
-    def get_suite(self, project_id: int, suite_id: int):
+    def get_suite(self, project_id: int, suite_id: int) -> SuiteInfo:
         analytics.track("Get suite", {"suite_id": suite_id})
-        return self._session.get(f"testing/project/{project_id}/suite/{suite_id}").json()
+        return SuiteInfo.parse_obj(self._session.get(f"testing/project/{project_id}/suite/{suite_id}").json())
 
-    def load_model_meta(self, project_key: str, uuid: str):
+    def load_model_meta(self, project_key: str, uuid: str) -> ModelMetaInfo:
         res = self._session.get(f"project/{project_key}/models/{uuid}").json()
-        return res
+        return ModelMetaInfo.parse_obj(res)
 
     def load_dataset_meta(self, project_key: str, uuid: str) -> DatasetMeta:
         res = self._session.get(f"project/{project_key}/datasets/{uuid}").json()
@@ -198,6 +200,7 @@ class GiskardClient:
                 "id": str(model_id),
                 "project": project_key,
                 "name": meta.name,
+                "description": meta.description,
                 "size": size,
             },
         )
@@ -205,6 +208,7 @@ class GiskardClient:
             "Upload Model",
             {
                 "name": anonymize(meta.name),
+                "description": anonymize(meta.description),
                 "projectKey": anonymize(project_key),
                 "languageVersion": python_version,
                 "modelType": meta.model_type.name,
@@ -312,8 +316,8 @@ class GiskardClient:
     def load_meta(self, endpoint: str, meta_class: SMT) -> TestFunctionMeta:
         return meta_class.from_json(self._session.get(endpoint).json())
 
-    def get_server_info(self):
-        return self._session.get("/public-api/ml-worker-connect").json()
+    def get_server_info(self) -> ServerInfo:
+        return ServerInfo.parse_obj(self._session.get("/public-api/ml-worker-connect").json())
 
     def save_test_suite(self, dto: TestSuiteDTO):
         return self._session.post(f"testing/project/{dto.project_key}/suites", json=dto.dict()).json()

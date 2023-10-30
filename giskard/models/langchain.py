@@ -15,6 +15,7 @@ class LangchainModel(WrapperModel):
         model,
         model_type: SupportedModelTypes,
         name: Optional[str] = None,
+        description: Optional[str] = None,
         data_preprocessing_function: Optional[Callable[[pd.DataFrame], Any]] = None,
         model_postprocessing_function: Optional[Callable[[Any], Any]] = None,
         feature_names: Optional[Iterable] = None,
@@ -26,10 +27,15 @@ class LangchainModel(WrapperModel):
             model_type == SupportedModelTypes.TEXT_GENERATION
         ), "LangchainModel only support text_generation ModelType"
 
+        from langchain import LLMChain
+
         super().__init__(
             model=model,
             model_type=model_type,
             name=name,
+            description=str(model.prompt.dict())
+            if description is None and isinstance(model, LLMChain)
+            else description,
             data_preprocessing_function=data_preprocessing_function,
             model_postprocessing_function=model_postprocessing_function,
             feature_names=feature_names,

@@ -389,6 +389,8 @@ def run_model_for_data_frame(
             ),
             prediction=list(predictions.prediction.astype(str)),
         )
+    elif model.is_text_generation:
+        return websocket.RunModelForDataFrame(prediction=list(predictions.prediction.astype(str)))
     else:
         return websocket.RunModelForDataFrame(
             prediction=list(predictions.prediction.astype(str)),
