@@ -118,7 +118,7 @@ def log_artifact_local(local_file, artifact_path=None):
     file_name = os.path.basename(local_file)
 
     paths = (projects_dir, artifact_path, file_name) if artifact_path else (projects_dir, file_name)
-    artifact_file = posixpath.join("/", *paths)
+    artifact_file = os.path.join("/", *paths)
     Path(artifact_file).parent.mkdir(parents=True, exist_ok=True)
 
     shutil.copy(local_file, artifact_file)
