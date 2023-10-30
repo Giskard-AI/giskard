@@ -3,8 +3,6 @@ import pytest
 import pandas as pd
 import shutil
 
-import requests_mock
-
 from giskard.datasets.base import Dataset
 from giskard.ml_worker import ml_worker, websocket
 from giskard.ml_worker.utils.file_utils import get_file_name
