@@ -24,7 +24,7 @@ from giskard.scanner.llm.llm_stereotypes_detector import LLMStereotypesDetector
 def test_requirement_based_detector_flow(Detector, issue_match):
     with (
         patch("giskard.scanner.llm.base.TestcaseRequirementsGenerator") as TestcaseRequirementsGenerator,
-        patch("giskard.scanner.llm.base.AdversarialExamplesGenerator") as AdversarialExamplesGenerator,
+        patch("giskard.scanner.llm.base.AdversarialDataGenerator") as AdversarialDataGenerator,
         patch("giskard.scanner.llm.base.RequirementEvaluator") as RequirementEvaluator,
         patch("giskard.scanner.llm.llm_output_format_detector.get_default_client") as get_default_client,
     ):
@@ -44,7 +44,7 @@ def test_requirement_based_detector_flow(Detector, issue_match):
 
         adv_gen_1 = Mock()
         adv_gen_2 = Mock()
-        AdversarialExamplesGenerator.side_effect = [adv_gen_1, adv_gen_2]
+        AdversarialDataGenerator.side_effect = [adv_gen_1, adv_gen_2]
 
         dataset_1 = Dataset(pd.DataFrame({"feat": ["input 1", "input 2", "input 3"]}))
         dataset_2 = Dataset(pd.DataFrame({"feat": ["test 1", "test 2", "test 3"]}))
@@ -76,8 +76,8 @@ def test_requirement_based_detector_flow(Detector, issue_match):
         requirements_generator.generate_requirements.assert_called_once_with(model, 2)
 
         # Examples generation
-        AdversarialExamplesGenerator.call_args_list[0].kwargs["requirement"] == "Requirement One"
-        AdversarialExamplesGenerator.call_args_list[1].kwargs["requirement"] == "Requirement Two"
+        AdversarialDataGenerator.call_args_list[0].kwargs["requirement"] == "Requirement One"
+        AdversarialDataGenerator.call_args_list[1].kwargs["requirement"] == "Requirement Two"
 
         adv_gen_1.generate_dataset.assert_called_once_with(model, 3)
         adv_gen_2.generate_dataset.assert_called_once_with(model, 3)
