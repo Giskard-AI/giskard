@@ -1,6 +1,8 @@
 import pandas as pd
 import numpy as np
 import pytest
+import uuid
+
 from giskard.datasets.base import Dataset
 
 from tests import utils
@@ -140,28 +142,31 @@ def test_numeric_column_names():
 
 def test_dataset_download_with_cache(request):
     dataset: Dataset = request.getfixturevalue("enron_data")
-    project_key = "test-project"
+    project_key = str(uuid.uuid4())
 
-    utils.local_save_dataset_under_giskard_home_cache(dataset=dataset, project_key=project_key)
+    with utils.MockedProjectCacheDir(project_key):
+        # Save the dataset to cache dir
+        utils.local_save_dataset_under_giskard_home_cache(dataset, project_key=project_key)
 
-    with utils.MockedClient(mock_all=False) as (client, mr):
-        # The dataset can be then loaded from the cache, without further requests
-        utils.register_uri_for_dataset_meta_info(mr, dataset, project_key)
+        with utils.MockedClient(mock_all=False) as (client, mr):
+            # The dataset can be then loaded from the cache, without further requests
+            utils.register_uri_for_dataset_meta_info(mr, dataset, project_key)
 
-        downloaded_dataset = Dataset.download(client=client, project_key=project_key, dataset_id=str(dataset.id))
+            downloaded_dataset = Dataset.download(client=client, project_key=project_key, dataset_id=str(dataset.id))
 
-        assert downloaded_dataset.id == dataset.id
+            assert downloaded_dataset.id == dataset.id
 
 
 def test_dataset_download(request):
     dataset: Dataset = request.getfixturevalue("enron_data")
-    project_key = "test-project"
+    project_key = str(uuid.uuid4())
 
-    with utils.MockedClient(mock_all=False) as (client, mr):
-        # The dataset needs to request files
-        utils.register_uri_for_dataset_meta_info(mr, dataset, project_key)
-        utils.register_uri_for_dataset_artifact_info(mr, dataset, project_key, register_file_contents=True)
+    with utils.MockedProjectCacheDir(project_key):
+        with utils.MockedClient(mock_all=False) as (client, mr):
+            # The dataset needs to request files
+            utils.register_uri_for_dataset_meta_info(mr, dataset, project_key)
+            utils.register_uri_for_dataset_artifact_info(mr, dataset, project_key, register_file_contents=True)
 
-        downloaded_dataset = Dataset.download(client=client, project_key=project_key, dataset_id=str(dataset.id))
+            downloaded_dataset = Dataset.download(client=client, project_key=project_key, dataset_id=str(dataset.id))
 
-        assert downloaded_dataset.id == dataset.id
+            assert downloaded_dataset.id == dataset.id

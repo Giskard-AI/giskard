@@ -2,6 +2,7 @@ import glob
 import logging
 import os
 import re
+import shutil
 import tarfile
 from pathlib import Path
 from typing import Optional
@@ -145,6 +146,18 @@ class MockedWebSocketMLWorker:
 
     def is_remote_worker(self):
         return self.ml_worker_id is not ml_worker.INTERNAL_WORKER_ID
+
+
+class MockedProjectCacheDir:
+    def __init__(self, project_key=None):
+        self.local_path_root = get_local_cache_project(project_key)
+
+    def __enter__(self):
+        self.local_path_root.mkdir(parents=True)
+        return self.local_path_root
+
+    def __exit__(self, exc_type, exc_val, exc_tb):
+        shutil.rmtree(str(self.local_path_root), ignore_errors=True)
 
 
 def get_local_cache_base():
