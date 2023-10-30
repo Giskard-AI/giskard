@@ -1,3 +1,5 @@
+from typing import Iterable, Optional, Union
+
 import builtins
 import importlib
 import logging
@@ -8,16 +10,12 @@ import tempfile
 import uuid
 from abc import ABC, abstractmethod
 from pathlib import Path
-from typing import Iterable, Optional, Union
 
 import cloudpickle
 import numpy as np
 import pandas as pd
 import yaml
 
-from .model_prediction import ModelPredictionResults
-from ..cache import get_cache_enabled
-from ..utils import np_types_to_native
 from ...client.giskard_client import GiskardClient
 from ...core.core import ModelMeta, ModelType, SupportedModelTypes
 from ...core.validation import configured_validate_arguments
@@ -27,6 +25,9 @@ from ...ml_worker.utils.logging import Timer
 from ...models.cache import ModelCache
 from ...path_utils import get_size
 from ...settings import settings
+from ..cache import get_cache_enabled
+from ..utils import np_types_to_native
+from .model_prediction import ModelPredictionResults
 
 META_FILENAME = "giskard-model-meta.yaml"
 
@@ -409,7 +410,7 @@ class BaseModel(ABC):
                 classification_labels = cls.cast_labels(meta_response)
                 meta = ModelMeta(
                     name=meta_response["name"],
-                    description=meta_response["description"],
+                    description=meta_response.get("description"),
                     model_type=SupportedModelTypes[meta_response["modelType"]],
                     feature_names=meta_response["featureNames"],
                     classification_labels=classification_labels,

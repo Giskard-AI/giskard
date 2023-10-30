@@ -12,16 +12,24 @@ from io import StringIO
 from multiprocessing import Process, Queue, cpu_count, get_context
 from multiprocessing.context import SpawnContext, SpawnProcess
 from multiprocessing.managers import SyncManager
+
+# from multiprocessing.managers import SyncManager
 from queue import Empty, Full
 from threading import Thread, current_thread
 from time import sleep
 from uuid import uuid4
 
-from giskard.ml_worker.utils.cache import SimpleCache
+from giskard.ml_worker.utils.cache import CACHE, SimpleCache
+
+# from giskard.ml_worker.utils.cache import SimpleCache
+# class SimpleCache:
+#     pass
+
 
 LOGGER = logging.getLogger(__name__)
 
-proxied_cache = None
+# proxied_cache = None
+
 
 def _generate_task_id():
     return str(uuid4())
@@ -95,9 +103,12 @@ class GiskardResult:
     exception: Any = None
 
 
-def _process_worker(tasks_queue: Queue, tasks_results: Queue, running_process: Dict[str, str]):
+def _process_worker(tasks_queue: Queue, tasks_results: Queue, running_process: Dict[str, str], cache_content):
     pid = os.getpid()
+    # cache = self._shared_cache
     LOGGER.info("Process %s started", pid)
+    CACHE.start(*cache_content)
+    LOGGER.info("Shared cache initializd")
 
     while True:
         # Blocking accessor, will wait for a task
@@ -155,7 +166,11 @@ class WorkerPoolExecutor(Executor):
         self.processes: Dict[int, SpawnProcess] = {}
         # Manager to handle shared object
         self._manager: SyncManager = self._mp_context.Manager()
-        self._manager.register('SimpleCache', SimpleCache)
+        cache_content = self._manager.dict()
+        cache_keys = self._manager.list()
+        CACHE.start(cache_content, cache_keys)
+        # self._manager.register("SimpleCache", SimpleCache)
+        # self._shared_cache: SimpleCache = self._manager.SimpleCache()
         # Mapping of the running tasks and worker pids
         self.running_process: Dict[str, str] = self._manager.dict()
         # Mapping of the running tasks and worker pids
@@ -172,9 +187,15 @@ class WorkerPoolExecutor(Executor):
         LOGGER.debug("Starting threads for the WorkerPoolExecutor")
 
         # This call will break ?!
-        proxied_cache = self._manager.SimpleCache()
+        # proxied_cache = self._manager.SimpleCache()
         self._threads = [
-            Thread(name=f"{self._prefix}{target.__name__}", target=target, daemon=True, args=[self, proxied_cache], kwargs=None)
+            Thread(
+                name=f"{self._prefix}{target.__name__}",
+                target=target,
+                daemon=True,
+                args=[self],
+                kwargs=None,
+            )
             for target in [_killer_thread, _feeder_thread, _results_thread]
         ]
         for t in self._threads:
@@ -232,7 +253,7 @@ class WorkerPoolExecutor(Executor):
         p = self._mp_context.Process(
             target=_process_worker,
             name=f"{self._prefix}_worker_process",
-            args=(self.running_tasks_queue, self.tasks_results, self.running_process),
+            args=(self.running_tasks_queue, self.tasks_results, self.running_process, CACHE.content()),
             daemon=True,
         )
         p.start()
@@ -354,6 +375,7 @@ def _results_thread(
             future.set_result(result.result)
         else:
             future.set_exception(RuntimeError(result.exception))
+
 
 def _feeder_thread(
     executor: WorkerPoolExecutor,

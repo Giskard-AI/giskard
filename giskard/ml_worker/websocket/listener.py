@@ -31,7 +31,7 @@ from giskard.ml_worker.ml_worker import MLWorker
 from giskard.ml_worker.testing.registry.giskard_test import GiskardTest
 from giskard.ml_worker.testing.registry.slicing_function import SlicingFunction
 from giskard.ml_worker.testing.registry.transformation_function import TransformationFunction
-from giskard.ml_worker.utils.cache import SimpleCache
+from giskard.ml_worker.utils.cache import CACHE, SimpleCache
 from giskard.ml_worker.utils.file_utils import get_file_name
 from giskard.ml_worker.websocket import CallToActionKind, GetInfoParam, PushKind
 from giskard.ml_worker.websocket.action import MLWorkerAction
@@ -53,11 +53,13 @@ from giskard.models.model_explanation import explain, explain_text
 from giskard.push import Push
 from giskard.utils import call_in_pool, shutdown_pool
 from giskard.utils.analytics_collector import analytics
-from giskard.utils.worker_pool import proxied_cache
+
+# from giskard.utils.worker_pool import proxied_cache
 
 logger = logging.getLogger(__name__)
-push_cache = SimpleCache(max_results=20)
+# push_cache = SimpleCache(max_results=20)
 MAX_STOMP_ML_WORKER_REPLY_SIZE = 1500
+
 
 @dataclass
 class MLWorkerInfo:
@@ -690,10 +692,10 @@ def get_push(
     params.cta_kind = None
     params.push_kind = None
 
-    cached_result_tuple = push_cache.get_result(params)
+    cached_result_tuple = CACHE.get_result(params)
     if cached_result_tuple is None:
         contribs, perturbs, overconf, borderl = get_push_objects(client, params)
-        push_cache.add_result(params, (contribs, perturbs, overconf, borderl))
+        CACHE.add_result(params, (contribs, perturbs, overconf, borderl))
     else:
         contribs, perturbs, overconf, borderl = cached_result_tuple
 
@@ -714,13 +716,10 @@ def get_push(
         else:
             raise ValueError("Invalid push kind")
 
-        logger.info("Handling push kind: " + str(push_kind) + " with cta kind: " + str(cta_kind))
+        logger.info("Handling push kind: %s with cta kind: %s", str(push_kind), str(cta_kind))
 
         # Upload related object depending on CTA type
-        if (
-            cta_kind == CallToActionKind.CREATE_SLICE
-            or cta_kind == CallToActionKind.CREATE_SLICE_OPEN_DEBUGGER
-        ):
+        if cta_kind == CallToActionKind.CREATE_SLICE or cta_kind == CallToActionKind.CREATE_SLICE_OPEN_DEBUGGER:
             push.slicing_function.meta.tags.append("generated")
             object_uuid = push.slicing_function.upload(client, project_key)
         if cta_kind == CallToActionKind.SAVE_PERTURBATION:
@@ -809,7 +808,7 @@ def get_push_objects(client: Optional[GiskardClient], params: websocket.GetPushP
         PushKind.CONTRIBUTION: (create_contribution_push, None, None, None),
         PushKind.PERTURBATION: (None, create_perturbation_push, None, None),
         PushKind.OVERCONFIDENCE: (None, None, create_overconfidence_push, None),
-        PushKind.BORDERLINE: (None, None, None, create_borderline_push)
+        PushKind.BORDERLINE: (None, None, None, create_borderline_push),
     }
 
     return (func(model, dataset, df) if func else None for func in push_functions[params.push_kind])
