@@ -3,6 +3,8 @@ import pytest
 import pandas as pd
 import shutil
 
+import requests_mock
+
 from giskard.datasets.base import Dataset
 from giskard.ml_worker import ml_worker, websocket
 from giskard.ml_worker.utils.file_utils import get_file_name
@@ -145,6 +147,42 @@ def test_websocket_actor_run_model_internal(data, model, sample, request):
         assert (inspection_path / get_file_name("calculated", "csv", sample)).exists()
         # Clean up
         shutil.rmtree(inspection_path, ignore_errors=True)
+
+
+@pytest.mark.parametrize("data,model,sample", [
+    ("enron_data", "enron_model", False),
+    ("enron_data", "enron_model", True),
+    ("enron_data", "enron_model", None),
+    ("hotel_text_data", "hotel_text_model", False)
+])
+@pytest.mark.slow
+def test_websocket_actor_run_model(data, model, sample, request):
+    dataset: Dataset = request.getfixturevalue(data)
+    model: BaseModel = request.getfixturevalue(model)
+
+    project_key = str(uuid.uuid4()) # Use a UUID to separate the resources used by the tests
+    inspection_id = 0
+
+    with utils.MockedProjectCacheDir(project_key):
+        params = websocket.RunModelParam(
+            model=websocket.ArtifactRef(project_key=project_key, id=str(model.id)),
+            dataset=websocket.ArtifactRef(project_key=project_key, id=str(dataset.id), sample=sample),
+            inspectionId=inspection_id,
+            project_key=project_key,
+        )
+
+        with utils.MockedClient(mock_all=False) as (client, mr):
+            # Prepare URL for meta info
+            utils.register_uri_for_model_meta_info(mr, model, project_key)
+            utils.register_uri_for_model_artifact_info(mr, model, project_key, register_file_contents=True)
+            utils.register_uri_for_dataset_meta_info(mr, dataset, project_key)
+            utils.register_uri_for_dataset_artifact_info(mr, dataset, project_key, register_file_contents=True)
+            # Prepare URL for inspections
+            utils.register_uri_for_inspection(mr, project_key, inspection_id, sample)
+
+            # Internal worker does not have client
+            reply = listener.run_model(client=client, params=params)
+            assert isinstance(reply, websocket.Empty)
 
 
 def test_websocket_actor_run_model_for_data_frame_regression_internal(request):

@@ -13,6 +13,7 @@ import platform
 import requests
 import requests_mock
 from giskard.ml_worker.core.savable import Artifact
+from giskard.ml_worker.utils.file_utils import get_file_name
 from giskard.path_utils import get_size
 
 import tests.utils
@@ -308,3 +309,11 @@ def register_uri_for_model_artifact_info(mr: requests_mock.Mocker, model: BaseMo
         artifacts = register_uri_for_artifacts_under_dir(mr, tmpdir_path, artifacts_base_url, register_file_contents)
 
     mr.register_uri(method=requests_mock.GET, url=artifact_info_url, json=artifacts)
+
+
+def register_uri_for_inspection(mr: requests_mock.Mocker, project_key: str, inspection_id: int, sample: bool):
+    url = posixpath.join(CLIENT_BASE_URL, "artifacts", f"{project_key}/models/inspections/{inspection_id}")
+    calculated_url = posixpath.join(url, get_file_name("calculated", "csv", sample))
+    predictions_url = posixpath.join(url, get_file_name("predictions", "csv", sample))
+    mr.register_uri(method=requests_mock.POST, url=calculated_url, json={})
+    mr.register_uri(method=requests_mock.POST, url=predictions_url, json={})
