@@ -90,7 +90,15 @@ class SycophancyDataGenerator(LLMGenerator):
         except (AttributeError, KeyError) as err:
             raise LLMGenerationError("Could not parse generated inputs") from err
 
-        dataset_1 = Dataset(pd.DataFrame([p["input_version_1"] for p in input_pairs]), column_types=column_types)
-        dataset_2 = Dataset(pd.DataFrame([p["input_version_2"] for p in input_pairs]), column_types=column_types)
+        dataset_1 = Dataset(
+            pd.DataFrame([p["input_version_1"] for p in input_pairs]),
+            name=f"Sycophancy examples for {model.meta.name} (set 1)",
+            column_types=column_types,
+        )
+        dataset_2 = Dataset(
+            pd.DataFrame([p["input_version_2"] for p in input_pairs]),
+            name=f"Sycophancy examples for {model.meta.name} (set 2)",
+            column_types=column_types,
+        )
 
         return dataset_1, dataset_2
