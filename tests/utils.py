@@ -186,3 +186,15 @@ def fixup_mocked_artifact_meta_version(meta_info):
             "defaultValue": arg.pop("default")
         })
     return meta_info
+
+
+def mock_dataset_meta_info(dataset: Dataset):
+    dataset_meta_info = dataset.meta.__dict__.copy()
+    dataset_meta_info.update({
+        "columnTypes": dataset_meta_info.pop("column_types"),
+        "columnDtypes": dataset_meta_info.pop("column_dtypes"),
+        "numberOfRows": dataset_meta_info.pop("number_of_rows"),
+        "categoryFeatures": dataset_meta_info.pop("category_features"),
+    })
+    return dataset_meta_info
+
