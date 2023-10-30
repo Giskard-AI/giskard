@@ -8,7 +8,7 @@ from ...datasets.base import Dataset
 from ...llm.evaluators import PlausibilityEvaluator
 from ...llm.generators import ImplausibleDataGenerator
 from ...models.base.model import BaseModel
-from ...testing.tests.llm.hallucination import test_llm_plausibility
+from ...testing.tests.llm.hallucination import test_llm_output_plausibility
 from ..decorators import detector
 from ..issues import Hallucination, Issue, IssueLevel
 
@@ -55,4 +55,4 @@ class LLMImplausibleOutputDetector:
 
 
 def _generate_implausible_output_tests(issue: Issue):
-    return {"Output plausibility": test_llm_plausibility(dataset=issue.dataset)}
+    return {"Output plausibility": test_llm_output_plausibility(dataset=issue.dataset)}

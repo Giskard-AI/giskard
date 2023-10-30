@@ -7,7 +7,7 @@ from ...llm.evaluators import RequirementEvaluator
 from ...llm.generators import AdversarialExamplesGenerator
 from ...llm.testcase import TestcaseRequirementsGenerator
 from ...models.base.model import BaseModel
-from ...testing.tests.llm import test_output_against_requirement
+from ...testing.tests.llm import test_llm_output_against_requirement
 from ..issues import Issue
 from ..scanner import logger
 
@@ -66,7 +66,7 @@ class RequirementBasedDetector:
 
 def _generate_output_requirement_tests(issue: Issue):
     return {
-        issue.meta["requirement"]: test_output_against_requirement(
+        issue.meta["requirement"]: test_llm_output_against_requirement(
             dataset=issue.dataset, requirement=issue.meta["requirement"]
         )
     }
