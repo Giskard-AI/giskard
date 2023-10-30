@@ -31,7 +31,7 @@ from giskard.ml_worker.ml_worker import MLWorker
 from giskard.ml_worker.testing.registry.giskard_test import GiskardTest
 from giskard.ml_worker.testing.registry.slicing_function import SlicingFunction
 from giskard.ml_worker.testing.registry.transformation_function import TransformationFunction
-from giskard.ml_worker.utils.cache import CACHE, SimpleCache
+from giskard.ml_worker.utils.cache import CACHE
 from giskard.ml_worker.utils.file_utils import get_file_name
 from giskard.ml_worker.websocket import CallToActionKind, GetInfoParam, PushKind
 from giskard.ml_worker.websocket.action import MLWorkerAction
@@ -695,6 +695,7 @@ def handle_cta(
     if push is None:
         push = get_push_objects(client, params)
     logger.info("Handling push kind: %s with cta kind: %s", str(push_kind), str(cta_kind))
+    push.prepare_cta()
 
     # Upload related object depending on CTA type
     if cta_kind == CallToActionKind.CREATE_SLICE or cta_kind == CallToActionKind.CREATE_SLICE_OPEN_DEBUGGER:

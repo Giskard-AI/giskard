@@ -2,7 +2,6 @@ from typing import Any, Dict, List, Optional
 
 import hashlib
 import logging
-from collections import OrderedDict
 from pickle import PicklingError
 
 LOGGER = logging.getLogger(__name__)

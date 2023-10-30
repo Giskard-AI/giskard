@@ -19,7 +19,7 @@ from threading import Thread, current_thread
 from time import sleep
 from uuid import uuid4
 
-from giskard.ml_worker.utils.cache import CACHE, SimpleCache
+from giskard.ml_worker.utils.cache import CACHE
 
 # from giskard.ml_worker.utils.cache import SimpleCache
 # class SimpleCache:
