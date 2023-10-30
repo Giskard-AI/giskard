@@ -5,6 +5,7 @@ import re
 import tarfile
 from pathlib import Path
 from typing import Optional
+import posixpath
 
 import requests
 import requests_mock
@@ -24,6 +25,8 @@ headers_to_match = {"Authorization": "Bearer SECRET_TOKEN", "Content-Type": "app
 
 CALLABLE_FUNCTION_PKL_CACHE = "data.pkl"
 CALLABLE_FUNCTION_META_CACHE = "meta.yaml"
+
+CLIENT_BASE_URL = "http://giskard-host:12345/api/v2"
 
 
 def match_model_id(my_model_id):
@@ -198,3 +201,27 @@ def mock_dataset_meta_info(dataset: Dataset):
     })
     return dataset_meta_info
 
+
+def register_uri_for_artifact_meta_info(mr: requests_mock.Mocker, cf: Artifact, project_key:Optional[str] = None):
+    url = posixpath.join(CLIENT_BASE_URL, "project", project_key, cf._get_name(), cf.meta.uuid) if project_key \
+        else posixpath.join(CLIENT_BASE_URL, cf._get_name(), cf.meta.uuid)
+    # Fixup the differences from Backend
+    meta_info = fixup_mocked_artifact_meta_version(cf.meta.to_json())
+
+    mr.register_uri(method=requests_mock.GET, url=url, json=meta_info)
+
+
+def register_uri_for_artifact_info(mr: requests_mock.Mocker, cf: Artifact, project_key:Optional[str] = None):
+    artifact_info_url = posixpath.join(CLIENT_BASE_URL, "artifact-info", project_key, cf._get_name(), cf.meta.uuid) if project_key \
+        else posixpath.join(CLIENT_BASE_URL, "artifact-info", "global", cf._get_name(), cf.meta.uuid)
+    artifacts = [
+        CALLABLE_FUNCTION_PKL_CACHE,
+        CALLABLE_FUNCTION_META_CACHE,
+    ]
+    mr.register_uri(method=requests_mock.GET, url=artifact_info_url, json=artifacts)
+
+
+def register_uri_for_dataset_meta_info(mr: requests_mock.Mocker, dataset: Dataset, project_key: str):
+    dataset_url = posixpath.join(CLIENT_BASE_URL, "project", project_key, "datasets", str(dataset.id))
+    dataset_meta_info = mock_dataset_meta_info(dataset)
+    mr.register_uri(method=requests_mock.GET, url=dataset_url, json=dataset_meta_info)
