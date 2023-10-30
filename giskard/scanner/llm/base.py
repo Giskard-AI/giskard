@@ -67,6 +67,6 @@ class RequirementBasedDetector:
 def _generate_output_requirement_tests(issue: Issue):
     return {
         issue.meta["requirement"]: test_output_against_requirement(
-            model=issue.model, dataset=issue.dataset, requirement=issue.meta["requirement"]
+            dataset=issue.dataset, requirement=issue.meta["requirement"]
         )
     }
