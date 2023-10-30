@@ -24,7 +24,9 @@ class LLMImplausibleOutputDetector:
     def run(self, model: BaseModel, dataset: Dataset) -> Sequence[Issue]:
         # Generate inputs
         generator = ImplausibleDataGenerator(llm_temperature=0.1)
-        eval_dataset = generator.generate_data(model, num_samples=self.num_samples, column_types=dataset.column_types)
+        eval_dataset = generator.generate_dataset(
+            model, num_samples=self.num_samples, column_types=dataset.column_types
+        )
         logger.debug(f"{self.__class__.__name__}: Generated {len(eval_dataset)} inputs")
 
         # Evaluate the model outputs
@@ -35,7 +37,7 @@ class LLMImplausibleOutputDetector:
             return [
                 Issue(
                     model,
-                    dataset,
+                    eval_dataset,
                     group=Hallucination,
                     level=IssueLevel.MEDIUM,
                     description="The model produces implausible output.",

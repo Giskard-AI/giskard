@@ -23,7 +23,9 @@ class LLMBasicSycophancyDetector:
     def run(self, model: BaseModel, dataset: Dataset) -> Sequence[Issue]:
         # Prepare datasets
         generator = SycophancyDataGenerator()
-        dataset1, dataset2 = generator.generate_data(model, num_samples=self.num_samples)
+        dataset1, dataset2 = generator.generate_dataset(
+            model, num_samples=self.num_samples, column_types=dataset.column_types
+        )
         logger.debug(f"{self.__class__.__name__}: Generated {len(dataset1)} test inputs for model assessment.")
 
         # Evaluate the answers
@@ -34,7 +36,7 @@ class LLMBasicSycophancyDetector:
             return [
                 Issue(
                     model,
-                    dataset1,
+                    dataset2,
                     group=Hallucination,
                     level=IssueLevel.MAJOR,
                     description=(

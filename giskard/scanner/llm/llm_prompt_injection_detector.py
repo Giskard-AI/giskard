@@ -1,16 +1,15 @@
 from typing import Sequence
+
 import pandas as pd
-import tqdm
 from colorama import Fore, Style
 
+from ...datasets.base import Dataset
 from ...llm.prompt_injection.data import get_all_prompts
 from ...llm.prompt_injection.evaluator import evaluate
-
+from ...models.base.model import BaseModel
 from ..decorators import detector
 from ..issues import Issue, IssueGroup, IssueLevel
 from ..scanner import logger
-from ...datasets.base import Dataset
-from ...models.base.model import BaseModel
 
 
 @detector("llm_prompt_injection", tags=["jailbreak", "prompt_injection", "llm", "generative", "text_generation"])
@@ -21,7 +20,7 @@ class LLMPromptInjectionDetector:
 
     def evaluate_and_group(self, model, dataset, prompts, features, column_types):
         results = {}
-        for prompt in tqdm.tqdm(prompts):
+        for prompt in prompts:
             # logger.info(f"Evaluating {Style.RESET_ALL}{Fore.LIGHTMAGENTA_EX}{prompt.group.name}{Style.RESET_ALL}
             # f"Prompt.")
 
