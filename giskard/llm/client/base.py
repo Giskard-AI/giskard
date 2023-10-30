@@ -18,12 +18,12 @@ class LLMClient(ABC):
 
 
 @dataclass
-class LLMOutput:
-    message: Optional[str] = None
-    function_call: Dict[str, str] = None
-
-
-@dataclass
 class LLMFunctionCall:
     function: str
     args: Any
+
+
+@dataclass
+class LLMOutput:
+    message: Optional[str] = None
+    function_call: Optional[LLMFunctionCall] = None
