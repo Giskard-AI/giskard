@@ -6,6 +6,7 @@ build-backend = "setuptools.build_meta"
 include = ["giskard*"]
 exclude = ["docs*", "tests*"]
 
+
 [tool.setuptools.package-data]
 giskard = [
     "**/*.md",
@@ -59,7 +60,7 @@ dev = [
     "pydantic>=2",
 ]
 ml_runtime = [
-    "langchain>=0.0.187",
+    "langchain>=0.0.275",
     "nltk>=3.8.1",
     "xgboost>=1.7.5",
     "lightgbm>=3.3.5",
@@ -86,6 +87,7 @@ test = [
     "pytest>=7.1.2",
     "pytest-xdist>=3.3.1",
     "polyfactory",
+    "pytest-env>=1.1.0",
 ]
 doc = [
     "furo>=2023.5.20",
@@ -171,12 +173,11 @@ dependencies = [
 
 [project.optional-dependencies]
 llm = [
-    "transformers",
-    "torch",
     "langchain<=0.0.301", # Weirdly fails with newer version, see https://linear.app/giskard/issue/GSK-1853/updating-lanchain-version-over-00301-weirdly-fails
-    "evaluate",
-    "bert-score",
-    "datasets",
+    "colorama",           # needed for garak
+    "openai>=0.28.1",
+    "evaluate>=0.4.1",
+    "bert-score>=0.3.13",
 ]
 
 server = [
@@ -308,6 +309,8 @@ addopts = [
     "--doctest-modules",
     "--doctest-continue-on-failure",
 ]
+
+env = ["WANDB_MODE=disabled"]
 
 [tool.deptry]
 extend_exclude = [".history"]

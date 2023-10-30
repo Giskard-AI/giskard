@@ -38,8 +38,11 @@ __all__ = [
     "test_metamorphic_invariance_wilcoxon",
     "test_underconfidence_rate",
     "test_overconfidence_rate",
+    "test_llm_response_validation",
+    "test_llm_individual_response_validation",
 ]
 
+from giskard.testing.tests.calibration import test_underconfidence_rate, test_overconfidence_rate
 from giskard.testing.tests.drift import (
     test_drift_psi,
     test_drift_chi_square,
@@ -50,6 +53,7 @@ from giskard.testing.tests.drift import (
     test_drift_prediction_ks,
     test_drift_prediction_earth_movers_distance,
 )
+from giskard.testing.tests.llm import test_llm_response_validation, test_llm_individual_response_validation
 from giskard.testing.tests.metamorphic import (
     test_metamorphic_invariance,
     test_metamorphic_increasing,
@@ -85,4 +89,3 @@ from giskard.testing.tests.statistic import (
     test_mutual_information,
     test_theil_u,
 )
-from giskard.testing.tests.calibration import test_underconfidence_rate, test_overconfidence_rate

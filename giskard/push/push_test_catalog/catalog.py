@@ -15,9 +15,11 @@ These test functions allow validating pushes and can be added to test suites.
 """
 from typing import Any, Optional
 
-from giskard import SlicingFunction, TestResult, test
 from giskard.datasets.base import Dataset
 from giskard.ml_worker.testing.functions.transformation import mad_transformation
+from giskard.ml_worker.testing.registry.decorators import test
+from giskard.ml_worker.testing.registry.slicing_function import SlicingFunction
+from giskard.ml_worker.testing.test_result import TestResult
 from giskard.ml_worker.testing.utils import Direction, check_slice_not_empty
 from giskard.models.base import BaseModel
 from giskard.testing.tests.calibration import test_overconfidence_rate, test_underconfidence_rate
