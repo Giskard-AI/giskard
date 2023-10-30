@@ -27,7 +27,10 @@ def _test_output_against_requirement(model: BaseModel, dataset: Dataset, require
         )
 
     return TestResult(
-        passed=eval_result.passed, output_df=output_ds, metric=len(eval_result.success_examples) / len(dataset)
+        passed=eval_result.passed,
+        output_df=output_ds,
+        metric=len(eval_result.failure_examples),
+        metric_name="Failing examples",
     )
 
 
