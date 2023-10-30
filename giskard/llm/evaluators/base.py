@@ -74,7 +74,7 @@ class LLMBasedEvaluator:
     def evaluate(self, model: BaseModel, dataset: Dataset):
         model_outputs = model.predict(dataset).prediction
 
-        succeded = []
+        succeeded = []
         failed = []
         errored = []
         for input_vars, model_output in zip(
@@ -99,12 +99,12 @@ class LLMBasedEvaluator:
 
             args = out.function_call.args
             if args["passed_test"]:
-                succeded.append({"input_vars": input_vars, "model_output": model_output, "reason": args.get("reason")})
+                succeeded.append({"input_vars": input_vars, "model_output": model_output, "reason": args.get("reason")})
             else:
                 failed.append({"input_vars": input_vars, "model_output": model_output, "reason": args.get("reason")})
 
         return EvaluationResult(
             failure_examples=failed,
-            success_examples=succeded,
+            success_examples=succeeded,
             errors=errored,
         )
