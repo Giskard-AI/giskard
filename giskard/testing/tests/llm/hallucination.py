@@ -9,7 +9,7 @@ from ....models.base.model import BaseModel
 
 
 @test(name="LLM Coherency", tags=["llm", "hallucination"])
-def test_llm_coherency(
+def test_llm_output_coherency(
     model: BaseModel, dataset_1: Dataset, dataset_2: Optional[Dataset] = None, eval_prompt: Optional[str] = None
 ):
     """Tests that the model output is coherent for multiple inputs.
@@ -40,7 +40,7 @@ def test_llm_coherency(
 
 
 @test(name="LLM Plausibility", tags=["llm", "hallucination"])
-def test_llm_plausibility(model: BaseModel, dataset: Dataset, eval_prompt: Optional[str] = None):
+def test_llm_output_plausibility(model: BaseModel, dataset: Dataset, eval_prompt: Optional[str] = None):
     """Tests that the model output is plausible.
 
 

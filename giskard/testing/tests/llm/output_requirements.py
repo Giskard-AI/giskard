@@ -36,7 +36,7 @@ def _test_output_against_requirement(model: BaseModel, dataset: Dataset, require
     tags=["llm", "llm-as-a-judge"],
     debug_description=debug_description_prefix + "that are <b>failing the evaluation criteria</b>.",
 )
-def test_output_against_requirement(model: BaseModel, dataset: Dataset, requirement: str, debug: bool = False):
+def test_llm_output_against_requirement(model: BaseModel, dataset: Dataset, requirement: str, debug: bool = False):
     """Evaluates the model output against a given requirement with another LLM (LLM-as-a-judge).
 
     The model outputs over a given dataset will be validated against the specified requirement using GPT-4 (note that
@@ -70,7 +70,7 @@ def test_output_against_requirement(model: BaseModel, dataset: Dataset, requirem
     tags=["llm", "llm-as-a-judge"],
     debug_description=debug_description_prefix + "that are <b>failing the evaluation criteria</b>.",
 )
-def test_single_output_against_requirement(
+def test_llm_single_output_against_requirement(
     model: BaseModel, input_var: str, requirement: str, input_as_json: bool = False, debug: bool = False
 ):
     """Evaluates the model output against a given requirement with another LLM (LLM-as-a-judge).
