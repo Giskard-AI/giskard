@@ -1,8 +1,7 @@
-import posixpath
 import uuid
 import pytest
 import pandas as pd
-import requests_mock
+import shutil
 
 from giskard.datasets.base import Dataset
 from giskard.ml_worker import ml_worker, websocket
@@ -13,7 +12,6 @@ from giskard.models.base.model import BaseModel
 from giskard.settings import settings
 from giskard import slicing_function, transformation_function
 
-from tests.utils import MockedWebSocketMLWorker, fixup_mocked_artifact_meta_version
 from tests import utils
 
 
@@ -37,8 +35,8 @@ def test_websocket_actor_echo():
 
 
 def test_websocket_actor_get_info():
-    internal_ml_worker = MockedWebSocketMLWorker(is_server=True)    # Internal worker
-    external_ml_worker = MockedWebSocketMLWorker(is_server=False)   # External worker
+    internal_ml_worker = utils.MockedWebSocketMLWorker(is_server=True)    # Internal worker
+    external_ml_worker = utils.MockedWebSocketMLWorker(is_server=False)   # External worker
 
     without_package_params = websocket.GetInfoParam(list_packages=False)
     with_package_params = websocket.GetInfoParam(list_packages=True)
@@ -127,23 +125,26 @@ def test_websocket_actor_run_model_internal(data, model, sample, request):
     project_key = str(uuid.uuid4()) # Use a UUID to separate the resources used by the tests
     inspection_id = 0
 
-    # Prepare dataset and model
-    utils.local_save_model_under_giskard_home_cache(model, project_key)
-    utils.local_save_dataset_under_giskard_home_cache(dataset, project_key)
+    with utils.MockedProjectCacheDir(project_key):
+        # Prepare dataset and model
+        utils.local_save_model_under_giskard_home_cache(model, project_key)
+        utils.local_save_dataset_under_giskard_home_cache(dataset, project_key)
 
-    params = websocket.RunModelParam(
-        model=websocket.ArtifactRef(project_key=project_key, id=str(model.id)),
-        dataset=websocket.ArtifactRef(project_key=project_key, id=str(dataset.id), sample=sample),
-        inspectionId=inspection_id,
-        project_key=project_key,
-    )
-    # Internal worker does not have client
-    reply = listener.run_model(client=None, params=params)
-    assert isinstance(reply, websocket.Empty)
-    # Inspection
-    inspection_path = settings.home_dir / "projects" / project_key / "models" / "inspections" / str(inspection_id)
-    assert (inspection_path / get_file_name("predictions", "csv", sample)).exists()
-    assert (inspection_path / get_file_name("calculated", "csv", sample)).exists()
+        params = websocket.RunModelParam(
+            model=websocket.ArtifactRef(project_key=project_key, id=str(model.id)),
+            dataset=websocket.ArtifactRef(project_key=project_key, id=str(dataset.id), sample=sample),
+            inspectionId=inspection_id,
+            project_key=project_key,
+        )
+        # Internal worker does not have client
+        reply = listener.run_model(client=None, params=params)
+        assert isinstance(reply, websocket.Empty)
+        # Inspection are logged locally
+        inspection_path = settings.home_dir / "projects" / project_key / "models" / "inspections" / str(inspection_id)
+        assert (inspection_path / get_file_name("predictions", "csv", sample)).exists()
+        assert (inspection_path / get_file_name("calculated", "csv", sample)).exists()
+        # Clean up
+        shutil.rmtree(inspection_path, ignore_errors=True)
 
 
 def test_websocket_actor_run_model_for_data_frame_regression_internal(request):
@@ -152,34 +153,35 @@ def test_websocket_actor_run_model_for_data_frame_regression_internal(request):
 
     project_key = str(uuid.uuid4()) # Use a UUID to separate the resources used by the tests
 
-    # Prepare model
-    utils.local_save_model_under_giskard_home_cache(model, project_key)
+    with utils.MockedProjectCacheDir(project_key):
+        # Prepare model
+        utils.local_save_model_under_giskard_home_cache(model, project_key)
 
-    # Prepare dataframe
-    dataframe = websocket.DataFrame(
-        rows=[
-            websocket.DataRow(columns={
-                str(k): str(v) for k, v in row.items()
-            }) for _, row in dataset.df.iterrows()
-        ],
-    )
+        # Prepare dataframe
+        dataframe = websocket.DataFrame(
+            rows=[
+                websocket.DataRow(columns={
+                    str(k): str(v) for k, v in row.items()
+                }) for _, row in dataset.df.iterrows()
+            ],
+        )
 
-    # Prepare parameters
-    params = websocket.RunModelForDataFrameParam(
-        model=websocket.ArtifactRef(project_key=project_key, id=str(model.id)),
-        dataframe=dataframe,
-        target=dataset.target,
-        column_types=dataset.column_types,
-        column_dtypes=dataset.column_dtypes,
-    )
+        # Prepare parameters
+        params = websocket.RunModelForDataFrameParam(
+            model=websocket.ArtifactRef(project_key=project_key, id=str(model.id)),
+            dataframe=dataframe,
+            target=dataset.target,
+            column_types=dataset.column_types,
+            column_dtypes=dataset.column_dtypes,
+        )
 
-    # client
-    reply = listener.run_model_for_data_frame(client=None, params=params)
-    assert isinstance(reply, websocket.RunModelForDataFrame)
-    assert not reply.all_predictions
-    assert reply.prediction
-    assert reply.raw_prediction
-    assert not reply.probabilities
+        # client
+        reply = listener.run_model_for_data_frame(client=None, params=params)
+        assert isinstance(reply, websocket.RunModelForDataFrame)
+        assert not reply.all_predictions
+        assert reply.prediction
+        assert reply.raw_prediction
+        assert not reply.probabilities
 
 
 def test_websocket_actor_run_model_for_data_frame_classification_internal(request):
@@ -188,34 +190,35 @@ def test_websocket_actor_run_model_for_data_frame_classification_internal(reques
 
     project_key = str(uuid.uuid4()) # Use a UUID to separate the resources used by the tests
 
-    # Prepare model
-    utils.local_save_model_under_giskard_home_cache(model, project_key)
+    with utils.MockedProjectCacheDir(project_key):
+        # Prepare model
+        utils.local_save_model_under_giskard_home_cache(model, project_key)
 
-    # Prepare dataframe
-    dataframe = websocket.DataFrame(
-        rows=[
-            websocket.DataRow(columns={
-                str(k): str(v) for k, v in row.items()
-            }) for _, row in dataset.df.iterrows()
-        ],
-    )
+        # Prepare dataframe
+        dataframe = websocket.DataFrame(
+            rows=[
+                websocket.DataRow(columns={
+                    str(k): str(v) for k, v in row.items()
+                }) for _, row in dataset.df.iterrows()
+            ],
+        )
 
-    # Prepare parameters
-    params = websocket.RunModelForDataFrameParam(
-        model=websocket.ArtifactRef(project_key=project_key, id=str(model.id)),
-        dataframe=dataframe,
-        target=dataset.target,
-        column_types=dataset.column_types,
-        column_dtypes=dataset.column_dtypes,
-    )
+        # Prepare parameters
+        params = websocket.RunModelForDataFrameParam(
+            model=websocket.ArtifactRef(project_key=project_key, id=str(model.id)),
+            dataframe=dataframe,
+            target=dataset.target,
+            column_types=dataset.column_types,
+            column_dtypes=dataset.column_dtypes,
+        )
 
-    # client
-    reply = listener.run_model_for_data_frame(client=None, params=params)
-    assert isinstance(reply, websocket.RunModelForDataFrame)
-    assert reply.all_predictions
-    assert reply.prediction
-    assert not reply.raw_prediction
-    assert not reply.probabilities
+        # client
+        reply = listener.run_model_for_data_frame(client=None, params=params)
+        assert isinstance(reply, websocket.RunModelForDataFrame)
+        assert reply.all_predictions
+        assert reply.prediction
+        assert not reply.raw_prediction
+        assert not reply.probabilities
 
 
 @pytest.mark.parametrize("data,model", [
@@ -228,17 +231,18 @@ def test_websocket_actor_explain_ws_internal(data, model, request):
 
     project_key = str(uuid.uuid4()) # Use a UUID to separate the resources used by the tests
 
-    # Prepare model and dataset
-    utils.local_save_model_under_giskard_home_cache(model, project_key)
-    utils.local_save_dataset_under_giskard_home_cache(dataset, project_key)
+    with utils.MockedProjectCacheDir(project_key):
+        # Prepare model and dataset
+        utils.local_save_model_under_giskard_home_cache(model, project_key)
+        utils.local_save_dataset_under_giskard_home_cache(dataset, project_key)
 
-    params = websocket.ExplainParam(
-        model=websocket.ArtifactRef(project_key=project_key, id=str(model.id)),
-        dataset=websocket.ArtifactRef(project_key=project_key, id=str(dataset.id)),
-        columns={str(k): str(v) for k, v in next(dataset.df.iterrows())[1].items()},  # Pick the first row
-    )
-    reply = listener.explain_ws(client=None, params=params)
-    assert isinstance(reply, websocket.Explain)
+        params = websocket.ExplainParam(
+            model=websocket.ArtifactRef(project_key=project_key, id=str(model.id)),
+            dataset=websocket.ArtifactRef(project_key=project_key, id=str(dataset.id)),
+            columns={str(k): str(v) for k, v in next(dataset.df.iterrows())[1].items()},  # Pick the first row
+        )
+        reply = listener.explain_ws(client=None, params=params)
+        assert isinstance(reply, websocket.Explain)
 
 
 def test_websocket_actor_explain_text_ws_regression_internal(request):
@@ -247,26 +251,27 @@ def test_websocket_actor_explain_text_ws_regression_internal(request):
 
     project_key = str(uuid.uuid4()) # Use a UUID to separate the resources used by the tests
 
-    # Prepare model and dataset
-    utils.local_save_model_under_giskard_home_cache(model, project_key)
+    with utils.MockedProjectCacheDir(project_key):
+        # Prepare model and dataset
+        utils.local_save_model_under_giskard_home_cache(model, project_key)
 
-    text_feature_name = None
-    for col_name, col_type in dataset.column_types.items():
-        if col_type == "text":
-            text_feature_name = col_name
-            break
-    assert text_feature_name
+        text_feature_name = None
+        for col_name, col_type in dataset.column_types.items():
+            if col_type == "text":
+                text_feature_name = col_name
+                break
+        assert text_feature_name
 
-    params = websocket.ExplainTextParam(
-        model=websocket.ArtifactRef(project_key=project_key, id=str(model.id)),
-        feature_name=text_feature_name,
-        columns={str(k): str(v) for k, v in next(dataset.df.iterrows())[1].items()},  # Pick the first row
-        column_types=dataset.column_types,
-    )
-    reply = listener.explain_text_ws(client=None, params=params)
-    assert isinstance(reply, websocket.ExplainText)
-    # Regression text explaining: Giskard Hub uses "WEIGHTS" to show it
-    assert "WEIGHTS" in reply.weights.keys()
+        params = websocket.ExplainTextParam(
+            model=websocket.ArtifactRef(project_key=project_key, id=str(model.id)),
+            feature_name=text_feature_name,
+            columns={str(k): str(v) for k, v in next(dataset.df.iterrows())[1].items()},  # Pick the first row
+            column_types=dataset.column_types,
+        )
+        reply = listener.explain_text_ws(client=None, params=params)
+        assert isinstance(reply, websocket.ExplainText)
+        # Regression text explaining: Giskard Hub uses "WEIGHTS" to show it
+        assert "WEIGHTS" in reply.weights.keys()
 
 
 def test_websocket_actor_explain_text_ws_classification_internal(request):
@@ -275,27 +280,28 @@ def test_websocket_actor_explain_text_ws_classification_internal(request):
 
     project_key = str(uuid.uuid4()) # Use a UUID to separate the resources used by the tests
 
-    # Prepare model and dataset
-    utils.local_save_model_under_giskard_home_cache(model, project_key)
+    with utils.MockedProjectCacheDir(project_key):
+        # Prepare model and dataset
+        utils.local_save_model_under_giskard_home_cache(model, project_key)
 
-    text_feature_name = None
-    for col_name, col_type in dataset.column_types.items():
-        if col_type == "text":
-            text_feature_name = col_name
-            break
-    assert text_feature_name
+        text_feature_name = None
+        for col_name, col_type in dataset.column_types.items():
+            if col_type == "text":
+                text_feature_name = col_name
+                break
+        assert text_feature_name
 
-    params = websocket.ExplainTextParam(
-        model=websocket.ArtifactRef(project_key=project_key, id=str(model.id)),
-        feature_name=text_feature_name,
-        columns={str(k): str(v) for k, v in next(dataset.df.iterrows())[1].items()},  # Pick the first row
-        column_types=dataset.column_types,
-    )
-    reply = listener.explain_text_ws(client=None, params=params)
-    assert isinstance(reply, websocket.ExplainText)
-    # Classification labels
-    for label in model.meta.classification_labels:
-        assert label in reply.weights.keys()
+        params = websocket.ExplainTextParam(
+            model=websocket.ArtifactRef(project_key=project_key, id=str(model.id)),
+            feature_name=text_feature_name,
+            columns={str(k): str(v) for k, v in next(dataset.df.iterrows())[1].items()},  # Pick the first row
+            column_types=dataset.column_types,
+        )
+        reply = listener.explain_text_ws(client=None, params=params)
+        assert isinstance(reply, websocket.ExplainText)
+        # Classification labels
+        for label in model.meta.classification_labels:
+            assert label in reply.weights.keys()
 
 
 def test_websocket_actor_dataset_processing_empty_internal(request):
@@ -303,26 +309,27 @@ def test_websocket_actor_dataset_processing_empty_internal(request):
 
     project_key = str(uuid.uuid4()) # Use a UUID to separate the resources used by the tests
 
-    # Prepare dataset
-    utils.local_save_dataset_under_giskard_home_cache(dataset, project_key)
+    with utils.MockedProjectCacheDir(project_key):
+        # Prepare dataset
+        utils.local_save_dataset_under_giskard_home_cache(dataset, project_key)
 
-    # FIXME: functions can be None from the protocol, but not iterable
-    # params = websocket.DatasetProcessingParam(
-    #     dataset=websocket.ArtifactRef(project_key=project_key, id=str(dataset.id), sample=False),
-    #     functions=None,
-    # )
-    params = websocket.DatasetProcessingParam(
-        dataset=websocket.ArtifactRef(project_key=project_key, id=str(dataset.id), sample=False),
-        functions=[],
-    )
-    reply = listener.dataset_processing(client=None, params=params)
-    assert isinstance(reply, websocket.DatasetProcessing)
-    assert reply.datasetId == str(dataset.id)
-    assert reply.totalRows == len(list(dataset.df.index))   
-    # No line filtered
-    assert reply.filteredRows is not None and 0 == len(reply.filteredRows)
-    # No line modified
-    assert reply.modifications is not None and 0 == len(reply.modifications)
+        # FIXME: functions can be None from the protocol, but not iterable
+        # params = websocket.DatasetProcessingParam(
+        #     dataset=websocket.ArtifactRef(project_key=project_key, id=str(dataset.id), sample=False),
+        #     functions=None,
+        # )
+        params = websocket.DatasetProcessingParam(
+            dataset=websocket.ArtifactRef(project_key=project_key, id=str(dataset.id), sample=False),
+            functions=[],
+        )
+        reply = listener.dataset_processing(client=None, params=params)
+        assert isinstance(reply, websocket.DatasetProcessing)
+        assert reply.datasetId == str(dataset.id)
+        assert reply.totalRows == len(list(dataset.df.index))   
+        # No line filtered
+        assert reply.filteredRows is not None and 0 == len(reply.filteredRows)
+        # No line modified
+        assert reply.modifications is not None and 0 == len(reply.modifications)
 
 
 # Define a slicing function
@@ -340,40 +347,41 @@ def test_websocket_actor_dataset_processing_head_slicing_with_cache(callable_und
     project_key = str(uuid.uuid4()) # Use a UUID to separate the resources used by the tests
     callable_function_project_key = project_key if callable_under_project else None
 
-    # Prepare dataset
-    utils.local_save_dataset_under_giskard_home_cache(dataset, project_key)
+    with utils.MockedProjectCacheDir(project_key):
+        # Prepare dataset
+        utils.local_save_dataset_under_giskard_home_cache(dataset, project_key)
 
-    head_slice.meta.uuid = str(uuid.uuid4())
+        head_slice.meta.uuid = str(uuid.uuid4())
 
-    params = websocket.DatasetProcessingParam(
-        dataset=websocket.ArtifactRef(project_key=project_key, id=str(dataset.id), sample=False),
-        functions=[
-            websocket.DatasetProcessingFunction(
-                slicingFunction=websocket.ArtifactRef(
-                    project_key=callable_function_project_key,
-                    id=head_slice.meta.uuid,
+        params = websocket.DatasetProcessingParam(
+            dataset=websocket.ArtifactRef(project_key=project_key, id=str(dataset.id), sample=False),
+            functions=[
+                websocket.DatasetProcessingFunction(
+                    slicingFunction=websocket.ArtifactRef(
+                        project_key=callable_function_project_key,
+                        id=head_slice.meta.uuid,
+                    )
                 )
-            )
-        ],
-    )
-    with utils.MockedClient(mock_all=False) as (client, mr):
-        # Prepare URL for meta info
-        cf = head_slice
-        # The slicing function will be loaded from the current module, without further requests
-        utils.register_uri_for_artifact_meta_info(mr, cf, project_key=callable_function_project_key)
-        utils.register_uri_for_artifact_info(mr, cf, project_key=callable_function_project_key)
+            ],
+        )
+        with utils.MockedClient(mock_all=False) as (client, mr):
+            # Prepare URL for meta info
+            cf = head_slice
+            # The slicing function will be loaded from the current module, without further requests
+            utils.register_uri_for_artifact_meta_info(mr, cf, project_key=callable_function_project_key)
+            utils.register_uri_for_artifact_info(mr, cf, project_key=callable_function_project_key)
 
-        # The dataset can be then loaded from the cache, without further requests
-        utils.register_uri_for_dataset_meta_info(mr, dataset, project_key)
+            # The dataset can be then loaded from the cache, without further requests
+            utils.register_uri_for_dataset_meta_info(mr, dataset, project_key)
 
-        reply = listener.dataset_processing(client=client, params=params)
-        assert isinstance(reply, websocket.DatasetProcessing)
-        assert reply.datasetId == str(dataset.id)
-        assert reply.totalRows == len(list(dataset.df.index))   
-        # One line not filtered
-        assert reply.filteredRows is not None and reply.totalRows - 1 == len(reply.filteredRows)
-        # No line modified
-        assert reply.modifications is not None and 0 == len(reply.modifications)
+            reply = listener.dataset_processing(client=client, params=params)
+            assert isinstance(reply, websocket.DatasetProcessing)
+            assert reply.datasetId == str(dataset.id)
+            assert reply.totalRows == len(list(dataset.df.index))   
+            # One line not filtered
+            assert reply.filteredRows is not None and reply.totalRows - 1 == len(reply.filteredRows)
+            # No line modified
+            assert reply.modifications is not None and 0 == len(reply.modifications)
 
 
 # Define a transformation function
@@ -390,38 +398,39 @@ def test_websocket_actor_dataset_processing_do_nothing_transform_with_cache(call
 
     project_key = str(uuid.uuid4()) # Use a UUID to separate the resources used by the tests
 
-    # Prepare dataset
-    utils.local_save_dataset_under_giskard_home_cache(dataset, project_key)
-    callable_function_project_key = project_key if callable_under_project else None
+    with utils.MockedProjectCacheDir(project_key):
+        # Prepare dataset
+        utils.local_save_dataset_under_giskard_home_cache(dataset, project_key)
+        callable_function_project_key = project_key if callable_under_project else None
 
-    do_nothing.meta.uuid = str(uuid.uuid4())
+        do_nothing.meta.uuid = str(uuid.uuid4())
 
-    params = websocket.DatasetProcessingParam(
-        dataset=websocket.ArtifactRef(project_key=project_key, id=str(dataset.id), sample=False),
-        functions=[
-            websocket.DatasetProcessingFunction(
-                transformationFunction=websocket.ArtifactRef(
-                    project_key=callable_function_project_key,
-                    id=do_nothing.meta.uuid,
+        params = websocket.DatasetProcessingParam(
+            dataset=websocket.ArtifactRef(project_key=project_key, id=str(dataset.id), sample=False),
+            functions=[
+                websocket.DatasetProcessingFunction(
+                    transformationFunction=websocket.ArtifactRef(
+                        project_key=callable_function_project_key,
+                        id=do_nothing.meta.uuid,
+                    )
                 )
-            )
-        ],
-    )
-    with utils.MockedClient(mock_all=False) as (client, mr):
-        # Prepare URL for meta info
-        cf = do_nothing
-        # The slicing function will be loaded from the current module, without further requests
-        utils.register_uri_for_artifact_meta_info(mr, cf, project_key=callable_function_project_key)
-        utils.register_uri_for_artifact_info(mr, cf, project_key=callable_function_project_key)
+            ],
+        )
+        with utils.MockedClient(mock_all=False) as (client, mr):
+            # Prepare URL for meta info
+            cf = do_nothing
+            # The slicing function will be loaded from the current module, without further requests
+            utils.register_uri_for_artifact_meta_info(mr, cf, project_key=callable_function_project_key)
+            utils.register_uri_for_artifact_info(mr, cf, project_key=callable_function_project_key)
 
-        # The dataset can be then loaded from the cache, without further requests
-        utils.register_uri_for_dataset_meta_info(mr, dataset, project_key)
+            # The dataset can be then loaded from the cache, without further requests
+            utils.register_uri_for_dataset_meta_info(mr, dataset, project_key)
 
-        reply = listener.dataset_processing(client=client, params=params)
-        assert isinstance(reply, websocket.DatasetProcessing)
-        assert reply.datasetId == str(dataset.id)
-        assert reply.totalRows == len(list(dataset.df.index))   
-        # No line filtered
-        assert reply.filteredRows is not None and 0 == len(reply.filteredRows)
-        # No line modified
-        assert reply.modifications is not None and 0 == len(reply.modifications)
+            reply = listener.dataset_processing(client=client, params=params)
+            assert isinstance(reply, websocket.DatasetProcessing)
+            assert reply.datasetId == str(dataset.id)
+            assert reply.totalRows == len(list(dataset.df.index))   
+            # No line filtered
+            assert reply.filteredRows is not None and 0 == len(reply.filteredRows)
+            # No line modified
+            assert reply.modifications is not None and 0 == len(reply.modifications)
