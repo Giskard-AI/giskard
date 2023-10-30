@@ -1,4 +1,5 @@
 from ...models.base.model import BaseModel
+from ...utils.display import truncate
 from .base import BaseDataGenerator
 
 GENERATE_INPUTS_PROMPT = """
@@ -41,6 +42,9 @@ class AdversarialDataGenerator(BaseDataGenerator):
         super().__init__(*args, **kwargs)
         self.issue_description = issue_description
         self.requirement = requirement
+
+    def _make_dataset_name(self, model: BaseModel, num_samples):
+        return truncate(f"Adversarial Examples for requirement “{self.requirement}”")
 
     def _make_generate_input_prompt(self, model: BaseModel, num_inputs: int):
         return self.prompt.format(

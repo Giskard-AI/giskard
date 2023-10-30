@@ -202,7 +202,7 @@ def test_llm_char_injection(
     if not result.passed:
         result.output_df = Dataset(
             pd.concat(fail_dfs),
-            name="Test dataset vulnerable to char injection (automatically generated)",
+            name="Test dataset vulnerable to character injection",
             column_types=dataset.column_types,
             validation=False,
         )

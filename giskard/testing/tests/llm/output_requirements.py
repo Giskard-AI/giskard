@@ -7,6 +7,7 @@ from ....llm.evaluators import RequirementEvaluator
 from ....ml_worker.testing.registry.decorators import test
 from ....ml_worker.testing.test_result import TestResult
 from ....models.base import BaseModel
+from ....utils.display import truncate
 from .. import debug_description_prefix
 
 
@@ -20,7 +21,7 @@ def _test_output_against_requirement(model: BaseModel, dataset: Dataset, require
         df = pd.DataFrame([ex["input_vars"] for ex in eval_result.failure_examples])
         output_ds = Dataset(
             df,
-            name="Test dataset for requirement (automatically generated)",
+            name=truncate(f'Failing examples for requirement "{requirement}"'),
             column_types=dataset.column_types,
             validation=False,
         )
@@ -113,7 +114,7 @@ def test_single_output_against_requirement(
 
     dataset = Dataset(
         pd.DataFrame([input_sample]),
-        name=f'Single entry dataset for "{requirement}"',
+        name=truncate(f'Single entry dataset for "{requirement}"'),
         column_types={k: "text" for k in input_var.keys()},
     )
 
