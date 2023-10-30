@@ -30,6 +30,7 @@ table.dataframe {
 
 .dataframe tr {
     border-bottom: 1px solid #555;
+    vertical-align: top;
 }
 
 .dataframe td,

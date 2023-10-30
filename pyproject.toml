@@ -6,6 +6,7 @@ build-backend = "setuptools.build_meta"
 include = ["giskard*"]
 exclude = ["docs*", "tests*"]
 
+
 [tool.setuptools.package-data]
 giskard = [
     "**/*.md",
@@ -26,11 +27,12 @@ name = "torch"
 
 
 [tool.pdm.scripts]
-_.env = { GSK_DISABLE_ANALYTICS = "True" }
+_.env = { GSK_DISABLE_ANALYTICS = "True", GISKARD_DEV_MODE = "True" }
 # add "-n auto" to the pytest command to parallelize the execution
 test.cmd = "pytest -c pyproject.toml tests --cov=giskard --cov-report=xml --disable-warnings --no-header -vv --durations=0"
 # for some reason github runners don't work when calling 'pdm test -m "not slow"'
-test-fast.cmd = "pytest -n auto -m 'not slow' -c pyproject.toml tests --cov=giskard --cov-report=xml --disable-warnings --no-header -vv --durations=0"
+test-fast.cmd = "pytest -n auto -m 'not slow and not concurrency' -c pyproject.toml tests --cov=giskard --cov-report=xml --disable-warnings --no-header -vv --durations=0"
+test-worker.cmd = "pytest -m 'concurrency' -c pyproject.toml tests --disable-warnings --no-header -vv --durations=0"
 lint = "ruff giskard tests"
 doc = "sphinx-build docs docs/_build/html"
 watch-doc = "python -m sphinx_autobuild --watch giskard docs docs/_build/html"
@@ -58,7 +60,7 @@ dev = [
     "pydantic>=2",
 ]
 ml_runtime = [
-    "langchain>=0.0.187",
+    "langchain>=0.0.275",
     "nltk>=3.8.1",
     "xgboost>=1.7.5",
     "lightgbm>=3.3.5",
@@ -67,10 +69,10 @@ ml_runtime = [
     "requests-mock>=1.10.0",
     "tensorflow-hub>=0.12.0",
     "transformers>=4.34.1",
-    "sentencepiece",                                                                      # needed for some transformers stuff with tokenizer
+    "sentencepiece", # needed for some transformers stuff with tokenizer
     "torch>=2.0.0",
     "torchdata>=0.6.0",
-    "portalocker>=2.0.0",                                                                 # Needed by torchdata for test_newspaper_classification_pytorch_dataset
+    "portalocker>=2.0.0", # Needed by torchdata for test_newspaper_classification_pytorch_dataset
     "torchtext>=0.15.1",
     "tensorflow-macos==2.14.0; sys_platform == 'darwin' and platform_machine == 'arm64'",
     "tensorflow==2.14.0",
@@ -78,13 +80,14 @@ ml_runtime = [
     "tensorflow-text==2.14.0; python_version < '3.11' and (sys_platform == 'linux' or sys_platform == 'darwin') and platform_machine == 'x86_64'",
     "mlflow>2",
     "wandb",
-    "tensorflow-io-gcs-filesystem<0.32; platform_machine != 'arm64'",                                                                              # Tensorflow io does not work for windows from 0.32, but does not work for arm64 before...
+    "tensorflow-io-gcs-filesystem<0.32; platform_machine != 'arm64'", # Tensorflow io does not work for windows from 0.32, but does not work for arm64 before...
 ]
 test = [
     "pytest-cov>=4.0.0",
     "pytest>=7.1.2",
     "pytest-xdist>=3.3.1",
     "polyfactory",
+    "pytest-env>=1.1.0",
 ]
 doc = [
     "furo>=2023.5.20",
@@ -123,7 +126,7 @@ giskard = "giskard.integrations.mlflow.giskard_evaluator:GiskardEvaluator"
 name = "giskard"
 readme = "README.md"
 license = { text = "Apache Software License 2.0" }
-version = "2.0.0b26"
+version = "2.0.0b28"
 description = "The testing framework dedicated to ML models, from tabular to LLMs"
 authors = [{ name = "Giskard AI", email = "hello@giskard.ai" }]
 keywords = ["Artificial Intelligence", "Machine Learning", "Quality", "MLOps"]
@@ -146,8 +149,7 @@ dependencies = [
     "cloudpickle>=1.1.1",
     "zstandard>=0.10.0",
     "mlflow-skinny>=2",
-    "gitpython",
-    "protobuf<3.21",            # Not compatible with transformers/tensorflow
+    "protobuf<3.21", # Not compatible with transformers/tensorflow
     "numpy>=1.22.0",
     "scikit-learn>=1.0",
     "scipy>=1.7.3",
@@ -157,26 +159,25 @@ dependencies = [
     "pandas>=1.3.4",
     "xxhash>=3.2.0",
     "langdetect>=1.0.9",
-    "chardet",                  # text metadata
-    "jinja2>=3",                # scan template
+    "chardet", # text metadata
+    "jinja2>=3", # scan template
     "requests-toolbelt>=0.9.1",
     "stomp-py>=8.1.0",
-    "setuptools",               # used in ml worker for pkg_resources
-    "typing_extensions",        # used in registry/decorators, for python <3.10
-    "websocket-client",         # used in worker, to get exception from stomp
-    "pyyaml",                   # cli_server
-    "packaging",                # cli_server
-    "markdown",                 # needed for display of scan results in notebook
+    "setuptools", # used in ml worker for pkg_resources
+    "typing_extensions", # used in registry/decorators, for python <3.10
+    "websocket-client", # used in worker, to get exception from stomp
+    "pyyaml", # cli_server
+    "packaging", # cli_server
+    "markdown", # needed for display of scan results in notebook
 ]
 
 [project.optional-dependencies]
 llm = [
-    "transformers",
-    "torch",
     "langchain<=0.0.301", # Weirdly fails with newer version, see https://linear.app/giskard/issue/GSK-1853/updating-lanchain-version-over-00301-weirdly-fails
-    "evaluate",
-    "bert-score",
-    "datasets",
+    "colorama",           # needed for garak
+    "openai>=0.28.1",
+    "evaluate>=0.4.1",
+    "bert-score>=0.3.13",
 ]
 
 server = [
@@ -185,8 +186,8 @@ server = [
     "click>=7.0",
     "docker>=6.0.0",
     "shap>=0.41.0",
-    "llvmlite>=0.40.0",        # Needed to be installable for Poetry
-    "numba>=0.50.0",           # Needed to be installable for Poetry
+    "llvmlite>=0.40.0", # Needed to be installable for Poetry
+    "numba>=0.50.0", # Needed to be installable for Poetry
     "lockfile>=0.12.2",
     "python-daemon>=2.2.2,<3",
     "pycryptodome>=3.6.1",
@@ -288,6 +289,7 @@ norecursedirs = [
     ".tox",
     ".git",
     "__pycache__",
+    "concurrency: test that should not be run with parallelism (no xdist)",
 ]
 doctest_optionflags = [
     "ELLIPSIS",
@@ -295,7 +297,10 @@ doctest_optionflags = [
     "NORMALIZE_WHITESPACE",
     "IGNORE_EXCEPTION_DETAIL",
 ]
-markers = ["slow: marks tests as slow (deselect with '-m \"not slow\"')"]
+markers = [
+    "slow: marks tests as slow (deselect with '-m \"not slow\"')",
+    "concurrency: run MLWorker pool tests",
+]
 
 # Extra options:
 addopts = [
@@ -304,6 +309,8 @@ addopts = [
     "--doctest-modules",
     "--doctest-continue-on-failure",
 ]
+
+env = ["WANDB_MODE=disabled"]
 
 [tool.deptry]
 extend_exclude = [".history"]

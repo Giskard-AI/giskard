@@ -15,16 +15,16 @@ from sklearn.metrics import (
     roc_auc_score,
 )
 
-from giskard import test
 from giskard.datasets.base import Dataset
+from giskard.ml_worker.testing.registry.decorators import test
 from giskard.ml_worker.testing.registry.slicing_function import SlicingFunction
 from giskard.ml_worker.testing.test_result import TestResult
-from giskard.testing.tests.debug_slicing_functions import incorrect_rows_slicing_fn, nlargest_abs_err_rows_slicing_fn
-from giskard.ml_worker.testing.utils import Direction
-from giskard.ml_worker.testing.utils import check_slice_not_empty
+from giskard.ml_worker.testing.utils import Direction, check_slice_not_empty
 from giskard.models.base import BaseModel
 from giskard.models.utils import np_type_to_native
-from . import debug_prefix, debug_description_prefix
+from giskard.testing.tests.debug_slicing_functions import incorrect_rows_slicing_fn, nlargest_abs_err_rows_slicing_fn
+
+from . import debug_description_prefix, debug_prefix
 
 
 def _verify_target_availability(dataset):
