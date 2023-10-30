@@ -184,16 +184,22 @@ def test_websocket_actor_run_model(data, model, sample, request):
             reply = listener.run_model(client=client, params=params)
             assert isinstance(reply, websocket.Empty)
 
-
-def test_websocket_actor_run_model_for_data_frame_regression_internal(request):
+@pytest.mark.parametrize("internal", [
+    True, False
+])
+def test_websocket_actor_run_model_for_data_frame_regression(internal, request):
     dataset: Dataset = request.getfixturevalue("hotel_text_data")
     model: BaseModel = request.getfixturevalue("hotel_text_model")
 
     project_key = str(uuid.uuid4()) # Use a UUID to separate the resources used by the tests
 
-    with utils.MockedProjectCacheDir(project_key):
+    with utils.MockedProjectCacheDir(project_key), utils.MockedClient(mock_all=False) as (client, mr):
         # Prepare model
-        utils.local_save_model_under_giskard_home_cache(model, project_key)
+        if internal:
+            utils.local_save_model_under_giskard_home_cache(model, project_key)
+        else:
+            utils.register_uri_for_model_meta_info(mr, model, project_key)
+            utils.register_uri_for_model_artifact_info(mr, model, project_key, register_file_contents=True)
 
         # Prepare dataframe
         dataframe = websocket.DataFrame(
@@ -214,7 +220,7 @@ def test_websocket_actor_run_model_for_data_frame_regression_internal(request):
         )
 
         # client
-        reply = listener.run_model_for_data_frame(client=None, params=params)
+        reply = listener.run_model_for_data_frame(client=None if internal else client, params=params)
         assert isinstance(reply, websocket.RunModelForDataFrame)
         assert not reply.all_predictions
         assert reply.prediction
@@ -222,15 +228,22 @@ def test_websocket_actor_run_model_for_data_frame_regression_internal(request):
         assert not reply.probabilities
 
 
-def test_websocket_actor_run_model_for_data_frame_classification_internal(request):
+@pytest.mark.parametrize("internal", [
+    True, False
+])
+def test_websocket_actor_run_model_for_data_frame_classification(internal, request):
     dataset: Dataset = request.getfixturevalue("enron_data")
     model: BaseModel = request.getfixturevalue("enron_model")
 
     project_key = str(uuid.uuid4()) # Use a UUID to separate the resources used by the tests
 
-    with utils.MockedProjectCacheDir(project_key):
+    with utils.MockedProjectCacheDir(project_key), utils.MockedClient(mock_all=False) as (client, mr):
         # Prepare model
-        utils.local_save_model_under_giskard_home_cache(model, project_key)
+        if internal:
+            utils.local_save_model_under_giskard_home_cache(model, project_key)
+        else:
+            utils.register_uri_for_model_meta_info(mr, model, project_key)
+            utils.register_uri_for_model_artifact_info(mr, model, project_key, register_file_contents=True)
 
         # Prepare dataframe
         dataframe = websocket.DataFrame(
@@ -251,7 +264,7 @@ def test_websocket_actor_run_model_for_data_frame_classification_internal(reques
         )
 
         # client
-        reply = listener.run_model_for_data_frame(client=None, params=params)
+        reply = listener.run_model_for_data_frame(client=None if internal else client, params=params)
         assert isinstance(reply, websocket.RunModelForDataFrame)
         assert reply.all_predictions
         assert reply.prediction
