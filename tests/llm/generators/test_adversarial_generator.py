@@ -1,7 +1,7 @@
 from unittest.mock import Mock
 
 from giskard.llm.client import LLMFunctionCall, LLMOutput
-from giskard.llm.generators.adversarial import AdversarialExamplesGenerator
+from giskard.llm.generators.adversarial import AdversarialDataGenerator
 
 
 def test_generator_formats_prompt_with_issue_desc_and_requirement():
@@ -26,7 +26,7 @@ def test_generator_formats_prompt_with_issue_desc_and_requirement():
     model.meta.name = "Mock model for test"
     model.meta.description = "This is a model for testing purposes"
 
-    generator = AdversarialExamplesGenerator(
+    generator = AdversarialDataGenerator(
         "This is an issue description",
         "This is a requirement",
         llm_client=llm_client,

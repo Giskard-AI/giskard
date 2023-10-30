@@ -35,7 +35,7 @@ Please call the `generate_inputs` function with the generated inputs. You must g
 """
 
 
-class AdversarialExamplesGenerator(BaseDataGenerator):
+class AdversarialDataGenerator(BaseDataGenerator):
     _default_prompt = GENERATE_INPUTS_PROMPT
 
     def __init__(self, issue_description, requirement, *args, **kwargs):
