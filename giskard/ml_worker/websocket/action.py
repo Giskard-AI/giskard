@@ -2,7 +2,12 @@ from typing import Any, Literal
 
 from enum import Enum
 
+import pydantic
+from packaging import version
+
 from giskard.core.validation import ConfiguredBaseModel
+
+IS_PYDANTIC_V2 = version.parse(pydantic.version.VERSION) >= version.parse("2.0")
 
 
 # Make it so we can use enum in pydantic to parse object
@@ -24,14 +29,21 @@ class MLWorkerAction(Enum):
 
     @classmethod
     def __get_validators__(cls):
-        yield cls.validate
+        if IS_PYDANTIC_V2:
+            yield cls.validate
+        else:
+            yield cls.validate_v1
 
     @classmethod
     def validate(cls, v, *args, **kwargs):
+        return cls.validate_v1(v)
+
+    @classmethod
+    def validate_v1(cls, value, values=None, config=None, field=None):
         try:
-            return cls[v]
+            return cls[value]
         except KeyError as e:
-            raise ValueError("Unknown value {v}") from e
+            raise ValueError(f"Unknown value {value}") from e
 
 
 class ActionPayload(ConfiguredBaseModel):
