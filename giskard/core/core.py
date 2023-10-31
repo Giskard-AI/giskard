@@ -183,13 +183,21 @@ class CallableMeta(SavableMeta, ABC):
         return [
             FunctionArgument(
                 name=parameter.name,
-                type=extract_optional(parameter.annotation).__qualname__,
+                type=self.extract_parameter_type_name(parameter),
                 optional=parameter.default != inspect.Parameter.empty,
                 default=parameter.default,
                 argOrder=idx,
             )
             for idx, parameter in enumerate(parameters)
         ]
+
+    @staticmethod
+    def extract_parameter_type_name(parameter):
+        return (
+            extract_optional(parameter.annotation).__qualname__
+            if hasattr(extract_optional(parameter.annotation), "__qualname__")
+            else None
+        )
 
     @staticmethod
     def extract_module_doc(func_doc):
