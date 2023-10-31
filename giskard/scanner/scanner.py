@@ -245,19 +245,18 @@ class Scanner:
         return detectors
 
     def _get_cost_estimate(self, model, dataset, detectors):
-        df_cost = pd.DataFrame(
-            [d.get_cost_estimate(model, dataset) for d in detectors if hasattr(d, "get_cost_estimate")]
-        )
-
         # Hardcoded for now…
         PROMPT_TOKEN_COST = 0.03e-3
         SAMPLED_TOKEN_COST = 0.06e-3
 
+        cost_estimates = [d.get_cost_estimate(model, dataset) for d in detectors if hasattr(d, "get_cost_estimate")]
+
         # Counts
-        num_model_calls = df_cost.model_predict_calls.sum()
-        num_llm_calls = df_cost.llm_calls.sum()
-        num_llm_prompt_tokens = df_cost.llm_prompt_tokens.sum()
-        num_llm_sampled_tokens = df_cost.llm_sampled_tokens.sum()
+        num_model_calls = sum(c.getget("model_predict_calls", 0) for c in cost_estimates)
+        num_llm_calls = sum(c.get("llm_calls", 0) for c in cost_estimates)
+        num_llm_prompt_tokens = sum(c.get("llm_prompt_tokens", 0) for c in cost_estimates)
+        num_llm_sampled_tokens = sum(c.get("llm_sampled_tokens", 0) for c in cost_estimates)
+
         estimated_usd = PROMPT_TOKEN_COST * num_llm_prompt_tokens + SAMPLED_TOKEN_COST * num_llm_sampled_tokens
 
         return {

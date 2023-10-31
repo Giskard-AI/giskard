@@ -14,9 +14,13 @@ from ..scanner import logger
 
 @detector("llm_prompt_injection", tags=["jailbreak", "prompt_injection", "llm", "generative", "text_generation"])
 class LLMPromptInjectionDetector:
-    def __init__(self, threshold: float = 0.5, num_samples=100):
+    def __init__(self, threshold: float = 0.5):
         self.threshold = threshold  # default
-        self.num_samples = num_samples
+
+    def get_cost_estimate(self, model: BaseModel, dataset: Dataset) -> float:
+        return {
+            "model_predict_calls": len(get_all_prompts()),
+        }
 
     def evaluate_and_group(self, model, dataset, prompts, features, column_types):
         results = {}

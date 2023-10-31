@@ -29,6 +29,11 @@ class LLMCharsInjectionDetector:
         self.output_sensitivity = output_sensitivity
         self.threshold = threshold
 
+    def get_cost_estimate(self, model: BaseModel, dataset: Dataset) -> dict:
+        return {
+            "model_predict_calls": self.num_samples * len(self.control_chars),
+        }
+
     def run(self, model: BaseModel, dataset: Dataset) -> Sequence[Issue]:
         if len(dataset) < 1:
             logger.warning(
