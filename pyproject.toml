@@ -127,7 +127,7 @@ giskard = "giskard.integrations.mlflow.giskard_evaluator:GiskardEvaluator"
 name = "giskard"
 readme = "README.md"
 license = { text = "Apache Software License 2.0" }
-version = "2.0.0b28"
+version = "2.0.0b29"
 description = "The testing framework dedicated to ML models, from tabular to LLMs"
 authors = [{ name = "Giskard AI", email = "hello@giskard.ai" }]
 keywords = ["Artificial Intelligence", "Machine Learning", "Quality", "MLOps"]
@@ -167,12 +167,12 @@ dependencies = [
     "pyyaml",
     "packaging",                # used in settings
     "markdown",                 # needed for display of scan results in notebook
+    "colorama",                 # needed for the scan
 ]
 
 [project.optional-dependencies]
 llm = [
     "langchain<=0.0.301", # Weirdly fails with newer version, see https://linear.app/giskard/issue/GSK-1853/updating-lanchain-version-over-00301-weirdly-fails
-    "colorama",           # needed for garak
     "openai>=0.28.1",
     "evaluate>=0.4.1",
     "bert-score>=0.3.13",
