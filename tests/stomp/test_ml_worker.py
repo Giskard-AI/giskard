@@ -10,6 +10,7 @@ from uuid import uuid4
 import pytest
 import requests_mock
 import yaml
+from pandas import DataFrame
 from websockets.server import WebSocketServerProtocol, serve
 
 from giskard import Model
@@ -19,7 +20,15 @@ from giskard.datasets.base import Dataset
 from giskard.ml_worker.ml_worker import MLWorker
 from giskard.ml_worker.stomp.constants import UTF_8, HeaderType, StompCommand
 from giskard.ml_worker.stomp.parsing import Frame, StompFrame
-from giskard.ml_worker.websocket import ArtifactRef, RunAdHocTestParam, RunModelParam
+from giskard.ml_worker.websocket import ArtifactRef
+from giskard.ml_worker.websocket import DataFrame as GiskardDataFrame
+from giskard.ml_worker.websocket import (
+    DataRow,
+    ExplainParam,
+    RunAdHocTestParam,
+    RunModelForDataFrameParam,
+    RunModelParam,
+)
 from giskard.ml_worker.websocket.action import MLWorkerAction
 from giskard.models.base.model import META_FILENAME
 from giskard.settings import Settings
@@ -308,3 +317,106 @@ async def test_ml_worker_model_run(
     assert mock_calculated.called
     assert mock_calculated.call_count == 1
     # TODO:  validate content ?
+
+
+def run_model_frame_dataframe(action_id: str, df: DataFrame, model_id: str):
+    dtypes = df.dtypes.astype(str).to_dict()
+    mapping = {"int64": "numeric", "float64": "numeric", "object": "category"}
+    types = {k: mapping[v] for k, v in dtypes.items()}
+    gsk_df = GiskardDataFrame(rows=[DataRow(columns=row.astype(str).to_dict()) for _, row in df.iterrows()])
+    return [
+        StompFrame.MESSAGE.build_frame(
+            {
+                HeaderType.DESTINATION: "/dest",
+                HeaderType.SUBSCRIPTION: action_id,
+                HeaderType.MESSAGE_ID: "ans-id1",
+                HeaderType.CONTENT_TYPE: "application/json",
+            },
+            body=json.dumps(
+                {
+                    "id": "run_model_dataframe_frame",
+                    "action": MLWorkerAction.runModelForDataFrame.name,
+                    "param": RunModelForDataFrameParam(
+                        model=ArtifactRef(project_key="test-ml-worker-key", id=model_id),
+                        dataframe=gsk_df,
+                        column_dtypes=dtypes,
+                        column_types=types,
+                    ).dict(by_alias=True),
+                }
+            ),
+        )
+    ]
+
+
+@pytest.mark.concurrency
+@pytest.mark.asyncio
+async def test_ml_worker_model_run_dataframe(
+    requests_mock: requests_mock.Mocker,
+    patch_settings: Settings,
+    titanic_model_data_raw,
+    remote_titanic_model: str,
+):
+    _, df = titanic_model_data_raw
+    model_uuid = remote_titanic_model
+    received_frames: List[Frame] = []
+    worker = ensure_config_worker(requests_mock)
+
+    async with serve(
+        wrapped_handler(received_frames, run_model_frame_dataframe, df=df, model_id=model_uuid),
+        host=patch_settings.host,
+        port=patch_settings.ws_port,
+    ):
+        await asyncio.wait_for(worker.start(nb_workers=1, restart=False), timeout=60)
+        ensure_run_worker(received_frames)
+    # TODO: validate output ?
+
+
+def run_model_explain(action_id: str, dataset_id: str, model_id: str, df: DataFrame):
+    _, data = next(df.iterrows())
+    return [
+        StompFrame.MESSAGE.build_frame(
+            {
+                HeaderType.DESTINATION: "/dest",
+                HeaderType.SUBSCRIPTION: action_id,
+                HeaderType.MESSAGE_ID: "ans-id1",
+                HeaderType.CONTENT_TYPE: "application/json",
+            },
+            body=json.dumps(
+                {
+                    "id": "explain_frame",
+                    "action": MLWorkerAction.explain.name,
+                    "param": ExplainParam(
+                        model=ArtifactRef(project_key="test-ml-worker-key", id=model_id),
+                        dataset=ArtifactRef(project_key="test-ml-worker-key", id=dataset_id),
+                        columns=data.astype(str).to_dict(),
+                    ).dict(by_alias=True),
+                }
+            ),
+        )
+    ]
+
+
+@pytest.mark.concurrency
+@pytest.mark.asyncio
+async def test_ml_worker_explain(
+    requests_mock: requests_mock.Mocker,
+    patch_settings: Settings,
+    titanic_model_data_raw,
+    remote_titanic_dataset: str,
+    remote_titanic_model: str,
+):
+    _, df = titanic_model_data_raw
+    model_uuid = remote_titanic_model
+    dataset_uuid = remote_titanic_dataset
+    received_frames: List[Frame] = []
+    worker = ensure_config_worker(requests_mock)
+
+    async with serve(
+        wrapped_handler(received_frames, run_model_explain, df=df, model_id=model_uuid, dataset_id=dataset_uuid),
+        host=patch_settings.host,
+        port=patch_settings.ws_port,
+    ):
+        await asyncio.wait_for(worker.start(nb_workers=1, restart=False), timeout=60)
+        ensure_run_worker(received_frames)
+    # TODO: validate output ?
+    return
