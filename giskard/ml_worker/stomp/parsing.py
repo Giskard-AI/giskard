@@ -130,6 +130,7 @@ class FrameParser:
             elif header_name == HeaderType.CONTENT_LENGTH:
                 try:
                     self.content_length = int(header_value)
+                    self.headers[header_name] = header_value
                 except ValueError as e:
                     raise StompProtocolError(
                         f"Invalid content length given, expected an integer, got {header_value}"
