@@ -34,6 +34,7 @@ def _test_output_against_requirement(model: BaseModel, dataset: Dataset, require
         passed=eval_result.passed,
         output_df=output_ds,
         metric=len(eval_result.failure_examples),
+        metric_name="Failing examples",
         is_error=eval_result.has_errors,
         messages=messages,
     )

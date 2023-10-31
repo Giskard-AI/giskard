@@ -36,7 +36,12 @@ def test_llm_output_coherency(
     evaluator = CoherencyEvaluator(eval_prompt=eval_prompt)
     eval_result = evaluator.evaluate(model, dataset_1, dataset_2)
 
-    return TestResult(passed=eval_result.passed, is_error=eval_result.has_errors, metric=eval_result.passed_ratio)
+    return TestResult(
+        passed=eval_result.passed,
+        is_error=eval_result.has_errors,
+        metric=len(eval_result.failure_examples),
+        metric_name="Failing examples",
+    )
 
 
 @test(name="LLM Plausibility", tags=["llm", "hallucination"])
@@ -62,4 +67,9 @@ def test_llm_output_plausibility(model: BaseModel, dataset: Dataset, eval_prompt
     evaluator = PlausibilityEvaluator(eval_prompt=eval_prompt)
     eval_result = evaluator.evaluate(model, dataset)
 
-    return TestResult(passed=eval_result.passed, is_error=eval_result.has_errors, metric=eval_result.passed_ratio)
+    return TestResult(
+        passed=eval_result.passed,
+        is_error=eval_result.has_errors,
+        metric=len(eval_result.failure_examples),
+        metric_name="Failing examples",
+    )
