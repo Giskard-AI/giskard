@@ -186,10 +186,9 @@ class Dataset(ColumnMetadataMixin):
         self.target = target
 
         if validation:
-            from giskard.core.dataset_validation import validate_dtypes, validate_target
+            from giskard.core.dataset_validation import validate_dtypes
 
             validate_dtypes(self)
-            validate_target(self)
 
         self.column_dtypes = self.extract_column_dtypes(self.df)
 

@@ -14,11 +14,14 @@ from giskard.ml_worker.testing.registry.slicing_function import SlicingFunction
 from giskard.models.base import BaseModel, WrapperModel
 from ..utils import fullname
 from ..utils.analytics_collector import analytics, get_dataset_properties, get_model_properties
+from .dataset_validation import validate_target
 
 
 @configured_validate_arguments
 def validate_model(model: BaseModel, validate_ds: Optional[Dataset] = None, print_validation_message: bool = True):
     try:
+        if model.meta.model_type != SupportedModelTypes.TEXT_GENERATION:
+            validate_target(validate_ds)
         _do_validate_model(model, validate_ds)
     except (ValueError, TypeError) as err:
         _track_validation_error(err, model, validate_ds)
