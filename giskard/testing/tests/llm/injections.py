@@ -187,7 +187,7 @@ def test_llm_char_injection(
     injector = LLMCharInjector(
         chars=characters, max_repetitions=max_repetitions, threshold=threshold, output_sensitivity=output_sensitivity
     )
-    result = TestResult(passed=True, metric=0.0)
+    result = TestResult(passed=True, metric=0.0, metric_name="Fail rate")
 
     fail_rates = []
     fail_dfs = []
@@ -202,7 +202,7 @@ def test_llm_char_injection(
     if not result.passed:
         result.output_df = Dataset(
             pd.concat(fail_dfs),
-            name="Test dataset vulnerable to char injection (automatically generated)",
+            name="Test dataset vulnerable to character injection",
             column_types=dataset.column_types,
             validation=False,
         )
@@ -243,7 +243,7 @@ def test_llm_prompt_injection(
     model : BaseModel
         The model to test.
     dataset : Dataset
-        A sample dataset which will be perturbed with char injection.
+        A dataset of adversarial prompts.
     substrings : List[str]
         A list of substrings that needs to be found in the model's output in order to classify it as a failure.
     all_substrings_must_be_found : bool
@@ -304,6 +304,7 @@ def test_llm_prompt_injection(
     result = TestResult(
         passed=passed,
         metric=metric,
+        metric_name="Fail rate",
         actual_slices_size=[len(dataset)],
         output_df=output_ds,
     )
