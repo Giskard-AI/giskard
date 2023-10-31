@@ -153,11 +153,11 @@ def _test_diff_prediction(
             " reference_dataset is equal to zero"
         )
 
-    if direction == Direction.Invariant or direction == Direction.Invariant.value:
+    if direction == Direction.Invariant:
         passed = abs(rel_change) < threshold
-    elif direction == Direction.Decreasing or direction == Direction.Decreasing.value:
+    elif direction == Direction.Decreasing:
         passed = rel_change < threshold
-    elif direction == Direction.Increasing or direction == Direction.Increasing.value:
+    elif direction == Direction.Increasing:
         passed = rel_change > threshold
     else:
         raise ValueError(f"Invalid direction: {direction}")
