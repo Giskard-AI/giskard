@@ -2,7 +2,6 @@ from typing import Any, Callable, Dict, List
 
 import asyncio
 import json
-import sys
 import tempfile
 from pathlib import Path
 from uuid import uuid4
@@ -15,9 +14,8 @@ from websockets.server import WebSocketServerProtocol, serve
 
 from giskard import Model
 from giskard.cli_utils import validate_url
-from giskard.client.dtos import ModelMetaInfo
 from giskard.datasets.base import Dataset
-from giskard.ml_worker.ml_worker import MLWorker
+from giskard.ml_worker.ml_worker import FragmentedPayload, MLWorker
 from giskard.ml_worker.stomp.constants import UTF_8, HeaderType, StompCommand
 from giskard.ml_worker.stomp.parsing import Frame, StompFrame
 from giskard.ml_worker.websocket import ArtifactRef
@@ -25,7 +23,6 @@ from giskard.ml_worker.websocket import DataFrame as GiskardDataFrame
 from giskard.ml_worker.websocket import (
     DataRow,
     ExplainParam,
-    RunAdHocTestParam,
     RunModelForDataFrameParam,
     RunModelParam,
 )
@@ -79,6 +76,18 @@ def wrapped_handler(received_messages: List[Frame], to_send: Callable[[str], Lis
         received_messages.append(frame)
         assert frame.command == StompCommand.SUBSCRIBE
         assert frame.headers[HeaderType.DESTINATION] == "/ml-worker/EXTERNAL/config"
+        config_id = frame.headers[HeaderType.ID]
+        # Send the config
+        await websocket.send(
+            StompFrame.MESSAGE.build_frame(
+                {
+                    HeaderType.DESTINATION: "/dest",
+                    HeaderType.MESSAGE_ID: "ans-id1",
+                    HeaderType.SUBSCRIPTION: config_id,
+                },
+                body=json.dumps({"config": "MAX_STOMP_ML_WORKER_REPLY_SIZE", "value": 50 * 1024 * 1024}),  # 50mo
+            ).to_bytes()
+        )
 
         # Send some message
         for frame in to_send(action_id, **kwargs):
@@ -167,6 +176,25 @@ def ensure_run_worker(received_frames: List[Frame]) -> MLWorker:
             assert "error_str" not in payload
 
 
+def validate_received_frames(received_frames: List[Frame], action: MLWorkerAction) -> Any:
+    assert received_frames[0].command == StompCommand.CONNECT
+    assert received_frames[1].command == StompCommand.SUBSCRIBE
+    assert received_frames[2].command == StompCommand.SUBSCRIBE
+    assert received_frames[-1].command == StompCommand.DISCONNECT
+    assert received_frames[-2].command == StompCommand.SEND
+    stop_response = FragmentedPayload.parse_raw(received_frames[-2].body)
+    assert stop_response.action == MLWorkerAction.stopWorker.name
+    assert stop_response.f_count == 1
+    assert stop_response.f_index == 0
+    assert stop_response.payload == "{}"
+    assert received_frames[3].command == StompCommand.SEND
+    action_response = FragmentedPayload.parse_raw(received_frames[3].body)
+    assert action_response.action == action.name
+    assert action_response.f_count == 1
+    assert action_response.f_index == 0
+    return json.loads(action_response.payload)
+
+
 @pytest.mark.concurrency
 @pytest.mark.asyncio
 async def test_ml_worker_get_info(requests_mock: requests_mock.Mocker, patch_settings: Settings):
@@ -179,6 +207,20 @@ async def test_ml_worker_get_info(requests_mock: requests_mock.Mocker, patch_set
     ):
         await asyncio.wait_for(worker.start(nb_workers=1, restart=False), timeout=60)
         ensure_run_worker(received_frames)
+    response_payload = validate_received_frames(received_frames, MLWorkerAction.getInfo)
+    assert set(response_payload.keys()) == {
+        "platform",
+        "interpreter",
+        "interpreterVersion",
+        "installedPackages",
+        "mlWorkerId",
+        "isRemote",
+        "pid",
+        "processStartTime",
+        "giskardClientVersion",
+    }
+
+    return
 
 
 def snake_to_camelcase(name):
@@ -317,6 +359,9 @@ async def test_ml_worker_model_run(
     assert mock_calculated.called
     assert mock_calculated.call_count == 1
     # TODO:  validate content ?
+    response_payload = validate_received_frames(received_frames, MLWorkerAction.runModel)
+    assert response_payload == {}
+    return
 
 
 def run_model_frame_dataframe(action_id: str, df: DataFrame, model_id: str):
@@ -368,7 +413,9 @@ async def test_ml_worker_model_run_dataframe(
     ):
         await asyncio.wait_for(worker.start(nb_workers=1, restart=False), timeout=60)
         ensure_run_worker(received_frames)
-    # TODO: validate output ?
+    response_payload = validate_received_frames(received_frames, MLWorkerAction.runModelForDataFrame)
+    assert set(response_payload.keys()) == {"all_predictions", "prediction", "probabilities", "raw_prediction"}
+    return
 
 
 def run_model_explain(action_id: str, dataset_id: str, model_id: str, df: DataFrame):
@@ -418,5 +465,6 @@ async def test_ml_worker_explain(
     ):
         await asyncio.wait_for(worker.start(nb_workers=1, restart=False), timeout=60)
         ensure_run_worker(received_frames)
-    # TODO: validate output ?
+    response_payload = validate_received_frames(received_frames, MLWorkerAction.explain)
+    assert set(response_payload.keys()) == {"explanations"}
     return
