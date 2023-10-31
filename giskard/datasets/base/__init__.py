@@ -194,7 +194,11 @@ class Dataset(ColumnMetadataMixin):
         self.column_dtypes = self.extract_column_dtypes(self.df)
 
         # used in the inference of category columns
-        self.category_threshold = round(np.log10(len(self.df))) if len(self.df) >= 100 else 2
+        df_size = len(self.df)
+        # if df_size >= 100     ==> category_threshold = floor(log10(df_size))
+        # if 2 < df_size < 100  ==> category_threshold = 2
+        # if df_size <= 2       ==> category_threshold = 0 (column is text)
+        self.category_threshold = max(np.floor(np.log10(df_size)), 2) * (df_size > 2)
         self.column_types = self._infer_column_types(column_types, cat_columns, validation)
         if validation:
             from giskard.core.dataset_validation import validate_column_types
