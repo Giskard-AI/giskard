@@ -5,7 +5,7 @@
 groups = ["default", "dev", "doc", "llm", "ml_runtime", "server", "test"]
 strategy = ["cross_platform"]
 lock_version = "4.4"
-content_hash = "sha256:9cb866e7f3a54bb85ebd72d5349c56638d7d1e5db9d3d7f940a41edc4f4abc57"
+content_hash = "sha256:dc847e523c5d64251654f60f2291132775321c5d26697076c80a7646f8341e4c"
 
 [[package]]
 name = "absl-py"
@@ -1060,12 +1060,12 @@ files = [
 
 [[package]]
 name = "filelock"
-version = "3.12.4"
+version = "3.13.0"
 requires_python = ">=3.8"
 summary = "A platform independent file lock."
 files = [
-    {file = "filelock-3.12.4-py3-none-any.whl", hash = "sha256:08c21d87ded6e2b9da6728c3dff51baf1dcecf973b768ef35bcbc3447edb9ad4"},
-    {file = "filelock-3.12.4.tar.gz", hash = "sha256:2e6f249f1f3654291606e046b09f1fd5eac39b360664c27f5aad072012f8bcbd"},
+    {file = "filelock-3.13.0-py3-none-any.whl", hash = "sha256:a552f4fde758f4eab33191e9548f671970f8b06d436d31388c9aa1e5861a710f"},
+    {file = "filelock-3.13.0.tar.gz", hash = "sha256:63c6052c82a1a24c873a549fbd39a26982e8f35a3016da231ead11a5be9dad44"},
 ]
 
 [[package]]

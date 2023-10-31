@@ -1,6 +1,7 @@
 from unittest.mock import Mock
 
 import pandas as pd
+import pytest
 
 from giskard.datasets.base import Dataset
 from giskard.llm.client import LLMFunctionCall, LLMOutput
@@ -103,3 +104,13 @@ def test_requirements_evaluator_handles_generation_errors():
     assert len(result.failure_examples) == 0
     assert len(result.errors) == 1
     assert result.errors[0]["message"] == "Invalid function call arguments received"
+
+
+def test_raises_error_if_datasets_have_different_length():
+    dataset1, dataset2 = _make_eval_datasets()
+    dataset2.df.drop(dataset2.df.index[0], inplace=True)
+    model = _make_mock_model()
+
+    evaluator = CoherencyEvaluator(llm_client=Mock())
+    with pytest.raises(ValueError, match="Datasets must have the same index"):
+        evaluator.evaluate(model, dataset1, dataset2)

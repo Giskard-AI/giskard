@@ -1,18 +1,18 @@
 import inspect
-import json
 from typing import List, Optional
 
 import pandas as pd
 from pydantic import BaseModel as PydanticBaseModel
 from pydantic import Field
 
-from giskard.llm import utils
-from .. import debug_description_prefix, debug_prefix
 from ....datasets.base import Dataset
+from ....llm.client import get_default_client
+from ....llm.errors import LLMGenerationError
 from ....llm.evaluators import RequirementEvaluator
 from ....ml_worker.testing.registry.decorators import test
 from ....ml_worker.testing.test_result import TestMessage, TestMessageLevel, TestResult
 from ....models.base import BaseModel
+from .. import debug_description_prefix, debug_prefix
 
 
 class EvalTestResult(PydanticBaseModel):
@@ -80,6 +80,7 @@ EVALUATE_FUNCTIONS = [
 def validate_test_case_with_reason(
     model: BaseModel, test_case: str, df, predictions: List[str]
 ) -> List[EvalTestResult]:
+    llm_client = get_default_client()
     inputs = [
         {
             "input_vars": df.iloc[i].to_dict(),
@@ -99,19 +100,20 @@ def validate_test_case_with_reason(
             model_output=data["model_output"],
             requirements=data["requirements"],
         )
-        out = utils.llm_fn_call([{"role": "system", "content": prompt}], functions=EVALUATE_FUNCTIONS, temperature=0.1)
-
         try:
-            args = json.loads(out.function_call.arguments)
+            out = llm_client.complete(
+                messages=[{"role": "system", "content": prompt}], functions=EVALUATE_FUNCTIONS, temperature=0.1
+            )
 
-            if args["passed_test"]:
-                results.append(EvalTestResult(score=5, reason="The answer is correct"))
-            else:
-                print("EVAL", args)
-                results.append(EvalTestResult(score=0, reason=args.get("reason")))
-
-        except (AttributeError, json.JSONDecodeError, KeyError):
+            if out.function_call is None or "passed_test" not in out.function_call.args:
+                raise LLMGenerationError("Could not parse the function call")
+        except LLMGenerationError:
             results.append(EvalTestResult(score=5, reason=""))
+
+        if out.function_call.args["passed_test"]:
+            results.append(EvalTestResult(score=5, reason="The answer is correct"))
+        else:
+            results.append(EvalTestResult(score=0, reason=out.function_call.args.get("reason")))
 
     return results
 
@@ -227,8 +229,8 @@ def test_llm_individual_response_validation(
     tags=["llm"],
     debug_description=debug_description_prefix + "that are <b>failing the evaluation criteria</b>.",
 )
-def test_llm_output_requirement(model: BaseModel, dataset: Dataset, requirements: str, debug: bool = False):
-    evaluator = RequirementEvaluator(requirements)
+def test_llm_output_requirement(model: BaseModel, dataset: Dataset, requirement: str, debug: bool = False):
+    evaluator = RequirementEvaluator([requirement])
     eval_result = evaluator.evaluate(model, dataset)
 
     output_ds = None
@@ -237,7 +239,7 @@ def test_llm_output_requirement(model: BaseModel, dataset: Dataset, requirements
         df = pd.DataFrame([ex["input_vars"] for ex in eval_result.failure_examples])
         output_ds = Dataset(
             df,
-            name=f"Test dataset failing criteria {requirements} (automatically generated)",
+            name="Test dataset for requirement (automatically generated)",
             column_types=dataset.column_types,
             validation=False,
         )
