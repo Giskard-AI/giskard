@@ -126,11 +126,23 @@ class BaseModel(ABC):
         if model_type == SupportedModelTypes.CLASSIFICATION and not classification_labels:
             raise ValueError("The parameter 'classification_labels' is required if 'model_type' is 'classification'.")
 
-        if model_type == SupportedModelTypes.TEXT_GENERATION and (name is None or description is None):
-            missing = [param for param, value in {"name": name, "description": description}.items() if value is None]
-            p = ("s", "are") if len(missing) > 1 else ("", "is")
-            missing = " and ".join(f'"{param}"' for param in missing)
-            raise ValueError(f"The parameter{p[0]}: {missing} {p[1]} required if 'model_type' is 'text_generation'.")
+        if model_type == SupportedModelTypes.TEXT_GENERATION:
+            if name is None or description is None:
+                missing = [
+                    param
+                    for param, value in {
+                        "name": name,
+                        "description": description,
+                        "feature_names": feature_names,
+                    }.items()
+                    if value is None
+                ]
+                p = ("s", "are", "They") if len(missing) > 1 else ("", "is", "It")
+                missing = "'" + missing[0] + "'" if len(missing) == 1 else missing
+                raise ValueError(
+                    f"The parameter{p[0]}: {missing} {p[1]} required if 'model_type' is "
+                    f"'text_generation'. {p[2]} {p[1]} needed to configure the scan detectors."
+                )
 
         self.meta = ModelMeta(
             name=name if name is not None else self.__class__.__name__,
