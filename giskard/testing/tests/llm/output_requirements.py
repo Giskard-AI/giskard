@@ -5,7 +5,7 @@ import pandas as pd
 from ....datasets.base import Dataset
 from ....llm.evaluators import RequirementEvaluator
 from ....ml_worker.testing.registry.decorators import test
-from ....ml_worker.testing.test_result import TestResult
+from ....ml_worker.testing.test_result import TestMessage, TestMessageLevel, TestResult
 from ....models.base import BaseModel
 from ....utils.display import truncate
 from .. import debug_description_prefix
@@ -26,8 +26,16 @@ def _test_output_against_requirement(model: BaseModel, dataset: Dataset, require
             validation=False,
         )
 
+    messages = []
+    if eval_result.has_errors:
+        messages = [TestMessage(TestMessageLevel.ERROR, err["message"]) for err in eval_result.errors]
+
     return TestResult(
-        passed=eval_result.passed, output_df=output_ds, metric=len(eval_result.success_examples) / len(dataset)
+        passed=eval_result.passed,
+        output_df=output_ds,
+        metric=len(eval_result.failure_examples),
+        is_error=eval_result.has_errors,
+        messages=messages,
     )
 
 
@@ -115,7 +123,7 @@ def test_llm_single_output_against_requirement(
     dataset = Dataset(
         pd.DataFrame([input_sample]),
         name=truncate(f'Single entry dataset for "{requirement}"'),
-        column_types={k: "text" for k in input_var.keys()},
+        column_types={k: "text" for k in input_sample.keys()},
     )
 
     # Run normal output requirement test
