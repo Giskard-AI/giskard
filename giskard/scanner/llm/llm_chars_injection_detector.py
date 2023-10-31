@@ -1,5 +1,7 @@
 from typing import Sequence
 
+import numpy as np
+
 from ...datasets.base import Dataset
 from ...models.base.model import BaseModel
 from ...testing.tests.llm import LLMCharInjector
@@ -79,7 +81,7 @@ class LLMCharsInjectionDetector:
                     "fail_rate": res.fail_rate,
                     "perturbed_data_slice": res.perturbed_dataset,
                     "perturbed_data_slice_predictions": res.predictions,
-                    "fail_data_idx": dataset_sample.df[~res.vulnerable_mask].index.values,
+                    "fail_data_idx": dataset_sample.df[~np.array(res.vulnerable_mask)].index.values,
                     "threshold": self.threshold,
                     "output_sensitivity": self.output_sensitivity,
                     "max_repetitions": self.num_repetitions,
@@ -99,10 +101,9 @@ def _generate_char_injection_tests(issue: Issue):
     feature = issue.features[0]
     return {
         f"Character injection ({issue.meta['special_char'].encode('unicode_escape').decode('ascii')}) in “{feature}”": test_llm_char_injection(
-            model=issue.model,
             dataset=issue.dataset,
             characters=[issue.meta["special_char"]],
-            feature=issue.features,
+            features=issue.features,
             threshold=issue.meta["threshold"],
             output_sensitivity=issue.meta["output_sensitivity"],
             max_repetitions=issue.meta["max_repetitions"],

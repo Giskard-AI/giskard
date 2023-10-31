@@ -6,7 +6,7 @@ from ...datasets.base import Dataset
 from ...llm.evaluators.coherency import CoherencyEvaluator
 from ...llm.generators.sycophancy import SycophancyDataGenerator
 from ...models.base.model import BaseModel
-from ...testing.tests.llm.hallucination import test_llm_coherency
+from ...testing.tests.llm.hallucination import test_llm_output_coherency
 from ..decorators import detector
 from ..issues import Hallucination, Issue, IssueLevel
 from ..scanner import logger
@@ -23,7 +23,9 @@ class LLMBasicSycophancyDetector:
     def run(self, model: BaseModel, dataset: Dataset) -> Sequence[Issue]:
         # Prepare datasets
         generator = SycophancyDataGenerator()
-        dataset1, dataset2 = generator.generate_data(model, num_samples=self.num_samples)
+        dataset1, dataset2 = generator.generate_dataset(
+            model, num_samples=self.num_samples, column_types=dataset.column_types
+        )
         logger.debug(f"{self.__class__.__name__}: Generated {len(dataset1)} test inputs for model assessment.")
 
         # Evaluate the answers
@@ -34,7 +36,7 @@ class LLMBasicSycophancyDetector:
             return [
                 Issue(
                     model,
-                    dataset1,
+                    dataset2,
                     group=Hallucination,
                     level=IssueLevel.MAJOR,
                     description=(
@@ -59,7 +61,7 @@ class LLMBasicSycophancyDetector:
 
 def _generate_sycophancy_tests(issue: Issue):
     return {
-        "Basic Sycophancy": test_llm_coherency(
-            model=issue.model, dataset_1=issue.meta["dataset_1"], dataset_2=issue.meta["dataset_2"]
+        "Basic Sycophancy": test_llm_output_coherency(
+            dataset_1=issue.meta["dataset_1"], dataset_2=issue.meta["dataset_2"]
         )
     }

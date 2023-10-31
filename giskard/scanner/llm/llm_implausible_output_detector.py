@@ -8,7 +8,7 @@ from ...datasets.base import Dataset
 from ...llm.evaluators import PlausibilityEvaluator
 from ...llm.generators import ImplausibleDataGenerator
 from ...models.base.model import BaseModel
-from ...testing.tests.llm.hallucination import test_llm_plausibility
+from ...testing.tests.llm.hallucination import test_llm_output_plausibility
 from ..decorators import detector
 from ..issues import Hallucination, Issue, IssueLevel
 
@@ -24,7 +24,9 @@ class LLMImplausibleOutputDetector:
     def run(self, model: BaseModel, dataset: Dataset) -> Sequence[Issue]:
         # Generate inputs
         generator = ImplausibleDataGenerator(llm_temperature=0.1)
-        eval_dataset = generator.generate_data(model, num_samples=self.num_samples, column_types=dataset.column_types)
+        eval_dataset = generator.generate_dataset(
+            model, num_samples=self.num_samples, column_types=dataset.column_types
+        )
         logger.debug(f"{self.__class__.__name__}: Generated {len(eval_dataset)} inputs")
 
         # Evaluate the model outputs
@@ -35,7 +37,7 @@ class LLMImplausibleOutputDetector:
             return [
                 Issue(
                     model,
-                    dataset,
+                    eval_dataset,
                     group=Hallucination,
                     level=IssueLevel.MEDIUM,
                     description="The model produces implausible output.",
@@ -53,4 +55,4 @@ class LLMImplausibleOutputDetector:
 
 
 def _generate_implausible_output_tests(issue: Issue):
-    return {"Output plausibility": test_llm_plausibility(model=issue.model, dataset=issue.dataset)}
+    return {"Output plausibility": test_llm_output_plausibility(dataset=issue.dataset)}
