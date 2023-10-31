@@ -241,7 +241,7 @@ def remote_titanic_dataset(patch_settings: Settings, titanic_dataset: Dataset, r
 
         for name in list(parsed_meta_dataset.keys()):
             parsed_meta_dataset[snake_to_camelcase(name)] = parsed_meta_dataset.pop(name)
-
+        parsed_meta_dataset["createdDate"] = "toto"
         # Mock artifact info
         requests_mock.get(
             f"http://{patch_settings.host}:{patch_settings.ws_port}/api/v2/artifact-info/test-ml-worker-key/datasets/{titanic_dataset.id.hex}",
