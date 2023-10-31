@@ -1,5 +1,5 @@
 import tempfile
-
+import pytest
 import pandas as pd
 from langchain.chains import LLMChain
 from langchain.llms.fake import FakeListLLM
@@ -19,7 +19,7 @@ def test_llm_chain():
     )
     chain = LLMChain(llm=llm, prompt=prompt)
 
-    wrapped_model = Model(chain, model_type="text_generation")
+    wrapped_model = Model(chain, model_type="text_generation", name="test", description="fake")
 
     df = pd.DataFrame(["colorful socks", "electric car"], columns=["product"])
 
@@ -37,3 +37,17 @@ def test_llm_chain():
         loaded_model = LangchainModel.load(tmpdirname)
 
         assert list(results.raw) == list(loaded_model.predict(wrapped_dataset).raw)
+
+
+def test_llm_model_requirements():
+    def prediction_function(df):
+        pass
+
+    with pytest.raises(ValueError, match=r'The parameter: "name" is required'):
+        Model(prediction_function, model_type="text_generation", description="dummy")
+
+    with pytest.raises(ValueError, match=r'The parameter: "description" is required'):
+        Model(prediction_function, model_type="text_generation", name="dummy")
+
+    with pytest.raises(ValueError, match=r'The parameters: "name" and "description" are required'):
+        Model(prediction_function, model_type="text_generation")
