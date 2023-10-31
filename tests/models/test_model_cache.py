@@ -56,7 +56,7 @@ def test_model_prediction_is_cached_on_text_generation_model():
 
     prompt = PromptTemplate(template="{instruct}", input_variables=["instruct"])
     chain = LLMChain(llm=llm, prompt=prompt)
-    model = Model(chain, model_type="text_generation")
+    model = Model(chain, model_type="text_generation", name="")
     dataset = Dataset(
         pd.DataFrame({"instruct": ["Test 1", "Test 2"]}),
         column_types={
@@ -73,7 +73,7 @@ def test_model_prediction_is_cached_on_text_generation_model():
     model_id = model.id
 
     del model
-    model = Model(chain, model_type="text_generation", id=model_id.hex)
+    model = Model(chain, model_type="text_generation", name="", id=model_id.hex)
 
     assert model.predict(dataset).raw_prediction.tolist() == llm.responses
 

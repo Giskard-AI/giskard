@@ -267,7 +267,7 @@ def test_metamorphic_invariance_llm():
     )
     chain = LLMChain(llm=llm, prompt=prompt)
 
-    wrapped_model = Model(chain, model_type="text_generation")
+    wrapped_model = Model(chain, model_type="text_generation", name="")
     df = pd.DataFrame(["colorful socks", "electric car"], columns=["product"])
 
     wrapped_dataset = Dataset(df, cat_columns=[])
