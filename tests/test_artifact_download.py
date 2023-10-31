@@ -17,10 +17,15 @@ from giskard import test
 from tests.utils import (
     CALLABLE_FUNCTION_META_CACHE,
     CALLABLE_FUNCTION_PKL_CACHE,
-    get_local_cache_callable_artifact,
     MockedClient,
-    local_save_artifact_under_giskard_home_cache,
+    MockedProjectCacheDir,
     fixup_mocked_artifact_meta_version,
+    get_local_cache_callable_artifact,
+    register_uri_for_artifact_meta_info,
+    register_uri_for_artifact_info,
+    get_url_for_artifact_meta_info,
+    get_url_for_artifacts_base,
+    local_save_artifact_under_giskard_home_cache,
 )
 
 
@@ -45,6 +50,17 @@ def do_nothing(row):
     return row
 
 
+def test_download_global_test_function_from_registry():
+    cf: Artifact = my_custom_test
+
+    # Load from registry using uuid without client
+    download_cf = cf.__class__.download(uuid=cf.meta.uuid, client=None, project_key=None)
+
+    # Check the downloaded info
+    assert download_cf.__class__ is cf.__class__
+    assert download_cf.meta.uuid == cf.meta.uuid
+
+
 @pytest.mark.parametrize(
     "cf",
     [
@@ -55,7 +71,7 @@ def do_nothing(row):
 )
 def test_download_callable_function(cf: Artifact):
     with MockedClient(mock_all=False) as (client, mr):
-        cf.meta.uuid = str(uuid.uuid4())    # Regenerate a UUID
+        cf.meta.uuid = str(uuid.uuid4())    # Regenerate a UUID to ensure not loading from registry
         cache_dir = get_local_cache_callable_artifact(project_key=None, artifact=cf)
 
         # Save to temp
@@ -66,33 +82,27 @@ def test_download_callable_function(cf: Artifact):
             assert (tmpdir_path / CALLABLE_FUNCTION_PKL_CACHE).exists()
             assert (tmpdir_path / CALLABLE_FUNCTION_META_CACHE).exists()
 
-            # Prepare global URL
-            url = posixpath.join(BASE_CLIENT_URL, cf._get_name(), cf.meta.uuid)
-            artifact_info_url = posixpath.join(BASE_CLIENT_URL, "artifact-info", "global", cf._get_name(), cf.meta.uuid)
-            artifacts = [
-                CALLABLE_FUNCTION_PKL_CACHE, CALLABLE_FUNCTION_META_CACHE,
-            ]
-            artifacts_base_url = posixpath.join(BASE_CLIENT_URL, "artifacts", "global", cf._get_name(), cf.meta.uuid)
-            meta_info = cf.meta.to_json()
+            # Fixup the differences from Backend
+            meta_info = fixup_mocked_artifact_meta_version(cf.meta.to_json())
             # Fixup the name to avoid load from module
             meta_info.update({
                 "name": f"fake_{cf._get_name()}",
             })
-            # Fixup the differences from Backend
-            meta_info = fixup_mocked_artifact_meta_version(meta_info)
-
+            url = get_url_for_artifact_meta_info(cf, project_key=None)
             mr.register_uri(method=requests_mock.GET, url=url, json=meta_info)
-            mr.register_uri(method=requests_mock.GET, url=artifact_info_url, json=artifacts)
-            mr.register_uri(
-                method=requests_mock.GET,
-                url=posixpath.join(artifacts_base_url, CALLABLE_FUNCTION_PKL_CACHE),
-                body=open(tmpdir_path / CALLABLE_FUNCTION_PKL_CACHE, "rb")
-            )
-            mr.register_uri(
-                method=requests_mock.GET,
-                url=posixpath.join(artifacts_base_url, CALLABLE_FUNCTION_META_CACHE),
-                body=open(tmpdir_path / CALLABLE_FUNCTION_META_CACHE, "rb")
-            )
+
+            # Register for Artifact info
+            register_uri_for_artifact_info(mr, cf, project_key=None)
+
+            # Register for Artifacts content
+            artifacts_base_url = get_url_for_artifacts_base(cf, project_key=None)
+            for file in [CALLABLE_FUNCTION_META_CACHE, CALLABLE_FUNCTION_PKL_CACHE]:
+                with open(tmpdir_path / file, "rb") as f:
+                    mr.register_uri(
+                        method=requests_mock.GET,
+                        url=posixpath.join(artifacts_base_url, file),
+                        content=f.read(),
+                    )
 
             # Download: should not call load_artifact to request and download
             download_cf = cf.__class__.download(uuid=cf.meta.uuid, client=client, project_key=None)
@@ -112,23 +122,14 @@ def test_download_callable_function(cf: Artifact):
         do_nothing,     # Transformation
     ],
 )
-def test_download_callable_function_from_module(cf: Artifact):
+def test_download_global_callable_function_from_module(cf: Artifact):
     with MockedClient(mock_all=False) as (client, mr):
-        cf.meta.uuid = str(uuid.uuid4())    # Regenerate a UUID
+        cf.meta.uuid = str(uuid.uuid4())    # Regenerate a UUID to ensure not loading from registry
         cache_dir = get_local_cache_callable_artifact(project_key=None, artifact=cf)
 
         # Prepare global URL
-        url = posixpath.join(BASE_CLIENT_URL, cf._get_name(), cf.meta.uuid)
-        artifact_info_url = posixpath.join(BASE_CLIENT_URL, "artifact-info", "global", cf._get_name(), cf.meta.uuid)
-        artifacts = [
-            CALLABLE_FUNCTION_PKL_CACHE, CALLABLE_FUNCTION_META_CACHE,
-        ]
-        meta_info = cf.meta.to_json()
-        # Fixup the differences from Backend
-        meta_info = fixup_mocked_artifact_meta_version(meta_info)
-
-        mr.register_uri(method=requests_mock.GET, url=url, json=meta_info)
-        mr.register_uri(method=requests_mock.GET, url=artifact_info_url, json=artifacts)
+        register_uri_for_artifact_meta_info(mr, cf, project_key=None)
+        register_uri_for_artifact_info(mr, cf, project_key=None)
 
         # Download: should not call load_artifact to request and download
         download_cf = cf.__class__.download(uuid=cf.meta.uuid, client=client, project_key=None)
@@ -148,7 +149,7 @@ def test_download_callable_function_from_module(cf: Artifact):
         do_nothing,     # Transformation
     ],
 )
-def test_download_callable_function_from_cache(cf: Artifact):
+def test_download_global_callable_function_from_cache(cf: Artifact):
     with MockedClient(mock_all=False) as (client, mr):
         cf.meta.uuid = str(uuid.uuid4())    # Regenerate a UUID
         cache_dir = get_local_cache_callable_artifact(project_key=None, artifact=cf)
@@ -158,18 +159,7 @@ def test_download_callable_function_from_cache(cf: Artifact):
         assert (cache_dir / CALLABLE_FUNCTION_PKL_CACHE).exists()
         assert (cache_dir / CALLABLE_FUNCTION_META_CACHE).exists()
 
-        # Prepare global URL
-        url = posixpath.join(BASE_CLIENT_URL, cf._get_name(), cf.meta.uuid)
-        artifact_info_url = posixpath.join(BASE_CLIENT_URL, "artifact-info", "global", cf._get_name(), cf.meta.uuid)
-        artifacts = [
-            CALLABLE_FUNCTION_PKL_CACHE, CALLABLE_FUNCTION_META_CACHE,
-        ]
-        meta_info = cf.meta.to_json()
-        # Fixup the differences from Backend
-        meta_info = fixup_mocked_artifact_meta_version(meta_info)
-
-        mr.register_uri(method=requests_mock.GET, url=url, json=meta_info)
-        mr.register_uri(method=requests_mock.GET, url=artifact_info_url, json=artifacts)
+        register_uri_for_artifact_meta_info(mr, cf, project_key=None)
 
         # Download: should not call load_artifact to request and download
         download_cf = cf.__class__.download(uuid=cf.meta.uuid, client=client, project_key=None)
@@ -188,9 +178,9 @@ def test_download_callable_function_from_cache(cf: Artifact):
     ],
 )
 def test_download_callable_function_in_project(cf: Artifact):
-    with MockedClient(mock_all=False) as (client, mr):
-        project_key = str(uuid.uuid4())
-        cf.meta.uuid = str(uuid.uuid4())    # Regenerate a UUID
+    project_key = str(uuid.uuid4())
+    with MockedClient(mock_all=False) as (client, mr), MockedProjectCacheDir(project_key=project_key):
+        cf.meta.uuid = str(uuid.uuid4())    # Regenerate a UUID to ensure not loading from registry
         cache_dir = get_local_cache_callable_artifact(project_key=project_key, artifact=cf)
 
         # Save to temp
@@ -201,33 +191,27 @@ def test_download_callable_function_in_project(cf: Artifact):
             assert (tmpdir_path / CALLABLE_FUNCTION_PKL_CACHE).exists()
             assert (tmpdir_path / CALLABLE_FUNCTION_META_CACHE).exists()
 
-            # Prepare global URL
-            url = posixpath.join(BASE_CLIENT_URL, "project", project_key, cf._get_name(), cf.meta.uuid)
-            artifact_info_url = posixpath.join(BASE_CLIENT_URL, "artifact-info", project_key, cf._get_name(), cf.meta.uuid)
-            artifacts = [
-                CALLABLE_FUNCTION_PKL_CACHE, CALLABLE_FUNCTION_META_CACHE,
-            ]
-            artifacts_base_url = posixpath.join(BASE_CLIENT_URL, "artifacts", project_key, cf._get_name(), cf.meta.uuid)
-            meta_info = cf.meta.to_json()
+            # Fixup the differences from Backend
+            meta_info = fixup_mocked_artifact_meta_version(cf.meta.to_json())
             # Fixup the name to avoid load from module
             meta_info.update({
                 "name": f"fake_{cf._get_name()}",
             })
-            # Fixup the differences from Backend
-            meta_info = fixup_mocked_artifact_meta_version(meta_info)
-
+            url = get_url_for_artifact_meta_info(cf, project_key=project_key)
             mr.register_uri(method=requests_mock.GET, url=url, json=meta_info)
-            mr.register_uri(method=requests_mock.GET, url=artifact_info_url, json=artifacts)
-            mr.register_uri(
-                method=requests_mock.GET,
-                url=posixpath.join(artifacts_base_url, CALLABLE_FUNCTION_PKL_CACHE),
-                body=open(tmpdir_path / CALLABLE_FUNCTION_PKL_CACHE, "rb")
-            )
-            mr.register_uri(
-                method=requests_mock.GET,
-                url=posixpath.join(artifacts_base_url, CALLABLE_FUNCTION_META_CACHE),
-                body=open(tmpdir_path / CALLABLE_FUNCTION_META_CACHE, "rb")
-            )
+
+            # Register for Artifact info
+            register_uri_for_artifact_info(mr, cf, project_key=project_key)
+
+            # Register for Artifacts content
+            artifacts_base_url = get_url_for_artifacts_base(cf, project_key=project_key)
+            for file in [CALLABLE_FUNCTION_META_CACHE, CALLABLE_FUNCTION_PKL_CACHE]:
+                with open(tmpdir_path / file, "rb") as f:
+                    mr.register_uri(
+                        method=requests_mock.GET,
+                        url=posixpath.join(artifacts_base_url, file),
+                        content=f.read(),
+                    )
 
             # Download: should not call load_artifact to request and download
             download_cf = cf.__class__.download(uuid=cf.meta.uuid, client=client, project_key=project_key)
@@ -248,23 +232,14 @@ def test_download_callable_function_in_project(cf: Artifact):
     ],
 )
 def test_download_callable_function_from_module_in_project(cf: Artifact):
-    with MockedClient(mock_all=False) as (client, mr):
-        project_key = str(uuid.uuid4())
-        cf.meta.uuid = str(uuid.uuid4())    # Regenerate a UUID
+    project_key = str(uuid.uuid4())
+    with MockedClient(mock_all=False) as (client, mr), MockedProjectCacheDir(project_key):
+        cf.meta.uuid = str(uuid.uuid4())    # Regenerate a UUID to ensure not loading from registry
         cache_dir = get_local_cache_callable_artifact(project_key=project_key, artifact=cf)
 
         # Prepare global URL
-        url = posixpath.join(BASE_CLIENT_URL, "project", project_key, cf._get_name(), cf.meta.uuid)
-        artifact_info_url = posixpath.join(BASE_CLIENT_URL, "artifact-info", "project", project_key, cf.meta.uuid)
-        artifacts = [
-            CALLABLE_FUNCTION_PKL_CACHE, CALLABLE_FUNCTION_META_CACHE,
-        ]
-        meta_info = cf.meta.to_json()
-        # Fixup the differences from Backend
-        meta_info = fixup_mocked_artifact_meta_version(meta_info)
-
-        mr.register_uri(method=requests_mock.GET, url=url, json=meta_info)
-        mr.register_uri(method=requests_mock.GET, url=artifact_info_url, json=artifacts)
+        register_uri_for_artifact_meta_info(mr, cf, project_key)
+        register_uri_for_artifact_info(mr, cf, project_key)
 
         # Download: should not call load_artifact to request and download
         download_cf = cf.__class__.download(uuid=cf.meta.uuid, client=client, project_key=project_key)
@@ -285,9 +260,9 @@ def test_download_callable_function_from_module_in_project(cf: Artifact):
     ],
 )
 def test_download_callable_function_from_cache_in_project(cf: Artifact):
-    with MockedClient(mock_all=False) as (client, mr):
-        project_key = str(uuid.uuid4())
-        cf.meta.uuid = str(uuid.uuid4())    # Regenerate a UUID
+    project_key = str(uuid.uuid4())
+    with MockedClient(mock_all=False) as (client, mr), MockedProjectCacheDir(project_key):
+        cf.meta.uuid = str(uuid.uuid4())    # Regenerate a UUID to ensure not loading from registry
         cache_dir = get_local_cache_callable_artifact(project_key=project_key, artifact=cf)
 
         # Save to local cache
@@ -295,18 +270,7 @@ def test_download_callable_function_from_cache_in_project(cf: Artifact):
         assert (cache_dir / CALLABLE_FUNCTION_PKL_CACHE).exists()
         assert (cache_dir / CALLABLE_FUNCTION_META_CACHE).exists()
 
-        # Prepare global URL
-        url = posixpath.join(BASE_CLIENT_URL, "project", project_key, cf._get_name(), cf.meta.uuid)
-        artifact_info_url = posixpath.join(BASE_CLIENT_URL, "artifact-info", "project", project_key, cf._get_name(), cf.meta.uuid)
-        artifacts = [
-            CALLABLE_FUNCTION_PKL_CACHE, CALLABLE_FUNCTION_META_CACHE,
-        ]
-        meta_info = cf.meta.to_json()
-        # Fixup the differences from Backend
-        meta_info = fixup_mocked_artifact_meta_version(meta_info)
-
-        mr.register_uri(method=requests_mock.GET, url=url, json=meta_info)
-        mr.register_uri(method=requests_mock.GET, url=artifact_info_url, json=artifacts)
+        register_uri_for_artifact_meta_info(mr, cf, project_key)
 
         # Download: should not call load_artifact to request and download
         download_cf = cf.__class__.download(uuid=cf.meta.uuid, client=client, project_key=project_key)
