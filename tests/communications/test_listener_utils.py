@@ -2,7 +2,11 @@ import pytest
 
 from giskard.ml_worker import websocket
 from giskard.ml_worker.exceptions.IllegalArgumentError import IllegalArgumentError
-from giskard.ml_worker.websocket.listener import extract_debug_info, function_argument_to_ws, parse_function_arguments
+from giskard.ml_worker.websocket.listener import (
+    extract_debug_info,
+    function_argument_to_ws,
+    parse_function_arguments,
+)
 
 TEST_PROJECT_KEY = "123"
 TEST_MODEL_ID = "231"
@@ -30,7 +34,6 @@ TEST_FUNC_ARGUMENT_BOOL = False
 
 
 def test_function_argument_to_ws():
-
     # Domain classes creation should be tested somewhere else, do not test them.
     #   "dataset": Dataset,
     #   "model": BaseModel,
@@ -76,4 +79,4 @@ def test_parse_function_arguments():
     assert "int" in kwargs.keys() and kwargs["int"] == TEST_FUNC_ARGUMENT_INT
     assert "str" in kwargs.keys() and kwargs["str"] == TEST_FUNC_ARGUMENT_STR
     assert "bool" in kwargs.keys() and kwargs["bool"] == TEST_FUNC_ARGUMENT_BOOL
-    assert "bool1" in kwargs.keys() and kwargs["bool1"] == TEST_FUNC_ARGUMENT_BOOL
+    assert "kwargs" in kwargs.keys() and kwargs["kwargs"]["bool1"] == TEST_FUNC_ARGUMENT_BOOL
