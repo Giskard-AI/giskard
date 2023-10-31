@@ -1,3 +1,5 @@
+from typing import Iterable, List, Optional, Type, Union
+
 import builtins
 import importlib
 import logging
@@ -8,16 +10,14 @@ import tempfile
 import uuid
 from abc import ABC, abstractmethod
 from pathlib import Path
-from typing import Iterable, Optional, Union
 
 import cloudpickle
 import numpy as np
 import pandas as pd
 import yaml
 
-from .model_prediction import ModelPredictionResults
-from ..cache import get_cache_enabled
-from ..utils import np_types_to_native
+from giskard.client.dtos import ModelMetaInfo
+
 from ...client.giskard_client import GiskardClient
 from ...core.core import ModelMeta, ModelType, SupportedModelTypes
 from ...core.validation import configured_validate_arguments
@@ -27,6 +27,9 @@ from ...ml_worker.utils.logging import Timer
 from ...models.cache import ModelCache
 from ...path_utils import get_size
 from ...settings import settings
+from ..cache import get_cache_enabled
+from ..utils import np_types_to_native
+from .model_prediction import ModelPredictionResults
 
 META_FILENAME = "giskard-model-meta.yaml"
 
@@ -196,7 +199,7 @@ class BaseModel(ABC):
             return getattr(importlib.import_module(meta.loader_module), meta.loader_class)
 
     def save_meta(self, local_path):
-        with open(Path(local_path) / META_FILENAME, "w") as f:
+        with (Path(local_path) / META_FILENAME).open(mode="w", encoding="utf-8") as f:
             yaml.dump(
                 {
                     "language_version": platform.python_version(),
@@ -419,19 +422,20 @@ class BaseModel(ABC):
             _, meta = cls.read_meta_from_local_dir(local_dir)
         else:
             client.load_artifact(local_dir, posixpath.join(project_key, "models", model_id))
-            meta_response = client.load_model_meta(project_key, model_id)
+            meta_response: ModelMetaInfo = client.load_model_meta(project_key, model_id)
             # internal worker case, no token based http client
-            assert local_dir.exists(), f"Cannot find existing model {project_key}.{model_id} in {local_dir}"
-            with open(Path(local_dir) / META_FILENAME) as f:
+            if not local_dir.exists():
+                raise RuntimeError(f"Cannot find existing model {project_key}.{model_id} in {local_dir}")
+            with (Path(local_dir) / META_FILENAME).open(encoding="utf-8") as f:
                 file_meta = yaml.load(f, Loader=yaml.Loader)
                 classification_labels = cls.cast_labels(meta_response)
                 meta = ModelMeta(
-                    name=meta_response["name"],
-                    description=meta_response["description"],
-                    model_type=SupportedModelTypes[meta_response["modelType"]],
-                    feature_names=meta_response["featureNames"],
+                    name=meta_response.name,
+                    description=meta_response.description,
+                    model_type=SupportedModelTypes[meta_response.modelType],
+                    feature_names=meta_response.featureNames,
                     classification_labels=classification_labels,
-                    classification_threshold=meta_response["threshold"],
+                    classification_threshold=meta_response.threshold,
                     loader_module=file_meta["loader_module"],
                     loader_class=file_meta["loader_class"],
                 )
@@ -449,7 +453,7 @@ class BaseModel(ABC):
 
     @classmethod
     def read_meta_from_local_dir(cls, local_dir):
-        with open(Path(local_dir) / META_FILENAME) as f:
+        with (Path(local_dir) / META_FILENAME).open(encoding="utf-8") as f:
             file_meta = yaml.load(f, Loader=yaml.Loader)
             meta = ModelMeta(
                 name=file_meta["name"],
@@ -465,9 +469,9 @@ class BaseModel(ABC):
         return file_meta["id"], meta
 
     @classmethod
-    def cast_labels(cls, meta_response):
-        labels_ = meta_response["classificationLabels"]
-        labels_dtype = meta_response["classificationLabelsDtype"]
+    def cast_labels(cls, meta_response: ModelMetaInfo) -> List[Union[str, Type]]:
+        labels_ = meta_response.classificationLabels
+        labels_dtype = meta_response.classificationLabelsDtype
         if labels_ and labels_dtype and builtins.hasattr(builtins, labels_dtype):
             dtype = builtins.getattr(builtins, labels_dtype)
             labels_ = [dtype(i) for i in labels_]
