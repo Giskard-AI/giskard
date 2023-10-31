@@ -8,11 +8,12 @@ from pydantic import AnyHttpUrl
 from websockets.client import WebSocketClientProtocol
 
 from giskard.cli_utils import validate_url
+from giskard.core.validation import ConfiguredBaseModel
 from giskard.ml_worker.stomp.client import StompWSClient
 from giskard.ml_worker.stomp.constants import HeaderType
 from giskard.ml_worker.stomp.parsing import Frame, StompFrame
 from giskard.ml_worker.testing.registry.registry import load_plugins
-from giskard.ml_worker.websocket.action import MLWorkerAction
+from giskard.ml_worker.websocket.action import ActionPayload, ConfigPayload, MLWorkerAction
 from giskard.ml_worker.websocket.listener import WEBSOCKET_ACTORS, MLWorkerInfo
 from giskard.ml_worker.websocket.utils import fragment_message
 from giskard.settings import settings
@@ -24,6 +25,14 @@ LOGGER = logging.getLogger(__name__)
 INTERNAL_WORKER_ID = "INTERNAL"
 EXTERNAL_WORKER_ID = "EXTERNAL"
 MAX_STOMP_ML_WORKER_REPLY_SIZE = 1500
+
+
+class FragmentedPayload(ConfiguredBaseModel):
+    id: str
+    action: str
+    payload: str
+    f_index: int
+    f_count: int
 
 
 class MLWorker(StompWSClient):
@@ -67,23 +76,14 @@ class MLWorker(StompWSClient):
         return self._worker_type is not INTERNAL_WORKER_ID
 
     async def config_handler(self, frame: Frame) -> List[Frame]:
-        req = json.loads(frame.body)
-        if req["config"] == "MAX_STOMP_ML_WORKER_REPLY_SIZE" and "value" in req.keys():
-            mtu = MAX_STOMP_ML_WORKER_REPLY_SIZE
-            try:
-                mtu = max(mtu, int(req["value"]))
-            except ValueError:
-                mtu = MAX_STOMP_ML_WORKER_REPLY_SIZE
-            self._ws_max_reply_payload_size = mtu
-            LOGGER.info("MAX_STOMP_ML_WORKER_REPLY_SIZE set to %s", mtu)
+        payload = ConfigPayload.parse_raw(frame.body)
+        self._ws_max_reply_payload_size = max(MAX_STOMP_ML_WORKER_REPLY_SIZE, payload.value)
+        LOGGER.info("MAX_STOMP_ML_WORKER_REPLY_SIZE set to %s", self._ws_max_reply_payload_size)
 
         return []
 
     async def action_handler(self, frame: Frame) -> List[Frame]:
-        req = json.loads(frame.body)
-        if "action" not in req.keys() or req["action"] not in WEBSOCKET_ACTORS:
-            raise ValueError(f"Invalid action frame received, {frame}")
-        action = MLWorkerAction[req["action"]]
+        data = ActionPayload.parse_raw(frame.body)
 
         # Dispatch the action
         client_params = (
@@ -95,12 +95,12 @@ class MLWorker(StompWSClient):
             if self._backend_url is not None
             else None
         )
-        if action == MLWorkerAction.stopWorker:
+        if data.action == MLWorkerAction.stopWorker:
             LOGGER.info("Marking worker as stopping...")
             self.stop()
 
-        payload: Optional[Union[str, Frame]] = await WEBSOCKET_ACTORS[action.name](
-            req, client_params, self._worker_info
+        payload: Optional[Union[str, Frame]] = await WEBSOCKET_ACTORS[data.action.name](
+            data, client_params, self._worker_info
         )
         # If no rep_id
         if payload is None:
@@ -114,7 +114,7 @@ class MLWorker(StompWSClient):
         analytics.track(
             "mlworker:websocket:action:reply",
             {
-                "name": action.name,
+                "name": data.action.name,
                 "worker": self._worker_info.id,
                 "language": "PYTHON",
                 "frag_len": self._ws_max_reply_payload_size,
@@ -128,15 +128,13 @@ class MLWorker(StompWSClient):
                 headers={
                     HeaderType.DESTINATION: f"/app/ml-worker/{self._worker_type}/rep",
                 },
-                body=json.dumps(
-                    {
-                        "id": req["id"],
-                        "action": req["action"],
-                        "payload": fragment_message(payload, frag_i, self._ws_max_reply_payload_size),
-                        "f_index": frag_i,
-                        "f_count": frag_count,
-                    }
-                ),
+                body=FragmentedPayload(
+                    id=data.id,
+                    action=data.action.name,
+                    payload=fragment_message(payload, frag_i, self._ws_max_reply_payload_size),
+                    f_index=frag_i,
+                    f_count=frag_count,
+                ).json(by_alias=True),
             )
             for frag_i in range(frag_count)
         ]

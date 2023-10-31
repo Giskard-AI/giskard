@@ -31,7 +31,7 @@ from giskard.ml_worker.testing.registry.slicing_function import SlicingFunction
 from giskard.ml_worker.testing.registry.transformation_function import TransformationFunction
 from giskard.ml_worker.utils.file_utils import get_file_name
 from giskard.ml_worker.websocket import CallToActionKind, GetInfoParam, PushKind
-from giskard.ml_worker.websocket.action import MLWorkerAction
+from giskard.ml_worker.websocket.action import ActionPayload, MLWorkerAction
 from giskard.ml_worker.websocket.utils import (
     do_run_adhoc_test,
     extract_debug_info,
@@ -63,10 +63,8 @@ class MLWorkerInfo:
     is_remote: bool
 
 
-def websocket_log_actor(ml_worker: MLWorkerInfo, req: Dict, *args, **kwargs):
-    param = req["param"] if "param" in req.keys() else {}
-    action = req["action"] if "action" in req.keys() else ""
-    logger.info(f"ML Worker {ml_worker.id} performing {action} params: {param}")
+def websocket_log_actor(ml_worker: MLWorkerInfo, req: ActionPayload, *args, **kwargs):
+    logger.info("ML Worker %s performing %s params: %s", {ml_worker.id}, {req.action}, {req.param})
 
 
 WEBSOCKET_ACTORS = dict((action.name, websocket_log_actor) for action in MLWorkerAction)
@@ -140,7 +138,7 @@ def parse_and_execute(
 async def dispatch_action(
     callback: Callable,
     action: MLWorkerAction,
-    req: Dict[str, Any],
+    req: ActionPayload,
     client_params: Dict[str, Any],
     worker_info: MLWorkerInfo,
     execute_in_pool: bool,
@@ -148,9 +146,9 @@ async def dispatch_action(
     ignore_timeout=False,
 ):
     # Parse the response ID
-    rep_id = req["id"] if "id" in req.keys() else None
+    rep_id = req.id
     # Parse the param
-    params = req["param"] if "param" in req.keys() else {}
+    params = req.param
 
     # Track usage frequency to optimize action param parsing
     analytics.track(
@@ -200,9 +198,9 @@ def websocket_actor(
     def websocket_actor_callback(callback: callable):
         if action not in MLWorkerAction:
             raise NotImplementedError(f"Missing implementation for {action}, not in MLWorkerAction")
-        logger.debug(f'Registered "{callback.__name__}" for ML Worker "{action.name}"')
+        logger.debug('Registered "%s" for ML Worker "%s"', {callback.__name__}, {action.name})
 
-        async def wrapped_callback(req: Dict, client_params: Dict, worker_info, *args, **kwargs):
+        async def wrapped_callback(req: ActionPayload, client_params: Dict, worker_info, *args, **kwargs):
             return await dispatch_action(
                 callback, action, req, client_params, worker_info, execute_in_pool, timeout, ignore_timeout
             )
