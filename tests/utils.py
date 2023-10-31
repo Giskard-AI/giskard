@@ -283,7 +283,7 @@ def register_uri_for_artifacts_under_dir(mr: requests_mock.Mocker, dir_path: Pat
 
 def register_uri_for_dataset_meta_info(mr: requests_mock.Mocker, dataset: Dataset, project_key: str):
     dataset_url = posixpath.join(CLIENT_BASE_URL, "project", project_key, "datasets", str(dataset.id))
-    dataset_meta_info = mock_dataset_meta_info(dataset)
+    dataset_meta_info = mock_dataset_meta_info(dataset, project_key)
     mr.register_uri(method=requests_mock.GET, url=dataset_url, json=dataset_meta_info)
 
 
