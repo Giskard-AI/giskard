@@ -33,13 +33,13 @@ class TestFunctionArgument(BaseModel):
 
 
 # CallableMeta shows that all fields can be none,
-# but we have a pre-check here for Database constraints:
+# but we have a pre-check here for Database constraints except auto-created "version":
 # referring to `ai.giskard.domain.Callable` and `ai.giskard.domain.TestFunction`.
 class FunctionMeta(BaseModel):
     uuid: str
     name: str
     displayName: Optional[str] = None
-    version: int
+    version: Optional[int] = None
     module: Optional[str] = None
     doc: Optional[str] = None
     moduleDoc: Optional[str] = None
@@ -51,14 +51,14 @@ class FunctionMeta(BaseModel):
 
 
 # CallableMeta shows that all fields can be none,
-# but we have a pre-check here for Database constraints:
+# but we have a pre-check here for Database constraints except auto-created "version":
 # referring to `ai.giskard.domain.Callable`, `ai.giskard.domain.SlicingFunction`,
 # `ai.giskard.domain.TransformationFunction` and `ai.giskard.domain.DatasetProcessFunction`.
 class DatasetProcessFunctionMeta(BaseModel):
     uuid: str
     name: str
     displayName: Optional[str] = None
-    version: int
+    version: Optional[int] = None
     module: Optional[str] = None
     doc: Optional[str] = None
     moduleDoc: Optional[str] = None

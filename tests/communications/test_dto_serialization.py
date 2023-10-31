@@ -25,7 +25,7 @@ MANDATORY_FIELDS = {
     "DataFrame": ["rows"],
     "DataRow": ["columns"],
     "DatasetMeta": [],
-    "DatasetProcessFunctionMeta": ["uuid", "name", "code", "version", "cellLevel"],
+    "DatasetProcessFunctionMeta": ["uuid", "name", "code", "cellLevel"],
     "DatasetProcessing": ["datasetId", "totalRows"],
     "DatasetProcessingFunction": [],
     "DatasetProcessingParam": ["dataset"],
@@ -39,7 +39,7 @@ MANDATORY_FIELDS = {
     "ExplainTextParam": ["model", "feature_name", "columns", "column_types"],
     "Explanation": ["per_feature"],
     "FuncArgument": ["name", "none"],
-    "FunctionMeta": ["uuid", "name", "code", "version"],
+    "FunctionMeta": ["uuid", "name", "code"],
     "GenerateTestSuite": [],
     "GenerateTestSuiteParam": ["project_key"],
     "GeneratedTestInput": ["name", "value", "is_alias"],
@@ -89,6 +89,7 @@ OPTIONAL_FIELDS = {
     "DataRow": [],
     "DatasetMeta": ["target"],
     "DatasetProcessFunctionMeta": [
+        "version",
         "displayName",
         "module",
         "doc",
@@ -124,6 +125,7 @@ OPTIONAL_FIELDS = {
         "args",
     ],
     "FunctionMeta": [
+        "version",
         "displayName",
         "module",
         "doc",
