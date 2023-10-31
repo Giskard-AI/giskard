@@ -16,6 +16,16 @@ def my_simple_test():
     return GiskardTestResult(passed=False)
 
 
+@test
+def my_simple_test_successful():
+    return GiskardTestResult(passed=True)
+
+
+@test
+def my_simple_test_error():
+    raise ValueError("Actively raise an error in the test.")
+
+
 @pytest.mark.parametrize("debug", [
     False, None
 ])
@@ -172,3 +182,63 @@ def test_websocket_actor_run_ad_hoc_test_debug_no_name(enron_data: Dataset):
             with pytest.raises(TypeError, match=".*NoneType.*"):
                 listener.run_ad_hoc_test(client=client, params=params)
 
+
+def test_websocket_actor_run_test_suite():
+    with utils.MockedClient(mock_all=False) as (client, mr):
+        params = websocket.TestSuiteParam(
+            tests= [
+                websocket.SuiteTestArgument(
+                    id=0,
+                    testUuid=my_simple_test.meta.uuid,
+                ),
+                websocket.SuiteTestArgument(
+                    id=1,
+                    testUuid=my_simple_test_successful.meta.uuid,
+                ),
+                websocket.SuiteTestArgument(
+                    id=2,
+                    testUuid=my_simple_test_error.meta.uuid,
+                ),
+            ],
+            globalArguments=[]
+        )
+        utils.register_uri_for_artifact_meta_info(mr, my_simple_test, None)
+        utils.register_uri_for_artifact_meta_info(mr, my_simple_test_successful, None)
+        utils.register_uri_for_artifact_meta_info(mr, my_simple_test_error, None)
+
+        reply = listener.run_test_suite(client, params)
+
+        assert isinstance(reply, websocket.TestSuite)
+        assert not reply.is_error
+        assert not reply.is_pass
+        assert 3 == len(reply.results)
+        assert 0 == reply.results[0].id
+        assert not reply.results[0].result.is_error
+        assert not reply.results[0].result.passed
+        assert 1 == reply.results[1].id
+        assert not reply.results[1].result.is_error
+        assert reply.results[1].result.passed
+        assert 2 == reply.results[2].id
+        assert reply.results[2].result.is_error
+        assert not reply.results[2].result.passed
+
+
+def test_websocket_actor_run_test_suite_raise_error():
+    with utils.MockedClient(mock_all=False) as (client, mr):
+        params = websocket.TestSuiteParam(
+            tests= [
+                websocket.SuiteTestArgument(
+                    id=0,
+                    testUuid=my_simple_test.meta.uuid,
+                ),
+            ],
+            globalArguments=[]
+        )
+        # The test is not registerd, will raise error when downloading
+
+        reply = listener.run_test_suite(client, params)
+
+        assert isinstance(reply, websocket.TestSuite)
+        assert reply.is_error
+        assert not reply.is_pass
+        assert 0 == len(reply.results)
