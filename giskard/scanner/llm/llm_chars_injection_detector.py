@@ -101,7 +101,6 @@ def _generate_char_injection_tests(issue: Issue):
     feature = issue.features[0]
     return {
         f"Character injection ({issue.meta['special_char'].encode('unicode_escape').decode('ascii')}) in “{feature}”": test_llm_char_injection(
-            model=issue.model,
             dataset=issue.dataset,
             characters=[issue.meta["special_char"]],
             features=issue.features,
