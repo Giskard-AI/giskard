@@ -132,8 +132,10 @@ class Dataset(ColumnMetadataMixin):
             metadata, etc.
         name (Optional[str]):
             A string representing the name of the dataset (default None).
-        target (Optional[str]):
-            The column name in df corresponding to the actual target variable (ground truth).
+        target (Union[str, bool, None]):
+            The column name in df corresponding to the actual target variable (ground truth). It can be set to 'False' if not relevant,
+            or to None if not available (default None).
+
         cat_columns (Optional[List[str]]):
             A list of strings representing the names of categorical columns (default None). If not provided,
             the categorical columns will be automatically inferred.
@@ -145,7 +147,7 @@ class Dataset(ColumnMetadataMixin):
     """
 
     name: Optional[str]
-    target: Optional[str]
+    target: Union[str, bool, None]
     column_types: Dict[str, str]
     df: pd.DataFrame
     id: uuid.UUID

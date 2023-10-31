@@ -9,17 +9,17 @@ from giskard.datasets.base import Dataset
 
 
 def validate_target(ds: Dataset):
-    if not ds.target:
+    if ds.target is None:
         warning(
             "You did not provide the optional argument 'target'. "
-            "'target' is the column name in df corresponding to the actual target variable (ground truth)."
+            "'target' is the column name in df corresponding to the actual target variable (ground truth). "
+            "You can 'set target=False' to silence this warning."
         )
-    else:
-        if ds.target not in ds.columns:
-            raise ValueError(
-                "Invalid target parameter:"
-                f" '{ds.target}' column is not present in the dataset with columns: {list(ds.columns)}"
-            )
+    elif ds.target and ds.target not in ds.columns:
+        raise ValueError(
+            "Invalid target parameter:"
+            f" '{ds.target}' column is not present in the dataset with columns: {list(ds.columns)}"
+        )
 
 
 def validate_dtypes(ds: Dataset):
