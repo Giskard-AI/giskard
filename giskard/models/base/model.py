@@ -92,6 +92,7 @@ class BaseModel(ABC):
         Parameters:
             model_type (ModelType): Type of the model, either ModelType.REGRESSION or ModelType.CLASSIFICATION.
             name (str, optional): Name of the model. If not provided, defaults to the class name.
+            description (str, optional): Description of the model's task. Mandatory for non-langchain text_generation models.
             feature_names (Iterable, optional): A list of names of the input features.
             classification_threshold (float, optional): Threshold value used for classification models. Defaults to 0.5.
             classification_labels (Iterable, optional): A list of labels for classification models.

@@ -97,11 +97,12 @@ class TestSuiteResult:
         for test_result in self.results:
             test_name = test_result[0]
             test_name = process_text(test_name)
+            mlflow_metric_name = f"{test_result[1].metric_name} for {test_name}"
             if mlflow_client is None and mlflow_run_id is None:
-                mlflow.log_metric(test_name, test_result[1].metric)
+                mlflow.log_metric(mlflow_metric_name, test_result[1].metric)
             elif mlflow_client and mlflow_run_id:
-                mlflow_client.log_metric(mlflow_run_id, test_name, test_result[1].metric)
-            metrics[test_name] = test_result[1].metric
+                mlflow_client.log_metric(mlflow_run_id, mlflow_metric_name, test_result[1].metric)
+            metrics[mlflow_metric_name] = test_result[1].metric
 
         return metrics
 
