@@ -17,6 +17,40 @@ class RequirementBasedDetector:
         self.num_requirements = num_requirements
         self.num_samples = num_samples
 
+    def get_cost_estimate(self, model: BaseModel, dataset: Dataset) -> dict:
+        counts = _estimate_base_token_counts(model, dataset)
+        model_meta_tokens = counts["model_meta_tokens"]
+        input_sample_tokens = counts["input_sample_tokens"]
+
+        num_calls = 0
+        num_prompt_tokens = 0
+        num_sampled_tokens = 0
+
+        # Requirement generation: base prompt + model meta
+        num_calls += 1
+        num_prompt_tokens += 320 + model_meta_tokens  # base prompt is roughly 320 tokens long
+        num_sampled_tokens += 30 * self.num_requirements  # generated requirements are typically 30 tokens long
+
+        # Adversarial examples generation, for each generated requirement
+        num_calls += self.num_requirements
+        num_prompt_tokens += self.num_requirements * (500 + model_meta_tokens + len(self.get_issue_description()) // 4)
+        num_sampled_tokens += self.num_requirements * input_sample_tokens * self.num_samples
+
+        # Evaluation of adversarial examples, for each example
+        num_calls += self.num_requirements * self.num_samples
+        # base prompt: 200, requirement: 30, model output: 50
+        num_prompt_tokens += (
+            self.num_requirements * self.num_samples * (200 + model_meta_tokens + input_sample_tokens + 30 + 50)
+        )
+        num_sampled_tokens += self.num_requirements * self.num_samples * 15
+
+        return {
+            "model_predict_calls": self.num_requirements * self.num_samples,
+            "llm_calls": num_calls,
+            "llm_prompt_tokens": num_prompt_tokens,
+            "llm_sampled_tokens": num_sampled_tokens,
+        }
+
     def run(self, model: BaseModel, dataset: Dataset) -> Sequence[Issue]:
         issue_description = self.get_issue_description()
 
@@ -70,3 +104,20 @@ def _generate_output_requirement_tests(issue: Issue):
             dataset=issue.dataset, requirement=issue.meta["requirement"]
         )
     }
+
+
+def _estimate_base_token_counts(model: BaseModel, dataset: Dataset) -> int:
+    # Note: For OpenAI (GPT-4), a token generally correspond to ~4 characters for English text.
+    # We use this rule of thumb to give a rough estimate of the number of tokens in a prompt.
+    model_meta_tokens = (
+        len(model.meta.name) + len(model.meta.description) + len(",".join(model.meta.feature_names))
+    ) // 4
+
+    if len(dataset) > 3:
+        input_sample_tokens = (
+            sum(dataset.df[f].apply(lambda x: len(str(x))).mean() for f in model.meta.feature_names) // 4
+        )
+    else:
+        input_sample_tokens = 30
+
+    return {"model_meta_tokens": model_meta_tokens, "input_sample_tokens": input_sample_tokens}

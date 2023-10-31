@@ -102,6 +102,7 @@ class CoherencyEvaluator(LLMBasedEvaluator):
             function_call={"name": "evaluate_model"},  # force function call
             temperature=self.llm_temperature,
             model=self.llm_model,
+            caller_id=self.__class__.__name__,
         )
 
         if out.function_call is None or "passed_test" not in out.function_call.args:

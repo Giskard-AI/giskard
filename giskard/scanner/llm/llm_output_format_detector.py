@@ -34,6 +34,16 @@ class LLMOutputFormattingDetector(RequirementBasedDetector):
     _issue_group = OutputFormatting
     _issue_level = IssueLevel.MEDIUM
 
+    def get_cost_estimate(self, model: BaseModel, dataset: Dataset) -> dict:
+        data = super().get_cost_estimate(model, dataset)
+
+        # Add the cost of the breaker prompt
+        data["llm_calls"] += 1
+        data["llm_prompt_tokens"] += 200
+        data["llm_sampled_tokens"] += 1
+
+        return data
+
     def get_issue_description(self) -> str:
         return OUTPUT_FORMAT_ISSUE_DESCRIPTION
 
@@ -47,6 +57,7 @@ class LLMOutputFormattingDetector(RequirementBasedDetector):
             ],
             temperature=0.1,
             max_tokens=1,
+            caller_id=self.__class__.__name__,
         )
 
         if out.message.strip().upper() != "Y":

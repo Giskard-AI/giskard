@@ -22,6 +22,13 @@ from .report import ScanReport
 
 MAX_ISSUES_PER_DETECTOR = 15
 
+COST_ESTIMATE_TEMPLATE = """This automatic scan will run {num_detectors} detectors to identify vulnerabilities in your model. These are the total estimated costs:
+
+Estimated calls to your model: ~{num_model_calls}
+Estimated OpenAI GPT-4 calls for evaluation: {num_llm_calls} (~{num_llm_prompt_tokens} prompt tokens and ~{num_llm_sampled_tokens} sampled tokens)
+Total OpenAI API costs are estimated to ${estimated_usd:.2f}.
+"""
+
 
 class Scanner:
     def __init__(self, params: Optional[dict] = None, only=None):
@@ -102,6 +109,11 @@ class Scanner:
 
         # Collect the detectors
         detectors = self.get_detectors(tags=[model.meta.model_type.value])
+
+        # Estimate costs
+        if model.is_text_generation:
+            estimates = self._get_cost_estimate(model, dataset, detectors)
+            maybe_print(COST_ESTIMATE_TEMPLATE.format(num_detectors=len(detectors), **estimates), verbose=verbose)
 
         # @TODO: this should be selective to specific warnings
         with warnings.catch_warnings():
@@ -231,6 +243,30 @@ class Scanner:
             detectors.append(detector_cls(**kwargs))
 
         return detectors
+
+    def _get_cost_estimate(self, model, dataset, detectors):
+        df_cost = pd.DataFrame(
+            [d.get_cost_estimate(model, dataset) for d in detectors if hasattr(d, "get_cost_estimate")]
+        )
+
+        # Hardcoded for now…
+        PROMPT_TOKEN_COST = 0.03e-3
+        SAMPLED_TOKEN_COST = 0.06e-3
+
+        # Counts
+        num_model_calls = df_cost.model_predict_calls.sum()
+        num_llm_calls = df_cost.llm_calls.sum()
+        num_llm_prompt_tokens = df_cost.llm_prompt_tokens.sum()
+        num_llm_sampled_tokens = df_cost.llm_sampled_tokens.sum()
+        estimated_usd = PROMPT_TOKEN_COST * num_llm_prompt_tokens + SAMPLED_TOKEN_COST * num_llm_sampled_tokens
+
+        return {
+            "num_model_calls": num_model_calls,
+            "num_llm_calls": num_llm_calls,
+            "num_llm_prompt_tokens": num_llm_prompt_tokens,
+            "num_llm_sampled_tokens": num_llm_sampled_tokens,
+            "estimated_usd": estimated_usd,
+        }
 
 
 def maybe_print(*args, **kwargs):

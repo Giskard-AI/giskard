@@ -29,6 +29,7 @@ class OpenAIClient(LLMClient):
         temperature: float = 1.0,
         function_call: Optional[Dict] = None,
         max_tokens=None,
+        caller_id: Optional[str] = None,
     ):
         extra_params = dict()
         if function_call is not None:
@@ -53,7 +54,11 @@ class OpenAIClient(LLMClient):
             ) from err
 
         self.logger.log_call(
-            prompt_tokens=completion["usage"]["prompt_tokens"], sampled_tokens=completion["usage"]["completion_tokens"]
+            prompt_tokens=completion["usage"]["prompt_tokens"],
+            sampled_tokens=completion["usage"]["completion_tokens"],
+            model=model,
+            client_class=self.__class__.__name__,
+            caller_id=caller_id,
         )
 
         return completion.choices[0]["message"]
@@ -66,6 +71,7 @@ class OpenAIClient(LLMClient):
         temperature=0.5,
         max_tokens=None,
         function_call: Optional[Dict] = None,
+        caller_id: Optional[str] = None,
     ):
         cc = self._completion(
             messages=messages,
@@ -74,6 +80,7 @@ class OpenAIClient(LLMClient):
             functions=functions,
             function_call=function_call,
             max_tokens=max_tokens,
+            caller_id=caller_id,
         )
 
         function_call = None

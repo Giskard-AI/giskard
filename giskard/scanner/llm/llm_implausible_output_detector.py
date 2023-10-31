@@ -11,6 +11,7 @@ from ...models.base.model import BaseModel
 from ...testing.tests.llm.hallucination import test_llm_output_plausibility
 from ..decorators import detector
 from ..issues import Hallucination, Issue, IssueLevel
+from .base import _estimate_base_token_counts
 
 
 @detector(
@@ -20,6 +21,32 @@ from ..issues import Hallucination, Issue, IssueLevel
 class LLMImplausibleOutputDetector:
     def __init__(self, num_samples=10):
         self.num_samples = num_samples
+
+    def get_cost_estimate(self, model: BaseModel, dataset: Dataset) -> dict:
+        counts = _estimate_base_token_counts(model, dataset)
+        model_meta_tokens = counts["model_meta_tokens"]
+        input_sample_tokens = counts["input_sample_tokens"]
+
+        num_calls = 0
+        num_prompt_tokens = 0
+        num_sampled_tokens = 0
+
+        # Data generation
+        num_calls += 1
+        num_prompt_tokens += 340 + model_meta_tokens
+        num_sampled_tokens += input_sample_tokens * self.num_samples
+
+        # Evaluation, for each generated sample
+        num_calls += self.num_samples
+        num_prompt_tokens += self.num_samples * (180 + model_meta_tokens + input_sample_tokens + 50)
+        num_sampled_tokens += self.num_samples * 15
+
+        return {
+            "model_predict_calls": self.num_samples,
+            "llm_calls": num_calls,
+            "llm_prompt_tokens": num_prompt_tokens,
+            "llm_sampled_tokens": num_sampled_tokens,
+        }
 
     def run(self, model: BaseModel, dataset: Dataset) -> Sequence[Issue]:
         # Generate inputs
