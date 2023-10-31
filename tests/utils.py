@@ -211,7 +211,7 @@ def fixup_mocked_artifact_meta_version(meta_info):
 def mock_dataset_meta_info(dataset: Dataset, project_key: str):
     dataset_meta_info = dataset.meta.__dict__.copy()
     with tempfile.TemporaryDirectory() as tmpdir:
-        original_size_bytes, compressed_size_bytes = dataset.save(tmpdir)
+        original_size_bytes, compressed_size_bytes = dataset.save(Path(tmpdir), str(dataset.id))
     dataset_meta_info.update({
         "columnTypes": dataset_meta_info.pop("column_types"),
         "columnDtypes": dataset_meta_info.pop("column_dtypes"),
@@ -297,6 +297,18 @@ def register_uri_for_dataset_artifact_info(mr: requests_mock.Mocker, dataset: Da
         artifacts = register_uri_for_artifacts_under_dir(mr, tmpdir_path, artifacts_base_url, register_file_contents)
 
     mr.register_uri(method=requests_mock.GET, url=artifact_info_url, json=artifacts)
+
+
+def register_uri_for_any_dataset_artifact_info_upload(mr: requests_mock.Mocker, register_files=False):
+    meta_info_pattern = re.compile(
+        "http://giskard-host:12345/api/v2/project/.*/datasets"
+    )
+    artifacts_url_pattern = re.compile(
+        "http://giskard-host:12345/api/v2/artifacts/.*/datasets/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/.*"
+    )
+    mr.register_uri(method=requests_mock.POST, url=meta_info_pattern)
+    if register_files:
+        mr.register_uri(method=requests_mock.POST, url=artifacts_url_pattern)
 
 
 def register_uri_for_model_meta_info(mr: requests_mock.Mocker, model: BaseModel, project_key: str):
