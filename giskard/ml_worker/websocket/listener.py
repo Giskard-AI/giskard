@@ -649,28 +649,6 @@ def run_test_suite(
         return websocket.TestSuite(is_error=True, is_pass=False, results=[], logs=log_listener.close())
 
 
-@websocket_actor(MLWorkerAction.generateTestSuite)
-def generate_test_suite(
-    client: Optional[GiskardClient], params: websocket.GenerateTestSuiteParam, *args, **kwargs
-) -> websocket.GenerateTestSuite:
-    inputs = [map_suite_input_ws(i) for i in params.inputs]
-
-    suite = Suite().generate_tests(inputs).to_dto(client, params.project_key)
-
-    return websocket.GenerateTestSuite(
-        tests=[
-            websocket.GeneratedTestSuite(
-                test_uuid=test.testUuid,
-                inputs=[
-                    websocket.GeneratedTestInput(name=i.name, value=i.value, is_alias=i.is_alias)
-                    for i in test.functionInputs.values()
-                ],
-            )
-            for test in suite.tests
-        ]
-    )
-
-
 @websocket_actor(MLWorkerAction.echo, execute_in_pool=False)
 def echo(params: websocket.EchoMsg, *args, **kwargs) -> websocket.EchoMsg:
     return params

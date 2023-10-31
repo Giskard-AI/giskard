@@ -55,8 +55,6 @@ def parse_action_param(action: MLWorkerAction, params):
         return ExplainTextParam.parse_obj(params)
     elif action == MLWorkerAction.echo:
         return EchoMsg.parse_obj(params)
-    elif action == MLWorkerAction.generateTestSuite:
-        return GenerateTestSuiteParam.parse_obj(params)
     elif action == MLWorkerAction.getPush:
         return GetPushParam.parse_obj(params)
     return params

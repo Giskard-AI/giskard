@@ -18,6 +18,7 @@ from tests import utils
 
 NOT_USED_WEBSOCKET_ACTOR = [
     MLWorkerAction.generateQueryBasedSlicingFunction,
+    MLWorkerAction.generateTestSuite,
 ]
 
 
