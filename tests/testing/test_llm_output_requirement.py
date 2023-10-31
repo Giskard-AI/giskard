@@ -42,7 +42,7 @@ def test_llm_output_requirement(RequirementEvaluator):
     res = my_test.execute()
     assert not res.passed
     assert res.metric == 2
-    # assert res.metric_name == "Failing examples"
+    assert res.metric_name == "Failing examples"
     assert isinstance(res.output_df, Dataset)
 
     # Errored tests
@@ -97,7 +97,7 @@ def test_llm_single_output_requirement(RequirementEvaluator):
     res = my_test.execute()
     assert not res.passed
     assert res.metric == 1
-    # assert res.metric_name == "Failing examples"
+    assert res.metric_name == "Failing examples"
     assert isinstance(res.output_df, Dataset)
 
     # Errored tests
