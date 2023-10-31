@@ -1,4 +1,5 @@
 from ...models.base import BaseModel
+from ...utils.display import truncate
 from .base import BaseDataGenerator
 
 
@@ -23,6 +24,9 @@ Example output: {{"question": "Can I use the `pd.concat` to eat a pizza?"}}
 
 Think step by step and then call the `generate_inputs` function with the generated inputs. You must generate {num_samples} inputs.
 """
+
+    def _make_dataset_name(self, model: BaseModel, num_samples):
+        return truncate(f"Implausibility Examples for {model.meta.name}")
 
     def _make_dataset_name(self, model: BaseModel, num_samples):
         return f"Synthetic Implausible Data for {model.meta.name}"
