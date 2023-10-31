@@ -1,3 +1,6 @@
+from types import TracebackType
+from typing import Dict, Optional, Type
+
 import getpass
 import hashlib
 import os
@@ -8,12 +11,11 @@ import uuid
 from functools import wraps
 from threading import ExceptHookArgs, Lock
 from traceback import TracebackException
-from types import TracebackType
-from typing import Dict, Optional, Type
 
 import requests
 from mixpanel import Mixpanel
 
+from giskard.client.dtos import ServerInfo
 from giskard.settings import settings
 from giskard.utils import fullname, threaded
 from giskard.utils.environment_detector import EnvironmentDetector
@@ -133,12 +135,12 @@ class GiskardAnalyticsCollector:
         )
 
     @analytics_method
-    def init_server_info(self, server_info):
+    def init_server_info(self, server_info: ServerInfo):
         self.server_info = {
-            "Server instance": server_info.get("instanceId"),
-            "Server version": server_info.get("serverVersion"),
-            "Server license": server_info.get("instanceLicenseId"),
-            "Giskard User": server_info.get("user"),
+            "Server instance": server_info.instanceId,
+            "Server version": server_info.serverVersion,
+            "Server license": server_info.instanceLicenseId,
+            "Giskard User": server_info.user,
         }
 
     @analytics_method
