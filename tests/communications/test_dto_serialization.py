@@ -1,7 +1,6 @@
-from typing import Dict, List, Optional, Type
-
 import json
 from pathlib import Path
+from typing import Dict, List, Optional, Type
 
 import pydantic
 import pytest
@@ -26,7 +25,7 @@ MANDATORY_FIELDS = {
     "DataFrame": ["rows"],
     "DataRow": ["columns"],
     "DatasetMeta": [],
-    "DatasetProcessFunctionMeta": ["uuid"],
+    "DatasetProcessFunctionMeta": ["uuid", "name", "code", "version", "cellLevel"],
     "DatasetProcessing": ["datasetId", "totalRows"],
     "DatasetProcessingFunction": [],
     "DatasetProcessingParam": ["dataset"],
@@ -40,7 +39,7 @@ MANDATORY_FIELDS = {
     "ExplainTextParam": ["model", "feature_name", "columns", "column_types"],
     "Explanation": ["per_feature"],
     "FuncArgument": ["name", "none"],
-    "FunctionMeta": ["uuid"],
+    "FunctionMeta": ["uuid", "name", "code", "version"],
     "GenerateTestSuite": [],
     "GenerateTestSuiteParam": ["project_key"],
     "GeneratedTestInput": ["name", "value", "is_alias"],
@@ -57,7 +56,7 @@ MANDATORY_FIELDS = {
         "giskardClientVersion",
     ],
     "GetInfoParam": ["list_packages"],
-    "GetPushParam": ["model", "dataset", "target", "column_types", "column_dtypes"],
+    "GetPushParam": ["model", "dataset", "column_types", "column_dtypes"],
     "GetPushResponse": [],
     "IdentifierSingleTestResult": ["id", "result"],
     "ModelMeta": [],
@@ -70,7 +69,7 @@ MANDATORY_FIELDS = {
     "RunAdHocTest": [],
     "RunAdHocTestParam": ["testUuid"],
     "RunModelForDataFrame": [],
-    "RunModelForDataFrameParam": ["model", "dataframe", "target", "column_types", "column_dtypes"],
+    "RunModelForDataFrameParam": ["model", "dataframe", "column_types", "column_dtypes"],
     "RunModelParam": ["model", "dataset", "inspectionId", "project_key"],
     "SingleTestResult": ["passed"],
     "SuiteInput": ["name", "type"],
@@ -90,17 +89,13 @@ OPTIONAL_FIELDS = {
     "DataRow": [],
     "DatasetMeta": ["target"],
     "DatasetProcessFunctionMeta": [
-        "name",
         "displayName",
-        "version",
         "module",
         "doc",
         "moduleDoc",
         "args",
         "tags",
-        "code",
         "type",
-        "cellLevel",
         "columnType",
         "processType",
     ],
@@ -129,15 +124,12 @@ OPTIONAL_FIELDS = {
         "args",
     ],
     "FunctionMeta": [
-        "name",
         "displayName",
-        "version",
         "module",
         "doc",
         "moduleDoc",
         "args",
         "tags",
-        "code",
         "type",
         "debugDescription",
     ],
@@ -147,7 +139,7 @@ OPTIONAL_FIELDS = {
     "GeneratedTestSuite": ["inputs"],
     "GetInfo": [],
     "GetInfoParam": [],
-    "GetPushParam": ["dataframe", "push_kind", "cta_kind"],
+    "GetPushParam": ["dataframe", "push_kind", "cta_kind", "target"],
     "GetPushResponse": ["contribution", "perturbation", "overconfidence", "borderline", "action"],
     "IdentifierSingleTestResult": ["arguments"],
     "ModelMeta": ["model_type"],
@@ -160,7 +152,7 @@ OPTIONAL_FIELDS = {
     "RunAdHocTest": ["results"],
     "RunAdHocTestParam": ["arguments", "debug"],
     "RunModelForDataFrame": ["all_predictions", "prediction", "probabilities", "raw_prediction"],
-    "RunModelForDataFrameParam": [],
+    "RunModelForDataFrameParam": ["target"],
     "RunModelParam": [],
     "SingleTestResult": [
         "is_error",

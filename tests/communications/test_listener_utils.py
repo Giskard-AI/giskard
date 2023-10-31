@@ -4,7 +4,6 @@ from giskard.ml_worker import websocket
 from giskard.ml_worker.exceptions.IllegalArgumentError import IllegalArgumentError
 from giskard.ml_worker.websocket.listener import extract_debug_info, function_argument_to_ws, parse_function_arguments
 
-
 TEST_PROJECT_KEY = "123"
 TEST_MODEL_ID = "231"
 TEST_DATASET_ID = "321"
@@ -31,12 +30,6 @@ TEST_FUNC_ARGUMENT_BOOL = False
 
 
 def test_function_argument_to_ws():
-    with pytest.raises(IllegalArgumentError):
-        function_argument_to_ws(
-            {
-                "list": [],  # List should not pass
-            }
-        )
 
     # Domain classes creation should be tested somewhere else, do not test them.
     #   "dataset": Dataset,
@@ -48,15 +41,16 @@ def test_function_argument_to_ws():
         "int": TEST_FUNC_ARGUMENT_INT,
         "str": TEST_FUNC_ARGUMENT_STR,
         "bool": TEST_FUNC_ARGUMENT_BOOL,
-        "dict": {},
+        "list": [1, 2, 3],  # List should be a kwargs
+        "dict": {"key": "value"},
     }
     args = function_argument_to_ws(kwargs)
-    assert len(args) == len(kwargs.values())
+    assert len(args) == len(kwargs.values()) - 1
     assert args[0].float_arg == TEST_FUNC_ARGUMENT_FLOAT
     assert args[1].int_arg == TEST_FUNC_ARGUMENT_INT
     assert args[2].str_arg == TEST_FUNC_ARGUMENT_STR
     assert args[3].bool_arg == TEST_FUNC_ARGUMENT_BOOL  # Processed as an integer, filed in GSK-1557
-    assert args[4].kwargs == str({})
+    assert args[4].kwargs == str("kwargs['list'] = [1, 2, 3]\nkwargs['dict'] = {'key': 'value'}")
 
 
 def test_parse_function_arguments():

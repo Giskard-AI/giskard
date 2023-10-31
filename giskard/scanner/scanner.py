@@ -5,10 +5,13 @@ from collections import Counter
 from time import perf_counter
 from typing import Optional, Sequence
 
-from giskard.client.python_utils import warning
+import pandas as pd
 
+from ..client.python_utils import warning
 from ..core.model_validation import validate_model
 from ..datasets.base import Dataset
+from ..llm.errors import LLMGenerationError
+from ..llm.utils import generate_test_dataset
 from ..models.base import BaseModel
 from ..utils import fullname
 from ..utils.analytics_collector import analytics, analytics_method, get_dataset_properties, get_model_properties
@@ -50,8 +53,18 @@ class Scanner:
         # Some extra checks
         if model.is_text_generation:
             logger.warning(
-                "LLM support is in alpha version — 🔥 things may break ! Please report any issues to https://github.com/giskard-AI/giskard/issues."
+                "LLM support is in alpha version — 🔥 things may break! Please report any issues to https://github.com/giskard-AI/giskard/issues."
             )
+            if not model.meta.name or not model.meta.description:
+                raise ValueError(
+                    "LLM models must have a name and a description. Please make sure the `name` and `description` "
+                    "parameters of your model are not empty. We will use them to configure our detectors."
+                )
+            if not model.meta.feature_names:
+                raise ValueError(
+                    "LLM models must specify their input variables to be analyzed. "
+                    "Please make sure to set the `feature_names` parameter when wrapping your model."
+                )
 
         model, dataset = self._prepare_model_dataset(model, dataset)
 
@@ -111,7 +124,7 @@ class Scanner:
         issues = self._postprocess(issues)
         self._collect_analytics(model, dataset, issues, elapsed, model_validation_time)
 
-        return ScanReport(issues)
+        return ScanReport(issues, model=model, dataset=dataset)
 
     def _run_detectors(self, detectors, model, dataset, verbose=True, raise_exceptions=False):
         if not detectors:
@@ -122,7 +135,7 @@ class Scanner:
         issues = []
         errors = []
         for detector in detectors:
-            maybe_print(f"Running detector {detector.__class__.__name__}…", end="", verbose=verbose)
+            maybe_print(f"Running detector {detector.__class__.__name__}…", verbose=verbose)
             detector_start = perf_counter()
             try:
                 detected_issues = detector.run(model, dataset)
@@ -145,7 +158,7 @@ class Scanner:
             detected_issues = sorted(detected_issues, key=lambda i: -i.importance)[:MAX_ISSUES_PER_DETECTOR]
             detector_elapsed = perf_counter() - detector_start
             maybe_print(
-                f" {len(detected_issues)} issues detected. (Took {datetime.timedelta(seconds=detector_elapsed)})",
+                f"{detector.__class__.__name__}: {len(detected_issues)} issue{'s' if len(detected_issues) > 1 else ''} detected. (Took {datetime.timedelta(seconds=detector_elapsed)})",
                 verbose=verbose,
             )
             analytics.track(
@@ -172,17 +185,14 @@ class Scanner:
 
     def _prepare_model_dataset(self, model: BaseModel, dataset: Optional[Dataset]):
         if model.is_text_generation and dataset is None:
-            logger.warning(
-                "No dataset provided. We will use TruthfulQA as a default dataset. This involves rewriting your model prompt."
-            )
-            from .llm.utils import load_default_dataset
-
-            dataset = load_default_dataset()
-            model = model.rewrite_prompt(
-                template="{question}", input_variables=["question"], feature_names=["question"]
-            )
-
-            return model, dataset
+            logger.debug("Automatically generating test dataset.")
+            try:
+                return model, generate_test_dataset(model)
+            except LLMGenerationError:
+                warning(
+                    "Failed to generate test dataset. Trying to run the scan with an empty dataset. For improved results, please provide a test dataset."
+                )
+                return model, Dataset(pd.DataFrame([], columns=model.meta.feature_names))
 
         if dataset is None:
             raise ValueError(f"Dataset must be provided for {model.meta.model_type.value} models.")

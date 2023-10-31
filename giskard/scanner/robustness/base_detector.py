@@ -5,9 +5,9 @@ import numpy as np
 import pandas as pd
 
 from ...datasets.base import Dataset
+from ...llm import LLMImportError
 from ...models.base import BaseModel
 from ..issues import Issue, IssueLevel, Robustness
-from ..llm.utils import LLMImportError
 from ..logger import logger
 from ..registry import Detector
 from .text_transformations import TextTransformation
@@ -28,7 +28,7 @@ class BaseTextPerturbationDetector(Detector):
         self.num_samples = num_samples
         self.output_sensitivity = output_sensitivity
 
-    def run(self, model: BaseModel, dataset: Dataset) -> Sequence[Issue]:
+    def run(self, model: BaseModel, dataset: Dataset, **kwargs) -> Sequence[Issue]:
         transformations = self.transformations or self._get_default_transformations(model, dataset)
         features = [
             col
@@ -195,8 +195,6 @@ def _generate_robustness_tests(issue: Issue):
     # Only generates a single metamorphic test
     return {
         f"Invariance to “{issue.transformation_fn}”": test_metamorphic_invariance(
-            model=issue.model,
-            dataset=issue.dataset,
             transformation_function=issue.transformation_fn,
             slicing_function=None,
             threshold=1 - issue.meta["threshold"],
