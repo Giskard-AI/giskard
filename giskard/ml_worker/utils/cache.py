@@ -22,6 +22,12 @@ class SimpleCache:
         self._results: Optional[Dict[str, Any]] = None
         self._keys: Optional[List[str]] = None
 
+    def content(self):
+        """
+        Returns the content of the cache.
+        """
+        return self._results, self._keys
+
     def start(self, cache_content: Dict[str, Any], cache_keys: List[str]):
         """
         Initialize the cache with existing content and keys.

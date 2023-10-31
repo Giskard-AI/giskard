@@ -688,40 +688,37 @@ def handle_cta(
     push_kind: PushKind,
     cta_kind: CallToActionKind,
 ):
-    project_key = params.model.project_key
+    if push is None:
+        push = get_push_objects(client, params)
+
+    logger.info("Handling push kind: %s with cta kind: %s", str(push_kind), str(cta_kind))
+    push.prepare_cta()
+
     object_uuid = ""
     object_params = {}
 
-    if push is None:
-        push = get_push_objects(client, params)
-    logger.info("Handling push kind: %s with cta kind: %s", str(push_kind), str(cta_kind))
-    push.prepare_cta()
+    project_key = params.model.project_key
 
     # Upload related object depending on CTA type
     if cta_kind == CallToActionKind.CREATE_SLICE or cta_kind == CallToActionKind.CREATE_SLICE_OPEN_DEBUGGER:
         push.slicing_function.meta.tags.append("generated")
         object_uuid = push.slicing_function.upload(client, project_key)
-    if cta_kind == CallToActionKind.SAVE_PERTURBATION:
+    elif cta_kind == CallToActionKind.SAVE_PERTURBATION:
         for perturbation in push.transformation_function:
             object_uuid = perturbation.upload(client, project_key)
-    if cta_kind == CallToActionKind.SAVE_EXAMPLE:
+    elif cta_kind == CallToActionKind.SAVE_EXAMPLE:
         object_uuid = push.saved_example.upload(client, project_key)
-    if cta_kind == CallToActionKind.CREATE_TEST or cta_kind == CallToActionKind.ADD_TEST_TO_CATALOG:
+    elif cta_kind == CallToActionKind.CREATE_TEST or cta_kind == CallToActionKind.ADD_TEST_TO_CATALOG:
+        object_params = {}
         for test in push.tests:
             object_uuid = test.upload(client, project_key)
-        # create empty dict
-        object_params = {}
-        # for every object in push.test_params, check if they're a subclass of Savable and if yes upload them
-        for test_param_name in push.test_params:
-            test_param = push.test_params[test_param_name]
-            if isinstance(test_param, RegistryArtifact):
-                object_params[test_param_name] = test_param.upload(client, project_key)
-            elif isinstance(test_param, Dataset):
+        for test_param_name, test_param in push.test_params.items():
+            if isinstance(test_param, (RegistryArtifact, Dataset)):
                 object_params[test_param_name] = test_param.upload(client, project_key)
             else:
                 object_params[test_param_name] = test_param
 
-    if object_uuid != "":
+    if object_uuid:
         logger.info("Uploaded object for CTA with uuid: %s", object_uuid)
         return websocket.PushAction(object_uuid=object_uuid, arguments=function_argument_to_ws(object_params))
 
@@ -746,7 +743,6 @@ def get_push(
             PushKind.PERTURBATION,
         ]
     )
-    # all_res = {}
     all_ws_res = {}
     push = None
     for kind in kinds:
@@ -758,9 +754,12 @@ def get_push(
         cache_hit_ws, res_ws = CACHE.get_result(("pushws", params))
         if not cache_hit_ws:
             res = get_push_objects(client, params)
-            CACHE.safe_add_result(("pushobj", params), res)
             res_ws = push_to_ws(res)
-            CACHE.add_result(("pushws", params), res_ws)
+            # We currently exclude perturbation from cache because it's not properly pickling the
+            # generated transformation function
+            if kind is not PushKind.PERTURBATION:
+                CACHE.safe_add_result(("pushobj", params), res)
+                CACHE.add_result(("pushws", params), res_ws)
 
         all_ws_res[kind] = res_ws
         if push_kind == kind:
@@ -818,7 +817,6 @@ def get_push_objects(client: Optional[GiskardClient], params: websocket.GetPushP
         return None, None, None, None
 
     push_functions = {
-        # None: (create_contribution_push, create_perturbation_push, create_overconfidence_push, create_borderline_push),
         PushKind.CONTRIBUTION: create_contribution_push,
         PushKind.PERTURBATION: create_perturbation_push,
         PushKind.OVERCONFIDENCE: create_overconfidence_push,
