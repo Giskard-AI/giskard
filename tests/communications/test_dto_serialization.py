@@ -91,8 +91,8 @@ OPTIONAL_FIELDS = {
     "DataRow": [],
     "DatasetMeta": ["target"],
     "DatasetProcessFunctionMeta": [
-        "version",
         "displayName",
+        "version",
         "module",
         "doc",
         "moduleDoc",
@@ -127,8 +127,8 @@ OPTIONAL_FIELDS = {
         "args",
     ],
     "FunctionMeta": [
-        "version",
         "displayName",
+        "version",
         "module",
         "doc",
         "moduleDoc",

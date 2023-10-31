@@ -55,3 +55,16 @@ class ModelMetaInfo(ConfiguredBaseModel):
     createdDate: str
     size: int
     projectId: int
+
+
+class DatasetMetaInfo(ConfiguredBaseModel):
+    target: str
+    columnTypes: Dict[str, str]
+    columnDtypes: Dict[str, str]
+    numberOfRows: int
+    categoryFeatures: Dict[str, List[str]]
+    name: Optional[str]
+    originalSizeBytes: int
+    compressedSizeBytes: int
+    createdDate: str
+    id: str

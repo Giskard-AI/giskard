@@ -16,7 +16,7 @@ from requests.auth import AuthBase
 from requests_toolbelt import sessions
 
 import giskard
-from giskard.client.dtos import ModelMetaInfo, ServerInfo, SuiteInfo, TestSuiteDTO
+from giskard.client.dtos import DatasetMetaInfo, ModelMetaInfo, ServerInfo, SuiteInfo, TestSuiteDTO
 from giskard.client.project import Project
 from giskard.client.python_utils import warning
 from giskard.core.core import SMT, DatasetMeta, ModelMeta, TestFunctionMeta
@@ -164,13 +164,14 @@ class GiskardClient:
 
     def load_dataset_meta(self, project_key: str, uuid: str) -> DatasetMeta:
         res = self._session.get(f"project/{project_key}/datasets/{uuid}").json()
+        info = DatasetMetaInfo.parse_obj(res)  # Used for validation, and avoid extraand typos
         return DatasetMeta(
-            name=res["name"],
-            target=res["target"],
-            column_types=res["columnTypes"],
-            column_dtypes=res["columnDtypes"],
-            number_of_rows=res["numberOfRows"],
-            category_features=res["categoryFeatures"],
+            name=info.name,
+            target=info.target,
+            column_types=info.columnTypes,
+            column_dtypes=info.columnDtypes,
+            number_of_rows=info.numberOfRows,
+            category_features=info.categoryFeatures,
         )
 
     def save_model_meta(
