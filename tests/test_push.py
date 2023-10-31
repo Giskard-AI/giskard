@@ -1,4 +1,5 @@
 import sys
+from pickle import PicklingError
 
 import numpy as np
 import pandas as pd
@@ -8,6 +9,7 @@ import giskard.push
 from giskard.ml_worker.testing.functions.transformation import mad_transformation
 from giskard.ml_worker.testing.registry.giskard_test import GiskardTest
 from giskard.ml_worker.testing.registry.slicing_function import slicing_function
+from giskard.ml_worker.utils.cache import SimpleCache
 from giskard.push import Push
 from giskard.push.contribution import create_contribution_push
 from giskard.push.perturbation import create_perturbation_push
@@ -161,3 +163,35 @@ def test_text_explain_in_push(medical_transcript_model, medical_transcript_data)
     output = create_contribution_push(medical_transcript_model, medical_transcript_data, problematic_df_entry)
     assert output is not None
     assert output.value is not None
+
+
+@pytest.fixture
+def push_lru_cache():
+    cache = SimpleCache(max_results=2)
+    cache.start({}, [])
+    return cache
+
+
+def test_add_result(push_lru_cache):
+    push_lru_cache.add_result("key1", "value1")
+    assert push_lru_cache.get_result("key1") == (True, "value1")
+
+
+def test_add_result_overflow(push_lru_cache):
+    push_lru_cache.add_result("key1", "value1")
+    push_lru_cache.add_result("key2", "value2")
+    push_lru_cache.add_result("key3", "value3")  # This should remove "key1"
+    assert push_lru_cache.get_result("key1") == (False, None)
+
+
+def test_get_result_not_found(push_lru_cache):
+    result = push_lru_cache.get_result("non_existing_key")
+    assert result == (False, None)
+
+
+def test_lru_behavior(push_lru_cache):
+    push_lru_cache.add_result("key1", "value1")
+    push_lru_cache.add_result("key2", "value2")
+    push_lru_cache.get_result("key1")  # Key1 should become the most recently used
+    push_lru_cache.add_result("key3", "value3")  # This should remove "key2"
+    assert push_lru_cache.get_result("key2") == (False, None)
