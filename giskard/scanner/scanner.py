@@ -252,7 +252,7 @@ class Scanner:
         cost_estimates = [d.get_cost_estimate(model, dataset) for d in detectors if hasattr(d, "get_cost_estimate")]
 
         # Counts
-        num_model_calls = sum(c.getget("model_predict_calls", 0) for c in cost_estimates)
+        num_model_calls = sum(c.get("model_predict_calls", 0) for c in cost_estimates)
         num_llm_calls = sum(c.get("llm_calls", 0) for c in cost_estimates)
         num_llm_prompt_tokens = sum(c.get("llm_prompt_tokens", 0) for c in cost_estimates)
         num_llm_sampled_tokens = sum(c.get("llm_sampled_tokens", 0) for c in cost_estimates)
