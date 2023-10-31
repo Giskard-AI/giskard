@@ -1,6 +1,7 @@
 from typing import Sequence
 
 import pandas as pd
+import random
 from colorama import Fore, Style
 
 from ...datasets.base import Dataset
@@ -14,9 +15,10 @@ from ..scanner import logger
 
 @detector("llm_prompt_injection", tags=["jailbreak", "prompt_injection", "llm", "generative", "text_generation"])
 class LLMPromptInjectionDetector:
-    def __init__(self, threshold: float = 0.5, num_samples=100):
+    def __init__(self, threshold: float = 0.5, num_samples=None, num_samples_seed=None):
         self.threshold = threshold  # default
         self.num_samples = num_samples
+        self.num_samples_seed = num_samples_seed
 
     def evaluate_and_group(self, model, dataset, prompts, features, column_types):
         results = {}
@@ -55,6 +57,9 @@ class LLMPromptInjectionDetector:
         column_types = dataset.column_types
 
         prompts = get_all_prompts()
+        rng = random.Random(self.num_samples_seed)
+        if self.num_samples is not None and self.num_samples < len(prompts):
+            prompts = rng.sample(prompts, self.num_samples)
 
         issues = []
 
