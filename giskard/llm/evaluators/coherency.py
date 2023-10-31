@@ -3,8 +3,6 @@ from typing import Optional
 from ...datasets.base import Dataset
 from ...models import cache as model_cache
 from ...models.base import BaseModel
-from ..client import LLMClient
-from ..client import llm_client as default_llm_client
 from ..errors import LLMGenerationError
 from .base import EVALUATE_MODEL_FUNCTIONS, EvaluationResult, LLMBasedEvaluator
 
@@ -47,9 +45,7 @@ If you are not sure or the test is not well defined, consider the model as passi
 
 
 class CoherencyEvaluator(LLMBasedEvaluator):
-    def __init__(self, eval_prompt=None, llm_client: LLMClient = None):
-        self.eval_prompt = eval_prompt or COHERENCY_EVAL_PROMPT
-        self.llm_client = llm_client if llm_client is not None else default_llm_client
+    _default_eval_prompt = COHERENCY_EVAL_PROMPT
 
     def evaluate(self, model: BaseModel, dataset_1: Dataset, dataset_2: Optional[Dataset] = None) -> EvaluationResult:
         if dataset_2 is not None and len(dataset_1) != len(dataset_2):
@@ -104,7 +100,8 @@ class CoherencyEvaluator(LLMBasedEvaluator):
             [{"role": "system", "content": prompt}],
             functions=EVALUATE_MODEL_FUNCTIONS,
             function_call={"name": "evaluate_model"},  # force function call
-            temperature=0.1,
+            temperature=self.llm_temperature,
+            model=self.llm_model,
         )
 
         if out.function_call is None or "passed_test" not in out.function_call.args:

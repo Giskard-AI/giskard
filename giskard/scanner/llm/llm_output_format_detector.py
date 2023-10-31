@@ -3,7 +3,7 @@ from typing import Sequence
 from giskard.scanner import logger
 
 from ...datasets.base import Dataset
-from ...llm import utils
+from ...llm.client import get_default_client
 from ...models.base.model import BaseModel
 from ..decorators import detector
 from ..issues import Issue, IssueLevel, OutputFormatting
@@ -39,7 +39,8 @@ class LLMOutputFormattingDetector(RequirementBasedDetector):
 
     def run(self, model: BaseModel, dataset: Dataset) -> Sequence[Issue]:
         # Let’s check whether the model description provides information about the output format.
-        out = utils.llm(
+        llm_client = get_default_client()
+        out = llm_client.complete(
             [
                 {"role": "system", "content": BREAKER_PROMPT},
                 {"role": "user", "content": "Model description: " + model.meta.description},
@@ -48,7 +49,7 @@ class LLMOutputFormattingDetector(RequirementBasedDetector):
             max_tokens=1,
         )
 
-        if out.strip().upper() != "Y":
+        if out.message.strip().upper() != "Y":
             logger.warning(
                 f"{self.__class__.__name__}: Skipping output format checks because we could not define format requirements based on the model description."
             )
