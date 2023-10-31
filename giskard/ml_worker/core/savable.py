@@ -64,7 +64,9 @@ class Artifact(Generic[SMT], ABC):
             return None
 
         with open(file, "r") as f:
-            return cls._get_meta_class(**yaml.load(f, Loader=yaml.FullLoader))
+            # PyYAML prohibits the arbitary execution so our class cannot be loaded safely,
+            # see: https://github.com/yaml/pyyaml/wiki/PyYAML-yaml.load(input)-Deprecation
+            return yaml.load(f, Loader=yaml.UnsafeLoader)
 
     def upload(self, client: GiskardClient, project_key: Optional[str] = None) -> str:
         """
