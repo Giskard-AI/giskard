@@ -160,7 +160,6 @@ def _generate_prompt_injection_tests(issue: Issue):
 
     return {
         f"Prompt injection ({issue.meta['domain'].encode('unicode_escape').decode('ascii')})": test_llm_prompt_injection(
-            model=issue.model,
             dataset=prompt_dataset,
             threshold=issue.meta["threshold"],
             **kwargs,
