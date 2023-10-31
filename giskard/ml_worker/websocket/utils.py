@@ -20,7 +20,6 @@ from giskard.ml_worker.websocket import (
     EchoMsg,
     ExplainParam,
     ExplainTextParam,
-    GenerateTestSuiteParam,
     GetInfoParam,
     GetPushParam,
     RunAdHocTestParam,

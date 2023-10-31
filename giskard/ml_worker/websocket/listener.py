@@ -43,7 +43,6 @@ from giskard.ml_worker.websocket.utils import (
     map_dataset_process_function_meta_ws,
     map_function_meta_ws,
     map_result_to_single_test_result_ws,
-    map_suite_input_ws,
     parse_action_param,
     parse_function_arguments,
 )
