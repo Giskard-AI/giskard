@@ -251,9 +251,18 @@ def mock_model_meta_info(model: BaseModel, project_key: str):
     return model_meta_info
 
 
-def register_uri_for_artifact_meta_info(mr: requests_mock.Mocker, cf: Artifact, project_key:Optional[str] = None):
-    url = posixpath.join(CLIENT_BASE_URL, "project", project_key, cf._get_name(), cf.meta.uuid) if project_key \
+def get_url_for_artifact_meta_info(cf: Artifact, project_key:Optional[str] = None):
+    return posixpath.join(CLIENT_BASE_URL, "project", project_key, cf._get_name(), cf.meta.uuid) if project_key \
         else posixpath.join(CLIENT_BASE_URL, cf._get_name(), cf.meta.uuid)
+
+
+def get_url_for_artifacts_base(cf: Artifact, project_key:Optional[str] = None):
+    return posixpath.join(CLIENT_BASE_URL, "artifacts", project_key, cf._get_name(), cf.meta.uuid) if project_key \
+        else posixpath.join(CLIENT_BASE_URL, "artifacts", "global", cf._get_name(), cf.meta.uuid)
+
+
+def register_uri_for_artifact_meta_info(mr: requests_mock.Mocker, cf: Artifact, project_key:Optional[str] = None):
+    url = get_url_for_artifact_meta_info(cf, project_key)
     # Fixup the differences from Backend
     meta_info = fixup_mocked_artifact_meta_version(cf.meta.to_json())
 
