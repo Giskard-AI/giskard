@@ -1,10 +1,13 @@
-from enum import Enum
 from typing import Dict, List, Optional
 
-from pydantic import BaseModel, Field
+from enum import Enum
+
+from pydantic import Field
+
+from giskard.core.validation import ConfiguredBaseModel
 
 
-class WorkerReply(BaseModel):
+class WorkerReply(ConfiguredBaseModel):
     pass
 
 
@@ -18,13 +21,13 @@ class ErrorReply(WorkerReply):
     detail: Optional[str] = None
 
 
-class ArtifactRef(BaseModel):
+class ArtifactRef(ConfiguredBaseModel):
     project_key: Optional[str] = None
     id: str
     sample: Optional[bool] = None
 
 
-class TestFunctionArgument(BaseModel):
+class TestFunctionArgument(ConfiguredBaseModel):
     name: str
     type: str
     optional: bool
@@ -35,7 +38,7 @@ class TestFunctionArgument(BaseModel):
 # CallableMeta shows that all fields can be none,
 # but we have a pre-check here for Database constraints except auto-created "version":
 # referring to `ai.giskard.domain.Callable` and `ai.giskard.domain.TestFunction`.
-class FunctionMeta(BaseModel):
+class FunctionMeta(ConfiguredBaseModel):
     uuid: str
     name: str
     displayName: Optional[str] = None
@@ -54,7 +57,7 @@ class FunctionMeta(BaseModel):
 # but we have a pre-check here for Database constraints except auto-created "version":
 # referring to `ai.giskard.domain.Callable`, `ai.giskard.domain.SlicingFunction`,
 # `ai.giskard.domain.TransformationFunction` and `ai.giskard.domain.DatasetProcessFunction`.
-class DatasetProcessFunctionMeta(BaseModel):
+class DatasetProcessFunctionMeta(ConfiguredBaseModel):
     uuid: str
     name: str
     displayName: Optional[str] = None
@@ -77,15 +80,15 @@ class Catalog(WorkerReply):
     transformations: Dict[str, DatasetProcessFunctionMeta]
 
 
-class DataRow(BaseModel):
+class DataRow(ConfiguredBaseModel):
     columns: Dict[str, str]
 
 
-class DataFrame(BaseModel):
+class DataFrame(ConfiguredBaseModel):
     rows: List[DataRow]
 
 
-class DatasetRowModificationResult(BaseModel):
+class DatasetRowModificationResult(ConfiguredBaseModel):
     rowId: int
     modifications: Dict[str, str]
 
@@ -97,7 +100,7 @@ class DatasetProcessing(WorkerReply):
     modifications: Optional[List[DatasetRowModificationResult]] = None
 
 
-class FuncArgument(BaseModel):
+class FuncArgument(ConfiguredBaseModel):
     name: str
     model: Optional[ArtifactRef] = None
     dataset: Optional[ArtifactRef] = None
@@ -112,13 +115,13 @@ class FuncArgument(BaseModel):
     is_none: bool = Field(..., alias="none")
 
 
-class DatasetProcessingFunction(BaseModel):
+class DatasetProcessingFunction(ConfiguredBaseModel):
     slicingFunction: Optional[ArtifactRef] = None
     transformationFunction: Optional[ArtifactRef] = None
     arguments: Optional[List[FuncArgument]] = None
 
 
-class DatasetProcessingParam(BaseModel):
+class DatasetProcessingParam(ConfiguredBaseModel):
     dataset: ArtifactRef
     functions: Optional[List[DatasetProcessingFunction]] = None
 
@@ -127,7 +130,7 @@ class EchoMsg(WorkerReply):
     msg: str
 
 
-class Explanation(BaseModel):
+class Explanation(ConfiguredBaseModel):
     per_feature: Dict[str, float]
 
 
@@ -135,13 +138,13 @@ class Explain(WorkerReply):
     explanations: Dict[str, Explanation]
 
 
-class ExplainParam(BaseModel):
+class ExplainParam(ConfiguredBaseModel):
     model: ArtifactRef
     dataset: ArtifactRef
     columns: Dict[str, str]
 
 
-class WeightsPerFeature(BaseModel):
+class WeightsPerFeature(ConfiguredBaseModel):
     weights: Optional[List[float]] = None
 
 
@@ -150,20 +153,20 @@ class ExplainText(WorkerReply):
     weights: Dict[str, WeightsPerFeature]
 
 
-class ExplainTextParam(BaseModel):
+class ExplainTextParam(ConfiguredBaseModel):
     model: ArtifactRef
     feature_name: str
     columns: Dict[str, Optional[str]]
     column_types: Dict[str, str]
 
 
-class GeneratedTestInput(BaseModel):
+class GeneratedTestInput(ConfiguredBaseModel):
     name: str
     value: str
     is_alias: bool
 
 
-class GeneratedTestSuite(BaseModel):
+class GeneratedTestSuite(ConfiguredBaseModel):
     test_uuid: str
     inputs: Optional[List[GeneratedTestInput]] = None
 
@@ -172,27 +175,27 @@ class GenerateTestSuite(WorkerReply):
     tests: Optional[List[GeneratedTestSuite]] = None
 
 
-class ModelMeta(BaseModel):
+class ModelMeta(ConfiguredBaseModel):
     model_type: Optional[str] = None
 
 
-class DatasetMeta(BaseModel):
+class DatasetMeta(ConfiguredBaseModel):
     target: Optional[str] = None
 
 
-class SuiteInput(BaseModel):
+class SuiteInput(ConfiguredBaseModel):
     name: str
     type: str
     modelMeta: Optional[ModelMeta] = None
     datasetMeta: Optional[DatasetMeta] = None
 
 
-class GenerateTestSuiteParam(BaseModel):
+class GenerateTestSuiteParam(ConfiguredBaseModel):
     project_key: str
     inputs: Optional[List[SuiteInput]] = None
 
 
-class Platform(BaseModel):
+class Platform(ConfiguredBaseModel):
     machine: str
     node: str
     processor: str
@@ -213,7 +216,7 @@ class GetInfo(WorkerReply):
     giskardClientVersion: str
 
 
-class GetInfoParam(BaseModel):
+class GetInfoParam(ConfiguredBaseModel):
     list_packages: bool
 
 
@@ -222,17 +225,17 @@ class TestMessageType(Enum):
     INFO = 1
 
 
-class TestMessage(BaseModel):
+class TestMessage(ConfiguredBaseModel):
     type: TestMessageType
     text: str
 
 
-class PartialUnexpectedCounts(BaseModel):
+class PartialUnexpectedCounts(ConfiguredBaseModel):
     value: Optional[List[int]] = None
     count: int
 
 
-class SingleTestResult(BaseModel):
+class SingleTestResult(ConfiguredBaseModel):
     passed: bool
     is_error: Optional[bool] = None
     messages: Optional[List[TestMessage]] = None
@@ -254,13 +257,13 @@ class SingleTestResult(BaseModel):
     output_df_id: Optional[str] = None
 
 
-class IdentifierSingleTestResult(BaseModel):
+class IdentifierSingleTestResult(ConfiguredBaseModel):
     id: int
     result: SingleTestResult
     arguments: Optional[List[FuncArgument]] = None
 
 
-class NamedSingleTestResult(BaseModel):
+class NamedSingleTestResult(ConfiguredBaseModel):
     testUuid: str
     result: SingleTestResult
 
@@ -269,7 +272,7 @@ class RunAdHocTest(WorkerReply):
     results: Optional[List[NamedSingleTestResult]] = None
 
 
-class RunAdHocTestParam(BaseModel):
+class RunAdHocTestParam(ConfiguredBaseModel):
     testUuid: str
     arguments: Optional[List[FuncArgument]] = None
     debug: Optional[bool] = None
@@ -282,7 +285,7 @@ class RunModelForDataFrame(WorkerReply):
     raw_prediction: Optional[List[float]] = None
 
 
-class RunModelForDataFrameParam(BaseModel):
+class RunModelForDataFrameParam(ConfiguredBaseModel):
     model: ArtifactRef
     dataframe: DataFrame
     target: Optional[str] = None
@@ -290,14 +293,14 @@ class RunModelForDataFrameParam(BaseModel):
     column_dtypes: Dict[str, str]
 
 
-class RunModelParam(BaseModel):
+class RunModelParam(ConfiguredBaseModel):
     model: ArtifactRef
     dataset: ArtifactRef
     inspectionId: int
     project_key: str
 
 
-class SuiteTestArgument(BaseModel):
+class SuiteTestArgument(ConfiguredBaseModel):
     id: int
     testUuid: str
     arguments: Optional[List[FuncArgument]] = None
@@ -310,7 +313,7 @@ class TestSuite(WorkerReply):
     logs: str
 
 
-class TestSuiteParam(BaseModel):
+class TestSuiteParam(ConfiguredBaseModel):
     tests: Optional[List[SuiteTestArgument]] = None
     globalArguments: Optional[List[FuncArgument]] = None
 
@@ -338,7 +341,7 @@ class CallToActionKind(Enum):
     CREATE_UNIT_TEST = 11
 
 
-class GetPushParam(BaseModel):
+class GetPushParam(ConfiguredBaseModel):
     model: ArtifactRef
     dataset: ArtifactRef
     dataframe: Optional[DataFrame] = None
@@ -347,16 +350,17 @@ class GetPushParam(BaseModel):
     column_dtypes: Dict[str, str]
     push_kind: Optional[PushKind] = None
     cta_kind: Optional[CallToActionKind] = None
+    rowIdx: int
 
 
-class PushDetails(BaseModel):
+class PushDetails(ConfiguredBaseModel):
     action: str
     explanation: str
     button: str
     cta: CallToActionKind
 
 
-class Push(BaseModel):
+class Push(ConfiguredBaseModel):
     kind: PushKind
     key: Optional[str] = None
     value: Optional[str] = None
@@ -364,12 +368,12 @@ class Push(BaseModel):
     push_details: List[PushDetails]
 
 
-class PushAction(BaseModel):
+class PushAction(ConfiguredBaseModel):
     object_uuid: str
     arguments: Optional[List[FuncArgument]] = None
 
 
-class GetPushResponse(BaseModel):
+class GetPushResponse(ConfiguredBaseModel):
     contribution: Optional[Push] = None
     perturbation: Optional[Push] = None
     overconfidence: Optional[Push] = None
