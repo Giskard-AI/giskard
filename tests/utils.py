@@ -232,29 +232,34 @@ def mock_dataset_meta_info(dataset: Dataset, project_key: str):
 
 
 def mock_model_meta_info(model: BaseModel, project_key: str):
+    meta = model.meta
     size = 0
     with tempfile.TemporaryDirectory() as tmpdir:
         model.save(tmpdir)
         size = get_size(tmpdir)
-    meta = model.meta
-    model_meta_info = meta.__dict__.copy()
-    model_meta_info.update({
-        "threshold": model_meta_info.pop("classification_threshold"),
-        "modelType": model_meta_info.pop("model_type").name.upper(),
-        "featureNames": model_meta_info.pop("feature_names"),
-        "classificationLabels": model_meta_info.pop("classification_labels"),
-        "classificationLabelsDtype": (
+
+    logger.debug(f"The project_key {project_key} will be ignored by Backend")
+
+    model_meta_info = dtos.ModelMetaInfo(
+        id=str(model.id),
+        name=meta.name or model.__class__.__name__,
+        modelType=meta.model_type.name.upper(),
+        featureNames=meta.feature_names,
+        threshold=meta.classification_threshold,
+        description=meta.description,
+        classificationLabels=meta.classification_labels,
+        classificationLabelsDtype=(
             None
             if (not meta.classification_labels or not len(meta.classification_labels))
             else type(meta.classification_labels[0]).__name__
         ),
-        "languageVersion": platform.python_version(),
-        "language": "PYTHON",
-        "id": str(model.id),
-        "project": project_key,
-        "size": size,
-    })
-    return model_meta_info
+        languageVersion=platform.python_version(),
+        language="PYTHON",
+        size=size,
+        createdDate="now",   # The field createdDate is not nullable but not used
+        projectId=0,    # Mock a project ID
+    )
+    return model_meta_info.dict()
 
 
 def get_url_for_artifact_meta_info(cf: Artifact, project_key:Optional[str] = None):
