@@ -26,6 +26,7 @@ from tests.utils import (
     get_url_for_artifact_meta_info,
     get_url_for_artifacts_base,
     local_save_artifact_under_giskard_home_cache,
+    is_url_requested,
 )
 
 
@@ -105,6 +106,7 @@ def test_download_callable_function(cf: Artifact):
             assert (tmpdir_path / CALLABLE_FUNCTION_PKL_CACHE).exists()
             assert (tmpdir_path / CALLABLE_FUNCTION_META_CACHE).exists()
 
+            requested_urls = []
             # Fixup the differences from Backend
             meta_info = fixup_mocked_artifact_meta_version(cf.meta.to_json())
             # Fixup the name to avoid load from module
@@ -113,9 +115,10 @@ def test_download_callable_function(cf: Artifact):
             })
             url = get_url_for_artifact_meta_info(cf, project_key=None)
             mr.register_uri(method=requests_mock.GET, url=url, json=meta_info)
+            requested_urls.append(url)
 
             # Register for Artifact info
-            register_uri_for_artifact_info(mr, cf, project_key=None)
+            requested_urls.extend(register_uri_for_artifact_info(mr, cf, project_key=None))
 
             # Register for Artifacts content
             artifacts_base_url = get_url_for_artifacts_base(cf, project_key=None)
@@ -126,9 +129,14 @@ def test_download_callable_function(cf: Artifact):
                         url=posixpath.join(artifacts_base_url, file),
                         content=f.read(),
                     )
+                    requested_urls.append(posixpath.join(artifacts_base_url, file))
 
             # Download: should not call load_artifact to request and download
             download_cf = cf.__class__.download(uuid=cf.meta.uuid, client=client, project_key=None)
+
+            for requested_url in requested_urls:
+                assert is_url_requested(mr.request_history, requested_url)
+
             # Check the downloaded info
             assert download_cf.__class__ is cf.__class__
             assert download_cf.meta.uuid == cf.meta.uuid
@@ -150,12 +158,16 @@ def test_download_global_callable_function_from_module(cf: Artifact):
         cf.meta.uuid = str(uuid.uuid4())    # Regenerate a UUID to ensure not loading from registry
         cache_dir = get_local_cache_callable_artifact(project_key=None, artifact=cf)
 
+        requested_urls = []
         # Prepare global URL
-        register_uri_for_artifact_meta_info(mr, cf, project_key=None)
-        register_uri_for_artifact_info(mr, cf, project_key=None)
+        requested_urls.extend(register_uri_for_artifact_meta_info(mr, cf, project_key=None))
 
         # Download: should not call load_artifact to request and download
         download_cf = cf.__class__.download(uuid=cf.meta.uuid, client=client, project_key=None)
+
+        for requested_url in requested_urls:
+            assert is_url_requested(mr.request_history, requested_url)
+
         # Check the downloaded info
         assert download_cf.__class__ is cf.__class__
         assert download_cf.meta.uuid == cf.meta.uuid
@@ -182,10 +194,14 @@ def test_download_global_callable_function_from_cache(cf: Artifact):
         assert (cache_dir / CALLABLE_FUNCTION_PKL_CACHE).exists()
         assert (cache_dir / CALLABLE_FUNCTION_META_CACHE).exists()
 
-        register_uri_for_artifact_meta_info(mr, cf, project_key=None)
+        requested_urls = register_uri_for_artifact_meta_info(mr, cf, project_key=None)
 
         # Download: should not call load_artifact to request and download
         download_cf = cf.__class__.download(uuid=cf.meta.uuid, client=client, project_key=None)
+
+        for requested_url in requested_urls:
+            assert is_url_requested(mr.request_history, requested_url)
+
         # Check the downloaded info
         assert download_cf.__class__ is cf.__class__
         assert download_cf.meta.uuid == cf.meta.uuid
@@ -214,6 +230,7 @@ def test_download_callable_function_in_project(cf: Artifact):
             assert (tmpdir_path / CALLABLE_FUNCTION_PKL_CACHE).exists()
             assert (tmpdir_path / CALLABLE_FUNCTION_META_CACHE).exists()
 
+            requested_urls = []
             # Fixup the differences from Backend
             meta_info = fixup_mocked_artifact_meta_version(cf.meta.to_json())
             # Fixup the name to avoid load from module
@@ -222,9 +239,10 @@ def test_download_callable_function_in_project(cf: Artifact):
             })
             url = get_url_for_artifact_meta_info(cf, project_key=project_key)
             mr.register_uri(method=requests_mock.GET, url=url, json=meta_info)
+            requested_urls.append(url)
 
             # Register for Artifact info
-            register_uri_for_artifact_info(mr, cf, project_key=project_key)
+            requested_urls.extend(register_uri_for_artifact_info(mr, cf, project_key=project_key))
 
             # Register for Artifacts content
             artifacts_base_url = get_url_for_artifacts_base(cf, project_key=project_key)
@@ -235,9 +253,14 @@ def test_download_callable_function_in_project(cf: Artifact):
                         url=posixpath.join(artifacts_base_url, file),
                         content=f.read(),
                     )
+                    requested_urls.append(posixpath.join(artifacts_base_url, file))
 
             # Download: should not call load_artifact to request and download
             download_cf = cf.__class__.download(uuid=cf.meta.uuid, client=client, project_key=project_key)
+
+            for requested_url in requested_urls:
+                assert is_url_requested(mr.request_history, requested_url)
+
             # Check the downloaded info
             assert download_cf.__class__ is cf.__class__
             assert download_cf.meta.uuid == cf.meta.uuid
@@ -260,12 +283,16 @@ def test_download_callable_function_from_module_in_project(cf: Artifact):
         cf.meta.uuid = str(uuid.uuid4())    # Regenerate a UUID to ensure not loading from registry
         cache_dir = get_local_cache_callable_artifact(project_key=project_key, artifact=cf)
 
+        requested_urls = []
         # Prepare global URL
-        register_uri_for_artifact_meta_info(mr, cf, project_key)
-        register_uri_for_artifact_info(mr, cf, project_key)
+        requested_urls.extend(register_uri_for_artifact_meta_info(mr, cf, project_key))
 
         # Download: should not call load_artifact to request and download
         download_cf = cf.__class__.download(uuid=cf.meta.uuid, client=client, project_key=project_key)
+
+        for requested_url in requested_urls:
+            assert is_url_requested(mr.request_history, requested_url)
+
         # Check the downloaded info
         assert download_cf.__class__ is cf.__class__
         assert download_cf.meta.uuid == cf.meta.uuid
@@ -293,10 +320,14 @@ def test_download_callable_function_from_cache_in_project(cf: Artifact):
         assert (cache_dir / CALLABLE_FUNCTION_PKL_CACHE).exists()
         assert (cache_dir / CALLABLE_FUNCTION_META_CACHE).exists()
 
-        register_uri_for_artifact_meta_info(mr, cf, project_key)
+        requested_urls = register_uri_for_artifact_meta_info(mr, cf, project_key)
 
         # Download: should not call load_artifact to request and download
         download_cf = cf.__class__.download(uuid=cf.meta.uuid, client=client, project_key=project_key)
+
+        for requested_url in requested_urls:
+            assert is_url_requested(mr.request_history, requested_url)
+
         # Check the downloaded info
         assert download_cf.__class__ is cf.__class__
         assert download_cf.meta.uuid == cf.meta.uuid
