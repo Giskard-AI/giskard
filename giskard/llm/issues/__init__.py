@@ -1,18 +1,20 @@
 from typing import Dict, List
 
-from pydantic import BaseModel, Field
+from pydantic import Field
+
+from giskard.core.validation import ConfiguredBaseModel
 
 from ...llm import LLMImportError
 from ..config import llm_config
 
 
-class TestCases(BaseModel):
+class TestCases(ConfiguredBaseModel):
     assertions: List[str] = Field(
         description="A list of concise descriptions outlining the expected behaviors. If no relevant behaviors can be generated for a specific {issue_name}, the list should be an empty array: []"
     )
 
 
-class PromptInputs(BaseModel):
+class PromptInputs(ConfiguredBaseModel):
     inputs: List[Dict[str, str]] = Field(
         description="A list of dictionaries with all variables as keys, along with their corresponding textual input value."
     )
@@ -136,7 +138,7 @@ Please make sure that the inputs are relevant to the following model:
 
 For each variable in the model, provide a textual input value: {variables}.
 
-**Format Instructions**: 
+**Format Instructions**:
 Please respond with a JSON object that includes the following keys:
 - inputs: A list of {input_count} dictionaries with all variables ({variables}) as keys, along with their corresponding textual input value.
 

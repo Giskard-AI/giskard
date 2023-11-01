@@ -1,4 +1,4 @@
-from typing import Callable, Dict, Optional, Union
+from typing import Any, Callable, Dict, Optional, Union
 
 import json
 import logging
@@ -10,6 +10,7 @@ import tempfile
 import time
 import traceback
 from concurrent.futures import CancelledError, Future
+from copy import copy
 from dataclasses import dataclass
 from pathlib import Path
 
@@ -580,6 +581,8 @@ def run_ad_hoc_test(
     test: GiskardTest = GiskardTest.download(params.testUuid, client, None)
 
     arguments = parse_function_arguments(client, params.arguments)
+    if "kwargs" in arguments:
+        arguments.update(**arguments.pop("kwargs"))
 
     arguments["debug"] = params.debug if params.debug else None
     debug_info = extract_debug_info(params.arguments) if params.debug else None
@@ -622,12 +625,17 @@ def run_test_suite(
 
         suite = Suite()
         for t in tests:
-            suite.add_test(t["test"].get_builder()(**t["arguments"]), t["id"])
+            test_args = t["arguments"]
+            if "kwargs" in test_args:
+                test_args: Dict[str, Any] = copy(test_args)
+                test_args.update(**test_args.pop("kwargs"))
+            suite.add_test(t["test"].get_builder()(**test_args), t["id"])
 
         suite_result = suite.run(**global_arguments)
 
         identifier_single_test_results = []
-        for identifier, result, arguments in suite_result.results:
+        for t, (identifier, result, _) in zip(tests, suite_result.results):
+            arguments = t["arguments"]
             identifier_single_test_results.append(
                 websocket.IdentifierSingleTestResult(
                     id=identifier,

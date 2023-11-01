@@ -185,7 +185,7 @@ def test_scanner_on_the_UI(dataset_name, model_name, request):
 def test_warning_duplicate_index(german_credit_model, german_credit_data):
     df = german_credit_data.df.copy()
     new_row = df.loc[1]
-    df = df.append(new_row)
+    df = pd.concat([df, pd.DataFrame([new_row])])
 
     dataset = Dataset(df=df, target=german_credit_data.target, cat_columns=german_credit_data.cat_columns)
 

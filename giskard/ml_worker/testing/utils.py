@@ -1,13 +1,14 @@
-from enum import Enum
-from functools import wraps
-import numbers
 from typing import Optional
 
-from giskard.datasets.base import Dataset
+import numbers
+from enum import Enum
+from functools import wraps
+
 from giskard.core.core import SupportedModelTypes
+from giskard.datasets.base import Dataset
 
 
-class Direction(Enum):
+class Direction(int, Enum):
     Invariant = 0
     Increasing = 1
     Decreasing = -1
