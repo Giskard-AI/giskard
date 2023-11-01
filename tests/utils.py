@@ -18,6 +18,7 @@ from giskard.path_utils import get_size
 
 import tests.utils
 from giskard.client.giskard_client import GiskardClient
+from giskard.client import dtos
 from giskard.datasets.base import Dataset
 from giskard.ml_worker import ml_worker
 from giskard.models.base.model import BaseModel
@@ -46,6 +47,13 @@ def match_url_patterns(last_requests, url_pattern):
         for header_name in headers_to_match.keys():
             if header_name in dict(req.headers).keys():
                 assert req.headers.get(header_name) == headers_to_match[header_name]
+
+
+def is_url_requested(last_requests, url):
+    for i in last_requests:
+        if i.url == url:
+            return True
+    return False
 
 
 class MockedClient:
@@ -209,46 +217,56 @@ def fixup_mocked_artifact_meta_version(meta_info):
 
 
 def mock_dataset_meta_info(dataset: Dataset, project_key: str):
-    dataset_meta_info = dataset.meta.__dict__.copy()
+    meta = dataset.meta
     with tempfile.TemporaryDirectory() as tmpdir:
         original_size_bytes, compressed_size_bytes = dataset.save(Path(tmpdir), str(dataset.id))
-    dataset_meta_info.update({
-        "columnTypes": dataset_meta_info.pop("column_types"),
-        "columnDtypes": dataset_meta_info.pop("column_dtypes"),
-        "numberOfRows": dataset_meta_info.pop("number_of_rows"),
-        "categoryFeatures": dataset_meta_info.pop("category_features"),
-        "project": project_key,
-        "id": str(dataset.id),
-        "originalSizeBytes": original_size_bytes,
-        "compressedSizeBytes": compressed_size_bytes,
-    })
-    return dataset_meta_info
+
+    logger.debug(f"The project_key {project_key} will be ignored by Backend")
+
+    dataset_meta_info = dtos.DatasetMetaInfo(
+        target=meta.target,
+        columnTypes=meta.column_types,
+        columnDtypes=meta.column_dtypes,
+        numberOfRows=meta.number_of_rows,
+        categoryFeatures=meta.category_features,
+        name=meta.name,
+        originalSizeBytes=original_size_bytes,
+        compressedSizeBytes=compressed_size_bytes,
+        createdDate="now",  # createdDate is not nullable but not used
+        id=str(dataset.id),
+    )
+    return dataset_meta_info.dict()
 
 
 def mock_model_meta_info(model: BaseModel, project_key: str):
+    meta = model.meta
     size = 0
     with tempfile.TemporaryDirectory() as tmpdir:
         model.save(tmpdir)
         size = get_size(tmpdir)
-    meta = model.meta
-    model_meta_info = meta.__dict__.copy()
-    model_meta_info.update({
-        "threshold": model_meta_info.pop("classification_threshold"),
-        "modelType": model_meta_info.pop("model_type").name.upper(),
-        "featureNames": model_meta_info.pop("feature_names"),
-        "classificationLabels": model_meta_info.pop("classification_labels"),
-        "classificationLabelsDtype": (
+
+    logger.debug(f"The project_key {project_key} will be ignored by Backend")
+
+    model_meta_info = dtos.ModelMetaInfo(
+        id=str(model.id),
+        name=meta.name or model.__class__.__name__,
+        modelType=meta.model_type.name.upper(),
+        featureNames=meta.feature_names,
+        threshold=meta.classification_threshold,
+        description=meta.description,
+        classificationLabels=meta.classification_labels,
+        classificationLabelsDtype=(
             None
             if (not meta.classification_labels or not len(meta.classification_labels))
             else type(meta.classification_labels[0]).__name__
         ),
-        "languageVersion": platform.python_version(),
-        "language": "PYTHON",
-        "id": str(model.id),
-        "project": project_key,
-        "size": size,
-    })
-    return model_meta_info
+        languageVersion=platform.python_version(),
+        language="PYTHON",
+        size=size,
+        createdDate="now",   # The field createdDate is not nullable but not used
+        projectId=0,    # Mock a project ID
+    )
+    return model_meta_info.dict()
 
 
 def get_url_for_artifact_meta_info(cf: Artifact, project_key:Optional[str] = None):
@@ -261,12 +279,21 @@ def get_url_for_artifacts_base(cf: Artifact, project_key:Optional[str] = None):
         else posixpath.join(CLIENT_BASE_URL, "artifacts", "global", cf._get_name(), cf.meta.uuid)
 
 
+def get_url_for_dataset(dataset: Dataset, project_key: str):
+    return posixpath.join(CLIENT_BASE_URL, "project", project_key, "datasets", str(dataset.id))
+
+
+def get_url_for_model(model: BaseModel, project_key: str):
+    return posixpath.join(CLIENT_BASE_URL, "project", project_key, "models", str(model.id))
+
+
 def register_uri_for_artifact_meta_info(mr: requests_mock.Mocker, cf: Artifact, project_key:Optional[str] = None):
     url = get_url_for_artifact_meta_info(cf, project_key)
     # Fixup the differences from Backend
     meta_info = fixup_mocked_artifact_meta_version(cf.meta.to_json())
 
     mr.register_uri(method=requests_mock.GET, url=url, json=meta_info)
+    return [url]
 
 
 def register_uri_for_artifact_info(mr: requests_mock.Mocker, cf: Artifact, project_key:Optional[str] = None):
@@ -277,35 +304,42 @@ def register_uri_for_artifact_info(mr: requests_mock.Mocker, cf: Artifact, proje
         CALLABLE_FUNCTION_META_CACHE,
     ]
     mr.register_uri(method=requests_mock.GET, url=artifact_info_url, json=artifacts)
+    return [artifact_info_url]
 
 
 def register_uri_for_artifacts_under_dir(mr: requests_mock.Mocker, dir_path: Path, artifacts_base_url, register_file_contents: bool = False):
     artifacts = []
+    artifact_urls = []
     for f in dir_path.iterdir():
         artifacts.append(f.name)
         if register_file_contents:
             with f.open("rb") as content:
                 # Read the entire file can use a lot of memory
                 mr.register_uri(method=requests_mock.GET, url=posixpath.join(artifacts_base_url, f.name), content=content.read())
-    return artifacts
+                artifact_urls.append(posixpath.join(artifacts_base_url, f.name))
+    return artifacts, artifact_urls
 
 
 def register_uri_for_dataset_meta_info(mr: requests_mock.Mocker, dataset: Dataset, project_key: str):
-    dataset_url = posixpath.join(CLIENT_BASE_URL, "project", project_key, "datasets", str(dataset.id))
+    dataset_url = get_url_for_dataset(dataset, project_key)
     dataset_meta_info = mock_dataset_meta_info(dataset, project_key)
     mr.register_uri(method=requests_mock.GET, url=dataset_url, json=dataset_meta_info)
+    return [dataset_url]
 
 
 def register_uri_for_dataset_artifact_info(mr: requests_mock.Mocker, dataset: Dataset, project_key: str, register_file_contents: bool = False):
     artifact_info_url = posixpath.join(CLIENT_BASE_URL, "artifact-info", project_key, "datasets", str(dataset.id))
     artifacts_base_url = posixpath.join(CLIENT_BASE_URL, "artifacts", project_key, "datasets", str(dataset.id))
     artifacts = []
+    artifact_urls = []
     with tempfile.TemporaryDirectory() as tmpdir:
         tmpdir_path = Path(tmpdir)
         dataset.save(Path(tmpdir), dataset.id)  # Save dataset in temp dir
-        artifacts = register_uri_for_artifacts_under_dir(mr, tmpdir_path, artifacts_base_url, register_file_contents)
+        artifacts, artifact_urls = register_uri_for_artifacts_under_dir(mr, tmpdir_path, artifacts_base_url, register_file_contents)
 
     mr.register_uri(method=requests_mock.GET, url=artifact_info_url, json=artifacts)
+    artifact_urls.extend([artifact_info_url])
+    return artifact_urls
 
 
 def register_uri_for_any_dataset_artifact_info_upload(mr: requests_mock.Mocker, register_files=False):
@@ -321,21 +355,25 @@ def register_uri_for_any_dataset_artifact_info_upload(mr: requests_mock.Mocker, 
 
 
 def register_uri_for_model_meta_info(mr: requests_mock.Mocker, model: BaseModel, project_key: str):
-    model_url = posixpath.join(CLIENT_BASE_URL, "project", project_key, "models", str(model.id))
+    model_url = get_url_for_model(model, project_key)
     model_meta_info = mock_model_meta_info(model, project_key=project_key)
     mr.register_uri(method=requests_mock.GET, url=model_url, json=model_meta_info)
+    return [model_url]
 
 
 def register_uri_for_model_artifact_info(mr: requests_mock.Mocker, model: BaseModel, project_key: str, register_file_contents: bool = False):
     artifact_info_url = posixpath.join(CLIENT_BASE_URL, "artifact-info", project_key, "models", str(model.id))
     artifacts_base_url = posixpath.join(CLIENT_BASE_URL, "artifacts", project_key, "models", str(model.id))
     artifacts = []
+    artifact_urls = []
     with tempfile.TemporaryDirectory() as tmpdir:
         tmpdir_path = Path(tmpdir)
         model.save(Path(tmpdir))  # Save dataset in temp dir
-        artifacts = register_uri_for_artifacts_under_dir(mr, tmpdir_path, artifacts_base_url, register_file_contents)
+        artifacts, artifact_urls = register_uri_for_artifacts_under_dir(mr, tmpdir_path, artifacts_base_url, register_file_contents)
 
     mr.register_uri(method=requests_mock.GET, url=artifact_info_url, json=artifacts)
+    artifact_urls.extend([artifact_info_url])
+    return artifact_urls
 
 
 def register_uri_for_inspection(mr: requests_mock.Mocker, project_key: str, inspection_id: int, sample: bool):
