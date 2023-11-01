@@ -25,7 +25,7 @@ jobs:
           echo "Job failed due to user not being a member of Giskard-AI organization and the 'safe for build' label not being set on the PR"
           exit 1
       - name: Checkout code
-        uses: actions/checkout@v4.1.0
+        uses: actions/checkout@v4.1.1
         with:
           fetch-tags: true
           ref: ${{ github.event.client_payload.version  }}
