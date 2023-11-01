@@ -285,6 +285,7 @@ def register_uri_for_artifact_meta_info(mr: requests_mock.Mocker, cf: Artifact, 
     meta_info = fixup_mocked_artifact_meta_version(cf.meta.to_json())
 
     mr.register_uri(method=requests_mock.GET, url=url, json=meta_info)
+    return [url]
 
 
 def register_uri_for_artifact_info(mr: requests_mock.Mocker, cf: Artifact, project_key:Optional[str] = None):
@@ -295,6 +296,7 @@ def register_uri_for_artifact_info(mr: requests_mock.Mocker, cf: Artifact, proje
         CALLABLE_FUNCTION_META_CACHE,
     ]
     mr.register_uri(method=requests_mock.GET, url=artifact_info_url, json=artifacts)
+    return [artifact_info_url]
 
 
 def register_uri_for_artifacts_under_dir(mr: requests_mock.Mocker, dir_path: Path, artifacts_base_url, register_file_contents: bool = False):
@@ -348,18 +350,22 @@ def register_uri_for_model_meta_info(mr: requests_mock.Mocker, model: BaseModel,
     model_url = posixpath.join(CLIENT_BASE_URL, "project", project_key, "models", str(model.id))
     model_meta_info = mock_model_meta_info(model, project_key=project_key)
     mr.register_uri(method=requests_mock.GET, url=model_url, json=model_meta_info)
+    return [model_url]
 
 
 def register_uri_for_model_artifact_info(mr: requests_mock.Mocker, model: BaseModel, project_key: str, register_file_contents: bool = False):
     artifact_info_url = posixpath.join(CLIENT_BASE_URL, "artifact-info", project_key, "models", str(model.id))
     artifacts_base_url = posixpath.join(CLIENT_BASE_URL, "artifacts", project_key, "models", str(model.id))
     artifacts = []
+    artifact_urls = []
     with tempfile.TemporaryDirectory() as tmpdir:
         tmpdir_path = Path(tmpdir)
         model.save(Path(tmpdir))  # Save dataset in temp dir
-        artifacts, _ = register_uri_for_artifacts_under_dir(mr, tmpdir_path, artifacts_base_url, register_file_contents)
+        artifacts, artifact_urls = register_uri_for_artifacts_under_dir(mr, tmpdir_path, artifacts_base_url, register_file_contents)
 
     mr.register_uri(method=requests_mock.GET, url=artifact_info_url, json=artifacts)
+    artifact_urls.extend([artifact_info_url])
+    return artifact_urls
 
 
 def register_uri_for_inspection(mr: requests_mock.Mocker, project_key: str, inspection_id: int, sample: bool):

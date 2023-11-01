@@ -42,10 +42,16 @@ def test_model_download(request):
     with utils.MockedProjectCacheDir(project_key):
         with utils.MockedClient(mock_all=False) as (client, mr):
             # The model needs to request files
-            utils.register_uri_for_model_meta_info(mr, model, project_key)
-            utils.register_uri_for_model_artifact_info(mr, model, project_key, register_file_contents=True)
+            requested_urls = []
+            requested_urls.extend(utils.register_uri_for_model_meta_info(mr, model, project_key))
+            requested_urls.extend(
+                utils.register_uri_for_model_artifact_info(mr, model, project_key, register_file_contents=True)
+            )
 
             downloaded_model = BaseModel.download(client=client, project_key=project_key, model_id=str(model.id))
+
+            for requested_url in requested_urls:
+                assert utils.is_url_requested(mr.request_history, requested_url)
 
             assert downloaded_model.id == model.id
             assert downloaded_model.meta == model.meta
@@ -61,9 +67,12 @@ def test_model_download_with_cache(request):
 
         with utils.MockedClient(mock_all=False) as (client, mr):
             # The model is cached, can be created without further requests
-            utils.register_uri_for_model_meta_info(mr, model, project_key)
+            requested_urls = utils.register_uri_for_model_meta_info(mr, model, project_key)
 
             downloaded_model = BaseModel.download(client=client, project_key=project_key, model_id=str(model.id))
+
+            for requested_url in requested_urls:
+                assert utils.is_url_requested(mr.request_history, requested_url)
 
             assert downloaded_model.id == model.id
             assert downloaded_model.meta == model.meta
