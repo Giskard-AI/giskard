@@ -7,6 +7,16 @@ from giskard.ml_worker.websocket import listener
 from giskard.models.base.model import BaseModel
 
 from tests import utils
+from tests.test_push import EXPECTED_COUNTS
+
+
+# For each kind
+EXPECTED_COUNTS_GERMAN_CREDIT_PUSH_KIND_SAMPLE_INDEX = [
+    ("contribution", 3),
+    ("overconfidence", 17),
+    ("perturbation", 35),
+    ("borderline", 31),
+]
 
 
 @pytest.mark.parametrize("model,data", [
@@ -171,3 +181,46 @@ def test_websocket_actor_get_push_invalid_push_kind(cta_kind, request):
         )
         with pytest.raises(ValueError):
             listener.get_push(client=client, params=params)
+
+
+@pytest.mark.parametrize("kind,row", EXPECTED_COUNTS_GERMAN_CREDIT_PUSH_KIND_SAMPLE_INDEX)
+def test_websocket_actor_get_push_no_action(kind, row, german_credit_model, german_credit_data):
+    assert EXPECTED_COUNTS["german_credit_model"][kind][row] != 0
+    push_kind = websocket.PushKind[kind.upper()]
+
+    model = german_credit_model
+    dataset = german_credit_data
+
+    project_key = str(uuid.uuid4())
+    with utils.MockedClient(mock_all=False) as (client, mr), utils.MockedProjectCacheDir(project_key):
+        utils.local_save_model_under_giskard_home_cache(model, project_key)
+        utils.local_save_dataset_under_giskard_home_cache(dataset, project_key)
+
+        utils.register_uri_for_model_meta_info(mr, model, project_key)
+        utils.register_uri_for_dataset_meta_info(mr, dataset, project_key)
+
+        # Pick the given row
+        given_row = dataset.df.iloc[row]
+        dataframe = websocket.DataFrame(
+            rows=[
+                websocket.DataRow(columns={
+                    str(k): str(v) for k, v in given_row.items()
+                }),
+            ],
+        )
+
+        params = websocket.GetPushParam(
+            model=websocket.ArtifactRef(project_key=project_key, id=str(model.id)),
+            dataset=websocket.ArtifactRef(project_key=project_key, id=str(dataset.id)),
+            dataframe=dataframe,
+            target=dataset.target,
+            column_types=dataset.column_types,
+            column_dtypes=dataset.column_dtypes,
+            push_kind=push_kind,
+            cta_kind=websocket.CallToActionKind.NONE,
+            rowIdx=row,
+        )
+        reply = listener.get_push(client=client, params=params)
+        assert isinstance(reply, websocket.GetPushResponse)
+        assert reply.__dict__[kind] # The given push should not be `None`
+        assert not reply.action
