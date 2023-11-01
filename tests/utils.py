@@ -18,6 +18,7 @@ from giskard.path_utils import get_size
 
 import tests.utils
 from giskard.client.giskard_client import GiskardClient
+from giskard.client import dtos
 from giskard.datasets.base import Dataset
 from giskard.ml_worker import ml_worker
 from giskard.models.base.model import BaseModel
@@ -209,20 +210,25 @@ def fixup_mocked_artifact_meta_version(meta_info):
 
 
 def mock_dataset_meta_info(dataset: Dataset, project_key: str):
-    dataset_meta_info = dataset.meta.__dict__.copy()
+    meta = dataset.meta
     with tempfile.TemporaryDirectory() as tmpdir:
         original_size_bytes, compressed_size_bytes = dataset.save(Path(tmpdir), str(dataset.id))
-    dataset_meta_info.update({
-        "columnTypes": dataset_meta_info.pop("column_types"),
-        "columnDtypes": dataset_meta_info.pop("column_dtypes"),
-        "numberOfRows": dataset_meta_info.pop("number_of_rows"),
-        "categoryFeatures": dataset_meta_info.pop("category_features"),
-        "project": project_key,
-        "id": str(dataset.id),
-        "originalSizeBytes": original_size_bytes,
-        "compressedSizeBytes": compressed_size_bytes,
-    })
-    return dataset_meta_info
+
+    logger.debug(f"The project_key {project_key} will be ignored by Backend")
+
+    dataset_meta_info = dtos.DatasetMetaInfo(
+        target=meta.target,
+        columnTypes=meta.column_types,
+        columnDtypes=meta.column_dtypes,
+        numberOfRows=meta.number_of_rows,
+        categoryFeatures=meta.category_features,
+        name=meta.name,
+        originalSizeBytes=original_size_bytes,
+        compressedSizeBytes=compressed_size_bytes,
+        createdDate="now",  # createdDate is not nullable but not used
+        id=str(dataset.id),
+    )
+    return dataset_meta_info.dict()
 
 
 def mock_model_meta_info(model: BaseModel, project_key: str):
