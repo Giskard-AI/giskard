@@ -571,6 +571,8 @@ def test_websocket_actor_get_push_borderline(kind, row, cta_kind, german_credit_
         assert reply.action # Action should not be `None`
 
 
+# FIXME: All of the Push classes contain tests, so any of them can be uploaded
+# Check with Hugo whether it is the case
 @pytest.mark.parametrize("kind,row", [
     EXPECTED_COUNTS_GERMAN_CREDIT_PUSH_KIND_SAMPLE_INDEX[k] for k in EXPECTED_COUNTS_GERMAN_CREDIT_PUSH_KIND_SAMPLE_INDEX if k != websocket.PushKind.BORDERLINE
 ])
