@@ -131,3 +131,43 @@ def test_websocket_actor_get_push_no_cta_kind(push_kind, request):
         reply = listener.get_push(client=client, params=params)
         assert isinstance(reply, websocket.GetPushResponse)
         assert not reply.action
+
+
+@pytest.mark.parametrize("cta_kind",[
+    kind for kind in websocket.CallToActionKind
+])
+def test_websocket_actor_get_push_invalid_push_kind(cta_kind, request):
+    model: BaseModel = request.getfixturevalue("enron_model")
+    dataset: Dataset = request.getfixturevalue("enron_data")
+
+    project_key = str(uuid.uuid4())
+    with utils.MockedClient(mock_all=False) as (client, mr), utils.MockedProjectCacheDir(project_key):
+        utils.local_save_model_under_giskard_home_cache(model, project_key)
+        utils.local_save_dataset_under_giskard_home_cache(dataset, project_key)
+
+        utils.register_uri_for_model_meta_info(mr, model, project_key)
+        utils.register_uri_for_dataset_meta_info(mr, dataset, project_key)
+
+        # Pick the first row
+        first_row = dataset.df.iloc[0]
+        dataframe = websocket.DataFrame(
+            rows=[
+                websocket.DataRow(columns={
+                    str(k): str(v) for k, v in first_row.items()
+                }),
+            ],
+        )
+
+        params = websocket.GetPushParam(
+            model=websocket.ArtifactRef(project_key=project_key, id=str(model.id)),
+            dataset=websocket.ArtifactRef(project_key=project_key, id=str(dataset.id)),
+            dataframe=dataframe,
+            target=dataset.target,
+            column_types=dataset.column_types,
+            column_dtypes=dataset.column_dtypes,
+            push_kind=websocket.PushKind.INVALID,
+            cta_kind=cta_kind,
+            rowIdx=0,
+        )
+        with pytest.raises(ValueError):
+            listener.get_push(client=client, params=params)
