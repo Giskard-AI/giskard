@@ -368,10 +368,10 @@ def register_uri_for_any_slices_artifact_info_upload(mr: requests_mock.Mocker, r
 
 def register_uri_for_any_transforms_artifact_info_upload(mr: requests_mock.Mocker, register_files=False):
     meta_info_pattern = re.compile(
-        "http://giskard-host:12345/api/v2/project/.*/transforms"
+        "http://giskard-host:12345/api/v2/project/.*/transformations"
     )
     artifacts_url_pattern = re.compile(
-        "http://giskard-host:12345/api/v2/artifacts/.*/transforms/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/.*"
+        "http://giskard-host:12345/api/v2/artifacts/.*/transformations/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/.*"
     )
     mr.register_uri(method=requests_mock.PUT, url=meta_info_pattern, json={})
     if register_files:
