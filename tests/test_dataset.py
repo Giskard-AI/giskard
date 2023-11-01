@@ -166,9 +166,13 @@ def test_dataset_download_with_cache(request):
 
         with utils.MockedClient(mock_all=False) as (client, mr):
             # The dataset can be then loaded from the cache, without further requests
-            utils.register_uri_for_dataset_meta_info(mr, dataset, project_key)
+            requested_urls = []
+            requested_urls.extend(utils.register_uri_for_dataset_meta_info(mr, dataset, project_key))
 
             downloaded_dataset = Dataset.download(client=client, project_key=project_key, dataset_id=str(dataset.id))
+
+            for requested_url in requested_urls:
+                assert utils.is_url_requested(mr.request_history, requested_url)
 
             assert downloaded_dataset.id == dataset.id
             assert downloaded_dataset.meta == dataset.meta
@@ -181,10 +185,16 @@ def test_dataset_download(request):
     with utils.MockedProjectCacheDir(project_key):
         with utils.MockedClient(mock_all=False) as (client, mr):
             # The dataset needs to request files
-            utils.register_uri_for_dataset_meta_info(mr, dataset, project_key)
-            utils.register_uri_for_dataset_artifact_info(mr, dataset, project_key, register_file_contents=True)
+            requested_urls = []
+            requested_urls.extend(utils.register_uri_for_dataset_meta_info(mr, dataset, project_key))
+            requested_urls.extend(
+                utils.register_uri_for_dataset_artifact_info(mr, dataset, project_key, register_file_contents=True)
+            )
 
             downloaded_dataset = Dataset.download(client=client, project_key=project_key, dataset_id=str(dataset.id))
+
+            for requested_url in requested_urls:
+                assert utils.is_url_requested(mr.request_history, requested_url)
 
             assert downloaded_dataset.id == dataset.id
             assert downloaded_dataset.meta == dataset.meta
