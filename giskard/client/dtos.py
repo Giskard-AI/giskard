@@ -58,7 +58,7 @@ class ModelMetaInfo(ConfiguredBaseModel):
 
 
 class DatasetMetaInfo(ConfiguredBaseModel):
-    target: str
+    target: Optional[str]
     columnTypes: Dict[str, str]
     columnDtypes: Dict[str, str]
     numberOfRows: int

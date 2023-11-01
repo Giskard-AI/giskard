@@ -101,7 +101,7 @@ class ModelMeta:
 @dataclass
 class DatasetMeta:
     name: Optional[str]
-    target: str
+    target: Optional[str]
     column_types: Dict[str, str]
     column_dtypes: Dict[str, str]
     number_of_rows: int
