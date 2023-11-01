@@ -58,12 +58,12 @@ class ModelMetaInfo(ConfiguredBaseModel):
 
 
 class DatasetMetaInfo(ConfiguredBaseModel):
-    target: Optional[str]
+    target: Optional[str] = None
     columnTypes: Dict[str, str]
     columnDtypes: Dict[str, str]
     numberOfRows: int
     categoryFeatures: Dict[str, List[str]]
-    name: Optional[str]
+    name: Optional[str] = None
     originalSizeBytes: int
     compressedSizeBytes: int
     createdDate: str
