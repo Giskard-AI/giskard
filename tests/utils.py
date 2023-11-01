@@ -342,6 +342,42 @@ def register_uri_for_dataset_artifact_info(mr: requests_mock.Mocker, dataset: Da
     return artifact_urls
 
 
+def register_uri_for_any_tests_artifact_info_upload(mr: requests_mock.Mocker, register_files=False):
+    meta_info_pattern = re.compile(
+        "http://giskard-host:12345/api/v2/project/.*/tests"
+    )
+    artifacts_url_pattern = re.compile(
+        "http://giskard-host:12345/api/v2/artifacts/.*/tests/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/.*"
+    )
+    mr.register_uri(method=requests_mock.PUT, url=meta_info_pattern, json={})
+    if register_files:
+        mr.register_uri(method=requests_mock.POST, url=artifacts_url_pattern)
+
+
+def register_uri_for_any_slices_artifact_info_upload(mr: requests_mock.Mocker, register_files=False):
+    meta_info_pattern = re.compile(
+        "http://giskard-host:12345/api/v2/project/.*/slices"
+    )
+    artifacts_url_pattern = re.compile(
+        "http://giskard-host:12345/api/v2/artifacts/.*/slices/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/.*"
+    )
+    mr.register_uri(method=requests_mock.PUT, url=meta_info_pattern, json={})
+    if register_files:
+        mr.register_uri(method=requests_mock.POST, url=artifacts_url_pattern)
+
+
+def register_uri_for_any_transforms_artifact_info_upload(mr: requests_mock.Mocker, register_files=False):
+    meta_info_pattern = re.compile(
+        "http://giskard-host:12345/api/v2/project/.*/transforms"
+    )
+    artifacts_url_pattern = re.compile(
+        "http://giskard-host:12345/api/v2/artifacts/.*/transforms/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/.*"
+    )
+    mr.register_uri(method=requests_mock.PUT, url=meta_info_pattern, json={})
+    if register_files:
+        mr.register_uri(method=requests_mock.POST, url=artifacts_url_pattern)
+
+
 def register_uri_for_any_dataset_artifact_info_upload(mr: requests_mock.Mocker, register_files=False):
     meta_info_pattern = re.compile(
         "http://giskard-host:12345/api/v2/project/.*/datasets"
