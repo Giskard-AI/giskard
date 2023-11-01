@@ -3,7 +3,6 @@ from typing import Any, Dict, List, Optional
 import logging
 import os
 import shutil
-from pathlib import Path
 
 from mlflow.store.artifact.artifact_repo import verify_artifact_path
 
