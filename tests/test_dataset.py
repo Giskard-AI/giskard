@@ -1,11 +1,33 @@
 import pandas as pd
 import numpy as np
+from pydantic import ValidationError
 import pytest
 import uuid
 
+import requests_mock
+
 from giskard.datasets.base import Dataset
+from giskard.client.dtos import DatasetMetaInfo
 
 from tests import utils
+from tests.communications.test_dto_serialization import is_required, get_fields, get_name
+
+
+# FIXME: conflict on `name` between Giskard Hub (@NotBlank) and Python client (optional in DatasetMeta and DatasetMetaInfo)
+MANDATORY_FIELDS = [
+    "id",
+    "originalSizeBytes",
+    "numberOfRows",
+    "columnTypes",
+    "columnDtypes",
+    "compressedSizeBytes",
+    "categoryFeatures",
+    "createdDate",
+]
+OPTIONAL_FIELDS = [
+    "name",
+    "target",
+]
 
 
 valid_df = pd.DataFrame(
@@ -198,3 +220,38 @@ def test_dataset_download(request):
 
             assert downloaded_dataset.id == dataset.id
             assert downloaded_dataset.meta == dataset.meta
+
+
+def test_dataset_meta_info():
+    klass = DatasetMetaInfo
+    mandatory_field_names = []
+    optional_field_names = []
+    for name, field in get_fields(klass).items():
+        mandatory_field_names.append(get_name(name, field)) if is_required(field) else \
+            optional_field_names.append(get_name(name, field))
+    assert set(mandatory_field_names) == set(MANDATORY_FIELDS)
+    assert set(optional_field_names) == set(OPTIONAL_FIELDS)
+
+
+def test_fetch_dataset_meta(request):
+    dataset: Dataset = request.getfixturevalue("enron_data")
+    project_key = str(uuid.uuid4())
+
+    for op in OPTIONAL_FIELDS:
+        with utils.MockedClient(mock_all=False) as (client, mr):
+            meta_info = utils.mock_dataset_meta_info(dataset, project_key)
+            meta_info.pop(op)
+            mr.register_uri(method=requests_mock.GET, url=utils.get_url_for_dataset(dataset, project_key), json=meta_info)
+
+            # Should not raise
+            client.load_dataset_meta(project_key, uuid=str(dataset.id))
+
+    for op in MANDATORY_FIELDS:
+        with utils.MockedClient(mock_all=False) as (client, mr):
+            meta_info = utils.mock_dataset_meta_info(dataset, project_key)
+            meta_info.pop(op)
+            mr.register_uri(method=requests_mock.GET, url=utils.get_url_for_dataset(dataset, project_key), json=meta_info)
+
+            # Should raise due to missing of values
+            with pytest.raises(ValidationError):
+                client.load_dataset_meta(project_key, uuid=str(dataset.id))

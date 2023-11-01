@@ -279,6 +279,14 @@ def get_url_for_artifacts_base(cf: Artifact, project_key:Optional[str] = None):
         else posixpath.join(CLIENT_BASE_URL, "artifacts", "global", cf._get_name(), cf.meta.uuid)
 
 
+def get_url_for_dataset(dataset: Dataset, project_key: str):
+    return posixpath.join(CLIENT_BASE_URL, "project", project_key, "datasets", str(dataset.id))
+
+
+def get_url_for_model(model: BaseModel, project_key: str):
+    return posixpath.join(CLIENT_BASE_URL, "project", project_key, "models", str(model.id))
+
+
 def register_uri_for_artifact_meta_info(mr: requests_mock.Mocker, cf: Artifact, project_key:Optional[str] = None):
     url = get_url_for_artifact_meta_info(cf, project_key)
     # Fixup the differences from Backend
@@ -313,7 +321,7 @@ def register_uri_for_artifacts_under_dir(mr: requests_mock.Mocker, dir_path: Pat
 
 
 def register_uri_for_dataset_meta_info(mr: requests_mock.Mocker, dataset: Dataset, project_key: str):
-    dataset_url = posixpath.join(CLIENT_BASE_URL, "project", project_key, "datasets", str(dataset.id))
+    dataset_url = get_url_for_dataset(dataset, project_key)
     dataset_meta_info = mock_dataset_meta_info(dataset, project_key)
     mr.register_uri(method=requests_mock.GET, url=dataset_url, json=dataset_meta_info)
     return [dataset_url]
@@ -347,7 +355,7 @@ def register_uri_for_any_dataset_artifact_info_upload(mr: requests_mock.Mocker, 
 
 
 def register_uri_for_model_meta_info(mr: requests_mock.Mocker, model: BaseModel, project_key: str):
-    model_url = posixpath.join(CLIENT_BASE_URL, "project", project_key, "models", str(model.id))
+    model_url = get_url_for_model(model, project_key)
     model_meta_info = mock_model_meta_info(model, project_key=project_key)
     mr.register_uri(method=requests_mock.GET, url=model_url, json=model_meta_info)
     return [model_url]
