@@ -525,7 +525,7 @@ def get_all_prompts(num_samples: int, num_samples_seed: Optional[int] = None):
     for prompts in grouped_prompts:
         if num_samples_per_group >= len(prompts):
             sampled_grouped_prompts += prompts
-        else:
+        elif num_samples_per_group > 0:
             sampled_grouped_prompts += rng.sample(prompts, num_samples_per_group)
 
     return single_prompts + sampled_grouped_prompts
