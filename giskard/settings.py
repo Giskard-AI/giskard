@@ -4,7 +4,6 @@ from typing import Optional
 
 import pydantic
 from packaging import version
-from pydantic import BaseModel
 
 # See https://linear.app/giskard/issue/GSK-1745/upgrade-pydantic-to-20
 IS_PYDANTIC_V2 = version.parse(pydantic.version.VERSION) >= version.parse("2.0")
@@ -24,7 +23,7 @@ def expand_env_var(env_var: Optional[str]) -> Optional[str]:
     return current
 
 
-class Settings(BaseModel):
+class Settings(pydantic.BaseModel):
     home: str = "~/giskard-home"
     ws_port: int = 9000
     ws_path: str = "/ml-worker"

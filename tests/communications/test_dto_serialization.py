@@ -7,7 +7,6 @@ import pydantic
 import pytest
 from packaging import version
 from polyfactory.factories.pydantic_factory import ModelFactory
-from pydantic import BaseModel
 
 import giskard
 import giskard.ml_worker.websocket
@@ -19,7 +18,7 @@ if IS_PYDANTIC_V2:
 else:
     from pydantic.fields import ModelField
 
-FILTERED_CLASSES = [BaseModel, ConfiguredBaseModel]
+FILTERED_CLASSES = [pydantic.BaseModel, ConfiguredBaseModel]
 
 MANDATORY_FIELDS = {
     "ArtifactRef": ["id"],
@@ -192,17 +191,17 @@ ALIASED_FIELDS = {
 }
 
 
-def get_all_dto_classes() -> List[Type[BaseModel]]:
-    klasses: List[Type[BaseModel]] = []
+def get_all_dto_classes() -> List[Type[pydantic.BaseModel]]:
+    klasses: List[Type[pydantic.BaseModel]] = []
     for name in dir(giskard.ml_worker.websocket):
         maybe_klass = getattr(giskard.ml_worker.websocket, name)
-        if isinstance(maybe_klass, type) and issubclass(maybe_klass, BaseModel) and maybe_klass not in FILTERED_CLASSES:
+        if isinstance(maybe_klass, type) and issubclass(maybe_klass, pydantic.BaseModel) and maybe_klass not in FILTERED_CLASSES:
             klasses.append(maybe_klass)
 
     return klasses
 
 
-def get_fields(klass: Type[BaseModel]) -> Dict[str, ModelField]:
+def get_fields(klass: Type[pydantic.BaseModel]) -> Dict[str, ModelField]:
     if IS_PYDANTIC_V2:
         return klass.model_fields
     return klass.__fields__
@@ -229,7 +228,7 @@ ALL_DTOS = [pytest.param((klass), id=klass.__name__) for klass in get_all_dto_cl
 
 # Goal is to ensure every DTO is tested properly
 def test_all_dtos_are_configured():
-    missing_classes: List[Type[BaseModel]] = []
+    missing_classes: List[Type[pydantic.BaseModel]] = []
     for param_set in ALL_DTOS:
         klass = param_set.values[0]
         if not issubclass(klass, ConfiguredBaseModel):
@@ -241,7 +240,7 @@ def test_all_dtos_are_configured():
 
 # Goal is to ensure every DTO is tested properly
 def test_list_mandatory_all_classes():
-    missing_classes: List[Type[BaseModel]] = []
+    missing_classes: List[Type[pydantic.BaseModel]] = []
     for param_set in ALL_DTOS:
         klass = param_set.values[0]
         if klass.__name__ not in MANDATORY_FIELDS.keys():
@@ -252,7 +251,7 @@ def test_list_mandatory_all_classes():
 
 
 def test_list_optional_all_classes():
-    missing_classes: List[Type[BaseModel]] = []
+    missing_classes: List[Type[pydantic.BaseModel]] = []
     for param_set in ALL_DTOS:
         klass = param_set.values[0]
         if klass.__name__ not in OPTIONAL_FIELDS.keys():
@@ -264,7 +263,7 @@ def test_list_optional_all_classes():
 
 # Goal is to ensure that no fields is becoming mandatory by error
 @pytest.mark.parametrize("klass", ALL_DTOS)
-def test_dto_ensure_all_mandatory_values(klass: Type[BaseModel]):
+def test_dto_ensure_all_mandatory_values(klass: Type[pydantic.BaseModel]):
     # Here we ensure all mandatory keys are present in dto_mandatory
     mandatory_field_names = [get_name(name, field) for name, field in get_fields(klass).items() if is_required(field)]
     assert set(mandatory_field_names) == set(MANDATORY_FIELDS.get(klass.__name__, []))
@@ -272,7 +271,7 @@ def test_dto_ensure_all_mandatory_values(klass: Type[BaseModel]):
 
 # Goal is to ensure that no fields is becoming optional by error
 @pytest.mark.parametrize("klass", ALL_DTOS)
-def test_dto_ensure_all_optional_values(klass: Type[BaseModel]):
+def test_dto_ensure_all_optional_values(klass: Type[pydantic.BaseModel]):
     # Here we ensure all optional keys are present in dto_mandatory
     mandatory_field_names = [
         get_name(name, field) for name, field in get_fields(klass).items() if not is_required(field)
@@ -282,7 +281,7 @@ def test_dto_ensure_all_optional_values(klass: Type[BaseModel]):
 
 # Goal is to ensure that no alias has been changed by error
 @pytest.mark.parametrize("klass", ALL_DTOS)
-def test_dto_verify_mapping(klass: Type[BaseModel]):
+def test_dto_verify_mapping(klass: Type[pydantic.BaseModel]):
     # Here we ensure all optional keys are present in dto_mandatory
     mapping_dto = ALIASED_FIELDS.get(klass.__name__, {})
     aliased_fields = []
@@ -299,7 +298,7 @@ def test_dto_verify_mapping(klass: Type[BaseModel]):
 
 
 @pytest.mark.parametrize("klass", ALL_DTOS)
-def test_serialisation_dtos(klass: BaseModel):
+def test_serialisation_dtos(klass: pydantic.BaseModel):
     fixtures_dir = Path(__file__).parent / "fixtures"
     with (fixtures_dir / "with_alias.json").open("r", encoding="utf-8") as fp:
         all_datas = json.load(fp)
@@ -349,9 +348,9 @@ class CustomFactory(ModelFactory):
     __max_collection_length__ = 1
 
 
-def pydantic_factory(klass: Type[BaseModel]):
+def pydantic_factory(klass: Type[pydantic.BaseModel]):
     factory = CustomFactory.create_factory(model=klass)
-    factory.__base_factory_overrides__ = {BaseModel: CustomFactory}
+    factory.__base_factory_overrides__ = {pydantic.BaseModel: CustomFactory}
 
     return factory
 
