@@ -55,7 +55,9 @@ class Model(CloudpickleSerializableModel):
         * if regression or text_generation: an array of predictions corresponding to data entries
         (rows of pandas.DataFrame) and outputs.
     name : Optional[str]
-        the name of the model.
+        Name of the model.
+    description : Optional[str]
+        Description of the model's task. Mandatory for non-langchain text_generation models.
     model_type : ModelType
         The type of the model: regression, classification or text_generation.
     data_preprocessing_function : Optional[Callable[[pd.DataFrame]
@@ -92,6 +94,7 @@ class Model(CloudpickleSerializableModel):
         data_preprocessing_function: Callable[[pd.DataFrame], Any] = None,
         model_postprocessing_function: Callable[[Any], Any] = None,
         name: Optional[str] = None,
+        description: Optional[str] = None,
         feature_names: Optional[Iterable] = None,
         classification_threshold: Optional[float] = 0.5,
         classification_labels: Optional[Iterable] = None,

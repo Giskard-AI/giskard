@@ -23,6 +23,7 @@ alphanumeric_map = {
     "=": "equal to",
     "!=": "different of",
 }
+control_chars_map = {"\\r": "carriage return", "\\b": "backspace"}
 
 
 def unwrap_python_model_from_pyfunc_if_langchain(pyfunc_model):
@@ -44,6 +45,9 @@ def unwrap_python_model_from_pyfunc_if_langchain(pyfunc_model):
 def process_text(some_string):
     for k, v in alphanumeric_map.items():
         some_string = some_string.replace(k, v)
+    for k, v in control_chars_map.items():
+        some_string = some_string.replace(k, v)
+
     some_string = some_string.replace("data slice", "data slice -")
     some_string = re.sub(r"[^A-Za-z0-9_\-. /]+", "", some_string)
 
