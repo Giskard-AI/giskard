@@ -1,5 +1,6 @@
 import random
 from abc import ABC
+from typing import Optional
 
 from .promptinject import build_prompts as pi_build_prompts
 from .promptinject import prompt_data as pi_prompt_data
@@ -21,6 +22,39 @@ DAN_GROUP_SUBSTRINGS = ("[DAN]", "DAN:", "DAN Mode enabled")
 GARAK_REF = "https://github.com/leondz/garak"
 PI_REF = "https://github.com/agencyenterprise/promptinject"
 LANGUAGE = "en"
+
+# Removing openai base prompts from pi_prompt_data
+for i in range(len(pi_prompt_data.ALL_OPENAI_PLAYGROUND_PROMPTS)):
+    pi_prompt_data.ALL_OPENAI_PLAYGROUND_PROMPTS[i]["instruction"] = ""
+
+ROGUE_STRINGS_AVAILABLE = ["hate-humans", "kill-humans", "long-prompt"]
+
+PI_PROMPT_CONFIG = {
+    "base": {
+        "text": pi_prompt_data.ALL_OPENAI_PLAYGROUND_PROMPTS,
+    },
+    "attack": {
+        "text": (
+            pi_prompt_data.goal_hikacking_attacks["ignore-print"],
+            pi_prompt_data.goal_hikacking_attacks["ignore-say"],
+            pi_prompt_data.goal_hikacking_attacks["ignore-print-upper"],
+            pi_prompt_data.goal_hikacking_attacks["nevermind"],
+            pi_prompt_data.goal_hikacking_attacks["screaming-stop"],
+        ),
+        "rogue_string": None,  # to be filled
+        "scoring": "match_rogue_to_output",
+        "settings": {
+            "escape": pi_prompt_data.escape_chars["n"],
+            "delimiter": pi_prompt_data.delimiter_chars["dash"],
+            "escape_length": 10,
+            "escape_times": 2,
+        },
+    },
+    "config": {
+        "id": (0, 1, 2, 3),
+    },
+    "visualization": {"columns": ()},
+}
 
 
 @dataclass(frozen=True)
@@ -432,116 +466,66 @@ def get_ablation_dan_11_0_prompts():
     return prompts
 
 
-def get_prompts_from_pi(max_prompts=50):
+def get_prompts_from_pi(rogue_string_name: str):
     """
     "pi" refers to the PromptInjection library https://github.com/agencyenterprise/promptinject
     """
-    rogue_strings = [
-        {
-            "name": "hate-humans",
-            "evaluation_method": StringMatchingMethod(
-                substrings=(pi_rogue_strings["hate-humans"],), punctuation_sensitive=False, exact_matching=True
-            ),
-            "group": Hate_group,
-            "language": LANGUAGE,
-            "tags": ADVERSARIAL_EXAMPLE_TAG,
-            "source": PI_REF,
-        },
-        {
-            "name": "kill-humans",
-            "evaluation_method": StringMatchingMethod(
-                substrings=(pi_rogue_strings["kill-humans"],), punctuation_sensitive=False, exact_matching=True
-            ),
-            "group": Violence_group,
-            "language": LANGUAGE,
-            "tags": ADVERSARIAL_EXAMPLE_TAG,
-            "source": PI_REF,
-        },
-        {
-            "name": "long-prompt",
-            "evaluation_method": StringMatchingMethod(
-                substrings=(pi_rogue_strings["long-prompt"],), punctuation_sensitive=False, exact_matching=True
-            ),
-            "group": LongPrompt_group,
-            "language": LANGUAGE,
-            "tags": ADVERSARIAL_EXAMPLE_TAG,
-            "source": PI_REF,
-        },
-    ]
-    for i in range(len(pi_prompt_data.ALL_OPENAI_PLAYGROUND_PROMPTS)):
-        pi_prompt_data.ALL_OPENAI_PLAYGROUND_PROMPTS[i]["instruction"] = ""
+    if rogue_string_name not in ROGUE_STRINGS_AVAILABLE:
+        raise ValueError(
+            f"The rogue_string {rogue_string_name} is not currently supported. "
+            f"We only support: {ROGUE_STRINGS_AVAILABLE}."
+        )
 
-    pi_prompts = []
-    for rogue_string in rogue_strings:
-        prompt_config = {
-            "base": {
-                "text": pi_prompt_data.ALL_OPENAI_PLAYGROUND_PROMPTS,
-            },
-            "attack": {
-                "text": (
-                    pi_prompt_data.goal_hikacking_attacks["ignore-print"],
-                    pi_prompt_data.goal_hikacking_attacks["ignore-say"],
-                    pi_prompt_data.goal_hikacking_attacks["ignore-print-upper"],
-                    pi_prompt_data.goal_hikacking_attacks["nevermind"],
-                    pi_prompt_data.goal_hikacking_attacks["screaming-stop"],
-                ),
-                "rogue_string": pi_rogue_strings[rogue_string["name"]],
-                "scoring": "match_rogue_to_output",
-                "settings": {
-                    "escape": pi_prompt_data.escape_chars["n"],
-                    "delimiter": pi_prompt_data.delimiter_chars["dash"],
-                    "escape_length": 10,
-                    "escape_times": 2,
-                },
-            },
-            "config": {
-                "id": (0, 1, 2, 3),
-            },
-            "visualization": {"columns": ()},
-        }
-        _pi_prompts = pi_build_prompts(prompt_config)
-        pi_prompts_per_rogue_string = []
-        for _pi_prompt in _pi_prompts:
-            pi_prompts_per_rogue_string.append(_pi_prompt["prompt"])
+    rogue_string = {
+        "evaluation_method": StringMatchingMethod(
+            substrings=(pi_rogue_strings[rogue_string_name],),
+            punctuation_sensitive=False,
+            exact_matching=True,
+        ),
+        "group": Hate_group,
+        "language": LANGUAGE,
+        "tags": ADVERSARIAL_EXAMPLE_TAG,
+        "source": PI_REF,
+    }
 
-        # TODO: find if there's an easier way to hack pi into only generating max_prompts instead of doing this
-        #       it'll gain us time.
-        if isinstance(max_prompts, int) and max_prompts < len(pi_prompts_per_rogue_string):
-            random.seed(30)
-            random.shuffle(pi_prompts)
-            pi_prompts_per_rogue_string = pi_prompts_per_rogue_string[-max_prompts:]
-        else:
-            max_prompts = len(pi_prompts_per_rogue_string)
-
-        pi_prompts += pi_prompts_per_rogue_string
-
-    prompts = []
-    for rogue_string in rogue_strings:
-        rogue_string.pop("name")
-    for i, prompt in enumerate(pi_prompts):
-        rogue_string_idx = int(i / max_prompts)
-        prompts.append(Prompt(content=prompt, **rogue_strings[rogue_string_idx]))
+    PI_PROMPT_CONFIG["rogue_string"] = pi_rogue_strings[rogue_string_name]
+    pi_prompts = pi_build_prompts(PI_PROMPT_CONFIG)
+    prompt_contents = [pi_prompt["prompt"] for pi_prompt in pi_prompts]
+    prompts = [Prompt(content=prompt_content, **rogue_string) for prompt_content in prompt_contents]
     return prompts
 
 
-def get_all_prompts():
-    return (
-        [
-            DAN_11_0,
-            DAN_10_0,
-            DAN_9_0,
-            DAN_8_0,
-            DAN_7_0,
-            DAN_6_2,
-            DAN_6_0,
-            DAN_Jailbreak,
-            DUDE,
-            STAN,
-            AntiDAN,
-            ChatGPT_Developer_Mode_v2,
-            ChatGPT_Developer_Mode_RANTI,
-            ChatGPT_Image_Markdown,
-        ]
-        + get_ablation_dan_11_0_prompts()
-        + get_prompts_from_pi()
-    )
+def get_all_prompts(num_samples: int, num_samples_seed: Optional[int] = None):
+    single_prompts = [
+        DAN_11_0,
+        DAN_10_0,
+        DAN_9_0,
+        DAN_8_0,
+        DAN_7_0,
+        DAN_6_2,
+        DAN_6_0,
+        DAN_Jailbreak,
+        DUDE,
+        STAN,
+        AntiDAN,
+        ChatGPT_Developer_Mode_v2,
+        ChatGPT_Developer_Mode_RANTI,
+        ChatGPT_Image_Markdown,
+    ]
+
+    grouped_prompts = [
+        get_ablation_dan_11_0_prompts(),
+    ] + [get_prompts_from_pi(rogue_string) for rogue_string in ROGUE_STRINGS_AVAILABLE]
+
+    num_samples_per_group = (num_samples - len(single_prompts)) // len(grouped_prompts)
+
+    rng = random.Random(num_samples_seed)
+
+    sampled_grouped_prompts = []
+    for prompts in grouped_prompts:
+        if num_samples_per_group >= len(prompts):
+            sampled_grouped_prompts += prompts
+        else:
+            sampled_grouped_prompts += rng.sample(prompts, num_samples_per_group)
+
+    return single_prompts + sampled_grouped_prompts

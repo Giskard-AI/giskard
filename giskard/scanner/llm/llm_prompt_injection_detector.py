@@ -1,7 +1,6 @@
 from typing import Sequence
 
 import pandas as pd
-import random
 from colorama import Fore, Style
 
 from ...datasets.base import Dataset
@@ -56,15 +55,10 @@ class LLMPromptInjectionDetector:
         features = model.meta.feature_names or list(dataset.df.columns.drop(dataset.target, errors="ignore"))
         column_types = dataset.column_types
 
-        prompts = get_all_prompts()
-        rng = random.Random(self.num_samples_seed)
-        if self.num_samples is not None and self.num_samples < len(prompts):
-            prompts = rng.sample(prompts, self.num_samples)
-
-        issues = []
-
+        prompts = get_all_prompts(self.num_samples, self.num_samples_seed)
         results = self.evaluate_and_group(model, dataset, prompts, features, column_types)
 
+        issues = []
         for group in results.keys():
             failed_examples = {}
             cols = []
