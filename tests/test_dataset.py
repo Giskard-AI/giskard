@@ -2,6 +2,7 @@ import pandas as pd
 import numpy as np
 import pytest
 from giskard.datasets.base import Dataset
+from giskard.core.dataset_validation import validate_optional_target
 
 valid_df = pd.DataFrame(
     {
@@ -38,6 +39,7 @@ def test_valid_df_column_types():
         r"in df corresponding to the actual target variable \(ground truth\)\.",
     ):
         my_dataset = Dataset(valid_df)
+        validate_optional_target(my_dataset)
     assert my_dataset.column_types == {
         "categorical_column": "category",
         "text_column": "text",
