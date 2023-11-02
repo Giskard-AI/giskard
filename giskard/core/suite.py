@@ -94,9 +94,10 @@ class TestSuiteResult:
 
         metrics = dict()
         for test_result in self.results:
-            test_name = test_result[0]
-            test_name = process_text(test_name)
-            mlflow_metric_name = f"{test_result[1].metric_name} for {test_name}"
+            test_name = process_text(test_result[0])
+            metric_name = process_text(test_result[1].metric_name)
+            # TODO: Improve this in GSK-2041
+            mlflow_metric_name = test_name if metric_name == "Metric" else f"{metric_name} for {test_name}"
             if mlflow_client is None and mlflow_run_id is None:
                 mlflow.log_metric(mlflow_metric_name, test_result[1].metric)
             elif mlflow_client and mlflow_run_id:
