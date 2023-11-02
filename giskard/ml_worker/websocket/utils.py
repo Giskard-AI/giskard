@@ -1,9 +1,10 @@
+from typing import Any, Dict, List, Optional
+
 import logging
 import os
 import posixpath
 import shutil
 from pathlib import Path
-from typing import Any, Dict, List, Optional
 
 from mlflow.store.artifact.artifact_repo import verify_artifact_path
 
@@ -193,7 +194,7 @@ def parse_function_arguments(client: Optional[GiskardClient], request_arguments:
         elif arg.kwargs is not None:
             kwargs = dict()
             exec(arg.kwargs, {"kwargs": kwargs})
-            arguments.update(kwargs)
+            arguments[arg.name] = kwargs
         else:
             raise IllegalArgumentError("Unknown argument type")
     return arguments
