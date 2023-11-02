@@ -94,9 +94,7 @@ def test_nonvalid_df_column_types():
 
 
 def test_dataset_raises_exception_if_mixed_column_types():
-    df = pd.DataFrame(
-        {"feature": [1, 2, "string", None, np.nan], "target": [0, 0, 1, 1, 0]}
-    )
+    df = pd.DataFrame({"feature": [1, 2, "string", None, np.nan], "target": [0, 0, 1, 1, 0]})
 
     with pytest.raises(TypeError):
         Dataset(df, target="target")
@@ -115,16 +113,12 @@ def test_inference_priority():
     assert my_dataset.column_types == expected_df_column_types
 
     # Case 2: one column in column_types is provided, one in cat_columns
-    my_dataset = Dataset(
-        valid_df, column_types=column_types, cat_columns=["categorical_column"]
-    )
+    my_dataset = Dataset(valid_df, column_types=column_types, cat_columns=["categorical_column"])
     assert my_dataset.column_types == valid_df_column_types
 
     # Case 3: an unknown column in column_types is provided
     column_types = {"unknown_column": "text"}
-    my_dataset = Dataset(
-        valid_df, column_types=column_types, cat_columns=["categorical_column"]
-    )
+    my_dataset = Dataset(valid_df, column_types=column_types, cat_columns=["categorical_column"])
     assert my_dataset.column_types == valid_df_column_types
 
 
@@ -133,3 +127,25 @@ def test_numeric_column_names():
 
     assert Dataset(df, target=2)
     assert Dataset(df, column_types={1: "numeric"})
+
+
+def test_infer_column_types():
+
+    # if df_size >= 100     ==> category_threshold = floor(log10(df_size))
+    assert Dataset(pd.DataFrame({"f": [1, 2] * 50})).column_types["f"] == "category"
+    assert Dataset(pd.DataFrame({"f": ["a", "b"] * 50})).column_types["f"] == "category"
+    assert Dataset(pd.DataFrame({"f": ["a", "b"] * 49})).column_types["f"] == "category"
+    assert Dataset(pd.DataFrame({"f": [1, 2, 3] * 50})).column_types["f"] == "numeric"
+    assert Dataset(pd.DataFrame({"f": ["a", "b", "c"] * 50})).column_types["f"] == "text"
+
+    # if 2 < df_size < 100  ==> category_threshold = 2
+    assert Dataset(pd.DataFrame({"f": [1, 2, 1]})).column_types["f"] == "category"
+    assert Dataset(pd.DataFrame({"f": ["a", "b", "a"]})).column_types["f"] == "category"
+    assert Dataset(pd.DataFrame({"f": [1, 2, 3]})).column_types["f"] == "numeric"
+    assert Dataset(pd.DataFrame({"f": ["a", "b", "c"]})).column_types["f"] == "text"
+
+    # if df_size <= 2       ==> category_threshold = 0 (column is text)
+    assert Dataset(pd.DataFrame({"f": [1, 2]})).column_types["f"] == "numeric"
+    assert Dataset(pd.DataFrame({"f": ["a", "b"]})).column_types["f"] == "text"
+    assert Dataset(pd.DataFrame({"f": [1]})).column_types["f"] == "numeric"
+    assert Dataset(pd.DataFrame({"f": ["a"]})).column_types["f"] == "text"

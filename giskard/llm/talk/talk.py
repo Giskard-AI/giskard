@@ -1,8 +1,10 @@
+from typing import Any, Callable, Dict, List, Optional
+
 import json
-from typing import Dict, Any
-from typing import Optional, Callable, List
 
 import pandas as pd
+
+from giskard.core.validation import ConfiguredBaseModel
 
 from ..config import llm_config
 
@@ -13,24 +15,26 @@ try:
     from langchain.agents.mrkl.prompt import FORMAT_INSTRUCTIONS
     from langchain.base_language import BaseLanguageModel
     from langchain.callbacks.base import BaseCallbackManager
-    from langchain.callbacks.manager import CallbackManagerForToolRun, AsyncCallbackManagerForToolRun
+    from langchain.callbacks.manager import (
+        AsyncCallbackManagerForToolRun,
+        CallbackManagerForToolRun,
+    )
     from langchain.tools import BaseTool
 except ImportError:
     raise ImportError('To use "talk to my ML" feature, please install langchain using `pip install langchain`')
 
-from pydantic import BaseModel
 
+import giskard.models.model_explanation as model_explanation
 from giskard.datasets.base import Dataset
 from giskard.models.base import BaseModel as GiskardBaseModel
-import giskard.models.model_explanation as model_explanation
 from giskard.scanner.report import ScanReport
 
 PredictionFunction = Callable[[pd.DataFrame], pd.Series]
 
 # flake8: noqa
 
-MODEL_PREFIX = """You are an agent designed to interact with a prediction model. 
-Your goal is to make a prediction calling `model_prediction` based on the available information using a JSON input format that includes feature names and their associated values. 
+MODEL_PREFIX = """You are an agent designed to interact with a prediction model.
+Your goal is to make a prediction calling `model_prediction` based on the available information using a JSON input format that includes feature names and their associated values.
 The value associated to the feature names found in `model_description` must be found calling any tool that are provided inside the 'Tools to gather information' list.
 If you fail to find a value after querying all the tool inside the 'Tools to gather information', you must return an explanation why you cannot answer with the list of missing feature that you need to answer'.
 
@@ -44,14 +48,17 @@ Question: {input}
 Thought: I should look at the features that are required to see what I should gather to predict in the available tools
 {agent_scratchpad}"""
 
+
 class LenientBaseToolkit(BaseToolkit):
     """Extended class to allow arbitrary_types_allowed for pydantic compatibility"""
+
     class Config:
         arbitrary_types_allowed = True
 
 
-class ModelSpec(BaseModel):
+class ModelSpec(ConfiguredBaseModel):
     """Base class for model spec."""
+
     model: GiskardBaseModel
     dataset: Optional[Dataset] = None
     scan_report: Optional[ScanReport] = None
@@ -126,7 +133,7 @@ class ModelPredictTool(BaseTool):
 
     name = "model_prediction"
     description = """
-    Can be used to predict using a ML model. 
+    Can be used to predict using a ML model.
     Before calling this you should be SURE that all the features are provided.
     The input is a text representation of the dictionary of features in json syntax.
     You MUST query the tools to find information when available.
@@ -154,7 +161,7 @@ class ModelPredictExplainTool(BaseTool):
 
     name = "model_explain_prediction"
     description = """
-    Can be used to explain the predict of 'model_prediction'. 
+    Can be used to explain the predict of 'model_prediction'.
     The input is a text representation of the dictionary of features in json syntax.
     Return a dict of each feature with the weight in the result prediction for the prediction labels.
     """
