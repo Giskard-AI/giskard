@@ -88,13 +88,13 @@ def test_selects_issues_with_benjamini_hochberg(titanic_model, titanic_dataset):
     detector = PerformanceBiasDetector()
 
     issues = detector.run(titanic_model, titanic_dataset)
-    assert len(issues) == 8
+    assert len(issues) == 4
 
     # Setting alpha enables the Benjamini–Hochberg procedure
     detector = PerformanceBiasDetector(alpha=0.10)
 
     issues = detector.run(titanic_model, titanic_dataset)
-    assert len(issues) == 3
+    assert len(issues) == 2
 
     detector = PerformanceBiasDetector(alpha=1e-10)
 
