@@ -6,7 +6,7 @@ import posixpath
 import sys
 from abc import ABC, abstractmethod
 from pathlib import Path
-from typing import Optional, Generic
+from typing import Optional, Generic, Set
 
 import cloudpickle
 import yaml
@@ -28,6 +28,10 @@ class Artifact(Generic[SMT], ABC):
     def save(self, local_dir: Path):
         self._save_locally(local_dir)
         self._save_meta_locally(local_dir)
+
+    @property
+    def dependencies(self) -> Set["Artifact"]:
+        return set()
 
     @abstractmethod
     def _save_locally(self, local_dit: Path):
@@ -66,7 +70,12 @@ class Artifact(Generic[SMT], ABC):
         with open(file, "r") as f:
             return cls._get_meta_class(**yaml.load(f, Loader=yaml.FullLoader))
 
-    def upload(self, client: GiskardClient, project_key: Optional[str] = None) -> str:
+    def upload(
+        self,
+        client: GiskardClient,
+        project_key: Optional[str] = None,
+        uploaded_dependencies: Optional[Set["Artifact"]] = None,
+    ) -> str:
         """
         Uploads the slicing function and its metadata to the Giskard server.
 
@@ -78,6 +87,14 @@ class Artifact(Generic[SMT], ABC):
         Returns:
             str: The UUID of the uploaded slicing function.
         """
+
+        # Upload dependencies and prevent cycle/multiple upload
+        uploaded_dependencies = uploaded_dependencies or set()
+        uploaded_dependencies.add(self)
+        for dependency in self.dependencies:
+            if dependency not in uploaded_dependencies:
+                dependency.upload(client, project_key, uploaded_dependencies)
+
         name = self._get_name()
 
         local_dir = settings.home_dir / settings.cache_dir / (project_key or "global") / name / self.meta.uuid

@@ -1,10 +1,12 @@
 from typing import Any, Optional
 
-from pydantic import BaseModel, Field
+from pydantic import Field
+
+from giskard.core.validation import ConfiguredBaseModel
 
 
 # @TODO: Define the fields of this class more rigorously.
-class ModelPredictionResults(BaseModel):
+class ModelPredictionResults(ConfiguredBaseModel):
     """Data structure for model predictions.
 
     For regression models, the `prediction` field of the returned `ModelPredictionResults` object will contain the same

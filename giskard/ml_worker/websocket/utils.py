@@ -196,7 +196,7 @@ def parse_function_arguments(client: Optional[GiskardClient], request_arguments:
         elif arg.kwargs is not None:
             kwargs = dict()
             exec(arg.kwargs, {"kwargs": kwargs})
-            arguments.update(kwargs)
+            arguments[arg.name] = kwargs
         else:
             raise IllegalArgumentError("Unknown argument type")
     return arguments
@@ -258,6 +258,7 @@ def map_suite_input_ws(i: websocket.SuiteInput):
 
 def function_argument_to_ws(value: Dict[str, Any]):
     args = list()
+    kwargs = dict()
 
     for v in value:
         obj = value[v]
@@ -291,10 +292,18 @@ def function_argument_to_ws(value: Dict[str, Any]):
             funcargs = websocket.FuncArgument(name=v, str=obj, none=False)
         elif isinstance(obj, bool):
             funcargs = websocket.FuncArgument(name=v, bool=obj, none=False)
-        elif isinstance(obj, dict):
-            funcargs = websocket.FuncArgument(name=v, kwargs=str(obj), none=False)
         else:
-            raise IllegalArgumentError("Unknown argument type")
+            kwargs[v] = obj
+            continue
         args.append(funcargs)
+
+    if len(kwargs) > 0:
+        args.append(
+            websocket.FuncArgument(
+                name="kwargs",
+                kwargs="\n".join([f"kwargs[{repr(key)}] = {repr(value)}" for key, value in kwargs.items()]),
+                none=False,
+            )
+        )
 
     return args

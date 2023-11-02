@@ -2,9 +2,9 @@ from typing import Sequence
 
 from .base_detector import BaseTextPerturbationDetector
 from .text_transformations import TextTransformation
+from ..decorators import detector
 from ...datasets.base import Dataset
 from ...models.base import BaseModel
-from ..decorators import detector
 
 
 @detector(
@@ -12,12 +12,8 @@ from ..decorators import detector
     tags=[
         "text_perturbation",
         "robustness",
-        "nlp",
         "classification",
         "regression",
-        "generative",
-        "text_generation",
-        "llm",
     ],
 )
 class TextPerturbationDetector(BaseTextPerturbationDetector):

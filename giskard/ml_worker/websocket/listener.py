@@ -8,9 +8,10 @@ import tempfile
 import time
 import traceback
 from concurrent.futures import CancelledError, Future
+from copy import copy
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Callable, Dict, Optional, Union
+from typing import Any, Callable, Dict, Optional, Union
 
 import numpy as np
 import pandas as pd
@@ -48,7 +49,7 @@ from giskard.ml_worker.websocket.utils import (
 from giskard.models.base import BaseModel
 from giskard.models.model_explanation import explain, explain_text
 from giskard.push import Push
-from giskard.utils import call_in_pool, log_pool_stats, shutdown_pool
+from giskard.utils import call_in_pool, shutdown_pool
 from giskard.utils.analytics_collector import analytics
 
 logger = logging.getLogger(__name__)
@@ -80,8 +81,6 @@ def wrapped_handle_result(
     action: MLWorkerAction, ml_worker: MLWorker, start: float, rep_id: Optional[str], ignore_timeout: bool
 ):
     def handle_result(future: Union[Future, Callable[..., websocket.WorkerReply]]):
-        log_pool_stats()
-
         info = None  # Needs to be defined in case of cancellation
 
         try:
@@ -210,17 +209,19 @@ def dispatch_action(callback, ml_worker, action, req, execute_in_pool, timeout=N
     # If execution should be done in a pool
     if execute_in_pool:
         logger.debug("Submitting for action %s '%s' into the pool", action.name, callback.__name__)
+        kwargs = {
+            "callback": callback,
+            "action": action,
+            "params": params,
+            "ml_worker": MLWorkerInfo(ml_worker),
+            "client_params": client_params,
+        }
         future = call_in_pool(
             parse_and_execute,
-            callback=callback,
-            action=action,
-            params=params,
-            ml_worker=MLWorkerInfo(ml_worker),
-            client_params=client_params,
+            kwargs=kwargs,
             timeout=timeout,
         )
         future.add_done_callback(result_handler)
-        log_pool_stats()
         return
 
     result_handler(
@@ -477,6 +478,8 @@ def run_model_for_data_frame(
             ),
             prediction=list(predictions.prediction.astype(str)),
         )
+    elif model.is_text_generation:
+        return websocket.RunModelForDataFrame(prediction=list(predictions.prediction.astype(str)))
     else:
         return websocket.RunModelForDataFrame(
             prediction=list(predictions.prediction.astype(str)),
@@ -578,6 +581,8 @@ def run_ad_hoc_test(
     test: GiskardTest = GiskardTest.download(params.testUuid, client, None)
 
     arguments = parse_function_arguments(client, params.arguments)
+    if "kwargs" in arguments:
+        arguments.update(**arguments.pop("kwargs"))
 
     # TODO: how to send to back all the time?
     # arguments["debug"] = params.debug if params.debug else None
@@ -621,12 +626,17 @@ def run_test_suite(
 
         suite = Suite()
         for t in tests:
-            suite.add_test(t["test"].get_builder()(**t["arguments"]), t["id"])
+            test_args = t["arguments"]
+            if "kwargs" in test_args:
+                test_args: Dict[str, Any] = copy(test_args)
+                test_args.update(**test_args.pop("kwargs"))
+            suite.add_test(t["test"].get_builder()(**test_args), t["id"])
 
         suite_result = suite.run(**global_arguments)
 
         identifier_single_test_results = []
-        for identifier, result, arguments in suite_result.results:
+        for t, (identifier, result, _) in zip(tests, suite_result.results):
+            arguments = t["arguments"]
             identifier_single_test_results.append(
                 websocket.IdentifierSingleTestResult(
                     id=identifier,

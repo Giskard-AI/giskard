@@ -4,13 +4,13 @@ from typing import Optional
 
 import numpy as np
 
-from giskard import test
 from giskard.datasets.base import Dataset
+from giskard.ml_worker.testing.registry.decorators import test
 from giskard.ml_worker.testing.registry.slicing_function import SlicingFunction
-from giskard.ml_worker.testing.test_result import TestResult, TestMessage, TestMessageLevel
-from giskard.ml_worker.testing.utils import check_slice_not_empty
-from giskard.ml_worker.testing.utils import validate_classification_label
+from giskard.ml_worker.testing.test_result import TestMessage, TestMessageLevel, TestResult
+from giskard.ml_worker.testing.utils import check_slice_not_empty, validate_classification_label
 from giskard.models.base import BaseModel
+
 from . import debug_description_prefix
 
 
@@ -300,8 +300,8 @@ def _mutual_information(x, y):
 
 def _theil_u(x, y):
     import pandas as pd
-    from sklearn.metrics import mutual_info_score
     from scipy import stats
+    from sklearn.metrics import mutual_info_score
 
     return mutual_info_score(x, y) / stats.entropy(pd.Series(y).value_counts(normalize=True))
 

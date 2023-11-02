@@ -28,9 +28,16 @@ from giskard.ml_worker.testing.registry.transformation_function import (
     TransformationFunctionType,
 )
 from giskard.settings import settings
+from giskard.core.errors import GiskardImportError
 
 from ...ml_worker.utils.file_utils import get_file_name
 from ..metadata.indexing import ColumnMetadataMixin
+
+try:
+    import wandb  # noqa
+except ImportError:
+    pass
+
 
 SAMPLE_SIZE = 1000
 
@@ -187,7 +194,12 @@ class Dataset(ColumnMetadataMixin):
         self.column_dtypes = self.extract_column_dtypes(self.df)
 
         # used in the inference of category columns
-        self.category_threshold = round(np.log10(len(self.df))) if len(self.df) >= 100 else 2
+        df_size = len(self.df)
+        # if df_size >= 100     ==> category_threshold = floor(log10(df_size))
+        # if 2 < df_size < 100  ==> category_threshold = 2
+        # if df_size <= 2       ==> category_threshold = 0 (column is text)
+        # df_size != 0 to avoid <stdin>:1: RuntimeWarning: divide by zero encountered in log10
+        self.category_threshold = max(np.floor(np.log10(df_size)), 2) * (df_size > 2) if df_size != 0 else 0
         self.column_types = self._infer_column_types(column_types, cat_columns, validation)
         if validation:
             from giskard.core.dataset_validation import validate_column_types
@@ -681,36 +693,37 @@ class Dataset(ColumnMetadataMixin):
 
         return artifact_name
 
-    def to_wandb(self, **kwargs) -> None:
+    def to_wandb(self, run: Optional["wandb.wandb_sdk.wandb_run.Run"] = None) -> None:  # noqa
         """Log the dataset to the WandB run.
 
         Log the current dataset in a table format to the active WandB run.
 
         Parameters
         ----------
-        **kwargs :
-            Additional keyword arguments
-            (see https://docs.wandb.ai/ref/python/init) to be added to the active WandB run.
+        run :
+            WandB run.
         """
-        import wandb  # noqa library import already checked in wandb_run
-
-        from giskard.integrations.wandb.wandb_utils import wandb_run
-
+        try:
+            import wandb  # noqa
+        except ImportError as e:
+            raise GiskardImportError("wandb") from e
+        from ...integrations.wandb.wandb_utils import get_wandb_run
         from ...utils.analytics_collector import analytics
 
-        with wandb_run(**kwargs) as run:
-            run.log({"Dataset/dataset": wandb.Table(dataframe=self.df)})
+        run = get_wandb_run(run)
 
-            analytics.track(
-                "wandb_integration:dataset",
-                {
-                    "wandb_run_id": run.id,
-                    "dataset_size": len(self.df),
-                    "dataset_cat_col_cnt": len([c for c, t in self.column_types.items() if t == "category"]),
-                    "dataset_num_col_cnt": len([c for c, t in self.column_types.items() if t == "numeric"]),
-                    "dataset_text_col_cnt": len([c for c, t in self.column_types.items() if t == "text"]),
-                },
-            )
+        run.log({"Dataset/dataset": wandb.Table(dataframe=self.df)})
+
+        analytics.track(
+            "wandb_integration:dataset",
+            {
+                "wandb_run_id": run.id,
+                "dataset_size": len(self.df),
+                "dataset_cat_col_cnt": len([c for c, t in self.column_types.items() if t == "category"]),
+                "dataset_num_col_cnt": len([c for c, t in self.column_types.items() if t == "numeric"]),
+                "dataset_text_col_cnt": len([c for c, t in self.column_types.items() if t == "text"]),
+            },
+        )
 
 
 def _cast_to_list_like(object):

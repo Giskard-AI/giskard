@@ -1,19 +1,21 @@
+from types import TracebackType
+from typing import Dict, Optional, Type
+
 import getpass
 import hashlib
 import os
 import platform
 import sys
 import threading
-from traceback import TracebackException
-from types import TracebackType
 import uuid
 from functools import wraps
 from threading import ExceptHookArgs, Lock
-from typing import Dict, Optional, Type
+from traceback import TracebackException
 
 import requests
 from mixpanel import Mixpanel
 
+from giskard.client.dtos import ServerInfo
 from giskard.settings import settings
 from giskard.utils import fullname, threaded
 from giskard.utils.environment_detector import EnvironmentDetector
@@ -31,11 +33,8 @@ def analytics_method(f):
 
         try:
             return f(*args, **kwargs)
-        except BaseException as e:  # NOSONAR
-            try:
-                _report_error(e, error_type="tracking error")
-            except BaseException:  # NOSONAR
-                pass
+        except BaseException:  # NOSONAR
+            pass
 
     return inner_function
 
@@ -136,12 +135,12 @@ class GiskardAnalyticsCollector:
         )
 
     @analytics_method
-    def init_server_info(self, server_info):
+    def init_server_info(self, server_info: ServerInfo):
         self.server_info = {
-            "Server instance": server_info.get("instanceId"),
-            "Server version": server_info.get("serverVersion"),
-            "Server license": server_info.get("instanceLicenseId"),
-            "Giskard User": server_info.get("user"),
+            "Server instance": server_info.instanceId,
+            "Server version": server_info.serverVersion,
+            "Server license": server_info.instanceLicenseId,
+            "Giskard User": server_info.user,
         }
 
     @analytics_method
@@ -149,6 +148,7 @@ class GiskardAnalyticsCollector:
         return self._track(event_name, properties=properties, meta=meta, force=force)
 
     @threaded
+    @analytics_method
     def _track(self, event_name, properties=None, meta=None, force=False):
         self.initialize_giskard_version()
         self.initialize_user_properties()

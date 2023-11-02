@@ -10,6 +10,7 @@ from pydantic import BaseModel
 
 import giskard
 import giskard.ml_worker.websocket
+from giskard.core.validation import ConfiguredBaseModel
 
 IS_PYDANTIC_V2 = version.parse(pydantic.version.VERSION) >= version.parse("2.0")
 if IS_PYDANTIC_V2:
@@ -17,7 +18,7 @@ if IS_PYDANTIC_V2:
 else:
     from pydantic.fields import ModelField
 
-FILTERED_CLASSES = [BaseModel]
+FILTERED_CLASSES = [BaseModel, ConfiguredBaseModel]
 
 MANDATORY_FIELDS = {
     "ArtifactRef": ["id"],
@@ -25,7 +26,7 @@ MANDATORY_FIELDS = {
     "DataFrame": ["rows"],
     "DataRow": ["columns"],
     "DatasetMeta": [],
-    "DatasetProcessFunctionMeta": ["uuid"],
+    "DatasetProcessFunctionMeta": ["uuid", "name", "code", "cellLevel"],
     "DatasetProcessing": ["datasetId", "totalRows"],
     "DatasetProcessingFunction": [],
     "DatasetProcessingParam": ["dataset"],
@@ -39,7 +40,7 @@ MANDATORY_FIELDS = {
     "ExplainTextParam": ["model", "feature_name", "columns", "column_types"],
     "Explanation": ["per_feature"],
     "FuncArgument": ["name", "none"],
-    "FunctionMeta": ["uuid"],
+    "FunctionMeta": ["uuid", "name", "code"],
     "GenerateTestSuite": [],
     "GenerateTestSuiteParam": ["project_key"],
     "GeneratedTestInput": ["name", "value", "is_alias"],
@@ -56,7 +57,7 @@ MANDATORY_FIELDS = {
         "giskardClientVersion",
     ],
     "GetInfoParam": ["list_packages"],
-    "GetPushParam": ["model", "dataset", "target", "column_types", "column_dtypes"],
+    "GetPushParam": ["model", "dataset", "column_types", "column_dtypes", "rowIdx"],
     "GetPushResponse": [],
     "IdentifierSingleTestResult": ["id", "result"],
     "ModelMeta": [],
@@ -69,7 +70,7 @@ MANDATORY_FIELDS = {
     "RunAdHocTest": [],
     "RunAdHocTestParam": ["testUuid"],
     "RunModelForDataFrame": [],
-    "RunModelForDataFrameParam": ["model", "dataframe", "target", "column_types", "column_dtypes"],
+    "RunModelForDataFrameParam": ["model", "dataframe", "column_types", "column_dtypes"],
     "RunModelParam": ["model", "dataset", "inspectionId", "project_key"],
     "SingleTestResult": ["passed"],
     "SuiteInput": ["name", "type"],
@@ -91,7 +92,6 @@ OPTIONAL_FIELDS = {
     "DataRow": [],
     "DatasetMeta": ["target"],
     "DatasetProcessFunctionMeta": [
-        "name",
         "displayName",
         "version",
         "module",
@@ -99,9 +99,7 @@ OPTIONAL_FIELDS = {
         "moduleDoc",
         "args",
         "tags",
-        "code",
         "type",
-        "cellLevel",
         "columnType",
         "processType",
     ],
@@ -130,7 +128,6 @@ OPTIONAL_FIELDS = {
         "args",
     ],
     "FunctionMeta": [
-        "name",
         "displayName",
         "version",
         "module",
@@ -138,7 +135,6 @@ OPTIONAL_FIELDS = {
         "moduleDoc",
         "args",
         "tags",
-        "code",
         "type",
         "debugDescription",
     ],
@@ -148,7 +144,7 @@ OPTIONAL_FIELDS = {
     "GeneratedTestSuite": ["inputs"],
     "GetInfo": [],
     "GetInfoParam": [],
-    "GetPushParam": ["dataframe", "push_kind", "cta_kind"],
+    "GetPushParam": ["dataframe", "target", "push_kind", "cta_kind"],
     "GetPushResponse": ["contribution", "perturbation", "overconfidence", "borderline", "action"],
     "IdentifierSingleTestResult": ["arguments"],
     "ModelMeta": ["model_type"],
@@ -161,7 +157,7 @@ OPTIONAL_FIELDS = {
     "RunAdHocTest": ["results"],
     "RunAdHocTestParam": ["arguments", "debug"],
     "RunModelForDataFrame": ["all_predictions", "prediction", "probabilities", "raw_prediction"],
-    "RunModelForDataFrameParam": [],
+    "RunModelForDataFrameParam": ["target"],
     "RunModelParam": [],
     "SingleTestResult": [
         "is_error",
@@ -234,12 +230,24 @@ ALL_DTOS = [pytest.param((klass), id=klass.__name__) for klass in get_all_dto_cl
 
 
 # Goal is to ensure every DTO is tested properly
+def test_all_dtos_are_configured():
+    missing_classes: List[Type[BaseModel]] = []
+    for param_set in ALL_DTOS:
+        klass = param_set.values[0]
+        if not issubclass(klass, ConfiguredBaseModel):
+            missing_classes.append(klass)
+    output = "\n  -".join([elt.__qualname__ for elt in missing_classes])
+    if len(missing_classes) > 0:
+        raise ValueError(f"All dtos should use ConfiguredBaseModel as base class, one not using are :\n  -{output}")
+
+
+# Goal is to ensure every DTO is tested properly
 def test_list_mandatory_all_classes():
     missing_classes: List[Type[BaseModel]] = []
     for param_set in ALL_DTOS:
         klass = param_set.values[0]
         if klass.__name__ not in MANDATORY_FIELDS.keys():
-            missing_classes.append(klass.__name__)
+            missing_classes.append(klass)
     output = "\n  -".join([elt.__qualname__ for elt in missing_classes])
     if len(missing_classes) > 0:
         raise ValueError(f"All dtos should be tested here, missing ones are :\n  -{output}")
@@ -250,7 +258,7 @@ def test_list_optional_all_classes():
     for param_set in ALL_DTOS:
         klass = param_set.values[0]
         if klass.__name__ not in OPTIONAL_FIELDS.keys():
-            missing_classes.append(klass.__name__)
+            missing_classes.append(klass)
     output = "\n  -".join([elt.__qualname__ for elt in missing_classes])
     if len(missing_classes) > 0:
         raise ValueError(f"All dtos should be tested here, missing ones are :\n  -{output}")
