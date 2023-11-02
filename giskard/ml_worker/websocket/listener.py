@@ -723,7 +723,7 @@ def handle_cta(
         return websocket.PushAction(object_uuid=object_uuid, arguments=function_argument_to_ws(object_params))
 
 
-@websocket_actor(MLWorkerAction.getPush, timeout=None, ignore_timeout=True)
+@websocket_actor(MLWorkerAction.getPush, timeout=30, ignore_timeout=True)
 def get_push(
     client: Optional[GiskardClient], params: websocket.GetPushParam, *args, **kwargs
 ) -> websocket.GetPushResponse:
