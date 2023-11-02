@@ -1,17 +1,16 @@
 from pathlib import Path
 
-import pytest
 import numpy as np
 import pandas as pd
-from sklearn.svm import SVC
+import pytest
 from imblearn.over_sampling import SMOTE
-from sklearn.preprocessing import OneHotEncoder
 from imblearn.pipeline import Pipeline as PipelineImb
+from sklearn.preprocessing import OneHotEncoder
+from sklearn.svm import SVC
 
 from giskard import Dataset
 from giskard.models.sklearn import SKLearnModel
 from tests.url_utils import fetch_from_ftp
-
 
 # Data.
 DATA_URL = "ftp://sys.giskard.ai/pub/unit_test_resources/drug_classification_dataset/drug200.csv"
@@ -47,7 +46,7 @@ def bin_numerical(df: pd.DataFrame) -> np.ndarray:
     return df
 
 
-@pytest.fixture()
+@pytest.fixture(scope="session")
 def drug_classification_data() -> Dataset:
     # Download data.
     fetch_from_ftp(DATA_URL, DATA_PATH)
@@ -63,7 +62,7 @@ def drug_classification_data() -> Dataset:
     return wrapped_dataset
 
 
-@pytest.fixture()
+@pytest.fixture(scope="session")
 def drug_classification_model(drug_classification_data) -> SKLearnModel:
     x = drug_classification_data.df.drop(TARGET_NAME, axis=1)
     y = drug_classification_data.df.Drug

@@ -1,21 +1,18 @@
 import re
 import string
-from typing import Union, List
 from dataclasses import dataclass
 from pathlib import Path
+from typing import List, Union
 
-import pytest
-import torch
 import numpy as np
 import pandas as pd
-from torch.utils.data import DataLoader
-from torch.utils.data import TensorDataset
+import pytest
+import torch
+from torch.utils.data import DataLoader, TensorDataset
 from transformers import DistilBertForSequenceClassification, DistilBertTokenizer
 
-from giskard import models
-from giskard import Dataset, Model
+from giskard import Dataset, Model, models
 from tests.url_utils import fetch_from_ftp
-
 
 # Data
 DATA_URL = "ftp://sys.giskard.ai/pub/unit_test_resources/tripadvisor_reviews_dataset/{}"
@@ -201,7 +198,7 @@ class CustomWrapper(Model):
         return predicted_probabilities
 
 
-@pytest.fixture()
+@pytest.fixture(scope="session")
 def tripadvisor_data() -> Dataset:
     # Download dataset
     df = load_dataset()
@@ -210,7 +207,7 @@ def tripadvisor_data() -> Dataset:
     )
 
 
-@pytest.fixture()
+@pytest.fixture(scope="session")
 def tripadvisor_model(tripadvisor_data: Dataset) -> Model:
     # Load model.
     model = DistilBertForSequenceClassification.from_pretrained(

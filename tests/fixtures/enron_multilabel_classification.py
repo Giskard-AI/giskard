@@ -65,7 +65,7 @@ def get_labels(filename):
     return dict(labels)
 
 
-@pytest.fixture()
+@pytest.fixture(scope="session")
 def enron_data() -> Dataset:
     logger.info("Fetching Enron Data")
     df = pd.read_csv(path("test_data/enron_data.csv"), keep_default_na=False, na_values=["_GSK_NA_"])
@@ -73,7 +73,7 @@ def enron_data() -> Dataset:
     return Dataset(df=df, target="Target", column_types=input_types)
 
 
-@pytest.fixture()
+@pytest.fixture(scope="session")
 def enron_data_full() -> Dataset:
     logger.info("Fetching Enron Data")
     email_files = get_email_files()
@@ -122,12 +122,12 @@ def enron_data_full() -> Dataset:
     return Dataset(df=data_filtered, target="Target", cat_columns=["Week_day", "Month"])
 
 
-@pytest.fixture()
+@pytest.fixture(scope="session")
 def enron_test_data(enron_data):
     return Dataset(df=pd.DataFrame(enron_data.df).drop(columns=["Target"]), target=None, column_types=input_types)
 
 
-@pytest.fixture()
+@pytest.fixture(scope="session")
 def enron_model(enron_data) -> SKLearnModel:
     timer = Timer()
 
@@ -153,7 +153,9 @@ def enron_model(enron_data) -> SKLearnModel:
             ("text_Mail", text_transformer, "Content"),
         ]
     )
-    clf = Pipeline(steps=[("preprocessor", preprocessor), ("classifier", LogisticRegression(max_iter=100, random_state=30))])
+    clf = Pipeline(
+        steps=[("preprocessor", preprocessor), ("classifier", LogisticRegression(max_iter=100, random_state=30))]
+    )
 
     Y = enron_data.df["Target"]
     X = enron_data.df.drop(columns="Target")

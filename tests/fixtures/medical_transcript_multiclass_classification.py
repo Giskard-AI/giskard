@@ -2,12 +2,12 @@ import string
 from pathlib import Path
 from typing import Iterable
 
-import pytest
 import pandas as pd
-from sklearn.pipeline import Pipeline
+import pytest
 from sklearn.ensemble import RandomForestClassifier
-from sklearn.preprocessing import FunctionTransformer
 from sklearn.feature_extraction.text import CountVectorizer
+from sklearn.pipeline import Pipeline
+from sklearn.preprocessing import FunctionTransformer
 
 from giskard import Dataset
 from giskard.models.sklearn import SKLearnModel
@@ -56,7 +56,7 @@ def load_data() -> pd.DataFrame:
     return df
 
 
-@pytest.fixture()
+@pytest.fixture(scope="session")
 def medical_transcript_data() -> Dataset:
     raw_data = load_data()
     wrapped_data = Dataset(
@@ -85,7 +85,7 @@ def adapt_vectorizer_input(df: pd.DataFrame) -> Iterable:
     return df
 
 
-@pytest.fixture()
+@pytest.fixture(scope="session")
 def medical_transcript_model(medical_transcript_data: Dataset) -> SKLearnModel:
     # Define final pipeline.
     pipeline = Pipeline(

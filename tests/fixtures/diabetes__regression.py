@@ -2,13 +2,13 @@ import pytest
 from sklearn import datasets, linear_model
 from sklearn.metrics import mean_squared_error
 
-from giskard.datasets.base import Dataset
-from giskard.models.sklearn import SKLearnModel
 from giskard.core.core import SupportedModelTypes
+from giskard.datasets.base import Dataset
 from giskard.ml_worker.utils.logging import Timer
+from giskard.models.sklearn import SKLearnModel
 
 
-@pytest.fixture()
+@pytest.fixture(scope="session")
 def linear_regression_diabetes_raw():
     timer = Timer()
     diabetes = datasets.load_diabetes()
@@ -38,7 +38,7 @@ def linear_regression_diabetes_raw():
     return regressor
 
 
-@pytest.fixture()
+@pytest.fixture(scope="session")
 def linear_regression_diabetes(linear_regression_diabetes_raw) -> SKLearnModel:
     diabetes = datasets.load_diabetes()
     return SKLearnModel(
@@ -48,7 +48,7 @@ def linear_regression_diabetes(linear_regression_diabetes_raw) -> SKLearnModel:
     )
 
 
-@pytest.fixture()
+@pytest.fixture(scope="session")
 def diabetes_dataset() -> Dataset:
     diabetes = datasets.load_diabetes()
     raw_data = datasets.load_diabetes(as_frame=True)["data"]
@@ -58,7 +58,7 @@ def diabetes_dataset() -> Dataset:
     return wrapped_data
 
 
-@pytest.fixture()
+@pytest.fixture(scope="session")
 def diabetes_dataset_with_target() -> Dataset:
     loaded = datasets.load_diabetes(as_frame=True)
 

@@ -1,14 +1,14 @@
 import string
 from pathlib import Path
 
-import pytest
 import numpy as np
 import pandas as pd
-from sklearn.pipeline import Pipeline
+import pytest
 from nltk.stem.snowball import SnowballStemmer
-from sklearn.linear_model import LogisticRegression
-from sklearn.preprocessing import FunctionTransformer
 from sklearn.feature_extraction.text import TfidfVectorizer
+from sklearn.linear_model import LogisticRegression
+from sklearn.pipeline import Pipeline
+from sklearn.preprocessing import FunctionTransformer
 
 from giskard import Dataset
 from giskard.models.sklearn import SKLearnModel
@@ -56,7 +56,7 @@ def preprocess_data(df: pd.DataFrame) -> pd.DataFrame:
     return df
 
 
-@pytest.fixture()
+@pytest.fixture(scope="session")
 def amazon_review_data() -> Dataset:
     raw_data = preprocess_data(download_data(nrows=5000))
     wrapped_data = Dataset(
@@ -88,7 +88,7 @@ def tokenizer(x):
     return stems
 
 
-@pytest.fixture()
+@pytest.fixture(scope="session")
 def amazon_review_model(amazon_review_data: Dataset) -> SKLearnModel:
     x = amazon_review_data.df[[FEATURE_COLUMN_NAME]]
     y = amazon_review_data.df[TARGET_COLUMN_NAME]

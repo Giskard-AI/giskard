@@ -43,14 +43,14 @@ input_types = {
 }
 
 
-@pytest.fixture()
+@pytest.fixture(scope="session")
 def german_credit_data() -> Dataset:
     logger.info("Reading german_credit_prepared.csv")
     df = pd.read_csv(path("test_data/german_credit_prepared.csv"), keep_default_na=False, na_values=["_GSK_NA_"])
     return Dataset(df=df, name="Test german credit scoring dataset", target="default", column_types=input_types)
 
 
-@pytest.fixture()
+@pytest.fixture(scope="session")
 def german_credit_catboost_raw_model(german_credit_data):
     from catboost import CatBoostClassifier
     from sklearn import model_selection
@@ -76,7 +76,7 @@ def german_credit_catboost_raw_model(german_credit_data):
     return cb
 
 
-@pytest.fixture()
+@pytest.fixture(scope="session")
 def german_credit_catboost(german_credit_catboost_raw_model) -> CatboostModel:
     return CatboostModel(
         model=german_credit_catboost_raw_model,
@@ -86,13 +86,13 @@ def german_credit_catboost(german_credit_catboost_raw_model) -> CatboostModel:
     )
 
 
-@pytest.fixture()
+@pytest.fixture(scope="session")
 def german_credit_test_data(german_credit_data):
     df = pd.DataFrame(german_credit_data.df).drop(columns=["default"])
     return Dataset(df=df, target=None, column_types=input_types)
 
 
-@pytest.fixture()
+@pytest.fixture(scope="session")
 def german_credit_raw_model(german_credit_data):
     timer = Timer()
 
@@ -115,7 +115,9 @@ def german_credit_raw_model(german_credit_data):
             ("cat", categorical_transformer, columns_to_encode),
         ]
     )
-    clf = Pipeline(steps=[("preprocessor", preprocessor), ("classifier", LogisticRegression(max_iter=100, random_state=30))])
+    clf = Pipeline(
+        steps=[("preprocessor", preprocessor), ("classifier", LogisticRegression(max_iter=100, random_state=30))]
+    )
 
     Y = german_credit_data.df["default"]
     X = german_credit_data.df[german_credit_data.columns].drop(columns="default")
@@ -130,7 +132,7 @@ def german_credit_raw_model(german_credit_data):
     return clf
 
 
-@pytest.fixture()
+@pytest.fixture(scope="session")
 def german_credit_model(german_credit_raw_model) -> SKLearnModel:
     return SKLearnModel(
         model=german_credit_raw_model,
@@ -141,7 +143,7 @@ def german_credit_model(german_credit_raw_model) -> SKLearnModel:
     )
 
 
-@pytest.fixture()
+@pytest.fixture(scope="session")
 def german_credit_always_default_model(german_credit_data) -> SKLearnModel:
     X = german_credit_data.df.drop(columns="default")
     y = german_credit_data.df["default"]

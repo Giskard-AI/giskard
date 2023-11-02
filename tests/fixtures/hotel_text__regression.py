@@ -1,17 +1,16 @@
 from pathlib import Path
 from typing import Iterable
 
-import pytest
 import pandas as pd
-from sklearn.pipeline import Pipeline
-from sklearn.preprocessing import FunctionTransformer
+import pytest
 from sklearn.ensemble import GradientBoostingRegressor
 from sklearn.feature_extraction.text import TfidfVectorizer
+from sklearn.pipeline import Pipeline
+from sklearn.preprocessing import FunctionTransformer
 
 from giskard import Dataset
-from tests.url_utils import fetch_from_ftp
 from giskard.models.sklearn import SKLearnModel
-
+from tests.url_utils import fetch_from_ftp
 
 # Data.
 DATA_URL = "ftp://sys.giskard.ai/pub/unit_test_resources/hotel_text_regression_dataset/Hotel_Reviews.csv"
@@ -31,7 +30,7 @@ def load_data(**kwargs) -> pd.DataFrame:
     return df
 
 
-@pytest.fixture
+@pytest.fixture(scope="session")
 def hotel_text_data() -> Dataset:
     fetch_from_ftp(DATA_URL, DATA_PATH)
 
@@ -56,7 +55,7 @@ def adapt_vectorizer_input(df: pd.DataFrame) -> Iterable:
     return df
 
 
-@pytest.fixture
+@pytest.fixture(scope="session")
 def hotel_text_model(hotel_text_data) -> SKLearnModel:
     x = hotel_text_data.df[[FEATURE_COLUMN_NAME]]
     y = hotel_text_data.df[TARGET_COLUMN_NAME]
