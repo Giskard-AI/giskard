@@ -1,13 +1,13 @@
 import functools
 import inspect
 from pathlib import Path
-from typing import Optional, List, Union, Type, Callable, Dict
+from typing import Optional, List, Union, Type, Callable, Dict, Set
 
 import pandas as pd
 
 from giskard.core.core import DatasetProcessFunctionMeta, DatasetProcessFunctionType
 from giskard.core.validation import configured_validate_arguments
-from giskard.ml_worker.core.savable import RegistryArtifact
+from giskard.ml_worker.core.savable import RegistryArtifact, Artifact
 from giskard.ml_worker.testing.registry.decorators_utils import (
     validate_arg_type,
     drop_arg,
@@ -79,6 +79,17 @@ class SlicingFunction(RegistryArtifact[DatasetProcessFunctionMeta]):
             self.params[next(iter([arg.name for arg in self.meta.args.values() if arg.argOrder == idx]))] = arg
 
         return self
+
+    @property
+    def dependencies(self) -> Set[Artifact]:
+        if self.func is None:
+            return set()
+
+        from inspect import Parameter, signature
+
+        parameters: List[Parameter] = list(signature(self.func).parameters.values())
+
+        return set([param.default for param in parameters if isinstance(param.default, Artifact)])
 
     def execute(self, data: Union[pd.Series, pd.DataFrame]):
         """

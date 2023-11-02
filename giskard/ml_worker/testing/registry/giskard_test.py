@@ -4,7 +4,7 @@ import pickle
 import sys
 from abc import ABC, abstractmethod
 from pathlib import Path
-from typing import Callable, Optional, Union
+from typing import Union, Callable, Optional, Set, List
 
 import cloudpickle
 
@@ -114,6 +114,7 @@ class GiskardTestMethod(GiskardTest):
 
             test()(test_fn)
             meta = tests_registry.get_test(test_uuid)
+
         super(GiskardTest, self).__init__(meta)
 
     def __call__(self, *args, **kwargs) -> "GiskardTestMethod":
@@ -126,6 +127,14 @@ class GiskardTestMethod(GiskardTest):
             instance.params[next(iter([arg.name for arg in instance.meta.args.values() if arg.argOrder == idx]))] = arg
 
         return instance
+
+    @property
+    def dependencies(self) -> Set[Artifact]:
+        from inspect import Parameter, signature
+
+        parameters: List[Parameter] = list(signature(self.test_fn).parameters.values())
+
+        return set([param.default for param in parameters if isinstance(param.default, Artifact)])
 
     def execute(self) -> Result:
         analytics.track("test:execute", {"test_name": self.meta.full_name})

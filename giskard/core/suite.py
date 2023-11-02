@@ -8,9 +8,10 @@ from functools import singledispatchmethod
 
 from mlflow import MlflowClient
 
-from giskard.client.dtos import SuiteTestDTO, TestInputDTO, TestSuiteDTO
+from giskard.client.dtos import SuiteInfo, SuiteTestDTO, TestInputDTO, TestSuiteDTO
 from giskard.client.giskard_client import GiskardClient
 from giskard.core.core import TestFunctionMeta
+from giskard.core.errors import GiskardImportError
 from giskard.datasets.base import Dataset
 from giskard.ml_worker.core.savable import Artifact
 from giskard.ml_worker.exceptions.IllegalArgumentError import IllegalArgumentError
@@ -20,8 +21,6 @@ from giskard.ml_worker.testing.registry.slicing_function import SlicingFunction
 from giskard.ml_worker.testing.registry.transformation_function import TransformationFunction
 from giskard.ml_worker.testing.test_result import TestMessage, TestMessageLevel, TestResult
 from giskard.models.base import BaseModel
-from giskard.core.errors import GiskardImportError
-
 
 logger = logging.getLogger(__name__)
 
@@ -120,7 +119,7 @@ class TestSuiteResult:
             import wandb  # noqa
         except ImportError as e:
             raise GiskardImportError("wandb") from e
-        from ..integrations.wandb.wandb_utils import get_wandb_run, _parse_test_name
+        from ..integrations.wandb.wandb_utils import _parse_test_name, get_wandb_run
         from ..utils.analytics_collector import analytics
 
         run = get_wandb_run(run)
@@ -648,14 +647,14 @@ class Suite:
 
     @classmethod
     def download(cls, client: GiskardClient, project_key: str, suite_id: int) -> "Suite":
-        suite_json = client.get_suite(client.get_project(project_key).project_id, suite_id)
+        suite_dto: SuiteInfo = client.get_suite(client.get_project(project_key).project_id, suite_id)
 
-        suite = Suite(name=suite_json["name"])
+        suite = Suite(name=suite_dto.name)
         suite.id = suite_id
 
-        for test_json in suite_json["tests"]:
-            test = GiskardTest.download(test_json["testUuid"], client, None)
-            test_arguments = parse_function_arguments(client, project_key, test_json["functionInputs"].values())
+        for test_json in suite_dto.tests:
+            test = GiskardTest.download(test_json.testUuid, client, None)
+            test_arguments = parse_function_arguments(client, project_key, test_json.functionInputs.values())
             suite.add_test(test.get_builder()(**test_arguments))
 
         return suite
