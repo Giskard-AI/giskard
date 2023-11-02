@@ -251,7 +251,9 @@ def do_run_adhoc_test(client, arguments, test, debug_info=None):
                 + "but extract_debug_info did not return the information needed."
             )
 
-        test_result.output_df.name += debug_info["suffix"]
+        if test_result.output_df.name is not None:
+            # Dataset can have empty name
+            test_result.output_df.name += debug_info["suffix"]
 
         test_result.output_df_id = test_result.output_df.upload(client=client, project_key=debug_info["project_key"])
         # We won't return output_df from WS, rather upload it
