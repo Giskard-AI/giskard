@@ -10,8 +10,8 @@ import pandas as pd
 from ..client.python_utils import warning
 from ..core.model_validation import validate_model
 from ..datasets.base import Dataset
-from ..llm.data_generation import generate_test_dataset
 from ..llm.errors import LLMGenerationError
+from ..llm.utils import generate_test_dataset
 from ..models.base import BaseModel
 from ..utils import fullname
 from ..utils.analytics_collector import analytics, analytics_method, get_dataset_properties, get_model_properties
