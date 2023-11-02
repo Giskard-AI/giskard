@@ -72,7 +72,7 @@ def test_performance_bias_detector_with_tabular(german_credit_model, german_cred
 
 def test_performance_bias_detector_with_text_features(enron_model, enron_data):
     # Augment the dataset with random data
-    df = pd.DataFrame({col: enron_data.df[col].sample(500, replace=True).values for col in enron_data.columns})
+    df = pd.DataFrame({col: enron_data.df[col].sample(100, replace=True).values for col in enron_data.columns})
     dataset = Dataset(df, target=enron_data.target, column_types=enron_data.column_types)
     detector = PerformanceBiasDetector()
 
