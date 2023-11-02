@@ -1,6 +1,6 @@
 import pytest
 
-from giskard import Model, Dataset
+from giskard import Dataset, Model
 from giskard.demo import titanic
 
 
@@ -16,4 +16,9 @@ def titanic_model(titanic_model_data_raw):
 
 @pytest.fixture()
 def titanic_dataset(titanic_model_data_raw):
-    return Dataset(titanic_model_data_raw[1], target="Survived", name="Titanic dataset")
+    return Dataset(
+        titanic_model_data_raw[1],
+        target="Survived",
+        name="Titanic dataset",
+        cat_columns=["Pclass", "Sex", "SibSp", "Parch", "Embarked"],
+    )
