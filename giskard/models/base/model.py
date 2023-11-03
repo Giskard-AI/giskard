@@ -131,7 +131,7 @@ class BaseModel(ABC):
             raise ValueError("The parameter 'classification_labels' is required if 'model_type' is 'classification'.")
 
         if model_type == SupportedModelTypes.TEXT_GENERATION:
-            if name is None or description is None:
+            if any(v is None for v in [name, description, feature_names]):
                 missing = [
                     param
                     for param, value in {
