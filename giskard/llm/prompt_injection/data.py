@@ -513,19 +513,21 @@ def get_all_prompts(num_samples: int, num_samples_seed: Optional[int] = None):
         ChatGPT_Image_Markdown,
     ]
 
-    grouped_prompts = [
-        get_ablation_dan_11_0_prompts(),
-    ] + [get_prompts_from_pi(rogue_string) for rogue_string in ROGUE_STRINGS_AVAILABLE]
+    multi_prompts_nested = [get_ablation_dan_11_0_prompts()] + [
+        get_prompts_from_pi(rogue_string) for rogue_string in ROGUE_STRINGS_AVAILABLE
+    ]
 
-    num_samples_per_group = (num_samples - len(single_prompts)) // len(grouped_prompts)
+    if num_samples is not None:
+        rng = random.Random(num_samples_seed)
+        num_samples_per_group = (num_samples - len(single_prompts)) // len(multi_prompts_nested)
+        multi_prompts_sampled_flattened = []
+        for prompts in multi_prompts_nested:
+            if num_samples_per_group >= len(prompts):
+                multi_prompts_sampled_flattened += prompts
+            elif num_samples_per_group > 0:
+                multi_prompts_sampled_flattened += rng.sample(prompts, num_samples_per_group)  # sampling each category
+        multi_prompts = multi_prompts_sampled_flattened
+    else:
+        multi_prompts = sum(multi_prompts_nested, [])  # flattening multi_prompts_nested
 
-    rng = random.Random(num_samples_seed)
-
-    sampled_grouped_prompts = []
-    for prompts in grouped_prompts:
-        if num_samples_per_group >= len(prompts):
-            sampled_grouped_prompts += prompts
-        elif num_samples_per_group > 0:
-            sampled_grouped_prompts += rng.sample(prompts, num_samples_per_group)
-
-    return single_prompts + sampled_grouped_prompts
+    return single_prompts + multi_prompts
