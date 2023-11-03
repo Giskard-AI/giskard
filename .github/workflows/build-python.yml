@@ -97,9 +97,9 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: Install libomp
-        if: ${{ matrix.os == 'macos-13' }}
-        run: brew install libomp
+      - name: Downgrade libomp on macOS
+        if: ${{ startsWith(matrix.os,'macos-') }}
+        run: wget https://raw.githubusercontent.com/Homebrew/homebrew-core/fb8323f2b170bd4ae97e1bac9bf3e2983af3fdb0/Formula/libomp.rb && brew install libomp.rb
 
       - name: Setup PDM
         uses: pdm-project/setup-pdm@v3
