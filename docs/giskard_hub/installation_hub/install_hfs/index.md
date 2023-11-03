@@ -5,7 +5,7 @@ Hugging Face Spaces is a great start and the easiest approach to explore Giskard
 ## Demo Space
 
 We have a [demo Giskard Space](https://huggingface.co/spaces/giskardai/giskard) on Hugging Face Spaces.
-Use this demo Space to discover the Giskard server and navigate through our demo projects.
+Use this demo Space to discover the Giskard hub and navigate through our demo projects.
 
 :::{warning}
 **The demo Giskard Space is read-only. To upload your own models, datasets and projects in the Giskard Space, we recommend that you duplicate the Space.**
@@ -45,7 +45,7 @@ With free hardware that lacks persistent storage, any inactivity beyond 48 hours
 
 Once you're ready, click on Duplicate Space. The building process will take several minutes.
 
-Upon completion, you can access the public Giskard instance on Hugging Face Spaces. For guidance, refer to the [Upload an object to the Giskard server](../../../guides/upload/index.md) guide.
+Upon completion, you can access the public Giskard instance on Hugging Face Spaces. For guidance, refer to the [Upload an object to the Giskard hub](../../../guides/upload/index.md) guide.
 
 For those seeking to use a private Space, please be aware of the following additional measures in place to ensure your data's security and privacy.
 
@@ -80,6 +80,6 @@ and in ML worker connection:
 
 ![ML Worker instruction](../../../assets/integrations/hfs/mlworker.png)
 
-Instructions and details for setting up a Giskard client can be found under the Giskard server's Settings tab.
+Instructions and details for setting up a Giskard client can be found under the Giskard hub's Settings tab.
 
-Aside from the Giskard Space Token, for uploading objects to the Giskard instance on Hugging Face Spaces, consult the [Upload an object to the Giskard server](../../../guides/upload/index.md) guide.
+Aside from the Giskard Space Token, for uploading objects to the Giskard instance on Hugging Face Spaces, consult the [Upload an object to the Giskard hub](../../../guides/upload/index.md) guide.
