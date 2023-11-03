@@ -21,7 +21,7 @@ import stomp
 
 import giskard
 from giskard.client.giskard_client import GiskardClient
-from giskard.core.suite import Suite
+from giskard.core.suite import Suite, generate_test_partial
 from giskard.datasets.base import Dataset
 from giskard.ml_worker import websocket
 from giskard.ml_worker.core.log_listener import LogListener
@@ -636,7 +636,7 @@ def run_test_suite(
 
         identifier_single_test_results = []
         for t, (identifier, result, _) in zip(tests, suite_result.results):
-            arguments = t["arguments"]
+            arguments = Suite.create_test_params(generate_test_partial(t["test"], t["arguments"]), global_arguments)
             identifier_single_test_results.append(
                 websocket.IdentifierSingleTestResult(
                     id=identifier,

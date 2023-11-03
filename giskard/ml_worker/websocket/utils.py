@@ -1,9 +1,10 @@
+from typing import Any, Dict, List, Optional
+
 import logging
 import os
 import posixpath
 import shutil
 from pathlib import Path
-from typing import Any, Dict, List, Optional
 
 from mlflow.store.artifact.artifact_repo import verify_artifact_path
 
@@ -17,6 +18,7 @@ from giskard.ml_worker.testing.registry.slicing_function import SlicingFunction
 from giskard.ml_worker.testing.registry.transformation_function import TransformationFunction
 from giskard.ml_worker.testing.test_result import TestMessageLevel, TestResult
 from giskard.ml_worker.websocket import (
+    CreateSubDatasetParam,
     DatasetProcessingParam,
     EchoMsg,
     ExplainParam,
@@ -28,7 +30,6 @@ from giskard.ml_worker.websocket import (
     RunModelForDataFrameParam,
     RunModelParam,
     TestSuiteParam,
-    CreateSubDatasetParam,
 )
 from giskard.ml_worker.websocket.action import MLWorkerAction
 from giskard.models.base import BaseModel

@@ -94,13 +94,15 @@ class TestSuiteResult:
 
         metrics = dict()
         for test_result in self.results:
-            test_name = test_result[0]
-            test_name = process_text(test_name)
+            test_name = process_text(test_result[0])
+            metric_name = process_text(test_result[1].metric_name)
+            # TODO: Improve this in GSK-2041
+            mlflow_metric_name = test_name if metric_name == "Metric" else f"{metric_name} for {test_name}"
             if mlflow_client is None and mlflow_run_id is None:
-                mlflow.log_metric(test_name, test_result[1].metric)
+                mlflow.log_metric(mlflow_metric_name, test_result[1].metric)
             elif mlflow_client and mlflow_run_id:
-                mlflow_client.log_metric(mlflow_run_id, test_name, test_result[1].metric)
-            metrics[test_name] = test_result[1].metric
+                mlflow_client.log_metric(mlflow_run_id, mlflow_metric_name, test_result[1].metric)
+            metrics[mlflow_metric_name] = test_result[1].metric
 
         return metrics
 
@@ -286,7 +288,7 @@ def build_test_input_dto(client, p, pname, ptype, project_key, uploaded_uuids):
         return TestInputDTO(name=pname, value=str(p), type=ptype)
 
 
-def _generate_test_partial(
+def generate_test_partial(
     test_fn: Test, test_id: Optional[Union[int, str]] = None, display_name: Optional[str] = None, **params
 ) -> TestPartial:
     if isinstance(test_fn, GiskardTestMethod):
@@ -418,13 +420,13 @@ class Suite:
 
         test_params = {}
         for pname, p in available_params:
-            if pname in kwargs:
-                test_params[pname] = kwargs[pname]
-            elif pname in test_partial.provided_inputs:
+            if pname in test_partial.provided_inputs:
                 if isinstance(test_partial.provided_inputs[pname], SuiteInput):
                     test_params[pname] = kwargs[test_partial.provided_inputs[pname].name]
                 else:
                     test_params[pname] = test_partial.provided_inputs[pname]
+            elif pname in kwargs:
+                test_params[pname] = kwargs[pname]
         return test_params
 
     def upload(self, client: GiskardClient, project_key: str):
@@ -511,7 +513,7 @@ class Suite:
             Suite: The current instance of the test suite to allow chained calls.
 
         """
-        self.tests.append(_generate_test_partial(test_fn, test_id, display_name, **params))
+        self.tests.append(generate_test_partial(test_fn, test_id, display_name, **params))
 
         return self
 
@@ -562,7 +564,7 @@ class Suite:
         test = self.tests[index]
         inputs = test.provided_inputs.copy()
         inputs.update(**params)
-        self.tests[index] = _generate_test_partial(test.giskard_test, test.test_id, **inputs)
+        self.tests[index] = generate_test_partial(test.giskard_test, test.test_id, **inputs)
 
         return self
 
