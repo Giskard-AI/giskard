@@ -69,13 +69,13 @@ FAQ/index
 :::::
 
 :::::{grid-item}
-:::{card} <h3><center>🌐 Run the Giskard Server</center></h3>
+:::{card} <h3><center>🌐 Run the Giskard Hub</center></h3>
 :link: installation_app
 :::
 :::::
 
 :::::{grid-item}
-:::{card} <h3><center>⬆️ Upload an object to the Giskard server</center></h3>
+:::{card} <h3><center>⬆️ Upload an object to the Giskard hub</center></h3>
 :link: upload
 :::
 :::::

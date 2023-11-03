@@ -209,7 +209,7 @@ jobs:
           poetry new ./install-test
           cd ./install-test
           sed -i 's/^\(python *= *\).*$/\1">=3.10,<3.12"/' pyproject.toml
-          poetry add "$(ls ../dist/*.whl)[server]"
+          poetry add "$(ls ../dist/*.whl)[hub]"
       - name: Create new project, install wheel and import (Poetry)
         run: |
           poetry new ./install-run
@@ -255,7 +255,7 @@ jobs:
           cd ./install-test
           pdm init --python 3.10 -n .
           sed -i 's/^\(requires-python *= *\).*$/\1">=3.10,<3.12"/' pyproject.toml
-          pdm add "$(ls ../dist/*.whl)[server]"
+          pdm add "$(ls ../dist/*.whl)[hub]"
           pdm run python -c "import giskard"
       - name: Create new project, install wheel and import (PDM)
         run: |
