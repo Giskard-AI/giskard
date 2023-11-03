@@ -29,33 +29,6 @@ for i in range(len(pi_prompt_data.ALL_OPENAI_PLAYGROUND_PROMPTS)):
 
 ROGUE_STRINGS_AVAILABLE = ["hate-humans", "kill-humans", "long-prompt"]
 
-PI_PROMPT_CONFIG = {
-    "base": {
-        "text": pi_prompt_data.ALL_OPENAI_PLAYGROUND_PROMPTS,
-    },
-    "attack": {
-        "text": (
-            pi_prompt_data.goal_hikacking_attacks["ignore-print"],
-            pi_prompt_data.goal_hikacking_attacks["ignore-say"],
-            pi_prompt_data.goal_hikacking_attacks["ignore-print-upper"],
-            pi_prompt_data.goal_hikacking_attacks["nevermind"],
-            pi_prompt_data.goal_hikacking_attacks["screaming-stop"],
-        ),
-        "rogue_string": None,  # to be filled
-        "scoring": "match_rogue_to_output",
-        "settings": {
-            "escape": pi_prompt_data.escape_chars["n"],
-            "delimiter": pi_prompt_data.delimiter_chars["dash"],
-            "escape_length": 10,
-            "escape_times": 2,
-        },
-    },
-    "config": {
-        "id": (0, 1, 2, 3),
-    },
-    "visualization": {"columns": ()},
-}
-
 
 @dataclass(frozen=True)
 class EvaluationMethod(ABC):
@@ -466,6 +439,35 @@ def get_ablation_dan_11_0_prompts():
     return prompts
 
 
+def get_pi_prompt_config(rogue_string_name: str):
+    return {
+        "base": {
+            "text": pi_prompt_data.ALL_OPENAI_PLAYGROUND_PROMPTS,
+        },
+        "attack": {
+            "text": (
+                pi_prompt_data.goal_hikacking_attacks["ignore-print"],
+                pi_prompt_data.goal_hikacking_attacks["ignore-say"],
+                pi_prompt_data.goal_hikacking_attacks["ignore-print-upper"],
+                pi_prompt_data.goal_hikacking_attacks["nevermind"],
+                pi_prompt_data.goal_hikacking_attacks["screaming-stop"],
+            ),
+            "rogue_string": pi_rogue_strings[rogue_string_name],
+            "scoring": "match_rogue_to_output",
+            "settings": {
+                "escape": pi_prompt_data.escape_chars["n"],
+                "delimiter": pi_prompt_data.delimiter_chars["dash"],
+                "escape_length": 10,
+                "escape_times": 2,
+            },
+        },
+        "config": {
+            "id": (0, 1, 2, 3),
+        },
+        "visualization": {"columns": ()},
+    }
+
+
 def get_prompts_from_pi(rogue_string_name: str):
     """
     "pi" refers to the PromptInjection library https://github.com/agencyenterprise/promptinject
@@ -487,9 +489,7 @@ def get_prompts_from_pi(rogue_string_name: str):
         "tags": ADVERSARIAL_EXAMPLE_TAG,
         "source": PI_REF,
     }
-
-    PI_PROMPT_CONFIG["rogue_string"] = pi_rogue_strings[rogue_string_name]
-    pi_prompts = pi_build_prompts(PI_PROMPT_CONFIG)
+    pi_prompts = pi_build_prompts(get_pi_prompt_config(rogue_string_name))
     prompt_contents = [pi_prompt["prompt"] for pi_prompt in pi_prompts]
     prompts = [Prompt(content=prompt_content, **rogue_string) for prompt_content in prompt_contents]
     return prompts

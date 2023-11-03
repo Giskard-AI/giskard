@@ -1,4 +1,5 @@
-from giskard.llm.prompt_injection.data import get_all_prompts
+from giskard.llm.prompt_injection.data import get_all_prompts, get_prompts_from_pi
+from giskard.llm.prompt_injection.promptinject.prompt_data import rogue_strings
 
 # total number of prompt injections available
 TOTAL_PI = 2241
@@ -23,3 +24,11 @@ def test_num_samples():
 
     prompts = get_all_prompts(num_samples=-1)
     assert TOTAL_SINGLE_PI == len(prompts)
+
+
+def test_prompts_from_pi():
+
+    for rogue_string, match in rogue_strings.items():
+        prompts = get_prompts_from_pi(rogue_string)
+        for prompt in prompts:
+            assert match in prompt.content
