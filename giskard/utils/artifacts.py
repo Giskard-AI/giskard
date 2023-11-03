@@ -1,6 +1,7 @@
 import inspect
 import uuid
-from typing import Any, Optional, Union
+from enum import Enum
+from typing import Any, Optional, Union, Dict
 
 try:
     from types import NoneType
@@ -18,12 +19,22 @@ def _serialize_artifact(artifact, artifact_uuid: Optional[Union[str, uuid.UUID]]
     return str(artifact_uuid)
 
 
+def repr_parameter(value: Any) -> str:
+    if isinstance(value, Enum):
+        return repr(value.value)
+
+    return repr(value)
+
+
 def serialize_parameter(default_value: Any) -> PRIMITIVES:
     if default_value == inspect.Parameter.empty:
         return None
 
     if isinstance(default_value, PRIMITIVES.__args__):
         return default_value
+
+    if isinstance(default_value, Dict):
+        return "\n".join(f"kwargs[{repr(key)}] = {repr_parameter(value)}" for key, value in default_value.items())
 
     from ..ml_worker.core.savable import Artifact
 
