@@ -142,13 +142,13 @@ test_suite.run()[1]
 
 ## Save your transformation function
 
-Saving your transformation function to the local Giskard server will enable you to:
+Saving your transformation function to the local Giskard hub will enable you to:
 
 * Use your transformations for testing purposes: your transformations can be used as *fixtures* for your test suite
 * Use the saved transformations to debug your dataset
 * Use the saved transformations to augment your dataset
 
-To upload your transformation function to the Giskard server, go to [upload objects](../upload/index.md).
+To upload your transformation function to the Giskard hub, go to [upload objects](../upload/index.md).
 
 <br>
 
