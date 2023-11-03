@@ -57,7 +57,7 @@ class OpenAIClient(LLMClient):
                 'setting OPENAI_API_KEY in the environment or using `giskard.llm.set_openai_key("sk-...")`'
             ) from err
 
-        self.logger.log_call(
+        self._logger.log_call(
             prompt_tokens=completion["usage"]["prompt_tokens"],
             sampled_tokens=completion["usage"]["completion_tokens"],
             model=model,
