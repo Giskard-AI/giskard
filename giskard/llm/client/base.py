@@ -2,8 +2,15 @@ from abc import ABC, abstractmethod
 from dataclasses import dataclass
 from typing import Any, Dict, Optional
 
+from .logger import LLMLogger
+
 
 class LLMClient(ABC):
+    @property
+    @abstractmethod
+    def logger(self) -> LLMLogger:
+        ...
+
     @abstractmethod
     def complete(
         self,
