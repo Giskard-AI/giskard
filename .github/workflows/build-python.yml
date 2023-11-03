@@ -97,6 +97,10 @@ jobs:
         with:
           fetch-depth: 0
 
+      - name: Install libomp
+        if: ${{ matrix.os == 'macos-13' }}
+        run: brew install libomp
+
       - name: Setup PDM
         uses: pdm-project/setup-pdm@v3
         with:
