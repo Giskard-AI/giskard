@@ -73,7 +73,7 @@ def test_model_prediction_is_cached_on_text_generation_model():
     model_id = model.id
 
     del model
-    model = Model(chain, model_type="text_generation", name="", id=model_id.hex)
+    model = Model(chain, model_type="text_generation", name="", feature_names=["instruct"], id=model_id.hex)
 
     assert model.predict(dataset).raw_prediction.tolist() == llm.responses
 
