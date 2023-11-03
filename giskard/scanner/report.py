@@ -8,8 +8,8 @@ import mlflow
 import pandas as pd
 from mlflow import MlflowClient
 
-from giskard.utils.analytics_collector import analytics, anonymize
 from giskard.core.errors import GiskardImportError
+from giskard.utils.analytics_collector import analytics, anonymize
 
 
 class ScanReport:
@@ -50,7 +50,9 @@ class ScanReport:
         from ..visualization.widget import ScanReportWidget
 
         widget = ScanReportWidget(self)
-        html = widget.render_html(embed=embed)
+
+        with pd.option_context("display.max_colwidth", None):
+            html = widget.render_html(embed=embed)
 
         if filename is not None:
             with open(filename, "w") as f:
