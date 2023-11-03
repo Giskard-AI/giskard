@@ -52,6 +52,9 @@ def test_llm_model_requirements():
     with pytest.raises(ValueError, match=r"The parameters: \[\'name\', \'description\'\] are required"):
         Model(prediction_function, model_type="text_generation", feature_names=["dummy"])
 
+    with pytest.raises(ValueError, match=r"The parameter: \'feature_names\' is required"):
+        Model(prediction_function, model_type="text_generation", description="dummy", name="dummy")
+
     with pytest.raises(
         ValueError, match=r"The parameters: \[\'name\', \'description\', \'feature_names\'\] are required"
     ):
