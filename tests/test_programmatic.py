@@ -57,10 +57,10 @@ def test_all_global():
     _assert_html_generation_does_no_fail(test_suite_result)
 
 
-def test_argument_overriden():
+def test_argument_not_overriden():
     test_suite_result = Suite().add_test(_test_a_greater_b(a=1, b=2)).run(a=3)
 
-    assert test_suite_result.passed
+    assert not test_suite_result.passed
     _assert_html_generation_does_no_fail(test_suite_result)
 
 

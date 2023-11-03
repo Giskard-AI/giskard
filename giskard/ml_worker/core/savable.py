@@ -1,4 +1,4 @@
-from typing import Generic, Optional
+from typing import Generic, Optional, Set
 
 import inspect
 import logging
@@ -29,6 +29,10 @@ class Artifact(Generic[SMT], ABC):
     def save(self, local_dir: Path):
         self._save_locally(local_dir)
         self._save_meta_locally(local_dir)
+
+    @property
+    def dependencies(self) -> Set["Artifact"]:
+        return set()
 
     @abstractmethod
     def _save_locally(self, local_dit: Path):
@@ -65,9 +69,16 @@ class Artifact(Generic[SMT], ABC):
             return None
 
         with open(file, "r") as f:
-            return cls._get_meta_class(**yaml.load(f, Loader=yaml.FullLoader))
+            # PyYAML prohibits the arbitary execution so our class cannot be loaded safely,
+            # see: https://github.com/yaml/pyyaml/wiki/PyYAML-yaml.load(input)-Deprecation
+            return yaml.load(f, Loader=yaml.UnsafeLoader)
 
-    def upload(self, client: GiskardClient, project_key: Optional[str] = None) -> str:
+    def upload(
+        self,
+        client: GiskardClient,
+        project_key: Optional[str] = None,
+        uploaded_dependencies: Optional[Set["Artifact"]] = None,
+    ) -> str:
         """
         Uploads the slicing function and its metadata to the Giskard hub.
 
@@ -79,6 +90,14 @@ class Artifact(Generic[SMT], ABC):
         Returns:
             str: The UUID of the uploaded slicing function.
         """
+
+        # Upload dependencies and prevent cycle/multiple upload
+        uploaded_dependencies = uploaded_dependencies or set()
+        uploaded_dependencies.add(self)
+        for dependency in self.dependencies:
+            if dependency not in uploaded_dependencies:
+                dependency.upload(client, project_key, uploaded_dependencies)
+
         name = self._get_name()
 
         local_dir = settings.home_dir / settings.cache_dir / (project_key or "global") / name / self.meta.uuid
