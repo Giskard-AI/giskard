@@ -30,7 +30,7 @@ Estimated OpenAI GPT-4 calls for evaluation: {num_llm_calls} (~{num_llm_prompt_t
 OpenAI API costs for evaluation are estimated to ${estimated_usd:.2f}.
 """
 
-COST_SUMMARY_TEMPLATE = """LLM-assisted detectors have consumed the following resources:
+COST_SUMMARY_TEMPLATE = """LLM-assisted detectors have used the following resources:
 OpenAI GPT-4 calls for evaluation: {num_llm_calls} ({num_llm_prompt_tokens} prompt tokens and {num_llm_sampled_tokens} sampled tokens)
 OpenAI API costs for evaluation amount to ${estimated_usd:.2f} (standard pricing).
 """
