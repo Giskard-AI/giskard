@@ -288,7 +288,7 @@ def build_test_input_dto(client, p, pname, ptype, project_key, uploaded_uuids):
         return TestInputDTO(name=pname, value=str(p), type=ptype)
 
 
-def _generate_test_partial(
+def generate_test_partial(
     test_fn: Test, test_id: Optional[Union[int, str]] = None, display_name: Optional[str] = None, **params
 ) -> TestPartial:
     if isinstance(test_fn, GiskardTestMethod):
@@ -513,7 +513,7 @@ class Suite:
             Suite: The current instance of the test suite to allow chained calls.
 
         """
-        self.tests.append(_generate_test_partial(test_fn, test_id, display_name, **params))
+        self.tests.append(generate_test_partial(test_fn, test_id, display_name, **params))
 
         return self
 
@@ -564,7 +564,7 @@ class Suite:
         test = self.tests[index]
         inputs = test.provided_inputs.copy()
         inputs.update(**params)
-        self.tests[index] = _generate_test_partial(test.giskard_test, test.test_id, **inputs)
+        self.tests[index] = generate_test_partial(test.giskard_test, test.test_id, **inputs)
 
         return self
 
