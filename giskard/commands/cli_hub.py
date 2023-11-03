@@ -104,7 +104,7 @@ def _is_backend_ready(endpoint) -> bool:
 
 
 def wait_backend_ready(port: int, host="localhost", is_cli=True, wait_sec=3 * 60) -> bool:
-    endpoint = f"http://{host}:{port}/management/health"
+    endpoint = f"http://{host}:{port}/management/health"  # noqa
     backoff_time = 2
     started_time = time.time()
     up = False
