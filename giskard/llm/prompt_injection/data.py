@@ -528,6 +528,6 @@ def get_all_prompts(num_samples: int, num_samples_seed: Optional[int] = None):
                 multi_prompts_sampled_flattened += rng.sample(prompts, num_samples_per_group)  # sampling each category
         multi_prompts = multi_prompts_sampled_flattened
     else:
-        multi_prompts = sum(multi_prompts_nested, [])  # flattening multi_prompts_nested
+        multi_prompts = [item for sublist in multi_prompts_nested for item in sublist]  # fastest flattening method
 
     return single_prompts + multi_prompts
