@@ -1,6 +1,7 @@
+from typing import Dict, List, Optional, Type
+
 import json
 from pathlib import Path
-from typing import Dict, List, Optional, Type
 
 import pydantic
 import pytest
@@ -23,6 +24,8 @@ FILTERED_CLASSES = [BaseModel, ConfiguredBaseModel]
 MANDATORY_FIELDS = {
     "ArtifactRef": ["id"],
     "Catalog": ["tests", "slices", "transformations"],
+    "CreateSubDataset": ["datasetUuid"],
+    "CreateSubDatasetParam": ["dataset", "projectKey", "name", "rowIndexes"],
     "DataFrame": ["rows"],
     "DataRow": ["columns"],
     "DatasetMeta": [],
@@ -81,13 +84,13 @@ MANDATORY_FIELDS = {
     "TestSuiteParam": [],
     "WeightsPerFeature": [],
     "WorkerReply": [],
-    "CreateSubDataset": ["datasetUuid"],
-    "CreateSubDatasetParam": ["dataset", "projectKey", "name", "rowIndexes"],
 }
 
 OPTIONAL_FIELDS = {
     "ArtifactRef": ["project_key", "sample"],
     "Catalog": [],
+    "CreateSubDataset": [],
+    "CreateSubDatasetParam": [],
     "DataFrame": [],
     "DataRow": [],
     "DatasetMeta": ["target"],
@@ -186,8 +189,6 @@ OPTIONAL_FIELDS = {
     "TestSuiteParam": ["tests", "globalArguments"],
     "WeightsPerFeature": ["weights"],
     "WorkerReply": [],
-    "CreateSubDataset": [],
-    "CreateSubDatasetParam": [],
 }
 ALIASED_FIELDS = {
     "FuncArgument": {"float_arg": "float", "int_arg": "int", "str_arg": "str", "bool_arg": "bool", "is_none": "none"}
