@@ -63,7 +63,15 @@ knowledge/catalogs/index
 :maxdepth: 1
 :hidden:
 
-reference/index
+reference/cli/index
+reference/models/index
+reference/datasets/index
+reference/scan/index
+reference/tests/index
+reference/slicing-functions/index
+reference/transformation-functions/index
+reference/push/index
+
 ```
 
 ```{toctree}
