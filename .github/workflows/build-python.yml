@@ -60,36 +60,36 @@ jobs:
         langchain_minimal: [false]
         # https://docs.github.com/en/actions/using-github-hosted-runners/about-github-hosted-runners#supported-runners-and-hardware-resources
         include:
+          # - python-version: "3.10"
+          #   os: windows-2019
+          #   pydantic_v1: false
+          #   pandas_v1: false
+          #   langchain_minimal: false
+          # - python-version: "3.10"
+          #   os: windows-2022
+          #   pydantic_v1: false
+          #   pandas_v1: false
+          #   langchain_minimal: false
           - python-version: "3.10"
-            os: windows-2019
+            os: macos-latest
             pydantic_v1: false
             pandas_v1: false
             langchain_minimal: false
-          - python-version: "3.10"
-            os: windows-2022
-            pydantic_v1: false
-            pandas_v1: false
-            langchain_minimal: false
-          - python-version: "3.10"
-            os: macos-13
-            pydantic_v1: false
-            pandas_v1: false
-            langchain_minimal: false
-          - python-version: "3.10"
-            os: ubuntu-latest
-            pydantic_v1: true
-            pandas_v1: false
-            langchain_minimal: false
-          - python-version: "3.10"
-            os: ubuntu-latest
-            pydantic_v1: false
-            pandas_v1: true
-            langchain_minimal: false
-          - python-version: "3.10"
-            os: ubuntu-latest
-            pydantic_v1: false
-            pandas_v1: false
-            langchain_minimal: true
+          # - python-version: "3.10"
+          #   os: ubuntu-latest
+          #   pydantic_v1: true
+          #   pandas_v1: false
+          #   langchain_minimal: false
+          # - python-version: "3.10"
+          #   os: ubuntu-latest
+          #   pydantic_v1: false
+          #   pandas_v1: true
+          #   langchain_minimal: false
+          # - python-version: "3.10"
+          #   os: ubuntu-latest
+          #   pydantic_v1: false
+          #   pandas_v1: false
+          #   langchain_minimal: true
     continue-on-error: false # https://ncorti.com/blog/howto-github-actions-build-matrix
     steps:
       - name: Checkout code
@@ -99,7 +99,7 @@ jobs:
 
       - name: Downgrade libomp on macOS
         if: ${{ startsWith(matrix.os,'macos-') }}
-        run: wget https://raw.githubusercontent.com/Homebrew/homebrew-core/fb8323f2b170bd4ae97e1bac9bf3e2983af3fdb0/Formula/libomp.rb && brew install libomp.rb
+        run: wget https://raw.githubusercontent.com/Homebrew/homebrew-core/fb8323f2b170bd4ae97e1bac9bf3e2983af3fdb0/Formula/libomp.rb && brew install --formula libomp.rb
 
       - name: Setup PDM
         uses: pdm-project/setup-pdm@v3
