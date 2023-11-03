@@ -52,6 +52,7 @@ tutorials/nlp_tutorials/index
 :maxdepth: 1
 :hidden:
 
+knowledge/how_does_scan_work
 knowledge/key_vulnerabilities/index
 knowledge/llm_vulnerabilities/index
 knowledge/catalogs/index
