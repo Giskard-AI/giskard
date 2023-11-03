@@ -1,7 +1,8 @@
+from typing import Any, Dict, List, Optional
+
 import hashlib
 import logging
 from pickle import PicklingError
-from typing import Optional, Dict, Any, List
 
 LOGGER = logging.getLogger(__name__)
 
@@ -11,14 +12,14 @@ class SimpleCache:
     Simple cache for storing and retrieving results. Uses the LRU algorithm.
     """
 
-    def __init__(self, max_results=128):
+    def __init__(self, max_results: int = 128):
         """
         Initialize the cache with a maximum number of results.
 
         Args:
             max_results (int): The maximum number of results to store in the cache.
         """
-        self.max_results = max_results
+        self._max_results = max_results
         self._results: Optional[Dict[str, Any]] = None
         self._keys: Optional[List[str]] = None
 
@@ -39,20 +40,23 @@ class SimpleCache:
         self._results = cache_content
         self._keys = cache_keys
 
-    def add_result(self, obj, result):
+    def _generate_key(self, obj):
+        return hashlib.md5(repr(obj).encode(encoding="utf-8")).hexdigest()
+
+    def add_result(self, obj: Any, result: Any) -> None:
         """
         Add a result to the cache.
 
         Args:
-            obj: The key for the result.
+            obj: The key object to identify the object to cache.
             result: The result to be cached.
         """
-        obj_hash = hashlib.md5(repr(obj).encode()).hexdigest()
+        obj_hash = self._generate_key(obj)
         self._results[obj_hash] = result
         self._keys.insert(0, obj_hash)
 
         # If the cache is full, remove the least recently used item
-        if len(self._results) >= self.max_results:
+        if len(self._results) > self._max_results:
             removed_key = self._keys.pop()
             self._results.pop(removed_key)
 
@@ -61,7 +65,7 @@ class SimpleCache:
         Add a result to the cache safely, handling exceptions.
 
         Args:
-            obj: The key for the result.
+            obj: The key object to identify the object to cache.
             result: The result to be cached.
 
         Returns:
@@ -86,7 +90,7 @@ class SimpleCache:
             Tuple[bool, Any]: A tuple with a boolean indicating whether the result was found
             in the cache and the result itself.
         """
-        obj_hash = hashlib.md5(repr(obj).encode()).hexdigest()
+        obj_hash = self._generate_key(obj)
 
         if obj_hash in self._results:
             self._keys.remove(obj_hash)

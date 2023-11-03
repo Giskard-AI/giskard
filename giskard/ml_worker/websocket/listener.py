@@ -58,10 +58,7 @@ from giskard.push.prediction import create_borderline_push, create_overconfidenc
 from giskard.utils import call_in_pool, shutdown_pool
 from giskard.utils.analytics_collector import analytics
 
-# from giskard.utils.worker_pool import proxied_cache
-
 logger = logging.getLogger(__name__)
-# push_cache = SimpleCache(max_results=20)
 MAX_STOMP_ML_WORKER_REPLY_SIZE = 1500
 
 

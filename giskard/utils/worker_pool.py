@@ -12,8 +12,6 @@ from io import StringIO
 from multiprocessing import Process, Queue, cpu_count, get_context
 from multiprocessing.context import SpawnContext, SpawnProcess
 from multiprocessing.managers import SyncManager
-
-# from multiprocessing.managers import SyncManager
 from queue import Empty, Full
 from threading import Thread, current_thread
 from time import sleep
@@ -21,14 +19,7 @@ from uuid import uuid4
 
 from giskard.ml_worker.utils.cache import CACHE
 
-# from giskard.ml_worker.utils.cache import SimpleCache
-# class SimpleCache:
-#     pass
-
-
 LOGGER = logging.getLogger(__name__)
-
-# proxied_cache = None
 
 
 def _generate_task_id():
@@ -105,7 +96,6 @@ class GiskardResult:
 
 def _process_worker(tasks_queue: Queue, tasks_results: Queue, running_process: Dict[str, str], cache_content):
     pid = os.getpid()
-    # cache = self._shared_cache
     LOGGER.info("Process %s started", pid)
     CACHE.start(*cache_content)
     LOGGER.info("Shared cache initializd")
@@ -169,8 +159,6 @@ class WorkerPoolExecutor(Executor):
         cache_content = self._manager.dict()
         cache_keys = self._manager.list()
         CACHE.start(cache_content, cache_keys)
-        # self._manager.register("SimpleCache", SimpleCache)
-        # self._shared_cache: SimpleCache = self._manager.SimpleCache()
         # Mapping of the running tasks and worker pids
         self.running_process: Dict[str, str] = self._manager.dict()
         # Mapping of the running tasks and worker pids
@@ -186,8 +174,6 @@ class WorkerPoolExecutor(Executor):
         self.futures_mapping: Dict[str, Future] = dict()
         LOGGER.debug("Starting threads for the WorkerPoolExecutor")
 
-        # This call will break ?!
-        # proxied_cache = self._manager.SimpleCache()
         self._threads = [
             Thread(
                 name=f"{self._prefix}{target.__name__}",
