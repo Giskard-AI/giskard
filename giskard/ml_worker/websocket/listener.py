@@ -764,7 +764,7 @@ def get_push(
             # generated transformation function
             if kind is not PushKind.PERTURBATION:
                 CACHE.safe_add_result(("pushobj", params), res)
-                CACHE.add_result(("pushws", params), res_ws)
+            CACHE.add_result(("pushws", params), res_ws)
 
         all_ws_res[kind] = res_ws
         if push_kind == kind:
