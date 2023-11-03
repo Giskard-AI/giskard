@@ -11,6 +11,12 @@ from giskard.scanner.logger import logger
 
 @detector(name="stochasticity", tags=["stochasticity", "classification", "regression"])
 class StochasticityDetector:
+    """Detects stochasticity in the model predictions.
+
+    This detector ensures that the model predictions are deterministic, i.e. that the same input always produces the
+    same output.
+    """
+
     def run(self, model: BaseModel, dataset: Dataset):
         logger.info("StochasticityDetector: Running")
         sample_size = min(100, len(dataset))

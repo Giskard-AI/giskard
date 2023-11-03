@@ -1,34 +1,33 @@
-Detectors
-=========
+Tabular & NLP Detectors
+=======================
 
-Performance Bias
-----------------
-.. autoclass :: giskard.scanner.performance.PerformanceBiasDetector
+Performance
+-----------
+.. automodule:: giskard.scanner.performance
    :members:
    :show-inheritance:
 
-
-Perturbation-based detectors
-----------------------------
-.. autoclass :: giskard.scanner.robustness.BaseTextPerturbationDetector
-   :members:
-   :show-inheritance:
-
-.. autoclass :: giskard.scanner.robustness.EthicalBiasDetector
-   :members:
-   :show-inheritance:
-   
-.. autoclass :: giskard.scanner.robustness.TextPerturbationDetector
+Robustness
+----------
+.. automodule:: giskard.scanner.robustness
    :members:
    :show-inheritance:
 
 Calibration
 -----------
+.. automodule:: giskard.scanner.calibration
+   :members:
+   :show-inheritance:
 
-.. autoclass :: giskard.scanner.calibration.OverconfidenceDetector
+Data Leakage
+------------
+.. automodule:: giskard.scanner.data_leakage
    :members:
    :show-inheritance:
-   
-.. autoclass :: giskard.scanner.calibration.UnderconfidenceDetector
+
+Stochasticity
+-------------
+.. automodule:: giskard.scanner.stochasticity
    :members:
    :show-inheritance:
+

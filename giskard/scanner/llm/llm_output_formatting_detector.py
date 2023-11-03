@@ -31,6 +31,11 @@ Here are some examples of requirements relative to the issue category above, but
 
 @detector("llm_output_formatting", tags=["output_formatting", "llm", "text_generation"])
 class LLMOutputFormattingDetector(RequirementBasedDetector):
+    """Detects output formatting issues in LLM-based models.
+
+    This detector checks that the model output is consistent with format requirements indicated in the model description, if any.
+    """
+
     _issue_group = OutputFormatting
     _issue_level = IssueLevel.MEDIUM
 

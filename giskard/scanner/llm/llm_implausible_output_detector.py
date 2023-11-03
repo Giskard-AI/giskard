@@ -18,6 +18,12 @@ from ..issues import Hallucination, Issue, IssueLevel
     tags=["hallucination", "misinformation", "implausible_output", "llm", "generative", "text_generation"],
 )
 class LLMImplausibleOutputDetector:
+    """Detects implausible output in LLM-based models.
+
+    The detector will stimulate the model in producing outputs that are implausible or controversial by generating a
+    set of ad hoc adversarial inputs. This can be seen as a proxy for hallucination and misinformation detection.
+    """
+
     def __init__(self, num_samples=10):
         self.num_samples = num_samples
 

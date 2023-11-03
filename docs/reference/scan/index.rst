@@ -6,6 +6,7 @@ Model Scanner
 
    report
    detectors
+   llm_detectors
 
 .. automodule:: giskard.scanner
    :members:

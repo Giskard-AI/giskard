@@ -14,6 +14,21 @@ from ..scanner import logger
 
 @detector("llm_prompt_injection", tags=["jailbreak", "prompt_injection", "llm", "generative", "text_generation"])
 class LLMPromptInjectionDetector:
+    """Detects prompt injection in LLM-based models.
+
+    Prompt injection is the vulnerability that occurs when an LLM can be manipulated through specially crafted inputs,
+    leading to partial or full control over the model behaviour [#]_. This detector will probe if the model is affected by
+    this issue by testing it against a set of adversarial inputs comprising a large variety of prompt injection
+    techniques [#]_ [#]_.
+
+    References
+    ----------
+    .. [#] Prompt Injection, OWASP Top 10 for LLM Applications, https://llmtop10.com/
+    .. [#] Fábio Perez, and Ian Ribeiro "Ignore Previous Prompt: Attack Techniques For Language Models",
+           https://arxiv.org/abs/2211.09527
+    .. [#] Leon Derczynsky, garak:  LLM vulnerability scanner, https://github.com/leondz/garak
+    """
+
     def __init__(self, threshold: float = 0.5, num_samples=100):
         self.threshold = threshold  # default
         self.num_samples = num_samples
