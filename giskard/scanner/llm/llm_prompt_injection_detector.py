@@ -1,4 +1,4 @@
-from typing import Sequence
+from typing import Sequence, Optional
 
 import pandas as pd
 from colorama import Fore, Style
@@ -42,7 +42,9 @@ def evaluate_and_group(model, dataset, prompts, features, column_types):
 
 @detector("llm_prompt_injection", tags=["jailbreak", "prompt_injection", "llm", "generative", "text_generation"])
 class LLMPromptInjectionDetector:
-    def __init__(self, threshold: float = 0.5, num_samples=None, num_samples_seed=None):
+    def __init__(
+        self, threshold: float = 0.5, num_samples: Optional[int] = 302, num_samples_seed: Optional[int] = None
+    ):
         self.threshold = threshold  # default
         self.num_samples = num_samples
         self.num_samples_seed = num_samples_seed
