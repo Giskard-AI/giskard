@@ -9,11 +9,12 @@ from ...llm.prompt_injection.evaluator import evaluate
 from ...models.base.model import BaseModel
 from ..decorators import detector
 from ..issues import Issue, IssueGroup, IssueLevel
+from ..registry import Detector
 from ..scanner import logger
 
 
 @detector("llm_prompt_injection", tags=["jailbreak", "prompt_injection", "llm", "generative", "text_generation"])
-class LLMPromptInjectionDetector:
+class LLMPromptInjectionDetector(Detector):
     """Detects prompt injection in LLM-based models.
 
     Prompt injection is the vulnerability that occurs when an LLM can be manipulated through specially crafted inputs,

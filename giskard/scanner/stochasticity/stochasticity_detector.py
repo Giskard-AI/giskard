@@ -8,9 +8,11 @@ from giskard.scanner.decorators import detector
 from giskard.scanner.issues import Issue, IssueLevel, Stochasticity
 from giskard.scanner.logger import logger
 
+from ..registry import Detector
+
 
 @detector(name="stochasticity", tags=["stochasticity", "classification", "regression"])
-class StochasticityDetector:
+class StochasticityDetector(Detector):
     """Detects stochasticity in the model predictions.
 
     This detector ensures that the model predictions are deterministic, i.e. that the same input always produces the
