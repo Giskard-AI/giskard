@@ -245,7 +245,7 @@ def validate_classification_threshold_label(
         )
 
     if classification_threshold is not None:
-        if classification_threshold != 0.5 and len(classification_labels) != 2:
+        if not np.isclose(classification_threshold, 0.5, rtol=1e-09, atol=1e-09) and len(classification_labels) != 2:
             raise ValueError(
                 f"Invalid classification_threshold parameter: {classification_threshold} value is applicable "
                 f"only for binary classification. "
