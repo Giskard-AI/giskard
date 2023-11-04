@@ -37,10 +37,10 @@ body:
     validations:
       required: true
   - type: input
-    id: giskard-server-version
+    id: giskard-hub-version
     attributes:
-      label: Giskard Server Version
-      description: You can obtain the Giskard Server version by logging to http://localhost:19000 (if running on docker) or http://localhost:9000 (if running on local) using admin credentials. Navigate to admin page on left bottom. Giskard server version is available under "Application"
+      label: Giskard Hub Version
+      description: You can obtain the Giskard Hub version by logging to http://localhost:19000 (if running on docker) or http://localhost:9000 (if running on local) using admin credentials. Navigate to admin page on left bottom. Giskard hub version is available under "Application"
       placeholder: e.g., 1.3.0
     validations:
       required: true

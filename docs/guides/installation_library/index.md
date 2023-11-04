@@ -1,6 +1,6 @@
 # 📥 Install the Giskard Python Library
 
-## Install the Giskard Python Library for only Python use (no Giskard server) without LLM models
+## Install the Giskard Python Library for only Python use (no Giskard hub) without LLM models
 
 If you don't want to use the UI features and your model is not a text generation model, you need to install the `giskard` library with `pip`:
 
@@ -22,15 +22,15 @@ pip install "giskard>=2.0.0b" -U
 :::
 ::::
 
-## Install the Giskard Python Library for Python + Giskard server (UI features) without LLM
+## Install the Giskard Python Library for Python + Giskard hub (UI features) without LLM
 
-If you want to use the Giskard server but your model is not a text generation model you need to install the `giskard` library with `pip`:
+If you want to use the Giskard hub but your model is not a text generation model you need to install the `giskard` library with `pip`:
 
 ::::{tab-set}
 :::{tab-item} Mac and Linux
 
 ```sh
-pip install "giskard[server]>=2.0.0b" -U
+pip install "giskard[hub]>=2.0.0b" -U
 ```
 
 :::
@@ -38,13 +38,13 @@ pip install "giskard[server]>=2.0.0b" -U
 :::{tab-item} Windows
 
 ```sh
-pip install "giskard[server]>=2.0.0b" -U
+pip install "giskard[hub]>=2.0.0b" -U
 ```
 
 :::
 ::::
 
-## Install the Giskard Python Library for only Python use (no Giskard server) and with LLM
+## Install the Giskard Python Library for only Python use (no Giskard hub) and with LLM
 
 If you don't want to use the UI features and your model is a text generation model, you need to install the `giskard` library with `pip`:
 
@@ -66,13 +66,13 @@ pip install "giskard[llm]>=2.0.0b" -U
 :::
 ::::
 
-## Install the Giskard Python Library with full functionalities (server + LLM)
+## Install the Giskard Python Library with full functionalities (hub + LLM)
 
 ::::{tab-set}
 :::{tab-item} Mac and Linux
 
 ```sh
-pip install "giskard[server, llm]>=2.0.0b" -U
+pip install "giskard[hub, llm]>=2.0.0b" -U
 ```
 
 :::
@@ -80,7 +80,7 @@ pip install "giskard[server, llm]>=2.0.0b" -U
 :::{tab-item} Windows
 
 ```sh
-pip install "giskard[server, llm]>=2.0.0b" -U
+pip install "giskard[hub, llm]>=2.0.0b" -U
 ```
 
 :::
@@ -88,9 +88,9 @@ pip install "giskard[server, llm]>=2.0.0b" -U
 
 ## Requirements
 
-`giskard[server]` works with Python `3.8`, `3.9` and `3.10`.
+`giskard[hub]` works with Python `3.8`, `3.9` and `3.10`.
 
-Below is the list of dependencies needed to make `giskard[server]` work:
+Below is the list of dependencies needed to make `giskard[hub]` work:
 
 ```sh
 dependencies = [
