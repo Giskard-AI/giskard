@@ -84,7 +84,7 @@ class SimpleCache:
         try:
             self.add_result(key, result)
             return True
-        except (AttributeError, PicklingError) as e:
+        except (AttributeError, PicklingError):
             LOGGER.exception("Error while trying to add to cache", exc_info=True)
             return False
 
