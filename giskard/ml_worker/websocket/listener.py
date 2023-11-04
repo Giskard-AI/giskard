@@ -755,13 +755,11 @@ def get_push(
 
         # We get a JSON for stability across process
         json_params = params.json()
-        _, res = CACHE.get_result("push" + json_params)
-        cache_hit_ws, res_ws = CACHE.get_result("pushws" + json_params)
-        if not cache_hit_ws:
+        cache_hit, res = CACHE.get_result(json_params)
+        if not cache_hit:
             res = get_push_objects(client, params)
-            res_ws = push_to_ws(res)
-            CACHE.safe_add_result("push" + json_params, res)
-            CACHE.add_result("pushws" + json_params, res_ws)
+            CACHE.safe_add_result(json_params, res)
+        res_ws = push_to_ws(res)
 
         all_ws_res[kind] = res_ws
         if push_kind == kind:
