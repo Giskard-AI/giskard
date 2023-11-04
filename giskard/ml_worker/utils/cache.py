@@ -1,10 +1,14 @@
 from typing import Any, Dict, List, Optional
 
-import hashlib
 import logging
 from pickle import PicklingError
 
+import cloudpickle
+from xxhash import xxh3_128_hexdigest
+
 LOGGER = logging.getLogger(__name__)
+
+SEED = 42
 
 
 class SimpleCache:
@@ -40,8 +44,10 @@ class SimpleCache:
         self._results = cache_content
         self._keys = cache_keys
 
-    def _generate_key(self, obj):
-        return hashlib.md5(repr(obj).encode(encoding="utf-8")).hexdigest()
+    @staticmethod
+    def _generate_key(obj):
+        pickle: bytes = cloudpickle.dumps(obj)
+        return xxh3_128_hexdigest(pickle, seed=SEED)
 
     def add_result(self, obj: Any, result: Any) -> None:
         """
