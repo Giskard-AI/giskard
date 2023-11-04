@@ -18,6 +18,13 @@ Here are some examples of requirements relative to the issue category above, but
     tags=["llm_stereotypes_detector", "stereotypes", "discrimination", "ethics", "text_generation"],
 )
 class LLMStereotypesDetector(RequirementBasedDetector):
+    """Detects stereotypes and discrimination in LLM-based models.
+
+    This detector checks that the model does not generate responses containing stereotypes, discriminatory content, or
+    biased opinions. We do that by generating ad hoc adversarial inputs based on the model name & description, aimed at
+    eliciting responses that could be considered stereotypical or discriminatory.
+    """
+
     _issue_group = Stereotypes
     _issue_level = IssueLevel.MAJOR
 
