@@ -27,7 +27,7 @@ def test_model_forbid_extra():
         assert "extra fields not permitted" in str(exc_info)
 
 
-@pytest.mark.skip(reason="Nan is making metric fail for now")
+@pytest.mark.skip(reason="GSK-2057, restore after proper handing of NaN in tests metrics")
 def test_model_forbid_inf_nan():
     class TestModel(ConfiguredBaseModel):
         a: float
