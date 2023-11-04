@@ -1,7 +1,6 @@
 from typing import Sequence
 
 import pandas as pd
-from colorama import Fore, Style
 
 from ...datasets.base import Dataset
 from ...llm.prompt_injection.data import get_all_prompts
@@ -9,7 +8,16 @@ from ...llm.prompt_injection.evaluator import evaluate
 from ...models.base.model import BaseModel
 from ..decorators import detector
 from ..issues import Issue, IssueGroup, IssueLevel
-from ..scanner import logger
+from ..xprint import (
+    xprint,
+    StyleBase,
+    DetectorStyle,
+    NumberOfPromptsStyle,
+    PromptEvaluationStyle,
+    PromptInjectionSuccessStyle,
+    PromptInjectionFailureStyle,
+    StartSummaryStyle,
+)
 
 
 @detector("llm_prompt_injection", tags=["jailbreak", "prompt_injection", "llm", "generative", "text_generation"])
@@ -20,9 +28,11 @@ class LLMPromptInjectionDetector:
 
     def evaluate_and_group(self, model, dataset, prompts, features, column_types):
         results = {}
-        for prompt in prompts:
-            # logger.info(f"Evaluating {Style.RESET_ALL}{Fore.LIGHTMAGENTA_EX}{prompt.group.name}{Style.RESET_ALL}
-            # f"Prompt.")
+        for i, prompt in enumerate(prompts):
+            xprint(
+                prompt.group.name + f" #{i}", prompt.evaluation_method.__class__.__name__, style=PromptEvaluationStyle
+            )
+            xprint(prompt.content[:120] + "…", style=StyleBase)
 
             prompt_dataset = dataset.copy()
             prompt_dataset.df = prompt_dataset.df.head(1)
@@ -46,9 +56,7 @@ class LLMPromptInjectionDetector:
         return results
 
     def run(self, model: BaseModel, dataset: Dataset) -> Sequence[Issue]:
-        logger.info(
-            f"Running the {Style.RESET_ALL}{Fore.LIGHTBLUE_EX}{self.__class__.__name__}{Style.RESET_ALL} Detector."
-        )
+        xprint(self.__class__.__name__, style=DetectorStyle)
 
         # even-though this detector doesn't rely on a dataset, it's still needed to get the features and column_types
         features = model.meta.feature_names or list(dataset.df.columns.drop(dataset.target, errors="ignore"))
@@ -58,8 +66,10 @@ class LLMPromptInjectionDetector:
 
         issues = []
 
+        xprint(len(prompts), style=NumberOfPromptsStyle)
         results = self.evaluate_and_group(model, dataset, prompts, features, column_types)
 
+        xprint(self.__class__.__name__, style=StartSummaryStyle)
         for group in results.keys():
             failed_examples = {}
             cols = []
@@ -78,10 +88,13 @@ class LLMPromptInjectionDetector:
             )
 
             failed = sum(results[group]["failed"])
-            if failed == 0:
-                continue
             total = len(results[group]["failed"])
             metric = failed / total
+            if failed != 0:
+                xprint(group.name, f"{metric*100}%", style=PromptInjectionFailureStyle)
+            else:
+                xprint("None", group.name, style=PromptInjectionSuccessStyle)
+                continue
 
             level = IssueLevel.MINOR
             if 0.1 <= metric < self.threshold:
@@ -117,7 +130,7 @@ class LLMPromptInjectionDetector:
                     tests=_generate_prompt_injection_tests,
                 )
             )
-
+        xprint("-" * 120, style=StyleBase)
         return issues
 
 
