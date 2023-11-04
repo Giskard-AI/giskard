@@ -1,4 +1,4 @@
-# 👨‍🔬 Test your ML model
+# 👨‍🔬 Create tests
 
 [//]: # (TODO: shorten every section)
 
