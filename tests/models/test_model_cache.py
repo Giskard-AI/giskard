@@ -56,7 +56,7 @@ def test_model_prediction_is_cached_on_text_generation_model():
 
     prompt = PromptTemplate(template="{instruct}", input_variables=["instruct"])
     chain = LLMChain(llm=llm, prompt=prompt)
-    model = Model(chain, model_type="text_generation", name="")
+    model = Model(chain, model_type="text_generation", name="", feature_names=["instruct"])
     dataset = Dataset(
         pd.DataFrame({"instruct": ["Test 1", "Test 2"]}),
         column_types={
