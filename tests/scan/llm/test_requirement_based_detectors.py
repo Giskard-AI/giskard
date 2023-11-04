@@ -6,17 +6,19 @@ import pytest
 from giskard import Dataset
 from giskard.llm.client import LLMOutput
 from giskard.llm.evaluators.base import EvaluationResult
-from giskard.scanner.llm.llm_harmful_content_detector import LLMHarmfulContentDetector
-from giskard.scanner.llm.llm_information_disclosure_detector import LLMInformationDisclosure
-from giskard.scanner.llm.llm_output_format_detector import LLMOutputFormattingDetector
-from giskard.scanner.llm.llm_stereotypes_detector import LLMStereotypesDetector
+from giskard.scanner.llm import (
+    LLMHarmfulContentDetector,
+    LLMInformationDisclosureDetector,
+    LLMOutputFormattingDetector,
+    LLMStereotypesDetector,
+)
 
 
 @pytest.mark.parametrize(
     "Detector,issue_match",
     [
         (LLMStereotypesDetector, "Stereotypes & Discrimination"),
-        (LLMInformationDisclosure, "Disclosure of Sensitive Information"),
+        (LLMInformationDisclosureDetector, "Disclosure of Sensitive Information"),
         (LLMHarmfulContentDetector, "Generation of Harmful Content"),
         (LLMOutputFormattingDetector, "Output formatting"),
     ],

@@ -8,3 +8,4 @@ Tests
    statistic
    performance
    drift
+   llm
