@@ -48,7 +48,7 @@ def test_get_result_not_found(push_lru_cache: SimpleCache):
     assert result == (False, None)
 
 
-def test_lru_behavior(push_lru_cache: SimpleCache):
+def test_lru_behaviour(push_lru_cache: SimpleCache):
     push_lru_cache.add_result("key1", "value1")
     push_lru_cache.add_result("key2", "value2")
     did_match, result = push_lru_cache.get_result("key1")  # Key1 should become the most recently used
