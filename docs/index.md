@@ -47,14 +47,13 @@ tutorials/nlp_tutorials/index
 ```
 
 ```{toctree}
-:caption: Knowledge Resources
+:caption: Knowledge Bank
 :name: mastertoc
 :maxdepth: 1
 :hidden:
 
-knowledge/how_does_scan_work
-knowledge/key_vulnerabilities/index
 knowledge/llm_vulnerabilities/index
+knowledge/key_vulnerabilities/index
 knowledge/catalogs/index
 reference/index
 ```
@@ -89,37 +88,18 @@ community/contribution_guidelines/index
 :gutter: 1
 
 :::{card} <h2><center> Getting Started </center></h2>
-:link: getting-started/index.html
+:link: getting_started/index.html
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<img src="assets/intro/coffee.png" alt="coffee" width="82%">
-:::
-
-:::{card} <h2><center> API Reference </center></h2>
-:link: reference/index.html
-<img src="assets/intro/Giskard_Turtle_Computer.png" alt="test" width="100%">
-:::
-
-:::{card} <h2><center> Contribute </center></h2>
-:link: contribute/index.html
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<img src="assets/intro/hey.png" alt="hey" width="72%">
-:::
-::::
-
-:::::
-
-:::::{grid-item}
-
-::::{grid} 1 1 1 1
-:gutter: 1
-
-:::{card} <h2><center> User Guide </center></h2>
-:link: guides/index.html
-
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<img src="assets/intro/ninja.png" alt="ninja" width="78.5%">
 :::
 
 :::{card} <h2><center> Tutorials </center></h2>
 :link: tutorials/index.html
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<img src="assets/intro/test_turtle.png" alt="hey" width="94%">
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<img src="assets/intro/test_turtle.png" alt="hey" width="90%">
+:::
+
+:::{card} <h2><center> API Reference </center></h2>
+:link: reference/index.html
+<img src="assets/intro/Giskard_Turtle_Computer.png" alt="test" width="97%">
 :::
 ::::
 
@@ -130,15 +110,35 @@ community/contribution_guidelines/index
 ::::{grid} 1 1 1 1
 :gutter: 1
 
-:::{card} <h2><center> Catalogs </center></h2>
-:link: catalogs/index.html
+:::{card} <h2><center> Open-Source Library </center></h2>
+:link: open_source/installation_library/index.html
 
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<img src="assets/intro/Giskard_Turtle_SK8.png" alt="ninja" width="86.5%">
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<img src="assets/intro/ninja.png" alt="ninja" width="64%">
 :::
 
-:::{card} <h2><center> Integrations </center></h2>
+:::{card} <h2><center> Knowledge </center></h2>
+:link: knowledge/llm_vulnerabilities/index.html
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<img src="assets/intro/integrations.png" alt="test" width="98%">
+:::
+
+::::
+
+:::::
+
+:::::{grid-item}
+
+::::{grid} 1 1 1 1
+:gutter: 1
+
+:::{card} <h2><center> Giskard Hub </center></h2>
+:link: catalogs/index.html
+
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<img src="assets/intro/Giskard_Turtle_SK8.png" alt="ninja" width="86.0025%">
+:::
+
+:::{card} <h2><center> Integrations & Community </center></h2>
 :link: integrations/index.html
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<img src="assets/intro/integrations.png" alt="test" width="100%">
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<img src="assets/intro/hey.png" alt="hey" width="56.5%">
 :::
 
 ::::
