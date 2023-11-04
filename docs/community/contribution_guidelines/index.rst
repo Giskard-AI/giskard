@@ -1,5 +1,5 @@
 #######################
-🧑‍💻Contribute to Giskard
+Contribute to Giskard
 #######################
 
 .. TODO: review content of this section
