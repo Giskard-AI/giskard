@@ -14,19 +14,19 @@ quickstart_nlp
 :gutter: 1
 
 :::::{grid-item}
-:::{card} <h3><center>📚  LLM quickstart</center></h3>
+:::{card} <h3><center>📚  LLM Quickstart</center></h3>
 :link: quickstart_llm.ipynb
 :::
 :::::
 
 :::::{grid-item}
-:::{card} <h3><center>📊  Tabular model quickstart</center></h3>
+:::{card} <h3><center>📊  Tabular Quickstart</center></h3>
 :link: quickstart_tabular.ipynb
 :::
 :::::
 
 :::::{grid-item}
-:::{card} <h3><center>🗣️ NLP model quickstart</center></h3>
+:::{card} <h3><center>🗣️ NLP Quickstart</center></h3>
 :link: quickstart_nlp.ipynb
 :::
 :::::
