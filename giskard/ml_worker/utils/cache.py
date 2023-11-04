@@ -45,11 +45,12 @@ class SimpleCache:
         self._keys = cache_keys
 
     @staticmethod
-    def _generate_key(obj):
-        pickle: bytes = cloudpickle.dumps(obj)
-        return xxh3_128_hexdigest(pickle, seed=SEED)
+    def _generate_key(key: str):
+        if not isinstance(key, str):
+            raise ValueError(f"Key should be an string, got '{type(key)}' for {key}")
+        return xxh3_128_hexdigest(key, seed=SEED)
 
-    def add_result(self, obj: Any, result: Any) -> None:
+    def add_result(self, key: str, result: Any) -> None:
         """
         Add a result to the cache.
 
@@ -57,8 +58,11 @@ class SimpleCache:
             obj: The key object to identify the object to cache.
             result: The result to be cached.
         """
-        obj_hash = self._generate_key(obj)
-        self._results[obj_hash] = result
+        obj_hash = self._generate_key(key)
+        # Using cloudpickle instead of default pickle here
+        self._results[obj_hash] = cloudpickle.dumps(result)
+        if obj_hash in self._keys:
+            self._keys.remove(obj_hash)
         self._keys.insert(0, obj_hash)
 
         # If the cache is full, remove the least recently used item
@@ -66,7 +70,7 @@ class SimpleCache:
             removed_key = self._keys.pop()
             self._results.pop(removed_key)
 
-    def safe_add_result(self, obj, result):
+    def safe_add_result(self, key: str, result: Any):
         """
         Add a result to the cache safely, handling exceptions.
 
@@ -78,14 +82,14 @@ class SimpleCache:
             bool: True if the result was added successfully, False otherwise.
         """
         try:
-            self.add_result(obj, result)
+            self.add_result(key, result)
             return True
         except (AttributeError, PicklingError) as e:
             LOGGER.warning("Error while trying to add to cache")
             LOGGER.exception(e)
             return False
 
-    def get_result(self, obj):
+    def get_result(self, key: str):
         """
         Retrieve a result from the cache.
 
@@ -96,12 +100,12 @@ class SimpleCache:
             Tuple[bool, Any]: A tuple with a boolean indicating whether the result was found
             in the cache and the result itself.
         """
-        obj_hash = self._generate_key(obj)
+        obj_hash = self._generate_key(key)
 
         if obj_hash in self._results:
             self._keys.remove(obj_hash)
             self._keys.insert(0, obj_hash)
-            return True, self._results[obj_hash]
+            return True, cloudpickle.loads(self._results[obj_hash])
         else:
             return False, None
 

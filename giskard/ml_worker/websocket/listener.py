@@ -697,7 +697,6 @@ def handle_cta(
         push = get_push_objects(client, params)
 
     logger.info("Handling push kind: %s with cta kind: %s", str(push_kind), str(cta_kind))
-    push.prepare_cta()
 
     object_uuid = ""
     object_params = {}
@@ -754,17 +753,15 @@ def get_push(
         params.push_kind = kind
         logger.info("Getting push for %s", kind)
 
-        # Try to get object
-        _, res = CACHE.get_result(("pushobj", params))
-        cache_hit_ws, res_ws = CACHE.get_result(("pushws", params))
+        # We get a JSON for stability across process
+        json_params = params.json()
+        _, res = CACHE.get_result("push" + json_params)
+        cache_hit_ws, res_ws = CACHE.get_result("pushws" + json_params)
         if not cache_hit_ws:
             res = get_push_objects(client, params)
             res_ws = push_to_ws(res)
-            # We currently exclude perturbation from cache because it's not properly pickling the
-            # generated transformation function
-            if kind is not PushKind.PERTURBATION:
-                CACHE.safe_add_result(("pushobj", params), res)
-            CACHE.add_result(("pushws", params), res_ws)
+            CACHE.safe_add_result("push" + json_params, res)
+            CACHE.add_result("pushws" + json_params, res_ws)
 
         all_ws_res[kind] = res_ws
         if push_kind == kind:

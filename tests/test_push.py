@@ -73,7 +73,6 @@ def test_test_function(request, dataset, push_type):
         if push is not None:
             assert isinstance(push, Push)
             assert isinstance(push, push_type_class)
-            push.prepare_cta()
             push_list.append(len(push.tests))
             assert all([isinstance(test(), GiskardTest) for test in push.tests])
             if hasattr(push, "slicing_function"):

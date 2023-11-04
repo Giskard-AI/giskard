@@ -1,7 +1,6 @@
 from multiprocessing import get_context
 from multiprocessing.context import SpawnContext
 from multiprocessing.managers import SyncManager
-from pickle import PicklingError
 
 import pytest
 
@@ -24,6 +23,11 @@ def sync_push_lru_cache() -> SimpleCache:
     cache.start(manager.dict(), manager.list())
     yield cache
     manager.shutdown()
+
+
+def test_key_should_be_str(push_lru_cache: SimpleCache):
+    with pytest.raises(ValueError):
+        push_lru_cache._generate_key({})
 
 
 def test_add_result(push_lru_cache: SimpleCache):
@@ -58,25 +62,3 @@ def test_lru_behaviour(push_lru_cache: SimpleCache):
     assert push_lru_cache._generate_key("key2") in push_lru_cache._keys
     push_lru_cache.add_result("key3", "value3")  # This should remove "key2"
     assert push_lru_cache.get_result("key2") == (False, None)
-
-
-def test_safe_add_do_not_raise(sync_push_lru_cache: SimpleCache):
-    my_var = "Hello"
-
-    def log():
-        print(my_var)  # Not pickable
-
-    did_add = sync_push_lru_cache.safe_add_result("key", log)
-    assert not did_add
-
-
-def test_simple_add_do_raise(sync_push_lru_cache: SimpleCache):
-    my_var = "Hello"
-
-    def log():
-        print(my_var)  # Not pickable
-
-    with pytest.raises((AttributeError, PicklingError)) as exc_info:
-        sync_push_lru_cache.add_result("key", log)
-
-    assert "Can't pickle local object 'test_simple_add_do_raise.<locals>.log'" in str(exc_info)

@@ -59,9 +59,6 @@ class Push:
     tests = None
     pushkind = None
 
-    def prepare_cta(self):
-        pass
-
     @abstractmethod
     def to_ws(self):
         """
@@ -156,6 +153,8 @@ class OverconfidencePush(ExamplePush):
         self.training_label_proba = training_label_proba
         self.training_label = training_label
         self.saved_example = dataset_row
+        self.tests = [one_sample_overconfidence_test()]
+        self.test_params = {"saved_example": self.saved_example}
 
         # if_overconfidence_rate_decrease(rate=rate),
         #     correct_example(saved_example=dataset_row, training_label=training_label),
@@ -163,10 +162,6 @@ class OverconfidencePush(ExamplePush):
         #         saved_example=dataset_row, training_label=training_label, training_label_proba=training_label_proba
         #     ),
         self.predicted_label = predicted_label
-
-    def prepare_cta(self):
-        self.tests = [one_sample_overconfidence_test()]
-        self.test_params = {"saved_example": self.saved_example}
 
     def _overconfidence(self):
         """
@@ -230,6 +225,8 @@ class BorderlinePush(ExamplePush):
         self.training_label_proba = training_label_proba
         self.training_label = training_label
         self.saved_example = dataset_row
+        self.tests = [one_sample_underconfidence_test]
+        self.test_params = {"saved_example": self.saved_example}
 
         # [
         #     if_underconfidence_rate_decrease(rate=rate),
@@ -238,10 +235,6 @@ class BorderlinePush(ExamplePush):
         #         saved_example=dataset_row, training_label=training_label, training_label_proba=training_label_proba
         #     ),
         # ]
-
-    def prepare_cta(self):
-        self.tests = [one_sample_underconfidence_test]
-        self.test_params = {"saved_example": self.saved_example}
 
     def _borderline(self):
         """
@@ -320,13 +313,8 @@ class ContributionPush(FeaturePush):
         self.correct_prediction = correct_prediction
 
         self._slicing_function()  # Needed for the message
-        self._set_title_and_details()
-        del self.slicing_function  # Removing for pickling
-        del self.test_params
-
-    def prepare_cta(self):
-        self._slicing_function()
         self._test_selection()
+        self._set_title_and_details()
 
     def _set_title_and_details(self):
         """
