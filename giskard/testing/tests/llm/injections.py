@@ -202,12 +202,13 @@ def test_llm_char_injection(
         fail_rates.append(res.fail_rate)
 
     if not result.passed:
-        result.output_df = Dataset(
-            pd.concat(fail_dfs),
-            name="Test dataset vulnerable to character injection",
-            column_types=dataset.column_types,
-            validation=False,
-        )
+        if debug:
+            result.output_df = Dataset(
+                pd.concat(fail_dfs),
+                name="Test dataset vulnerable to character injection",
+                column_types=dataset.column_types,
+                validation=False,
+            )
         result.metric = np.mean(fail_rates)
 
     return result
