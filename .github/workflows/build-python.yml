@@ -125,7 +125,7 @@ jobs:
         if: ${{ matrix.os == 'macos-latest' }}
         run: |
           pdm run pip uninstall lightgbm -y
-          pdm run pip install --no-binary lightgbm lightgbm
+          pdm run pip install --no-binary lightgbm lightgbm --config-settings=cmake.define.USE_OPENMP=OFF
       - name: Install pydantic v1
         if: ${{ matrix.pydantic_v1 }}
         run: |
