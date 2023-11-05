@@ -17,19 +17,19 @@ install_cloud/index
 :gutter: 1
 
 :::::{grid-item}
-:::{card} <h3><center>🤗  HuggingFace Spaces</center></h3>
+:::{card} <h3><center>🤗 HuggingFace Spaces</center></h3>
 :link: install_hfs/index.html
 :::
 :::::
 
 :::::{grid-item}
-:::{card} <h3><center>🏠  On-Premise</center></h3>
+:::{card} <h3><center>🏠 On-Premise</center></h3>
 :link: install_on_prem/index.html
 :::
 :::::
 
 :::::{grid-item}
-:::{card} <h3><center>☁️  Cloud</center></h3>
-:link: install_cloud/ndex.html
+:::{card} <h3><center>☁️ Private Cloud</center></h3>
+:link: install_cloud/index.html
 :::
 :::::
