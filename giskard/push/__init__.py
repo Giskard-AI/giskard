@@ -16,8 +16,9 @@ statistical tests and slicing functions.
 
 The push classes allow converting to gRPC protobuf format via the to_grpc() method.
 """
-from abc import abstractmethod
 from typing import Optional
+
+from abc import abstractmethod
 
 from giskard.core.core import SupportedModelTypes
 from giskard.ml_worker import websocket
@@ -30,7 +31,14 @@ from giskard.push.push_test_catalog.catalog import (
     test_metamorphic_invariance_with_mad,
 )
 from giskard.push.utils import TransformationInfo
-from giskard.slicing.slice import ContainsWord, EqualTo, GreaterThan, LowerThan, Query, QueryBasedSliceFunction
+from giskard.slicing.slice import (
+    ContainsWord,
+    EqualTo,
+    GreaterThan,
+    LowerThan,
+    Query,
+    QueryBasedSliceFunction,
+)
 from giskard.testing.tests.metamorphic import test_metamorphic_invariance
 from giskard.testing.tests.statistic import test_theil_u
 
@@ -145,9 +153,9 @@ class OverconfidencePush(ExamplePush):
         self.training_label_proba = training_label_proba
         self.training_label = training_label
         self.saved_example = dataset_row
-
         self.tests = [one_sample_overconfidence_test()]
-        self.test_params = {"saved_example": dataset_row}
+        self.test_params = {"saved_example": self.saved_example}
+
         # if_overconfidence_rate_decrease(rate=rate),
         #     correct_example(saved_example=dataset_row, training_label=training_label),
         #     increase_probability(
@@ -217,9 +225,9 @@ class BorderlinePush(ExamplePush):
         self.training_label_proba = training_label_proba
         self.training_label = training_label
         self.saved_example = dataset_row
-
         self.tests = [one_sample_underconfidence_test]
-        self.test_params = {"saved_example": dataset_row}
+        self.test_params = {"saved_example": self.saved_example}
+
         # [
         #     if_underconfidence_rate_decrease(rate=rate),
         #     correct_example(saved_example=dataset_row, training_label=training_label),
@@ -236,8 +244,9 @@ class BorderlinePush(ExamplePush):
             "push_title": "This example was predicted with very low confidence",
             "details": [
                 {
-                    "action": "Generate a one-sample to automatically test the underconfidence",
-                    "explanation": "This may help you ensure this example is not predicted with low confidence for a new model",
+                    "action": "Generate a one-sample to check for underconfidence",
+                    "explanation": "This may help you ensure this specific example is not predicted with low "
+                    "confidence for a new model",
                     "button": "Create one-sample test",
                     "cta": CallToActionKind.CREATE_TEST,
                 },
@@ -303,9 +312,9 @@ class ContributionPush(FeaturePush):
         self.model_type = model_type
         self.correct_prediction = correct_prediction
 
-        self._slicing_function()
-        self._set_title_and_details()
+        self._slicing_function()  # Needed for the message
         self._test_selection()
+        self._set_title_and_details()
 
     def _set_title_and_details(self):
         """

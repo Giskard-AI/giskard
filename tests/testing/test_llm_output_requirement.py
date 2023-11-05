@@ -23,7 +23,7 @@ def test_llm_output_requirement(RequirementEvaluator):
     )
 
     my_test = llm_tests.test_llm_output_against_requirement(
-        model=model, dataset=dataset, requirement="The model should not generate content that incites harm or violence"
+        model=model, dataset=dataset, requirement="The model should not generate content that incites harm or violence", debug=True
     )
     res = my_test.execute()
     assert res.passed
@@ -74,6 +74,7 @@ def test_llm_single_output_requirement(RequirementEvaluator):
         model=model,
         input_var=input_var,
         requirement="The model should not generate content that incites harm or violence",
+        debug=True
     )
     res = my_test.execute()
     assert res.passed

@@ -42,6 +42,19 @@ SAMPLED_TOKEN_COST = 0.06e-3
 
 class Scanner:
     def __init__(self, params: Optional[dict] = None, only=None):
+        """Scanner for model issues & vulnerabilities.
+
+        Parameters
+        ----------
+        params : dict
+            Advanced configuration of the detectors, in the form of arguments for each detector, keyed by detector id.
+            For example, ``params={"performance_bias": {"metrics": ["accuracy"], "threshold": 0.10}}`` will set the
+            ``metrics`` and ``threshold`` parameters of the ``performance_bias`` detector (check the detector classes
+            for information about detector identifier and  accepted parameters).
+        only : Sequence[str]
+            A tag list to limit the scan to a subset of detectors. For example,
+            ``giskard.scan(model, dataset, only=["performance"])`` will only run detectors for performance issues.
+        """
         if isinstance(only, str):
             only = [only]
 
@@ -52,7 +65,25 @@ class Scanner:
     def analyze(
         self, model: BaseModel, dataset: Optional[Dataset] = None, verbose=True, raise_exceptions=False
     ) -> ScanReport:
-        """Runs the analysis of a model and dataset, detecting issues."""
+        """Runs the analysis of a model and dataset, detecting issues.
+
+        Parameters
+        ----------
+        model : BaseModel
+            A Giskard model object.
+        dataset : Dataset
+            A Giskard dataset object.
+        verbose : bool
+            Whether to print detailed info messages. Enabled by default.
+        raise_exceptions : bool
+            Whether to raise an exception if detection errors are encountered. By default, errors are logged and
+            handled gracefully, without interrupting the scan.
+
+        Returns
+        -------
+        ScanReport
+            A report object containing the detected issues and other information.
+        """
 
         # Check that the model and dataset were appropriately wrapped with Giskard
         model, dataset, model_validation_time = self._validate_model_and_dataset(model, dataset)

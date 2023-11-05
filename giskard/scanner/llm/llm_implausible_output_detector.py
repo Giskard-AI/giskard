@@ -11,6 +11,7 @@ from ...models.base.model import BaseModel
 from ...testing.tests.llm.hallucination import test_llm_output_plausibility
 from ..decorators import detector
 from ..issues import Hallucination, Issue, IssueLevel
+from ..registry import Detector
 from .base import _estimate_base_token_counts
 
 
@@ -18,7 +19,13 @@ from .base import _estimate_base_token_counts
     "llm_implausible_output",
     tags=["hallucination", "misinformation", "implausible_output", "llm", "generative", "text_generation"],
 )
-class LLMImplausibleOutputDetector:
+class LLMImplausibleOutputDetector(Detector):
+    """Detects implausible output in LLM-based models.
+
+    The detector will stimulate the model in producing outputs that are implausible or controversial by generating a
+    set of ad hoc adversarial inputs. This can be seen as a proxy for hallucination and misinformation detection.
+    """
+
     def __init__(self, num_samples=10):
         self.num_samples = num_samples
 
