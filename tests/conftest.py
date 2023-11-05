@@ -1,5 +1,5 @@
 try:
-    import lightgbm
+    import lightgbm  # noqa: F401
 except ImportError:
     pass
 from typing import List, Tuple
