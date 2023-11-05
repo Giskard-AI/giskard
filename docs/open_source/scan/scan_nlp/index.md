@@ -94,7 +94,7 @@ object and provide a suitable serialization method (provided by `save_model` and
 <b>Some important conditions:</b>
 
 1. There will be an override of the `model_predict` method which should take as input the <b>raw</b> pandas dataframe
-  and return the <b>probabilities</b> for each classification labels (classification). 
+  and return the <b>probabilities</b> for each classification labels (classification).
 2. The pre-defined serialization and prediction methods cover the `sklearn`, `catboost`, `pytorch`,
   `tensorflow`, `huggingface` and `langchain` libraries. If none of these libraries are detected, `cloudpickle`
   is used as the default for serialization. If this fails, we will ask you to also override the `save_model` and `load_model`
