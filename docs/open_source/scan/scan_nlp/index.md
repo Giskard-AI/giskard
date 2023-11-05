@@ -1,4 +1,4 @@
-# 📊 Tabular model scan
+# 🗣️ NLP model scan
 
 The Giskard python library provides an automatic scan functionality designed to automatically detect [potential vulnerabilities](https://docs.giskard.ai/en/latest/knowledge/key_vulnerabilities/index.html) affecting your ML model. It enables you to proactively identify and address key issues to ensure the reliability, fairness, and robustness of your Machine Learning models.
 
@@ -10,9 +10,8 @@ To scan your model, start by **wrapping your dataset**. This should be a validat
 # Wrap your Pandas DataFrame with Giskard.Dataset (validation or test set)
 giskard_dataset = giskard.Dataset(
     df=df,  # A pandas.DataFrame containing raw data (before pre-processing) and including ground truth variable.
-    target="Survived",  # Ground truth variable
-    name="Titanic dataset", # Optional: Give a name to your dataset
-    cat_columns=['Pclass', 'Sex', "SibSp", "Parch", "Embarked"]  # List of categorical columns. Optional, but improves quality of results if available.
+    target="label",  # Ground truth variable
+    name="Tweets with sentiment", # Optional: Give a name to your dataset
 )
 ```
 
@@ -49,19 +48,19 @@ Wrapping your model through the prediction function is the preferred method. The
 2. `prediction_function(df[feature_names])` <b>does not return an error message</b>.
 
 :::::{tab-set}
-::::{tab-item} Classification
+::::{tab-item} Text Classification
 
 ```python
 def prediction_function(df):
     preprocessed_df = demo_data_processing_function(df) # The pre-processor can be a pipeline of one-hot encoding, imputer, scaler, etc.
     return demo_classification_model.predict_proba(preprocessed_df)
 
-wrapped_model = giskard.Model(
+giskard_model = giskard.Model(
     model=prediction_function,
     model_type="classification",
     classification_labels=demo_classification_model.classes_,  # The order MUST be identical to the prediction_function's output order
-    feature_names=['PassengerId', 'Pclass', 'Name', 'Sex', 'Age', 'SibSp', 'Parch', 'Fare', 'Embarked'],  # Default: all columns of your dataset
-    name="titanic_model", # Optional: give it a name to identify it in metadata
+    feature_names=[TEXT_COLUMN],  # Default: all columns of your dataset
+    name="Tweets sentiment classification", # Optional: give it a name to identify it in metadata
     # classification_threshold=0.5, # Optional: Default: 0.5
 )
 ```
@@ -86,40 +85,6 @@ For further examples, check out the [tutorials section](https://docs.giskard.ai/
 </details>
 
 ::::
-::::{tab-item} Regression
-
-```python
-import numpy as np
-
-def prediction_function(df):
-    preprocessed_df = demo_data_processing_function(df) # The pre-processor can be a pipeline of one-hot encoding, imputer, scaler, etc.
-    return np.squeeze(demo_regression_model.predict(preprocessed_df))
-
-wrapped_model = giskard.Model(
-    model=prediction_function,
-    model_type="regression",
-    feature_names=['x'],  # Default: all columns of your dataset
-    name="linear_model", # Optional: give it a name to identify it in metadata
-)
-```
-For further examples, check out the [tutorials section](https://docs.giskard.ai/en/latest/tutorials/tabular_tutorials/index.html).
-
-<details>
-<summary>Click to view parameter details</summary>
-
-* <mark style="color:red;">**`Mandatory parameters`**</mark>
-    * `model`: A prediction function that takes `pandas.DataFrame` as input and returns an array $n$ of predictions
-      corresponding to $n$ data entries (rows of `pandas.DataFrame`).
-    * `model_type`: The type of model, either `regression`, `classification` or `text_generation`.
-
-* <mark style="color:red;">**`Optional parameters`**</mark>
-    * `name`: Give a name to the wrapped model to identify it in metadata.
-    * `feature_names`: An optional list of the column names of your feature. By default, `feature_names` are all the columns in your
-      dataset. Make sure these features are all present and in the same order as they are in your training dataset.
-
-</details>
-
-::::
 :::::
 ::::::
 ::::::{tab-item} Wrap a model object
@@ -129,14 +94,14 @@ object and provide a suitable serialization method (provided by `save_model` and
 <b>Some important conditions:</b>
 
 1. There will be an override of the `model_predict` method which should take as input the <b>raw</b> pandas dataframe
-  and return the <b>probabilities</b> for each classification labels (classification) or predictions (regression or text_generation). 
+  and return the <b>probabilities</b> for each classification labels (classification). 
 2. The pre-defined serialization and prediction methods cover the `sklearn`, `catboost`, `pytorch`,
   `tensorflow`, `huggingface` and `langchain` libraries. If none of these libraries are detected, `cloudpickle`
   is used as the default for serialization. If this fails, we will ask you to also override the `save_model` and `load_model`
   methods where you provide your own serialization of the `model` object.
 
 :::::{tab-set}
-::::{tab-item} Classification
+::::{tab-item} Text Classification
 
 ```python
 class MyCustomModel(giskard.Model):
@@ -144,12 +109,12 @@ class MyCustomModel(giskard.Model):
         preprocessed_df = demo_data_processing_function(df)
         return self.model.predict_proba(preprocessed_df)
 
-wrapped_model = MyCustomModel(
+giskard_model = MyCustomModel(
     model=demo_classification_model,
     model_type="classification",
     classification_labels=demo_classification_model.classes_,  # Their order MUST be identical to the prediction_function's output order
-    feature_names=['PassengerId', 'Pclass', 'Name', 'Sex', 'Age', 'SibSp', 'Parch', 'Fare', 'Embarked', 'Survived'],  # Default: all columns of your dataset
-    name="titanic_model", # Optional: give it a name to identify it in metadata
+    feature_names=[TEXT_COLUMN],  # Default: all columns of your dataset
+    name="Tweets sentiment classification", # Optional: give it a name to identify it in metadata
     # classification_threshold=0.5, # Optional: Default: 0.5
     # model_postprocessing_function=None, # Optional
     # **kwargs # Additional model-specific arguments
@@ -181,49 +146,6 @@ For further examples, check out the [tutorials section](https://docs.giskard.ai/
 </details>
 
 ::::
-::::{tab-item} Regression
-
-```python
-import numpy as np
-
-class MyCustomModel(giskard.Model):
-    def model_predict(self, df):
-        preprocessed_df = demo_data_processing_function(df)
-        return np.squeeze(self.model.predict(preprocessed_df))
-
-wrapped_model = MyCustomModel(
-    model=demo_regression_model,
-    model_type="regression",
-    feature_names=['x'],  # Default: all columns of your dataset
-    name="my_regression_model", # Optional: give it a name to identify it in metadata
-    # model_postprocessing_function=None, # Optional
-    # **kwargs # Additional model-specific arguments
-)
-```
-For further examples, check out the [tutorials section](https://docs.giskard.ai/en/latest/tutorials/tabular_tutorials/index.html).
-
-<details>
-<summary>Click to view parameter details</summary>
-
-* <mark style="color:red;">**`Mandatory parameters`**</mark>
-    * `model`: Any model from `sklearn`, `catboost`, `pytorch`, `tensorflow`, `huggingface` (check
-      the [tutorials](https://docs.giskard.ai/en/latest/tutorials/tabular_tutorials/index.html)). If none of these libraries apply to you, we try to serialize your model with `cloudpickle`. If that also does not work, we
-      ask you to provide us with your own serialization method.
-    * `model_type`: The type of model, either `regression`, `classification` or `text_generation`.
-
-* <mark style="color:red;">**`Optional parameters`**</mark>
-    * `name`: Give a name to the wrapped model to identify it in metadata.
-    * `feature_names`: An optional list of the feature names. By default, `feature_names` are all the columns in your
-      dataset. Make sure these features are all present and in the same order as they are in your training dataset.
-    * `data_preprocessing_function`: A function that takes a `pandas.DataFrame` as raw input, applies pre-processing and
-      returns any object that could be directly fed to `model`.
-    * `model_postprocessing_function`: A function that takes a `model` output as input, applies post-processing and returns
-      an object of the same type and shape as the `model` output.
-    * `**kwargs`: Additional model-specific arguments (See [Models](https://docs.giskard.ai/en/latest/reference/index.html)).
-
-</details>
-
-::::
 :::::
 ::::::
 :::::::
@@ -237,7 +159,7 @@ scan_results = giskard.scan(giskard_model, giskard_dataset)
 display(scan_results)  # in your notebook
 ```
 
-![Tabular scan results](../../../assets/scan_tabular.png)
+![Tabular scan results](../../../assets/scan_nlp.png)
 
 If you are not working in a notebook or want to save the results for later, you can save them to an HTML file like this:
 
