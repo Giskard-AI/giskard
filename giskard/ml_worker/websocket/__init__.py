@@ -319,7 +319,6 @@ class TestSuiteParam(ConfiguredBaseModel):
 
 
 class PushKind(Enum):
-    INVALID = 0
     PERTURBATION = 1
     CONTRIBUTION = 2
     OVERCONFIDENCE = 3

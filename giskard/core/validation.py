@@ -38,5 +38,5 @@ def validate_is_pandasdataframe(df):
 class ConfiguredBaseModel(pydantic.BaseModel):
     class Config:
         extra = "forbid"
-        allow_inf_nan = False
+        # allow_inf_nan = False Disable since some metrics can return NaN
         # May be nice to use once we drop v1 support : # https://docs.pydantic.dev/latest/api/config/#pydantic.config.ConfigDict.strict
