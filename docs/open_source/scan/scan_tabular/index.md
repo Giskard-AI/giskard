@@ -1,25 +1,25 @@
 # 📊 Tabular model scan
 
-The Giskard python library provides an automatic scan functionality designed to automatically detect [potential vulnerabilities](../../getting-started/key_vulnerabilities/performance_bias/index.md) affecting your ML model. It enables you to proactively identify and address key issues to ensure the reliability, fairness, and robustness of your Machine Learning models.
+The Giskard python library provides an automatic scan functionality designed to automatically detect [potential vulnerabilities](https://docs.giskard.ai/en/latest/knowledge/key_vulnerabilities/index.html) affecting your ML model. It enables you to proactively identify and address key issues to ensure the reliability, fairness, and robustness of your Machine Learning models.
 
 ## Step 1: Wrap your dataset
 
 To scan your model, start by **wrapping your dataset**. This should be a validation or test set in Pandas format, as shown here:
 
 ```python
-    # Wrap your Pandas DataFrame with Giskard.Dataset (validation or test set)
-    giskard_dataset = giskard.Dataset(
-        df=df,  # A pandas.DataFrame containing raw data (before pre-processing) and including ground truth variable.
-        target="Survived",  # Ground truth variable
-        name="Titanic dataset", # Optional: Give a name to your dataset
-        cat_columns=['Pclass', 'Sex', "SibSp", "Parch", "Embarked"]  # List of categorical columns. Optional, but improves quality of results if available.
-    )
+# Wrap your Pandas DataFrame with Giskard.Dataset (validation or test set)
+giskard_dataset = giskard.Dataset(
+    df=df,  # A pandas.DataFrame containing raw data (before pre-processing) and including ground truth variable.
+    target="Survived",  # Ground truth variable
+    name="Titanic dataset", # Optional: Give a name to your dataset
+    cat_columns=['Pclass', 'Sex', "SibSp", "Parch", "Embarked"]  # List of categorical columns. Optional, but improves quality of results if available.
+)
 ```
 
-For further examples, check out the [tutorials section]().
+For further examples, check out the [tutorials section](https://docs.giskard.ai/en/latest/tutorials/tabular_tutorials/index.html).
 
 <details>
-<summary>Click to view Dataset class parameters</summary>
+<summary>Click to view parameter details</summary>
 
 * <mark style="color:red;">**`Mandatory parameters`**</mark>
     * `df`: A `pandas.DataFrame` containing raw data (before pre-processing) and including ground truth variable. Extra columns not included as features of the model can remain in `df`.
@@ -65,8 +65,11 @@ wrapped_model = giskard.Model(
     # classification_threshold=0.5, # Optional: Default: 0.5
 )
 ```
+For further examples, check out the [tutorials section](https://docs.giskard.ai/en/latest/tutorials/tabular_tutorials/index.html).
 
-[//]: # (TODO: check if we can put the following under a toggle:)
+<details>
+<summary>Click to view parameter details</summary>
+
 * <mark style="color:red;">**`Mandatory parameters`**</mark>
     * `model`: A prediction function that takes a `pandas.DataFrame` as input and returns an array ($n\times m$) of
       probabilities corresponding to $n$ data entries (rows of `pandas.DataFrame`) and $m$ `classification_labels`. In the case of binary classification, an array ($n\times 1$) of probabilities is also accepted.
@@ -80,7 +83,7 @@ wrapped_model = giskard.Model(
       dataset. Make sure these features are all present and in the same order as they are in your training dataset.
     * `classification_threshold`: Model threshold for binary classification problems.
 
-For further examples, check out the [tutorials section]().
+</details>
 
 ::::
 ::::{tab-item} Regression
@@ -99,8 +102,11 @@ wrapped_model = giskard.Model(
     name="linear_model", # Optional: give it a name to identify it in metadata
 )
 ```
+For further examples, check out the [tutorials section](https://docs.giskard.ai/en/latest/tutorials/tabular_tutorials/index.html).
 
-[//]: # (TODO: check if we can put the following under a toggle:)
+<details>
+<summary>Click to view parameter details</summary>
+
 * <mark style="color:red;">**`Mandatory parameters`**</mark>
     * `model`: A prediction function that takes `pandas.DataFrame` as input and returns an array $n$ of predictions
       corresponding to $n$ data entries (rows of `pandas.DataFrame`).
@@ -111,7 +117,7 @@ wrapped_model = giskard.Model(
     * `feature_names`: An optional list of the column names of your feature. By default, `feature_names` are all the columns in your
       dataset. Make sure these features are all present and in the same order as they are in your training dataset.
 
-For further examples, check out the [tutorials section]().
+</details>
 
 ::::
 :::::
@@ -149,11 +155,14 @@ wrapped_model = MyCustomModel(
     # **kwargs # Additional model-specific arguments
 )
 ```
+For further examples, check out the [tutorials section](https://docs.giskard.ai/en/latest/tutorials/tabular_tutorials/index.html).
 
-[//]: # (TODO: check if we can put the following under a toggle:)
+<details>
+<summary>Click to view parameter details</summary>
+
 * <mark style="color:red;">**`Mandatory parameters`**</mark>
     * `model`: Any model from `sklearn`, `catboost`, `pytorch`, `tensorflow`, `huggingface` (check
-      the [tutorials](../../../tutorials/index.md)). If none of these libraries apply to you, we try to serialize your model with `cloudpickle`. If that also does not work, we ask you to provide us with your own serialization method.
+      the [tutorials](https://docs.giskard.ai/en/latest/tutorials/tabular_tutorials/index.html)). If none of these libraries apply to you, we try to serialize your model with `cloudpickle`. If that also does not work, we ask you to provide us with your own serialization method.
     * `model_type`: The type of model, either `regression`, `classification` or `text_generation`.
     * `classification_labels`: The list of unique categories for your dataset's target variable. If `classification_labels`
       is a list of $m$ elements, make sure that `prediction_function` is returning a ($n\times m$) array of probabilities and `classification_labels` have the same order as the output of the prediction function.
@@ -167,9 +176,9 @@ wrapped_model = MyCustomModel(
       returns any object that could be directly fed to `model`.
     * `model_postprocessing_function`: A function that takes a `model` output as input, applies post-processing and returns
       an object of the same type and shape as the `model` output.
-    * `**kwargs`: Additional model-specific arguments (See [Models](../../../reference/models/index.rst)).
+    * `**kwargs`: Additional model-specific arguments (See [Models](https://docs.giskard.ai/en/latest/reference/index.html)).
 
-For further examples, check out the [tutorials section]().
+</details>
 
 ::::
 ::::{tab-item} Regression
@@ -191,11 +200,14 @@ wrapped_model = MyCustomModel(
     # **kwargs # Additional model-specific arguments
 )
 ```
+For further examples, check out the [tutorials section](https://docs.giskard.ai/en/latest/tutorials/tabular_tutorials/index.html).
 
-[//]: # (TODO: check if we can put the following under a toggle:)
+<details>
+<summary>Click to view parameter details</summary>
+
 * <mark style="color:red;">**`Mandatory parameters`**</mark>
     * `model`: Any model from `sklearn`, `catboost`, `pytorch`, `tensorflow`, `huggingface` (check
-      the [tutorials](../../../tutorials/index.md)). If none of these libraries apply to you, we try to serialize your model with `cloudpickle`. If that also does not work, we
+      the [tutorials](https://docs.giskard.ai/en/latest/tutorials/tabular_tutorials/index.html)). If none of these libraries apply to you, we try to serialize your model with `cloudpickle`. If that also does not work, we
       ask you to provide us with your own serialization method.
     * `model_type`: The type of model, either `regression`, `classification` or `text_generation`.
 
@@ -207,9 +219,9 @@ wrapped_model = MyCustomModel(
       returns any object that could be directly fed to `model`.
     * `model_postprocessing_function`: A function that takes a `model` output as input, applies post-processing and returns
       an object of the same type and shape as the `model` output.
-    * `**kwargs`: Additional model-specific arguments (See [Models](../../../reference/models/index.rst)).
+    * `**kwargs`: Additional model-specific arguments (See [Models](https://docs.giskard.ai/en/latest/reference/index.html)).
 
-For further examples, check out the [tutorials section]().
+</details>
 
 ::::
 :::::
@@ -221,19 +233,16 @@ For further examples, check out the [tutorials section]().
 Now you can scan your model and display your scan report:
 
 ```python
-
-    scan_results = giskard.scan(giskard_model, giskard_dataset)
-    display(scan_results)  # in your notebook
+scan_results = giskard.scan(giskard_model, giskard_dataset)
+display(scan_results)  # in your notebook
 ```
-../../assets/scan_widget.html
 
-[//]: # (TODO: add scan html or png)
+![Tabular scan results](../../../assets/scan_tabular.png)
 
 If you are not working in a notebook or want to save the results for later, you can save them to an HTML file like this:
 
 ```python
-
-    scan_results.to_html("model_scan_results.html")
+scan_results.to_html("model_scan_results.html")
 ```
 
 ## What's next? 
@@ -245,14 +254,13 @@ Your scan results may have highlighted important vulnerabilities. There are 2 im
 * Turn the issues you found into actionable tests that you can directly integrate in your CI/CD pipeline
 
 ```python
+test_suite = scan_results.generate_test_suite("My first test suite")
 
-    test_suite = scan_results.generate_test_suite("My first test suite")
-
-    # You can run the test suite locally to verify that it reproduces the issues
-    test_suite.run()
+# You can run the test suite locally to verify that it reproduces the issues
+test_suite.run()
 ```
 
-Jump to the [test customization]() and [test integration]() sections to find out everything you can do with test suites.
+Jump to the [test customization](https://docs.giskard.ai/en/latest/open_source/customize_tests/index.html) and [test integration](https://docs.giskard.ai/en/latest/open_source/integrate_tests/index.html) sections to find out everything you can do with test suites.
 
 ### 2. Upload your test suite to the Giskard Hub to:
 * Debug your tests to diagnose the identified issues
