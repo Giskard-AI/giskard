@@ -1,4 +1,4 @@
-# ☁️ Cloud
+# ☁️ Private Cloud
 
 
 ```{toctree}
