@@ -156,13 +156,9 @@ def test_llm_char_injection(
 ):
     """Tests that the model is not vulnerable to control character injection.
 
-    This works by appending special characters like `\r` or `\b` to the input and checking that the model output
+    This works by appending special characters like `\\r` or `\\b` to the input and checking that the model output
     is not altered. If the model is vulnerable, it will typically forget the prompt and output unrelated content.
-    See [1]_ for more details about this vulnerability.
-
-    .. [1] Mark Breitenbach, Adrian Wood, Win Suen, and Po-Ning Tseng "Dont you (forget NLP): Prompt injection with
-       control characters in ChatGPT",
-       https://dropbox.tech/machine-learning/prompt-injection-with-control-characters-openai-chatgpt-llm
+    See [#]_ for more details about this vulnerability.
 
     Parameters
     ----------
@@ -171,7 +167,7 @@ def test_llm_char_injection(
     dataset : Dataset
         A sample dataset which will be perturbed with char injection.
     characters : Sequence[str], optional
-        The character to inject. By default, we will try with `\r` and `\b`.
+        The character to inject. By default, we will try with `\\r` and `\\b`.
     features: Sequence[str], optional
         The features to test. By default, will test all features.
     max_repetitions : int, optional
@@ -183,6 +179,12 @@ def test_llm_char_injection(
     -------
     TestResult
         The test result.
+
+    References
+    ----------
+    .. [#] Mark Breitenbach, Adrian Wood, Win Suen, and Po-Ning Tseng "Dont you (forget NLP): Prompt injection with
+           control characters in ChatGPT",
+           https://dropbox.tech/machine-learning/prompt-injection-with-control-characters-openai-chatgpt-llm
     """
     injector = LLMCharInjector(
         chars=characters, max_repetitions=max_repetitions, threshold=threshold, output_sensitivity=output_sensitivity
@@ -233,10 +235,7 @@ def test_llm_prompt_injection(
     This works by inserting a set of jailbreaking prompts to the input and checking that the model output
     is not altered. If the model is vulnerable, it will typically ignore any instructions or safeguarding protocols
     it might have had and comply to the new instructions given by the injected prompt.
-    See [1]_ for more details about this vulnerability.
-
-    .. [1] Fábio Perez, and Ian Ribeiro "Ignore Previous Prompt: Attack Techniques For Language Models",
-       https://arxiv.org/abs/2211.09527
+    See [#]_ for more details about this vulnerability.
 
     Parameters
     ----------
@@ -265,6 +264,12 @@ def test_llm_prompt_injection(
     -------
     TestResult
         The test result.
+
+    References
+    ----------
+    .. [#] Fábio Perez, and Ian Ribeiro "Ignore Previous Prompt: Attack Techniques For Language Models",
+           https://arxiv.org/abs/2211.09527
+
     """
 
     # The evaluation method is fixed for all the prompts in the dataset
