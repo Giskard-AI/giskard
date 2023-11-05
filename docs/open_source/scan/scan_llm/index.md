@@ -30,7 +30,7 @@ For further examples, check out the [tutorials section](https://docs.giskard.ai/
 * <mark style="color:red;">**`Mandatory parameters`**</mark>
     * `model`: A prediction function that takes a `pandas.DataFrame` as input and returns a string.
     * `model_type`: The type of model, either `regression`, `classification` or `text_generation`.
-    * `description`: A detailed description of what the model does, this is used to generate prompts during the scan.
+    * `description`: A detailed description of what the model does, this is used to generate prompts to test during the scan.
 
 * <mark style="color:red;">**`Optional parameters`**</mark>
     * `name`: Give a name to the wrapped model to identify it in metadata.
@@ -92,7 +92,7 @@ For further examples, check out the [tutorials section](https://docs.giskard.ai/
 * <mark style="color:red;">**`Mandatory parameters`**</mark>
     * `model`: A prediction function that takes a `pandas.DataFrame` as input and returns a string.
     * `model_type`: The type of model, either `regression`, `classification` or `text_generation`.
-    * `description`: A detailed description of what the model does, this is used to generate prompts during the scan.
+    * `description`: A detailed description of what the model does, this is used to generate prompts to test during the scan.
 
 * <mark style="color:red;">**`Optional parameters`**</mark>
     * `name`: Give a name to the wrapped model to identify it in metadata.
