@@ -1,4 +1,4 @@
-# 📊 Tabular model scan
+# 📚  LLM scan
 
 The Giskard python library provides an automatic scan functionality designed to automatically detect [potential vulnerabilities](https://docs.giskard.ai/en/latest/knowledge/key_vulnerabilities/index.html) affecting your ML model. It enables you to proactively identify and address key issues to ensure the reliability, fairness, and robustness of your Machine Learning models.
 
@@ -56,7 +56,7 @@ def prediction_function(df):
     preprocessed_df = demo_data_processing_function(df) # The pre-processor can be a pipeline of one-hot encoding, imputer, scaler, etc.
     return demo_classification_model.predict_proba(preprocessed_df)
 
-wrapped_model = giskard.Model(
+giskard_model = giskard.Model(
     model=prediction_function,
     model_type="classification",
     classification_labels=demo_classification_model.classes_,  # The order MUST be identical to the prediction_function's output order
@@ -95,7 +95,7 @@ def prediction_function(df):
     preprocessed_df = demo_data_processing_function(df) # The pre-processor can be a pipeline of one-hot encoding, imputer, scaler, etc.
     return np.squeeze(demo_regression_model.predict(preprocessed_df))
 
-wrapped_model = giskard.Model(
+giskard_model = giskard.Model(
     model=prediction_function,
     model_type="regression",
     feature_names=['x'],  # Default: all columns of your dataset
@@ -144,7 +144,7 @@ class MyCustomModel(giskard.Model):
         preprocessed_df = demo_data_processing_function(df)
         return self.model.predict_proba(preprocessed_df)
 
-wrapped_model = MyCustomModel(
+giskard_model = MyCustomModel(
     model=demo_classification_model,
     model_type="classification",
     classification_labels=demo_classification_model.classes_,  # Their order MUST be identical to the prediction_function's output order
@@ -191,7 +191,7 @@ class MyCustomModel(giskard.Model):
         preprocessed_df = demo_data_processing_function(df)
         return np.squeeze(self.model.predict(preprocessed_df))
 
-wrapped_model = MyCustomModel(
+giskard_model = MyCustomModel(
     model=demo_regression_model,
     model_type="regression",
     feature_names=['x'],  # Default: all columns of your dataset
