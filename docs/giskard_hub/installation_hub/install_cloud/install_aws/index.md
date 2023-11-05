@@ -33,15 +33,78 @@
 giskard hub start
 ```
 
-### 4. Connect to your instance and start uploading an ML model
-
+### 4. Connect to your instance
 * **Get your IP address**: Click on the ID of the instance you just created and copy its **Public IPv4** address (or **Public IPv4 DNS**)
-* Go to **`http://<your IP address>:19000`** in your web browser
+* Go to **`http://<your IP address>:19000`** in your web browser. For instance, `http://ec2-13-50-XXXX.compute.amazonaws.com:19000`
 * The user id is `admin` and the password is `admin`
-
-That's it, you are now ready to use Giskard in AWS! Now you can start [uploading an artifact](docs/guide/upload/index.md)!
 
 :::{hint}
 You can stop the instance and restart it when you need to save AWS compute costs. However, note that the **IP address will not necessarily be the same**. So make sure you copy it again when it's launched
 :::
 
+### 5. Start the ML worker
+
+Giskard executes your model using a worker that runs the model directly in **your Python environment**, with all the dependencies required by your model. You can either execute the ML worker:
+
+- From your **local notebook** within the kernel that contains all the dependencies of your model
+- From **Google Colab** within the kernel that contains all the dependencies of your model
+- Or from **your terminal** within the Python environment that contains all the dependencies of your model
+
+:::::::{tab-set}
+::::::{tab-item} From your local notebook
+
+To start the ML worker from your notebook, run the following code in your notebook:
+
+```
+!giskard worker start -d -k YOUR_KEY -u http://<your IP address>:19000/
+```
+
+The API Access Key (`YOUR_KEY`) can be found in the Settings tab of the Giskard Hub.
+
+
+> ### ⚠️ Warning
+> To see the available commands of the worker, you can execute:
+>```
+>!giskard worker --help
+>```
+
+You're all set to try Giskard in action. Upload your first model, dataset or test suite by following the [upload an object](../upload/index.html) page.
+
+::::::
+::::::{tab-item} From Colab notebook
+
+To start the ML worker from your Colab notebook, run in your Colab cell:
+
+```
+!giskard worker start -d -k YOUR_KEY -u http://<your IP address>:19000/
+```
+The API Access Key (`YOUR_KEY`) can be found in the Settings tab of the Giskard Hub.
+
+> ### ⚠️ Warning
+> To see the available commands of the worker, you can execute:
+>```
+>!giskard worker --help
+>```
+
+You're all set to try Giskard in action. Upload your first model, dataset or test suite by following the [upload an object](../upload/index.html) page.
+
+::::::
+::::::{tab-item} From your terminal
+
+* Run the following command **within the Python environment that contains all the dependencies of your model**:
+
+```
+giskard worker start -k YOUR_KEY -u http://<your IP address>:19000/
+```
+The API Access Key (`YOUR_KEY`) can be found in the Settings tab of the Giskard Hub.
+
+> ### ⚠️ Warning
+> To see the available commands of the worker, you can execute:
+>```
+>!giskard worker --help
+>```
+
+You're all set to try Giskard in action. Upload your first model, dataset or test suite by following the [upload an object](../upload/index.html) page.
+
+::::::
+:::::::

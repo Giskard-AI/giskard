@@ -1,85 +1,77 @@
 # 🤗 HuggingFace Spaces
 
-Hugging Face Spaces is a great start and the easiest approach to explore Giskard's functionalities.
+For an **easy use** of the Giskard Hub, you can directly access the Hub online through Hugging Face with:
+* The **public HF Space**: That's perfect if you don't want to upload your own model and just want to check some Giskard demo projects. 
+* The **private HF Space**: That's perfect if you want to use Giskard with your own model without installing the Giskard Hub. You need to have an Hugging Face account.
 
-## Demo Space
+> For other ways to install the Giskard Hub, the [On-premise](../install_on_prem/index.md) or [Private Cloud](../install_cloud/index.md) installation.
 
-We have a [demo Giskard Space](https://huggingface.co/spaces/giskardai/giskard) on Hugging Face Spaces.
-Use this demo Space to discover the Giskard hub and navigate through our demo projects.
+The Giskard Hub is the app adapted for an enterprise use of Giskard. Extending the features of the open-source library, it enables you to:
 
-:::{warning}
-**The demo Giskard Space is read-only. To upload your own models, datasets and projects in the Giskard Space, we recommend that you duplicate the Space.**
+* Debug tests to diagnose your issues
+* Create domain-specific tests thanks to automatic model insights
+* Compare models to decide which model to promote
+* Collect business feedback of your model results
+* Share your results with your colleagues for alignment
+* Store all your QA objects (tests, data slices, evaluation criteria, etc.) in one place to work more efficiently
+
+
+## Public HF Space: Try the Hub on demo models in 1 click
+
+If you want to try the Giskard Hub on some demo ML projects (not on your own ML models), navigate to our public demo Space:
+
+<a  href="https://huggingface.co/spaces/giskardai/giskard">
+    <img src="https://huggingface.co/datasets/huggingface/badges/raw/main/open-in-hf-spaces-lg.svg" />
+</a>
+
+:::{hint}
+The demo Giskard Space is read-only. To upload your own models, datasets and projects in the Giskard Space, we recommend that you duplicate the Space. More on this in the following sections. 
 :::
 
-## Create your own Space
+## Private HF Space: Test & debug your own ML model in the Hub
 
-To upload and debug your own models, datasets and projects, you will need your own Giskard instance on Hugging Face Spaces.
+Leverage the Hugging Face (HF) Space to easily test & debug your own ML models. This implies that you deploy a private HF space containing the Giskard Hub and upload your Python objects (such as ML models, test suites, datasets, slicing functions, or transformation functions) to your HF Space. To do so, follow these steps:
 
-To do so, you can duplicate our demo Space:
+### 1. Duplicate the demo Space from Giskard
+Begin by visiting the [Giskard HF space](https://huggingface.co/spaces/giskardai/giskard) and duplicate the space (as depicted below).
 
-![Duplicate demo Space from Giskard](../../../assets/integrations/hfs/duplicate_this_space.png)
+![Duplication image](../../../assets/integrations/hfs/duplicate_this_space.png)
 
-In the popup, you can change the **owner**, the **visibility** and the **hardware**:
+During duplication, you're presented with options to modify the **owner**, the **visibility** and the **hardware**:
 
 ![Space Duplication popup](../../../assets/integrations/hfs/paid_tier.png)
 
 :::{hint}
 **Owner and visibility**:
-- You can change the visibility of the Space to public, which makes it will be **accessible to everyone**. This is nice and recommended for demonstrating the performance of your models using Giskard.
-- You can also keep the Space **private** and set the owner to **your organization**, which makes it accessible only by you and the people under your organization. This setup is ideal for internal collaboration, and ensures that your datasets and models remain private.
-:::
-
-![Free tier Space](../../../assets/integrations/hfs/free_tier.png)
-
-:::{hint}
+If you don't want to publicly share your model, set your Space to **private** and assign the owner as **your organization**
 **Hardware**:
-
-We recommend to use paid hardware to get the best out of Giskard's Hugging Face Space. You can also incorporate [persistent storage](https://huggingface.co/docs/hub/spaces-storage) to retain your data even after the Space reboots.
-
-However, if you're on a budget, Hugging Face generously offers support for free hardware options.
-:::
-
-:::{warning}
-With free hardware that lacks persistent storage, any inactivity beyond 48 hours will result in the space being shut down. This will lead to a loss of all data within your Giskard Space.
+We recommend to use paid hardware to get the best out of Giskard's HF Space. You can also incorporate [persistent storage](https://huggingface.co/docs/hub/spaces-storage) to retain your data even after the Space reboots. With free hardware that lacks persistent storage, any inactivity beyond 48 hours will result in the space being shut down. This will lead to a loss of all data within your Giskard Space.
 :::
 
 Once you're ready, click on Duplicate Space. The building process will take several minutes.
 
-Upon completion, you can access the public Giskard instance on Hugging Face Spaces. For guidance, refer to the [Upload an object to the Giskard hub](../../../guides/upload/index.md) guide.
+### 2. Create a new Giskard project
 
-For those seeking to use a private Space, please be aware of the following additional measures in place to ensure your data's security and privacy.
+![Create a new Giskard project](../../../assets/create_project.gif)
 
-## Special notice on Private Space
+### 3. Enter your HF Access token
 
-To connect your Giskard Client or ML worker to your private Space in Hugging Face Spaces, you'll need a **Giskard Space Token**. This token can be generated directly within your private Space and is valid for 24 hours.
-Retrieve it either from the ML worker connection details under Giskard Settings or by using the instructions to upload a demo test suite from demo projects.
-
-For first-timers, Giskard requires a Hugging Face access token to produce the Giskard Space Token. This token remains active until you choose to expire it and will only reside in your browser.
+On your first access on a private HF Space, Giskard needs a HF access token to generate the Giskard Space Token. To do so, follow the instructions in the pop-up that you encounter when creating your first project.
 
 ![Input Hugging Face access token](../../../assets/integrations/hfs/input_hf_access_token.png)
 
-You can create and manage them at [Hugging Face settings](https://huggingface.co/settings/tokens).
+Alternatively, provide your HF access token through the Giskard Settings.
 
-![Hugging Face settings and access token](../../../assets/integrations/hfs/where_to_create_access_token.png)
+### 4. Wrap your model and scan it in your Python environment
 
-If you haven't got one, simply click the New token button to generate a Hugging Face access token.
+For detailed guidance on this step, refer to [our documentation](../../../open_source/scan/index.md).
 
-![Generate Hugging Face access token](../../../assets/integrations/hfs/generate_token.png)
+### 5. Upload your test suite by creating a Giskard Client for your HF Space
 
-Giskard respects your privacy – we neither alter nor access content from your Hugging Face account. Assigning a 'read' role suffices.
+You can then upload the test suite generated by the Giskard scan from your Python notebook to your HF Space. Achieve this by initializing a Giskard Client: simply **copy the "Create a Giskard Client" snippet** from the Giskard Hub settings and run it within your Python notebook. For more details, have a look at our upload object documentation [page](../../upload/index.md)
 
-![Copy Hugging Face access token](../../../assets/integrations/hfs/copy_token.png)
+You are now ready to debug the tests which you've just uploaded in the test tab of the Giskard Hub.
 
-Copy it and paste into the input field, and click on `Fetch`.
+## Feedback and support
 
-Giskard will generate the instructions with the generated token in Giskard Client connection:
-
-![Giskard Client instruction](../../../assets/integrations/hfs/giskard_client.png)
-
-and in ML worker connection:
-
-![ML Worker instruction](../../../assets/integrations/hfs/mlworker.png)
-
-Instructions and details for setting up a Giskard client can be found under the Giskard hub's Settings tab.
-
-Aside from the Giskard Space Token, for uploading objects to the Giskard instance on Hugging Face Spaces, consult the [Upload an object to the Giskard hub](../../../guides/upload/index.md) guide.
+If you have suggestions or need specialized support, please join us on the [Giskard Discord community](https://discord.gg/ABvfpbu69R) or reach out on [Giskard's GitHub repository](https://github.com/Giskard-AI/giskard).
