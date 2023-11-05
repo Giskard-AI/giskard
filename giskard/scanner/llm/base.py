@@ -9,10 +9,11 @@ from ...llm.testcase import TestcaseRequirementsGenerator
 from ...models.base.model import BaseModel
 from ...testing.tests.llm import test_llm_output_against_requirement
 from ..issues import Issue
+from ..registry import Detector
 from ..scanner import logger
 
 
-class RequirementBasedDetector:
+class RequirementBasedDetector(Detector):
     def __init__(self, num_requirements=4, num_samples=5):
         self.num_requirements = num_requirements
         self.num_samples = num_samples

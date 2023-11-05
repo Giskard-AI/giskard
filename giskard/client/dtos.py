@@ -1,5 +1,7 @@
 from typing import Any, Dict, List, Optional
 
+from pydantic import Field
+
 from giskard.core.validation import ConfiguredBaseModel
 
 
@@ -7,7 +9,7 @@ class TestInputDTO(ConfiguredBaseModel):
     name: str
     value: str
     type: str
-    params: List["TestInputDTO"] = list()
+    params: List["TestInputDTO"] = Field(default_factory=list)
     is_alias: bool = False
 
 
@@ -34,11 +36,21 @@ class ServerInfo(ConfiguredBaseModel):
 class TestInfo(ConfiguredBaseModel):
     testUuid: str
     functionInputs: Dict[str, Any]
+    # The following inputs are never used and are here only for
+    # coherence with backend
+    id: int
+    displayName: Optional[str]
+    test: Any
 
 
 class SuiteInfo(ConfiguredBaseModel):
     name: str
     tests: List[TestInfo]
+    # The following inputs are never used and are here only for
+    # coherence with backend
+    id: int
+    functionInputs: List
+    projectKey: str
 
 
 class ModelMetaInfo(ConfiguredBaseModel):
