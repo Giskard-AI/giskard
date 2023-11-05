@@ -2,7 +2,7 @@
 
 The Giskard python library provides an automatic scan functionality designed to automatically detect [potential vulnerabilities](../../getting-started/key_vulnerabilities/performance_bias/index.md) affecting your ML model. It enables you to proactively identify and address key issues to ensure the reliability, fairness, and robustness of your Machine Learning models.
 
-## Step 1️⃣: Wrap your dataset
+## Step 1: Wrap your dataset
 
 To scan your model, start by **wrapping your dataset**. This should be a validation or test set in Pandas format, as shown here:
 
@@ -18,7 +18,9 @@ To scan your model, start by **wrapping your dataset**. This should be a validat
 
 For further examples, check out the [tutorials section]().
 
-[//]: # (TODO: check if we can put the following under a toggle:)
+<details>
+<summary>Click to view Dataset class parameters</summary>
+
 * <mark style="color:red;">**`Mandatory parameters`**</mark>
     * `df`: A `pandas.DataFrame` containing raw data (before pre-processing) and including ground truth variable. Extra columns not included as features of the model can remain in `df`.
 
@@ -29,8 +31,9 @@ For further examples, check out the [tutorials section]().
       numerical, or textual with a few unique values. If not provided, column types will be inferred automatically.
     * `column_types`: Dictionary of column names and their types (numeric, category or text) for all columns of `df`.
       If not provided, column types will be inferred automatically.
+</details>
 
-## Step 2️⃣: Wrap your model
+## Step 2: Wrap your model
 
 Next, **wrap your model**. You can wrap either the prediction function (recommended) or model object, as shown here:
 
@@ -213,7 +216,7 @@ For further examples, check out the [tutorials section]().
 ::::::
 :::::::
 
-## Step 3️⃣: Scan you model
+## Step 3: Scan your model
 
 Now you can scan your model and display your scan report:
 
@@ -233,13 +236,12 @@ If you are not working in a notebook or want to save the results for later, you 
     scan_results.to_html("model_scan_results.html")
 ```
 
-## 🤔What's next? 
+## What's next? 
 
 Your scan results may have highlighted important vulnerabilities. There are 2 important actions you can take next:
 
 ### 1. Generate a test suite from your scan results to:
 
-[//]: # (TODO: list other benefits of test suites)
 * Turn the issues you found into actionable tests that you can directly integrate in your CI/CD pipeline
 
 ```python
@@ -258,9 +260,8 @@ Jump to the [test customization]() and [test integration]() sections to find out
 * Create more domain-specific tests relevant to your use case
 * Share results, and collaborate with your team to integrate business feedback
 
-[Here's a demo](HF link) of the Giskard Hub in action.
+[Here's a demo](https://huggingface.co/spaces/giskardai/giskard) of the Giskard Hub in action.
 
 ## Troubleshooting
 
 If you encounter any issues, join our [Discord community](https://discord.gg/fkv7CAr3FE) and ask questions in our #support channel.
-
