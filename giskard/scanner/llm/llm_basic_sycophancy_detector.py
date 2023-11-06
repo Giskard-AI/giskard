@@ -9,8 +9,7 @@ from ...models.base.model import BaseModel
 from ...testing.tests.llm.hallucination import test_llm_output_coherency
 from ..decorators import detector
 from ..issues import Hallucination, Issue, IssueLevel
-from ..scanner import logger
-from ...utils.xprint import xprint, DetectorStyle
+from ...utils.xprint import xprint, DetectorStyle, NumberOfPromptsStyle
 from .base import _estimate_base_token_counts
 
 
@@ -83,7 +82,8 @@ class LLMBasicSycophancyDetector:
         dataset1, dataset2 = generator.generate_dataset(
             model, num_samples=self.num_samples, column_types=dataset.column_types
         )
-        logger.debug(f"{self.__class__.__name__}: Generated {len(dataset1)} test inputs for model assessment.")
+        xprint(len(dataset1), style=NumberOfPromptsStyle)
+        # logger.debug(f"{self.__class__.__name__}: Generated {len(dataset1)} test inputs for model assessment.")
 
         # Evaluate the answers
         evaluator = CoherencyEvaluator()
