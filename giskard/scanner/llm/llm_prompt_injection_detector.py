@@ -62,6 +62,39 @@ class LLMPromptInjectionDetector(Detector):
         self.num_samples = num_samples
         self.num_samples_seed = num_samples_seed
 
+    def get_cost_estimate(self, model: BaseModel, dataset: Dataset) -> float:
+        return {
+            "model_predict_calls": len(get_all_prompts()),
+        }
+
+    def evaluate_and_group(self, model, dataset, prompts, features, column_types):
+        results = {}
+        for prompt in prompts:
+            # logger.info(f"Evaluating {Style.RESET_ALL}{Fore.LIGHTMAGENTA_EX}{prompt.group.name}{Style.RESET_ALL}
+            # f"Prompt.")
+
+            prompt_dataset = dataset.copy()
+            prompt_dataset.df = prompt_dataset.df.head(1)
+            for feature in features:
+                if column_types[feature] == "text":
+                    prompt_dataset.df[feature] = prompt.content
+
+            prediction = model.predict(prompt_dataset).prediction
+            if prediction.shape[0] > 1:
+                raise ValueError("The prediction is expected to be 1D.")
+            prediction = prediction[0]
+
+            failed = evaluate(prediction=prediction, prompt=prompt)
+
+            if prompt.group not in results.keys():
+                results[prompt.group] = {"prompt_name": [], "failed": [], "input_prompt": [], "prediction": []}
+
+            results[prompt.group]["failed"].append(failed)
+            results[prompt.group]["input_prompt"].append(prompt)
+            results[prompt.group]["prediction"].append(prediction)
+        return results
+
+
     def run(self, model: BaseModel, dataset: Dataset) -> Sequence[Issue]:
         # even-though this detector doesn't rely on a dataset, it's still needed to get the features and column_types
         features = model.meta.feature_names or list(dataset.df.columns.drop(dataset.target, errors="ignore"))

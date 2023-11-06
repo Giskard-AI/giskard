@@ -1,4 +1,4 @@
-# 🐝 Evaluate & log with Weights & Biases
+# 🐝 Weights & Biases
 
 **[Weights and Biases](https://wandb.ai/)**, often referred to as **wandb** or even simply **W&B**, is an MLOps platform that helps AI developers streamline their ML workflow from end to end. With W&B, developers have access to:
 
