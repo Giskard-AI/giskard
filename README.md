@@ -10,7 +10,9 @@
   [![License](https://img.shields.io/badge/License-Apache_2.0-blue.svg)](https://github.com/Giskard-AI/giskard/blob/main/LICENSE)
   [![CI](https://github.com/Giskard-AI/giskard/actions/workflows/build-python.yml/badge.svg?branch=main)](https://github.com/Giskard-AI/giskard/actions/workflows/build-python.yml?query=branch%3Amain)
   [![Sonar](https://sonarcloud.io/api/project_badges/measure?project=giskard&metric=alert_status)](https://sonarcloud.io/summary/new_code?id=giskard)
-  [![Giskard on Discord](https://img.shields.io/discord/939190303397666868?label=Discord)](https://sonarcloud.io/summary/new_code?id=giskard)
+  [![Giskard on Discord](https://img.shields.io/discord/939190303397666868?label=Discord)](https://gisk.ar/discord)
+
+  <a rel="me" href="https://fosstodon.org/@Giskard"></a>
 
 </div>
 <h3 align="center">
