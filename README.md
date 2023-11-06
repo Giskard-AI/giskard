@@ -12,7 +12,7 @@
      <img alt="GitHub" src="https://img.shields.io/badge/License-Apache_2.0-blue.svg">
  </a>
   <a href="https://github.com/Giskard-AI/giskard/actions/workflows/build_backend.yml?query=branch%3Amain">
-    <img alt="build" src="https://github.com/Giskard-AI/giskard/actions/workflows/build_python.yml/badge.svg?branch=main"/>
+    <img alt="build" src="https://github.com/Giskard-AI/giskard/actions/workflows/build-python.yml/badge.svg?branch=main"/>
  </a>
   <a href="https://sonarcloud.io/summary/new_code?id=giskard">
     <img alt="build" src="https://sonarcloud.io/api/project_badges/measure?project=giskard&metric=alert_status"/>
