@@ -9,6 +9,7 @@ from ..decorators import detector
 from ..issues import Issue, IssueLevel, Robustness
 from ..logger import logger
 from ..registry import Detector
+from ...utils.xprint import xprint, NumberOfPromptsStyle, DetectorStyle
 
 
 @detector(
@@ -72,6 +73,7 @@ class LLMCharsInjectionDetector(Detector):
         }
 
     def run(self, model: BaseModel, dataset: Dataset) -> Sequence[Issue]:
+        xprint(self.__class__.__name__, style=DetectorStyle)
         if len(dataset) < 1:
             logger.warning(
                 f"{self.__class__.__name__}: Skipping control character injection test because the dataset is empty."
@@ -84,6 +86,7 @@ class LLMCharsInjectionDetector(Detector):
             lambda df: df.sample(min(self.num_samples, len(dataset)), random_state=402),
             row_level=False,
         )
+        xprint(len(dataset_sample), style=NumberOfPromptsStyle)
 
         # Prepare char injector
         injector = LLMCharInjector(
