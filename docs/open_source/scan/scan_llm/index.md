@@ -1,16 +1,16 @@
 # 📚  LLM scan
 
-The Giskard python library provides an automatic scan functionality designed to automatically detect [potential vulnerabilities](https://docs.giskard.ai/en/latest/knowledge/llm_vulnerabilities/index.html) affecting your LLMs. It enables you to proactively identify and address key issues to ensure the reliability, fairness, and robustness of your LLMs.
+The Giskard python library provides an automatic scan functionality designed to automatically detect [potential vulnerabilities](https://docs.giskard.ai/en/latest/knowledge/llm_vulnerabilities/index.html) affecting your LLMs.
 
 ### How does it work?
 
 The LLM scan combines both **heuristics-based** and **LLM-assisted detectors.** The heuristics-based detectors use known
-techniques and patterns to test for vulnerabilities which are not specific to model. The LLM-assisted detectors are
-designed to detect vulnerabilities that are specific to your business case. They use another LLM model to probe the
+techniques and patterns to test for vulnerabilities which are not specific to the model. The LLM-assisted detectors are
+designed to detect vulnerabilities that are specific to your business case. They use another LLM model to probe
 your LLM system (specifically, we use OpenAI GPT-4).
 
-Differently from other techniques that focus on benchmarking a foundation LLM, Giskard LLM scan focuses on performing
-**in-depth assessments on domain specific models.** This includes chatbots, **question answering systems, and
+Differently from other techniques that focus on benchmarking a foundation LLM, Giskard's LLM scan focuses on performing
+**in-depth assessments on domain-specific models.** This includes chatbots, **question answering systems, and
 retrieval-augmented generation (RAG) models.**
 
 You can find detailed information about the inner workings of the LLM scan {doc}`here </knowledge/llm_vulnerabilities/index>`.
@@ -23,7 +23,7 @@ Before starting, make sure you have installed the LLM flavor of Giskard:
 pip install "giskard[llm]"
 ```
 
-Also, for the LLM-assisted detectors to work, you need to have an OpenAI API key. You can set it in your notebook
+For the LLM-assisted detectors to work, you need to have an OpenAI API key. You can set it in your notebook
 like this:
 
 ```python
