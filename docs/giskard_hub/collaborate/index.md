@@ -1,7 +1,7 @@
 # 🤝 Collaborate to build better models
 
-[//]: # (TODO: create content, needs to include screenshots and instructions)
-
+Collaboration is often key to create great evaluation criteria. Giskard offers a bunch of features so that you:
+* you can easily
 [//]: # (- Invite stakeholders)
 
 [//]: # (    - share)
