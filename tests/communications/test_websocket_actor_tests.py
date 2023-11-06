@@ -178,9 +178,16 @@ def test_websocket_actor_run_ad_hoc_test_debug_no_name(enron_data: Dataset):
         with utils.MockedClient(mock_all=False) as (client, mr):
             utils.register_uri_for_artifact_meta_info(mr, my_simple_test_debug_no_name, None)
             utils.register_uri_for_dataset_meta_info(mr, enron_data, project_key)
+            utils.register_uri_for_any_dataset_artifact_info_upload(mr, register_files=True)
 
-            with pytest.raises(TypeError, match=".*NoneType.*"):
-                listener.run_ad_hoc_test(client=client, params=params)
+            # Dataset nullable name fixed in https://github.com/Giskard-AI/giskard/pull/1541
+            reply = listener.run_ad_hoc_test(client=client, params=params)
+            assert reply.results and 1 == len(reply.results)
+            assert my_simple_test_debug_no_name.meta.uuid == reply.results[0].testUuid
+            assert not reply.results[0].result.passed
+            assert not reply.results[0].result.is_error
+            assert not reply.results[0].result.output_df
+            assert reply.results[0].result.output_df_id
 
 
 def test_websocket_actor_run_test_suite():
