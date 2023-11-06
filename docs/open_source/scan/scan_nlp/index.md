@@ -8,9 +8,9 @@ To scan your model, start by **wrapping your dataset**. This should be a validat
 
 > ### ⚠️ Warning
 > It's highly recommended that you wrap your data **before preprocessing** so that you can easily interpret 
-> the result of the scan. If you cannot (because you prediction function cannot integrate your data 
-> preprocessing steps), we recommend you **add some columns that are not features** of your model as metadata 
-> of your dataset. This provides better scan results
+> the scan results. If you're unable to (because your prediction function can't integrate your data 
+> preprocessing steps), we recommend you **add columns that are not features** of your model as metadata 
+> to your dataset. This provides better scan results.
 
 
 ```python
