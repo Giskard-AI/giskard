@@ -121,7 +121,7 @@ class LegacyOpenAIClient(BaseOpenAIClient):
             caller_id=caller_id,
         )
 
-        return completion.choices[0]["message"]
+        return completion["choices"][0]["message"]
 
 
 class OpenAIClient(BaseOpenAIClient):

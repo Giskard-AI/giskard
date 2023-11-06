@@ -88,6 +88,7 @@ test = [
     "pytest-xdist>=3.3.1",
     "polyfactory",
     "pytest-env>=1.1.0",
+    "openai>=1",
 ]
 doc = [
     "furo>=2023.5.20",
