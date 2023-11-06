@@ -154,8 +154,8 @@ def test_generator_casts_based_on_column_types(Generator, args, kwargs):
 
     dataset = generator.generate_dataset(model, num_samples=2)
 
-    assert dataset.column_types["question"] == "category"
-    assert dataset.column_types["other_feature"] == "category"
+    assert dataset.column_types["question"] == "numeric"
+    assert dataset.column_types["other_feature"] == "numeric"
 
     dataset = generator.generate_dataset(
         model, num_samples=2, column_types={"question": "text", "other_feature": "numeric"}

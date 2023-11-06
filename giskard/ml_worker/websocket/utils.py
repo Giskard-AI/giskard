@@ -1,9 +1,10 @@
+from typing import Any, Dict, List, Optional
+
 import logging
 import os
 import posixpath
 import shutil
 from pathlib import Path
-from typing import Any, Dict, List, Optional
 
 from mlflow.store.artifact.artifact_repo import verify_artifact_path
 
@@ -193,7 +194,7 @@ def parse_function_arguments(client: Optional[GiskardClient], request_arguments:
         elif arg.kwargs is not None:
             kwargs = dict()
             exec(arg.kwargs, {"kwargs": kwargs})
-            arguments.update(kwargs)
+            arguments[arg.name] = kwargs
         else:
             raise IllegalArgumentError("Unknown argument type")
     return arguments
@@ -250,7 +251,9 @@ def do_run_adhoc_test(client, arguments, test, debug_info=None):
                 + "but extract_debug_info did not return the information needed."
             )
 
-        test_result.output_df.name += debug_info["suffix"]
+        if test_result.output_df.name is not None:
+            # Dataset can have empty name
+            test_result.output_df.name += debug_info["suffix"]
 
         test_result.output_df_id = test_result.output_df.upload(client=client, project_key=debug_info["project_key"])
         # We won't return output_df from WS, rather upload it

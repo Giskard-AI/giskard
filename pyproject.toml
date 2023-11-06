@@ -127,7 +127,7 @@ giskard = "giskard.integrations.mlflow.giskard_evaluator:GiskardEvaluator"
 name = "giskard"
 readme = "README.md"
 license = { text = "Apache Software License 2.0" }
-version = "2.0.0b29"
+version = "2.0.0"
 description = "The testing framework dedicated to ML models, from tabular to LLMs"
 authors = [{ name = "Giskard AI", email = "hello@giskard.ai" }]
 keywords = ["Artificial Intelligence", "Machine Learning", "Quality", "MLOps"]
@@ -163,6 +163,7 @@ dependencies = [
     "chardet",                  # text metadata
     "jinja2>=3",                # scan template
     "requests-toolbelt>=0.9.1",
+    "setuptools",               # used for pkg_resources
     "typing_extensions",        # used in registry/decorators, for python <3.10
     "pyyaml",
     "packaging",                # used in settings
@@ -178,11 +179,10 @@ llm = [
     "bert-score>=0.3.13",
 ]
 
-server = [
+hub = [
     # Worker deps
     "websockets>=11.0",                        # Not sure what is the minimal version, let's say 11 to handle python 3.11
     "uvloop>=0.18.0; sys_platform != 'win32'",
-    "setuptools",                              # used in ml worker for pkg_resources
     # Server deps
     "tenacity>=4.11.0",
     "psutil>=5.4.6",

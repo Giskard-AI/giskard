@@ -95,6 +95,7 @@ class BaseModel(ABC):
         Parameters:
             model_type (ModelType): Type of the model, either ModelType.REGRESSION or ModelType.CLASSIFICATION.
             name (str, optional): Name of the model. If not provided, defaults to the class name.
+            description (str, optional): Description of the model's task. Mandatory for non-langchain text_generation models.
             feature_names (Iterable, optional): A list of names of the input features.
             classification_threshold (float, optional): Threshold value used for classification models. Defaults to 0.5.
             classification_labels (Iterable, optional): A list of labels for classification models.
@@ -384,10 +385,10 @@ class BaseModel(ABC):
     @classmethod
     def download(cls, client: Optional[GiskardClient], project_key, model_id):
         """
-        Downloads the specified model from the Giskard server and loads it into memory.
+        Downloads the specified model from the Giskard hub and loads it into memory.
 
         Args:
-            client (GiskardClient): The client instance that will connect to the Giskard server.
+            client (GiskardClient): The client instance that will connect to the Giskard hub.
             project_key (str): The key for the project that the model belongs to.
             model_id (str): The ID of the model to download.
 

@@ -43,7 +43,7 @@ def start_stop_options(func):
         "-u",
         type=STRING,
         default="http://localhost:19000",
-        help="Remote Giskard server url",
+        help="Remote Giskard hub url",
         callback=validate_url,
     )
     @click.option(
@@ -69,7 +69,7 @@ def start_stop_options(func):
     "-k",
     "api_key",
     envvar="GSK_API_KEY",
-    help="Giskard server API key",
+    help="Giskard hub API key",
 )
 @click.option(
     "--daemon",
@@ -115,7 +115,7 @@ def initialize_api_key(api_key, is_server):
     if is_server:
         return None
     if not api_key:
-        api_key = click.prompt("Enter Giskard server API key", type=str)
+        api_key = click.prompt("Enter Giskard hub API key", type=str)
     if "GSK_API_KEY" in os.environ:
         # delete API key environment variable so that it doesn't get leaked when the test code is executed
         del os.environ["GSK_API_KEY"]
@@ -213,7 +213,7 @@ def stop_command(is_server, url, stop_all):
 @worker.command("restart", help="Restart ML Worker")
 @common_options
 @start_stop_options
-@click.option("--api-key", "-k", "api_key", help="Giskard server API key")
+@click.option("--api-key", "-k", "api_key", help="Giskard hub API key")
 @click.option(
     "--hf-token",
     "hf_token",

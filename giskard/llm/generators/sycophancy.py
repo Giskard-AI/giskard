@@ -82,6 +82,7 @@ class SycophancyDataGenerator(LLMGenerator):
             function_call={"name": "generate_inputs"},
             temperature=self.llm_temperature,
             model=self.llm_model,
+            caller_id=self.__class__.__name__,
         )
 
         # Parse results

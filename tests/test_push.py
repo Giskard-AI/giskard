@@ -69,7 +69,7 @@ def test_test_function(request, dataset, push_type):
 
     push_list = []
     for i in range(nb_line):
-        push = push_func(model, data, data.df.iloc[[i]])
+        push: Push = push_func(model, data, data.df.iloc[[i]])
         if push is not None:
             assert isinstance(push, Push)
             assert isinstance(push, push_type_class)

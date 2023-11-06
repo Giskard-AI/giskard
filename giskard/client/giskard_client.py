@@ -87,6 +87,14 @@ class GiskardClient:
             self._session.cookies["spaces-jwt"] = hf_token
 
         server_settings: ServerInfo = self.get_server_info()
+
+        if server_settings.serverVersion != giskard.__version__:
+            warning(
+                f"Your giskard client version ({giskard.__version__}) does not match the hub version "
+                f"({server_settings.serverVersion}). "
+                f"Please upgrade your client to the latest version. "
+                f"pip install \"giskard[hub]>=2.0.0b\" -U"
+            )
         analytics.init_server_info(server_settings)
 
         analytics.track("Init GiskardClient", {"client version": giskard.__version__})
