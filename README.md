@@ -124,7 +124,7 @@ Once the scan completes, you can display the results directly in your notebook:
 ```python
 display(scan_results)
 ```
-*If you're facing issues, check out our wrapping [model](https://docs.giskard.ai/en/latest/guides/wrap_model/index.html) & [dataset](https://docs.giskard.ai/en/latest/guides/wrap_dataset/index.html) docs for more information.*
+*If you're facing issues, check out our wrapping [model](https://docs.giskard.ai/en/latest/open_source/scan/scan_tabular/index.html) & [dataset](https://docs.giskard.ai/en/latest/open_source/scan/scan_tabular/index.html) docs for more information.*
 ## 2. 🪄 Automatically generate a test suite
 
 If the scan found potential issues in your model, you can automatically generate a **test suite** based on the vulnerabilities found:
@@ -219,7 +219,7 @@ You can then **upload the test suite** created using the `giskard` Python librar
 <details>
   <summary>If Giskard hub/ML worker is not installed</summary>
 
-  Go to the [Run the Giskard Hub](https://docs.giskard.ai/en/latest/guides/installation_app/index.html) page.
+  Go to the [Install the Giskard Hub](https://docs.giskard.ai/en/latest/giskard_hub/installation_hub/index.html) page.
 </details>
 
 <details>
@@ -233,7 +233,7 @@ You can then **upload the test suite** created using the `giskard` Python librar
 <details>
   <summary>For more information on uploading to your local Giskard hub</summary>
 
-  Go to the [Upload an object to the Giskard hub](https://docs.giskard.ai/en/latest/guides/upload/index.html) page.
+  Go to the [Upload an object to the Giskard hub](https://docs.giskard.ai/en/latest/giskard_hub/upload/index.html) page.
 </details>
 
 For any other questions and doubts, head over to our [Discord](https://gisk.ar/discord).
