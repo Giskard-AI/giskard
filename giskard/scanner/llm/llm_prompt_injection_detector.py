@@ -64,7 +64,7 @@ class LLMPromptInjectionDetector(Detector):
 
     def get_cost_estimate(self, model: BaseModel, dataset: Dataset) -> float:
         return {
-            "model_predict_calls": len(get_all_prompts()),
+            "model_predict_calls": self.num_samples,
         }
 
     def evaluate_and_group(self, model, dataset, prompts, features, column_types):
