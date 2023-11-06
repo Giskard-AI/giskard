@@ -34,11 +34,11 @@
 ## Install Giskard 🐢
 You can install the latest version of Giskard from PyPi using pip :
 ```sh
-pip install "giskard[hub]>=2.0.0b" -U
+pip install giskard -U
 ```
 We officially support Python 3.9, 3.10 and 3.11.
 ## Try in Colab 📙
-[Open Colab notebook](https://colab.research.google.com/github/giskard-ai/giskard/blob/main/docs/getting-started/quickstart.ipynb)
+[Open Colab notebook](https://colab.research.google.com/github/giskard-ai/giskard/blob/main/docs/getting_started/quickstart/quickstart_llm.ipynb)
 
 ______________________________________________________________________
 
@@ -112,7 +112,6 @@ giskard_model = giskard.Model(
     classification_labels=demo_sklearn_model.classes_,  # Their order MUST be identical to the prediction_function's output order
     feature_names=['PassengerId', 'Pclass', 'Name', 'Sex', 'Age', 'SibSp', 'Parch', 'Fare', 'Embarked'],  # Default: all columns of your dataset
 )
-
 ```
 
 ✨✨✨Then run giskard's magical scan✨✨✨
@@ -158,6 +157,7 @@ If you are interested in learning more about Giskard's premium offering, please 
 
 To start the **Giskard hub**, run the following command:
 ```sh
+pip install giskard[hub] -U
 giskard hub start
 ```
 
@@ -181,7 +181,7 @@ You can then **upload the test suite** created using the `giskard` Python librar
 
 2. Then execute the ML worker in your notebook:
     ```python
-       !giskard worker start -d -k YOUR_KEY
+    !giskard worker start -d -k YOUR_KEY
     ```
 
 3. Finally upload your test suite to the giskard hub using the following code:
