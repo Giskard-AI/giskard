@@ -1,5 +1,7 @@
+.. _transformation_functions:
+
 Transformation functions
-======
+========================
 
 .. autofunction:: giskard.transformation_function
 
@@ -10,10 +12,18 @@ Transformation functions
    .. automethod:: download
 
 Textual transformation functions
--------
+--------------------------------
 
 .. autofunction:: giskard.ml_worker.testing.functions.transformation.keyboard_typo_transformation
 .. autofunction:: giskard.ml_worker.testing.functions.transformation.uppercase_transformation
 .. autofunction:: giskard.ml_worker.testing.functions.transformation.lowercase_transformation
 .. autofunction:: giskard.ml_worker.testing.functions.transformation.strip_punctuation
 .. autofunction:: giskard.ml_worker.testing.functions.transformation.change_writing_style
+
+
+Special transformations used by the scan
+----------------------------------------
+
+.. automodule:: giskard.scanner.robustness.text_transformations
+   :members:
+   :show-inheritance:

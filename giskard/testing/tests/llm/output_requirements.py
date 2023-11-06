@@ -17,7 +17,7 @@ def _test_output_against_requirement(model: BaseModel, dataset: Dataset, require
 
     output_ds = None
 
-    if eval_result.failed:
+    if eval_result.failed and debug:
         df = pd.DataFrame([ex["input_vars"] for ex in eval_result.failure_examples])
         output_ds = Dataset(
             df,
