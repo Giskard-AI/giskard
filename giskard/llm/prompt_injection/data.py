@@ -23,10 +23,6 @@ GARAK_REF = "https://github.com/leondz/garak"
 PI_REF = "https://github.com/agencyenterprise/promptinject"
 LANGUAGE = "en"
 
-# Removing openai base prompts from pi_prompt_data
-for i in range(len(pi_prompt_data.ALL_OPENAI_PLAYGROUND_PROMPTS)):
-    pi_prompt_data.ALL_OPENAI_PLAYGROUND_PROMPTS[i]["instruction"] = ""
-
 ROGUE_STRINGS_AVAILABLE = ["hate-humans", "kill-humans", "long-prompt"]
 
 
