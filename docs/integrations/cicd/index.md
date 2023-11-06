@@ -2,7 +2,7 @@
 
 :::{warning}
 First, you'll need to know how to run Giskard's scan function
-see [Scan your ML Model](../../open-source/scan/index.md)
+see [Scan your ML Model](../../../open_source/scan/index.md)
 :::
 
 Adding Giskard to your CI/CD pipeline will allow you to run the test or scan on every commit to your repository, ensuring

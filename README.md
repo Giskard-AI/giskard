@@ -4,24 +4,17 @@
 </p>
 <h1 align="center" weight='300' >The testing framework dedicated to ML models, from tabular to LLMs</h1>
 <h3 align="center" weight='300' >Scan AI models to detect risks of biases, performance issues and errors. In 4 lines of code. </h3>
-<p align="center">
-   <a href="https://github.com/Giskard-AI/giskard/releases">
-      <img alt="GitHub release" src="https://img.shields.io/github/v/release/Giskard-AI/giskard">
-  </a>
- <a href="https://github.com/Giskard-AI/giskard/blob/main/LICENSE">
-     <img alt="GitHub" src="https://img.shields.io/badge/License-Apache_2.0-blue.svg">
- </a>
-  <a href="https://github.com/Giskard-AI/giskard/actions/workflows/build_backend.yml?query=branch%3Amain">
-    <img alt="build" src="https://github.com/Giskard-AI/giskard/actions/workflows/build_backend.yml/badge.svg?branch=main"/>
- </a>
-  <a href="https://sonarcloud.io/summary/new_code?id=giskard">
-    <img alt="build" src="https://sonarcloud.io/api/project_badges/measure?project=giskard&metric=alert_status"/>
- </a>
-  <a href="https://gisk.ar/discord">
-    <img alt="Giskard on Discord" src="https://img.shields.io/discord/939190303397666868?label=Discord"/>
-  </a>
+<div align="center">
+
+  [![GitHub release](https://img.shields.io/github/v/release/Giskard-AI/giskard)](https://github.com/Giskard-AI/giskard/releases)
+  [![License](https://img.shields.io/badge/License-Apache_2.0-blue.svg)](https://github.com/Giskard-AI/giskard/blob/main/LICENSE)
+  [![CI](https://github.com/Giskard-AI/giskard/actions/workflows/build-python.yml/badge.svg?branch=main)](https://github.com/Giskard-AI/giskard/actions/workflows/build-python.yml?query=branch%3Amain)
+  [![Sonar](https://sonarcloud.io/api/project_badges/measure?project=giskard&metric=alert_status)](https://sonarcloud.io/summary/new_code?id=giskard)
+  [![Giskard on Discord](https://img.shields.io/discord/939190303397666868?label=Discord)](https://gisk.ar/discord)
+
   <a rel="me" href="https://fosstodon.org/@Giskard"></a>
-</p>
+
+</div>
 <h3 align="center">
    <a href="https://docs.giskard.ai/en/latest/getting-started/quickstart.html"><b>Documentation</b></a> &bull;
    <a href="https://www.giskard.ai/knowledge-categories/blog/?utm_source=github&utm_medium=github&utm_campaign=github_readme&utm_id=readmeblog"><b>Blog</b></a> &bull;
@@ -34,11 +27,11 @@
 ## Install Giskard 🐢
 You can install the latest version of Giskard from PyPi using pip :
 ```sh
-pip install "giskard[hub]>=2.0.0b" -U
+pip install giskard -U
 ```
 We officially support Python 3.9, 3.10 and 3.11.
 ## Try in Colab 📙
-[Open Colab notebook](https://colab.research.google.com/github/giskard-ai/giskard/blob/main/docs/getting-started/quickstart.ipynb)
+[Open Colab notebook](https://colab.research.google.com/github/giskard-ai/giskard/blob/main/docs/getting_started/quickstart/quickstart_llm.ipynb)
 
 ______________________________________________________________________
 
@@ -112,7 +105,6 @@ giskard_model = giskard.Model(
     classification_labels=demo_sklearn_model.classes_,  # Their order MUST be identical to the prediction_function's output order
     feature_names=['PassengerId', 'Pclass', 'Name', 'Sex', 'Age', 'SibSp', 'Parch', 'Fare', 'Embarked'],  # Default: all columns of your dataset
 )
-
 ```
 
 ✨✨✨Then run giskard's magical scan✨✨✨
@@ -158,6 +150,7 @@ If you are interested in learning more about Giskard's premium offering, please 
 
 To start the **Giskard hub**, run the following command:
 ```sh
+pip install giskard[hub] -U
 giskard hub start
 ```
 
@@ -181,7 +174,7 @@ You can then **upload the test suite** created using the `giskard` Python librar
 
 2. Then execute the ML worker in your notebook:
     ```python
-       !giskard worker start -d -k YOUR_KEY
+    !giskard worker start -d -k YOUR_KEY
     ```
 
 3. Finally upload your test suite to the giskard hub using the following code:
