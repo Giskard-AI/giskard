@@ -13,6 +13,6 @@ With Giskard, you can:
 ![Feedback](../../assets/feedback.png)
 ![Discussion](../../assets/discussion.png)
 
-To invite users, you just need to create user tab in the Giskard Settings of the hub. Then you can share your project with the user you just invited.
+➡️ To invite users, you just need to create user tab in the Giskard Settings of the hub. Then you can share your project with the user you just invited.
 
 > 💡 Try in live with our Hugging Face space: [here](https://giskardai-giskard.hf.space/main/projects)
