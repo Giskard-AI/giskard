@@ -1,4 +1,4 @@
-# ⚖️ Compare Models
+# ⚖️ Compare models
 
 Comparing different models enables you to:
 * At prototyping time, **choose the best model** among various candidates with different LLM prompts, LLM providers, hyperparameters, etc.
