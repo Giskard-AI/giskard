@@ -9,14 +9,14 @@ In this section, we'll see how to enrich the tests you initially created from th
 
 ## Add tests from the automatic model insights
 
-While you [debug](../inspect/index.md) your test suite, Giskard provides some magic notifications displaying a bulb 💡. These model insights covers various issues such as:
+While you [debug](../inspect/index.md) your test suite, Giskard provides some magic notifications displaying a bulb 💡 at different place of your [debugging session](../inspect/index.md). These model insights covers various issues such as:
 * Words or features that **contributes** to the incorrect prediction
-* **Unrobust** predictions
+* **Unrobust** predictions against small variations
 * **Overconfident** predictions
 * **Underconfident** predictions
 
 By clicking on these small bulbs 💡, you have the possibility to:
-* Add new **tests** to your test suite: this enables you add new tests in 1 click
+* Add new **tests** to your test suite: this enables you to add new tests in 1 click
 * **Save** the data slice: this enables you to add this slice as a parameter of your future tests
 * Directly **debug** the data slice: this enables you to analize if the model insight is general to the whole slice
 
