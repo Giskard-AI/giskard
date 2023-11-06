@@ -4,14 +4,6 @@ Giskard is an **open-source testing framework** dedicated to ML models, covering
 
 Testing Machine Learning applications can be tedious. Since ML models depend on data, testing scenarios depend on the domain specificities and are often infinite.
 
-<p align="center">
-<strong>Where to start testing? Which tests to implement? What issues to cover? How to implement the tests?</strong>
-</p>
-
-<p align="center">
-  <img src="https://giskard.readthedocs.io/en/latest/_images/hey.png" alt="hey" width="20%">
-</p>
-
 At Giskard, we believe that Machine Learning needs its own testing framework. Created by ML engineers for ML engineers, Giskard enables you to:
 
 - **Scan your model to find dozens of hidden vulnerabilities**: The Giskard scan automatically detects vulnerability issues such as performance bias, data leakage, unrobustness, spurious correlation, overconfidence, underconfidence, unethical issue, etc.
