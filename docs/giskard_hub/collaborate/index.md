@@ -1,4 +1,4 @@
-# 🤝 Collaborate to Build Better Models
+# 🤝 Collaborate to build better models
 
 Collaboration is important in AI QA for various reasons:
 * **Alignment Between Stakeholders**: If your quality criteria are very specific to your business, you will need to engage in some discussions before defining tests, evaluation criteria, or data slices.
