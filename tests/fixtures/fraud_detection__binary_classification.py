@@ -1,7 +1,10 @@
+from typing import List, Tuple
+
 from pathlib import Path
 
 import pandas as pd
 import pytest
+from lightgbm import LGBMClassifier
 from pandas.api.types import union_categoricals
 from sklearn.model_selection import train_test_split
 
@@ -140,17 +143,23 @@ def preprocess_dataset(train_set, test_set):
 
 
 @pytest.fixture(scope="session")
-def fraud_detection_data() -> Dataset:
-    _, test_set = preprocess_dataset(*read_dataset())
+def fraud_detection_raw_data() -> Tuple[pd.DataFrame, pd.DataFrame]:
+    train_set, test_set = preprocess_dataset(*read_dataset())
+    return train_set, test_set
+
+
+@pytest.fixture()
+def fraud_detection_data(fraud_detection_raw_data: Tuple[pd.DataFrame, pd.DataFrame]) -> Dataset:
+    _, test_set = fraud_detection_raw_data
     wrapped_dataset = Dataset(
         test_set, name="fraud_detection_adversarial_dataset", target=TARGET_COLUMN, cat_columns=CATEGORICALS
     )
     return wrapped_dataset
 
 
-@pytest.fixture(scope="session")
-def fraud_detection_train_data() -> Dataset:
-    train_set, _ = preprocess_dataset(*read_dataset())
+@pytest.fixture()
+def fraud_detection_train_data(fraud_detection_raw_data: Tuple[pd.DataFrame, pd.DataFrame]) -> Dataset:
+    train_set, _ = fraud_detection_raw_data
     wrapped_dataset = Dataset(
         train_set, name="fraud_detection_adversarial_dataset", target=TARGET_COLUMN, cat_columns=CATEGORICALS
     )
@@ -158,20 +167,28 @@ def fraud_detection_train_data() -> Dataset:
 
 
 @pytest.fixture(scope="session")
-def fraud_detection_model(fraud_detection_train_data: Dataset) -> Model:
-    from lightgbm import LGBMClassifier
+def fraud_detection_raw_model(
+    fraud_detection_raw_data: Tuple[pd.DataFrame, pd.DataFrame]
+) -> Tuple[LGBMClassifier, List[str]]:
+    train_df, _ = fraud_detection_raw_data
 
-    x = fraud_detection_train_data.df.drop(TARGET_COLUMN, axis=1)
-    y = fraud_detection_train_data.df[TARGET_COLUMN]
+    x = train_df.drop(TARGET_COLUMN, axis=1)
+    y = train_df[TARGET_COLUMN]
 
     estimator = LGBMClassifier(random_state=30)
     estimator.fit(x, y)
 
+    return estimator, x.columns.tolist()
+
+
+@pytest.fixture()
+def fraud_detection_model(fraud_detection_raw_model: Tuple[LGBMClassifier, List[str]]) -> Model:
+    model, features = fraud_detection_raw_model
     wrapped_model = Model(
-        estimator,
+        model,
         model_type="classification",
         name="train_test_data_classifier",
-        feature_names=x.columns,
+        feature_names=features,
         classification_threshold=0.5,
         classification_labels=[0, 1],
     )

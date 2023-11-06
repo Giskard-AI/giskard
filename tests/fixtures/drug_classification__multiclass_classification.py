@@ -1,6 +1,7 @@
+from typing import List, Tuple
+
 from pathlib import Path
 
-import numpy as np
 import pandas as pd
 import pytest
 from imblearn.over_sampling import SMOTE
@@ -26,7 +27,7 @@ NA_TO_K_BINS = [0, 9, 19, 29, 50]
 NA_TO_K_CATEGORIES = ["<10", "10-20", "20-30", ">30"]
 
 
-def bin_numerical(df: pd.DataFrame) -> np.ndarray:
+def bin_numerical(df: pd.DataFrame) -> pd.DataFrame:
     """Perform numerical features binning."""
 
     def _bin_age(_df: pd.DataFrame) -> pd.DataFrame:
@@ -47,25 +48,30 @@ def bin_numerical(df: pd.DataFrame) -> np.ndarray:
 
 
 @pytest.fixture(scope="session")
-def drug_classification_data() -> Dataset:
+def drug_classification_raw_data() -> pd.DataFrame:
     # Download data.
     fetch_from_ftp(DATA_URL, DATA_PATH)
 
     # Load and wrap data.
     raw_data = bin_numerical(pd.read_csv(DATA_PATH))
+    return raw_data
+
+
+@pytest.fixture()
+def drug_classification_data(drug_classification_raw_data: pd.DataFrame) -> Dataset:
     wrapped_dataset = Dataset(
-        raw_data,
+        drug_classification_raw_data,
         name="drug_classification_dataset",
         target=TARGET_NAME,
-        cat_columns=raw_data.drop(columns=[TARGET_NAME]).columns.tolist(),
+        cat_columns=drug_classification_raw_data.drop(columns=[TARGET_NAME]).columns.tolist(),
     )
     return wrapped_dataset
 
 
 @pytest.fixture(scope="session")
-def drug_classification_model(drug_classification_data) -> SKLearnModel:
-    x = drug_classification_data.df.drop(TARGET_NAME, axis=1)
-    y = drug_classification_data.df.Drug
+def drug_classification_raw_model(drug_classification_raw_data: pd.DataFrame) -> Tuple[PipelineImb, List[str]]:
+    x = drug_classification_raw_data.drop(TARGET_NAME, axis=1)
+    y = drug_classification_raw_data[TARGET_NAME]
 
     pipeline = PipelineImb(
         steps=[
@@ -76,8 +82,15 @@ def drug_classification_model(drug_classification_data) -> SKLearnModel:
     )
 
     pipeline.fit(x, y)
+    return pipeline, x.columns.to_list()
 
-    wrapped_model = SKLearnModel(
-        pipeline, model_type="classification", name="drug_classifier", feature_names=x.columns.tolist()
+
+@pytest.fixture()
+def drug_classification_model(drug_classification_raw_model: Tuple[PipelineImb, List[str]]) -> SKLearnModel:
+    model, features = drug_classification_raw_model
+    return SKLearnModel(
+        model,
+        model_type="classification",
+        name="drug_classifier",
+        feature_names=features,
     )
-    return wrapped_model

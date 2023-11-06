@@ -1,3 +1,5 @@
+from typing import List, Tuple
+
 import email
 import logging
 from collections import defaultdict
@@ -66,15 +68,20 @@ def get_labels(filename):
 
 
 @pytest.fixture(scope="session")
-def enron_data() -> Dataset:
+def enron_raw_data() -> pd.DataFrame:
     logger.info("Fetching Enron Data")
     df = pd.read_csv(path("test_data/enron_data.csv"), keep_default_na=False, na_values=["_GSK_NA_"])
     df.drop(columns="Unnamed: 0", inplace=True)
-    return Dataset(df=df, target="Target", column_types=input_types)
+    return df
+
+
+@pytest.fixture()
+def enron_data(enron_raw_data) -> Dataset:
+    return Dataset(df=enron_raw_data, target="Target", column_types=input_types)
 
 
 @pytest.fixture(scope="session")
-def enron_data_full() -> Dataset:
+def enron_raw_data_full() -> pd.DataFrame:
     logger.info("Fetching Enron Data")
     email_files = get_email_files()
 
@@ -119,16 +126,21 @@ def enron_data_full() -> Dataset:
     data_filtered = data[data["Target"].notnull()]
     data_filtered = data_filtered.head(150)  # Sample to make the scan faster
     data_filtered.Year = data_filtered.Year.astype(float)
-    return Dataset(df=data_filtered, target="Target", cat_columns=["Week_day", "Month"])
+    return data_filtered
+
+
+@pytest.fixture()
+def enron_data_full(enron_raw_data_full: pd.DataFrame) -> Dataset:
+    return Dataset(df=enron_raw_data_full, target="Target", cat_columns=["Week_day", "Month"])
+
+
+@pytest.fixture()
+def enron_test_data(enron_raw_data: pd.DataFrame) -> Dataset:
+    return Dataset(df=enron_raw_data.drop(columns=["Target"]), target=None, column_types=input_types)
 
 
 @pytest.fixture(scope="session")
-def enron_test_data(enron_data):
-    return Dataset(df=pd.DataFrame(enron_data.df).drop(columns=["Target"]), target=None, column_types=input_types)
-
-
-@pytest.fixture(scope="session")
-def enron_model(enron_data) -> SKLearnModel:
+def enron_raw_model(enron_raw_data: pd.DataFrame) -> Tuple[Pipeline, List[str]]:
     timer = Timer()
 
     columns_to_scale = [key for key in input_types.keys() if input_types[key] == "numeric"]
@@ -157,8 +169,8 @@ def enron_model(enron_data) -> SKLearnModel:
         steps=[("preprocessor", preprocessor), ("classifier", LogisticRegression(max_iter=100, random_state=30))]
     )
 
-    Y = enron_data.df["Target"]
-    X = enron_data.df.drop(columns="Target")
+    Y = enron_raw_data["Target"]
+    X = enron_raw_data.drop(columns="Target")
     X_train, X_test, Y_train, Y_test = model_selection.train_test_split(
         X, Y, test_size=0.20, random_state=30, stratify=Y  # NOSONAR
     )
@@ -166,10 +178,15 @@ def enron_model(enron_data) -> SKLearnModel:
 
     model_score = clf.score(X_test, Y_test)
     timer.stop(f"Trained model with score: {model_score}")
+    return clf, list(input_types.keys())
 
+
+@pytest.fixture()
+def enron_model(enron_raw_model) -> SKLearnModel:
+    clf, features = enron_raw_model
     return SKLearnModel(
         model=clf,
         model_type=SupportedModelTypes.CLASSIFICATION,
-        feature_names=list(input_types),
+        feature_names=features,
         classification_threshold=0.5,
     )

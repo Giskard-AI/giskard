@@ -57,12 +57,15 @@ def preprocess_data(df: pd.DataFrame) -> pd.DataFrame:
 
 
 @pytest.fixture(scope="session")
-def amazon_review_data() -> Dataset:
-    raw_data = preprocess_data(download_data(nrows=5000))
-    wrapped_data = Dataset(
-        raw_data, name="reviews", target=TARGET_COLUMN_NAME, column_types={FEATURE_COLUMN_NAME: "text"}
+def amazon_review_raw_data() -> pd.DataFrame:
+    return preprocess_data(download_data(nrows=5000))
+
+
+@pytest.fixture()
+def amazon_review_data(amazon_review_raw_data: pd.DataFrame) -> Dataset:
+    return Dataset(
+        amazon_review_raw_data, name="reviews", target=TARGET_COLUMN_NAME, column_types={FEATURE_COLUMN_NAME: "text"}
     )
-    return wrapped_data
 
 
 def make_lowercase(x):
@@ -89,9 +92,9 @@ def tokenizer(x):
 
 
 @pytest.fixture(scope="session")
-def amazon_review_model(amazon_review_data: Dataset) -> SKLearnModel:
-    x = amazon_review_data.df[[FEATURE_COLUMN_NAME]]
-    y = amazon_review_data.df[TARGET_COLUMN_NAME]
+def amazon_review_raw_model(amazon_review_raw_data: pd.DataFrame) -> Pipeline:
+    x = amazon_review_raw_data[[FEATURE_COLUMN_NAME]]
+    y = amazon_review_raw_data[TARGET_COLUMN_NAME]
 
     # Define and fit pipeline.
     vectorizer = TfidfVectorizer(tokenizer=tokenizer, stop_words="english", ngram_range=(1, 1), min_df=0.01)
@@ -109,10 +112,14 @@ def amazon_review_model(amazon_review_data: Dataset) -> SKLearnModel:
     )
 
     pipeline.fit(x, y)
+    return pipeline
 
+
+@pytest.fixture()
+def amazon_review_model(amazon_review_raw_model) -> SKLearnModel:
     # Wrap pipeline.
     wrapped_model = SKLearnModel(
-        model=pipeline,
+        model=amazon_review_raw_model,
         model_type="classification",
         feature_names=[FEATURE_COLUMN_NAME],
         name="review_helpfulness_predictor",
