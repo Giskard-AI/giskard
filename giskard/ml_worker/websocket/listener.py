@@ -685,7 +685,7 @@ def handle_cta(
         push.slicing_function.meta.tags.append("generated")
         object_uuid = push.slicing_function.upload(client, project_key)
     elif cta_kind == CallToActionKind.SAVE_PERTURBATION:
-        for perturbation in push.transformation_function:
+        for perturbation in push.transformation_functions:
             object_uuid = perturbation.upload(client, project_key)
     elif cta_kind == CallToActionKind.SAVE_EXAMPLE:
         object_uuid = push.saved_example.upload(client, project_key)
