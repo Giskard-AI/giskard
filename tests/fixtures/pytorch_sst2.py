@@ -62,7 +62,7 @@ def sst2_raw_model(sst2_dev_data):
 
 
 @pytest.fixture()
-def sst2_raw_model(sst2_raw_model):
+def sst2_model(sst2_raw_model):
     model, classification_labels, pandas_to_torch, my_softmax = sst2_raw_model
     return PyTorchModel(
         name="SST2-XLMR_BASE_ENCODER",
