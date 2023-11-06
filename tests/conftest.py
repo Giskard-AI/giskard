@@ -1,13 +1,14 @@
+from typing import List, Tuple
+
+import os
 from glob import glob
 from io import TextIOWrapper
 from pathlib import Path
-from typing import List, Tuple
-import os
 from uuid import uuid4
 
-from _pytest.terminal import TerminalReporter
-from _pytest.config import ExitCode, Config
+from _pytest.config import Config, ExitCode
 from _pytest.reports import BaseReport
+from _pytest.terminal import TerminalReporter
 from pytest import CollectReport, TestReport
 
 pytest_plugins = []
@@ -38,17 +39,13 @@ def _write_report(writer: TextIOWrapper, report: BaseReport):
     _write_details(writer, "Stderr", report.capstderr)
 
 
-def pytest_terminal_summary(
-    terminalreporter: TerminalReporter, exitstatus: ExitCode, config: Config
-):
+def pytest_terminal_summary(terminalreporter: TerminalReporter, exitstatus: ExitCode, config: Config):
     file = Path(os.getenv("GITHUB_STEP_SUMMARY", "local_report.md"))
 
     with file.open("w", encoding="utf-8") as writer:
         # Add overall test results
         writer.write("### Pytest report\n")
-        writer.write(
-            f"Test results: {ExitCode(exitstatus).name} {'✅' if exitstatus == ExitCode.OK else '❌'}\n\n"
-        )
+        writer.write(f"Test results: {ExitCode(exitstatus).name} {'✅' if exitstatus == ExitCode.OK else '❌'}\n\n")
 
         writer.write("\n| Status |Count |\n")
         writer.write("| :---: | :---: |\n")
@@ -63,12 +60,8 @@ def pytest_terminal_summary(
         writer.write(f"| Total | {total} |\n\n")
 
         # Extract failures and errors to get more details
-        failures: List[TestReport] = [
-            report for report in terminalreporter.stats.get("failed", [])
-        ]
-        errors: List[CollectReport] = [
-            report for report in terminalreporter.stats.get("error", [])
-        ]
+        failures: List[TestReport] = [report for report in terminalreporter.stats.get("failed", [])]
+        errors: List[CollectReport] = [report for report in terminalreporter.stats.get("error", [])]
 
         # Write a summary of all test, to easily check is one test ran or not
         writer.write("### All tests results\n\n")
@@ -90,14 +83,10 @@ def pytest_terminal_summary(
         writer.write("### Summary of failures and errors\n\n")
         for error in errors:
             error.html_id = str(uuid4())
-            writer.write(
-                f"- [Error : {error.nodeid.split('::')[-1]}](#user-content-{error.html_id})\n"
-            )
+            writer.write(f"- [Error : {error.nodeid.split('::')[-1]}](#user-content-{error.html_id})\n")
         for failure in failures:
             failure.html_id = str(uuid4())
-            writer.write(
-                f"- [Failure : {failure.nodeid.split('::')[-1]}](#user-content-{failure.html_id})\n"
-            )
+            writer.write(f"- [Failure : {failure.nodeid.split('::')[-1]}](#user-content-{failure.html_id})\n")
 
         writer.write("\n### Errors\n\n")
         for error in errors:

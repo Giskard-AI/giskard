@@ -1,4 +1,4 @@
-# 🔄 Define data transformations
+# 🔄 Create data transformations
 
 Transformations such as adding typos, switching words, or paraphrasing can help create more diverse and realistic training datasets. This can enhance the model's resilience to noise and improve its performance on unseen examples.
 

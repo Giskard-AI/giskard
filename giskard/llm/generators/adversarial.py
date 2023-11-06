@@ -2,8 +2,7 @@ from ...models.base.model import BaseModel
 from ...utils.display import truncate
 from .base import BaseDataGenerator
 
-GENERATE_INPUTS_PROMPT = """
-You are auditing AI models. Your task is to generate a set of inputs used to evaluate the behavior of a given AI model. These inputs should highlight the model's performance in scenarios where it may fail or exhibit suboptimal behavior related to the following issue category:
+GENERATE_INPUTS_PROMPT = """You are auditing AI models. Your task is to generate a set of inputs used to evaluate the behavior of a given AI model. These inputs should highlight the model's performance in scenarios where it may fail or exhibit suboptimal behavior related to the following issue category:
 
 {issue_description}
 

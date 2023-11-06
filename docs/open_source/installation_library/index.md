@@ -1,6 +1,6 @@
 # 📥 Install the Giskard Python Library
 
-Giskard supports Python `3.8`, `3.9`, `3.10` and `3.11`.
+Giskard supports Python `3.9`, `3.10` and `3.11`.
 
 ## Install
 
@@ -8,7 +8,7 @@ Giskard supports Python `3.8`, `3.9`, `3.10` and `3.11`.
 :::{tab-item} LLMs
 
 ```sh
-pip install "giskard[llm]>=2.0.0b" -U
+pip install giskard[llm] -U
 ```
 
 :::
@@ -16,7 +16,7 @@ pip install "giskard[llm]>=2.0.0b" -U
 :::{tab-item} Tabular and NLP
 
 ```sh
-pip install "giskard>=2.0.0b" -U
+pip install giskard -U
 ```
 
 :::
@@ -26,7 +26,7 @@ pip install "giskard>=2.0.0b" -U
 
 ```sh
 pip uninstall giskard
-pip install "giskard>=2.0.0b" -U
+pip install giskard -U
 ```
 
 ## Dependency issues
@@ -38,5 +38,5 @@ For instance, if you have dependency conflicts with `pandas`, you can run:
 ```sh
 pip uninstall giskard
 pip uninstall pandas
-pip install "giskard>=2.0.0b" -U
+pip install giskard -U
 ```

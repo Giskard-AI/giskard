@@ -75,6 +75,7 @@ class TestcaseRequirementsGenerator:
             function_call={"name": "generate_requirements"},
             model=self.llm_model,
             temperature=self.llm_temperature,
+            caller_id=self.__class__.__name__,
         )
 
         if out.function_call is None or "requirements" not in out.function_call.args:
