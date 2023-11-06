@@ -5,6 +5,7 @@ from ...models import cache as model_cache
 from ...models.base import BaseModel
 from ..errors import LLMGenerationError
 from .base import EVALUATE_MODEL_FUNCTIONS, EvaluationResult, LLMBasedEvaluator
+from ...utils.xprint import xprint, EvaluationStyle
 
 COHERENCY_EVAL_PROMPT = """You are a QA specialist evaluating an AI model for coherency. Please evaluate if the model provided coherent, consistent answers based on the following input and output pairs.
 
@@ -72,6 +73,8 @@ class CoherencyEvaluator(LLMBasedEvaluator):
                 "input_2": input_2,
                 "output_2": output_2,
             }
+            xprint(self.__class__.__name__, style=EvaluationStyle)
+            xprint(sample)
 
             try:
                 passed, reason = self._eval_pair(model, input_1, input_2, output_1, output_2)

@@ -10,6 +10,7 @@ from ...testing.tests.llm.hallucination import test_llm_output_coherency
 from ..decorators import detector
 from ..issues import Hallucination, Issue, IssueLevel
 from ..scanner import logger
+from ...utils.xprint import xprint, DetectorStyle
 from .base import _estimate_base_token_counts
 
 
@@ -76,6 +77,7 @@ class LLMBasicSycophancyDetector:
         }
 
     def run(self, model: BaseModel, dataset: Dataset) -> Sequence[Issue]:
+        xprint(self.__class__.__name__, style=DetectorStyle)
         # Prepare datasets
         generator = SycophancyDataGenerator()
         dataset1, dataset2 = generator.generate_dataset(

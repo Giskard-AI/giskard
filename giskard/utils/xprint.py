@@ -2,8 +2,10 @@ from colorama import Fore, Style
 from typing import Optional, List
 from dataclasses import dataclass, field
 
+CHARS_LIMIT = 120
 
-@dataclass
+
+@dataclass(frozen=True)
 class StyleBase:
     colors: List = field(default_factory=lambda: [Fore.LIGHTBLACK_EX])
     fonts: List = field(default_factory=lambda: [Style.BRIGHT])
@@ -22,11 +24,11 @@ class StyleBase:
         return _styles
 
     def process_template(self):
-        possibilities = [" {} ", " {}", "{} ", "{}"]
-        for p in possibilities:
-            self.template = self.template.replace(p, "{}")
+        _template = self.template.replace(" {} ", "{}")
+        for p in [" {}", "{} ", "{}"]:
+            _template = _template.replace(p, "{}")
 
-        return self.template.format(*self.get_styles()).split("{}")
+        return _template.format(*self.get_styles()).split("{}")
 
     def check_num_args(self, *args):
         if len(args) != self.num_args:
@@ -41,7 +43,7 @@ class StyleBase:
         return wrap[0], *args, wrap[1]
 
 
-@dataclass
+@dataclass(frozen=True)
 class SingleStyleBase(StyleBase):
     num_args: int = 1
 
@@ -50,7 +52,7 @@ class SingleStyleBase(StyleBase):
         return super().get(*args)
 
 
-@dataclass
+@dataclass(frozen=True)
 class DoubleStyleBase(StyleBase):
     colors: List = field(default_factory=lambda: [Fore.LIGHTBLACK_EX] * 2)
     fonts: List = field(default_factory=lambda: [Style.BRIGHT] * 2)
@@ -64,40 +66,46 @@ class DoubleStyleBase(StyleBase):
         return wrap[0], args[0], wrap[1], args[1], wrap[2]
 
 
-@dataclass
+@dataclass(frozen=True)
 class DetectorStyle(SingleStyleBase):
     colors: List = field(default_factory=lambda: [Fore.LIGHTBLUE_EX])
-    template: str = "Running the {} detector."
+    template: str = "Running the {} detector…"
 
 
-@dataclass
+@dataclass(frozen=True)
 class NumberOfPromptsStyle(SingleStyleBase):
     colors: List = field(default_factory=lambda: [Fore.LIGHTCYAN_EX])
-    template: str = "Evaluating {} prompts."
+    template: str = "Evaluating {} prompts…"
 
 
-@dataclass
+@dataclass(frozen=True)
 class PromptEvaluationStyle(DoubleStyleBase):
     colors: List = field(default_factory=lambda: [Fore.LIGHTMAGENTA_EX, Fore.LIGHTYELLOW_EX])
-    template: str = "Evaluating {} prompt with the {} evaluator."
+    template: str = "Evaluating {} prompt with the {} evaluator…"
 
 
-@dataclass
+@dataclass(frozen=True)
+class EvaluationStyle(SingleStyleBase):
+    colors: List = field(default_factory=lambda: [Fore.LIGHTYELLOW_EX])
+    template: str = "Evaluating prompts with the {} evaluator…"
+
+
+@dataclass(frozen=True)
 class PromptInjectionSuccessStyle(DoubleStyleBase):
     colors: List = field(default_factory=lambda: [Fore.LIGHTGREEN_EX, Fore.LIGHTMAGENTA_EX])
     template: str = "{} of the {} prompts manipulated your model into jailbreak."
 
 
-@dataclass
+@dataclass(frozen=True)
 class PromptInjectionFailureStyle(DoubleStyleBase):
     colors: List = field(default_factory=lambda: [Fore.LIGHTMAGENTA_EX, Fore.LIGHTRED_EX])
     template: str = "The injection of {} prompts manipulated your model into jailbreak {} of the times."
 
 
-@dataclass
+@dataclass(frozen=True)
 class StartSummaryStyle(SingleStyleBase):
     colors: List = field(default_factory=lambda: [Fore.LIGHTBLUE_EX])
-    template: str = "-" * 50 + " Summary of {} " + "-" * 50
+    template: str = "-" * (CHARS_LIMIT // 2 - 8) + " Summary of {} " + "-" * (CHARS_LIMIT // 2 - 8)
 
 
 def xprint(

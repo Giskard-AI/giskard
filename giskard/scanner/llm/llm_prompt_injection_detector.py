@@ -9,10 +9,9 @@ from ...models.base.model import BaseModel
 from ..decorators import detector
 from ..issues import Issue, IssueGroup, IssueLevel
 from ..registry import Detector
-from ..scanner import logger
-from ..xprint import (
+from ...utils.xprint import (
     xprint,
-    StyleBase,
+    CHARS_LIMIT,
     DetectorStyle,
     NumberOfPromptsStyle,
     PromptEvaluationStyle,
@@ -20,7 +19,6 @@ from ..xprint import (
     PromptInjectionFailureStyle,
     StartSummaryStyle,
 )
-
 
 
 @detector("llm_prompt_injection", tags=["jailbreak", "prompt_injection", "llm", "generative", "text_generation"])
@@ -54,7 +52,7 @@ class LLMPromptInjectionDetector(Detector):
             xprint(
                 prompt.group.name + f" #{i}", prompt.evaluation_method.__class__.__name__, style=PromptEvaluationStyle
             )
-            xprint(prompt.content[:120] + "…", style=StyleBase)
+            xprint(prompt.content[:CHARS_LIMIT] + "…")
 
             prompt_dataset = dataset.copy()
             prompt_dataset.df = prompt_dataset.df.head(1)
@@ -152,7 +150,7 @@ class LLMPromptInjectionDetector(Detector):
                     tests=_generate_prompt_injection_tests,
                 )
             )
-        xprint("-" * 120, style=StyleBase)
+        xprint("-" * CHARS_LIMIT)
         return issues
 
 
