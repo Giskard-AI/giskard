@@ -56,7 +56,7 @@ class LLMPromptInjectionDetector(Detector):
     """
 
     def __init__(
-        self, threshold: float = 0.5, num_samples: Optional[int] = 302, num_samples_seed: Optional[int] = None
+        self, threshold: float = 0.5, num_samples: Optional[int] = 214, num_samples_seed: Optional[int] = None
     ):
         self.threshold = threshold  # default
         self.num_samples = num_samples
@@ -66,33 +66,6 @@ class LLMPromptInjectionDetector(Detector):
         return {
             "model_predict_calls": self.num_samples,
         }
-
-    def evaluate_and_group(self, model, dataset, prompts, features, column_types):
-        results = {}
-        for prompt in prompts:
-            # logger.info(f"Evaluating {Style.RESET_ALL}{Fore.LIGHTMAGENTA_EX}{prompt.group.name}{Style.RESET_ALL}
-            # f"Prompt.")
-
-            prompt_dataset = dataset.copy()
-            prompt_dataset.df = prompt_dataset.df.head(1)
-            for feature in features:
-                if column_types[feature] == "text":
-                    prompt_dataset.df[feature] = prompt.content
-
-            prediction = model.predict(prompt_dataset).prediction
-            if prediction.shape[0] > 1:
-                raise ValueError("The prediction is expected to be 1D.")
-            prediction = prediction[0]
-
-            failed = evaluate(prediction=prediction, prompt=prompt)
-
-            if prompt.group not in results.keys():
-                results[prompt.group] = {"prompt_name": [], "failed": [], "input_prompt": [], "prediction": []}
-
-            results[prompt.group]["failed"].append(failed)
-            results[prompt.group]["input_prompt"].append(prompt)
-            results[prompt.group]["prediction"].append(prediction)
-        return results
 
     def run(self, model: BaseModel, dataset: Dataset) -> Sequence[Issue]:
         # even-though this detector doesn't rely on a dataset, it's still needed to get the features and column_types
