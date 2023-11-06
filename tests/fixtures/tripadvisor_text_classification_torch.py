@@ -1,8 +1,9 @@
+from typing import List, Union
+
 import re
 import string
 from dataclasses import dataclass
 from pathlib import Path
-from typing import List, Union
 
 import numpy as np
 import pandas as pd
@@ -199,16 +200,24 @@ class CustomWrapper(Model):
 
 
 @pytest.fixture(scope="session")
-def tripadvisor_data() -> Dataset:
+def tripadvisor_raw_data() -> Dataset:
     # Download dataset
     df = load_dataset()
+    return df
+
+
+@pytest.fixture()
+def tripadvisor_data(tripadvisor_raw_data) -> Dataset:
     return Dataset(
-        df, name="trip_advisor_reviews_sentiment", target=TARGET_COLUMN_NAME, column_types={TEXT_COLUMN_NAME: "text"}
+        tripadvisor_raw_data,
+        name="trip_advisor_reviews_sentiment",
+        target=TARGET_COLUMN_NAME,
+        column_types={TEXT_COLUMN_NAME: "text"},
     )
 
 
 @pytest.fixture(scope="session")
-def tripadvisor_model(tripadvisor_data: Dataset) -> Model:
+def tripadvisor_raw_model(tripadvisor_raw_data) -> Model:
     # Load model.
     model = DistilBertForSequenceClassification.from_pretrained(
         PRETRAINED_WEIGHTS_NAME, num_labels=3, output_attentions=False, output_hidden_states=False
@@ -216,6 +225,17 @@ def tripadvisor_model(tripadvisor_data: Dataset) -> Model:
 
     return CustomWrapper(
         model,
+        model_type="classification",
+        classification_labels=[0, 1, 2],
+        name="trip_advisor_sentiment_classifier",
+        feature_names=[TEXT_COLUMN_NAME],
+    )
+
+
+@pytest.fixture()
+def tripadvisor_model(tripadvisor_raw_model) -> Model:
+    return CustomWrapper(
+        tripadvisor_raw_model,
         model_type="classification",
         classification_labels=[0, 1, 2],
         name="trip_advisor_sentiment_classifier",

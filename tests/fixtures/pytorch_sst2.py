@@ -19,13 +19,13 @@ def sst2_dev_data():
     return pd.DataFrame(dev_datapipe, columns=["text", "label"])
 
 
-@pytest.fixture(scope="session")
+@pytest.fixture()
 def sst2_data(sst2_dev_data):
     return Dataset(sst2_dev_data.head(), name="test dataset", target="label")
 
 
 @pytest.fixture(scope="session")
-def sst2_model(sst2_dev_data):
+def sst2_raw_model(sst2_dev_data):
     torch_softmax = nn.Softmax(dim=1)
     device = "cuda" if torch.cuda.is_available() else "cpu"
 
@@ -58,6 +58,12 @@ def sst2_model(sst2_dev_data):
     def my_softmax(x):
         return torch_softmax(x)
 
+    return (model, classification_labels, pandas_to_torch, my_softmax)
+
+
+@pytest.fixture()
+def sst2_raw_model(sst2_raw_model):
+    model, classification_labels, pandas_to_torch, my_softmax = sst2_raw_model
     return PyTorchModel(
         name="SST2-XLMR_BASE_ENCODER",
         model=model,

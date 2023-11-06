@@ -1,6 +1,7 @@
+from typing import Iterable
+
 import string
 from pathlib import Path
-from typing import Iterable
 
 import pandas as pd
 import pytest
@@ -57,10 +58,18 @@ def load_data() -> pd.DataFrame:
 
 
 @pytest.fixture(scope="session")
-def medical_transcript_data() -> Dataset:
+def medical_transcript_raw_data() -> Dataset:
     raw_data = load_data()
+    return raw_data
+
+
+@pytest.fixture()
+def medical_transcript_data(medical_transcript_raw_data) -> Dataset:
     wrapped_data = Dataset(
-        raw_data, name="medical_transcript_dataset", target=TARGET_COLUMN_NAME, column_types={TEXT_COLUMN_NAME: "text"}
+        medical_transcript_raw_data,
+        name="medical_transcript_dataset",
+        target=TARGET_COLUMN_NAME,
+        column_types={TEXT_COLUMN_NAME: "text"},
     )
     return wrapped_data
 
@@ -86,7 +95,7 @@ def adapt_vectorizer_input(df: pd.DataFrame) -> Iterable:
 
 
 @pytest.fixture(scope="session")
-def medical_transcript_model(medical_transcript_data: Dataset) -> SKLearnModel:
+def medical_transcript_raw_model(medical_transcript_raw_data) -> SKLearnModel:
     # Define final pipeline.
     pipeline = Pipeline(
         steps=[
@@ -98,15 +107,20 @@ def medical_transcript_model(medical_transcript_data: Dataset) -> SKLearnModel:
     )
 
     # Fit pipeline.
-    pipeline.fit(medical_transcript_data.df[[TEXT_COLUMN_NAME]], medical_transcript_data.df[TARGET_COLUMN_NAME])
+    pipeline.fit(medical_transcript_raw_data[[TEXT_COLUMN_NAME]], medical_transcript_raw_data[TARGET_COLUMN_NAME])
 
+    return pipeline
+
+
+@pytest.fixture()
+def medical_transcript_model(medical_transcript_raw_model) -> SKLearnModel:
     # Wrap model with giskard
     wrapped_model = SKLearnModel(
-        pipeline,
+        medical_transcript_raw_model,
         model_type="classification",
         name="medical_transcript_classification",
         feature_names=[TEXT_COLUMN_NAME],
-        classification_labels=pipeline.classes_,
+        classification_labels=medical_transcript_raw_model.classes_,
     )
 
     return wrapped_model

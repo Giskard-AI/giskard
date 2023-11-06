@@ -1,5 +1,6 @@
-from pathlib import Path
 from typing import Iterable
+
+from pathlib import Path
 
 import pandas as pd
 import pytest
@@ -31,12 +32,17 @@ def load_data(**kwargs) -> pd.DataFrame:
 
 
 @pytest.fixture(scope="session")
-def hotel_text_data() -> Dataset:
+def hotel_text_raw_data():
     fetch_from_ftp(DATA_URL, DATA_PATH)
 
     raw_data = load_data(nrows=105)[[FEATURE_COLUMN_NAME, TARGET_COLUMN_NAME]]
+    return raw_data
+
+
+@pytest.fixture()
+def hotel_text_data(hotel_text_raw_data) -> Dataset:
     wrapped_data = Dataset(
-        raw_data,
+        hotel_text_raw_data,
         name="hotel_text_regression_dataset",
         target=TARGET_COLUMN_NAME,
         column_types={FEATURE_COLUMN_NAME: "text"},
@@ -56,9 +62,9 @@ def adapt_vectorizer_input(df: pd.DataFrame) -> Iterable:
 
 
 @pytest.fixture(scope="session")
-def hotel_text_model(hotel_text_data) -> SKLearnModel:
-    x = hotel_text_data.df[[FEATURE_COLUMN_NAME]]
-    y = hotel_text_data.df[TARGET_COLUMN_NAME]
+def hotel_text_raw_model(hotel_text_raw_data) -> SKLearnModel:
+    x = hotel_text_raw_data[[FEATURE_COLUMN_NAME]]
+    y = hotel_text_raw_data[TARGET_COLUMN_NAME]
 
     pipeline = Pipeline(
         steps=[
@@ -69,9 +75,13 @@ def hotel_text_model(hotel_text_data) -> SKLearnModel:
     )
 
     pipeline.fit(x, y)
+    return pipeline
 
+
+@pytest.fixture()
+def hotel_text_model(hotel_text_raw_model) -> SKLearnModel:
     wrapped_model = SKLearnModel(
-        pipeline, model_type="regression", name="hotel_text_regression", feature_names=[FEATURE_COLUMN_NAME]
+        hotel_text_raw_model, model_type="regression", name="hotel_text_regression", feature_names=[FEATURE_COLUMN_NAME]
     )
 
     return wrapped_model
