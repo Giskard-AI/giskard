@@ -3,6 +3,7 @@ import pytest
 
 from giskard.datasets.base import Dataset
 from giskard.ml_worker import websocket
+from giskard.ml_worker.utils.cache import CACHE
 from giskard.ml_worker.websocket import listener
 from giskard.models.base.model import BaseModel
 
@@ -17,6 +18,12 @@ EXPECTED_COUNTS_GERMAN_CREDIT_PUSH_KIND_SAMPLE_INDEX = {
     websocket.PushKind.PERTURBATION: ("perturbation", 35),
     websocket.PushKind.BORDERLINE: ("borderline", 31),
 }
+
+
+@pytest.fixture(autouse=True)
+def clean_push_cache():
+    CACHE.start({}, []) # Reset cache
+    yield
 
 
 @pytest.mark.parametrize("model,data", [
