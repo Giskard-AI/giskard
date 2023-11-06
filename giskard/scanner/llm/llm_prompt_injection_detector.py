@@ -1,7 +1,6 @@
 from typing import Sequence, Optional
 
 import pandas as pd
-from colorama import Fore, Style
 
 from ...datasets.base import Dataset
 from ...llm.prompt_injection.data import get_all_prompts
@@ -55,6 +54,7 @@ class LLMPromptInjectionDetector(Detector):
            https://arxiv.org/abs/2211.09527
     .. [#] Leon Derczynsky, garak:  LLM vulnerability scanner, https://github.com/leondz/garak
     """
+
     def __init__(
         self, threshold: float = 0.5, num_samples: Optional[int] = 302, num_samples_seed: Optional[int] = None
     ):
@@ -63,10 +63,6 @@ class LLMPromptInjectionDetector(Detector):
         self.num_samples_seed = num_samples_seed
 
     def run(self, model: BaseModel, dataset: Dataset) -> Sequence[Issue]:
-        logger.info(
-            f"Running the {Style.RESET_ALL}{Fore.LIGHTBLUE_EX}{self.__class__.__name__}{Style.RESET_ALL} Detector."
-        )
-
         # even-though this detector doesn't rely on a dataset, it's still needed to get the features and column_types
         features = model.meta.feature_names or list(dataset.df.columns.drop(dataset.target, errors="ignore"))
         column_types = dataset.column_types
@@ -75,7 +71,7 @@ class LLMPromptInjectionDetector(Detector):
         results = evaluate_and_group(model, dataset, prompts, features, column_types)
 
         issues = []
-        print(f"{len(prompts)} prompt injections will be evaluated.")
+        logger.info(f"{len(prompts)} prompt injections will be evaluated…")
         for group in results.keys():
             failed_examples = {}
             cols = []
@@ -94,10 +90,14 @@ class LLMPromptInjectionDetector(Detector):
             )
 
             failed = sum(results[group]["failed"])
-            if failed == 0:
-                continue
             total = len(results[group]["failed"])
             metric = failed / total
+
+            if failed != 0:
+                logger.info(f"The injection of {group.name} prompts broke your model {metric*100}% of the times.")
+            else:
+                logger.info(f"The injection of {group.name} prompts did not break your model.")
+            continue
 
             level = IssueLevel.MINOR
             if 0.1 <= metric < self.threshold:
