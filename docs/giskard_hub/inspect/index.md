@@ -1,4 +1,4 @@
-# 🧐 Inspect failing tests
+# 🧐 Debug your tests with automatic model insights
 
 [//]: # (TODO: create content, needs to include screenshots and instructions)
 
