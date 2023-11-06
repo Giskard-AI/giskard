@@ -131,7 +131,7 @@ community/contribution_guidelines/index
 :gutter: 1
 
 :::{card} <h2><center> Giskard Hub </center></h2>
-:link: catalogs/index.html
+:link: giskard_hub/installation_hub/index.html
 
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<img src="assets/intro/Giskard_Turtle_SK8.png" alt="ninja" width="86.0025%">
 :::
