@@ -708,7 +708,7 @@ def handle_cta(
         push.slicing_function.meta.tags.append("generated")
         object_uuid = push.slicing_function.upload(client, project_key)
     elif cta_kind == CallToActionKind.SAVE_PERTURBATION:
-        for perturbation in push.transformation_function:
+        for perturbation in push.transformation_functions:
             object_uuid = perturbation.upload(client, project_key)
     elif cta_kind == CallToActionKind.SAVE_EXAMPLE:
         object_uuid = push.saved_example.upload(client, project_key)
@@ -814,7 +814,7 @@ def get_push_objects(client: Optional[GiskardClient], params: websocket.GetPushP
 
     # if df is empty, return early
     if df.empty:
-        return None, None, None, None
+        return None
 
     push_functions = {
         PushKind.CONTRIBUTION: create_contribution_push,
