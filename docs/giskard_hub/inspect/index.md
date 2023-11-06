@@ -1,18 +1,19 @@
-# 🧐 Debug Your Issues
+# 🧐 Debug your issues
 
-To assess the quality of your model and diagnose your issues, you need to drill down and inspect each prediction individually. This process is what we call **debugging** at Giskard. Debugging is crucial if you want to:
-* Inspect the failing examples of your [tests](../write_and_debug_tests/index.md).
+To assess the quality of your model and diagnose your issues, you need to drill down and inspect each prediction individually. 
+This process is what we call **debugging** at Giskard. Debugging is crucial if you want to:
+* Inspect failing examples of your [tests](../write_and_debug_tests/index.md).
 * Have [collaborative reviews](../collaborate/index.md) from your team members, especially business experts with domain knowledge.
 
 > ➡️ To debug your issues, you have 2 options:
-> 1. Click on the **debug button** of your failing tests. Of course, you will need to execute the test suite first.
+> 1. Click on the **debug button** of your failing tests (after executing the test suite).
 > 2. Go to the **debug tab** and choose a model and a dataset to debug.
 
 While the debugging process can be tedious if you have a large dataset, Giskard provides **semi-automatic features** to ease this process with 3 methods:
 
-## 1. Automatic Model Insights
+## 1. Automated Model Insights
 
-Giskard provides helpful notifications while you're debugging, displaying a bulb 💡 at different places in your debugging session. These model insights cover various issues such as:
+Giskard provides helpful notifications while you're debugging, displaying a bulb 💡 at different spots in your debugging session. These model insights cover various issues such as:
 * Words or features that **contribute** to the incorrect prediction.
 * **Unrobust** predictions against small variations.
 * **Overconfident** predictions.
@@ -39,7 +40,7 @@ If you want to create a new slice, you can:
 
 ## 3. Filter by Prediction Types
 
-Finally, Giskard enables you to filter predictions depending on the output of your model:
+Finally, the Giskard Hub enables you to filter predictions depending on the output of your model:
 * **Correct predictions**: these are examples that are correctly predicted.
 * **Incorrect predictions**: these are examples that are wrongly predicted.
 * **Underconfidence**: these are examples whose predictions were made with low confidence (prediction probabilities between the first and second labels are very close).
