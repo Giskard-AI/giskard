@@ -126,7 +126,9 @@ class LLMPromptInjectionDetector(Detector):
             metric = failed / total
 
             if failed != 0:
-                logger.info(f"The injection of {group.name} prompts broke your model {metric*100}% of the times.")
+                logger.info(
+                    f"The injection of {group.name} prompts broke your model {round(metric*100,2)}% of the times."
+                )
             else:
                 logger.info(f"The injection of {group.name} prompts did not break your model.")
                 continue
