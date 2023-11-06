@@ -791,7 +791,7 @@ def get_push_objects(client: Optional[GiskardClient], params: websocket.GetPushP
 
     # if df is empty, return early
     if df.empty:
-        return None, None, None, None
+        return None
 
     push_functions = {
         PushKind.CONTRIBUTION: create_contribution_push,
