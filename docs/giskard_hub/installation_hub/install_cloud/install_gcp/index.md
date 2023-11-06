@@ -48,7 +48,7 @@ Creating the firewall rules can also be done **through UI** in the `VPC Network`
 giskard hub start
 ```
 
-### 3. Connect to your instance and start uploading ML model
+### 3. Connect to your instance
 
 * Get the external IP address of your Giskard VM in the `VM instances` section of the `Compute Engine`
 * Go to **`http://<your IP address>:19000`** in your web browser
@@ -62,4 +62,71 @@ You can stop the instance and restart it when you need to save your GCP compute 
 &#x20;`giskard hub start`
 :::
 
-That's it, you are now ready to use Giskard in GCP! Now you can start [uploading an artifact](docs/guide/upload/index.md)! To do that in GCP, you can use a workbench notebook, for example! &#x20;
+
+
+### 4. Start the ML worker
+
+Giskard executes your model using a worker that runs the model directly in **your Python environment**, with all the dependencies required by your model. You can either execute the ML worker:
+
+- From your **local notebook** within the kernel that contains all the dependencies of your model
+- From **Google Colab** within the kernel that contains all the dependencies of your model
+- Or from **your terminal** within the Python environment that contains all the dependencies of your model
+
+:::::::{tab-set}
+::::::{tab-item} From your local notebook
+
+To start the ML worker from your notebook, run the following code in your notebook:
+
+```
+!giskard worker start -d -k YOUR_KEY -u http://<your IP address>:19000/
+```
+
+The API Access Key (`YOUR_KEY`) can be found in the Settings tab of the Giskard Hub.
+
+
+> ### ⚠️ Warning
+> To see the available commands of the worker, you can execute:
+>```
+>!giskard worker --help
+>```
+
+You're all set to try Giskard in action. Upload your first model, dataset or test suite by following the [upload an object](../upload/index.html) page.
+
+::::::
+::::::{tab-item} From Colab notebook
+
+To start the ML worker from your Colab notebook, run in your Colab cell:
+
+```
+!giskard worker start -d -k YOUR_KEY -u http://<your IP address>:19000/
+```
+The API Access Key (`YOUR_KEY`) can be found in the Settings tab of the Giskard Hub.
+
+> ### ⚠️ Warning
+> To see the available commands of the worker, you can execute:
+>```
+>!giskard worker --help
+>```
+
+You're all set to try Giskard in action. Upload your first model, dataset or test suite by following the [upload an object](../upload/index.html) page.
+
+::::::
+::::::{tab-item} From your terminal
+
+* Run the following command **within the Python environment that contains all the dependencies of your model**:
+
+```
+giskard worker start -k YOUR_KEY -u http://<your IP address>:19000/
+```
+The API Access Key (`YOUR_KEY`) can be found in the Settings tab of the Giskard Hub.
+
+> ### ⚠️ Warning
+> To see the available commands of the worker, you can execute:
+>```
+>!giskard worker --help
+>```
+
+You're all set to try Giskard in action. Upload your first model, dataset or test suite by following the [upload an object](../upload/index.html) page.
+
+::::::
+:::::::
