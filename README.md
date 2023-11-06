@@ -5,22 +5,21 @@
 <h1 align="center" weight='300' >The testing framework dedicated to ML models, from tabular to LLMs</h1>
 <h3 align="center" weight='300' >Scan AI models to detect risks of biases, performance issues and errors. In 4 lines of code. </h3>
 <p align="center">
-   <a href="https://github.com/Giskard-AI/giskard/releases">
+   <a href="https://github.com/Giskard-AI/giskard/releases" style="text-decoration: none;">
       <img alt="GitHub release" src="https://img.shields.io/github/v/release/Giskard-AI/giskard">
   </a>
- <a href="https://github.com/Giskard-AI/giskard/blob/main/LICENSE">
-     <img alt="GitHub" src="https://img.shields.io/badge/License-Apache_2.0-blue.svg">
+ <a href="https://github.com/Giskard-AI/giskard/blob/main/LICENSE" style="text-decoration: none;">
+     <img alt="License" src="https://img.shields.io/badge/License-Apache_2.0-blue.svg">
  </a>
-  <a href="https://github.com/Giskard-AI/giskard/actions/workflows/build_backend.yml?query=branch%3Amain">
-    <img alt="build" src="https://github.com/Giskard-AI/giskard/actions/workflows/build-python.yml/badge.svg?branch=main"/>
+  <a href="https://github.com/Giskard-AI/giskard/actions/workflows/build-python.yml?query=branch%3Amain" style="text-decoration: none;">
+    <img alt="CI" src="https://github.com/Giskard-AI/giskard/actions/workflows/build-python.yml/badge.svg?branch=main"/>
  </a>
-  <a href="https://sonarcloud.io/summary/new_code?id=giskard">
-    <img alt="build" src="https://sonarcloud.io/api/project_badges/measure?project=giskard&metric=alert_status"/>
+  <a href="https://sonarcloud.io/summary/new_code?id=giskard" style="text-decoration: none;">
+    <img alt="Sonar" src="https://sonarcloud.io/api/project_badges/measure?project=giskard&metric=alert_status"/>
  </a>
-  <a href="https://gisk.ar/discord">
+  <a href="https://gisk.ar/discord" style="text-decoration: none;">
     <img alt="Giskard on Discord" src="https://img.shields.io/discord/939190303397666868?label=Discord"/>
   </a>
-  <a rel="me" href="https://fosstodon.org/@Giskard"></a>
 </p>
 <h3 align="center">
    <a href="https://docs.giskard.ai/en/latest/getting-started/quickstart.html"><b>Documentation</b></a> &bull;
