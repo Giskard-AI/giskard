@@ -2,9 +2,13 @@ from typing import Dict, List, Optional
 
 from enum import Enum
 
+import pydantic
+from packaging import version
 from pydantic import Field
 
 from giskard.core.validation import ConfiguredBaseModel
+
+IS_PYDANTIC_V2 = version.parse(pydantic.version.VERSION) >= version.parse("2.0")
 
 
 class WorkerReply(ConfiguredBaseModel):
@@ -177,6 +181,11 @@ class GenerateTestSuite(WorkerReply):
 
 class ModelMeta(ConfiguredBaseModel):
     model_type: Optional[str] = None
+
+    if IS_PYDANTIC_V2:
+
+        class Config:
+            protected_namespaces = ()  # Disable pydantic warning
 
 
 class DatasetMeta(ConfiguredBaseModel):
