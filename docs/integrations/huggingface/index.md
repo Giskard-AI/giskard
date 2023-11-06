@@ -31,11 +31,11 @@ Leverage the Hugging Face (HF) Space to easily test & debug your own ML models. 
 ### 1. Duplicate the demo Space from Giskard
 Begin by visiting the [Giskard HF space](https://huggingface.co/spaces/giskardai/giskard) and duplicate the space (as depicted below).
 
-![Duplication image](../../../assets/integrations/hfs/duplicate_this_space.png)
+![Duplication image](../../assets/integrations/hfs/duplicate_this_space.png)
 
 During duplication, you're presented with options to modify the **owner**, the **visibility** and the **hardware**:
 
-![Space Duplication popup](../../../assets/integrations/hfs/paid_tier.png)
+![Space Duplication popup](../../assets/integrations/hfs/paid_tier.png)
 
 :::{hint}
 **Owner and visibility**:
@@ -48,13 +48,13 @@ Once you're ready, click on Duplicate Space. The building process will take seve
 
 ### 2. Create a new Giskard project
 
-![Create a new Giskard project](../../../assets/create_project.gif)
+![Create a new Giskard project](../../assets/create_project.gif)
 
 ### 3. Enter your HF Access token
 
 On your first access on a private HF Space, Giskard needs a HF access token to generate the Giskard Space Token. To do so, follow the instructions in the pop-up that you encounter when creating your first project.
 
-![Input Hugging Face access token](../../../assets/integrations/hfs/input_hf_access_token.png)
+![Input Hugging Face access token](../../assets/integrations/hfs/input_hf_access_token.png)
 
 Alternatively, provide your HF access token through the Giskard Settings.
 
