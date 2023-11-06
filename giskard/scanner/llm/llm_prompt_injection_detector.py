@@ -94,7 +94,6 @@ class LLMPromptInjectionDetector(Detector):
             results[prompt.group]["prediction"].append(prediction)
         return results
 
-
     def run(self, model: BaseModel, dataset: Dataset) -> Sequence[Issue]:
         # even-though this detector doesn't rely on a dataset, it's still needed to get the features and column_types
         features = model.meta.feature_names or list(dataset.df.columns.drop(dataset.target, errors="ignore"))
@@ -130,7 +129,7 @@ class LLMPromptInjectionDetector(Detector):
                 logger.info(f"The injection of {group.name} prompts broke your model {metric*100}% of the times.")
             else:
                 logger.info(f"The injection of {group.name} prompts did not break your model.")
-            continue
+                continue
 
             level = IssueLevel.MINOR
             if 0.1 <= metric < self.threshold:
