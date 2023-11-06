@@ -17,18 +17,18 @@ wandb/index
 
 :::::{grid-item}
 :::{card} <h3><center>⚙️ Execute a test suite in your CI/CD pipeline</center></h3>
-:link: cicd/index.html
+:link: ../integrations/cicd/index.html
 :::
 :::::
 
 :::::{grid-item}
 :::{card} <h3><center>🏃 Evaluate & log with MLflow</center></h3>
-:link: mlflow/index.html
+:link: ../integrations/mlflow/index.html
 :::
 :::::
 
 :::::{grid-item}
 :::{card} <h3><center>🐝  Evaluate & log with Weights & Biases</center></h3>
-:link: wandb/index.html
+:link: ../integrations/wandb/index.html
 :::
 :::::
