@@ -83,9 +83,6 @@ class Scanner:
 
         # Some extra checks
         if model.is_text_generation:
-            logger.warning(
-                "LLM support is in alpha version — 🔥 things may break! Please report any issues to https://github.com/giskard-AI/giskard/issues."
-            )
             if not model.meta.name or not model.meta.description:
                 raise ValueError(
                     "LLM models must have a name and a description. Please make sure the `name` and `description` "
