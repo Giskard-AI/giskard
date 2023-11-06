@@ -1,4 +1,4 @@
-# 🔪 Identify data slices
+# 🔪 Create data slices
 
 Having global quality metrics is often not enough. By analyzing subsets based on relevant factors you can identify biases, disparities, and issues specific to certain groups.
 
