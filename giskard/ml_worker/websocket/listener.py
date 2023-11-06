@@ -53,7 +53,7 @@ from giskard.push.contribution import create_contribution_push
 from giskard.push.perturbation import create_perturbation_push
 from giskard.push.prediction import create_borderline_push, create_overconfidence_push
 from giskard.settings import settings
-from giskard.utils import call_in_pool, shutdown_pool
+from giskard.utils import call_in_pool
 from giskard.utils.analytics_collector import analytics
 
 logger = logging.getLogger(__name__)
