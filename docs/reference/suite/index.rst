@@ -7,7 +7,6 @@ Test suite
    .. automethod:: run
    .. automethod:: add_test
    .. automethod:: upload
-   .. automethod:: download
 
 .. autoclass:: giskard.core.suite.SuiteInput
 

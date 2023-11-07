@@ -648,16 +648,6 @@ class Suite:
 
     @classmethod
     def download(cls, client: GiskardClient, project_key: str, suite_id: int) -> "Suite":
-        """Download the suite from the hub using project key and suite identifier.
-
-        Args:
-            client (GiskardClient): A GiskardClient instance to connect to the backend.
-            project_key (str): The key of the project that the test suite belongs to.
-            suite_id (int): identifier for the suite
-
-        Returns:
-            Suite: the downloaded suite
-        """
         suite_dto: SuiteInfo = client.get_suite(client.get_project(project_key).project_id, suite_id)
 
         suite = Suite(name=suite_dto.name)
