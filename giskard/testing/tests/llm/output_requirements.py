@@ -48,8 +48,9 @@ def _test_output_against_requirement(model: BaseModel, dataset: Dataset, require
 def test_llm_output_against_requirement(model: BaseModel, dataset: Dataset, requirement: str, debug: bool = False):
     """Evaluates the model output against a given requirement with another LLM (LLM-as-a-judge).
 
-    The model outputs over a given dataset will be validated against the specified requirement using GPT-4 (note that
-    this requires you to set the `OPENAI_API_TOKEN` environment variable for the test to run correctly).
+    The model outputs over a given dataset will be validated against the
+    specified requirement using GPT-4 (note that this requires you to set the
+    `OPENAI_API_TOKEN` environment variable for the test to run correctly).
 
     Parameters
     ----------
@@ -58,13 +59,15 @@ def test_llm_output_against_requirement(model: BaseModel, dataset: Dataset, requ
     dataset : Dataset
         A dataset of examples which will be provided as inputs to the model.
     requirement : str
-        The requirement to evaluate the model output against. This should be a clear and explicit requirement that can
-        be interpreted by the LLM, for example: “The model should decline to answer”, “The model should not generate
-        content that incites harm or violence”, or “The model should apologize and explain that it cannot answer
-        questions unrelated to its scope”.
+        The requirement to evaluate the model output against. This should be a
+        clear and explicit requirement that can be interpreted by the LLM, for
+        example: “The model should decline to answer”, “The model should not
+        generate content that incites harm or violence”, or “The model should
+        apologize and explain that it cannot answer questions unrelated to its
+        scope”.
     debug : bool
-        If True and the test fails, a dataset containing the rows that have failed the evaluation criteria will be
-        included in the test result.
+        If True and the test fails, a dataset containing the rows that have
+        failed the evaluation criteria will be included in the test result.
 
     Returns
     -------
@@ -84,31 +87,36 @@ def test_llm_single_output_against_requirement(
 ):
     """Evaluates the model output against a given requirement with another LLM (LLM-as-a-judge).
 
-    The model outputs over a given dataset will be validated against the specified requirement using GPT-4 (note that
-    this requires you to set the `OPENAI_API_TOKEN` environment variable for the test to run correctly).
+    The model outputs over a given dataset will be validated against the
+    specified requirement using GPT-4 (note that this requires you to set the
+    `OPENAI_API_TOKEN` environment variable for the test to run correctly).
 
     Parameters
     ----------
     model : BaseModel
         The generative model to test.
     input_var : str
-        The input to provide to the model. If your model has a single input variable, this will be used as its value.
-        For example, if your model has a single input variable called `question`, you can set `input_var` to the
-        question you want to ask the model, `question = "What is the capital of France?"`.
-        If need to pass multiple input variables to the model, set `input_as_json` to `True` and specify `input_var` as
-        a JSON encoded object. For example:
+        The input to provide to the model. If your model has a single input
+        variable, this will be used as its value. For example, if your model has
+        a single input variable called ``question``, you can set ``input_var``
+        to the question you want to ask the model, ``question = "What is the
+        capital of France?"``. If need to pass multiple input variables to the
+        model, set ``input_as_json` to `True` and specify `input_var` as a JSON
+        encoded object. For example:
         ```
         input_var = '{"question": "What is the capital of France?", "language": "English"}'
         ```
     requirement : str
-        The requirement to evaluate the model output against. This should be a clear and explicit requirement that can
-        be interpreted by the LLM, for example: “The model should decline to answer”, “The model should not generate
-        content that incites harm or violence”.
+        The requirement to evaluate the model output against. This should be a
+        clear and explicit requirement that can be interpreted by the LLM, for
+        example: “The model should decline to answer”, “The model should not
+        generate content that incites harm or violence”.
     input_as_json : bool
-        If True, `input_var` will be parsed as a JSON encoded object. Default is False.
+        If True, `input_var` will be parsed as a JSON encoded object. Default is
+        False.
     debug : bool
-        If True and the test fails, a dataset containing the rows that have failed the evaluation criteria will be
-        included in the test result.
+        If True and the test fails, a dataset containing the rows that have
+        failed the evaluation criteria will be included in the test result.
 
     Returns
     -------

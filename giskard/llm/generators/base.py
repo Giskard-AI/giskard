@@ -83,20 +83,22 @@ class BaseDataGenerator(LLMGenerator):
         ----------
         model : BaseModel
             The model to generate a test dataset for.
-        num_samples : Optional[int]
+        num_samples : int
             The number of samples to generate, by default 10.
-        column_types : Optional[float]
-            The column types for the generated datasets.
+        column_types : float, optional
+            The column types for the generated datasets. (Default value = None)
+
+        Returns
+        -------
+        Dataset
+            The generated dataset.
 
         Raises
         ------
         LLMGenerationError
             If the generation fails.
 
-        Returns
-        -------
-        Dataset
-            The generated dataset.
+
         """
         prompt = self._make_generate_input_prompt(model, num_samples)
         functions = self._make_generate_input_functions(model, num_samples)

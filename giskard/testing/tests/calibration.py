@@ -55,21 +55,34 @@ def test_overconfidence_rate(
     overconfident samples divided by the total number of wrongly predicted
     samples, and check that it is below a user-specified threshold.
 
-    Arguments:
-        model(BaseModel): The model to test.
-        dataset(Dataset): The dataset to test the model on.
-        slicing_function(Optional[SlicingFunction]): An optional slicing
-            function used to slice the dataset before testing. If not provided,
-            the whole dataset will be considered in calculating the
-            overconfidence rate.
-        threshold(Optional[float]): The threshold for overconfident prediction
-            rate, i.e. the max ratio of overconfident samples over number of
-            wrongly predicted samples. Default is 0.10 (10%).
-        p_threshold(Optional[float]): The threshold for the difference between
-            the probability assigned to the wrong label and the correct label
-            over which a prediction is considered overconfident. If not
-            provided, it will be determined automatically depending on the
-            number of classes.
+
+    Parameters
+    ----------
+    model : BaseModel
+        The model to test.
+    dataset : Dataset
+        The dataset to test the model on.
+    slicing_function : SlicingFunction, optional
+        An optional slicing function used to slice the dataset before testing.
+        If not provided, the whole dataset will be considered in calculating the
+        overconfidence rate.
+    threshold : float, optional
+        The threshold for overconfident prediction rate, i.e. the max ratio of
+        overconfident samples over number of wrongly predicted samples. Default
+        is 0.10 (10%).
+    p_threshold : float, optional
+        The threshold for the difference between the probability assigned to the
+        wrong label and the correct label over which a prediction is considered
+        overconfident. If not provided, it will be determined automatically
+        depending on the number of classes.
+    debug : bool
+        If True and the test fails, a dataset will be provided containing the
+        rows that have an overconfidence score larger than p_threshold.
+
+    Returns
+    -------
+    TestResult
+        A TestResult object containing the test result.
     """
     if not model.is_classification:
         raise ValueError("This test is only applicable to classification models.")
@@ -133,22 +146,33 @@ def test_underconfidence_rate(
     underconfident samples divided by the total number of samples, and check
     that it is below the user-specified threshold.
 
+    Parameters
+    ----------
+    model : BaseModel
+        The model to test.
+    dataset : Dataset
+        The dataset to test the model on.
+    slicing_function : SlicingFunction, optional
+        An optional slicing function used to slice the dataset before testing.
+        If not provided, the whole dataset will be considered in calculating the
+        underconfidence rate.
+    threshold : float, optional
+        The threshold for underconfident prediction rate. Default is 0.10 (10%).
+    p_threshold : float, optional
+        The threshold for the relative value of the second most-probable
+        prediction and the max probability. If greater than this value, the
+        prediction is considered underconfident. Default is 0.90, i.e. when the
+        second most probable prediction is 90% or more with respect to the
+        highest probability, the sample prediction is considered underconfident.
 
-    Arguments:
-        model(BaseModel): The model to test.
-        dataset(Dataset): The dataset to test the model on.
-        slicing_function(Optional[SlicingFunction]): An optional slicing
-            function used to slice the dataset before testing. If not provided,
-            the whole dataset will be considered in calculating the
-            underconfidence rate.
-        threshold(Optional[float]): The threshold for underconfident prediction
-            rate. Default is 0.10 (10%).
-        p_threshold(Optional[float]): The threshold for the relative value of
-            the second most-probable prediction and the max probability. If
-            greater that this value, the prediction is considered
-            underconfident. Default is 0.90, i.e. when the second most probable
-            prediction is 90% or more with respect to the highest probability,
-            the sample prediction is considered underconfident.
+    debug : bool
+        If True and the test fails, a dataset will be provided containing the
+        rows that have an underconfidence score larger than p_threshold.
+
+    Returns
+    -------
+    TestResult
+        A TestResult object containing the test result.
     """
     if not model.is_classification:
         raise ValueError("This test is only applicable to classification models.")
