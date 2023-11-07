@@ -1,15 +1,18 @@
 # 🤝 Collaborate to build better models
 
-Collaboration is often key to create great evaluation criteria. Giskard offers a bunch of features so that you:
-* you can easily
-[//]: # (- Invite stakeholders)
+Collaboration is important in AI QA for various reasons:
+* **Alignment Between Stakeholders**: If your quality criteria are very specific to your business, you will need to engage in some discussions before defining tests, evaluation criteria, or data slices.
+* **Accountability Among Stakeholders**: Have your tests and issues reviewed by different stakeholders to share responsibility across the team.
 
-[//]: # (    - share)
+With Giskard, you can:
+* Easily **invite** business experts with domain knowledge to debug your issues.
+* **Collect feedback** from other team members on your issues.
+* **Discuss** quality issues with various stakeholders.
+* **Integrate** your discussions into your favorite communication channels (such as Slack, email, etc.).
 
-[//]: # (    - Manage rights)
+![Feedback](../../assets/feedback.png)
+![Discussion](../../assets/discussion.png)
 
-[//]: # (- Collect feedbacks)
+➡️ To invite users, you simply need to create a user tab in the Giskard Settings of the hub. Then, you can share your project with the user you just invited.
 
-[//]: # (    - How to create feedback?)
-
-Coming soon!
+> 💡 Try it live with our Hugging Face space: [here](https://giskardai-giskard.hf.space/main/projects)
