@@ -16,7 +16,7 @@ Through their own integrations with MLflow, Giskard and Dagshub can be combined 
 
 As discussed on this [page](https://docs.giskard.ai/en/latest/integrations/mlflow/index.html), The Giskard-MLflow integration via the evaluation API aims to provide the user with an **automated vulnerability detection** for tabular and NLP models as well as LLMs.
 
-In conjunction, DagsHub provides a free hosted MLflow server with team-based access control for every repository. You can log experiments with MLflow to it, view its information under the experiment tab, and manage your trained models from the full-fledged MLflow UI built into your DagsHub project. See this [page](https://dagshub.com/docs/integration_guide/mlflow_tracking/) for more details.
+In conjunction, DagsHub provides a free hosted MLflow server with team-based access control for every repository. You can log experiments with MLflow to it, view the information under the experiment tab, and manage your trained models from the full-fledged MLflow UI built into your DagsHub project. See this [page](https://dagshub.com/docs/integration_guide/mlflow_tracking/) for more details.
 
 The result of combining these two abilities, can be visualised in this [demo repository on Dagshub](https://dagshub.com/Dean/Giskard-Integration-Demo).
 
@@ -43,6 +43,7 @@ After completing these steps, you can version your notebook with the DagsHub Cli
 dagshub.notebook.save_notebook(repo="your_repo_name")
 ```
 Finally, you can access to the evaluation results by clicking on `Remote > Experiments > Go to mlflow UI` (see below):
+<br><br>
 ![dagshub](../../assets/integrations/dagshub/dagshub.png)
 
 ## Notebook examples
