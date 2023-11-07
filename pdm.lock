@@ -5,7 +5,7 @@
 groups = ["default", "dev", "doc", "hub", "llm", "ml_runtime", "test"]
 strategy = ["cross_platform"]
 lock_version = "4.4"
-content_hash = "sha256:388d0044ea8802e3294503f5dcf8ec423a00cc0812cdbedea8b86ec347db3e08"
+content_hash = "sha256:ee4d31b3f0d1bc019ffa293a81c5fa4e921ededab600d8fde4242d1e9c6bb9a8"
 
 [[package]]
 name = "absl-py"
@@ -2092,7 +2092,7 @@ files = [
 
 [[package]]
 name = "langchain"
-version = "0.0.301"
+version = "0.0.331"
 requires_python = ">=3.8.1,<4.0"
 summary = "Building applications with LLMs through composability"
 dependencies = [
@@ -2103,16 +2103,15 @@ dependencies = [
     "async-timeout<5.0.0,>=4.0.0; python_version < \"3.11\"",
     "dataclasses-json<0.7,>=0.5.7",
     "jsonpatch<2.0,>=1.33",
-    "langsmith<0.1.0,>=0.0.38",
-    "numexpr<3.0.0,>=2.8.4",
+    "langsmith<0.1.0,>=0.0.52",
     "numpy<2,>=1",
     "pydantic<3,>=1",
     "requests<3,>=2",
     "tenacity<9.0.0,>=8.1.0",
 ]
 files = [
-    {file = "langchain-0.0.301-py3-none-any.whl", hash = "sha256:979b8af02ac9c5e04d34acb07d99ae6b36d84de381570efd35a797566b57dacb"},
-    {file = "langchain-0.0.301.tar.gz", hash = "sha256:06da8eed444f70232c73ddeaefcff176b4e28a6925a7568a98866aea9602048a"},
+    {file = "langchain-0.0.331-py3-none-any.whl", hash = "sha256:64e6e1a57b8deafc1c4e914820b2b8e22a5eed60d49432cadc3b8cca9d613694"},
+    {file = "langchain-0.0.331.tar.gz", hash = "sha256:b1ac365faf7fe413d5aa38329f70f23589ed07152c1a1398a5f16319eb32beb6"},
 ]
 
 [[package]]
@@ -2837,39 +2836,6 @@ files = [
     {file = "numba-0.58.1-cp39-cp39-manylinux2014_x86_64.manylinux_2_17_x86_64.whl", hash = "sha256:45698b995914003f890ad839cfc909eeb9c74921849c712a05405d1a79c50f68"},
     {file = "numba-0.58.1-cp39-cp39-win_amd64.whl", hash = "sha256:bd3dda77955be03ff366eebbfdb39919ce7c2620d86c906203bed92124989032"},
     {file = "numba-0.58.1.tar.gz", hash = "sha256:487ded0633efccd9ca3a46364b40006dbdaca0f95e99b8b83e778d1195ebcbaa"},
-]
-
-[[package]]
-name = "numexpr"
-version = "2.8.7"
-requires_python = ">=3.9"
-summary = "Fast numerical expression evaluator for NumPy"
-dependencies = [
-    "numpy>=1.13.3",
-]
-files = [
-    {file = "numexpr-2.8.7-cp310-cp310-macosx_10_9_x86_64.whl", hash = "sha256:d88531ffea3ea9287e8a1665c6a2d0206d3f4660d5244423e2a134a7f0ce5fba"},
-    {file = "numexpr-2.8.7-cp310-cp310-macosx_11_0_arm64.whl", hash = "sha256:db1065ba663a854115cf1f493afd7206e2efcef6643129e8061e97a51ad66ebb"},
-    {file = "numexpr-2.8.7-cp310-cp310-manylinux_2_17_aarch64.manylinux2014_aarch64.whl", hash = "sha256:a4546416004ff2e7eb9cf52c2d7ab82732b1b505593193ee9f93fa770edc5230"},
-    {file = "numexpr-2.8.7-cp310-cp310-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:cb2f473fdfd09d17db3038e34818d05b6bc561a36785aa927d6c0e06bccc9911"},
-    {file = "numexpr-2.8.7-cp310-cp310-musllinux_1_1_x86_64.whl", hash = "sha256:5496fc9e3ae214637cbca1ab556b0e602bd3afe9ff4c943a29c482430972cda8"},
-    {file = "numexpr-2.8.7-cp310-cp310-win32.whl", hash = "sha256:d43f1f0253a6f2db2f76214e6f7ae9611b422cba3f7d4c86415d7a78bbbd606f"},
-    {file = "numexpr-2.8.7-cp310-cp310-win_amd64.whl", hash = "sha256:cf5f112bce5c5966c47cc33700bc14ce745c8351d437ed57a9574fff581f341a"},
-    {file = "numexpr-2.8.7-cp311-cp311-macosx_10_9_x86_64.whl", hash = "sha256:32934d51b5bc8a6636436326da79ed380e2f151989968789cf65b1210572cb46"},
-    {file = "numexpr-2.8.7-cp311-cp311-macosx_11_0_arm64.whl", hash = "sha256:f021ac93cb3dd5d8ba2882627b615b1f58cb089dcc85764c6fbe7a549ed21b0c"},
-    {file = "numexpr-2.8.7-cp311-cp311-manylinux_2_17_aarch64.manylinux2014_aarch64.whl", hash = "sha256:dccf572763517db6562fb7b17db46aacbbf62a9ca0a66672872f4f71aee7b186"},
-    {file = "numexpr-2.8.7-cp311-cp311-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:11121b14ee3179bade92e823f25f1b94e18716d33845db5081973331188c3338"},
-    {file = "numexpr-2.8.7-cp311-cp311-musllinux_1_1_x86_64.whl", hash = "sha256:81451962d4145a46dba189df65df101d4d1caddb6efe6ebfe05982cd9f62b2cf"},
-    {file = "numexpr-2.8.7-cp311-cp311-win32.whl", hash = "sha256:da55ba845b847cc33c4bf81cee4b1bddfb0831118cabff8db62888ab8697ec34"},
-    {file = "numexpr-2.8.7-cp311-cp311-win_amd64.whl", hash = "sha256:fd93b88d5332069916fa00829ea1b972b7e73abcb1081eee5c905a514b8b59e3"},
-    {file = "numexpr-2.8.7-cp39-cp39-macosx_10_9_x86_64.whl", hash = "sha256:4ecaa5be24cf8fa0f00108e9dfa1021b7510e9dd9d159b8d8bc7c7ddbb995b31"},
-    {file = "numexpr-2.8.7-cp39-cp39-macosx_11_0_arm64.whl", hash = "sha256:3a84284e0a407ca52980fd20962e89aff671c84cd6e73458f2e29ea2aa206356"},
-    {file = "numexpr-2.8.7-cp39-cp39-manylinux_2_17_aarch64.manylinux2014_aarch64.whl", hash = "sha256:e838289e3b7bbe100b99e35496e6cc4cc0541c2207078941ee5a1d46e6b925ae"},
-    {file = "numexpr-2.8.7-cp39-cp39-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:0983052f308ea75dd232eb7f4729eed839db8fe8d82289940342b32cc55b15d0"},
-    {file = "numexpr-2.8.7-cp39-cp39-musllinux_1_1_x86_64.whl", hash = "sha256:8bf005acd7f1985c71b1b247aaac8950d6ea05a0fe0bbbbf3f96cd398b136daa"},
-    {file = "numexpr-2.8.7-cp39-cp39-win32.whl", hash = "sha256:56ec95f8d1db0819e64987dcf1789acd500fa4ea396eeabe4af6efdcb8902d07"},
-    {file = "numexpr-2.8.7-cp39-cp39-win_amd64.whl", hash = "sha256:c7bf60fc1a9c90a9cb21c4c235723e579bff70c8d5362228cb2cf34426104ba2"},
-    {file = "numexpr-2.8.7.tar.gz", hash = "sha256:596eeb3bbfebc912f4b6eaaf842b61ba722cebdb8bc42dfefa657d3a74953849"},
 ]
 
 [[package]]
