@@ -18,7 +18,6 @@ open_source/installation_library/index
 open_source/scan/index
 open_source/customize_tests/index
 open_source/integrate_tests/index
-open_source/talk_to_your_model/index
 ```
 
 ```{toctree}
