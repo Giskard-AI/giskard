@@ -58,7 +58,6 @@ jobs:
         pydantic_v1: [false]
         pandas_v1: [false]
         langchain_minimal: [false]
-        openai_inf_1: [false]
         # https://docs.github.com/en/actions/using-github-hosted-runners/about-github-hosted-runners#supported-runners-and-hardware-resources
         include:
           - python-version: "3.10"
@@ -66,43 +65,31 @@ jobs:
             pydantic_v1: false
             pandas_v1: false
             langchain_minimal: false
-            openai_inf_1: false
           - python-version: "3.10"
             os: windows-2022
             pydantic_v1: false
             pandas_v1: false
             langchain_minimal: false
-            openai_inf_1: false
           - python-version: "3.10"
             os: macos-latest
             pydantic_v1: false
             pandas_v1: false
             langchain_minimal: false
-            openai_inf_1: false
           - python-version: "3.10"
             os: ubuntu-latest
             pydantic_v1: true
             pandas_v1: false
             langchain_minimal: false
-            openai_inf_1: false
           - python-version: "3.10"
             os: ubuntu-latest
             pydantic_v1: false
             pandas_v1: true
             langchain_minimal: false
-            openai_inf_1: false
           - python-version: "3.10"
             os: ubuntu-latest
             pydantic_v1: false
             pandas_v1: false
-            openai_inf_1: false
             langchain_minimal: true
-          - python-version: "3.10"
-            os: ubuntu-latest
-            pydantic_v1: false
-            pandas_v1: false
-            openai_inf_1: True
-            langchain_minimal: false
     continue-on-error: false # https://ncorti.com/blog/howto-github-actions-build-matrix
     steps:
       - name: Checkout code
@@ -144,17 +131,6 @@ jobs:
         run: |
           pdm run pip uninstall pydantic pydantic_core -y
           pdm run pip install "pydantic>=1,<2"
-
-      - name: Install OpenAI <1
-        if: ${{ matrix.openai_inf_1 }}
-        run: |
-          pdm run pip uninstall openai -y
-          pdm run pip install "openai<1"
-
-      - name: Check OpenAI installed version
-        run: |
-          pdm run pip freeze | grep '^openai'
-          pdm run pip freeze | grep -q '^openai==${{ matrix.openai_inf_1 && '0' || '1' }}\.'
 
       - name: Check Pydantic installed version
         run: |
