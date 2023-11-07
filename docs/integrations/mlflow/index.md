@@ -12,8 +12,10 @@ MLflow is an open-source platform for managing end-to-end machine learning (ML) 
 
 Integrating Giskard with MLflow offers several compelling advantages for managing and enhancing machine learning workflows:
 - **Seamless Integration with `mlflow.evaluate()`**: Giskard effortlessly integrates with MLflow's evaluation API, simplifying vulnerability assessment.
-- **Comprehensive Vulnerability Reports**: Giskard's [scans](https://docs.giskard.ai/en/latest/guides/scan/index.html) cover performance bias, data leakage, model robustness, and more, providing in-depth model assessments.
-- **Efficient Metric Logging**: Easily track and compare model performance, robustness, and ethical considerations within MLflow.
+- **Automated Vulnerability Detection**: Giskard's scan feature ensures the identification of hidden vulnerabilities in ML models by generating a comprehensive report that can be logged into MLflow.
+  - **Tabular and NLP models**: wherein some of the most important vulnerabilities revolves around **performance biases**, **data leakage**, **unrobustness**, and more.
+  - **LLMs**: wherein some of the most critical vulnerabilities are **Prompt Injection** (when LLMs are manipulated to behave as the attacker wishes), **Sensitive Information Disclosure** (when LLMs inadvertently leak confidential information), **Hallucination** (when LLMs generate inaccurate or inappropriate content), and more. In conjunction with the tracing, the scan report creates the ideal combination for building and debugging LLM apps.
+- **Customizable Tests**: Giskard generates tailored tests based on the detected vulnerabilities. You can further customize these tests by defining domain-specific data slicers and transformers.
 - **Enhanced Model Governance**: This integration supports transparent model evaluation and governance, crucial for meeting best practices and compliance requirements.
 
 ## Setup
