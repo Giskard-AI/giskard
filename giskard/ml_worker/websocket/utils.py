@@ -2,9 +2,7 @@ from typing import Any, Dict, List, Optional
 
 import logging
 import os
-import posixpath
 import shutil
-from pathlib import Path
 
 from mlflow.store.artifact.artifact_repo import verify_artifact_path
 
@@ -23,7 +21,6 @@ from giskard.ml_worker.websocket import (
     EchoMsg,
     ExplainParam,
     ExplainTextParam,
-    GenerateTestSuiteParam,
     GetInfoParam,
     GetPushParam,
     RunAdHocTestParam,
@@ -58,8 +55,6 @@ def parse_action_param(action: MLWorkerAction, params):
         return ExplainTextParam.parse_obj(params)
     elif action == MLWorkerAction.echo:
         return EchoMsg.parse_obj(params)
-    elif action == MLWorkerAction.generateTestSuite:
-        return GenerateTestSuiteParam.parse_obj(params)
     elif action == MLWorkerAction.getPush:
         return GetPushParam.parse_obj(params)
     elif action == MLWorkerAction.createSubDataset:
@@ -121,9 +116,11 @@ def log_artifact_local(local_file, artifact_path=None):
 
     file_name = os.path.basename(local_file)
 
-    paths = (projects_dir, artifact_path, file_name) if artifact_path else (projects_dir, file_name)
-    artifact_file = posixpath.join("/", *paths)
-    Path(artifact_file).parent.mkdir(parents=True, exist_ok=True)
+    if artifact_path:
+        artifact_file = projects_dir / artifact_path / file_name
+    else:
+        artifact_file = projects_dir / file_name
+    artifact_file.parent.mkdir(parents=True, exist_ok=True)
 
     shutil.copy(local_file, artifact_file)
 

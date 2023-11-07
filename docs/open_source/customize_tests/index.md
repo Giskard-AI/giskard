@@ -14,19 +14,19 @@ data_transformations/index
 :gutter: 1
 
 :::::{grid-item}
-:::{card} <h3><center>👨‍🔬 Test your ML model</center></h3>
+:::{card} <h3><center>👨‍🔬 Create tests</center></h3>
 :link: test_model/index.html
 :::
 :::::
 
 :::::{grid-item}
-:::{card} <h3><center>🔪 Identify data slices</center></h3>
+:::{card} <h3><center>🔪 Create data slices</center></h3>
 :link: data_slices/index.html
 :::
 :::::
 
 :::::{grid-item}
-:::{card} <h3><center>🔄 Define data transformations</center></h3>
+:::{card} <h3><center>🔄 Create data transformations</center></h3>
 :link: data_transformations/index.html
 :::
 :::::
