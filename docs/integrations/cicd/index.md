@@ -1,4 +1,4 @@
-# ⚙️ CI/CD pipeline
+# 🐙️ GitHub
 
 :::{warning}
 First, you'll need to know how to run Giskard's scan function
