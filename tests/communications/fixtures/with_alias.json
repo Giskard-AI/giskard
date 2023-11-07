@@ -204,223 +204,6 @@
           "processType": "kmJPLpnAdfPSTrxWDKzo"
         }
       }
-    },
-    {
-      "tests": {
-        "fnGBedSHjSbtSKoUFTUw": {
-          "uuid": "JCXPLQZnkMOAzuTPEcSx",
-          "name": "jpJagpUMYCDCBCQXvGqp",
-          "displayName": "AECYiHZMDtuWUIUWStyP",
-          "version": 6105,
-          "module": "HSNuPzhhZQtgOXvWovor",
-          "doc": "VlRXuwdkhLfiOfHjawXc",
-          "moduleDoc": "lvcHWMJRMZJjPKclHTgx",
-          "args": [
-            {
-              "name": "JzuFyhFKinMWBTGQVPGS",
-              "type": "fNLsUKcGpVfAomhnvGUd",
-              "optional": false,
-              "default": "AXoypzzFmjNMExhABhNZ",
-              "argOrder": 3492
-            }
-          ],
-          "tags": [
-            "qzrghneCKDJlkDTvabpF"
-          ],
-          "code": "elJZrFAbrhnOJceLfqoc",
-          "type": "bhuWHmJoAqXsPHRFTvJG",
-          "debugDescription": "BDBuUGCcAjlwCnoByuft"
-        }
-      },
-      "slices": {
-        "ICCRLJbqJiVhTlRSrUiS": {
-          "uuid": "twgFoIPFaXVHtDTxOFvW",
-          "name": "vFcybKacfhAsoZVIPQmQ",
-          "displayName": "mDsiOVqTsIZOcwtpQwKH",
-          "version": 8503,
-          "module": "hrfACGUNgEykGXulmYrm",
-          "doc": "JMtHIWwugzngavPHWxtA",
-          "moduleDoc": "QViBfnyQKPlKZCmvijId",
-          "args": [
-            {
-              "name": "BDitblmcAjAFZeuyDcee",
-              "type": "QcAObSyLigDQOHZPCKKQ",
-              "optional": false,
-              "default": "QshDROGMrhnsoyhgnkPB",
-              "argOrder": 3250
-            }
-          ],
-          "tags": [
-            "CLmhxKeWhIbvvhFICWSh"
-          ],
-          "code": "kLuMjphzpApKbPGftxGc",
-          "type": "OigWQfwEMAuVZlXIAQEL",
-          "cellLevel": false,
-          "columnType": "gkNtzFnHIVASYNvofRgD",
-          "processType": "xclQCWVeJcvwXEjABksT"
-        }
-      },
-      "transformations": {
-        "ZOdVxRjhVocAZRuZPRHu": {
-          "uuid": "VyWCVywEqhESoSOOvZPD",
-          "name": "fDaUrtCHEzGSxAQaiqlU",
-          "displayName": "hfqAQZSFbdGQnYCDGdiW",
-          "version": 4379,
-          "module": "vgCHmfLcAOQkCCrpAbQP",
-          "doc": "bZviCKKGBjUmEYALxOsx",
-          "moduleDoc": "WFsWHaziUclUBjXkxmAq",
-          "args": [
-            {
-              "name": "XdEjGXEFszWIEGRRErHk",
-              "type": "AzRFIWSFMVNFinQpNuCn",
-              "optional": true,
-              "default": "FcxUmxKWKGtwHsOaNMpa",
-              "argOrder": 5540
-            }
-          ],
-          "tags": [
-            "qTQcLrIQdOpvrbHJNNMH"
-          ],
-          "code": "ptWYQSWvmcmlLtGLpLsL",
-          "type": "JxihZwrPzWfHQIwRNHfl",
-          "cellLevel": false,
-          "columnType": "MMZntlfAAgVYdadMSdaB",
-          "processType": "raakkpCnmkUmCxrvajHN"
-        }
-      }
-    },
-    {
-      "tests": {
-        "ljVfPThRhcorExPIgkMg": {
-          "uuid": "XQlonvmbnksxTIGSuwmR",
-          "name": "TVFfdPUBVWNtxsuyagiD",
-          "displayName": "TKhxGheFmHiSqwCUVRJd",
-          "version": 3060,
-          "module": "ybcXHMtWsSAQtIjtYULP",
-          "doc": "dRpDmOmpDkYlAnidDAUF",
-          "moduleDoc": "SPSwAjSkPolhObzjOemK",
-          "args": [
-            {
-              "name": "kwIFiJRKWlUCUSzszAIW",
-              "type": "IqqOerSnZHqZVlnQTXva",
-              "optional": true,
-              "default": "GcwWlsIDDFJqsuBDTuxR",
-              "argOrder": 3979
-            }
-          ],
-          "tags": [
-            "bHedByzrBiKuuLRxEtRt"
-          ],
-          "code": "smHCSwTkhWcsrQDyDTFx",
-          "type": "ikuyqhigPMBmKyAqBAqR",
-          "debugDescription": "kJJQrwLAjUxBskefBhuy"
-        }
-      },
-      "slices": {
-        "BEEXEzpsNRoTbdIYCxqr": {
-          "uuid": "MuMovreuTTFSAqshkOZU",
-          "name": "HiKwxZDWuuLpLHuSpfjh",
-          "displayName": "fgqZzJWrEDPqJQViBSWc",
-          "version": 5258,
-          "module": "VNrXrsEIvOSpluKIjuUX",
-          "doc": "FORldFuKpwQevhBMZNhw",
-          "moduleDoc": "CHKYWkiYiYgEggrPKqhs",
-          "args": [
-            {
-              "name": "jmzzVeBDhshUsdyBULkV",
-              "type": "aKcQjPQOfufLZBHIhtsN",
-              "optional": false,
-              "default": "wYVkhmmuOweiQBcSogmO",
-              "argOrder": 6133
-            }
-          ],
-          "tags": [
-            "VOEcxJBEsRmHwhagoybd"
-          ],
-          "code": "PYwyFfCJXHCvVByMwdET",
-          "type": "tffVfIeAVmpFDDucEoGw",
-          "cellLevel": true,
-          "columnType": "VTOXwcAMwpEqYuYKZDuN",
-          "processType": "laZzQgsRqZThAhxbyDqt"
-        }
-      },
-      "transformations": {
-        "KaknQOoHLAbufqGKDUez": {
-          "uuid": "rTciGPgBNkBllAURwFoQ",
-          "name": "dEcZwYRvRdlJWZNXvWAh",
-          "displayName": "jlQddxQliUKtyMWFynPp",
-          "version": 3416,
-          "module": "PJtbNxSgSHUKwAfmDjsH",
-          "doc": "EUwCvNGXhgpGHkoEnRfO",
-          "moduleDoc": "hLOXUbIVOxNoPvYbEgNY",
-          "args": [
-            {
-              "name": "zRmbPveIUeFscdcpqBGS",
-              "type": "SiGTmFZGKqZRqpazTOhm",
-              "optional": true,
-              "default": "euhQYPRduKixufUOLpZH",
-              "argOrder": 5513
-            }
-          ],
-          "tags": [
-            "edmBLCaXxCjmlFVnsoba"
-          ],
-          "code": "OYcdxpmTkkVGJIbYblyR",
-          "type": "XahahVeCkaonCTBBojyu",
-          "cellLevel": false,
-          "columnType": "kbcqluTLERTdJgvuockK",
-          "processType": "XVbDjBBieycRUaPRcEyj"
-        }
-      }
-    }
-  ],
-  "CreateSubDataset": [
-    {
-      "datasetUuid": "gSNnzxHPebRwNaxLlXUb"
-    },
-    {
-      "datasetUuid": "bCWtlvblwzmmlxpbRCHj"
-    },
-    {
-      "datasetUuid": "ZSgrLKWvRIpETSAEbmPv"
-    }
-  ],
-  "CreateSubDatasetParam": [
-    {
-      "dataset": {
-        "project_key": "gSNnzxHPebRwNaxLlXUb",
-        "id": "bCWtlvblwzmmlxpbRCHj",
-        "sample": false
-      },
-      "projectKey": "SgrLKWvRIpETSAEbmPvi",
-      "name": "CKJtwAOBuzbcKZEuiAZO",
-      "rowIndexes": [
-        8841
-      ]
-    },
-    {
-      "dataset": {
-        "project_key": "VCvrSsVIFLtSXWAgOkXz",
-        "id": "sCWvQvaCOrFPHCjeCSWb",
-        "sample": false
-      },
-      "projectKey": "dTxNonPjpinXIHpKzfqr",
-      "name": "PnnLYYwYlubXxAwRYGKx",
-      "rowIndexes": [
-        8583
-      ]
-    },
-    {
-      "dataset": {
-        "project_key": "HuDqGdpYTpSqWMvnaTbQ",
-        "id": "YDiTYKAtskJwkfIpzqTU",
-        "sample": true
-      },
-      "projectKey": "iSQDhwnftCVRBNBdcgiB",
-      "name": "nrAnrfmXOLzEOqvtZhgf",
-      "rowIndexes": [
-        9624
-      ]
     }
   ],
   "DataFrame": [
@@ -1322,13 +1105,7 @@
         "sample": true
       },
       "dataframe": {
-        "rows": [
-          {
-            "columns": {
-              "OEixJiRwYPCQCLqkqbOW": "LquudqFxnOOUTysjkksQ"
-            }
-          }
-        ]
+        "rows": []
       },
       "target": "OEixJiRwYPCQCLqkqbOW",
       "column_types": {
@@ -1370,7 +1147,7 @@
   "GetPushResponse": [
     {
       "contribution": {
-        "kind": 4,
+        "kind": 2,
         "key": "gSNnzxHPebRwNaxLlXUb",
         "value": "bCWtlvblwzmmlxpbRCHj",
         "push_title": "ZSgrLKWvRIpETSAEbmPv",
@@ -1735,126 +1512,6 @@
           }
         ]
       }
-    },
-    {
-      "contribution": {
-        "kind": 1,
-        "key": "XhORIKxWYtPwiqgVXgFv",
-        "value": "gpmMajwbGFRkoCoEnJPQ",
-        "push_title": "YCzSNDtofPgMCYNYhADq",
-        "push_details": []
-      },
-      "perturbation": {
-        "kind": 0,
-        "key": "AsBaxxpuOJzHtkaoFTRA",
-        "value": "ZyRvMZpiGBsauwvSEMUM",
-        "push_title": "zMHHGvGGWOSNQFsnKTCh",
-        "push_details": [
-          {
-            "action": "RzycAMvsIbAXJuJFkkUn",
-            "explanation": "dRBtAMiHLQoFmDiPTrlY",
-            "button": "KRbUGqwNOjGiYxVLFnBh",
-            "cta": 4
-          }
-        ]
-      },
-      "overconfidence": {
-        "kind": 2,
-        "key": "hLsNmLLpfuzfjcFUlbKQ",
-        "value": "YFrRgKeuztimQyElLrEV",
-        "push_title": "ZcPSqtEVuTNhVahIctgy",
-        "push_details": [
-          {
-            "action": "RVbdRcogebHMJRIuGYHm",
-            "explanation": "dWEsFDBdsvkTwILMLNnY",
-            "button": "hVSSceQytZcBxguKTbBe",
-            "cta": 2
-          }
-        ]
-      },
-      "borderline": {
-        "kind": 1,
-        "key": "PebtMqgPPSpwmCrrOXEf",
-        "value": "HxZLRKBURpitBfrDcQHq",
-        "push_title": "psqMABhVqrdYyVWYQWVP",
-        "push_details": []
-      },
-      "action": {
-        "object_uuid": "gBDZOKMsXHuyYBihJDVj",
-        "arguments": []
-      }
-    },
-    {
-      "contribution": {
-        "kind": 0,
-        "key": "vLcfCnfnGBedSHjSbtSK",
-        "value": "oUFTUwJCXPLQZnkMOAzu",
-        "push_title": "TPEcSxjpJagpUMYCDCBC",
-        "push_details": []
-      },
-      "perturbation": {
-        "kind": 4,
-        "key": "QXvGqpAECYiHZMDtuWUI",
-        "value": "UWStyPtMzrxgsvainSEo",
-        "push_title": "ZnAMJwOzLzYLegYlbnyX",
-        "push_details": []
-      },
-      "overconfidence": {
-        "kind": 4,
-        "key": "uLReFZCBsXYfCvIgnoyP",
-        "value": "SOJeuIpAVgSfuVkBvUZp",
-        "push_title": "zUClNrzaZIWYnCwNRloK",
-        "push_details": [
-          {
-            "action": "vgkDFXBFhvoKnltyrFjT",
-            "explanation": "KBdqJHQUqzrghneCKDJl",
-            "button": "kDTvabpFelJZrFAbrhnO",
-            "cta": 4
-          }
-        ]
-      },
-      "borderline": {
-        "kind": 2,
-        "key": "JceLfqocbhuWHmJoAqXs",
-        "value": "PHRFTvJGBDBuUGCcAjlw",
-        "push_title": "CnoByuftICCRLJbqJiVh",
-        "push_details": []
-      },
-      "action": {
-        "object_uuid": "TlRSrUiStwgFoIPFaXVH",
-        "arguments": [
-          {
-            "name": "tDTxOFvWvFcybKacfhAs",
-            "model": {
-              "project_key": "oZVIPQmQmDsiOVqTsIZO",
-              "id": "cwtpQwKHAcIUiHzrKYbU",
-              "sample": true
-            },
-            "dataset": {
-              "project_key": "GXulmYrmJMtHIWwugzng",
-              "id": "avPHWxtAQViBfnyQKPlK",
-              "sample": true
-            },
-            "float": 443516.974148451,
-            "int": 2603,
-            "str": "IrmOWXjEAwPWLKJHBmOg",
-            "bool": false,
-            "slicingFunction": {
-              "project_key": "ceeQcAObSyLigDQOHZPC",
-              "id": "KKQzoWnojLesWnntDaXX",
-              "sample": true
-            },
-            "transformationFunction": {
-              "project_key": "kPBkwTECukGeOcMtJEgC",
-              "id": "dmtoIZsRlKsBeRkypQEF",
-              "sample": false
-            },
-            "kwargs": "xGcOigWQfwEMAuVZlXIA",
-            "args": [],
-            "none": false
-          }
-        ]
-      }
     }
   ],
   "IdentifierSingleTestResult": [
@@ -1865,7 +1522,7 @@
         "is_error": false,
         "messages": [
           {
-            "type": 1,
+            "type": 0,
             "text": "dgNytkzUuFNKnPEfqbHa"
           }
         ],
@@ -1882,36 +1539,26 @@
         "partial_unexpected_index_list": [
           8983
         ],
-        "partial_unexpected_counts": [
-          {
-            "value": [
-              3803
-            ],
-            "count": 6626
-          }
+        "partial_unexpected_counts": [],
+        "unexpected_index_list": [
+          3803
         ],
         "output_df": "",
         "number_of_perturbed_rows": 6626,
         "actual_slices_size": [
           8417
         ],
-        "number_of_perturbed_rows": 5633,
-        "actual_slices_size": [
-          9466
-        ],
         "reference_slices_size": [
-          5788
+          5633
         ],
-        "failed_indexes": [
-          7522
-        ]
+        "output_df_id": "XExoCXaOQUMQADwcTDkA"
       },
       "arguments": []
     },
     {
-      "id": 4411,
+      "id": 7945,
       "result": {
-        "passed": false,
+        "passed": true,
         "is_error": false,
         "messages": [
           {
@@ -2140,12 +1787,7 @@
       "result": {
         "passed": true,
         "is_error": false,
-        "messages": [
-          {
-            "type": 1,
-            "text": "jpinXIHpKzfqrPnnLYYw"
-          }
-        ],
+        "messages": [],
         "props": {
           "NmfGrdiBioLxqybuvjfU": "AkFQbahLiKJClYPAlHuD"
         },
@@ -2691,6 +2333,7 @@
       "unexpected_index_list": [
         8330
       ],
+      "output_df": "78",
       "number_of_perturbed_rows": 1768,
       "actual_slices_size": [
         2682
@@ -2698,85 +2341,76 @@
       "reference_slices_size": [
         8535
       ],
-      "failed_indexes": [
-        6443
-      ]
+      "output_df_id": "RtMyqSFEHilakVCvrSsV"
     },
     {
-      "passed": true,
+      "passed": false,
       "is_error": false,
       "messages": [],
       "props": {
-        "MyqSFEHilakVCvrSsVIF": "LtSXWAgOkXzsCWvQvaCO"
+        "FLtSXWAgOkXzsCWvQvaC": "OrFPHCjeCSWbXdTxNonP"
       },
-      "metric": -644089601.29333,
-      "missing_count": 3761,
-      "missing_percent": 9023.23985076817,
-      "unexpected_count": 1500,
-      "unexpected_percent": -4.1239841581825,
-      "unexpected_percent_total": 255348685454.96,
-      "unexpected_percent_nonmissing": -31.1925299156086,
+      "metric": -74261205724.171,
+      "missing_count": 2615,
+      "missing_percent": 7115285514.84961,
+      "unexpected_count": 4824,
+      "unexpected_percent": -8329781.63588469,
+      "unexpected_percent_total": 6800273280538.43,
+      "unexpected_percent_nonmissing": 34684657.1824718,
       "partial_unexpected_index_list": [
-        3024
-      ],
-      "partial_unexpected_counts": [],
-      "unexpected_index_list": [
-        5643
-      ],
-      "number_of_perturbed_rows": 4756,
-      "actual_slices_size": [
-        1138
-      ],
-      "reference_slices_size": [
-        2743
-      ],
-      "failed_indexes": [
-        2615
-      ]
-    },
-    {
-      "passed": true,
-      "is_error": false,
-      "messages": [
-        {
-          "type": 1,
-          "text": "XIHpKzfqrPnnLYYwYlub"
-        }
-      ],
-      "props": {
-        "XxAwRYGKxBbJPIwMglcd": "dVpiDgDSElUxRTOGbkfD"
-      },
-      "metric": 66082199.1751947,
-      "missing_count": 6390,
-      "missing_percent": -4368841589.80232,
-      "unexpected_count": 6591,
-      "unexpected_percent": 674160828.42957,
-      "unexpected_percent_total": 43.3747055055675,
-      "unexpected_percent_nonmissing": 7892866006.71778,
-      "partial_unexpected_index_list": [
-        5633
+        4152
       ],
       "partial_unexpected_counts": [
         {
           "value": [
-            8754
+            8357
           ],
-          "count": 7938
+          "count": 3425
         }
       ],
       "unexpected_index_list": [
-        8724
+        9922
       ],
-      "number_of_perturbed_rows": 3844,
+      "output_df": "",
+      "number_of_perturbed_rows": 7072,
       "actual_slices_size": [
-        1070
+        341
       ],
       "reference_slices_size": [
-        661
+        3692
       ],
-      "failed_indexes": [
-        1387
-      ]
+      "output_df_id": "ahLiKJClYPAlHuDqGdpY"
+    },
+    {
+      "passed": true,
+      "is_error": true,
+      "messages": [],
+      "props": {
+        "ddVpiDgDSElUxRTOGbkf": "DUEzWuAaFuoiSQDhwnft"
+      },
+      "metric": -958864.947462485,
+      "missing_count": 8754,
+      "missing_percent": 1095934.97370289,
+      "unexpected_count": 661,
+      "unexpected_percent": 2929896526659.68,
+      "unexpected_percent_total": -46210052149.9833,
+      "unexpected_percent_nonmissing": -385989.363839118,
+      "partial_unexpected_index_list": [
+        5575
+      ],
+      "partial_unexpected_counts": [],
+      "unexpected_index_list": [
+        1866
+      ],
+      "output_df": "",
+      "number_of_perturbed_rows": 4771,
+      "actual_slices_size": [
+        3853
+      ],
+      "reference_slices_size": [
+        9895
+      ],
+      "output_df_id": "OLzEOqvtZhgfEWdCDXsp"
     }
   ],
   "SuiteInput": [
