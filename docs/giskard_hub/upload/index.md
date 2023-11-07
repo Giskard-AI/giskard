@@ -1,6 +1,5 @@
 # ⬆️ Log datasets & models in the Hub
 
-[//]: # (TODO: review content and make sure flow is ok)
 You can easily upload objects to the Hub, such as **model**, **dataset**, **slicing & transformation functions** and **test suite**.
 
 The Giskard Hub is installed on your infrastructure. Giskard as a company does not have access to your datasets and models, so you can keep everything private.
@@ -13,7 +12,7 @@ Uploading objects to the Giskard Hub will help you:
 
 ## 1. Run the Giskard Hub
 
-To install the Giskard Hub, please check the [Giskard Hub installation page](../installation_app/index.rst) page.
+To install the Giskard Hub, please check the [Giskard Hub installation page](../installation_hub/index.md) page.
 
 ## 2. Create a Giskard client
 

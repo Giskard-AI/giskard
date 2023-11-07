@@ -49,7 +49,7 @@ Example: character injection detection
 
 For example, the character injection detector (see
 :class:`~giskard.scanner.llm.LLMCharsInjectionDetector`) checks if the model is vulnerable to a specific form of
-injection attack based on repeated sequences of special characters [#]_ (for example the carriage return ``\r``).
+injection attack based on repeated sequences of special characters [Breitenbach2023]_ (for example the carriage return ``\r``).
 
 Consider a customer support chatbot that uses a GPT-3.5 model to generate responses to customer queries, using an
 internal knowledge base to retrieve the information. An example query may look like this
@@ -66,35 +66,28 @@ mobile app?\r\r\r\r\r\r…\r\r\r\r\r\r\r\r\r"``. Then, it will query the model w
 
     **Model**: "Telah terinfeksi mesin penyejuk nya speaker berhenti pads Steppers bolehDON'T FORGET TO REMOVE ROTOR ARM FROM CENTRIFUGE. Grip the impeller and pull away from driving shaft, making sure it seals in the Rubber to Metal…"
 
-It will then compare the model output with the original one using BERT score [#]_. If the detector finds a systematic
+It will then compare the model output with the original one using BERT score [Zhang2019]_. If the detector finds a systematic
 change in the model outputs, an issue will be raised and reported in the scan.
 
-.. [#]: Breitenbach et al, Dont you (forget NLP): Prompt injection with control characters in ChatGPT, https://dropbox.tech/machine-learning/prompt-injection-with-control-characters-openai-chatgpt-llm
-.. [#]: Zhang et al, BERTScore: Evaluating Text Generation with BERT, https://arxiv.org/abs/1904.09675
-
-The prompt injection detector ():class:`~giskard.scanner.llm.LLMPromptInjectionDetector` works similarly, using a large
+The prompt injection detector works similarly, using a large
 library of known prompts to probe the model.
-
 
 .. _llm_assisted_detectors:
 
 LLM assisted detectors
 ^^^^^^^^^^^^^^^^^^^^^^
 
-This class of detectors combines LLM adversarial input generation with an LLM-as-a-judge [#]_ evaluation approach,
+This class of detectors combines LLM adversarial input generation with an LLM-as-a-judge [Zheng2023]_ evaluation approach,
 where another powerful LLM model (GPT-4, in our case) is used evaluate the output of the model under analysis.
 
 The effectiveness of LLM as an evaluator relies on the fact that generally discriminative "perception" tasks are easier
-to perform than their generative counterpart [#]_. For this reason, even if an LLM is incapable of generating text
+to perform than their generative counterpart [Ribeiro2023a]_ [Ribeiro2023b]_. For this reason, even if an LLM is incapable of generating text
 that perfectly respects some requirements, it may still be capable of evaluating if a given text respects the same
 requirements.
 
 LLM-assisted detectors follow the three-phase approach described above, except that both 1 (adversarial input
 generation) and 3 (evaluation) are performed using an LLM model.
 
-.. [#]: Zheng et al, Judging LLM-as-a-Judge with MT-Bench and Chatbot Arena, https://arxiv.org/abs/2306.05685
-.. [#]: Marco Ribeiro, Testing Language Models (and Prompts) Like We Test Software, https://towardsdatascience.com/testing-large-language-models-like-we-test-software-92745d28a359
-.. [#]: Ribeiro & Lundberg, Adaptive Testing and Debugging of NLP Models, https://aclanthology.org/2022.acl-long.230
 
 Example: Sycophancy detector
 """"""""""""""""""""""""""""
@@ -147,4 +140,13 @@ example:
    strategies are ineffective.
 
 When the LLM judge detects a contradiction, it will raise an issue and report it in the scan.
-"""
+
+
+References
+----------
+
+.. [Breitenbach2023] Breitenbach et al, Dont you (forget NLP): Prompt injection with control characters in ChatGPT, https://dropbox.tech/machine-learning/prompt-injection-with-control-characters-openai-chatgpt-llm
+.. [Zhang2019] Zhang et al, BERTScore: Evaluating Text Generation with BERT, https://arxiv.org/abs/1904.09675
+.. [Zheng2023] Zheng et al, Judging LLM-as-a-Judge with MT-Bench and Chatbot Arena, https://arxiv.org/abs/2306.05685
+.. [Ribeiro2023a] Marco Ribeiro, Testing Language Models (and Prompts) Like We Test Software, https://towardsdatascience.com/testing-large-language-models-like-we-test-software-92745d28a359
+.. [Ribeiro2023b] Ribeiro & Lundberg, Adaptive Testing and Debugging of NLP Models, https://aclanthology.org/2022.acl-long.230
