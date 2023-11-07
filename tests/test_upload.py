@@ -1,15 +1,20 @@
 import re
-import pandas as pd
 
+import pandas as pd
 import pytest
 
-from giskard import Dataset, slicing_function, transformation_function
+from giskard import Dataset, slicing_function, test, transformation_function
 from giskard.ml_worker.core.savable import Artifact
-from giskard.models.sklearn import SKLearnModel
 from giskard.ml_worker.testing.test_result import TestResult as GiskardTestResult
-from giskard import test
-
-from tests.utils import CALLABLE_FUNCTION_META_CACHE, CALLABLE_FUNCTION_PKL_CACHE, get_local_cache_callable_artifact, match_model_id, match_url_patterns, MockedClient
+from giskard.models.sklearn import SKLearnModel
+from tests.utils import (
+    CALLABLE_FUNCTION_META_CACHE,
+    CALLABLE_FUNCTION_PKL_CACHE,
+    MockedClient,
+    get_local_cache_callable_artifact,
+    match_model_id,
+    match_url_patterns,
+)
 
 model_name = "uploaded model"
 
@@ -56,12 +61,7 @@ def _test_upload_model(model: SKLearnModel, ds: Dataset):
     )
     models_url_pattern = re.compile("http://giskard-host:12345/api/v2/project/test-project/models")
     with MockedClient() as (client, mr):
-        if model.is_regression:
-            # Warning Scenario: classification_labels is sent for regression model
-            with pytest.warns(UserWarning):
-                model.upload(client, "test-project", ds)
-        else:
-            model.upload(client, "test-project", ds)
+        model.upload(client, "test-project", ds)
 
         match_model_id(model.id)
         match_url_patterns(mr.request_history, artifact_url_pattern)
@@ -139,14 +139,16 @@ def do_nothing(row):
 @pytest.mark.parametrize(
     "cf",
     [
-        my_custom_test, # Test
-        head_slice,     # Slice
-        do_nothing,     # Transformation
+        my_custom_test,  # Test
+        head_slice,  # Slice
+        do_nothing,  # Transformation
     ],
 )
 def test_upload_callable_function(cf: Artifact):
     artifact_url_pattern = re.compile(
-        "http://giskard-host:12345/api/v2/artifacts/global/" + cf._get_name() + "/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/.*"
+        "http://giskard-host:12345/api/v2/artifacts/global/"
+        + cf._get_name()
+        + "/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/.*"
     )
     with MockedClient() as (client, mr):
         cf.upload(client=client, project_key=None)
@@ -161,14 +163,16 @@ def test_upload_callable_function(cf: Artifact):
 @pytest.mark.parametrize(
     "cf",
     [
-        my_custom_test, # Test
-        head_slice,     # Slice
-        do_nothing,     # Transformation
+        my_custom_test,  # Test
+        head_slice,  # Slice
+        do_nothing,  # Transformation
     ],
 )
 def test_upload_callable_function_to_project(cf: Artifact):
     artifact_url_pattern = re.compile(
-        "http://giskard-host:12345/api/v2/artifacts/test-project/" + cf._get_name() + "/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/.*"
+        "http://giskard-host:12345/api/v2/artifacts/test-project/"
+        + cf._get_name()
+        + "/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/.*"
     )
     with MockedClient() as (client, mr):
         cf.upload(client=client, project_key="test-project")
