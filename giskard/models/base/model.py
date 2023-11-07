@@ -1,5 +1,3 @@
-from typing import Iterable, List, Optional, Type, Union
-
 import builtins
 import importlib
 import logging
@@ -10,6 +8,7 @@ import tempfile
 import uuid
 from abc import ABC, abstractmethod
 from pathlib import Path
+from typing import Iterable, List, Optional, Type, Union
 
 import cloudpickle
 import numpy as np
@@ -484,31 +483,4 @@ class BaseModel(ABC):
             )
 
     def to_mlflow(self):
-        raise NotImplementedError
-
-    def _llm_agent(self, dataset=None, allow_dataset_queries: bool = False, scan_result=None):
-        from ...llm.config import llm_config
-        from ...llm.talk.talk import create_ml_llm
-
-        data_source_tools = []
-        if allow_dataset_queries:
-            if dataset is None:
-                raise ValueError("Please provide a dataset to allow_dataset_queries")
-            from langchain.agents import create_pandas_dataframe_agent
-            from langchain.tools import Tool
-
-            agent = create_pandas_dataframe_agent(llm_config.default_llm, dataset.df, verbose=False)
-            data_source_tools.append(
-                Tool.from_function(
-                    func=agent.run,
-                    name=f"{self.meta.name if self.meta.name is not None else 'model'}_info",
-                    description="Useful for when you need to find information to predict the model. "
-                    + "The input is a natural language request. "
-                    + "Example: 'give me all info of the row about ...'",
-                )
-            )
-
-        return create_ml_llm(llm_config.default_llm, self, dataset, data_source_tools, scan_result)
-
-    def talk(self, question: str, dataset=None, allow_dataset_queries: bool = False, scan_report=None):
-        return self._llm_agent(dataset, allow_dataset_queries, scan_report).run(question)
+        raise NotImplementedError()
