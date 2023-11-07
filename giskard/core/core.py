@@ -2,13 +2,14 @@ import typing
 
 import inspect
 import logging
-import re
+import textwrap
 from abc import ABC
 from dataclasses import dataclass
 from enum import Enum
 from pathlib import Path
 
 from ..utils.artifacts import serialize_parameter
+from .docscrape import NumpyDocString
 
 try:
     from types import NoneType
@@ -225,12 +226,19 @@ class CallableMeta(SavableMeta, ABC):
 
     @staticmethod
     def extract_doc(func):
-        if func.__doc__:
-            func_doc, _, args_doc = func.__doc__.partition("\n\n\n")
-            func_doc = re.sub(r"\n[ \t\n]+", r"\n", func_doc.strip())
-        else:
-            func_doc = None
-        return func_doc
+        if not func.__doc__:
+            return None
+
+        ds = NumpyDocString(func.__doc__)
+
+        # Summary
+        parsed = ds["Summary"]
+        parsed += "\n\n"
+
+        # Extended Summary
+        parsed += textwrap.dedent("\n".join(ds["Extended Summary"]))
+
+        return parsed
 
     def to_json(self):
         return {
