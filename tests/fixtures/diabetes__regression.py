@@ -66,4 +66,4 @@ def diabetes_dataset(diabetes_raw_dataset: DataFrame) -> Dataset:
 @pytest.fixture()
 def diabetes_dataset_with_target(diabetes_raw_dataset: DataFrame) -> Dataset:
     column_types = {feature: "numeric" for feature in diabetes_raw_dataset.columns.tolist()}
-    return Dataset(diabetes_raw_dataset, column_types=column_types)
+    return Dataset(diabetes_raw_dataset, column_types=column_types, target="target")
