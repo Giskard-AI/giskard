@@ -1,12 +1,16 @@
 import typing
 
 import inspect
+import json
 import logging
 import re
 from abc import ABC
 from dataclasses import dataclass
 from enum import Enum
 from pathlib import Path
+
+from griffe import Docstring
+from griffe.enumerations import DocstringSectionKind
 
 from ..utils.artifacts import serialize_parameter
 
@@ -18,7 +22,7 @@ except ImportError:
 from typing import Any, Callable, Dict, List, Literal, Optional, Type, TypeVar, Union
 
 logger = logging.getLogger(__name__)
-
+DEMILITER = f"\n{'='*20}\n"
 
 class Kwargs:
     pass
@@ -117,6 +121,20 @@ class FunctionArgument:
     optional: bool
     argOrder: int
 
+
+class CallableDocumentation:
+    description: Optional[str]
+    parameters: Optional[Dict[str, str]]
+
+    def __init__(self):
+        self.description = None
+        self.parameters = None
+
+    def to_dict(self):
+        return {
+            "description": self.description,
+            "parameters": self.parameters,
+        }
 
 class CallableMeta(SavableMeta, ABC):
     code: str
@@ -225,9 +243,25 @@ class CallableMeta(SavableMeta, ABC):
 
     @staticmethod
     def extract_doc(func):
+        res: CallableDocumentation = CallableDocumentation()
         if func.__doc__:
-            func_doc, _, args_doc = func.__doc__.partition("\n\n\n")
-            func_doc = re.sub(r"\n[ \t\n]+", r"\n", func_doc.strip())
+            google_doc_parts = Docstring(func.__doc__).parse("google")
+            sphinx_doc_parts = Docstring(func.__doc__).parse("sphinx")
+            doc_parts = google_doc_parts if len(google_doc_parts) > len(sphinx_doc_parts) else sphinx_doc_parts
+            for d in doc_parts:
+                if d.kind == DocstringSectionKind.text:
+                    description_value = d.value.strip()
+                    if res.description:
+                        logger.warning(
+                            f"{func.__name__} with already initialized description: {DEMILITER}{res.description}{DEMILITER} is being overwritten by {DEMILITER}{description_value}{DEMILITER}"
+                        )
+                    res.description = description_value
+                elif d.kind == DocstringSectionKind.parameters:
+                    res.parameters = {d.name: d.description.strip() for d in d.value}
+                else:
+                    logger.warning(f"Unexpected documentation element for {func.__name__}: {d.kind}")
+
+            func_doc = json.dumps(res.to_dict())
         else:
             func_doc = None
         return func_doc
