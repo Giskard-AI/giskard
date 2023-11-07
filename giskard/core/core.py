@@ -3,6 +3,7 @@ import typing
 import inspect
 import json
 import logging
+import textwrap
 from abc import ABC
 from dataclasses import dataclass
 from enum import Enum
@@ -17,6 +18,7 @@ from griffe.docstrings.dataclasses import (
 from griffe.enumerations import DocstringSectionKind
 
 from ..utils.artifacts import serialize_parameter
+from .docscrape import NumpyDocString
 
 try:
     from types import NoneType
@@ -249,36 +251,46 @@ class CallableMeta(SavableMeta, ABC):
 
     @staticmethod
     def extract_doc(func):
+        if not func.__doc__:
+            return None
+
         res: CallableDocumentation = CallableDocumentation()
-        if func.__doc__:
-            parsed_docs: List[List[DocstringSection]] = list(
-                sorted(
-                    [Docstring(func.__doc__).parse(parser) for parser in ["numpy", "google", "sphinx"]],
-                    key=len,
-                    reverse=True,
-                )
+
+        parsed_docs: List[List[DocstringSection]] = list(
+            sorted(
+                [Docstring(func.__doc__).parse(parser) for parser in ["numpy", "google", "sphinx"]],
+                key=len,
+                reverse=True,
             )
+        )
 
-            best_doc: List[DocstringSection] = parsed_docs[0]  # We keep the one with most sections
-            res.parameters = {}
-            for d in best_doc:
-                if d.kind == DocstringSectionKind.text:
-                    description_value = d.value.strip()
-                    if res.description:
-                        logger.warning(
-                            f"{func.__name__} with already initialized description: {DEMILITER}{res.description}{DEMILITER} is being overwritten by {DEMILITER}{description_value}{DEMILITER}"
-                        )
-                    res.description = description_value
-                elif d.kind == DocstringSectionKind.parameters:
-                    params: DocstringSectionParameters = d
-                    res.parameters = {p.name: p.description.strip() for p in params.value}
-                else:
-                    if d.kind not in [DocstringSectionKind.returns]:  # List of ignored section
-                        logger.warning(f"Unexpected documentation element for {func.__name__}: {d.kind}")
+        best_doc: List[DocstringSection] = parsed_docs[0]  # We keep the one with most sections
+        res.parameters = {}
+        for d in best_doc:
+            if d.kind == DocstringSectionKind.text:
+                description_value: str = d.value.strip()
+                if res.description and description_value.startswith("References"):
+                    res.description += "\n\n"
+                    res.description += description_value.replace("\n----------\n", "\n")
+                elif res.description:
+                    logger.warning(
+                        f"{func.__name__} with already initialized description: {DEMILITER}{res.description}{DEMILITER} is being overwritten by {DEMILITER}{description_value}{DEMILITER}"
+                    )
+                res.description = description_value
+            elif d.kind == DocstringSectionKind.parameters:
+                params: DocstringSectionParameters = d
+                missing_annotation = [p.name for p in params.value if p.annotation is None]
+                if len(missing_annotation) > 0:
+                    logger.warning(
+                        f"{func.__name__} is missing type hinting for params {', '.join(missing_annotation)}"
+                    )
 
-            func_doc = json.dumps(res.to_dict())
-        else:
-            func_doc = None
+                res.parameters = {p.name: p.description.strip() for p in params.value}
+            else:
+                if d.kind not in [DocstringSectionKind.returns]:  # List of ignored section
+                    logger.warning(f"Unexpected documentation element for {func.__name__}: {d.kind}")
+
+        func_doc = json.dumps(res.to_dict())
         return func_doc
 
     def to_json(self):
