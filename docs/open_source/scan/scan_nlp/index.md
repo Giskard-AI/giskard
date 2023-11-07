@@ -197,6 +197,13 @@ Jump to the [test customization](https://docs.giskard.ai/en/latest/open_source/c
 * Create more domain-specific tests relevant to your use case
 * Share results, and collaborate with your team to integrate business feedback
 
+To upload your test suite, you must have created a project on Giskard Hub and instantiated a Giskard Python client. If you haven't done this yet, follow the first steps of [upload your object](https://docs.giskard.ai/en/latest/giskard_hub/upload/index.html#upload-your-object) guide.
+
+Then, upload your test suite like this:
+```python
+test_suite.upload(giskard_client, project_key)
+```
+
 [Here's a demo](https://huggingface.co/spaces/giskardai/giskard) of the Giskard Hub in action.
 
 ## Troubleshooting
