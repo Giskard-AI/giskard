@@ -88,6 +88,7 @@ test = [
     "pytest-xdist>=3.3.1",
     "polyfactory",
     "pytest-env>=1.1.0",
+    "openai>=1",
 ]
 doc = [
     "furo>=2023.5.20",
@@ -176,7 +177,7 @@ dependencies = [
 [project.optional-dependencies]
 llm = [
     "langchain<=0.0.301", # Weirdly fails with newer version, see https://linear.app/giskard/issue/GSK-1853/updating-lanchain-version-over-00301-weirdly-fails
-    "openai<=0.28.1", # openai introduced on 6/10/2023 a new release 1.0.1 that we do not yet support
+    "openai",
     "evaluate>=0.4.1",
     "bert-score>=0.3.13",
 ]
