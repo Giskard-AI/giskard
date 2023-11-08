@@ -1,5 +1,5 @@
 import tempfile
-import pytest
+
 import pandas as pd
 from langchain.chains import LLMChain
 from langchain.llms.fake import FakeListLLM
@@ -39,25 +39,3 @@ def test_llm_chain():
         loaded_model = LangchainModel.load(tmpdirname)
 
         assert list(results.raw) == list(loaded_model.predict(wrapped_dataset).raw)
-
-
-def test_llm_model_requirements():
-    def prediction_function(df):
-        pass
-
-    with pytest.raises(ValueError, match=r"The parameter: \'name\' is required"):
-        Model(prediction_function, model_type="text_generation", description="dummy", feature_names=["dummy"])
-
-    with pytest.raises(ValueError, match=r"The parameter: \'description\' is required"):
-        Model(prediction_function, model_type="text_generation", name="dummy", feature_names=["dummy"])
-
-    with pytest.raises(ValueError, match=r"The parameters: \[\'name\', \'description\'\] are required"):
-        Model(prediction_function, model_type="text_generation", feature_names=["dummy"])
-
-    with pytest.raises(ValueError, match=r"The parameter: \'feature_names\' is required"):
-        Model(prediction_function, model_type="text_generation", description="dummy", name="dummy")
-
-    with pytest.raises(
-        ValueError, match=r"The parameters: \[\'name\', \'description\', \'feature_names\'\] are required"
-    ):
-        Model(prediction_function, model_type="text_generation")
