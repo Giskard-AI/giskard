@@ -1,14 +1,14 @@
 import string
 from pathlib import Path
 
-import pytest
 import numpy as np
 import pandas as pd
-from sklearn.pipeline import Pipeline
+import pytest
 from nltk.stem.snowball import SnowballStemmer
-from sklearn.linear_model import LogisticRegression
-from sklearn.preprocessing import FunctionTransformer
 from sklearn.feature_extraction.text import TfidfVectorizer
+from sklearn.linear_model import LogisticRegression
+from sklearn.pipeline import Pipeline
+from sklearn.preprocessing import FunctionTransformer
 
 from giskard import Dataset
 from giskard.models.sklearn import SKLearnModel
@@ -56,13 +56,16 @@ def preprocess_data(df: pd.DataFrame) -> pd.DataFrame:
     return df
 
 
+@pytest.fixture(scope="session")
+def amazon_review_raw_data() -> pd.DataFrame:
+    return preprocess_data(download_data(nrows=5000))
+
+
 @pytest.fixture()
-def amazon_review_data() -> Dataset:
-    raw_data = preprocess_data(download_data(nrows=5000))
-    wrapped_data = Dataset(
-        raw_data, name="reviews", target=TARGET_COLUMN_NAME, column_types={FEATURE_COLUMN_NAME: "text"}
+def amazon_review_data(amazon_review_raw_data: pd.DataFrame) -> Dataset:
+    return Dataset(
+        amazon_review_raw_data, name="reviews", target=TARGET_COLUMN_NAME, column_types={FEATURE_COLUMN_NAME: "text"}
     )
-    return wrapped_data
 
 
 def make_lowercase(x):
@@ -88,10 +91,10 @@ def tokenizer(x):
     return stems
 
 
-@pytest.fixture()
-def amazon_review_model(amazon_review_data: Dataset) -> SKLearnModel:
-    x = amazon_review_data.df[[FEATURE_COLUMN_NAME]]
-    y = amazon_review_data.df[TARGET_COLUMN_NAME]
+@pytest.fixture(scope="session")
+def amazon_review_raw_model(amazon_review_raw_data: pd.DataFrame) -> Pipeline:
+    x = amazon_review_raw_data[[FEATURE_COLUMN_NAME]]
+    y = amazon_review_raw_data[TARGET_COLUMN_NAME]
 
     # Define and fit pipeline.
     vectorizer = TfidfVectorizer(tokenizer=tokenizer, stop_words="english", ngram_range=(1, 1), min_df=0.01)
@@ -109,10 +112,14 @@ def amazon_review_model(amazon_review_data: Dataset) -> SKLearnModel:
     )
 
     pipeline.fit(x, y)
+    return pipeline
 
+
+@pytest.fixture()
+def amazon_review_model(amazon_review_raw_model) -> SKLearnModel:
     # Wrap pipeline.
     wrapped_model = SKLearnModel(
-        model=pipeline,
+        model=amazon_review_raw_model,
         model_type="classification",
         feature_names=[FEATURE_COLUMN_NAME],
         name="review_helpfulness_predictor",
