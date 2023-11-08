@@ -45,7 +45,6 @@ from giskard.ml_worker.websocket.utils import (
     map_dataset_process_function_meta_ws,
     map_function_meta_ws,
     map_result_to_single_test_result_ws,
-    map_suite_input_ws,
     parse_action_param,
     parse_function_arguments,
 )
@@ -312,7 +311,7 @@ def on_ml_worker_get_info(ml_worker: MLWorkerInfo, params: GetInfoParam, *args, 
 
     # TODO(Bazire): seems to be deprecated https://setuptools.pypa.io/en/latest/pkg_resources.html#workingset-objects
     installed_packages = (
-        {p.project_name: p.version for p in pkg_resources.working_set} if params.list_packages else None
+        {p.project_name: p.version for p in pkg_resources.working_set} if params.list_packages else {}
     )
     current_process = psutil.Process(os.getpid())
     return websocket.GetInfo(
@@ -398,7 +397,7 @@ def run_other_model(dataset, prediction_results):
 
 
 @websocket_actor(MLWorkerAction.runModel)
-def run_model(client: GiskardClient, params: websocket.RunModelParam, *args, **kwargs) -> websocket.Empty:
+def run_model(client: Optional[GiskardClient], params: websocket.RunModelParam, *args, **kwargs) -> websocket.Empty:
     try:
         model = BaseModel.download(client, params.model.project_key, params.model.id)
         dataset = Dataset.download(
@@ -659,28 +658,6 @@ def run_test_suite(
         return websocket.TestSuite(is_error=True, is_pass=False, results=[], logs=log_listener.close())
 
 
-@websocket_actor(MLWorkerAction.generateTestSuite)
-def generate_test_suite(
-    client: Optional[GiskardClient], params: websocket.GenerateTestSuiteParam, *args, **kwargs
-) -> websocket.GenerateTestSuite:
-    inputs = [map_suite_input_ws(i) for i in params.inputs]
-
-    suite = Suite().generate_tests(inputs).to_dto(client, params.project_key)
-
-    return websocket.GenerateTestSuite(
-        tests=[
-            websocket.GeneratedTestSuite(
-                test_uuid=test.testUuid,
-                inputs=[
-                    websocket.GeneratedTestInput(name=i.name, value=i.value, is_alias=i.is_alias)
-                    for i in test.functionInputs.values()
-                ],
-            )
-            for test in suite.tests
-        ]
-    )
-
-
 @websocket_actor(MLWorkerAction.echo, execute_in_pool=False)
 def echo(params: websocket.EchoMsg, *args, **kwargs) -> websocket.EchoMsg:
     return params
@@ -708,7 +685,7 @@ def handle_cta(
         push.slicing_function.meta.tags.append("generated")
         object_uuid = push.slicing_function.upload(client, project_key)
     elif cta_kind == CallToActionKind.SAVE_PERTURBATION:
-        for perturbation in push.transformation_function:
+        for perturbation in push.transformation_functions:
             object_uuid = perturbation.upload(client, project_key)
     elif cta_kind == CallToActionKind.SAVE_EXAMPLE:
         object_uuid = push.saved_example.upload(client, project_key)
@@ -814,7 +791,7 @@ def get_push_objects(client: Optional[GiskardClient], params: websocket.GetPushP
 
     # if df is empty, return early
     if df.empty:
-        return None, None, None, None
+        return None
 
     push_functions = {
         PushKind.CONTRIBUTION: create_contribution_push,
