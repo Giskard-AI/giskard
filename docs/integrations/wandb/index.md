@@ -1,4 +1,7 @@
 # 🐝 Weights & Biases
+**Giskard's automated vulnerability detection in conjunction with W&B's tracing tools creates the ideal combination for building and debugging ML apps from tabular to LLMs.**
+
+## Why Weights & Biases?
 
 **[Weights and Biases](https://wandb.ai/)**, often referred to as **wandb** or even simply **W&B**, is an MLOps platform that helps AI developers streamline their ML workflow from end to end. With W&B, developers have access to:
 
