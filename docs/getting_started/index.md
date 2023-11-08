@@ -3,56 +3,75 @@
 Giskard is an **AI quality management system** dedicated to ML models.
 
 Designed for comprehensive coverage of the AI model lifecycle, Giskard provides a suite of tools for scanning, testing, 
-debugging, automation, collaboration, and monitoring of AI models, encompassing all models from tabular to LLMs.
+debugging, and monitoring of all AI models, from tabular to LLMs.
 
-Giskard currently offers 3 tools for AI quality management: the Giskard opens-source Python library, the Giskard Hub and LLMon.
+Giskard currently offers 3 tools for AI quality management: the **Giskard open-source Python library**, the **Giskard Quality 
+Assurance Hub** and the **LLM Monitoring platform (LLMon)**.
 
 ## Giskard Python Library
 
-An open-Source Library to Scan your models for vulnerabilities and generate test suites automatically
+An **open-source** library to scan your AI models for vulnerabilities and generate test suites automatically to aid in 
+the Quality Assurance process of ML models and LLMs.
 
-
-Testing Machine Learning applications can be tedious. Since ML models depend on data, testing scenarios depend on the 
+Testing Machine Learning applications can be tedious. Since ML models depend on data, testing scenarios depend on 
 domain specificities and are often infinite.
 
-At Giskard, we believe that Machine Learning needs its own testing framework. Created by ML engineers for ML engineers, 
-Giskard enables you to:
+Created by ML engineers for ML engineers, `giskard` enables you to:
 
-- **Scan your model to find dozens of hidden vulnerabilities**: The Giskard scan automatically detects vulnerability 
-issues such as performance bias, data leakage, unrobustness, spurious correlation, overconfidence, underconfidence, unethical issue, etc.
+- **Scan your model to find dozens of hidden vulnerabilities**: The `giskard` scan automatically detects vulnerabilities 
+such as performance bias, hallucination, prompt injection, data leakage, spurious correlation, overconfidence, etc.
+  <br><br>
+  ![](../assets/scan_llm.png)
 
-<br>
 
-  ![](/_static/scan_example.png)
-- **Instantaneously generate domain-specific tests**: Giskard automatically generates relevant tests based on the 
-vulnerabilities detected by the scan. You can easily customize the tests depending on your use case by defining 
-domain-specific data slicers and transformers as fixtures of your test suites.
+- **Instantaneously generate domain-specific tests**: `giskard` automatically generates relevant, customizable tests based on the 
+vulnerabilities detected in the scan.
+  <br><br>
+  ![](../assets/test_suite_scan_llm.png)
+
+
+- **Integrate and automate** the quality testing of AI models in **CI/CD** processes by leveraging native `giskard` integrations.
+  <br><br>
+  ![](../assets/GH-discussion.png)
+
+
+Get started **now** with our [quickstart notebooks](../getting_started/quickstart/index.md)! ⚡️
 
 <br>
 
 ## Giskard Hub
 
-An Enterprise AI Quality Management Platform
+An enterprise AI quality management platform for ML engineers, domain experts and AI Quality Assurance teams to manage 
+all their AI model quality testing and debugging activities in a centralized hub.
 
-  ![](/_static/test_suite_example.png)
-- **Leverage the Quality Assurance best practices of the open-source community**: The Giskard catalog enables you to 
-easily contribute and load data slicing & transformation functions such as AI-based detectors (toxicity, hate, etc.), 
-generators (typos, paraphraser, etc.), or evaluators. Inspired by the Hugging Face philosophy, the aim of Giskard is to 
-become the open-source hub of ML Quality Assurance.
+- Leverage the **Quality Assurance best practices** of the **most advanced ML teams** with a centralized platform to curate, 
+run and debug tests for LLMs, tabular and NLP models.
+  <br><br>
+  ![](../assets/llm_debug.png)
+
+
+- Create hundreds of domain-specific tests thanks to **automated model insights**.
+  <br><br>
+  ![](../assets/model_insights_titanic.png)
+
+
+- A single platform to **collect business feedback** and **share your model results** with data scientists, QA teams and decision makers.
+  <br><br>
+  ![](../assets/credit_scoring_comment.png)
+
+
+Get started **now** with our [demo HuggingFace Space](https://huggingface.co/spaces/giskardai/giskard) or 
+by following [installation instructions](../getting_started/quickstart/index.md)! 🐢
 
 <br>
 
-  ![](/_static/catalog_example.png)
+## LLM Monitoring (LLMon)
 
-<br>
+A SaaS platform to detect AI Safety risks in your deployed LLM applications. From hallucinations to incorrect responses, toxicity and many more metrics.
 
-:::{info}
-**The Giskard hub is installed on your infrastructure.**
+Get access to insights on your LLM app performance in 2 lines of code, giving you the ability to evaluate LLM quality in real-time.
 
-Giskard as a company does not have access to your datasets and models, so you can keep everything private.
-:::
+  ![](../assets/llm_monitoring_dashboard.gif)
 
-## LLMon
 
-The monitoring platform for LLMs.
-
+Get started **now** by [signing up for our beta](https://www.giskard.ai/llmon)! 🍋
