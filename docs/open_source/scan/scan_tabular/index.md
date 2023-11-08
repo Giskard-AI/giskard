@@ -4,7 +4,13 @@ The Giskard python library provides an automatic scan functionality designed to 
 
 ## Step 1: Wrap your dataset
 
-To scan your model, start by **wrapping your dataset**. This should be a validation or test set in Pandas format, as shown here:
+To scan your model, start by **wrapping your dataset**. This should be a validation or test set in Pandas format.
+
+> ### ⚠️ Warning
+> It's highly recommended that you wrap your data **before preprocessing** so that you can easily interpret 
+> the scan results. If you're unable to (because your prediction function can't integrate your data 
+> preprocessing steps), we recommend you **add columns that are not features** of your model as metadata 
+> to your dataset. This provides better scan results.
 
 ```python
 # Wrap your Pandas DataFrame with Giskard.Dataset (validation or test set)
@@ -267,6 +273,13 @@ Jump to the [test customization](https://docs.giskard.ai/en/latest/open_source/c
 * Compare the quality of different models to decide which one to promote
 * Create more domain-specific tests relevant to your use case
 * Share results, and collaborate with your team to integrate business feedback
+
+To upload your test suite, you must have created a project on Giskard Hub and instantiated a Giskard Python client. If you haven't done this yet, follow the first steps of [upload your object](https://docs.giskard.ai/en/latest/giskard_hub/upload/index.html#upload-your-object) guide.
+
+Then, upload your test suite like this:
+```python
+test_suite.upload(giskard_client, project_key)
+```
 
 [Here's a demo](https://huggingface.co/spaces/giskardai/giskard) of the Giskard Hub in action.
 

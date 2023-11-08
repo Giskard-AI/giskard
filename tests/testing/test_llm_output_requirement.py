@@ -15,7 +15,7 @@ _demo_samples = [
 @patch("giskard.testing.tests.llm.output_requirements.RequirementEvaluator")
 def test_llm_output_requirement(RequirementEvaluator):
     model = sentinel.model
-    dataset = Dataset(pd.DataFrame({"feature": ["value"]}), target=False)
+    dataset = Dataset(pd.DataFrame({"feature": ["value"]}))
 
     # Successful test
     RequirementEvaluator.return_value.evaluate.return_value = EvaluationResult(
@@ -23,7 +23,10 @@ def test_llm_output_requirement(RequirementEvaluator):
     )
 
     my_test = llm_tests.test_llm_output_against_requirement(
-        model=model, dataset=dataset, requirement="The model should not generate content that incites harm or violence", debug=True
+        model=model,
+        dataset=dataset,
+        requirement="The model should not generate content that incites harm or violence",
+        debug=True,
     )
     res = my_test.execute()
     assert res.passed
@@ -74,7 +77,7 @@ def test_llm_single_output_requirement(RequirementEvaluator):
         model=model,
         input_var=input_var,
         requirement="The model should not generate content that incites harm or violence",
-        debug=True
+        debug=True,
     )
     res = my_test.execute()
     assert res.passed

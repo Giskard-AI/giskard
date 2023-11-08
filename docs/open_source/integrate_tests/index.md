@@ -7,9 +7,9 @@ Once you've created a test suite for a model, integrating it into existing workf
 :maxdepth: 2
 :hidden:
 
-cicd/index
-mlflow/index
-wandb/index
+../../integrations/cicd/index
+../../integrations/mlflow/index
+../../integrations/wandb/index
 ```
 
 ::::::{grid} 1 1 2 2
@@ -17,18 +17,18 @@ wandb/index
 
 :::::{grid-item}
 :::{card} <h3><center>⚙️ Execute a test suite in your CI/CD pipeline</center></h3>
-:link: cicd/index.html
+:link: ../../integrations/cicd/index.html
 :::
 :::::
 
 :::::{grid-item}
 :::{card} <h3><center>🏃 Evaluate & log with MLflow</center></h3>
-:link: mlflow/index.html
+:link: ../../integrations/mlflow/index.html
 :::
 :::::
 
 :::::{grid-item}
 :::{card} <h3><center>🐝  Evaluate & log with Weights & Biases</center></h3>
-:link: wandb/index.html
+:link: ../../integrations/wandb/index.html
 :::
 :::::
