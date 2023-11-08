@@ -118,7 +118,7 @@ class Scanner:
         if verbose:
             self._print_execution_summary(model, issues, errors, elapsed)
 
-        self._collect_analytics(model, dataset, issues, elapsed, model_validation_time)
+        self._collect_analytics(model, dataset, issues, elapsed, model_validation_time, detectors)
 
         return ScanReport(issues, model=model, dataset=dataset)
 
@@ -254,17 +254,21 @@ class Scanner:
         return model, dataset
 
     @analytics_method
-    def _collect_analytics(self, model, dataset, issues, elapsed, model_validation_time):
+    def _collect_analytics(self, model, dataset, issues, elapsed, model_validation_time, detectors):
         issues_counter = Counter([fullname(i) for i in issues]) if issues else {}
 
         properties = dict(
             elapsed=elapsed,
             model_validation_time=model_validation_time,
             total_issues=len(issues),
+            detectors=[d.__class__.__name__ for d in detectors],
             **issues_counter,
         )
         properties.update(get_model_properties(model))
         properties.update(get_dataset_properties(dataset))
+
+        cost_estimate = self._get_cost_estimate(model, dataset, detectors)
+        properties.update(cost_estimate)
 
         analytics.track("scan", properties)
 
