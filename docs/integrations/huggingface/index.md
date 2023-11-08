@@ -1,5 +1,7 @@
 # 🤗 HuggingFace
+**Leverage the Hugging Face (HF) Space to easily test & debug your own ML models.**
 
+## Why Giskard?
 **Giskard** is an open-source testing framework dedicated for AI models, from tabular to LLMs. Giskard is composed of 
 1. An open-source Python library containing a **vulnerability scan**, **testing** and **CI/CD** framework for ML models
 2. The **Giskard Hub**, a server application, containing a collaborative ML Testing dashboard for model **debugging** (root-cause analysis), model **comparison** & human **feedback** collection for ML.
