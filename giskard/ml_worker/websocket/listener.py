@@ -310,9 +310,7 @@ def on_ml_worker_get_info(ml_worker: MLWorkerInfo, params: GetInfoParam, *args, 
     logger.info("Collecting ML Worker info from WebSocket")
 
     # TODO(Bazire): seems to be deprecated https://setuptools.pypa.io/en/latest/pkg_resources.html#workingset-objects
-    installed_packages = (
-        {p.project_name: p.version for p in pkg_resources.working_set} if params.list_packages else {}
-    )
+    installed_packages = {p.project_name: p.version for p in pkg_resources.working_set} if params.list_packages else {}
     current_process = psutil.Process(os.getpid())
     return websocket.GetInfo(
         platform=websocket.Platform(
@@ -586,7 +584,7 @@ def run_ad_hoc_test(
     if "kwargs" in arguments:
         arguments.update(**arguments.pop("kwargs"))
 
-    arguments["debug"] = params.debug if params.debug else None
+    arguments["debug"] = params.debug if params.debug is not None else False
     debug_info = extract_debug_info(params.arguments) if params.debug else None
 
     test_result = do_run_adhoc_test(client, arguments, test, debug_info)
