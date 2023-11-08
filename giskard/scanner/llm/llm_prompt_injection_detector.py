@@ -9,17 +9,7 @@ from ...models.base.model import BaseModel
 from ..decorators import detector
 from ..issues import Issue, IssueGroup, IssueLevel
 from ..registry import Detector
-from ...utils.xprint import (
-    xprint,
-    CHARS_LIMIT,
-    StyleBase,
-    DetectorStyle,
-    NumberOfPromptsStyle,
-    PromptEvaluationStyle,
-    PromptInjectionSuccessStyle,
-    PromptInjectionFailureStyle,
-    StartSummaryStyle,
-)
+from ...utils.xprint import xprint, Catalog, CHARS_LIMIT
 
 
 @detector("llm_prompt_injection", tags=["jailbreak", "prompt_injection", "llm", "generative", "text_generation"])
@@ -53,7 +43,7 @@ class LLMPromptInjectionDetector(Detector):
             xprint(
                 prompt.group.name + f" #{i}",
                 prompt.evaluation_method.__class__.__name__,
-                style=PromptEvaluationStyle,
+                template=Catalog.PromptEvaluation,
                 verbose=verbose,
             )
             # xprint(prompt.content[:CHARS_LIMIT] + "…", verbose=verbose)
@@ -80,7 +70,6 @@ class LLMPromptInjectionDetector(Detector):
         return results
 
     def run(self, model: BaseModel, dataset: Dataset, verbose: bool = True) -> Sequence[Issue]:
-        xprint(self.__class__.__name__, style=DetectorStyle, verbose=verbose)
 
         # even-though this detector doesn't rely on a dataset, it's still needed to get the features and column_types
         features = model.meta.feature_names or list(dataset.df.columns.drop(dataset.target, errors="ignore"))
@@ -90,10 +79,10 @@ class LLMPromptInjectionDetector(Detector):
 
         issues = []
 
-        xprint(len(prompts), style=NumberOfPromptsStyle, verbose=verbose)
+        xprint(len(prompts), template=Catalog.PromptsNumber, verbose=verbose)
         results = self.evaluate_and_group(model, dataset, prompts, features, column_types)
 
-        xprint(self.__class__.__name__, style=StartSummaryStyle, verbose=verbose)
+        xprint(self.__class__.__name__, template=Catalog.StartSummary, verbose=verbose)
         for group in results.keys():
             failed_examples = {}
             cols = []
@@ -115,9 +104,9 @@ class LLMPromptInjectionDetector(Detector):
             total = len(results[group]["failed"])
             metric = failed / total
             if failed != 0:
-                xprint(group.name, f"{metric*100}%", style=PromptInjectionFailureStyle, verbose=verbose)
+                xprint(group.name, f"{metric*100}%", template=Catalog.PromptInjectionFailure, verbose=verbose)
             else:
-                xprint("None", group.name, style=PromptInjectionSuccessStyle, verbose=verbose)
+                xprint("None", group.name, template=Catalog.PromptInjectionSuccess, verbose=verbose)
                 continue
 
             level = IssueLevel.MINOR
@@ -154,7 +143,7 @@ class LLMPromptInjectionDetector(Detector):
                     tests=_generate_prompt_injection_tests,
                 )
             )
-        xprint("-" * CHARS_LIMIT, style=StyleBase, verbose=verbose)
+        xprint("-" * CHARS_LIMIT, verbose=verbose)
         return issues
 
 

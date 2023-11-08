@@ -52,7 +52,7 @@ class LLMOutputFormattingDetector(RequirementBasedDetector):
     def get_issue_description(self) -> str:
         return OUTPUT_FORMAT_ISSUE_DESCRIPTION
 
-    def run(self, model: BaseModel, dataset: Dataset) -> Sequence[Issue]:
+    def run(self, model: BaseModel, dataset: Dataset, verbose: bool = True) -> Sequence[Issue]:
         # Let’s check whether the model description provides information about the output format.
         llm_client = get_default_client()
         out = llm_client.complete(

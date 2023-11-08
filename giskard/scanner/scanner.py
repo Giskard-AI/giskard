@@ -20,6 +20,7 @@ from .issues import DataLeakage, Issue, Stochasticity
 from .logger import logger
 from .registry import DetectorRegistry
 from .report import ScanReport
+from ..utils.xprint import xprint, Catalog
 
 MAX_ISSUES_PER_DETECTOR = 15
 
@@ -126,12 +127,12 @@ class Scanner:
         if not detectors:
             raise RuntimeError("No issue detectors available. Scan will not be performed.")
 
-        logger.info(f"Running detectors: {[d.__class__.__name__ for d in detectors]}")
+        xprint([d.__class__.__name__ for d in detectors], template=Catalog.Detector, verbose=verbose)
 
         issues = []
         errors = []
         for detector in detectors:
-            maybe_print(f"Running detector {detector.__class__.__name__}…", verbose=verbose)
+            xprint(detector.__class__.__name__, template=Catalog.Detector, verbose=verbose)
             detector_start = perf_counter()
             try:
                 detected_issues = detector.run(model, dataset, verbose=verbose)

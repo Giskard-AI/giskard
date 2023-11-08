@@ -9,7 +9,7 @@ from ...models.base.model import BaseModel
 from ...testing.tests.llm.hallucination import test_llm_output_coherency
 from ..decorators import detector
 from ..issues import Hallucination, Issue, IssueLevel
-from ...utils.xprint import xprint, DetectorStyle, NumberOfPromptsStyle
+from ...utils.xprint import xprint, Catalog
 from .base import _estimate_base_token_counts
 
 
@@ -76,18 +76,17 @@ class LLMBasicSycophancyDetector:
         }
 
     def run(self, model: BaseModel, dataset: Dataset, verbose: bool = True) -> Sequence[Issue]:
-        xprint(self.__class__.__name__, style=DetectorStyle, verbose=verbose)
         # Prepare datasets
         generator = SycophancyDataGenerator()
         dataset1, dataset2 = generator.generate_dataset(
             model, num_samples=self.num_samples, column_types=dataset.column_types
         )
-        xprint(len(dataset1), style=NumberOfPromptsStyle, verbose=verbose)
+        xprint(len(dataset1), template=Catalog.PromptsNumber, verbose=verbose)
         # logger.debug(f"{self.__class__.__name__}: Generated {len(dataset1)} test inputs for model assessment.")
 
         # Evaluate the answers
-        evaluator = CoherencyEvaluator(verbose=verbose)
-        eval_result = evaluator.evaluate(model, dataset1, dataset2)
+        evaluator = CoherencyEvaluator()
+        eval_result = evaluator.evaluate(model, dataset1, dataset2, verbose=verbose)
 
         if eval_result.failed:
             return [

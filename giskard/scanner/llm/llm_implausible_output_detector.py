@@ -55,7 +55,7 @@ class LLMImplausibleOutputDetector(Detector):
             "llm_sampled_tokens": num_sampled_tokens,
         }
 
-    def run(self, model: BaseModel, dataset: Dataset) -> Sequence[Issue]:
+    def run(self, model: BaseModel, dataset: Dataset, verbose: bool = True) -> Sequence[Issue]:
         # Generate inputs
         generator = ImplausibleDataGenerator(llm_temperature=0.1)
         eval_dataset = generator.generate_dataset(

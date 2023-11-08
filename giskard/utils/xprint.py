@@ -1,128 +1,116 @@
-from colorama import Fore, Style
+from colorama import Fore
+from colorama import Style as _Style
 from typing import Optional, List
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 
 CHARS_LIMIT = 120
+PLACEHOLDER = "{}"
 
 # Aliasing
-BLACK = Fore.LIGHTBLACK_EX
-RED = Fore.LIGHTRED_EX
-GREEN = Fore.LIGHTGREEN_EX
-YELLOW = Fore.LIGHTYELLOW_EX
-BLUE = Fore.LIGHTBLUE_EX
-MAGENTA = Fore.LIGHTMAGENTA_EX
-CYAN = Fore.LIGHTCYAN_EX
-WHITE = Fore.LIGHTWHITE_EX
+FBLACK = Fore.LIGHTBLACK_EX
+FRED = Fore.LIGHTRED_EX
+FGREEN = Fore.LIGHTGREEN_EX
+FYELLOW = Fore.LIGHTYELLOW_EX
+FBLUE = Fore.LIGHTBLUE_EX
+FMAGENTA = Fore.LIGHTMAGENTA_EX
+FCYAN = Fore.LIGHTCYAN_EX
+FWHITE = Fore.LIGHTWHITE_EX
 
-BOLD = Style.BRIGHT
+RESET = _Style.RESET_ALL
+BOLD = _Style.BRIGHT
 
 
 @dataclass(frozen=True)
-class StyleBase:
-    colors: List = field(default_factory=lambda: [BLACK])
-    fonts: List = field(default_factory=lambda: [Style.BRIGHT])
-    styles: List[str] = field(default_factory=lambda: ["{reset}{font}{color}{{}}{reset}"])
-    template: str = "{}"
-    num_args: int = 1
+class Style:
+    color: int = FBLACK
+    font: int = BOLD
+    design: str = "{reset}{font}{color}{" + PLACEHOLDER + "}{reset}"
 
-    def get_styles(self):
-        _styles = []
-        for i in range(len(self.template.split("{}")) - 1):
-            _styles += [
-                self.styles[i].format(
-                    reset=Style.RESET_ALL, font=self.fonts[i], color=self.colors[i], template=self.template
-                )
-            ]
-        return _styles
 
-    def process_template(self):
-        _template = self.template.replace(" {} ", "{}")
-        for p in [" {}", "{} ", "{}"]:
-            _template = _template.replace(p, "{}")
+class Template:
+    def __init__(self, content: str = PLACEHOLDER, pstyles: Optional[List[Style]] = None) -> None:
+        self.content = content
+        self.pstyles = pstyles
+        if not self.pstyles:
+            self.pstyles = [Style()]
 
-        return _template.format(*self.get_styles()).split("{}")
+    @property
+    def num_placeholders(self):
+        return len(self.content.split(PLACEHOLDER))
 
-    def check_num_args(self, *args):
-        if len(args) != self.num_args:
-            p = "s" if self.num_args > 1 else ""
-            raise ValueError(
-                f"{self.__class__.__name__} expects exactly {self.num_args} argument{p} to xprint but "
-                f"{len(args)} received."
+    @property
+    def num_styles(self):
+        return len(self.pstyles)
+
+
+def get_design_templates(template: Template):
+    _design_templates = []
+    for i in range(template.num_placeholders - 1):
+        _design_templates += [
+            template.pstyles[i].design.format(
+                reset=RESET,
+                font=template.pstyles[i].font,
+                color=template.pstyles[i].color,
+                string_template=template.content,
             )
-
-    def get(self, *args):
-        wrap = self.process_template()
-        return wrap[0], *args, wrap[1]
+        ]
+    return _design_templates
 
 
-@dataclass(frozen=True)
-class SingleStyleBase(StyleBase):
-    num_args: int = 1
+def process_template(template: Template):
+    _content_template = template.content.replace(" " + PLACEHOLDER + " ", PLACEHOLDER)
+    for p in [" " + PLACEHOLDER, PLACEHOLDER + " "]:
+        _content_template = _content_template.replace(p, PLACEHOLDER)
 
-    def get(self, *args):
-        self.check_num_args(*args)
-        return super().get(*args)
-
-
-@dataclass(frozen=True)
-class DoubleStyleBase(StyleBase):
-    colors: List = field(default_factory=lambda: [BLACK] * 2)
-    fonts: List = field(default_factory=lambda: [Style.BRIGHT] * 2)
-    styles: List[str] = field(default_factory=lambda: ["{reset}{font}{color}{{}}{reset}"] * 2)
-    template: str = "{} {}"
-    num_args: int = 2
-
-    def get(self, *args):
-        self.check_num_args(*args)
-        wrap = self.process_template()
-        return wrap[0], args[0], wrap[1], args[1], wrap[2]
+    return _content_template.format(*get_design_templates(template)).split(PLACEHOLDER)
 
 
-@dataclass(frozen=True)
-class DetectorStyle(SingleStyleBase):
-    colors: List = field(default_factory=lambda: [BLUE])
-    template: str = "Running the {} detector…"
+def style(*args, template: Optional[Template] = None):
+    if not template:
+        template = Template()
+    wraps = process_template(template)
+    out = []
+    for i, _style in enumerate(template.pstyles):
+        if i == template.num_styles - 1 and len(args[i:]) > 1:
+            out += [wraps[i], *args[i:]]
+            break
+        out += [wraps[i], args[i]]
+    out += [wraps[-1]]
+    return out
 
 
-@dataclass(frozen=True)
-class NumberOfPromptsStyle(SingleStyleBase):
-    colors: List = field(default_factory=lambda: [CYAN])
-    template: str = "Evaluating {} prompts…"
+# Aliasing
+BLACK = Style(color=FBLACK)
+RED = Style(color=FRED)
+GREEN = Style(color=FGREEN)
+YELLOW = Style(color=FYELLOW)
+BLUE = Style(color=FBLUE)
+MAGENTA = Style(color=FMAGENTA)
+CYAN = Style(color=FCYAN)
+WHITE = Style(color=FWHITE)
 
 
 @dataclass(frozen=True)
-class PromptEvaluationStyle(DoubleStyleBase):
-    colors: List = field(default_factory=lambda: [MAGENTA, YELLOW])
-    template: str = "Evaluating {} prompt with the {} evaluator…"
-
-
-@dataclass(frozen=True)
-class EvaluationStyle(SingleStyleBase):
-    colors: List = field(default_factory=lambda: [YELLOW])
-    template: str = "Evaluating prompts with the {} evaluator…"
-
-
-@dataclass(frozen=True)
-class PromptInjectionSuccessStyle(DoubleStyleBase):
-    colors: List = field(default_factory=lambda: [GREEN, MAGENTA])
-    template: str = "{} of the {} prompts manipulated your model into jailbreak."
-
-
-@dataclass(frozen=True)
-class PromptInjectionFailureStyle(DoubleStyleBase):
-    colors: List = field(default_factory=lambda: [MAGENTA, RED])
-    template: str = "The injection of {} prompts manipulated your model into jailbreak {} of the times."
-
-
-@dataclass(frozen=True)
-class StartSummaryStyle(SingleStyleBase):
-    colors: List = field(default_factory=lambda: [BLUE])
-    template: str = "-" * (CHARS_LIMIT // 2 - 8) + " Summary of {} " + "-" * (CHARS_LIMIT // 2 - 8)
+class Catalog:
+    Detector = Template(content="Running {}…", pstyles=[BLUE])
+    PromptsNumber = Template(content="Evaluating {} prompts…", pstyles=[CYAN])
+    PromptEvaluation = Template(content="Evaluating {} prompt with the {} evaluator…", pstyles=[MAGENTA, YELLOW])
+    Evaluation = Template(content="Evaluating prompts with the {} evaluator…", pstyles=[YELLOW])
+    PromptInjectionSuccess = Template(
+        content="{} of the {} prompts manipulated your model into jailbreak.", pstyles=[GREEN, MAGENTA]
+    )
+    PromptInjectionFailure = Template(
+        content="The injection of {} prompts manipulated your model into jailbreak {} of the times.",
+        pstyles=[MAGENTA, RED],
+    )
+    StartSummary = Template(
+        content="-" * (CHARS_LIMIT // 2 - 8) + " Summary of {} " + "-" * (CHARS_LIMIT // 2 - 8), pstyles=[BLUE]
+    )
 
 
 def xprint(
     *args,
-    style: Optional[StyleBase] = None,
+    template: Optional[Template] = None,
     filename: Optional[str] = None,
     verbose: bool = True,
     **kwargs,
@@ -130,8 +118,7 @@ def xprint(
     if not verbose:
         return
 
-    if style is not None:
-        args = style().get(*args)
+    args = style(*args, template=template)
 
     if filename is not None:
         with open(filename, "a") as f:

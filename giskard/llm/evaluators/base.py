@@ -71,7 +71,7 @@ class LLMBasedEvaluator:
     def _make_evaluate_functions(self, model: BaseModel, input_vars, model_output):
         return EVALUATE_MODEL_FUNCTIONS
 
-    def evaluate(self, model: BaseModel, dataset: Dataset):
+    def evaluate(self, model: BaseModel, dataset: Dataset, verbose: bool = True):
         model_outputs = model.predict(dataset).prediction
 
         succeeded = []
