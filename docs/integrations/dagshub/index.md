@@ -1,5 +1,8 @@
 # 🐶 DagsHub
-DagsHub is a versatile web platform, purpose-built for data scientists and the open-source community, offering a unified solution that enhances collaboration, reproducibility, and integration with open-source tools. Here's how DagsHub can boost your data science endeavors:
+**With its multifaceted platform and free hosted MLflow server, Dagshub enhances your ML debugging experience of Giskard's vulnerability reports.**
+
+## Why DagsHub?
+DagsHub is an ML platform, purpose-built for data scientists and the open-source community, offering a unified solution to manage datasets, track experiments and register models. It enhances collaboration, reproducibility, and provides integrations with many open-source tools. Here's how DagsHub can boost your data science endeavors:
 
 - **Effortless Collaboration:** DagsHub provides a collaborative environment where project contributors can easily comment on various project elements, take notes, and seamlessly share updates with team members or the broader community.
 

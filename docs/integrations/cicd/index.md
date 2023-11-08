@@ -1,12 +1,13 @@
 # 🐙️ GitHub
-
+**Adding Giskard to your CI/CD pipeline will allow you to run the test or scan on every commit to your repository, ensuring
+new models are not introducing new vulnerabilities.**
+<br><br>
 :::{warning}
 First, you'll need to know how to run Giskard's scan function
 see [Scan your ML Model](../../../open_source/scan/index.md)
 :::
 
-Adding Giskard to your CI/CD pipeline will allow you to run the test or scan on every commit to your repository, ensuring
-new models are not introducing new vulnerabilities. With Giskard, you can easily automate scan or test execution publication in your CI/CD every time you have a new version of you model. For instance, you can:
+With Giskard, you can easily automate scan or test execution publication in your CI/CD every time you have a new version of you model. For instance, you can:
 * Publish the scan report as a **discussion** of your PR: see example of a [GitHub repo](https://github.com/rabah-khalek/Healthcare-Analytics/pull/23)
 * Add a paragraph in the **Read Me** of your repo by opening a PR: see example of a [GitHub repo](https://github.com/rabah-khalek/Healthcare-Analytics/pull/24)
 
