@@ -39,7 +39,7 @@ dagshub.init(repo_name="your_repo_name", repo_owner="your_username")
 Once this is done, you can perform the evaluation of your model via (see [page](https://docs.giskard.ai/en/latest/integrations/mlflow/index.html)):
 ```python
 with mlflow.start_run() as run:
-        mlflow.evaluate(model_uri, ...)
+        mlflow.evaluate(model_uri, ..., evaluators="giskard")
 ```
 After completing these steps, you can version your notebook with the DagsHub Client following this final step:
 ```python
