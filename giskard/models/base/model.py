@@ -41,9 +41,9 @@ def _validate_text_generation_params(name, description, feature_names):
     if not name or not description:
         raise ValueError(
             "The parameters 'name' and 'description' are required for 'text_generation' models, please make sure you "
-            "passed them when wrapping your model. Both are very important for the LLM-assisted testing and scan to "
-            "work properly. Name and description should briefly describe the expected behavior of your model. Check "
-            "our documentation for more information."
+            "pass them when wrapping your model. Both are very important in order for the LLM-assisted testing and "
+            "scan to work properly. Name and description should briefly describe the expected behavior of your model. "
+            "Check our documentation for more information."
         )
 
     if not feature_names:
