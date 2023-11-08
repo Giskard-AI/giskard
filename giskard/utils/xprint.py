@@ -4,10 +4,22 @@ from dataclasses import dataclass, field
 
 CHARS_LIMIT = 120
 
+# Aliasing
+BLACK = Fore.LIGHTBLACK_EX
+RED = Fore.LIGHTRED_EX
+GREEN = Fore.LIGHTGREEN_EX
+YELLOW = Fore.LIGHTYELLOW_EX
+BLUE = Fore.LIGHTBLUE_EX
+MAGENTA = Fore.LIGHTMAGENTA_EX
+CYAN = Fore.LIGHTCYAN_EX
+WHITE = Fore.LIGHTWHITE_EX
+
+BOLD = Style.BRIGHT
+
 
 @dataclass(frozen=True)
 class StyleBase:
-    colors: List = field(default_factory=lambda: [Fore.LIGHTBLACK_EX])
+    colors: List = field(default_factory=lambda: [BLACK])
     fonts: List = field(default_factory=lambda: [Style.BRIGHT])
     styles: List[str] = field(default_factory=lambda: ["{reset}{font}{color}{{}}{reset}"])
     template: str = "{}"
@@ -54,7 +66,7 @@ class SingleStyleBase(StyleBase):
 
 @dataclass(frozen=True)
 class DoubleStyleBase(StyleBase):
-    colors: List = field(default_factory=lambda: [Fore.LIGHTBLACK_EX] * 2)
+    colors: List = field(default_factory=lambda: [BLACK] * 2)
     fonts: List = field(default_factory=lambda: [Style.BRIGHT] * 2)
     styles: List[str] = field(default_factory=lambda: ["{reset}{font}{color}{{}}{reset}"] * 2)
     template: str = "{} {}"
@@ -68,63 +80,68 @@ class DoubleStyleBase(StyleBase):
 
 @dataclass(frozen=True)
 class DetectorStyle(SingleStyleBase):
-    colors: List = field(default_factory=lambda: [Fore.LIGHTBLUE_EX])
+    colors: List = field(default_factory=lambda: [BLUE])
     template: str = "Running the {} detector…"
 
 
 @dataclass(frozen=True)
 class NumberOfPromptsStyle(SingleStyleBase):
-    colors: List = field(default_factory=lambda: [Fore.LIGHTCYAN_EX])
+    colors: List = field(default_factory=lambda: [CYAN])
     template: str = "Evaluating {} prompts…"
 
 
 @dataclass(frozen=True)
 class PromptEvaluationStyle(DoubleStyleBase):
-    colors: List = field(default_factory=lambda: [Fore.LIGHTMAGENTA_EX, Fore.LIGHTYELLOW_EX])
+    colors: List = field(default_factory=lambda: [MAGENTA, YELLOW])
     template: str = "Evaluating {} prompt with the {} evaluator…"
 
 
 @dataclass(frozen=True)
 class EvaluationStyle(SingleStyleBase):
-    colors: List = field(default_factory=lambda: [Fore.LIGHTYELLOW_EX])
+    colors: List = field(default_factory=lambda: [YELLOW])
     template: str = "Evaluating prompts with the {} evaluator…"
 
 
 @dataclass(frozen=True)
 class PromptInjectionSuccessStyle(DoubleStyleBase):
-    colors: List = field(default_factory=lambda: [Fore.LIGHTGREEN_EX, Fore.LIGHTMAGENTA_EX])
+    colors: List = field(default_factory=lambda: [GREEN, MAGENTA])
     template: str = "{} of the {} prompts manipulated your model into jailbreak."
 
 
 @dataclass(frozen=True)
 class PromptInjectionFailureStyle(DoubleStyleBase):
-    colors: List = field(default_factory=lambda: [Fore.LIGHTMAGENTA_EX, Fore.LIGHTRED_EX])
+    colors: List = field(default_factory=lambda: [MAGENTA, RED])
     template: str = "The injection of {} prompts manipulated your model into jailbreak {} of the times."
 
 
 @dataclass(frozen=True)
 class StartSummaryStyle(SingleStyleBase):
-    colors: List = field(default_factory=lambda: [Fore.LIGHTBLUE_EX])
+    colors: List = field(default_factory=lambda: [BLUE])
     template: str = "-" * (CHARS_LIMIT // 2 - 8) + " Summary of {} " + "-" * (CHARS_LIMIT // 2 - 8)
 
 
 def xprint(
     *args,
-    style: Optional[StyleBase] = StyleBase,
+    style: Optional[StyleBase] = None,
     filename: Optional[str] = None,
+    verbose: bool = True,
     **kwargs,
 ):
-    styled_args = style().get(*args)
+    if not verbose:
+        return
+
+    if style is not None:
+        args = style().get(*args)
 
     if filename is not None:
         with open(filename, "a") as f:
             print(
-                *styled_args,
+                *args,
                 file=f,
                 **kwargs,
             )
     else:
         print(
-            *styled_args,
+            *args,
             **kwargs,
         )

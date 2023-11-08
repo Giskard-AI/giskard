@@ -63,7 +63,7 @@ class Scanner:
         self.uuid = uuid.uuid4()
 
     def analyze(
-        self, model: BaseModel, dataset: Optional[Dataset] = None, verbose=True, raise_exceptions=False
+        self, model: BaseModel, dataset: Optional[Dataset] = None, verbose: bool = True, raise_exceptions=False
     ) -> ScanReport:
         """Runs the analysis of a model and dataset, detecting issues.
 
@@ -134,7 +134,7 @@ class Scanner:
             maybe_print(f"Running detector {detector.__class__.__name__}…", verbose=verbose)
             detector_start = perf_counter()
             try:
-                detected_issues = detector.run(model, dataset)
+                detected_issues = detector.run(model, dataset, verbose=verbose)
             except Exception as err:
                 logger.error(f"Detector {detector.__class__.__name__} failed with error: {err}")
                 errors.append((detector, err))

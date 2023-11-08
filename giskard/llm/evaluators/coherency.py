@@ -48,7 +48,9 @@ If you are not sure or the test is not well defined, consider the model as passi
 class CoherencyEvaluator(LLMBasedEvaluator):
     _default_eval_prompt = COHERENCY_EVAL_PROMPT
 
-    def evaluate(self, model: BaseModel, dataset_1: Dataset, dataset_2: Optional[Dataset] = None) -> EvaluationResult:
+    def evaluate(
+        self, model: BaseModel, dataset_1: Dataset, dataset_2: Optional[Dataset] = None, verbose: bool = True
+    ) -> EvaluationResult:
         if dataset_2 is not None and len(dataset_1) != len(dataset_2):
             raise ValueError("Datasets must have the same index.")
 
@@ -73,8 +75,8 @@ class CoherencyEvaluator(LLMBasedEvaluator):
                 "input_2": input_2,
                 "output_2": output_2,
             }
-            xprint(self.__class__.__name__, style=EvaluationStyle)
-            xprint(sample)
+            xprint(self.__class__.__name__, style=EvaluationStyle, verbose=verbose)
+            # xprint(sample)
 
             try:
                 passed, reason = self._eval_pair(model, input_1, input_2, output_1, output_2)
