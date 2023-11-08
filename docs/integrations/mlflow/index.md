@@ -34,9 +34,9 @@ mlflow.models.list_evaluators() # ['default', 'giskard']
 
 The configuration of the giskard evaluator can be done entirely through the `evaluator_config` argument that can yield 3 keys:
 
-- `model_config`: to be filled according to this [page](https://docs.giskard.ai/en/latest/reference/models/index.html).
-- `dataset_config`: to be filled according to this [page](https://docs.giskard.ai/en/latest/reference/datasets/index.html).
-- `scan_config`: to be filled according to this [page](https://docs.giskard.ai/en/latest/reference/scan/index.html).
+- `model_config`: to be filled according to our [guides](https://docs.giskard.ai/en/latest/open_source/scan/index.html) with the help of our [model API reference](https://docs.giskard.ai/en/latest/reference/models/index.html).
+- `dataset_config`: to be filled according to our [guides](https://docs.giskard.ai/en/latest/open_source/scan/index.html) with the help of our [dataset API reference](https://docs.giskard.ai/en/latest/reference/datasets/index.html).
+- `scan_config`: to be filled according to our [guides](https://docs.giskard.ai/en/latest/open_source/scan/index.html) with the help of our [scan API reference](https://docs.giskard.ai/en/latest/reference/scan/index.html).
 
 Here's the integration in a nutshell:
 ```python
@@ -52,8 +52,9 @@ with mlflow.start_run(run_name="my_run") as run:
                   evaluators="giskard",
                   evaluator_config=evaluator_config)
 ```
-:::{warning}
-For `sklearn` models, we strongly recommend to `log_model` with `pyfunc_predict_fn="predict_proba"` in order to get the best out of the evaluation.
+:::{hint}
+- **Data preprocessing**: In order to include your data preprocessing into the prediction pipeline, you should log a [custom python model](https://www.mlflow.org/docs/latest/models.html#custom-python-models) with MLflow.
+- **`sklearn` models**: we strongly recommend to `log_model` with `pyfunc_predict_fn="predict_proba"` in order to get the best out of the evaluation.
 :::
 For more complete examples, check our notebook examples below.
 
