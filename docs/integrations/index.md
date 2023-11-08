@@ -7,4 +7,5 @@ cicd/index
 huggingface/index
 mlflow/index
 wandb/index
+dagshub/index
 ```
