@@ -165,6 +165,7 @@ class Model(CloudpickleSerializableModel):
                 data_preprocessing_function=data_preprocessing_function,
                 model_postprocessing_function=model_postprocessing_function,
                 name=name,
+                description=description,
                 feature_names=list(feature_names) if feature_names is not None else None,
                 classification_threshold=classification_threshold,
                 classification_labels=classification_labels,
