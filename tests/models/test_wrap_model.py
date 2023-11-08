@@ -1,3 +1,4 @@
+import numpy as np
 import pytest
 from sklearn.linear_model import LogisticRegression
 
@@ -65,6 +66,15 @@ def test_text_generation_model_needs_name_and_description():
             feature_names=["one", "two"],
         )
 
+    with pytest.raises(ValueError, match=r"The parameters 'name' and 'description' are required"):
+        Model(
+            lambda x: ["Hello"] * len(x),
+            name="Hello",
+            description="",
+            model_type="text_generation",
+            feature_names=np.array([1, 2]),
+        )
+
     # Should raise no error
     Model(
         lambda x: ["Hello"] * len(x),
@@ -72,6 +82,14 @@ def test_text_generation_model_needs_name_and_description():
         description="This is a model that says hello",
         model_type="text_generation",
         feature_names=["one", "two"],
+    )
+
+    Model(
+        lambda x: ["Hello"] * len(x),
+        name="Hello",
+        description="This is a model that says hello",
+        model_type="text_generation",
+        feature_names=np.array(["one", "two"]),
     )
 
     # Other models should not require name and description
