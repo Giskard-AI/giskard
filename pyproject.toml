@@ -32,11 +32,10 @@ _.env = { GSK_DISABLE_ANALYTICS = "True", GISKARD_DEV_MODE = "True" }
 test.cmd = "pdm base-test tests/"
 # for some reason github runners don't work when calling 'pdm test -m "not slow"'
 base-test.cmd = "pytest -c pyproject.toml --cov=giskard --cov-report=xml --cov-append --disable-warnings --no-header -vv --durations=0"
-test-models.cmd = "pdm base-test -n auto -m 'not slow and not concurrency' tests/models"
-test-integrations.cmd = "pdm base-test -n auto -m 'not slow and not concurrency' tests/integrations"
-test-fast.cmd = "pdm base-test -n auto -m 'not slow and not concurrency' tests --ignore=tests/models --ignore=tests/integrations"
+test-fast.cmd = "pdm base-test -m 'not slow and not concurrency' tests"
 test-slow.cmd = "pdm base-test -n auto -m 'slow and not concurrency' tests"
-test-worker.cmd = "pdm base-test -m 'concurrency' tests/"
+# No pytest cov for worker test, since it's causing issued with process
+test-worker.cmd = "pytest -c pyproject.toml --disable-warnings --no-header -vv --durations=0 -m 'concurrency' tests/"                                                                                                                                                                                                    # No pytest cov, since it's causing issued with process
 lint = "ruff giskard tests"
 doc = "sphinx-build docs docs/_build/html"
 watch-doc = "python -m sphinx_autobuild --watch giskard docs docs/_build/html"
