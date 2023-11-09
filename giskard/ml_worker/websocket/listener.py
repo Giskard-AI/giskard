@@ -644,7 +644,7 @@ def run_test_suite(
 
         identifier_single_test_results = []
         for t, (identifier, result, _) in zip(tests, suite_result.results):
-            arguments = Suite.create_test_params(generate_test_partial(t["test"], t["arguments"]), global_arguments)
+            arguments = Suite.create_test_params(generate_test_partial(t["test"], **t["arguments"]), global_arguments)
             identifier_single_test_results.append(
                 websocket.IdentifierSingleTestResult(
                     id=identifier,
