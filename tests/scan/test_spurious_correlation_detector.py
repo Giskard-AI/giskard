@@ -2,9 +2,7 @@ import numpy as np
 import pytest
 
 from giskard import Model
-from giskard.scanner.correlation.spurious_correlation_detector import (
-    SpuriousCorrelationDetector,
-)
+from giskard.scanner.correlation.spurious_correlation_detector import SpuriousCorrelationDetector
 
 
 def _make_titanic_biased_model(minimal=False):
@@ -22,6 +20,7 @@ def _make_titanic_biased_model(minimal=False):
     return model
 
 
+@pytest.mark.memory_expensive
 def test_spurious_correlation_is_detected(titanic_dataset):
     model = _make_titanic_biased_model()
     detector = SpuriousCorrelationDetector()
