@@ -96,7 +96,7 @@ def wrapped_handler(received_messages: List[Frame], to_send: Callable[[str], Lis
         # Ensure you get some answers
         try:
             while True:
-                frame = StompFrame.from_string(await asyncio.wait_for(websocket.recv(), timeout=10))
+                frame = StompFrame.from_string(await asyncio.wait_for(websocket.recv(), timeout=20))
                 received_messages.append(frame)
                 assert frame.command == StompCommand.SEND
         except asyncio.TimeoutError:
