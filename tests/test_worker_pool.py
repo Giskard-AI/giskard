@@ -8,7 +8,7 @@ from uuid import uuid4
 
 import pytest
 
-from giskard.utils.worker_pool import PoolState, WorkerPoolExecutor
+from giskard.utils.worker_pool import PoolState, WorkerPoolExecutor, GiskardMLWorkerException
 
 @pytest.fixture(scope="function")
 def many_worker_pool():
@@ -94,9 +94,11 @@ def test_handle_exception_log(one_worker_pool: WorkerPoolExecutor):
     exception = future.exception(timeout=5)
     assert exception is not None
     print(exception)
-    assert "ZeroDivisionError: division by zero" in str(exception)
-    assert "in bugged_code" in str(exception)
-    assert "return 1 / 0" in str(exception)
+    assert isinstance(exception, GiskardMLWorkerException)
+    stacktrace = exception.info.stack_trace
+    assert "ZeroDivisionError: division by zero" in stacktrace
+    assert "in bugged_code" in stacktrace
+    assert "return 1 / 0" in stacktrace
     print(future.logs)
     assert "Before raising" in future.logs
     assert "ZeroDivisionError: division by zero" in future.logs

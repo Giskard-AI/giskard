@@ -284,7 +284,9 @@ def test_metamorphic_llm():
     )
     chain = LLMChain(llm=llm, prompt=prompt)
 
-    wrapped_model = giskard.Model(chain, model_type="text_generation")
+    wrapped_model = giskard.Model(
+        chain, model_type="text_generation", name="demo", description="test", feature_names=["product"]
+    )
     df = pd.DataFrame(["colorful socks", "electric car"], columns=["product"])
 
     wrapped_dataset = giskard.Dataset(df, cat_columns=[])

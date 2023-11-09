@@ -7,9 +7,9 @@ Once you've created a test suite for a model, integrating it into existing workf
 :maxdepth: 2
 :hidden:
 
-cicd/index
-mlflow/index
-wandb/index
+../../integrations/cicd/index
+../../integrations/mlflow/index
+../../integrations/wandb/index
 ```
 
 ::::::{grid} 1 1 2 2
