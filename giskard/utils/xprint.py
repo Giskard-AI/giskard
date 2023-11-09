@@ -36,7 +36,7 @@ class Template:
 
     @property
     def num_placeholders(self):
-        return len(self.content.split(PLACEHOLDER))
+        return len(self.content.split(PLACEHOLDER)) - 1
 
     @property
     def num_styles(self):
@@ -45,13 +45,13 @@ class Template:
 
 def get_design_templates(template: Template):
     _design_templates = []
-    for i in range(template.num_placeholders - 1):
+    for i in range(template.num_placeholders):
         _design_templates += [
             template.pstyles[i].design.format(
                 reset=RESET,
                 font=template.pstyles[i].font,
                 color=template.pstyles[i].color,
-                string_template=template.content,
+                PLACEHOLDER=template.content,
             )
         ]
     return _design_templates
