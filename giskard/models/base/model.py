@@ -1,5 +1,3 @@
-from typing import Iterable, List, Optional, Type, Union
-
 import builtins
 import importlib
 import logging
@@ -10,6 +8,7 @@ import tempfile
 import uuid
 from abc import ABC, abstractmethod
 from pathlib import Path
+from typing import Iterable, List, Optional, Type, Union
 
 import cloudpickle
 import numpy as np
@@ -36,6 +35,23 @@ META_FILENAME = "giskard-model-meta.yaml"
 MODEL_CLASS_PKL = "ModelClass.pkl"
 
 logger = logging.getLogger(__name__)
+
+
+def _validate_text_generation_params(name, description, feature_names):
+    if not name or not description:
+        raise ValueError(
+            "The parameters 'name' and 'description' are required for 'text_generation' models, please make sure you "
+            "pass them when wrapping your model. Both are very important in order for the LLM-assisted testing and "
+            "scan to work properly. Name and description should briefly describe the expected behavior of your model. "
+            "Check our documentation for more information."
+        )
+
+    if not feature_names:
+        raise ValueError(
+            "The parameter 'feature_names' is required for 'text_generation' models. It is a list of the input "
+            "variables for your model, e.g. ['question', 'user_language']. Please make sure to set this parameter "
+            "when wrapping your model."
+        )
 
 
 class BaseModel(ABC):
@@ -129,6 +145,9 @@ class BaseModel(ABC):
         # sklearn and catboost will fill classification_labels before this check
         if model_type == SupportedModelTypes.CLASSIFICATION and not classification_labels:
             raise ValueError("The parameter 'classification_labels' is required if 'model_type' is 'classification'.")
+
+        if model_type == SupportedModelTypes.TEXT_GENERATION:
+            _validate_text_generation_params(name, description, feature_names)
 
         self.meta = ModelMeta(
             name=name if name is not None else self.__class__.__name__,

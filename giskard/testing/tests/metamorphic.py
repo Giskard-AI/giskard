@@ -197,7 +197,7 @@ def _test_metamorphic(
     output_ds = None
     if not passed and debug:
         output_ds = dataset.copy()  # copy all properties
-        output_ds.df = dataset.df.iloc[failed_idx]
+        output_ds.df = dataset.df.loc[failed_idx]
         test_name = inspect.stack()[1][3]
         output_ds.name = debug_prefix + test_name
     # ---
@@ -444,7 +444,7 @@ def _create_test_result(critical_quantile, dataset, debug, direction, messages, 
     if not passed and debug:
         _, failed_idx = _compare_prediction(result_df, model.meta.model_type, direction, None)
         output_ds = dataset.copy()  # copy all properties
-        output_ds.df = dataset.df.iloc[failed_idx]
+        output_ds.df = dataset.df.loc[failed_idx]
         test_name = inspect.stack()[1][3]
         output_ds.name = debug_prefix + test_name
     # ---

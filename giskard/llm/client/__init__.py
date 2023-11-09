@@ -16,9 +16,18 @@ def get_default_client() -> LLMClient:
         return _default_client
 
     # Setup the default client
-    from .openai import OpenAIClient
+    from .openai import LegacyOpenAIClient, OpenAIClient
 
-    _default_client = OpenAIClient()
+    try:
+        # For openai>=1.0.0
+        from openai import OpenAI
+
+        client = OpenAI()
+        _default_client = OpenAIClient(client)
+    except ImportError:
+        # Fallback for openai<=0.28.1
+        _default_client = LegacyOpenAIClient()
+
     return _default_client
 
 
