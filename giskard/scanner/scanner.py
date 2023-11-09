@@ -216,7 +216,7 @@ class Scanner:
                 "You can follow the docs here: https://docs.giskard.ai/en/latest/guides/wrap_dataset/index.html"
             )
 
-        model, dataset = self._prepare_model_dataset(model, dataset)
+        model, dataset = self._prepare_model_dataset(model, dataset, verbose=verbose)
 
         if not model.is_text_generation:
             time_start = perf_counter()
