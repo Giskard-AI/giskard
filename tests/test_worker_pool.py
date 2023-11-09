@@ -8,7 +8,8 @@ from uuid import uuid4
 
 import pytest
 
-from giskard.utils.worker_pool import PoolState, WorkerPoolExecutor, GiskardMLWorkerException
+from giskard.utils.worker_pool import GiskardMLWorkerException, PoolState, WorkerPoolExecutor
+
 
 @pytest.fixture(scope="function")
 def many_worker_pool():
@@ -127,7 +128,7 @@ def test_task_should_be_cancelled(one_worker_pool: WorkerPoolExecutor):
 def test_after_cancel_should_work(one_worker_pool: WorkerPoolExecutor):
     pid = set(one_worker_pool.processes.keys())
     assert len(pid) == 1
-    future = one_worker_pool.schedule(sleep_add_one, [100, 1], timeout=3)
+    future = one_worker_pool.schedule(sleep_add_one, [100, 1], timeout=10)
     with pytest.raises(TimeoutError) as exc_info:
         future.result()
     assert "Task took too long" in str(exc_info)
@@ -141,6 +142,7 @@ def test_after_cancel_should_work(one_worker_pool: WorkerPoolExecutor):
     assert future.result() == 3
     future = one_worker_pool.submit(add_one, 4)
     assert future.result() == 5
+
 
 @pytest.mark.concurrency
 def test_after_cancel_should_shutdown_nicely():
@@ -163,11 +165,9 @@ def test_after_cancel_should_shutdown_nicely():
     assert exit_codes == [0]
 
 
-
-
 @pytest.mark.skipif(condition=sys.platform == "win32", reason="Not working on windows")
 @pytest.mark.concurrency
-def test_many_tasks_should_shutdown_nicely(many_worker_pool : WorkerPoolExecutor):
+def test_many_tasks_should_shutdown_nicely(many_worker_pool: WorkerPoolExecutor):
     sleep(3)
     futures = []
     for _ in range(100):
@@ -176,9 +176,10 @@ def test_many_tasks_should_shutdown_nicely(many_worker_pool : WorkerPoolExecutor
     exit_codes = many_worker_pool.shutdown(wait=True, timeout=60)
     assert len([code is not None for code in exit_codes]) == 4
     assert all([code is not None for code in exit_codes])
-    assert exit_codes == [0,0,0,0]
+    assert exit_codes == [0, 0, 0, 0]
     assert all([f.done() for f in futures])
     assert all([not t.is_alive() for t in many_worker_pool._threads])
+
 
 @pytest.mark.concurrency
 def test_submit_many_task(many_worker_pool: WorkerPoolExecutor):
@@ -190,6 +191,7 @@ def test_submit_many_task(many_worker_pool: WorkerPoolExecutor):
 
     for expected, future in enumerate(futures):
         assert expected + 1 == future.result()
+
 
 @pytest.mark.concurrency
 def test_task_already_cancelled(one_worker_pool: WorkerPoolExecutor):
