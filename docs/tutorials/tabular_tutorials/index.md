@@ -42,3 +42,15 @@
 
 </div>
 
+<div style="border: 1px solid #ccc; padding: 10px; margin: 10px; border-radius: 5px; box-shadow: 2px 2px 5px #888;">
+
+  <h3><a href="../../reference/notebooks/m5_sales_prediction_lgbm.html">Sales Prediction</a> - Regression (LGBM)</h3>
+
+</div>
+
+<div style="border: 1px solid #ccc; padding: 10px; margin: 10px; border-radius: 5px; box-shadow: 2px 2px 5px #888;">
+
+  <h3><a href="../../reference/notebooks/wage_classification.html">Wage Classification</a> - Classification (scikit-learn)</h3>
+
+</div>
+

@@ -35,3 +35,27 @@
 <h3><a href="../../reference/notebooks/hotel_text_regression.html">Hotel Score Prediction</a> - Regression (scikit-learn)</h3>
 
 </div>
+
+<div style="border: 1px solid #ccc; padding: 10px; margin: 10px; border-radius: 5px; box-shadow: 2px 2px 5px #888;">
+
+<h3><a href="../../reference/notebooks/medical_transcript_classification_sklearn.html">Medical Transcript Classification</a> - Classification (scikit-learn)</h3>
+
+</div>
+
+<div style="border: 1px solid #ccc; padding: 10px; margin: 10px; border-radius: 5px; box-shadow: 2px 2px 5px #888;">
+
+<h3><a href="../../reference/notebooks/movie_review_sentiment_classification_pytorch_sklearn.html">Movie Review Sentiment Analysis</a> - Classification (scikit-learn)</h3>
+
+</div>
+
+<div style="border: 1px solid #ccc; padding: 10px; margin: 10px; border-radius: 5px; box-shadow: 2px 2px 5px #888;">
+
+<h3><a href="../../reference/notebooks/newspaper_classification_pytorch.html">Newspaper Topic Classification</a> - Classification (PyTorch)</h3>
+
+</div>
+
+<div style="border: 1px solid #ccc; padding: 10px; margin: 10px; border-radius: 5px; box-shadow: 2px 2px 5px #888;">
+
+<h3><a href="../../reference/notebooks/tripadvisor_sentiment_classification.html">Tripadvisor Review Sentiment Analysis</a> - Classification (HuggingFace)</h3>
+
+</div>
