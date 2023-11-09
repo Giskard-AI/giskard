@@ -19,7 +19,9 @@ def test_llm_chain():
     )
     chain = LLMChain(llm=llm, prompt=prompt)
 
-    wrapped_model = Model(chain, model_type="text_generation")
+    wrapped_model = Model(
+        chain, model_type="text_generation", name="test", description="fake", feature_names=["product"]
+    )
 
     df = pd.DataFrame(["colorful socks", "electric car"], columns=["product"])
 

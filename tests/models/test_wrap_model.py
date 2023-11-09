@@ -1,3 +1,5 @@
+import numpy as np
+import pytest
 from sklearn.linear_model import LogisticRegression
 
 from giskard.models.automodel import Model
@@ -28,3 +30,90 @@ def test_bound_method_model():
     )
 
     assert isinstance(my_model, CloudpickleSerializableModel)
+
+
+def test_text_generation_model_needs_name_and_description():
+    with pytest.raises(ValueError, match=r"The parameters 'name' and 'description' are required"):
+        Model(
+            lambda x: ["Hello"] * len(x),
+            model_type="text_generation",
+            feature_names=["one", "two"],
+        )
+
+    with pytest.raises(ValueError, match=r"The parameters 'name' and 'description' are required"):
+        Model(
+            lambda x: ["Hello"] * len(x),
+            name="My name",
+            model_type="text_generation",
+            feature_names=["one", "two"],
+        )
+
+    with pytest.raises(ValueError, match=r"The parameters 'name' and 'description' are required"):
+        Model(
+            lambda x: ["Hello"] * len(x),
+            name="",
+            description="My description",
+            model_type="text_generation",
+            feature_names=["one", "two"],
+        )
+
+    with pytest.raises(ValueError, match=r"The parameters 'name' and 'description' are required"):
+        Model(
+            lambda x: ["Hello"] * len(x),
+            name="Hello",
+            description="",
+            model_type="text_generation",
+            feature_names=["one", "two"],
+        )
+
+    with pytest.raises(ValueError, match=r"The parameters 'name' and 'description' are required"):
+        Model(
+            lambda x: ["Hello"] * len(x),
+            name="Hello",
+            description="",
+            model_type="text_generation",
+            feature_names=np.array([1, 2]),
+        )
+
+    # Should raise no error
+    Model(
+        lambda x: ["Hello"] * len(x),
+        name="Hello",
+        description="This is a model that says hello",
+        model_type="text_generation",
+        feature_names=["one", "two"],
+    )
+
+    Model(
+        lambda x: ["Hello"] * len(x),
+        name="Hello",
+        description="This is a model that says hello",
+        model_type="text_generation",
+        feature_names=np.array(["one", "two"]),
+    )
+
+    # Other models should not require name and description
+    Model(
+        lambda x: ["Hello"] * len(x),
+        model_type="regression",
+        feature_names=["one", "two"],
+    )
+
+
+def test_text_generation_model_needs_feature_names():
+    with pytest.raises(ValueError, match=r"feature_names"):
+        Model(
+            lambda x: ["Hello"] * len(x),
+            name="Hello",
+            description="This is a model that says hello",
+            model_type="text_generation",
+        )
+
+    # Should raise no error
+    Model(
+        lambda x: ["Hello"] * len(x),
+        name="Hello",
+        description="This is a model that says hello",
+        model_type="text_generation",
+        feature_names=["one", "two"],
+    )
