@@ -28,7 +28,7 @@ def configured_validate_arguments(func):
     validated_func = validate_arguments(func, config={"arbitrary_types_allowed": True})
     # Call wraps, to update name, docs, ...
     validated_func = functools.wraps(func)(validated_func)
-    return func
+    return validated_func
 
 
 def validate_is_pandasdataframe(df):
