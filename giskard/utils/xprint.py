@@ -7,14 +7,14 @@ CHARS_LIMIT = 120
 PLACEHOLDER = "{}"
 
 # Aliasing
-FBLACK = Fore.LIGHTBLACK_EX
-FRED = Fore.LIGHTRED_EX
-FGREEN = Fore.LIGHTGREEN_EX
-FYELLOW = Fore.LIGHTYELLOW_EX
-FBLUE = Fore.LIGHTBLUE_EX
-FMAGENTA = Fore.LIGHTMAGENTA_EX
-FCYAN = Fore.LIGHTCYAN_EX
-FWHITE = Fore.LIGHTWHITE_EX
+BLACK_COLOR = Fore.LIGHTBLACK_EX
+RED_COLOR = Fore.LIGHTRED_EX
+GREEN_COLOR = Fore.LIGHTGREEN_EX
+YELLOW_COLOR = Fore.LIGHTYELLOW_EX
+BLUE_COLOR = Fore.LIGHTBLUE_EX
+MAGENTA_COLOR = Fore.LIGHTMAGENTA_EX
+CYAN_COLOR = Fore.LIGHTCYAN_EX
+WHITE_COLOR = Fore.LIGHTWHITE_EX
 
 RESET = _Style.RESET_ALL
 BOLD = _Style.BRIGHT
@@ -22,7 +22,7 @@ BOLD = _Style.BRIGHT
 
 @dataclass(frozen=True)
 class Style:
-    color: int = FBLACK
+    color: int = RESET
     font: int = BOLD
     design: str = "{reset}{font}{color}{" + PLACEHOLDER + "}{reset}"
 
@@ -80,31 +80,61 @@ def style(*args, template: Optional[Template] = None):
 
 
 # Aliasing
-BLACK = Style(color=FBLACK)
-RED = Style(color=FRED)
-GREEN = Style(color=FGREEN)
-YELLOW = Style(color=FYELLOW)
-BLUE = Style(color=FBLUE)
-MAGENTA = Style(color=FMAGENTA)
-CYAN = Style(color=FCYAN)
-WHITE = Style(color=FWHITE)
+BLACK_STYLE = Style(color=BLACK_COLOR)
+RED_STYLE = Style(color=RED_COLOR)
+GREEN_STYLE = Style(color=GREEN_COLOR)
+YELLOW_STYLE = Style(color=YELLOW_COLOR)
+BLUE_STYLE = Style(color=BLUE_COLOR)
+MAGENTA_STYLE = Style(color=MAGENTA_COLOR)
+CYAN_STYLE = Style(color=CYAN_COLOR)
+WHITE_STYLE = Style(color=WHITE_COLOR)
+
+SCAN_COST_ESTIMATE_CONTENT = """ ⚠️{}
+This automatic scan will use LLM-assisted detectors based on GPT-4 to identify vulnerabilities in your model.
+These are the total estimated costs:
+Estimated calls to your model: ~{}
+Estimated OpenAI GPT-4 calls for evaluation: {} (~{} prompt tokens and ~{} sampled tokens)
+OpenAI API costs for evaluation are estimated to ${}.
+"""
+
+SCAN_COST_SUMMARY_CONTENT = """LLM-assisted detectors have used the following resources:
+OpenAI GPT-4 calls for evaluation: {} ({} prompt tokens and {} sampled tokens)
+OpenAI API costs for evaluation amount to ${} (standard pricing).
+"""
 
 
 @dataclass(frozen=True)
 class Catalog:
-    Detector = Template(content="Running {}…", pstyles=[BLUE])
-    PromptsNumber = Template(content="Evaluating {} prompts…", pstyles=[CYAN])
-    PromptEvaluation = Template(content="Evaluating {} prompt with the {} evaluator…", pstyles=[MAGENTA, YELLOW])
-    Evaluation = Template(content="Evaluating prompts with the {} evaluator…", pstyles=[YELLOW])
+    Black = Template(content="{}", pstyles=[BLACK_STYLE])
+    Red = Template(content="{}", pstyles=[RED_STYLE])
+    Green = Template(content="{}", pstyles=[GREEN_STYLE])
+    Yellow = Template(content="{}", pstyles=[YELLOW_STYLE])
+    Blue = Template(content="{}", pstyles=[BLUE_STYLE])
+    Magenta = Template(content="{}", pstyles=[MAGENTA_STYLE])
+    Cyan = Template(content="{}", pstyles=[CYAN_STYLE])
+    White = Template(content="{}", pstyles=[WHITE_STYLE])
+
+    Detector = Template(content="Running {}…", pstyles=[BLUE_STYLE])
+    PromptsNumber = Template(content="Evaluating {} prompts…", pstyles=[CYAN_STYLE])
+    PromptEvaluation = Template(
+        content="Evaluating {} prompt with the {} evaluator…", pstyles=[MAGENTA_STYLE, YELLOW_STYLE]
+    )
+    Evaluation = Template(content="Evaluating prompts with the {} evaluator…", pstyles=[YELLOW_STYLE])
     PromptInjectionSuccess = Template(
-        content="{} of the {} prompts manipulated your model into jailbreak.", pstyles=[GREEN, MAGENTA]
+        content="{} of the {} prompts manipulated your model into jailbreak.", pstyles=[GREEN_STYLE, MAGENTA_STYLE]
     )
     PromptInjectionFailure = Template(
         content="The injection of {} prompts manipulated your model into jailbreak {} of the times.",
-        pstyles=[MAGENTA, RED],
+        pstyles=[MAGENTA_STYLE, RED_STYLE],
     )
     StartSummary = Template(
-        content="-" * (CHARS_LIMIT // 2 - 8) + " Summary of {} " + "-" * (CHARS_LIMIT // 2 - 8), pstyles=[BLUE]
+        content="-" * (CHARS_LIMIT // 2 - 8) + " Summary of {} " + "-" * (CHARS_LIMIT // 2 - 8), pstyles=[BLUE_STYLE]
+    )
+    DetectedIssues = Template(content="{}: {} detected. (Took {})", pstyles=[BLUE_STYLE, RED_STYLE, MAGENTA_STYLE])
+    NoDetectedIssues = Template(content="{}: {} detected. (Took {})", pstyles=[BLUE_STYLE, GREEN_STYLE, MAGENTA_STYLE])
+    ScanCostEstimate = Template(
+        content=SCAN_COST_ESTIMATE_CONTENT,
+        pstyles=[YELLOW_STYLE, MAGENTA_STYLE, MAGENTA_STYLE, CYAN_STYLE, CYAN_STYLE, RED_STYLE],
     )
 
 

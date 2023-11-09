@@ -2,7 +2,7 @@ import datetime
 import uuid
 import warnings
 from collections import Counter
-from time import perf_counter
+from time import perf_counter, sleep
 from typing import Optional, Sequence
 
 import pandas as pd
@@ -39,6 +39,22 @@ OpenAI API costs for evaluation amount to ${estimated_usd:.2f} (standard pricing
 # Hardcoded for now…
 PROMPT_TOKEN_COST = 0.03e-3
 SAMPLED_TOKEN_COST = 0.06e-3
+
+
+def get_decision_from_user():
+    while True:
+        try:
+            value = str(input("➡️ Would you like to proceed [y/n]? "))
+        except ValueError:
+            logger.error("Your input must be a string. Try again.")
+            continue
+
+        if value.lower() not in ["y", "n"]:
+            logger.error("The only accepted answers are 'y' or 'n'. Try again.")
+            continue
+        else:
+            break
+    return value
 
 
 class Scanner:
@@ -87,14 +103,13 @@ class Scanner:
         """
 
         # Check that the model and dataset were appropriately wrapped with Giskard
-        model, dataset, model_validation_time = self._validate_model_and_dataset(model, dataset)
+        model, dataset, model_validation_time = self._validate_model_and_dataset(model, dataset, verbose)
 
         # Initialize LLM logger if needed
         if model.is_text_generation:
             get_default_client().logger.reset()
 
         # Good, we can start
-        maybe_print("🔎 Running scan…", verbose=verbose)
         time_start = perf_counter()
 
         # Collect the detectors
@@ -154,8 +169,16 @@ class Scanner:
                 detected_issues = []
             detected_issues = sorted(detected_issues, key=lambda i: -i.importance)[:MAX_ISSUES_PER_DETECTOR]
             detector_elapsed = perf_counter() - detector_start
-            maybe_print(
-                f"{detector.__class__.__name__}: {len(detected_issues)} issue{'s' if len(detected_issues) > 1 else ''} detected. (Took {datetime.timedelta(seconds=detector_elapsed)})",
+            issues_info = (
+                (f"{len(detected_issues)} issues", Catalog.DetectedIssues)
+                if len(detected_issues) > 1
+                else ("No issues", Catalog.NoDetectedIssues)
+            )
+            xprint(
+                detector.__class__.__name__,
+                issues_info[0],
+                datetime.timedelta(seconds=detector_elapsed),
+                template=issues_info[1],
                 verbose=verbose,
             )
             analytics.track(
@@ -180,7 +203,7 @@ class Scanner:
 
         return issues
 
-    def _validate_model_and_dataset(self, model, dataset):
+    def _validate_model_and_dataset(self, model, dataset, verbose):
         if not isinstance(model, BaseModel):
             raise ValueError(
                 "The model object you provided is not valid. Please wrap it with the `giskard.Model` class. "
@@ -206,7 +229,7 @@ class Scanner:
                     "Please make sure to set the `feature_names` parameter when wrapping your model."
                 )
 
-        model, dataset = self._prepare_model_dataset(model, dataset)
+        model, dataset = self._prepare_model_dataset(model, dataset, verbose=verbose)
 
         if not model.is_text_generation:
             time_start = perf_counter()
@@ -238,9 +261,11 @@ class Scanner:
 
         return model, dataset, model_validation_time
 
-    def _prepare_model_dataset(self, model: BaseModel, dataset: Optional[Dataset]):
+    def _prepare_model_dataset(self, model: BaseModel, dataset: Optional[Dataset], verbose: bool):
         if model.is_text_generation and dataset is None:
-            logger.debug("Automatically generating test dataset.")
+            xprint(
+                "🪄 Preparing scan: Automatically generating a test dataset…", template=Catalog.Green, verbose=verbose
+            )
             try:
                 return model, generate_test_dataset(model)
             except LLMGenerationError:
@@ -303,7 +328,7 @@ class Scanner:
             "num_llm_calls": num_llm_calls,
             "num_llm_prompt_tokens": num_llm_prompt_tokens,
             "num_llm_sampled_tokens": num_llm_sampled_tokens,
-            "estimated_usd": estimated_usd,
+            "estimated_usd": f"{estimated_usd:.2f}",
         }
 
     def _get_cost_measure(self):
@@ -316,18 +341,29 @@ class Scanner:
             "num_llm_calls": num_calls,
             "num_llm_prompt_tokens": num_prompt_tokens,
             "num_llm_sampled_tokens": num_sampled_tokens,
-            "estimated_usd": PROMPT_TOKEN_COST * num_prompt_tokens + SAMPLED_TOKEN_COST * num_sampled_tokens,
+            "estimated_usd": f"{PROMPT_TOKEN_COST * num_prompt_tokens + SAMPLED_TOKEN_COST * num_sampled_tokens:.2f}",
         }
 
     def _print_cost_estimate(self, model, dataset, detectors):
         if model.is_text_generation:
             estimates = self._get_cost_estimate(model, dataset, detectors)
-            print(COST_ESTIMATE_TEMPLATE.format(num_detectors=len(detectors), **estimates))
+            xprint("Disclaimer…", *estimates.values(), template=Catalog.ScanCostEstimate)
+            sleep(0.5)  # TODO: this is hideous, but needed due to the race condition
+            if float(estimates["estimated_usd"]) != 0:
+                user_input = get_decision_from_user()
+                if user_input != "y":
+                    xprint("⛔ Scan aborted…", template=Catalog.Red)
+                    raise KeyboardInterrupt
+                xprint("🔎 Running scan…", template=Catalog.Green)
 
     def _print_execution_summary(self, model, issues, errors, elapsed):
-        print(
-            f"Scan completed: {len(issues) or 'no'} issue{'s' if len(issues) != 1 else ''} found. (Took {datetime.timedelta(seconds=elapsed)})"
+        issues_info = (
+            (f"{len(issues)} issues", Catalog.DetectedIssues)
+            if len(issues) > 1
+            else ("No issues", Catalog.NoDetectedIssues)
         )
+        xprint("Scan completed", issues_info[0], datetime.timedelta(seconds=elapsed), template=issues_info[1])
+
         if model.is_text_generation:
             measured = self._get_cost_measure()
             print(COST_SUMMARY_TEMPLATE.format(**measured))
@@ -336,8 +372,3 @@ class Scanner:
                 f"{len(errors)} errors were encountered while running detectors. Please check the log to understand what went wrong. "
                 "You can run the scan again with `raise_exceptions=True` to disable graceful handling."
             )
-
-
-def maybe_print(*args, **kwargs):
-    if kwargs.pop("verbose", True):
-        print(*args, **kwargs)
