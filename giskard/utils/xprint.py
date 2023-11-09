@@ -89,7 +89,7 @@ MAGENTA_STYLE = Style(color=MAGENTA_COLOR)
 CYAN_STYLE = Style(color=CYAN_COLOR)
 WHITE_STYLE = Style(color=WHITE_COLOR)
 
-SCAN_COST_ESTIMATE_CONTENT = """ ⚠️{}
+SCAN_COST_ESTIMATE_CONTENT = """ ⚠️ {}
 This automatic scan will use LLM-assisted detectors based on GPT-4 to identify vulnerabilities in your model.
 These are the total estimated costs:
 Estimated calls to your model: ~{}
@@ -97,7 +97,8 @@ Estimated OpenAI GPT-4 calls for evaluation: {} (~{} prompt tokens and ~{} sampl
 OpenAI API costs for evaluation are estimated to ${}.
 """
 
-SCAN_COST_SUMMARY_CONTENT = """LLM-assisted detectors have used the following resources:
+SCAN_COST_SUMMARY_CONTENT = """💵 {}
+LLM-assisted detectors have used the following resources:
 OpenAI GPT-4 calls for evaluation: {} ({} prompt tokens and {} sampled tokens)
 OpenAI API costs for evaluation amount to ${} (standard pricing).
 """
@@ -134,6 +135,10 @@ class Catalog:
     NoDetectedIssues = Template(content="{}: {} detected. (Took {})", pstyles=[BLUE_STYLE, GREEN_STYLE, MAGENTA_STYLE])
     ScanCostEstimate = Template(
         content=SCAN_COST_ESTIMATE_CONTENT,
+        pstyles=[YELLOW_STYLE, MAGENTA_STYLE, MAGENTA_STYLE, CYAN_STYLE, CYAN_STYLE, RED_STYLE],
+    )
+    ScanCostSummary = Template(
+        content=SCAN_COST_SUMMARY_CONTENT,
         pstyles=[YELLOW_STYLE, MAGENTA_STYLE, MAGENTA_STYLE, CYAN_STYLE, CYAN_STYLE, RED_STYLE],
     )
 

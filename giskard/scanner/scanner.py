@@ -353,7 +353,7 @@ class Scanner:
 
         if model.is_text_generation:
             measured = self._get_cost_measure()
-            print(COST_SUMMARY_TEMPLATE.format(**measured))
+            xprint("Cost summary…", *measured.values(), template=Catalog.ScanCostSummary)
         if errors:
             warning(
                 f"{len(errors)} errors were encountered while running detectors. Please check the log to understand what went wrong. "

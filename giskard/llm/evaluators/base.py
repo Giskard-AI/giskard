@@ -5,6 +5,7 @@ from ...datasets.base import Dataset
 from ...models.base.model import BaseModel
 from ..client import LLMClient, get_default_client
 from ..errors import LLMGenerationError
+from ...utils.xprint import xprint, Catalog
 
 EVALUATE_MODEL_FUNCTIONS = [
     {
@@ -77,6 +78,7 @@ class LLMBasedEvaluator:
         succeeded = []
         failed = []
         errored = []
+        xprint(self.__class__.__name__, template=Catalog.Evaluation, verbose=verbose)
         for input_vars, model_output in zip(
             dataset.df.loc[:, model.meta.feature_names].to_dict("records"), model_outputs
         ):

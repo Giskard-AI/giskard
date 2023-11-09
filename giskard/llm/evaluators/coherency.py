@@ -51,6 +51,8 @@ class CoherencyEvaluator(LLMBasedEvaluator):
     def evaluate(
         self, model: BaseModel, dataset_1: Dataset, dataset_2: Optional[Dataset] = None, verbose: bool = True
     ) -> EvaluationResult:
+        xprint(self.__class__.__name__, template=Catalog.Evaluation, verbose=verbose)
+
         if dataset_2 is not None and len(dataset_1) != len(dataset_2):
             raise ValueError("Datasets must have the same index.")
 
@@ -75,7 +77,6 @@ class CoherencyEvaluator(LLMBasedEvaluator):
                 "input_2": input_2,
                 "output_2": output_2,
             }
-            xprint(self.__class__.__name__, template=Catalog.Evaluation, verbose=verbose)
             # xprint(sample)
 
             try:
