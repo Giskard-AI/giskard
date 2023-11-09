@@ -30,21 +30,18 @@ Created by ML engineers for ML engineers, `giskard` enables you to:
 - **Scan your model to find dozens of hidden vulnerabilities**: The `giskard` scan automatically detects vulnerabilities 
 such as performance bias, hallucination, prompt injection, data leakage, spurious correlation, overconfidence, etc.
   <br><br>
-  <iframe src="https://htmlpreview.github.io/?https://gist.githubusercontent.com/AbSsEnT/a67354621807f3c3a332fca7d8b9a5c8/raw/588f027dc6b14c88c7393c50ff3086fe1122e2e9/LLM_QA_IPCC_scan_report.html" width="600" height="400"></iframe>
+  <iframe src="https://htmlpreview.github.io/?https://gist.githubusercontent.com/AbSsEnT/a67354621807f3c3a332fca7d8b9a5c8/raw/588f027dc6b14c88c7393c50ff3086fe1122e2e9/LLM_QA_IPCC_scan_report.html" width="700" height="400"></iframe>
+
 
 - **Instantaneously generate domain-specific tests**: `giskard` automatically generates relevant, customizable tests based on the 
 vulnerabilities detected in the scan.
   <br><br>
+  <img src="../assets/test_suite_scan_llm.png" width="500">
 
-<p align="center">
-  <img src="../assets/test_suite_scan_llm.png" width="500"/>
-</p>
 
 - **Integrate and automate** the quality testing of AI models in **CI/CD** processes by leveraging native `giskard` integrations.
   <br><br>
-<p align="center">
-  <img src="../assets/GH-discussion.png" width="600"/>
-</p>
+  <img src="../assets/GH-discussion.png" width="650">
 
 
 Get started **now** with our [quickstart notebooks](../getting_started/quickstart/index.md)! ⚡️
