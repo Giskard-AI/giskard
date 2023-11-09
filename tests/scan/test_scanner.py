@@ -101,8 +101,15 @@ def test_default_dataset_is_used_with_generative_model():
     def fake_model(*args, **kwargs):
         return None
 
-    model = Model(model=fake_model, model_type=SupportedModelTypes.TEXT_GENERATION)
-    # model.is_text_generation = True
+    model = Model(
+        model=fake_model,
+        model_type=SupportedModelTypes.TEXT_GENERATION,
+        name="test",
+        description="test",
+        feature_names=["query"],
+        target="query",
+    )
+
     model.meta = ModelMeta(
         "Model name",
         "Some meaningful model description",
