@@ -160,28 +160,8 @@ jobs:
           pdm run pip freeze | grep '^pandas'
           pdm run pip freeze | grep -q '^pandas==${{ matrix.pandas_v1 && '1' || '2' }}\.'
 
-      - name: Test code (concurrency)
-        run: pdm test-worker
-
-      - name: Tests integrations/
-        env:
-          PYTEST_XDIST_AUTO_NUM_WORKERS: ${{ startsWith(matrix.os,'windows-') && 1 || 2 }}
-        run: pdm test-integrations
-
-      - name: Tests models/
-        env:
-          PYTEST_XDIST_AUTO_NUM_WORKERS: ${{ startsWith(matrix.os,'windows-') && 1 || 2 }}
-        run: pdm run test-models
-
-      - name: Tests scan/
-        env:
-          PYTEST_XDIST_AUTO_NUM_WORKERS: ${{ startsWith(matrix.os,'windows-') && 1 || 2 }}
-        run: pdm test-scan
-
       - name: Test others
-        env:
-          PYTEST_XDIST_AUTO_NUM_WORKERS: ${{ startsWith(matrix.os,'windows-') && 1 || 2 }}
-        run: pdm test-fast
+        run: pdm test
 
       - name: SonarCloud Scan
         if: ${{ matrix.os == 'ubuntu-latest' && matrix.python-version == '3.10' && !matrix.langchain_minimal && !matrix.pandas_v1 && !matrix.pydantic_v1 && (github.event.ref == 'refs/heads/main' || github.event_name == 'pull_request')}}
@@ -202,6 +182,12 @@ jobs:
         uses: actions/upload-artifact@v3
         with:
           path: dist/*whl
+
+      - name: "Memory csv"
+        if: ${{ always() }}
+        uses: actions/upload-artifact@v3
+        with:
+          path: memory*.csv
 
       - name: Run integration tests for python
         if: ${{ inputs.run-integration-tests && matrix.os != 'windows-2019' }}
