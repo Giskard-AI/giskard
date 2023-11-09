@@ -163,7 +163,17 @@ jobs:
       - name: Test code (concurrency)
         run: pdm run test-worker
 
-      - name: Test code
+      - name: Tests integrations/
+        env:
+          PYTEST_XDIST_AUTO_NUM_WORKERS: ${{ startsWith(matrix.os,'windows-') && 1 || 2 }}
+        run: pdm run test-integrations
+
+      - name: Tests models/
+        env:
+          PYTEST_XDIST_AUTO_NUM_WORKERS: ${{ startsWith(matrix.os,'windows-') && 1 || 2 }}
+        run: pdm run test-models
+
+      - name: Test others
         env:
           PYTEST_XDIST_AUTO_NUM_WORKERS: ${{ startsWith(matrix.os,'windows-') && 1 || 2 }}
         run: pdm run test-fast
@@ -192,7 +202,7 @@ jobs:
         if: ${{ inputs.run-integration-tests && matrix.os != 'windows-2019' }}
         env:
           PYTEST_XDIST_AUTO_NUM_WORKERS: 2
-        run: pdm run test -m 'slow'
+        run: pdm test-slow
   install-poetry:
     name: "Check if wheel can be installed with using Poetry"
     runs-on: ubuntu-latest
