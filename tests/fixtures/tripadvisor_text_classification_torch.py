@@ -1,21 +1,19 @@
+from typing import List, Union
+
 import re
 import string
-from typing import Union, List
 from dataclasses import dataclass
 from pathlib import Path
 
-import pytest
-import torch
 import numpy as np
 import pandas as pd
-from torch.utils.data import DataLoader
-from torch.utils.data import TensorDataset
+import pytest
+import torch
+from torch.utils.data import DataLoader, TensorDataset
 from transformers import DistilBertForSequenceClassification, DistilBertTokenizer
 
-from giskard import models
-from giskard import Dataset, Model
+from giskard import Dataset, Model, models
 from tests.url_utils import fetch_from_ftp
-
 
 # Data
 DATA_URL = "ftp://sys.giskard.ai/pub/unit_test_resources/tripadvisor_reviews_dataset/{}"
@@ -201,17 +199,25 @@ class CustomWrapper(Model):
         return predicted_probabilities
 
 
-@pytest.fixture()
-def tripadvisor_data() -> Dataset:
+@pytest.fixture(scope="session")
+def tripadvisor_raw_data() -> Dataset:
     # Download dataset
     df = load_dataset()
+    return df
+
+
+@pytest.fixture()
+def tripadvisor_data(tripadvisor_raw_data) -> Dataset:
     return Dataset(
-        df, name="trip_advisor_reviews_sentiment", target=TARGET_COLUMN_NAME, column_types={TEXT_COLUMN_NAME: "text"}
+        tripadvisor_raw_data,
+        name="trip_advisor_reviews_sentiment",
+        target=TARGET_COLUMN_NAME,
+        column_types={TEXT_COLUMN_NAME: "text"},
     )
 
 
-@pytest.fixture()
-def tripadvisor_model(tripadvisor_data: Dataset) -> Model:
+@pytest.fixture(scope="session")
+def tripadvisor_raw_model(tripadvisor_raw_data) -> Model:
     # Load model.
     model = DistilBertForSequenceClassification.from_pretrained(
         PRETRAINED_WEIGHTS_NAME, num_labels=3, output_attentions=False, output_hidden_states=False
@@ -219,6 +225,17 @@ def tripadvisor_model(tripadvisor_data: Dataset) -> Model:
 
     return CustomWrapper(
         model,
+        model_type="classification",
+        classification_labels=[0, 1, 2],
+        name="trip_advisor_sentiment_classifier",
+        feature_names=[TEXT_COLUMN_NAME],
+    )
+
+
+@pytest.fixture()
+def tripadvisor_model(tripadvisor_raw_model) -> Model:
+    return CustomWrapper(
+        tripadvisor_raw_model,
         model_type="classification",
         classification_labels=[0, 1, 2],
         name="trip_advisor_sentiment_classifier",

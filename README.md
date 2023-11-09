@@ -4,24 +4,17 @@
 </p>
 <h1 align="center" weight='300' >The testing framework dedicated to ML models, from tabular to LLMs</h1>
 <h3 align="center" weight='300' >Scan AI models to detect risks of biases, performance issues and errors. In 4 lines of code. </h3>
-<p align="center">
-   <a href="https://github.com/Giskard-AI/giskard/releases">
-      <img alt="GitHub release" src="https://img.shields.io/github/v/release/Giskard-AI/giskard">
-  </a>
- <a href="https://github.com/Giskard-AI/giskard/blob/main/LICENSE">
-     <img alt="GitHub" src="https://img.shields.io/badge/License-Apache_2.0-blue.svg">
- </a>
-  <a href="https://github.com/Giskard-AI/giskard/actions/workflows/build_backend.yml?query=branch%3Amain">
-    <img alt="build" src="https://github.com/Giskard-AI/giskard/actions/workflows/build_backend.yml/badge.svg?branch=main"/>
- </a>
-  <a href="https://sonarcloud.io/summary/new_code?id=giskard">
-    <img alt="build" src="https://sonarcloud.io/api/project_badges/measure?project=giskard&metric=alert_status"/>
- </a>
-  <a href="https://gisk.ar/discord">
-    <img alt="Giskard on Discord" src="https://img.shields.io/discord/939190303397666868?label=Discord"/>
-  </a>
+<div align="center">
+
+  [![GitHub release](https://img.shields.io/github/v/release/Giskard-AI/giskard)](https://github.com/Giskard-AI/giskard/releases)
+  [![License](https://img.shields.io/badge/License-Apache_2.0-blue.svg)](https://github.com/Giskard-AI/giskard/blob/main/LICENSE)
+  [![CI](https://github.com/Giskard-AI/giskard/actions/workflows/build-python.yml/badge.svg?branch=main)](https://github.com/Giskard-AI/giskard/actions/workflows/build-python.yml?query=branch%3Amain)
+  [![Sonar](https://sonarcloud.io/api/project_badges/measure?project=giskard&metric=alert_status)](https://sonarcloud.io/summary/new_code?id=giskard)
+  [![Giskard on Discord](https://img.shields.io/discord/939190303397666868?label=Discord)](https://gisk.ar/discord)
+
   <a rel="me" href="https://fosstodon.org/@Giskard"></a>
-</p>
+
+</div>
 <h3 align="center">
    <a href="https://docs.giskard.ai/en/latest/getting-started/quickstart.html"><b>Documentation</b></a> &bull;
    <a href="https://www.giskard.ai/knowledge-categories/blog/?utm_source=github&utm_medium=github&utm_campaign=github_readme&utm_id=readmeblog"><b>Blog</b></a> &bull;
@@ -123,7 +116,7 @@ Once the scan completes, you can display the results directly in your notebook:
 ```python
 display(scan_results)
 ```
-*If you're facing issues, check out our wrapping [model](https://docs.giskard.ai/en/latest/guides/wrap_model/index.html) & [dataset](https://docs.giskard.ai/en/latest/guides/wrap_dataset/index.html) docs for more information.*
+*If you're facing issues, check out our wrapping [model](https://docs.giskard.ai/en/latest/open_source/scan/scan_tabular/index.html) & [dataset](https://docs.giskard.ai/en/latest/open_source/scan/scan_tabular/index.html) docs for more information.*
 ## 2. 🪄 Automatically generate a test suite
 
 If the scan found potential issues in your model, you can automatically generate a **test suite** based on the vulnerabilities found:
@@ -219,7 +212,7 @@ You can then **upload the test suite** created using the `giskard` Python librar
 <details>
   <summary>If Giskard hub/ML worker is not installed</summary>
 
-  Go to the [Run the Giskard Hub](https://docs.giskard.ai/en/latest/guides/installation_app/index.html) page.
+  Go to the [Install the Giskard Hub](https://docs.giskard.ai/en/latest/giskard_hub/installation_hub/index.html) page.
 </details>
 
 <details>
@@ -233,7 +226,7 @@ You can then **upload the test suite** created using the `giskard` Python librar
 <details>
   <summary>For more information on uploading to your local Giskard hub</summary>
 
-  Go to the [Upload an object to the Giskard hub](https://docs.giskard.ai/en/latest/guides/upload/index.html) page.
+  Go to the [Upload an object to the Giskard hub](https://docs.giskard.ai/en/latest/giskard_hub/upload/index.html) page.
 </details>
 
 For any other questions and doubts, head over to our [Discord](https://gisk.ar/discord).

@@ -6,10 +6,10 @@ batch_size = 32
 seed = 42
 
 
-@pytest.fixture()
+@pytest.fixture(scope="session")
 def imdb_data():
     # Import put here to avoid failure when resolving tests
-    from keras.utils import text_dataset_from_directory, get_file
+    from keras.utils import get_file, text_dataset_from_directory
 
     dataset = get_file(
         "aclImdb",

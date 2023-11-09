@@ -87,11 +87,18 @@ class GiskardTask:
 
 
 @dataclass(frozen=True)
+class GiskardMLWorkerExceptionInfo:
+    type: str
+    message: str
+    stack_trace: str
+
+
+@dataclass(frozen=True)
 class GiskardResult:
     id: str
     logs: str
     result: Any = None
-    exception: Any = None
+    exception: Optional[GiskardMLWorkerExceptionInfo] = None
 
 
 def _process_worker(tasks_queue: Queue, tasks_results: Queue, running_process: Dict[str, str], cache_content):
@@ -122,8 +129,12 @@ def _process_worker(tasks_queue: Queue, tasks_results: Queue, running_process: D
                     result = task.callable(*task.args, **task.kwargs)
                     to_return = GiskardResult(id=task.id, result=result, logs=f.getvalue())
                 except BaseException as e:
-                    exception = "\n".join(traceback.format_exception(type(e), e, e.__traceback__))
-                    to_return = GiskardResult(id=task.id, exception=exception, logs=f.getvalue() + "\n" + exception)
+                    exception = GiskardMLWorkerExceptionInfo(
+                        type=type(e).__name__,
+                        message=str(e),
+                        stack_trace=traceback.format_exc(),
+                    )
+                    to_return = GiskardResult(id=task.id, exception=exception, logs=f.getvalue() + "\n" + str(exception.stack_trace))
                 finally:
                     running_process.pop(task.id)
                     tasks_results.put(to_return)
@@ -343,6 +354,12 @@ class WorkerPoolExecutor(Executor):
         return exit_codes
 
 
+class GiskardMLWorkerException(Exception):
+    def __init__(self, info: GiskardMLWorkerExceptionInfo):
+        super().__init__(info.message)
+        self.info = info
+
+
 def _results_thread(
     executor: WorkerPoolExecutor,
 ):
@@ -360,7 +377,7 @@ def _results_thread(
         if result.exception is None:
             future.set_result(result.result)
         else:
-            future.set_exception(RuntimeError(result.exception))
+            future.set_exception(GiskardMLWorkerException(result.exception))
 
 
 def _feeder_thread(

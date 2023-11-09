@@ -192,19 +192,6 @@ class Scanner:
                 "You can follow the docs here: https://docs.giskard.ai/en/latest/guides/wrap_dataset/index.html"
             )
 
-        # Some extra checks
-        if model.is_text_generation:
-            if not model.meta.name or not model.meta.description:
-                raise ValueError(
-                    "LLM models must have a name and a description. Please make sure the `name` and `description` "
-                    "parameters of your model are not empty. We will use them to configure our detectors."
-                )
-            if not model.meta.feature_names:
-                raise ValueError(
-                    "LLM models must specify their input variables to be analyzed. "
-                    "Please make sure to set the `feature_names` parameter when wrapping your model."
-                )
-
         model, dataset = self._prepare_model_dataset(model, dataset)
 
         if not model.is_text_generation:
