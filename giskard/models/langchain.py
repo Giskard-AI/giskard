@@ -87,26 +87,3 @@ class LangchainModel(WrapperModel):
                 str({key: value for key, value in generation.items() if key in output_keys})
                 for generation in generations
             ]
-
-    def rewrite_prompt(self, template, input_variables=None, **kwargs):
-        from langchain import LLMChain
-
-        update = dict(template=template)
-        if input_variables is not None:
-            update["input_variables"] = input_variables
-
-        new_prompt = self.model.prompt.copy(update=update)
-        chain = LLMChain(llm=self.model.llm, prompt=new_prompt)
-
-        model_kwargs = dict(
-            model_type=self.meta.model_type,
-            data_preprocessing_function=self.data_preprocessing_function,
-            model_postprocessing_function=self.model_postprocessing_function,
-            feature_names=None,
-            # The dataset passed with the new prompts could have different column name in the scan detectors
-            classification_threshold=self.meta.classification_threshold,
-            classification_labels=self.meta.classification_labels,
-        )
-        model_kwargs.update(kwargs)
-
-        return self.__class__(chain, **model_kwargs)
