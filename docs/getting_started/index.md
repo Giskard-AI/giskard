@@ -1,25 +1,28 @@
 # Why Giskard?
 
-Giskard is an **AI quality management system** dedicated to ML models.
+Giskard is an open-source **AI quality management system** dedicated to ML models.
 
 Designed for comprehensive coverage of the AI model lifecycle, Giskard provides a suite of tools for scanning, testing, 
-debugging, and monitoring of all AI models, from tabular to LLMs.
+debugging, and monitoring all AI models, from tabular to LLMs.
 
 Giskard currently offers 3 tools for AI quality management: the **Giskard open-source Python library**, the **Giskard Quality 
 Assurance Hub** and the **LLM Monitoring platform (LLMon)**.
 
-## Giskard Python Library
+## The Giskard open source Python Library
 
 An **open-source** library to scan your AI models for vulnerabilities and generate test suites automatically to aid in 
 the Quality Assurance process of ML models and LLMs.
 
 Testing Machine Learning applications can be tedious. Since ML models depend on data, testing scenarios depend on 
-domain specificities and are often infinite.
+**domain specificities** and are often **infinite**.
 
 Created by ML engineers for ML engineers, `giskard` enables you to:
 
 - **Scan your model to find dozens of hidden vulnerabilities**: The `giskard` scan automatically detects vulnerabilities 
 such as performance bias, hallucination, prompt injection, data leakage, spurious correlation, overconfidence, etc.
+  <br><br>
+  <iframe src="https://htmlpreview.github.io/?https://gist.githubusercontent.com/AbSsEnT/a67354621807f3c3a332fca7d8b9a5c8/raw/588f027dc6b14c88c7393c50ff3086fe1122e2e9/LLM_QA_IPCC_scan_report.html" width="600" height="400"></iframe>
+
   <br><br>
   ![](../assets/scan_llm.png)
 
@@ -27,8 +30,7 @@ such as performance bias, hallucination, prompt injection, data leakage, spuriou
 - **Instantaneously generate domain-specific tests**: `giskard` automatically generates relevant, customizable tests based on the 
 vulnerabilities detected in the scan.
   <br><br>
-  ![](../assets/test_suite_scan_llm.png)
-
+<iframe src="https://htmlpreview.github.io/?https://gist.githubusercontent.com/AbSsEnT/a67354621807f3c3a332fca7d8b9a5c8/raw/588f027dc6b14c88c7393c50ff3086fe1122e2e9/LLM_QA_IPCC_scan_report.html" width="100%" height="400"></iframe>
 
 - **Integrate and automate** the quality testing of AI models in **CI/CD** processes by leveraging native `giskard` integrations.
   <br><br>
