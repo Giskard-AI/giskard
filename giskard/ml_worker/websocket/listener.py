@@ -583,33 +583,48 @@ def dataset_processing(
     )
 
 
-@websocket_actor(MLWorkerAction.runAdHocTest)
+@websocket_actor(MLWorkerAction.runAdHocTest, execute_in_pool=False)
 def run_ad_hoc_test(
     client: Optional[GiskardClient], params: websocket.RunAdHocTestParam, *args, **kwargs
 ) -> websocket.RunAdHocTest:
     test: GiskardTest = GiskardTest.download(params.testUuid, client, None)
 
     arguments = parse_function_arguments(client, params.arguments)
+    if params.debug:
+        arguments.update({"debug": True})
     if "kwargs" in arguments:
         arguments.update(**arguments.pop("kwargs"))
 
     test_result = do_run_adhoc_test(arguments, test)
 
-    # For legacy debug
     if params.debug:
-        debug_info = extract_debug_info(arguments)
-        if not debug_info["dataset"] or len(test_result.failed_indexes) == 0:
+        debug_info = extract_debug_info(params.arguments)
+        dataset = None
+        if test_result.output_df is not None:
+            # For legacy debug returning output_df
+            if test_result.output_df.name:
+                # Dataset can have empty name
+                test_result.output_df.name += debug_info["suffix"]
+            dataset = test_result.output_df
+        elif len(test_result.failed_indexes) != 0:
+            # For legacy test calling new functions that return TestResult with failed_indexes
+            dataset_name = debug_prefix + test.meta.name + debug_info["suffix"]
+            parent_dataset = Dataset.download(
+                client=client,
+                project_key=debug_info["dataset"].project_key,
+                dataset_id=debug_info["dataset"].id,
+                sample=debug_info["dataset"].sample,
+            )
+            dataset = do_create_sub_dataset(parent_dataset, dataset_name, test_result.failed_indexes)
+        else:
             raise ValueError(
                 "This test does not return any examples to debug. "
                 "Check the debugging method associated to this test at "
                 "https://docs.giskard.ai/en/latest/reference/tests/index.html"
             )
 
-        dataset_name = debug_prefix + test.meta.name + debug_info["suffix"]
-
-        sub_dataset = do_create_sub_dataset(debug_info["dataset"], dataset_name, test_result.failed_indexes)
         # Upload the sub-dataset
-        test_result.output_df_id = sub_dataset.upload(client, debug_info["project_key"])
+        test_result.output_df_id = dataset.upload(client, debug_info["project_key"])
 
     return websocket.RunAdHocTest(
         results=[
