@@ -806,3 +806,26 @@ def get_push_objects(client: Optional[GiskardClient], params: websocket.GetPushP
     }
 
     return push_functions[params.push_kind](model, dataset, df)
+
+
+@websocket_actor(MLWorkerAction.createSubDataset)
+def create_sub_dataset(
+    client: Optional[GiskardClient], params: websocket.CreateSubDatasetParam, *arg, **kwargs
+) -> websocket.CreateSubDataset:
+    dataset = Dataset.download(
+        client=client,
+        project_key=params.projectKey,
+        dataset_id=params.dataset.id,
+        sample=params.dataset.sample
+    )
+
+    sub_dataset = Dataset(
+        df=dataset.df.iloc[params.rowIndexes],
+        name=params.name,
+        target=dataset.target,
+        cat_columns=dataset.cat_columns,
+        column_types=dataset.column_types,
+        validation=False,
+    )
+
+    return websocket.CreateSubDataset(datasetUuid=sub_dataset.upload(client=client, project_key=params.projectKey))

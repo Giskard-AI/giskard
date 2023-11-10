@@ -537,3 +537,32 @@ def test_websocket_actor_dataset_processing_do_nothing_transform_with_cache(call
             assert reply.filteredRows is not None and 0 == len(reply.filteredRows)
             # No line modified
             assert reply.modifications is not None and 0 == len(reply.modifications)
+
+
+def test_websocket_actor_create_sub_dataset(request):
+    dataset: Dataset = request.getfixturevalue("enron_data")
+    project_key = str(uuid.uuid4())
+
+    with utils.MockedProjectCacheDir(project_key=project_key), utils.MockedClient(mock_all=False) as (client, mr):
+        # Prepare dataset
+        utils.local_save_dataset_under_giskard_home_cache(dataset, project_key)
+        utils.register_uri_for_dataset_meta_info(mr, dataset, project_key)
+
+        # Prepare dataset upload requests
+        utils.register_uri_for_any_dataset_artifact_info_upload(mr, register_files=True)
+
+        params = websocket.CreateSubDatasetParam(
+            dataset=websocket.ArtifactRef(
+                project_key=project_key,
+                id=str(dataset.id),
+                sample=False,
+            ),
+            projectKey=project_key,
+            name="Generated sub-dataset",
+            rowIndexes=[0],
+        )
+
+        reply = listener.create_sub_dataset(client=client, params=params)
+
+        assert isinstance(reply, websocket.CreateSubDataset)
+        assert reply.datasetUuid != str(dataset.id)
