@@ -583,7 +583,7 @@ def dataset_processing(
     )
 
 
-@websocket_actor(MLWorkerAction.runAdHocTest, execute_in_pool=False)
+@websocket_actor(MLWorkerAction.runAdHocTest)
 def run_ad_hoc_test(
     client: Optional[GiskardClient], params: websocket.RunAdHocTestParam, *args, **kwargs
 ) -> websocket.RunAdHocTest:
