@@ -1,12 +1,14 @@
-from unittest.mock import Mock, sentinel
+from unittest.mock import Mock, patch, sentinel
 
+import numpy as np
 import pandas as pd
 import pytest
 
 from giskard.datasets import Dataset
+from giskard.models.base import BaseModel
 from giskard.models.base.model_prediction import ModelPredictionResults
 from giskard.testing.tests.llm import LLMCharInjector
-from giskard.testing.tests.llm.injections import CharInjectionResult
+from giskard.testing.tests.llm.injections import CharInjectionResult, test_llm_char_injection
 
 
 @pytest.mark.memory_expensive
@@ -25,6 +27,7 @@ def test_single_injection():
 
     injector = LLMCharInjector(max_repetitions=23, threshold=0.1412, output_sensitivity=0.15)
     result = injector.run_single_injection(model, dataset, reference_predictions, char="\r", feature="feature_1")
+    injector._cleanup()
 
     assert isinstance(result, CharInjectionResult)
     assert result.fail_rate == pytest.approx(1 / 3)
@@ -41,12 +44,14 @@ def test_single_injection():
     # Increase sensitivity
     injector = LLMCharInjector(max_repetitions=23, threshold=0.1412, output_sensitivity=0.2)
     result = injector.run_single_injection(model, dataset, reference_predictions, char="\r", feature="feature_1")
+    injector._cleanup()
     assert not result.vulnerable
     assert result.fail_rate == pytest.approx(0.0)
 
     # Increase threshold
     injector = LLMCharInjector(max_repetitions=23, threshold=0.4, output_sensitivity=0.15)
     result = injector.run_single_injection(model, dataset, reference_predictions, char="\r", feature="feature_1")
+    injector._cleanup()
     assert not result.vulnerable
     assert result.fail_rate == pytest.approx(1 / 3)
 
@@ -110,3 +115,167 @@ def test_runs_on_multiple_features_and_chars():
 
     assert run_mock.call_args_list[0].args[3] == "char1"
     assert run_mock.call_args_list[1].args[3] == "char2"
+
+
+@patch("giskard.testing.tests.llm.injections.LLMCharInjector")
+def test_char_injector_test_fails(Injector):
+    original_dataset = Dataset(
+        pd.DataFrame({"my_feature": ["original 1", "original 2"]}),
+        validation=False,
+    )
+    perturbed_dataset = Dataset(
+        pd.DataFrame({"my_feature": ["perturbed 1", "perturbed 2"]}),
+        validation=False,
+    )
+    reference_predictions = ["Hello", "World"]
+    predictions = ["Hello", "BOOM!"]
+
+    results = [
+        CharInjectionResult(
+            char="a",
+            feature="my_feature",
+            fail_rate=0.81,
+            vulnerable=True,
+            vulnerable_mask=np.array([False, True]),
+            original_dataset=original_dataset,
+            perturbed_dataset=perturbed_dataset,
+            predictions=predictions,
+            original_predictions=reference_predictions,
+        ),
+        CharInjectionResult(
+            char="a",
+            feature="other_feature",
+            fail_rate=0.01,
+            vulnerable=False,
+            vulnerable_mask=np.array([False, False]),
+            original_dataset=original_dataset,
+            perturbed_dataset=perturbed_dataset,
+            predictions=predictions,
+            original_predictions=reference_predictions,
+        ),
+        CharInjectionResult(
+            char="b",
+            feature="my_feature",
+            fail_rate=0.89,
+            vulnerable=True,
+            vulnerable_mask=np.array([False, True]),
+            original_dataset=original_dataset,
+            perturbed_dataset=perturbed_dataset,
+            predictions=predictions,
+            original_predictions=reference_predictions,
+        ),
+        CharInjectionResult(
+            char="b",
+            feature="other_feature",
+            fail_rate=None,
+            vulnerable=None,
+            vulnerable_mask=None,
+            original_dataset=None,
+            perturbed_dataset=None,
+            predictions=None,
+            original_predictions=None,
+            errors=["Error 1", "Error 2"],
+        ),
+    ]
+
+    Injector.return_value.run.return_value = results
+
+    my_test = test_llm_char_injection()
+    test_result = my_test(Mock(BaseModel), original_dataset).execute()
+
+    assert test_result.passed is False
+    assert test_result.is_error is False
+    assert test_result.metric == pytest.approx(0.85)
+    assert test_result.messages == ["Error 1", "Error 2"]
+
+
+@patch("giskard.testing.tests.llm.injections.LLMCharInjector")
+def test_char_injector_test_succeeds(Injector):
+    original_dataset = Dataset(
+        pd.DataFrame({"my_feature": ["original 1", "original 2"]}),
+        validation=False,
+    )
+    perturbed_dataset = Dataset(
+        pd.DataFrame({"my_feature": ["perturbed 1", "perturbed 2"]}),
+        validation=False,
+    )
+    reference_predictions = ["Hello", "World"]
+    predictions = ["Hello", "BOOM!"]
+
+    results = [
+        CharInjectionResult(
+            char="a",
+            feature="other_feature",
+            fail_rate=0.01,
+            vulnerable=False,
+            vulnerable_mask=np.array([False, False]),
+            original_dataset=original_dataset,
+            perturbed_dataset=perturbed_dataset,
+            predictions=predictions,
+            original_predictions=reference_predictions,
+        ),
+        CharInjectionResult(
+            char="b",
+            feature="other_feature",
+            fail_rate=None,
+            vulnerable=None,
+            vulnerable_mask=None,
+            original_dataset=None,
+            perturbed_dataset=None,
+            predictions=None,
+            original_predictions=None,
+            errors=["Error 1", "Error 2"],
+        ),
+    ]
+
+    Injector.return_value.run.return_value = results
+
+    my_test = test_llm_char_injection()
+    test_result = my_test(Mock(BaseModel), original_dataset).execute()
+
+    assert test_result.passed
+    assert test_result.is_error is False
+    assert test_result.messages == ["Error 1", "Error 2"]
+
+
+@patch("giskard.testing.tests.llm.injections.LLMCharInjector")
+def test_char_injector_test_error(Injector):
+    original_dataset = Dataset(
+        pd.DataFrame({"my_feature": ["original 1", "original 2"]}),
+        validation=False,
+    )
+
+    results = [
+        CharInjectionResult(
+            char="b",
+            feature="other_feature",
+            fail_rate=None,
+            vulnerable=None,
+            vulnerable_mask=None,
+            original_dataset=None,
+            perturbed_dataset=None,
+            predictions=None,
+            original_predictions=None,
+            errors=["Error 1", "Error 2"],
+        ),
+        CharInjectionResult(
+            char="b",
+            feature="other_feature",
+            fail_rate=None,
+            vulnerable=None,
+            vulnerable_mask=None,
+            original_dataset=None,
+            perturbed_dataset=None,
+            predictions=None,
+            original_predictions=None,
+            errors=["Error 3"],
+        ),
+    ]
+
+    Injector.return_value.run.return_value = results
+
+    my_test = test_llm_char_injection()
+    test_result = my_test(Mock(BaseModel), original_dataset).execute()
+
+    assert test_result.is_error
+    assert test_result.messages == ["Error 1", "Error 2", "Error 3"]
