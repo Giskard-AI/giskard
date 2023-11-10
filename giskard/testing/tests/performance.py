@@ -45,7 +45,7 @@ def _get_rmse(y_actual, y_predicted):
     return np.sqrt(mean_squared_error(y_actual, y_predicted))
 
 
-def _test_classification_score(score_fn, model: BaseModel, dataset: Dataset, threshold: float = 1.0):
+def _test_classification_score(score_fn, model: BaseModel, dataset: Dataset, threshold: float = 1.0, debug: bool = False):
     _verify_target_availability(dataset)
     is_binary_classification = len(model.meta.classification_labels) == 2
     targets = dataset.df[dataset.target]
@@ -67,7 +67,7 @@ def _test_classification_score(score_fn, model: BaseModel, dataset: Dataset, thr
     return TestResult(actual_slices_size=[len(dataset)], metric=metric, passed=passed, failed_indexes=failed_indexes)
 
 
-def _test_accuracy_score(dataset: Dataset, model: BaseModel, threshold: float = 1.0):
+def _test_accuracy_score(dataset: Dataset, model: BaseModel, threshold: float = 1.0, debug: bool = False):
     _verify_target_availability(dataset)
     prediction = model.predict(dataset).prediction
     targets = dataset.df[dataset.target]
@@ -85,7 +85,13 @@ def _test_accuracy_score(dataset: Dataset, model: BaseModel, threshold: float = 
 
 
 def _test_regression_score(
-    score_fn, model: BaseModel, dataset: Dataset, threshold: float = 1.0, r2=False, debug_percent_rows: float = 0.3
+    score_fn,
+    model: BaseModel,
+    dataset: Dataset,
+    threshold: float = 1.0,
+    r2=False,
+    debug_percent_rows: float = 0.3,
+    debug: bool = False,
 ):
     _verify_target_availability(dataset)
 
@@ -119,6 +125,7 @@ def _test_diff_prediction(
     direction: Direction = Direction.Invariant,
     test_name=None,
     debug_percent_rows: float = None,
+    debug: bool = False,
 ):
     reference_args = {"dataset": reference_dataset, "model": model}
     actual_args = {"dataset": actual_dataset, "model": model}
@@ -167,7 +174,11 @@ def _test_diff_prediction(
     debug_description=debug_description_prefix + "that are <b>incorrectly predicted</b>.",
 )
 def test_auc(
-    model: BaseModel, dataset: Dataset, slicing_function: Optional[SlicingFunction] = None, threshold: float = 1.0
+    model: BaseModel,
+    dataset: Dataset,
+    slicing_function: Optional[SlicingFunction] = None,
+    threshold: float = 1.0,
+    debug: bool = False,
 ):
     """
     Test if the model AUC performance is higher than a threshold for a given slice
@@ -184,6 +195,8 @@ def test_auc(
           Slicing function to be applied on dataset
         threshold(float):
           Threshold value of AUC metrics
+        debug(bool):
+          legacy debug(deprecated)
 
     Returns:
       actual_slices_size:
@@ -231,7 +244,11 @@ def test_auc(
     debug_description=debug_description_prefix + "that are <b>incorrectly predicted</b>.",
 )
 def test_f1(
-    model: BaseModel, dataset: Dataset, slicing_function: Optional[SlicingFunction] = None, threshold: float = 1.0
+    model: BaseModel,
+    dataset: Dataset,
+    slicing_function: Optional[SlicingFunction] = None,
+    threshold: float = 1.0,
+    debug: bool = False,
 ):
     """
     Test if the model F1 score is higher than a defined threshold for a given slice
@@ -248,6 +265,8 @@ def test_f1(
           Slicing function to be applied on dataset
         threshold(float):
           Threshold value for F1 Score
+        debug(bool):
+          legacy debug(deprecated)
 
     Returns:
         actual_slices_size:
@@ -260,7 +279,7 @@ def test_f1(
     if slicing_function:
         dataset = dataset.slice(slicing_function)
         check_slice_not_empty(sliced_dataset=dataset, dataset_name="dataset", test_name="test_f1")
-    return _test_classification_score(f1_score, model, dataset, threshold)
+    return _test_classification_score(f1_score, model, dataset, threshold, debug)
 
 
 @test(
@@ -269,7 +288,11 @@ def test_f1(
     debug_description=debug_description_prefix + "that are <b>incorrectly predicted</b>.",
 )
 def test_accuracy(
-    model: BaseModel, dataset: Dataset, slicing_function: Optional[SlicingFunction] = None, threshold: float = 1.0
+    model: BaseModel,
+    dataset: Dataset,
+    slicing_function: Optional[SlicingFunction] = None,
+    threshold: float = 1.0,
+    debug: bool = False,
 ):
     """
     Test if the model Accuracy is higher than a threshold for a given slice
@@ -286,6 +309,8 @@ def test_accuracy(
           Slicing function to be applied on dataset
         threshold(float):
           Threshold value for Accuracy
+        debug(bool):
+          legacy debug(deprecated)
 
     Returns:
       actual_slices_size:
@@ -298,7 +323,7 @@ def test_accuracy(
     if slicing_function:
         dataset = dataset.slice(slicing_function)
         check_slice_not_empty(sliced_dataset=dataset, dataset_name="dataset", test_name="test_accuracy")
-    return _test_accuracy_score(dataset, model, threshold)
+    return _test_accuracy_score(dataset, model, threshold, debug)
 
 
 @test(
@@ -307,7 +332,11 @@ def test_accuracy(
     debug_description=debug_description_prefix + "that are <b>incorrectly predicted</b>.",
 )
 def test_precision(
-    model: BaseModel, dataset: Dataset, slicing_function: Optional[SlicingFunction] = None, threshold: float = 1.0
+    model: BaseModel,
+    dataset: Dataset,
+    slicing_function: Optional[SlicingFunction] = None,
+    threshold: float = 1.0,
+    debug: bool = False,
 ):
     """
     Test if the model Precision is higher than a threshold for a given slice
@@ -324,6 +353,8 @@ def test_precision(
           Slicing function to be applied on dataset
         threshold(float):
           Threshold value for Precision
+        debug(bool):
+          legacy debug(deprecated)
 
     Returns:
         actual_slices_size:
@@ -336,7 +367,7 @@ def test_precision(
     if slicing_function:
         dataset = dataset.slice(slicing_function)
         check_slice_not_empty(sliced_dataset=dataset, dataset_name="dataset", test_name="test_precision")
-    return _test_classification_score(precision_score, model, dataset, threshold)
+    return _test_classification_score(precision_score, model, dataset, threshold, debug)
 
 
 @test(
@@ -345,7 +376,11 @@ def test_precision(
     debug_description=debug_description_prefix + "that are <b>incorrectly predicted</b>.",
 )
 def test_recall(
-    model: BaseModel, dataset: Dataset, slicing_function: Optional[SlicingFunction] = None, threshold: float = 1.0
+    model: BaseModel,
+    dataset: Dataset,
+    slicing_function: Optional[SlicingFunction] = None,
+    threshold: float = 1.0,
+    debug: bool = False,
 ):
     """
     Test if the model Recall is higher than a threshold for a given slice
@@ -362,6 +397,8 @@ def test_recall(
           Slicing function to be applied on dataset
         threshold(float):
           Threshold value for Recall
+        debug(bool):
+          legacy debug(deprecated)
 
     Returns:
         actual_slices_size:
@@ -374,7 +411,7 @@ def test_recall(
     if slicing_function:
         dataset = dataset.slice(slicing_function)
         check_slice_not_empty(sliced_dataset=dataset, dataset_name="dataset", test_name="test_recall")
-    return _test_classification_score(recall_score, model, dataset, threshold)
+    return _test_classification_score(recall_score, model, dataset, threshold, debug)
 
 
 @test(
@@ -389,6 +426,7 @@ def test_rmse(
     slicing_function: Optional[SlicingFunction] = None,
     threshold: float = 1.0,
     debug_percent_rows: float = 0.3,
+    debug: bool = False,
 ):
     """
     Test if the model RMSE is lower than a threshold
@@ -407,6 +445,8 @@ def test_rmse(
           Threshold value for RMSE
         debug_percent_rows(float):
           Percentage of rows (sorted by their highest absolute error) to debug. By default 30%.
+        debug(bool):
+          legacy debug(deprecated)
 
     Returns:
         actual_slices_size:
@@ -419,7 +459,7 @@ def test_rmse(
     if slicing_function:
         dataset = dataset.slice(slicing_function)
         check_slice_not_empty(sliced_dataset=dataset, dataset_name="dataset", test_name="test_rmse")
-    return _test_regression_score(_get_rmse, model, dataset, threshold, debug_percent_rows=debug_percent_rows)
+    return _test_regression_score(_get_rmse, model, dataset, threshold, debug_percent_rows=debug_percent_rows, debug=debug)
 
 
 @test(
@@ -434,6 +474,7 @@ def test_mse(
     slicing_function: Optional[SlicingFunction] = None,
     threshold: float = 1.0,
     debug_percent_rows: float = 0.3,
+    debug: bool = False,
 ):
     """
     Test if the model mean squared error (MSE) is lower than a threshold.
@@ -452,7 +493,9 @@ def test_mse(
           Threshold value for MSE
         debug_percent_rows(float):
           Percentage of rows (sorted by their highest absolute error) to debug. By default 30%.
-
+        debug(bool):
+          legacy debug(deprecated)
+          
     Returns:
         actual_slices_size:
           Length of dataset tested
@@ -464,7 +507,7 @@ def test_mse(
     if slicing_function:
         dataset = dataset.slice(slicing_function)
         check_slice_not_empty(sliced_dataset=dataset, dataset_name="dataset", test_name="test_mse")
-    return _test_regression_score(_get_mse, model, dataset, threshold, debug_percent_rows=debug_percent_rows)
+    return _test_regression_score(_get_mse, model, dataset, threshold, debug_percent_rows=debug_percent_rows, debug=debug)
 
 
 @test(
@@ -479,6 +522,7 @@ def test_mae(
     slicing_function: Optional[SlicingFunction] = None,
     threshold: float = 1.0,
     debug_percent_rows: float = 0.3,
+    debug: bool = False,
 ):
     """
     Test if the model Mean Absolute Error is lower than a threshold
@@ -497,6 +541,8 @@ def test_mae(
           Threshold value for MAE
         debug_percent_rows(float):
           Percentage of rows (sorted by their highest absolute error) to debug. By default 30%.
+        debug(bool):
+          legacy debug(deprecated)
 
     Returns:
         actual_slices_size:
@@ -511,7 +557,7 @@ def test_mae(
     if slicing_function:
         dataset = dataset.slice(slicing_function)
         check_slice_not_empty(sliced_dataset=dataset, dataset_name="dataset", test_name="test_mae")
-    return _test_regression_score(mean_absolute_error, model, dataset, threshold, debug_percent_rows=debug_percent_rows)
+    return _test_regression_score(mean_absolute_error, model, dataset, threshold, debug_percent_rows=debug_percent_rows, debug=debug)
 
 
 @test(
@@ -526,6 +572,7 @@ def test_r2(
     slicing_function: Optional[SlicingFunction] = None,
     threshold: float = 1.0,
     debug_percent_rows: float = 0.3,
+    debug: bool = False,
 ):
     """
     Test if the model R-Squared is higher than a threshold
@@ -544,6 +591,8 @@ def test_r2(
           Threshold value for R-Squared
         debug_percent_rows(float):
           Percentage of rows (sorted by their highest absolute error) to debug. By default 30%.
+        debug(bool):
+          legacy debug(deprecated)
 
     Returns:
         actual_slices_size:
@@ -556,7 +605,10 @@ def test_r2(
     if slicing_function:
         dataset = dataset.slice(slicing_function)
         check_slice_not_empty(sliced_dataset=dataset, dataset_name="dataset", test_name="test_r2")
-    return _test_regression_score(r2_score, model, dataset, threshold, r2=True, debug_percent_rows=debug_percent_rows)
+    return _test_regression_score(
+        r2_score, model, dataset, threshold, r2=True,
+        debug_percent_rows=debug_percent_rows, debug=debug
+    )
 
 
 @test(
@@ -572,6 +624,7 @@ def test_diff_accuracy(
     slicing_function: Optional[SlicingFunction] = None,
     threshold: float = 0.1,
     direction: Direction = Direction.Invariant,
+    debug: bool = False,
 ):
     """
 
@@ -594,6 +647,8 @@ def test_diff_accuracy(
           Slicing function to be applied on both actual and reference datasets
         threshold(float):
           Threshold value for Accuracy Score difference
+        debug(bool):
+          legacy debug(deprecated)
     Returns:
         actual_slices_size:
           Length of dataset tested
@@ -619,6 +674,7 @@ def test_diff_accuracy(
         threshold=threshold,
         direction=direction,
         test_name="Accuracy",
+        debug=debug,
     )
 
 
@@ -635,6 +691,7 @@ def test_diff_f1(
     slicing_function: Optional[SlicingFunction] = None,
     threshold: float = 0.1,
     direction: Direction = Direction.Invariant,
+    debug: bool = False,
 ):
     """
     Test if the absolute percentage change in model F1 Score between two samples is lower than a threshold
@@ -656,6 +713,8 @@ def test_diff_f1(
           Slicing function to be applied on both actual and reference datasets
         threshold(float):
           Threshold value for F1 Score difference
+        debug(bool):
+          legacy debug(deprecated)
     Returns:
         actual_slices_size:
           Length of dataset tested
@@ -681,6 +740,7 @@ def test_diff_f1(
         threshold=threshold,
         direction=direction,
         test_name="F1 Score",
+        debug=debug,
     )
 
 
@@ -697,6 +757,7 @@ def test_diff_precision(
     slicing_function: Optional[SlicingFunction] = None,
     threshold: float = 0.1,
     direction: Direction = Direction.Invariant,
+    debug: bool = False,
 ):
     """
     Test if the absolute percentage change of model Precision between two samples is lower than a threshold
@@ -718,6 +779,8 @@ def test_diff_precision(
           Slicing function to be applied on both actual and reference datasets
         threshold(float):
           Threshold value for Precision difference
+        debug(bool):
+          legacy debug(deprecated)
     Returns:
         actual_slices_size:
           Length of dataset tested
@@ -743,6 +806,7 @@ def test_diff_precision(
         threshold=threshold,
         direction=direction,
         test_name="Precision",
+        debug=debug,
     )
 
 
@@ -759,6 +823,7 @@ def test_diff_recall(
     slicing_function: Optional[SlicingFunction] = None,
     threshold: float = 0.1,
     direction: Direction = Direction.Invariant,
+    debug: bool = False,
 ):
     """
     Test if the absolute percentage change of model Recall between two samples is lower than a threshold
@@ -780,6 +845,8 @@ def test_diff_recall(
           Slicing function to be applied on both actual and reference datasets
         threshold(float):
           Threshold value for Recall difference
+        debug(bool):
+          legacy debug(deprecated)
     Returns:
         actual_slices_size:
           Length of dataset tested
@@ -805,6 +872,7 @@ def test_diff_recall(
         threshold=threshold,
         direction=direction,
         test_name="Recall",
+        debug=debug,
     )
 
 
@@ -823,6 +891,7 @@ def test_diff_rmse(
     threshold: float = 0.1,
     direction: Direction = Direction.Invariant,
     debug_percent_rows: float = 0.3,
+    debug: bool = False,
 ):
     """
     Test if the absolute percentage change of model RMSE between two samples is lower than a threshold
@@ -846,6 +915,8 @@ def test_diff_rmse(
           Threshold value for RMSE difference
         debug_percent_rows(float):
           Percentage of rows (sorted by their highest absolute error) to debug. By default 30%.
+        debug(bool):
+          legacy debug(deprecated)
 
     Returns:
         actual_slices_size:
@@ -873,4 +944,5 @@ def test_diff_rmse(
         direction=direction,
         test_name="RMSE",
         debug_percent_rows=debug_percent_rows,
+        debug=debug,
     )
