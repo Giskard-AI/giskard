@@ -80,65 +80,85 @@ community/contribution_guidelines/index
 
 
 ::::::{grid} 1 1 3 3
+:child-align:
 :gutter: 1
 
 :::::{grid-item}
-
+:child-align:
 ::::{grid} 1 1 1 1
+:child-align:
 :gutter: 1
 
 :::{card} <h2><center> Getting Started </center></h2>
+:margin: 1
+:width: 100%
+:text-align:
 :link: getting_started/index.html
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<img src="assets/intro/coffee.png" alt="coffee" width="82%">
+:img-bottom: assets/intro/coffee.png
 :::
 
 :::{card} <h2><center> Tutorials </center></h2>
+:margin: 1
+:width: 100%
+:text-align:
 :link: tutorials/index.html
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<img src="assets/intro/test_turtle.png" alt="hey" width="90%">
+:img-bottom: assets/intro/test_turtle.png
 :::
 
 :::{card} <h2><center> API Reference </center></h2>
+:margin: 1
+:width: 100%
 :link: reference/index.html
-<img src="assets/intro/Giskard_Turtle_Computer.png" alt="test" width="97%">
+:img-bottom: assets/intro/Giskard_Turtle_Computer.png
 :::
 ::::
 
 :::::
 
 :::::{grid-item}
-
+:child-align:
 ::::{grid} 1 1 1 1
+:child-align:
 :gutter: 1
 
 :::{card} <h2><center> Open-Source Library </center></h2>
+:margin: 1
+:width: 100%
+:text-align:
 :link: open_source/installation_library/index.html
-
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<img src="assets/intro/ninja.png" alt="ninja" width="64%">
+:img-bottom: assets/intro/ninja.png
 :::
 
 :::{card} <h2><center> Knowledge </center></h2>
+:margin: 1
+:width: 100%
+:text-align:
 :link: knowledge/llm_vulnerabilities/index.html
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<img src="assets/intro/integrations.png" alt="test" width="98%">
+:img-bottom: assets/intro/integrations.png
 :::
-
 ::::
-
 :::::
 
 :::::{grid-item}
-
+:child-align:
 ::::{grid} 1 1 1 1
+:child-align:
 :gutter: 1
 
 :::{card} <h2><center> Giskard Hub </center></h2>
+:margin: 1
+:width: 100%
+:text-align:
 :link: giskard_hub/installation_hub/index.html
-
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<img src="assets/intro/Giskard_Turtle_SK8.png" alt="ninja" width="86.0025%">
+:img-bottom: assets/intro/Giskard_Turtle_SK8.png
 :::
 
 :::{card} <h2><center> Integrations & Community </center></h2>
+:margin: 1
+:width: 100%
+:text-align:
 :link: integrations/index.html
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<img src="assets/intro/hey.png" alt="hey" width="56.5%">
+:img-bottom: assets/intro/hey.png
 :::
 
 ::::

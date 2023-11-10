@@ -1,18 +1,19 @@
+from typing import Callable, Dict, List, Optional, Set, Type, Union
+
 import functools
 import inspect
 from pathlib import Path
-from typing import Optional, List, Union, Type, Callable, Dict, Set
 
 import pandas as pd
 
 from giskard.core.core import DatasetProcessFunctionMeta, DatasetProcessFunctionType
 from giskard.core.validation import configured_validate_arguments
-from giskard.ml_worker.core.savable import RegistryArtifact, Artifact
+from giskard.ml_worker.core.savable import Artifact, RegistryArtifact
 from giskard.ml_worker.testing.registry.decorators_utils import (
-    validate_arg_type,
     drop_arg,
     make_all_optional_or_suite_input,
     set_return_type,
+    validate_arg_type,
 )
 from giskard.ml_worker.testing.registry.registry import get_object_uuid, tests_registry
 
@@ -60,7 +61,7 @@ class SlicingFunction(RegistryArtifact[DatasetProcessFunctionMeta]):
         """
         self.is_initialized = False
         self.params = {}
-        self.func = configured_validate_arguments(func)
+        self.func = func
         self.row_level = row_level
         self.cell_level = cell_level
 
@@ -101,13 +102,14 @@ class SlicingFunction(RegistryArtifact[DatasetProcessFunctionMeta]):
         Returns:
             Union[pd.Series, pd.DataFrame]: The sliced data.
         """
+        func = configured_validate_arguments(self.func)
         if self.cell_level:
             actual_params = {k: v for k, v in self.params.items() if k != "column_name"}
-            return data.loc[data.apply(lambda row: self.func(row[self.params["column_name"]], **actual_params), axis=1)]
+            return data.loc[data.apply(lambda row: func(row[self.params["column_name"]], **actual_params), axis=1)]
         if self.row_level:
-            return data.loc[data.apply(lambda row: self.func(row, **self.params), axis=1)]
+            return data.loc[data.apply(lambda row: func(row, **self.params), axis=1)]
         else:
-            return self.func(data, **self.params)
+            return func(data, **self.params)
 
     @classmethod
     def load(cls, local_dir: Path, uuid: str, meta: DatasetProcessFunctionMeta):
