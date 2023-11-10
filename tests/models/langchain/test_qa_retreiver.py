@@ -1,4 +1,4 @@
-from typing import Optional, Callable, Any, Iterable, Dict
+from typing import Any, Callable, Dict, Iterable, Optional
 
 import pandas as pd
 import pytest
@@ -81,7 +81,12 @@ def test_vectorstore():
     query = "What did the president say about Ketanji Brown Jackson"
 
     model = FaissRetrieverModel(
-        qa, model_type=SupportedModelTypes.TEXT_GENERATION, retriever=docsearch, feature_names=["query"]
+        qa,
+        model_type=SupportedModelTypes.TEXT_GENERATION,
+        name="Test model",
+        description="Test model",
+        retriever=docsearch,
+        feature_names=["query"],
     )
     dataset = giskard.Dataset(pd.DataFrame({"query": [query]}))
 
