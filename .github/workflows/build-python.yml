@@ -190,14 +190,14 @@ jobs:
         uses: actions/upload-artifact@v3
         with:
           path: dist/*whl
-          name: memory-usage
-          retention-days: 1
 
       - name: "Memory csv"
         if: ${{ always() && matrix.os == 'ubuntu-latest' && matrix.python-version == '3.10' }}
         uses: actions/upload-artifact@v3
         with:
           path: memory*.csv
+          name: memory-usage
+          retention-days: 1
 
       - name: Run integration tests for python
         if: ${{ inputs.run-integration-tests && matrix.os != 'windows-2019' }}
