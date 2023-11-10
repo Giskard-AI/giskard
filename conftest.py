@@ -25,11 +25,15 @@ def pytest_fixture_setup(fixturedef, request):
 
     end = time.time()
 
-    if fixture_memory_usage > 1:
-        file = Path("memory_fixtures.csv")
-        with file.open("a", encoding="utf-8") as writer:
-            # Add overall test results
-            writer.write(f"{request.fixturename},{end - start:.3f},{fixture_memory_usage:.3f}\n")
+    file = Path("memory_fixtures.csv")
+    write_header = False
+    if not file.exists():
+        write_header = True
+    with file.open("a", encoding="utf-8") as writer:
+        if write_header:
+            writer.write("fixture_name,execution_time,memory_usage(mo)\n")
+        # Add overall test results
+        writer.write(f"{request.fixturename},{end - start:.3f},{fixture_memory_usage:.3f}\n")
 
 
 @pytest.hookimpl(hookwrapper=True)
@@ -50,6 +54,12 @@ def pytest_runtest_protocol(item: Function, nextitem: Function):
     test_memory_usage = memory_usage - base_memory_usage  # in bytes
     test_memory_usage = test_memory_usage / (1024 * 1024)  # in mo
     full_memory_usage = memory_usage / (1024 * 1024)
+    write_header = False
+    if not file.exists():
+        write_header = True
     with file.open("a", encoding="utf-8") as writer:
+        if write_header:
+            writer.write("test_name,memory_usage(mo),total_usage(mo)\n")
+
         # Add overall test results
-        writer.write(f"{item.name},{test_memory_usage:.3f},{full_memory_usage:.3f}\n")
+        writer.write(f"{item.nodeid},{test_memory_usage:.3f},{full_memory_usage:.3f}\n")
