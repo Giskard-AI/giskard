@@ -17,6 +17,7 @@ NOT_SUPP_TEXT_WARNING_MSG = r"We do not support the wandb logging of ShapResult 
         ("diabetes_dataset_with_target", "linear_regression_diabetes"),
     ],
 )
+@pytest.mark.memory_expensive
 def test_fast(dataset_name, model_name, request):
     # Expect the 'NotImplementedError' when dataset contains textual features.
     exception_fixtures = ("hotel_text_data",)

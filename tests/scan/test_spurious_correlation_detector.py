@@ -63,6 +63,7 @@ def test_threshold(titanic_model, titanic_dataset):
         ("mutual_information", "Mutual information", 0.70),
     ],
 )
+@pytest.mark.memory_expensive
 def test_can_choose_association_measures(method, expected_name, expected_value, request):
     titanic_dataset = request.getfixturevalue("titanic_dataset")
     titanic_model = request.getfixturevalue("titanic_model")

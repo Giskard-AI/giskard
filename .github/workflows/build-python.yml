@@ -162,6 +162,8 @@ jobs:
 
       - name: Test code (RAM expensive)
         run: pdm test-ram
+        env:
+          PYTEST_XDIST_AUTO_NUM_WORKERS: 2
 
       - name: Test code (concurrency)
         run: pdm test-worker
