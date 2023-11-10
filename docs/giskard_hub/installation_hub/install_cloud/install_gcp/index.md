@@ -72,6 +72,11 @@ Giskard executes your model using a worker that runs the model directly in **you
 - From **Google Colab** within the kernel that contains all the dependencies of your model
 - Or from **your terminal** within the Python environment that contains all the dependencies of your model
 
+:::{note}
+If you plan to use LLM-assisted tests or transformations, don’t forget to set the ``OPENAI_API_KEY`` environment
+variable before starting the Giskard worker.
+:::
+
 :::::::{tab-set}
 ::::::{tab-item} From your local notebook
 
