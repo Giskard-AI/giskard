@@ -1,7 +1,7 @@
 from dataclasses import dataclass, field
 from enum import Enum
 
-from typing import List, Dict
+from typing import List, Dict, Optional
 
 
 class TestMessageLevel(Enum):
@@ -57,6 +57,7 @@ class TestResult:
     number_of_perturbed_rows: int = 0
     actual_slices_size: List[int] = field(default_factory=list, repr=False)
     reference_slices_size: List[int] = field(default_factory=list, repr=False)
+    output_df_id: Optional[str] = None
     failed_indexes: List[int] = field(default_factory=list, repr=False)
     is_error: bool = False
 

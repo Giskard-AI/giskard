@@ -68,13 +68,14 @@ def fragment_message(payload: str, frag_i: int, frag_length: int):
 
 def extract_debug_info(request_arguments):
     template_info = " | <xxx:xxx_id>"
-    info = {"suffix": "", "project_key": ""}
+    info = {"suffix": "", "project_key": "", "dataset": None}
     for arg in request_arguments:
         if arg.model:
             filled_info = template_info.replace("xxx", arg.name)
             info["suffix"] += filled_info.replace(arg.name + "_id", arg.model.id)
             info["project_key"] = arg.model.project_key  # in case model is in the args and dataset is not
         elif arg.dataset:
+            info["dataset"] = arg.dataset   # retrieve the dataset
             filled_info = template_info.replace("xxx", arg.name)
             info["suffix"] += filled_info.replace(arg.name + "_id", arg.dataset.id)
             info["project_key"] = arg.dataset.project_key  # in case dataset is in the args and model is not
@@ -232,6 +233,7 @@ def map_result_to_single_test_result_ws(result) -> websocket.SingleTestResult:
             number_of_perturbed_rows=result.number_of_perturbed_rows,
             actual_slices_size=result.actual_slices_size,
             reference_slices_size=result.reference_slices_size,
+            output_df_id=result.output_df_id,   # For legacy debug
             failed_indexes=result.failed_indexes,
         )
     elif isinstance(result, bool):
@@ -305,3 +307,14 @@ def function_argument_to_ws(value: Dict[str, Any]):
         )
 
     return args
+
+
+def do_create_sub_dataset(dataset: Dataset, name: Optional[str], row_indexes: List[int]):
+    return Dataset(
+        df=dataset.df.iloc[row_indexes],
+        name=name,
+        target=dataset.target,
+        cat_columns=dataset.cat_columns,
+        column_types=dataset.column_types,
+        validation=False,
+    )

@@ -45,6 +45,8 @@ from giskard.ml_worker.websocket.utils import (
     map_result_to_single_test_result_ws,
     parse_action_param,
     parse_function_arguments,
+    extract_debug_info,
+    do_create_sub_dataset,
 )
 from giskard.models.base import BaseModel
 from giskard.models.model_explanation import explain, explain_text
@@ -55,6 +57,7 @@ from giskard.push.prediction import create_borderline_push, create_overconfidenc
 from giskard.utils import call_in_pool, shutdown_pool
 from giskard.utils.analytics_collector import analytics
 from giskard.utils.worker_pool import GiskardMLWorkerException
+from giskard.testing.tests import debug_prefix
 
 logger = logging.getLogger(__name__)
 MAX_STOMP_ML_WORKER_REPLY_SIZE = 1500
@@ -590,11 +593,23 @@ def run_ad_hoc_test(
     if "kwargs" in arguments:
         arguments.update(**arguments.pop("kwargs"))
 
-    # TODO: how to send to back all the time?
-    # arguments["debug"] = params.debug if params.debug else None
-    # debug_info = extract_debug_info(params.arguments) if params.debug else None
-
     test_result = do_run_adhoc_test(arguments, test)
+
+    # For legacy debug
+    if params.debug:
+        debug_info = extract_debug_info(arguments)
+        if not debug_info["dataset"] or len(test_result.failed_indexes) == 0:
+            raise ValueError(
+                "This test does not return any examples to debug. "
+                "Check the debugging method associated to this test at "
+                "https://docs.giskard.ai/en/latest/reference/tests/index.html"
+            )
+
+        dataset_name = debug_prefix + test.meta.name + debug_info["suffix"]
+
+        sub_dataset = do_create_sub_dataset(debug_info["dataset"], dataset_name, test_result.failed_indexes)
+        # Upload the sub-dataset
+        test_result.output_df_id = sub_dataset.upload(client, debug_info["project_key"])
 
     return websocket.RunAdHocTest(
         results=[
@@ -819,13 +834,6 @@ def create_sub_dataset(
         sample=params.dataset.sample
     )
 
-    sub_dataset = Dataset(
-        df=dataset.df.iloc[params.rowIndexes],
-        name=params.name,
-        target=dataset.target,
-        cat_columns=dataset.cat_columns,
-        column_types=dataset.column_types,
-        validation=False,
-    )
+    sub_dataset = do_create_sub_dataset(dataset, params.name, params.rowIndexes)
 
     return websocket.CreateSubDataset(datasetUuid=sub_dataset.upload(client=client, project_key=params.projectKey))

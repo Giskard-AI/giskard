@@ -261,6 +261,7 @@ class SingleTestResult(ConfiguredBaseModel):
     number_of_perturbed_rows: Optional[int] = None
     actual_slices_size: Optional[List[int]] = None
     reference_slices_size: Optional[List[int]] = None
+    output_df_id: Optional[str] = None
     failed_indexes: Optional[List[int]] = None
 
 
