@@ -190,6 +190,7 @@ jobs:
         uses: actions/upload-artifact@v3
         with:
           path: dist/*whl
+          name: memory-usage
 
       - name: "Memory csv"
         if: always()
