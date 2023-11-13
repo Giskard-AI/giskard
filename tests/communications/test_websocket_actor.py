@@ -360,6 +360,33 @@ def test_websocket_actor_explain_text_ws_regression(internal, request):
         assert "WEIGHTS" in reply.weights.keys()
 
 
+def test_websocket_actor_explain_text_ws_not_text(request):
+    dataset: Dataset = request.getfixturevalue("enron_data")
+    model: BaseModel = request.getfixturevalue("enron_model")
+
+    project_key = str(uuid.uuid4()) # Use a UUID to separate the resources used by the tests
+
+    with utils.MockedProjectCacheDir(project_key), utils.MockedClient(mock_all=False) as (client, mr):
+        # Prepare model and dataset
+        utils.local_save_model_under_giskard_home_cache(model, project_key)
+
+        not_text_feature_name = None
+        for col_name, col_type in dataset.column_types.items():
+            if col_type != "text":
+                not_text_feature_name = col_name
+                break
+        assert not_text_feature_name
+
+        params = websocket.ExplainTextParam(
+            model=websocket.ArtifactRef(project_key=project_key, id=str(model.id)),
+            feature_name=not_text_feature_name,
+            columns={str(k): str(v) for k, v in next(dataset.df.iterrows())[1].items()},  # Pick the first row
+            column_types=dataset.column_types,
+        )
+        with pytest.raises(ValueError, match="Column .* is not of type text"):
+            listener.explain_text_ws(client=None, params=params)
+
+
 @pytest.mark.parametrize("internal", [
     True, False
 ])
