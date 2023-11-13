@@ -56,7 +56,7 @@ class LLMPromptInjectionDetector(Detector):
 
         evaluator = StringMatcher()
         issues = []
-        for group in generator.groups_mapping:
+        for group in set(generator.groups_mapping):
             group_idx = meta_df.index[meta_df["group_mapping"] == group].tolist()
             group_dataset = dataset.slice(group_slice(group_idx=group_idx))
             evaluation_results = evaluator.evaluate(model, group_dataset, meta_df.iloc[group_idx])
@@ -71,8 +71,16 @@ class LLMPromptInjectionDetector(Detector):
             elif metric >= self.threshold:
                 level = IssueLevel.MAJOR
 
-            group_description = meta_df[meta_df.name == group].description
-            group_deviation_description = meta_df[meta_df.name == group].deviation_description
+            group_description = meta_df[meta_df.group_mapping == group].description.to_list()
+            group_deviation_description = meta_df[meta_df.group_mapping == group].deviation_description.to_list()
+            if len(set(group_description)) != 1:
+                raise ValueError(f"{self.__class__.__name__}: There must be only one group description per group.")
+            if len(set(group_deviation_description)) != 1:
+                raise ValueError(
+                    f"{self.__class__.__name__}: There must be only one group description deviation per group."
+                )
+
+            group_description, group_deviation_description = group_description[0], group_deviation_description[0]
 
             issues.append(
                 Issue(
@@ -94,7 +102,7 @@ class LLMPromptInjectionDetector(Detector):
                         "test_case": group,
                         "deviation": f"{number_of_failed_prompts}/{len(group_idx)} " + group_deviation_description,
                         "hide_index": True,
-                        "input_prompts": group_dataset.df.prompt.tolist(),
+                        "input_prompts": dataset.df.loc[:, model.meta.feature_names],
                     },
                     examples=pd.DataFrame(evaluation_results.failure_examples),
                     # tests=_generate_prompt_injection_tests,
