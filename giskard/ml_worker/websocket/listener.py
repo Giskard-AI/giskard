@@ -661,18 +661,20 @@ def run_test_suite(
         logger.info(f"Executing test suite: {test_names}")
 
         suite = Suite()
+        updated_test_args = []  # Save final args for building test
         for t in tests:
             test_args = t["arguments"]
             if "kwargs" in test_args:
                 test_args: Dict[str, Any] = copy(test_args)
                 test_args.update(**test_args.pop("kwargs"))
+            updated_test_args.append(test_args)
             suite.add_test(t["test"].get_builder()(**test_args), t["id"])
 
         suite_result = suite.run(**global_arguments)
 
         identifier_single_test_results = []
-        for t, (identifier, result, _) in zip(tests, suite_result.results):
-            arguments = Suite.create_test_params(generate_test_partial(t["test"], t["arguments"]), global_arguments)
+        for t, (identifier, result, _), test_args in zip(tests, suite_result.results, updated_test_args):
+            arguments = Suite.create_test_params(generate_test_partial(t["test"], **test_args), global_arguments)
             identifier_single_test_results.append(
                 websocket.IdentifierSingleTestResult(
                     id=identifier,
