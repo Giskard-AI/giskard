@@ -8,7 +8,7 @@ from uuid import uuid4
 
 import pytest
 
-from giskard.utils.worker_pool import PoolState, WorkerPoolExecutor, GiskardMLWorkerException
+from giskard.utils.worker_pool import GiskardMLWorkerException, PoolState, WorkerPoolExecutor
 
 
 @pytest.fixture(scope="function")
@@ -128,7 +128,7 @@ def test_task_should_be_cancelled(one_worker_pool: WorkerPoolExecutor):
 def test_after_cancel_should_work(one_worker_pool: WorkerPoolExecutor):
     pid = set(one_worker_pool.processes.keys())
     assert len(pid) == 1
-    future = one_worker_pool.schedule(sleep_add_one, [100, 1], timeout=3)
+    future = one_worker_pool.schedule(sleep_add_one, [100, 1], timeout=10)
     with pytest.raises(TimeoutError) as exc_info:
         future.result()
     assert "Task took too long" in str(exc_info)
@@ -165,7 +165,7 @@ def test_after_cancel_should_shutdown_nicely():
     assert exit_codes == [0]
 
 
-@pytest.mark.skipif(condition=sys.platform == "win32", reason="Pytest stays hanging")
+@pytest.mark.skipif(condition=sys.platform == "win32", reason="Not working on windows")
 @pytest.mark.concurrency
 def test_many_tasks_should_shutdown_nicely(many_worker_pool: WorkerPoolExecutor):
     sleep(3)
