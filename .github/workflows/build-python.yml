@@ -205,10 +205,16 @@ jobs:
           path: dist/*whl
 
       - name: Run integration tests for python
-        if: ${{ inputs.run-integration-tests && matrix.os != 'windows-2019' }}
+        if: ${{ inputs.run-integration-tests }}
         env:
           PYTEST_XDIST_AUTO_NUM_WORKERS: 2
-        run: pdm test-slow
+        run: pdm test-slow tests/integrations
+
+      - name: Run integration tests for python
+        if: ${{ inputs.run-integration-tests }}
+        env:
+          PYTEST_XDIST_AUTO_NUM_WORKERS: 2
+        run: pdm test-slow tests/ --ignore=tests/integrations
 
       - name: "Memory csv"
         if: ${{ always() && matrix.os == 'ubuntu-latest' && matrix.python-version == '3.10' }}
