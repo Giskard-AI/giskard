@@ -2,9 +2,7 @@ import numpy as np
 import pytest
 
 from giskard import Model
-from giskard.scanner.correlation.spurious_correlation_detector import (
-    SpuriousCorrelationDetector,
-)
+from giskard.scanner.correlation.spurious_correlation_detector import SpuriousCorrelationDetector
 
 
 def _make_titanic_biased_model(minimal=False):
@@ -22,6 +20,7 @@ def _make_titanic_biased_model(minimal=False):
     return model
 
 
+@pytest.mark.memory_expensive
 def test_spurious_correlation_is_detected(titanic_dataset):
     model = _make_titanic_biased_model()
     detector = SpuriousCorrelationDetector()
@@ -46,6 +45,7 @@ def test_spurious_correlation_is_detected(titanic_dataset):
     assert not issues
 
 
+@pytest.mark.memory_expensive
 def test_threshold(titanic_model, titanic_dataset):
     detector = SpuriousCorrelationDetector(threshold=0.6)
     issues = detector.run(titanic_model, titanic_dataset)
@@ -64,6 +64,7 @@ def test_threshold(titanic_model, titanic_dataset):
         ("mutual_information", "Mutual information", 0.70),
     ],
 )
+@pytest.mark.memory_expensive
 def test_can_choose_association_measures(method, expected_name, expected_value, request):
     titanic_dataset = request.getfixturevalue("titanic_dataset")
     titanic_model = request.getfixturevalue("titanic_model")

@@ -98,6 +98,13 @@ class LLMCharsInjectionDetector(Detector):
         issues = []
         for res in injector.run(model, dataset_sample, features):
             encoded_char = res.char.encode("unicode_escape").decode("ascii")
+
+            if res.errors:
+                logger.warning(
+                    f"{self.__class__.__name__}: Injection failed with errors for feature`{res.feature}` and char `{encoded_char}`: {','.join(res.errors)}"
+                )
+                continue
+
             logger.info(
                 f"{self.__class__.__name__}: Tested `{res.feature}` for special char injection `{encoded_char}`\tFail rate = {res.fail_rate:.3f}\tVulnerable = {res.vulnerable}"
             )
