@@ -179,7 +179,7 @@ def _test_metamorphic(
     classification_label=None,
     output_sensitivity=None,
     output_proba=True,
-    debug: bool = False,    # noqa: old version tests will call this under legacy debug mode
+    debug: bool = False,    # noqa: NOSONAR - old version tests will call this under legacy debug mode
 ) -> TestResult:
     results_df, modified_rows_count = _perturb_and_predict(
         model, dataset, transformation_function, output_proba=output_proba, classification_label=classification_label
@@ -408,7 +408,7 @@ def _test_metamorphic_t_test(
     critical_quantile: float,
     classification_label=None,
     output_proba=True,
-    debug: bool = False,    # noqa: old version tests will call this under legacy debug mode
+    debug: bool = False,    # noqa: NOSONAR - old version tests will call this under legacy debug mode
 ) -> TestResult:
     result_df, modified_rows_count = _perturb_and_predict(
         model, dataset, transformation_function, output_proba=output_proba, classification_label=classification_label
@@ -642,7 +642,7 @@ def _test_metamorphic_wilcoxon(
     critical_quantile: float,
     classification_label=None,
     output_proba=True,
-    debug: bool = False,    # noqa: old version tests will call this under legacy debug mode
+    debug: bool = False,    # noqa: NOSONAR - old version tests will call this under legacy debug mode
 ) -> TestResult:
     result_df, modified_rows_count = _perturb_and_predict(
         model, dataset, transformation_function, output_proba=output_proba, classification_label=classification_label
