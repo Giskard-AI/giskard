@@ -176,7 +176,6 @@ OPTIONAL_FIELDS = {
         "partial_unexpected_index_list",
         "partial_unexpected_counts",
         "unexpected_index_list",
-        "output_df",
         "number_of_perturbed_rows",
         "actual_slices_size",
         "reference_slices_size",
