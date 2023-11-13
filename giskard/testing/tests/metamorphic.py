@@ -194,7 +194,7 @@ def _test_metamorphic(
     # --- debug ---
     failed_indexes = list()
     if not passed:
-        failed_indexes = list(dataset.df.iloc[failed_idx].index)
+        failed_indexes = list(dataset.df.loc[failed_idx].index)
     # ---
 
     return TestResult(
@@ -421,13 +421,15 @@ def _test_metamorphic_t_test(
     return _create_test_result(critical_quantile, dataset, direction, messages, model, p_value, result_df, debug)
 
 
-def _create_test_result(critical_quantile, dataset, direction, messages, model, p_value, result_df, debug: bool = False):
+def _create_test_result(
+    critical_quantile, dataset, direction, messages, model, p_value, result_df, debug: bool = False
+):
     passed = bool(p_value < critical_quantile)
     # --- debug ---
     failed_indexes = list()
     if not passed:
         _, failed_idx = _compare_prediction(result_df, model.meta.model_type, direction, None)
-        failed_indexes = list(dataset.df.iloc[failed_idx].index)
+        failed_indexes = list(dataset.df.loc[failed_idx].index)
     # ---
     return TestResult(
         actual_slices_size=[len(dataset.df)],
