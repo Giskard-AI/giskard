@@ -1,14 +1,14 @@
 # For the complete tutorial, check: https://huggingface.co/docs/transformers/tasks/sequence_classification
 import pandas as pd
+import pytest
+from transformers import AutoTokenizer, TFAutoModelForSequenceClassification
 
-from transformers import AutoTokenizer
-from transformers import TFAutoModelForSequenceClassification
-
-from giskard import Dataset
 import tests.utils
+from giskard import Dataset
 from giskard.models.huggingface import HuggingFaceModel
 
 
+@pytest.mark.memory_expensive
 def test_sequence_classification_distilbert_base_uncased_tensorflow():
     tokenizer_distilbert_base_uncased = AutoTokenizer.from_pretrained("stevhliu/my_awesome_model")
 

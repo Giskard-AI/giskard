@@ -1,5 +1,6 @@
 # For the complete tutorial, check: https://huggingface.co/docs/transformers/tasks/sequence_classification
 import pandas as pd
+import pytest
 from transformers import pipeline
 
 import tests.utils
@@ -7,6 +8,7 @@ from giskard import Dataset
 from giskard.models.huggingface import HuggingFaceModel
 
 
+@pytest.mark.memory_expensive
 def test_sequence_classification_distilbert_base_uncased_pytorch_pipeline():
     text = "This was a masterpiece. Not completely faithful to the books, but enthralling from beginning to end. Might be my favorite of the three."
 

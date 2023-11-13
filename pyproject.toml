@@ -29,10 +29,13 @@ name = "torch"
 [tool.pdm.scripts]
 _.env = { GSK_DISABLE_ANALYTICS = "True", GISKARD_DEV_MODE = "True" }
 # add "-n auto" to the pytest command to parallelize the execution
-test.cmd = "pytest -c pyproject.toml tests --cov=giskard --cov-report=xml --disable-warnings --no-header -vv --durations=0"
+test.cmd = "pdm base-test tests/"
 # for some reason github runners don't work when calling 'pdm test -m "not slow"'
-test-fast.cmd = "pytest -n auto -m 'not slow and not concurrency' -c pyproject.toml tests --cov=giskard --cov-report=xml --disable-warnings --no-header -vv --durations=0"
-test-worker.cmd = "pytest -m 'concurrency' -c pyproject.toml tests --disable-warnings --no-header -vv --durations=0"
+base-test.cmd = "pytest -c pyproject.toml --cov=giskard --cov-report=xml --cov-append --disable-warnings --no-header -vv --durations=0"
+test-fast.cmd = "pdm base-test -n auto -m 'not slow and not concurrency and not memory_expensive' tests"
+test-slow.cmd = "pdm base-test -m 'slow and not concurrency and not memory_expensive' tests"
+test-ram.cmd = "pdm base-test -m 'memory_expensive'"
+test-worker.cmd = "pdm base-test -m 'concurrency' tests/"
 lint = "ruff giskard tests"
 doc = "sphinx-build docs docs/_build/html"
 watch-doc = "python -m sphinx_autobuild --watch giskard docs docs/_build/html"
@@ -89,6 +92,7 @@ test = [
     "polyfactory",
     "pytest-env>=1.1.0",
     "openai>=1",
+    "pytest-memray; sys_platform == 'linux' or sys_platform == 'darwin'"
 ]
 doc = [
     "furo>=2023.5.20",
@@ -302,6 +306,7 @@ doctest_optionflags = [
 markers = [
     "slow: marks tests as slow (deselect with '-m \"not slow\"')",
     "concurrency: run MLWorker pool tests",
+    "memory_expensive: memory consuming tests",
 ]
 
 # Extra options:

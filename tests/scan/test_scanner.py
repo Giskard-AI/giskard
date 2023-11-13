@@ -5,8 +5,6 @@ from unittest import mock
 import numpy as np
 import pandas as pd
 import pytest
-from langchain import LLMChain, PromptTemplate
-from langchain.llms.fake import FakeListLLM
 
 from giskard import Dataset, GiskardClient, Model
 from giskard.core.core import ModelMeta, SupportedModelTypes
@@ -25,6 +23,7 @@ from giskard.scanner.report import ScanReport
         ("hotel_text_data", "hotel_text_model"),
     ],
 )
+@pytest.mark.memory_expensive
 def test_scanner_returns_non_empty_scan_result_fast(dataset_name, model_name, request):
     _test_scanner_returns_non_empty_scan_result(dataset_name, model_name, request)
 
@@ -80,6 +79,7 @@ def test_scanner_raises_exception_if_no_detectors_available(german_credit_data, 
         scanner.analyze(german_credit_model, german_credit_data)
 
 
+@pytest.mark.memory_expensive
 def test_scanner_works_if_dataset_has_no_target(titanic_model, titanic_dataset):
     scanner = Scanner()
     no_target_dataset = Dataset(titanic_dataset.df, target=None)
@@ -101,8 +101,15 @@ def test_default_dataset_is_used_with_generative_model():
     def fake_model(*args, **kwargs):
         return None
 
-    model = Model(model=fake_model, model_type=SupportedModelTypes.TEXT_GENERATION)
-    # model.is_text_generation = True
+    model = Model(
+        model=fake_model,
+        model_type=SupportedModelTypes.TEXT_GENERATION,
+        name="test",
+        description="test",
+        feature_names=["query"],
+        target="query",
+    )
+
     model.meta = ModelMeta(
         "Model name",
         "Some meaningful model description",
@@ -121,28 +128,6 @@ def test_default_dataset_is_used_with_generative_model():
         except:  # noqa
             pass
         generate_test_dataset.assert_called_once()
-
-
-@pytest.mark.skip(reason="Now rely on LLM generated issues")
-@pytest.mark.slow
-def test_generative_model_dataset():
-    llm = FakeListLLM(responses=["Are you dumb or what?", "I don't know and I don't want to know."] * 100)
-    prompt = PromptTemplate(template="{instruct}: {question}", input_variables=["instruct", "question"])
-    chain = LLMChain(llm=llm, prompt=prompt)
-    model = Model(chain, model_type="text_generation")
-    dataset = Dataset(
-        pd.DataFrame(
-            {
-                "instruct": ["Paraphrase this", "Answer this question"],
-                "question": ["Who is the mayor of Rome?", "How many bridges are there in Paris?"],
-            }
-        ),
-        column_types={"instruct": "text", "question": "text"},
-    )
-
-    scanner = Scanner()
-    result = scanner.analyze(model, dataset)
-    assert result.has_issues()
 
 
 @pytest.mark.skip(reason="For active testing of the UI")
