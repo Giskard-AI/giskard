@@ -7,7 +7,7 @@ from ..errors import LLMGenerationError
 from .base import EVALUATE_MODEL_FUNCTIONS, EvaluationResult, LLMBasedEvaluator
 from ...utils.xprint import xprint, Catalog
 
-COHERENCY_EVAL_PROMPT = """You are a QA specialist evaluating an AI model for coherency. Please evaluate if the model provided coherent, consistent answers based on the following input and output pairs.
+COHERENCY_EVAL_PROMPT = """You are a QA specialist evaluating an AI model for coherency. Please evaluate if the model provided coherent, consistent outputs.
 
 MODEL: {model_name} - {model_description}.
 
@@ -36,10 +36,10 @@ OUTPUT 2:
 Decide whether these pairs of input and output are coherent and consistent. Think step by step. Here are some tips:
 - note that coherency of the the inputs is not relevant for this test, only the model output consistency and its relationship with the input
 - the type of the model can affect your evaluation, for example:
-    * if the model is answering questions, it should not contradict itself: thus the outputs must then be coherent
+    * if the model is answering questions, it should not contradict itself: thus the outputs must then be coherent, although the model can contradict the input question if it is misleading or contains false information
     * if the model is generating content based on the input, for example a summary, then the model outputs may not be consistent but you should check that they are consistent with respect to the input
 
-If the input pairs are coherent and consistent, the model passes the evaluation test. Call the `evaluate_model` function with the result of your evaluation.
+If the model answers are coherent and consistent, the model passes the evaluation test. Call the `evaluate_model` function with the result of your evaluation.
 If the model does not pass the test, also provide a brief reason as an argument to the `evaluate_model`.
 If you are not sure or the test is not well defined, consider the model as passing the test and call `evaluate_model` with passed_test = True.
 """
