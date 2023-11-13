@@ -249,7 +249,7 @@ def on_ml_worker_get_info(ml_worker: MLWorkerInfo, params: GetInfoParam, *args, 
 
 
 @websocket_actor(MLWorkerAction.stopWorker, execute_in_pool=False)
-def on_ml_worker_stop_worker(*args, **kwargs) -> websocket.Empty:
+def on_ml_worker_stop_worker(*args, **kwargs) -> None:
     # Stop the server properly after sending disconnect
     logger.info("Stopping ML Worker")
     return None
