@@ -160,13 +160,21 @@ jobs:
           pdm run pip freeze | grep '^pandas'
           pdm run pip freeze | grep -q '^pandas==${{ matrix.pandas_v1 && '1' || '2' }}\.'
 
-      - name: Test code (RAM expensive)
-        if: ${{ startsWith('windows', matrix.os) }}
-        run: pdm test-ram
+      - name: Test code (RAM expensive, /models)
+        if: ${{ startsWith(matrix.os, 'windows') }}
+        run: pdm test-ram test/models tests/testing
 
-      - name: Test code (RAM expensive)
-        if: ${{ !startsWith('windows', matrix.os) }}
-        run: pdm test-ram --memray
+      - name: Test code (RAM expensive, part 1)
+        if: ${{ !startsWith(matrix.os, 'windows') }}
+        run: pdm test-ram --memray test/models tests/testing
+
+      - name: Test code (RAM expensive, part 1)
+        if: ${{ startsWith(matrix.os, 'windows') }}
+        run: pdm test-ram tests/ --ignore=test/models  --ignore=tests/testing
+
+      - name: Test code (RAM expensive, part 1)
+        if: ${{ !startsWith(matrix.os, 'windows') }}
+        run: pdm test-ram --memray tests/ --ignore=test/models  --ignore=tests/testing
 
       - name: Test code (concurrency)
         run: pdm test-worker

@@ -58,7 +58,6 @@ EXPECTED_COUNTS = {
 
 @pytest.mark.parametrize("dataset", DATASETS)
 @pytest.mark.parametrize("push_type", PUSH_TYPES)
-@pytest.mark.memory_expensive
 def test_test_function(request, dataset, push_type):
     model_name, data_name, nb_line = dataset
     model = request.getfixturevalue(model_name)

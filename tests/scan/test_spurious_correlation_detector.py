@@ -45,6 +45,7 @@ def test_spurious_correlation_is_detected(titanic_dataset):
     assert not issues
 
 
+@pytest.mark.memory_expensive
 def test_threshold(titanic_model, titanic_dataset):
     detector = SpuriousCorrelationDetector(threshold=0.6)
     issues = detector.run(titanic_model, titanic_dataset)
