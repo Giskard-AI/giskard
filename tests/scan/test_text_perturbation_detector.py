@@ -1,5 +1,6 @@
 import numpy as np
 import pandas as pd
+import pytest
 from langchain import LLMChain, PromptTemplate
 from langchain.llms.fake import FakeListLLM
 
@@ -39,6 +40,7 @@ def test_text_perturbation_works_with_nan_values():
     assert len(issues) == 0
 
 
+@pytest.mark.memory_expensive
 def test_llm_text_transformation():
     llm = FakeListLLM(responses=["Are you dumb or what?", "I don't know and I don’t want to know."] * 100)
     prompt = PromptTemplate(template="{instruct}: {question}", input_variables=["instruct", "question"])

@@ -32,11 +32,9 @@ _.env = { GSK_DISABLE_ANALYTICS = "True", GISKARD_DEV_MODE = "True" }
 test.cmd = "pdm base-test tests/"
 # for some reason github runners don't work when calling 'pdm test -m "not slow"'
 base-test.cmd = "pytest -c pyproject.toml --cov=giskard --cov-report=xml --cov-append --disable-warnings --no-header -vv --durations=0"
-test-models.cmd = "pdm base-test -n auto -m 'not slow and not concurrency' tests/models"
-test-integrations.cmd = "pdm base-test -n auto -m 'not slow and not concurrency' tests/integrations"
-test-scan.cmd = "pdm base-test -n auto -m 'not slow and not concurrency' tests/scan"
-test-fast.cmd = "pdm base-test -n auto -m 'not slow and not concurrency' tests --ignore=tests/models --ignore=tests/integrations --ignore=tests/scan"
-test-slow.cmd = "pdm base-test -n auto -m 'slow and not concurrency' tests"
+test-fast.cmd = "pdm base-test -n auto -m 'not slow and not concurrency and not memory_expensive' tests"
+test-slow.cmd = "pdm base-test -m 'slow and not concurrency and not memory_expensive' tests"
+test-ram.cmd = "pdm base-test -m 'memory_expensive'"
 test-worker.cmd = "pdm base-test -m 'concurrency' tests/"
 lint = "ruff giskard tests"
 doc = "sphinx-build docs docs/_build/html"
@@ -95,6 +93,7 @@ test = [
     "polyfactory",
     "pytest-env>=1.1.0",
     "openai>=1",
+    "pytest-memray; sys_platform == 'linux' or sys_platform == 'darwin'"
 ]
 doc = [
     "furo>=2023.5.20",
@@ -308,6 +307,7 @@ doctest_optionflags = [
 markers = [
     "slow: marks tests as slow (deselect with '-m \"not slow\"')",
     "concurrency: run MLWorker pool tests",
+    "memory_expensive: memory consuming tests",
 ]
 
 # Extra options:

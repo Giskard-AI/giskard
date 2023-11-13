@@ -10,6 +10,8 @@ from giskard.models.tensorflow import TensorFlowModel
 
 tf = pytest.importorskip("tensorflow")
 
+
+@pytest.mark.memory_expensive
 def test_text_classification_tfhub():
     hub = pytest.importorskip("tensorflow_hub")
     pytest.importorskip("tensorflow_text")
