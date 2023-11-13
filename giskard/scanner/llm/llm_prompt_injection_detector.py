@@ -107,7 +107,7 @@ class LLMPromptInjectionDetector(Detector):
                         "evaluator_config": evaluator_config,
                     },
                     examples=pd.DataFrame(evaluation_results.failure_examples),
-                    # tests=_generate_prompt_injection_tests,
+                    tests=_generate_prompt_injection_tests,
                 )
             )
         return issues
