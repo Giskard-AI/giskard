@@ -160,19 +160,19 @@ jobs:
           pdm run pip freeze | grep '^pandas'
           pdm run pip freeze | grep -q '^pandas==${{ matrix.pandas_v1 && '1' || '2' }}\.'
 
-      - name: Test code (RAM expensive, /models)
+      - name: Test code (RAM expensive, /tests/models and /tests/testing)
         if: ${{ startsWith(matrix.os, 'windows') }}
         run: pdm test-ram tests/models tests/testing
 
-      - name: Test code (RAM expensive, part 1)
+      - name: Test code (RAM expensive, /tests/models and /tests/testing)
         if: ${{ !startsWith(matrix.os, 'windows') }}
         run: pdm test-ram --memray tests/models tests/testing
 
-      - name: Test code (RAM expensive, part 1)
+      - name: Test code (RAM expensive, others)
         if: ${{ startsWith(matrix.os, 'windows') }}
         run: pdm test-ram tests/ --ignore=tests/models  --ignore=tests/testing
 
-      - name: Test code (RAM expensive, part 1)
+      - name: Test code (RAM expensive, others)
         if: ${{ !startsWith(matrix.os, 'windows') }}
         run: pdm test-ram --memray tests/ --ignore=tests/models  --ignore=tests/testing
 
@@ -204,6 +204,12 @@ jobs:
         with:
           path: dist/*whl
 
+      - name: Run integration tests for python
+        if: ${{ inputs.run-integration-tests && matrix.os != 'windows-2019' }}
+        env:
+          PYTEST_XDIST_AUTO_NUM_WORKERS: 2
+        run: pdm test-slow
+
       - name: "Memory csv"
         if: ${{ always() && matrix.os == 'ubuntu-latest' && matrix.python-version == '3.10' }}
         uses: actions/upload-artifact@v3
@@ -212,11 +218,6 @@ jobs:
           name: memory-usage
           retention-days: 1
 
-      - name: Run integration tests for python
-        if: ${{ inputs.run-integration-tests && matrix.os != 'windows-2019' }}
-        env:
-          PYTEST_XDIST_AUTO_NUM_WORKERS: 2
-        run: pdm test-slow
   install-poetry:
     name: "Check if wheel can be installed with using Poetry"
     runs-on: ubuntu-latest
