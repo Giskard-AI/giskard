@@ -253,6 +253,7 @@ def test_metamorphic_invariance_wilcoxon_nopert(german_credit_test_data, german_
     assert results.passed, f"metric = {results.metric}"
 
 
+@pytest.mark.memory_expensive
 def test_metamorphic_invariance_llm():
     from langchain.chains import LLMChain
     from langchain.llms.fake import FakeListLLM
