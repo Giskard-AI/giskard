@@ -84,7 +84,7 @@ def test_websocket_actor_get_info():
 
 def test_websocket_actor_stop_worker():
     reply = listener.on_ml_worker_stop_worker()
-    assert isinstance(reply, websocket.Empty)
+    assert reply is None
 
 
 def test_websocket_actor_get_catalog():
