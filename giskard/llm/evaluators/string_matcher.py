@@ -1,14 +1,14 @@
 import re
 import string
 import logging
-from typing import Tuple
+from typing import Tuple, Dict
 from dataclasses import dataclass
 
-import pandas as pd
 
 from .base import BaseEvaluator, EvaluationResult
 from ...datasets.base import Dataset
 from ...models.base.model import BaseModel
+from ..errors import LLMGenerationError
 
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.INFO)
@@ -23,6 +23,12 @@ class StringMatchingMethod:
     case_sensitive: bool = True
     punctuation_sensitive: bool = True
     evaluation_method_name: str = "StringMatchingMethod"
+
+
+def get_evaluation_method_from_meta(kwargs: Dict):
+    kwargs = {k: v for k, v in kwargs.items() if k in list(StringMatchingMethod.__annotations__.keys())}
+
+    return StringMatchingMethod(**kwargs)
 
 
 class StringMatcher(BaseEvaluator):
@@ -64,36 +70,27 @@ class StringMatcher(BaseEvaluator):
 
         return failed
 
-    def evaluate(self, model: BaseModel, dataset: Dataset, meta_df: pd.DataFrame = None):
+    def evaluate(self, model: BaseModel, dataset: Dataset, evaluator_config):
         model_outputs = model.predict(dataset).prediction
 
         succeeded = []
         failed = []
+        errored = []
         zipped = zip(dataset.df.loc[:, model.meta.feature_names].to_dict("records"), model_outputs)
 
         for i, items in enumerate(zipped):
             input_vars, model_output = items[0], items[1]
-            if meta_df is None:
-                evaluation_method = StringMatchingMethod()
-            else:
-                _kwargs = meta_df.iloc[i].to_dict()
-                kwargs = {
-                    k: v
-                    for k, v in _kwargs.items()
-                    if k
-                    in [
-                        "substrings",
-                        "all_substrings_must_be_found",
-                        "exact_matching",
-                        "word_matching",
-                        "case_sensitive",
-                        "punctuation_sensitive",
-                        "evaluation_method_name",
-                    ]
-                }
-                evaluation_method = StringMatchingMethod(**kwargs)
+            try:
+                if not evaluator_config[i].get("substrings", None):
+                    raise ValueError(
+                        f"{self.__class__.__name__}: substrings for {input_vars} are needed for the evaluation."
+                    )
+                evaluation_method = get_evaluation_method_from_meta(evaluator_config[i])
 
-            prompt_failed = self._evaluate(model_output, evaluation_method=evaluation_method)
+                prompt_failed = self._evaluate(model_output, evaluation_method=evaluation_method)
+            except LLMGenerationError as err:
+                errored.append({"message": str(err), "sample": input_vars})
+                continue
             if not prompt_failed:
                 succeeded.append({"input_vars": input_vars, "model_output": model_output})
             else:
@@ -102,5 +99,5 @@ class StringMatcher(BaseEvaluator):
         return EvaluationResult(
             failure_examples=failed,
             success_examples=succeeded,
-            errors=[],
+            errors=errored,
         )
