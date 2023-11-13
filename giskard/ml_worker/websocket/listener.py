@@ -56,6 +56,7 @@ from giskard.push.perturbation import create_perturbation_push
 from giskard.push.prediction import create_borderline_push, create_overconfidence_push
 from giskard.utils import call_in_pool, shutdown_pool
 from giskard.utils.analytics_collector import analytics
+from giskard.utils.worker_pool import GiskardMLWorkerException
 
 logger = logging.getLogger(__name__)
 MAX_STOMP_ML_WORKER_REPLY_SIZE = 1500
@@ -97,6 +98,12 @@ def wrapped_handle_result(
                     error_str=str(e), error_type=type(e).__name__, detail=traceback.format_exc()
                 )
                 logger.warning(e)
+        except GiskardMLWorkerException as e:
+            # Retrieve the exception info from worker process
+            info: websocket.WorkerReply = websocket.ErrorReply(
+                error_str=e.info.message, error_type=e.info.type, detail=e.info.stack_trace
+            )
+            logger.warning(e)
         except Exception as e:
             info: websocket.WorkerReply = websocket.ErrorReply(
                 error_str=str(e), error_type=type(e).__name__, detail=traceback.format_exc()
@@ -310,9 +317,7 @@ def on_ml_worker_get_info(ml_worker: MLWorkerInfo, params: GetInfoParam, *args, 
     logger.info("Collecting ML Worker info from WebSocket")
 
     # TODO(Bazire): seems to be deprecated https://setuptools.pypa.io/en/latest/pkg_resources.html#workingset-objects
-    installed_packages = (
-        {p.project_name: p.version for p in pkg_resources.working_set} if params.list_packages else {}
-    )
+    installed_packages = {p.project_name: p.version for p in pkg_resources.working_set} if params.list_packages else {}
     current_process = psutil.Process(os.getpid())
     return websocket.GetInfo(
         platform=websocket.Platform(
@@ -586,7 +591,7 @@ def run_ad_hoc_test(
     if "kwargs" in arguments:
         arguments.update(**arguments.pop("kwargs"))
 
-    arguments["debug"] = params.debug if params.debug else None
+    arguments["debug"] = params.debug if params.debug is not None else False
     debug_info = extract_debug_info(params.arguments) if params.debug else None
 
     test_result = do_run_adhoc_test(client, arguments, test, debug_info)
