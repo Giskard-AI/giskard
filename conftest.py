@@ -1,5 +1,4 @@
 import gc
-import logging
 import os
 import time
 from pathlib import Path
@@ -7,8 +6,6 @@ from pathlib import Path
 import psutil
 import pytest
 from _pytest.python import Function
-
-LOGGER = logging.getLogger(__name__)
 
 
 @pytest.hookimpl(hookwrapper=True)

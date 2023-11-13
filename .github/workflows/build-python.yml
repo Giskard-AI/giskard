@@ -58,7 +58,7 @@ jobs:
         pydantic_v1: [false]
         pandas_v1: [false]
         langchain_minimal: [false]
-        # # https://docs.github.com/en/actions/using-github-hosted-runners/about-github-hosted-runners#supported-runners-and-hardware-resources
+        # https://docs.github.com/en/actions/using-github-hosted-runners/about-github-hosted-runners#supported-runners-and-hardware-resources
         include:
           - python-version: "3.10"
             os: windows-2019
