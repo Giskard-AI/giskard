@@ -217,7 +217,6 @@ def test_metamorphic_invariance(
     slicing_function: Optional[SlicingFunction] = None,
     threshold: float = 0.5,
     output_sensitivity: float = None,
-    debug: bool = False,
 ):
     """
     Summary: Tests if the model prediction is invariant when the feature values are perturbed
@@ -246,8 +245,6 @@ def test_metamorphic_invariance(
             Optional. The threshold for ratio between the difference between perturbed prediction and actual prediction over
             the actual prediction for a regression model. We consider there is a prediction difference for
             regression if the ratio is above the output_sensitivity of 0.1
-        debug(bool):
-            legacy debug (deprecated).
 
     Returns:
         actual_slices_size:
@@ -286,7 +283,6 @@ def test_metamorphic_increasing(
     slicing_function: Optional[SlicingFunction] = None,
     threshold: float = 0.5,
     classification_label: str = None,
-    debug: bool = False,
 ):
     """
     Summary: Tests if the model probability increases when the feature values are perturbed
@@ -313,8 +309,6 @@ def test_metamorphic_increasing(
           Slicing function to be applied on dataset
         classification_label(str):
           Optional.One specific label value from the target column
-        debug(bool):
-          legacy debug (deprecated).
 
     Returns:
         actual_slices_size:
@@ -352,7 +346,6 @@ def test_metamorphic_decreasing(
     slicing_function: Optional[SlicingFunction] = None,
     threshold: float = 0.5,
     classification_label: str = None,
-    debug: bool = False,
 ):
     """
     Summary: Tests if the model probability decreases when the feature values are perturbed
@@ -381,8 +374,6 @@ def test_metamorphic_decreasing(
           Threshold of the ratio of decreasing rows
         classification_label(str):
           Optional. One specific label value from the target column
-        debug(bool):
-          legacy debug (deprecated).
 
     Returns:
         actual_slices_size:
@@ -417,6 +408,7 @@ def _test_metamorphic_t_test(
     critical_quantile: float,
     classification_label=None,
     output_proba=True,
+    debug: bool = False,
 ) -> TestResult:
     result_df, modified_rows_count = _perturb_and_predict(
         model, dataset, transformation_function, output_proba=output_proba, classification_label=classification_label
@@ -426,10 +418,10 @@ def _test_metamorphic_t_test(
 
     messages = [TestMessage(type=TestMessageLevel.INFO, text=f"{modified_rows_count} rows were perturbed")]
 
-    return _create_test_result(critical_quantile, dataset, direction, messages, model, p_value, result_df)
+    return _create_test_result(critical_quantile, dataset, direction, messages, model, p_value, result_df, debug)
 
 
-def _create_test_result(critical_quantile, dataset, direction, messages, model, p_value, result_df):
+def _create_test_result(critical_quantile, dataset, direction, messages, model, p_value, result_df, debug: bool = False):
     passed = bool(p_value < critical_quantile)
     # --- debug ---
     failed_indexes = list()
@@ -458,7 +450,6 @@ def test_metamorphic_decreasing_t_test(
     slicing_function: Optional[SlicingFunction] = None,
     critical_quantile: float = 0.05,
     classification_label: str = None,
-    debug: bool = False,
 ):
     """
     Summary: Tests if the model probability decreases when the feature values are perturbed
@@ -482,8 +473,6 @@ def test_metamorphic_decreasing_t_test(
           Slicing function to be applied on dataset
         critical_quantile(float):
             Critical quantile above which the null hypothesis cannot be rejected
-        debug(bool):
-          legacy debug (deprecated).
 
     Returns:
         actual_slices_size:
@@ -524,7 +513,6 @@ def test_metamorphic_increasing_t_test(
     slicing_function: Optional[SlicingFunction] = None,
     critical_quantile: float = 0.05,
     classification_label: str = None,
-    debug: bool = False,
 ):
     """
     Summary: Tests if the model probability increases when the feature values are perturbed
@@ -548,8 +536,6 @@ def test_metamorphic_increasing_t_test(
           Slicing function to be applied on dataset
         critical_quantile(float):
             Critical quantile above which the null hypothesis cannot be rejected
-        debug(bool):
-          legacy debug (deprecated).
 
     Returns:
         actual_slices_size:
@@ -589,7 +575,6 @@ def test_metamorphic_invariance_t_test(
     slicing_function: Optional[SlicingFunction] = None,
     window_size: float = 0.2,
     critical_quantile: float = 0.05,
-    debug: bool = False,
 ) -> TestResult:
     """
     Summary: Tests if the model predictions are statistically invariant when the feature values are perturbed.
@@ -618,8 +603,6 @@ def test_metamorphic_invariance_t_test(
               Probability window in which the mean of the perturbed sample can be in
           critical_quantile(float):
               Critical quantile above which the null hypothesis cannot be rejected
-          debug(bool):
-              legacy debug (deprecated).
 
     Returns:
           actual_slices_size:
@@ -657,6 +640,7 @@ def _test_metamorphic_wilcoxon(
     critical_quantile: float,
     classification_label=None,
     output_proba=True,
+    debug: bool = False,
 ) -> TestResult:
     result_df, modified_rows_count = _perturb_and_predict(
         model, dataset, transformation_function, output_proba=output_proba, classification_label=classification_label
@@ -666,7 +650,7 @@ def _test_metamorphic_wilcoxon(
 
     messages = [TestMessage(type=TestMessageLevel.INFO, text=f"{modified_rows_count} rows were perturbed")]
 
-    return _create_test_result(critical_quantile, dataset, direction, messages, model, p_value, result_df)
+    return _create_test_result(critical_quantile, dataset, direction, messages, model, p_value, result_df, debug)
 
 
 @test(
@@ -681,7 +665,6 @@ def test_metamorphic_decreasing_wilcoxon(
     slicing_function: Optional[SlicingFunction] = None,
     critical_quantile: float = 0.05,
     classification_label: str = None,
-    debug: bool = False,
 ):
     """
     Summary: Tests if the model probability decreases when the feature values are perturbed
@@ -705,8 +688,6 @@ def test_metamorphic_decreasing_wilcoxon(
             Slicing function to be applied on dataset
         critical_quantile(float):
             Critical quantile above which the null hypothesis cannot be rejected
-        debug(bool):
-            legacy debug (deprecated).
 
     Returns:
         actual_slices_size:
@@ -747,7 +728,6 @@ def test_metamorphic_increasing_wilcoxon(
     slicing_function: Optional[SlicingFunction] = None,
     critical_quantile: float = 0.05,
     classification_label: str = None,
-    debug: bool = False,
 ):
     """
     Summary: Tests if the model probability increases when the feature values are perturbed
@@ -771,8 +751,6 @@ def test_metamorphic_increasing_wilcoxon(
             Slicing function to be applied on dataset
         critical_quantile(float):
             Critical quantile above which the null hypothesis cannot be rejected
-        debug(bool):
-            legacy debug (deprecated).
 
     Returns:
         actual_slices_size:
@@ -812,7 +790,6 @@ def test_metamorphic_invariance_wilcoxon(
     slicing_function: Optional[SlicingFunction] = None,
     window_size: float = 0.2,
     critical_quantile: float = 0.05,
-    debug: bool = False,
 ) -> TestResult:
     """
     Summary: Tests if the model predictions are statistically invariant when the feature values are perturbed.
@@ -841,8 +818,6 @@ def test_metamorphic_invariance_wilcoxon(
             Probability window in which the mean of the perturbed sample can be in
         critical_quantile(float):
             Critical quantile above which the null hypothesis cannot be rejected
-        debug(bool):
-            legacy debug (deprecated).
 
     Returns:
         actual_slices_size:

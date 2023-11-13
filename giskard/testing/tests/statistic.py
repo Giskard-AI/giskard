@@ -26,7 +26,6 @@ def test_right_label(
     classification_label: str,
     slicing_function: Optional[SlicingFunction] = None,
     threshold: float = 0.5,
-    debug: bool = False,
 ) -> TestResult:
     """
     Summary: Test if the model returns the right classification label for a slice
@@ -49,8 +48,6 @@ def test_right_label(
           Slicing function to be applied on the dataset
       threshold(float):
           Threshold for the percentage of passed rows
-      debug(bool):
-          legacy debug(deprecated)
 
     Returns:
       actual_slices_size:
@@ -96,7 +93,6 @@ def test_output_in_range(
     min_range: float = 0.3,
     max_range: float = 0.7,
     threshold: float = 0.5,
-    debug: bool = False,
 ) -> TestResult:
     """
     Summary: Test if the model output belongs to the right range for a slice
@@ -131,8 +127,6 @@ def test_output_in_range(
             Maximum probability of occurrence of classification label
         threshold(float):
             Threshold for the percentage of passed rows
-        debug(bool):
-            legacy debug(deprecated)
 
     Returns:
         actual_slices_size:
@@ -188,7 +182,6 @@ def test_disparate_impact(
     slicing_function: Optional[SlicingFunction] = None,
     min_threshold: float = 0.8,
     max_threshold: float = 1.25,
-    debug: bool = False,
 ) -> TestResult:
     """
     Summary: Tests if the model is biased more towards an unprotected slice of the dataset over a protected slice.
@@ -228,8 +221,6 @@ def test_disparate_impact(
               Threshold below which the DI test is considered to fail, by default 0.8
           max_threshold(float):
               Threshold above which the DI test is considered to fail, by default 1.25
-          debug(bool):
-              legacy debug(deprecated)
 
     Returns:
           metric:
@@ -396,7 +387,7 @@ def test_nominal_association(
     debug_description=debug_description_prefix + "of <b>the data slice that was given as an input of the test</b>.",
 )
 def test_cramer_v(
-    model: BaseModel, dataset: Dataset, slicing_function: SlicingFunction, threshold: float = 0.5, debug: bool = False
+    model: BaseModel, dataset: Dataset, slicing_function: SlicingFunction, threshold: float = 0.5
 ) -> TestResult:
     """
     Summary: Cramer's V is a statistical measure used to assess the strength and nature of association between two
@@ -427,10 +418,8 @@ def test_cramer_v(
           Slicing function to be applied on the dataset
       threshold(float):
           Threshold value for the Cramer's V score
-      debug(bool):
-          legacy debug(deprecated)
     """
-    return test_nominal_association(model, dataset, slicing_function, "cramer_v", threshold, debug).execute()
+    return test_nominal_association(model, dataset, slicing_function, "cramer_v", threshold).execute()
 
 
 @test(
@@ -439,7 +428,7 @@ def test_cramer_v(
     debug_description=debug_description_prefix + "of <b>the data slice that was given as an input of the test</b>.",
 )
 def test_mutual_information(
-    model: BaseModel, dataset: Dataset, slicing_function: SlicingFunction, threshold: float = 0.5, debug: bool = False
+    model: BaseModel, dataset: Dataset, slicing_function: SlicingFunction, threshold: float = 0.5
 ) -> TestResult:
     """
     Summary: The mutual information statistical test is a measure used to quantify the degree of association between two
@@ -469,10 +458,8 @@ def test_mutual_information(
           Slicing function to be applied on the dataset
       threshold(float):
           Threshold value for the mutual information score
-      debug(bool):
-          legacy debug(deprecated)
     """
-    return test_nominal_association(model, dataset, slicing_function, "mutual_information", threshold, debug).execute()
+    return test_nominal_association(model, dataset, slicing_function, "mutual_information", threshold).execute()
 
 
 @test(
@@ -481,7 +468,7 @@ def test_mutual_information(
     debug_description=debug_description_prefix + "of <b>the data slice that was given as an input of the test</b>.",
 )
 def test_theil_u(
-    model: BaseModel, dataset: Dataset, slicing_function: SlicingFunction, threshold: float = 0.5, debug: bool = False
+    model: BaseModel, dataset: Dataset, slicing_function: SlicingFunction, threshold: float = 0.5
 ) -> TestResult:
     """
     Summary: Theil's U statistical test for nominal association is a measure used to assess the strength and direction
@@ -511,7 +498,5 @@ def test_theil_u(
           Slicing function to be applied on the dataset
       threshold(float):
           Threshold value for the Theil's U score
-      debug(bool):
-          legacy debug(deprecated)
     """
-    return test_nominal_association(model, dataset, slicing_function, "theil_u", threshold, debug).execute()
+    return test_nominal_association(model, dataset, slicing_function, "theil_u", threshold).execute()

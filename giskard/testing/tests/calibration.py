@@ -41,7 +41,6 @@ def test_overconfidence_rate(
     slicing_function: Optional[SlicingFunction] = None,
     threshold: Optional[float] = 0.10,
     p_threshold: Optional[float] = None,
-    debug: bool = False,
 ):
     """Tests that the rate of overconfident predictions is below a threshold.
 
@@ -71,8 +70,6 @@ def test_overconfidence_rate(
             over which a prediction is considered overconfident. If not
             provided, it will be determined automatically depending on the
             number of classes.
-        debug(bool):
-            legacy debug (deprecated).
     """
     if not model.is_classification:
         raise ValueError("This test is only applicable to classification models.")
@@ -121,7 +118,6 @@ def test_underconfidence_rate(
     slicing_function: Optional[SlicingFunction] = None,
     threshold: Optional[float] = 0.10,
     p_threshold: float = 0.90,
-    debug: bool = False,
 ):
     """Tests that the rate of underconfident predictions is below a threshold.
 
@@ -151,8 +147,6 @@ def test_underconfidence_rate(
             underconfident. Default is 0.90, i.e. when the second most probable
             prediction is 90% or more with respect to the highest probability,
             the sample prediction is considered underconfident.
-        debug(bool):
-            legacy debug (deprecated).
     """
     if not model.is_classification:
         raise ValueError("This test is only applicable to classification models.")

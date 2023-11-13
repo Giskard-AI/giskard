@@ -199,7 +199,6 @@ def test_drift_psi(
     threshold: float = 0.2,
     max_categories: int = 20,
     psi_contribution_percent: float = 0.2,
-    debug: bool = False,
 ) -> TestResult:
     """
     Test if the PSI score between the actual and reference datasets is below the threshold for
@@ -224,8 +223,6 @@ def test_drift_psi(
             the ratio between the PSI score of a given category over the total PSI score
             of the categorical variable. If there is a drift, the test provides all the
             categories that have a PSI contribution over than this ratio.
-        debug(bool):
-            legacy debug (deprecated).
 
 
     Returns:
@@ -297,7 +294,6 @@ def test_drift_chi_square(
     threshold: float = 0.05,
     max_categories: int = 20,
     chi_square_contribution_percent: float = 0.2,
-    debug: bool = False,
 ) -> TestResult:
     """
     Test if the p-value of the chi square test between the actual and reference datasets is
@@ -324,8 +320,6 @@ def test_drift_chi_square(
             the ratio between the Chi-Square value of a given category over the total Chi-Square
             value of the categorical variable. If there is a drift, the test provides all the
             categories that have a PSI contribution over than this ratio.
-        debug(bool):
-            legacy debug (deprecated).
 
     Returns:
         actual_slices_size:
@@ -520,7 +514,6 @@ def test_drift_prediction_psi(
     max_categories: int = 10,
     threshold: float = 0.2,
     psi_contribution_percent: float = 0.2,
-    debug: bool = False,
 ):
     """
     Test if the PSI score between the reference and actual datasets is below the threshold
@@ -546,8 +539,6 @@ def test_drift_prediction_psi(
             The ratio between the PSI score of a given category over the total PSI score
             of the categorical variable. If there is a drift, the test provides all the
             categories that have a PSI contribution over than this ratio.
-        debug(bool):
-            legacy debug (deprecated).
 
     Returns:
         actual_slices_size:
@@ -648,7 +639,6 @@ def test_drift_prediction_chi_square(
     max_categories: int = 10,
     threshold: float = 0.05,
     chi_square_contribution_percent: float = 0.2,
-    debug: bool = False,
 ):
     """
     Test if the Chi Square value between the reference and actual datasets is below the threshold
@@ -674,8 +664,6 @@ def test_drift_prediction_chi_square(
             the ratio between the Chi-Square value of a given category over the total Chi-Square
             value of the categorical variable. If there is a drift, the test provides all the
             categories that have a PSI contribution over than this ratio.
-        debug(bool):
-            legacy debug (deprecated).
 
     Returns:
         actual_slices_size:
