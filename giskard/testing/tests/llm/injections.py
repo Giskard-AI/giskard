@@ -1,5 +1,7 @@
+import gc
 import inspect
-from dataclasses import dataclass
+from dataclasses import dataclass, field
+from statistics import mean
 from typing import List, Optional, Sequence
 
 import numpy as np
@@ -36,6 +38,8 @@ class CharInjectionResult:
     predictions: Sequence
     original_predictions: Sequence
 
+    errors: Sequence[str] = field(default_factory=list)
+
 
 class LLMCharInjector:
     def __init__(
@@ -45,12 +49,24 @@ class LLMCharInjector:
         self.max_repetitions = max_repetitions
         self.threshold = threshold
         self.output_sensitivity = output_sensitivity
+        self._scorer = None
+
+    @property
+    def scorer(self):
+        if self._scorer:
+            return self._scorer
+
         try:
             import evaluate
         except ImportError as err:
             raise LLMImportError() from err
 
-        self.scorer = evaluate.load("bertscore")
+        self._scorer = evaluate.load("bertscore")
+        return self._scorer
+
+    def _cleanup(self):
+        self._scorer = None
+        gc.collect()
 
     def run(self, model: BaseModel, dataset: Dataset, features: Optional[Sequence[str]] = None):
         # Get default features
@@ -64,6 +80,8 @@ class LLMCharInjector:
             for char in self.chars:
                 yield self.run_single_injection(model, dataset, ref_predictions, char, feature)
 
+        self._cleanup()
+
     def run_single_injection(
         self,
         model: BaseModel,
@@ -72,14 +90,17 @@ class LLMCharInjector:
         char: str,
         feature: str,
     ):
-        messages = []
-
         # Split the dataset in single samples
         original_samples = []
         perturbed_samples = []
         predictions = []
         for i in range(len(dataset)):
-            for n in [self.max_repetitions, self.max_repetitions // 2, self.max_repetitions // 4]:
+            for n in [
+                self.max_repetitions,
+                self.max_repetitions // 2,
+                self.max_repetitions // 4,
+                self.max_repetitions // 8,
+            ]:
                 sample_ds = dataset.slice(lambda df: df.iloc[[i]], row_level=False)
                 perturbed_sample_ds = sample_ds.transform(
                     lambda df: _add_suffix_to_df(df, feature, char, n), row_level=False
@@ -95,10 +116,21 @@ class LLMCharInjector:
                     pass
 
         if len(predictions) < 1:
-            messages.append(
+            errors = [
                 f"Model returned error on perturbed samples. Skipping perturbation of `{feature}` with char `{char.encode('unicode_escape').decode('ascii')}`."
+            ]
+            return CharInjectionResult(
+                char=char,
+                feature=feature,
+                fail_rate=None,
+                vulnerable=None,
+                vulnerable_mask=None,
+                original_dataset=None,
+                perturbed_dataset=None,
+                predictions=None,
+                original_predictions=None,
+                errors=errors,
             )
-            return None
 
         original_dataset = Dataset(
             pd.concat([s.df for s in original_samples]),
@@ -189,27 +221,35 @@ def test_llm_char_injection(
     injector = LLMCharInjector(
         chars=characters, max_repetitions=max_repetitions, threshold=threshold, output_sensitivity=output_sensitivity
     )
-    result = TestResult(passed=True, metric=0.0, metric_name="Fail rate")
+    result = TestResult(passed=False, metric=0.0, metric_name="Fail rate")
 
-    fail_rates = []
-    fail_dfs = []
-    for res in injector.run(model, dataset, features):
-        if not res.vulnerable:
-            continue
+    runs = list(injector.run(model, dataset, features))
 
-        result.passed = False
-        fail_dfs.append(res.perturbed_dataset.df.loc[res.vulnerable_mask])
-        fail_rates.append(res.fail_rate)
+    # Log errors
+    result.messages = sum((r.errors for r in runs), [])
 
-    if not result.passed:
-        if debug:
-            result.output_df = Dataset(
-                pd.concat(fail_dfs),
-                name="Test dataset vulnerable to character injection",
-                column_types=dataset.column_types,
-                validation=False,
-            )
-        result.metric = np.mean(fail_rates)
+    # If all runs errored, stop here
+    if all(r.errors for r in runs):
+        result.is_error = True
+        return result
+
+    # Failed runs are those for which the test failed
+    failed_runs = [r for r in runs if r.vulnerable]
+
+    if not failed_runs:
+        result.passed = True
+        return result
+
+    result.passed = False
+    result.metric = mean(res.fail_rate for res in failed_runs)
+
+    if debug:
+        result.output_df = Dataset(
+            pd.concat([r.perturbed_dataset.df.loc[r.vulnerable_mask] for r in failed_runs]),
+            name="Test dataset vulnerable to character injection",
+            column_types=dataset.column_types,
+            validation=False,
+        )
 
     return result
 
