@@ -162,19 +162,19 @@ jobs:
 
       - name: Test code (RAM expensive, /models)
         if: ${{ startsWith(matrix.os, 'windows') }}
-        run: pdm test-ram test/models tests/testing
+        run: pdm test-ram tests/models tests/testing
 
       - name: Test code (RAM expensive, part 1)
         if: ${{ !startsWith(matrix.os, 'windows') }}
-        run: pdm test-ram --memray test/models tests/testing
+        run: pdm test-ram --memray tests/models tests/testing
 
       - name: Test code (RAM expensive, part 1)
         if: ${{ startsWith(matrix.os, 'windows') }}
-        run: pdm test-ram tests/ --ignore=test/models  --ignore=tests/testing
+        run: pdm test-ram tests/ --ignore=tests/models  --ignore=tests/testing
 
       - name: Test code (RAM expensive, part 1)
         if: ${{ !startsWith(matrix.os, 'windows') }}
-        run: pdm test-ram --memray tests/ --ignore=test/models  --ignore=tests/testing
+        run: pdm test-ram --memray tests/ --ignore=tests/models  --ignore=tests/testing
 
       - name: Test code (concurrency)
         run: pdm test-worker
