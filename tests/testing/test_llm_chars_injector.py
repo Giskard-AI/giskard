@@ -11,6 +11,7 @@ from giskard.testing.tests.llm import LLMCharInjector
 from giskard.testing.tests.llm.injections import CharInjectionResult, test_llm_char_injection
 
 
+@pytest.mark.memory_expensive
 def test_single_injection():
     dataset = Dataset(pd.DataFrame({"feature_1": ["one", "two", "three"], "feature_2": [1, 2, 3]}))
     reference_predictions = ["this is ok", "this is ok", "this is not ok"]
@@ -55,6 +56,7 @@ def test_single_injection():
     assert result.fail_rate == pytest.approx(1 / 3)
 
 
+@pytest.mark.memory_expensive
 def test_single_injection_with_nonstring_types():
     dataset = Dataset(pd.DataFrame({"feature_1": ["one", "two"], "feature_2": [1, 2]}))
     reference_predictions = ["this is ok", "this is ok!"]

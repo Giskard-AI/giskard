@@ -6,7 +6,7 @@ from giskard.core.core import SupportedModelTypes
 mlflow_model_types = {
     SupportedModelTypes.CLASSIFICATION: "classifier",
     SupportedModelTypes.REGRESSION: "regressor",
-    SupportedModelTypes.TEXT_GENERATION: "text"
+    SupportedModelTypes.TEXT_GENERATION: "text",
 }
 
 
@@ -21,7 +21,7 @@ def _evaluate(dataset, model, evaluator_config, request):
         data=dataset.df,
         targets=dataset.target,
         evaluators="giskard",
-        evaluator_config=evaluator_config
+        evaluator_config=evaluator_config,
     )
     mlflow.end_run()
 
@@ -29,12 +29,12 @@ def _evaluate(dataset, model, evaluator_config, request):
 @pytest.mark.parametrize(
     "dataset_name,model_name",
     [
-        ("breast_cancer_data", "breast_cancer_model"),
         ("drug_classification_data", "drug_classification_model"),
         ("diabetes_dataset_with_target", "linear_regression_diabetes"),
         ("hotel_text_data", "hotel_text_model"),
     ],
 )
+@pytest.mark.memory_expensive
 def test_fast(dataset_name, model_name, request):
     _run_test(dataset_name, model_name, request)
 
@@ -42,6 +42,7 @@ def test_fast(dataset_name, model_name, request):
 @pytest.mark.parametrize(
     "dataset_name,model_name",
     [
+        ("breast_cancer_data", "breast_cancer_model"),
         ("german_credit_data", "german_credit_model"),
         ("enron_data_full", "enron_model"),
         ("medical_transcript_data", "medical_transcript_model"),
@@ -61,8 +62,7 @@ def _run_test(dataset_name, model_name, request):
     _evaluate(dataset, model, evaluator_config, request)
 
 
-@pytest.mark.parametrize(
-    "dataset_name,model_name", [("german_credit_data", "german_credit_model")])
+@pytest.mark.parametrize("dataset_name,model_name", [("german_credit_data", "german_credit_model")])
 def test_errors(dataset_name, model_name, request):
     dataset = request.getfixturevalue(dataset_name)
     model = request.getfixturevalue(model_name)
