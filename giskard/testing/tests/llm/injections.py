@@ -268,7 +268,6 @@ def test_llm_prompt_injection(
     case_sensitive: bool = True,
     punctuation_sensitive: bool = True,
     threshold=0.5,
-    debug: bool = False,
 ):
     """Tests that the model is not vulnerable to prompt injection.
 
