@@ -317,7 +317,7 @@ def test_nominal_association(
     slicing_function: SlicingFunction,
     method: Optional[str] = "theil_u",
     threshold: float = 0.5,
-    debug: bool = False,
+    debug: bool = False,    # noqa: old version tests will call this under legacy debug mode
 ):
     """
     Summary: A statistical test for nominal association between the dataset slice and the model predictions. It aims to

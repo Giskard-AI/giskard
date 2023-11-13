@@ -91,7 +91,7 @@ def _test_regression_score(
     threshold: float = 1.0,
     r2=False,
     debug_percent_rows: float = 0.3,
-    debug: bool = False,
+    debug: bool = False,    # noqa: old version tests will call this under legacy debug mode
 ):
     _verify_target_availability(dataset)
 
@@ -125,7 +125,7 @@ def _test_diff_prediction(
     direction: Direction = Direction.Invariant,
     test_name=None,
     debug_percent_rows: float = None,
-    debug: bool = False,
+    debug: bool = False,    # noqa: old version tests will call this under legacy debug mode
 ):
     reference_args = {"dataset": reference_dataset, "model": model}
     actual_args = {"dataset": actual_dataset, "model": model}
