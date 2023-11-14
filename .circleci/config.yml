@@ -76,7 +76,7 @@ commands:
           steps:
             - run: (Invoke-WebRequest -Uri https://pdm-project.org/install-pdm.py -UseBasicParsing).Content | python3 -
       - install-pdm
-        os: <<parameters.os>>
+          os: <<parameters.os>>
 # See: https://circleci.com/docs/configuration-reference/#jobs
 jobs:
   install:
