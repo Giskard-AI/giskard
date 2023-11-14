@@ -51,7 +51,7 @@ jobs:
           name: Run tests
           command: |
             mkdir -p test-results
-            TEST=$(find ./tests -type f | grep -v __ | grep -v '/fixtures/' |  grep -v conftest | circleci tests split --split-by=timings)
+            TEST=$(find ./tests -type f | grep '.py$' | grep -v __ | grep -v '/fixtures/' |  grep -v conftest | circleci tests split --split-by=timings)
             pdm base-test -m 'not slow' --junitxml=test-results/junit.xml $TEST
 
       - store_test_results:
