@@ -19,14 +19,16 @@ executors:
       GSK_DISABLE_ANALYTICS: "True"
       GISKARD_DEV_MODE: "True"
     resource_class: medium
+# https://circleci.com/developer/machine/image/windows-server-2022-gui
   windows:
     parameters:
       python-version:
         description: "Python version"
         type: string
     machine:
-      image: windows-server-2022-gui
+      image: 'windows-server-2022-gui:current'
       resource_class: windows.medium
+      shell: powershell.exe -ExecutionPolicy Bypass
     environment:
       GSK_DISABLE_ANALYTICS: "True"
       GISKARD_DEV_MODE: "True"
