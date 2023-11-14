@@ -1,13 +1,14 @@
-import os
 import random
 import re
 import string
 
 import numpy as np
 import pandas as pd
+from scipy.stats import median_abs_deviation
 
 from giskard.ml_worker.testing.registry.transformation_function import transformation_function
-from scipy.stats import median_abs_deviation
+
+from ....llm import get_default_client
 
 nearbykeys = {
     "a": ["q", "w", "s", "x", "z"],
@@ -106,40 +107,38 @@ def strip_punctuation(text: str) -> str:
 
 
 @transformation_function(name="Change writing style", row_level=False, tags=["text"])
-def change_writing_style(
-    x: pd.DataFrame, index: int, column_name: str, style: str, OPENAI_API_KEY: str
-) -> pd.DataFrame:
-    os.environ["OPENAI_API_KEY"] = OPENAI_API_KEY
-    rewrite_prompt_template = """
-    As a text rewriting robot, your task is to rewrite a given text using a specified rewriting style. You will receive a prompt with the following format:
-    ```
-    "TEXT"
-    ===
-    "REWRITING STYLE"
-    ```
-    Your goal is to rewrite the provided text according to the specified style. The purpose of this task is to evaluate how the rewritten text will affect our machine learning models.
+def change_writing_style(df: pd.DataFrame, column_name: str, style: str) -> pd.DataFrame:
+    sys_prompt = f"""Your task is to rewrite user-provided text using a given style.
 
-    Your response should be in the following format:
-    ```
-    REWRITTEN TEXT
-    ```
-    Please ensure that your rewritten text is grammatically correct and retains the meaning of the original text as much as possible. Good luck!
-    ```
-    "TEXT": {text}
-    ===
-    "REWRITING STYLE": {style}
-    ```
-    """
+Your goal is to rewrite the provided text according to the specified style. Do not add extra sentences in your answer, only include the rewritten text:
+Please ensure that your rewritten text retains the meaning of the original text as much as possible, keep the same
+language.
 
-    from langchain import PromptTemplate
-    from langchain import LLMChain
-    from langchain import OpenAI
+Here is an example:
+SYSTEM: Your writing style is: informal
+USER: The Third Council of Constantinople, counted as the Sixth Ecumenical Council by the Eastern Orthodox and Catholic Churches, as well as by certain other Western Churches, met in 680–681 and condemned monoenergism and monothelitism as heretical and defined Jesus Christ as having two energies and two wills (divine and human).
+ASSISTANT: So, there was this big meeting called the Third Council of Constantinople, which some churches refer to as the Sixth Ecumenical Council. It happened in 680–681, and they basically said that monoenergism and monothelitism were heretical. They also made it clear that Jesus Christ has two energies and two wills, one divine and one human.
 
-    rewrite_prompt = PromptTemplate(input_variables=["text", "style"], template=rewrite_prompt_template)
-    chain_rewrite = LLMChain(llm=OpenAI(), prompt=rewrite_prompt)
+Now it’s your turn. Your writing style is: {style}
+"""
 
-    x.at[index, column_name] = chain_rewrite.run({"text": x.at[index, column_name], "style": style})
-    return x
+    client = get_default_client()
+
+    def _rewrite(text):
+        llm_output = client.complete(
+            messages=[
+                {"role": "system", "content": sys_prompt},
+                {"role": "user", "content": text},
+            ],
+            model="gpt-3.5-turbo",
+            caller_id="change_writing_style_transormation",
+        )
+        return llm_output.message
+
+    new_df = df.copy()
+    new_df[column_name] = df[column_name].apply(_rewrite)
+
+    return new_df
 
 
 def compute_mad(x):

@@ -19,7 +19,6 @@ from .client.giskard_client import GiskardClient
 from .client.project import Project
 from .core.suite import Suite, SuiteInput
 from .datasets.base import Dataset
-from .llm.config import llm_config
 from .ml_worker.testing.registry.decorators import test
 from .ml_worker.testing.registry.giskard_test import GiskardTest
 from .ml_worker.testing.registry.slicing_function import SlicingFunction, slicing_function
@@ -75,5 +74,4 @@ __all__ = [
     "TestResult",
     "GiskardTest",
     "demo",
-    "llm_config",
 ]

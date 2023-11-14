@@ -180,7 +180,6 @@ dependencies = [
 
 [project.optional-dependencies]
 llm = [
-    "langchain<=0.0.301", # Weirdly fails with newer version, see https://linear.app/giskard/issue/GSK-1853/updating-lanchain-version-over-00301-weirdly-fails
     "openai",
     "evaluate>=0.4.1",
     "bert-score>=0.3.13",
