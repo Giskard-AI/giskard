@@ -35,7 +35,7 @@ executors:
         type: string
     macos:
       xcode: 14.2.0
-      resource_class: macos.medium
+      resource_class: macos.x86.medium.gen2
     environment:
       GSK_DISABLE_ANALYTICS: "True"
       GISKARD_DEV_MODE: "True"
@@ -146,13 +146,13 @@ workflows:
           name: install-<<matrix.os>>-<<matrix.python-version>>
           matrix:
             parameters:
-              os: [ubuntu]
+              os: [ubuntu, windows, macos]
               python-version: ["3.9.18", "3.10.13", "3.11.6"]
       - unit-tests:
           name: test-<<matrix.os>>-<<matrix.python-version>>
           matrix:
             parameters:
-              os: [ubuntu]
+              os: [ubuntu, windows, ]
               python-version: ["3.9.18", "3.10.13", "3.11.6"]
           requires:
             - install-<<matrix.os>>-<<matrix.python-version>>
