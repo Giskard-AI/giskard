@@ -1,6 +1,7 @@
 import mlflow
 import pytest
 
+from tempfile import TemporaryDirectory
 from giskard.core.core import SupportedModelTypes
 
 mlflow_model_types = {
@@ -10,20 +11,21 @@ mlflow_model_types = {
 }
 
 
-def _evaluate(dataset, model, evaluator_config, request):
-    mlflow.end_run()
-    mlflow.start_run()
-    model_info = model.to_mlflow()
+def _evaluate(dataset, model, evaluator_config):
 
-    mlflow.evaluate(
-        model=model_info.model_uri,
-        model_type=mlflow_model_types[model.meta.model_type],
-        data=dataset.df,
-        targets=dataset.target,
-        evaluators="giskard",
-        evaluator_config=evaluator_config,
-    )
-    mlflow.end_run()
+    with TemporaryDirectory() as f:
+        mlflow.set_tracking_uri("file://" + f)
+        experiment_id = mlflow.create_experiment("test", artifact_location=f)
+        with mlflow.start_run(experiment_id=experiment_id):
+            model_info = model.to_mlflow()
+            mlflow.evaluate(
+                model=model_info.model_uri,
+                model_type=mlflow_model_types[model.meta.model_type],
+                data=dataset.df,
+                targets=dataset.target,
+                evaluators="giskard",
+                evaluator_config=evaluator_config,
+            )
 
 
 @pytest.mark.parametrize(
@@ -59,7 +61,7 @@ def _run_test(dataset_name, model_name, request):
     dataset = request.getfixturevalue(dataset_name)
     model = request.getfixturevalue(model_name)
     evaluator_config = {"model_config": {"classification_labels": model.meta.classification_labels}}
-    _evaluate(dataset, model, evaluator_config, request)
+    _evaluate(dataset, model, evaluator_config)
 
 
 @pytest.mark.parametrize("dataset_name,model_name", [("german_credit_data", "german_credit_model")])
@@ -74,7 +76,7 @@ def test_errors(dataset_name, model_name, request):
     dataset_copy.target = [1]
 
     with pytest.raises(Exception) as e:
-        _evaluate(dataset_copy, model, evaluator_config, request)
+        _evaluate(dataset_copy, model, evaluator_config)
     assert e.match(r"Only pd.DataFrame are currently supported by the giskard evaluator.")
 
     # dataset wrapping error
@@ -82,7 +84,7 @@ def test_errors(dataset_name, model_name, request):
     dataset_copy.df.savings[0] = ["wrong_entry"]
 
     with pytest.raises(Exception) as e:
-        _evaluate(dataset_copy, model, evaluator_config, request)
+        _evaluate(dataset_copy, model, evaluator_config)
     assert e.match(r"An error occurred while wrapping the dataset.*")
 
     # model wrapping error
@@ -90,7 +92,7 @@ def test_errors(dataset_name, model_name, request):
     evaluator_config = {"model_config": {"classification_labels": None}}
 
     with pytest.raises(Exception) as e:
-        _evaluate(dataset_copy, model, evaluator_config, request)
+        _evaluate(dataset_copy, model, evaluator_config)
     assert e.match(r"An error occurred while wrapping the model.*")
 
     # scan error
@@ -100,5 +102,5 @@ def test_errors(dataset_name, model_name, request):
     evaluator_config = {"model_config": {"classification_labels": cl}}
 
     with pytest.raises(Exception) as e:
-        _evaluate(dataset_copy, model, evaluator_config, request)
+        _evaluate(dataset_copy, model, evaluator_config)
     assert e.match(r"An error occurred while scanning the model for vulnerabilities.*")
