@@ -100,6 +100,7 @@ class OverconfidenceDetector(LossBasedDetector):
                     },
                     tests=_generate_overconfidence_tests,
                     importance=relative_delta,
+                    taxonomy=["avid-effect:performance:P0204"],
                 )
 
                 # Add examples

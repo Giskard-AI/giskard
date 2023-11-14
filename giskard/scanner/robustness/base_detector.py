@@ -17,7 +17,7 @@ class BaseTextPerturbationDetector(Detector):
     """Base class for metamorphic detectors based on text transformations."""
 
     _issue_group = Robustness
-    _taxonomy = ["avid-effect:robustness:P0201"]
+    _taxonomy = ["avid-effect:performance:P0201"]
 
     def __init__(
         self,

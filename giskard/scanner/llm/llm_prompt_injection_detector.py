@@ -135,6 +135,7 @@ class LLMPromptInjectionDetector(Detector):
                     examples=failed_examples_df,
                     features=features,
                     tests=_generate_prompt_injection_tests,
+                    taxonomy=["avid-effect:security:S0403"],
                 )
             )
 
