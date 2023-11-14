@@ -11,7 +11,7 @@ executors:
           GSK_DISABLE_ANALYTICS: "True"
           GISKARD_DEV_MODE: "True"
     # working_directory: /root/engine
-    resource_class: small
+    resource_class: medium
 
 # Define a job to be invoked later in a workflow.
 # See: https://circleci.com/docs/configuration-reference/#jobs
