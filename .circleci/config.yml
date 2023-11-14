@@ -2,7 +2,7 @@
 # See: https://circleci.com/docs/configuration-reference
 version: 2.1
 orbs:
-  windows: circleci/windows@5.0.0
+  win: circleci/windows@5.0.0
 
 
 # https://circleci.com/docs/reusing-config/#example-of-using-an-executor-declared-in-configyml-with-matrix-jobs
@@ -25,10 +25,10 @@ executors:
         description: "Python version"
         type: string
     name: win/server-2022
+    size: medium
     environment:
       GSK_DISABLE_ANALYTICS: "True"
       GISKARD_DEV_MODE: "True"
-    resource_class: medium
   macos:
     parameters:
       python-version:
