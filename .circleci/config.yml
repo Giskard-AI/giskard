@@ -50,7 +50,7 @@ jobs:
       - run:
           name: Run tests
           command: |
-            TEST=$(circleci tests glob "tests/*.py" | circleci tests split --split-by=timings)
+            TEST=$(find ./tests -type f | grep -v __ | grep -v '/fixtures/' |  grep -v conftest | circleci tests split --split-by=timings)
             pdm base-test -m 'not slow' $TEST
 
 # Orchestrate jobs using workflows
