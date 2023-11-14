@@ -70,6 +70,7 @@ def test_performance_bias_detector_with_tabular(german_credit_model, german_cred
         assert str(issue.slicing_fn) in issue.description
 
 
+@pytest.mark.memory_expensive
 def test_performance_bias_detector_with_text_features(enron_model, enron_data):
     # Augment the dataset with random data
     df = pd.DataFrame({col: enron_data.df[col].sample(100, replace=True).values for col in enron_data.columns})
@@ -81,6 +82,7 @@ def test_performance_bias_detector_with_text_features(enron_model, enron_data):
     assert all([isinstance(issue, Issue) for issue in issues])
 
 
+@pytest.mark.memory_expensive
 def test_selects_issues_with_benjamini_hochberg(titanic_model, titanic_dataset):
     # By default, it does not use the statistical significance
     detector = PerformanceBiasDetector()
