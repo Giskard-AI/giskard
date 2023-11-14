@@ -1,6 +1,9 @@
 # Use the latest 2.1 version of CircleCI pipeline process engine.
 # See: https://circleci.com/docs/configuration-reference
 version: 2.1
+orbs:
+  windows: circleci/windows@5.0.0
+
 
 # https://circleci.com/docs/reusing-config/#example-of-using-an-executor-declared-in-configyml-with-matrix-jobs
 executors:
@@ -12,28 +15,68 @@ executors:
         type: string
     docker:
       - image: cimg/python:<<parameters.python-version>>
-        environment:
-          GSK_DISABLE_ANALYTICS: "True"
-          GISKARD_DEV_MODE: "True"
-    # working_directory: /root/engine
+    environment:
+      GSK_DISABLE_ANALYTICS: "True"
+      GISKARD_DEV_MODE: "True"
     resource_class: medium
-  # macos-3.10:
-  #   macos:
-  #     xcode: 14.2.0
-  #   environment:
-  #     GSK_DISABLE_ANALYTICS: "True"
-  #     GISKARD_DEV_MODE: "True"
-  #   # working_directory: /root/engine
-  #   resource_class: medium
-  # windows-3.10:
-  #   windows:
-  #     environment:
-  #       GSK_DISABLE_ANALYTICS: "True"
-  #       GISKARD_DEV_MODE: "True"
-  #   # working_directory: /root/engine
-  #   resource_class: medium
+  windows:
+    parameters:
+      python-version:
+        description: "Python version"
+        type: string
+    name: win/server-2022
+    environment:
+      GSK_DISABLE_ANALYTICS: "True"
+      GISKARD_DEV_MODE: "True"
+    resource_class: medium
+  macos:
+    parameters:
+      python-version:
+        description: "Python version"
+        type: string
+    macos:
+      xcode: 14.2.0
+    environment:
+      GSK_DISABLE_ANALYTICS: "True"
+      GISKARD_DEV_MODE: "True"
+    resource_class: medium
 
 # Define a job to be invoked later in a workflow.
+commands:
+  install-pdm:
+    description: "Install PDM"
+    parameters:
+      os:
+        type: string
+    steps:
+      - when:
+          condition: <<parameters.os>> != "windows"
+          steps:
+            - run: curl -sSL https://pdm-project.org/install-pdm.py | python3 -
+      - when:
+          condition: <<parameters.os>> == "windows"
+          steps:
+            - run: (Invoke-WebRequest -Uri https://pdm-project.org/install-pdm.py -UseBasicParsing).Content | python3 -
+  install-python:
+    description: "Install PDM"
+    parameters:
+      os:
+        type: string
+      python-version:
+        type: string
+    steps:
+      - when:
+          name: "Install Python (Windows)"
+          condition: <<parameters.os>> == "windows"
+          steps:
+            - run: choco install python --version=<<parameters.python-version>>
+      - when:
+          name: "Install Python (MacOs)"
+          condition: <<parameters.os>> == "macos"
+          steps:
+            - run: (Invoke-WebRequest -Uri https://pdm-project.org/install-pdm.py -UseBasicParsing).Content | python3 -
+      - install-pdm
+        os: <<parameters.os>>
 # See: https://circleci.com/docs/configuration-reference/#jobs
 jobs:
   install:
@@ -47,9 +90,9 @@ jobs:
       python-version: <<parameters.python-version>>
     steps:
       - checkout
-      - run:
-          name: Install PDM
-          command: curl -sSL https://pdm-project.org/install-pdm.py | python3 -
+      - install-python
+        os: <<parameters.os>>
+        python-version: <<parameters.python-version>>
       # Download and cache dependencies
       - restore_cache:
           keys:
@@ -71,12 +114,12 @@ jobs:
     executor:
       name: <<parameters.os>>
       python-version: <<parameters.python-version>>
-    parallelism: 10
+    parallelism: 20
     steps:
       - checkout
-      - run:
-          name: Install PDM
-          command: curl -sSL https://pdm-project.org/install-pdm.py | python3 -
+      - install-python
+        os: <<parameters.os>>
+        python-version: <<parameters.python-version>>
       # Download and cache dependencies
       - restore_cache:
           keys:
@@ -100,15 +143,14 @@ workflows:
           name: install-<<matrix.os>>-<<matrix.python-version>>
           matrix:
             parameters:
-              os: [ubuntu]
-              python-version: ["3.9", "3.10", "3.11"]
-
+              os: [ubuntu, windows]
+              python-version: ["3.9.18", "3.10.13", "3.11.6"]
       - unit-tests:
           name: test-<<matrix.os>>-<<matrix.python-version>>
           matrix:
             parameters:
-              os: [ubuntu]
-              python-version: ["3.9", "3.10", "3.11"]
+              os: [ubuntu, windows]
+              python-version: ["3.9.18", "3.10.13", "3.11.6"]
           requires:
             - install-<<matrix.os>>-<<matrix.python-version>>
 # https://circleci.com/docs/using-matrix-jobs/
