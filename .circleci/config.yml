@@ -41,7 +41,7 @@ jobs:
       python-version:
         type: string
       os:
-        type: executor
+        type: string
     executor:
       name: <<parameters.os>>
       python-version: <<parameters.python-version>>
