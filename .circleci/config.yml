@@ -100,14 +100,14 @@ workflows:
           name: install-<<matrix.os>>-<<matrix.python-version>>
           matrix:
             parameters:
-              os: ["ubuntu"]
+              os: [ubuntu]
               python-version: ["3.9", "3.10", "3.11"]
 
       - unit-tests:
           name: test-<<matrix.os>>-<<matrix.python-version>>
           matrix:
             parameters:
-              os: ["ubuntu"]
+              os: [ubuntu]
               python-version: ["3.9", "3.10", "3.11"]
           requires:
             - install-<<matrix.os>>-<<matrix.python-version>>
