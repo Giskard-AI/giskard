@@ -78,7 +78,7 @@ jobs:
       os:
         type: string
     executor: <<parameters.os>>-<<parameters.python-version>>
-    parallelism: 4
+    parallelism: 10
     steps:
       - checkout
       - run:
