@@ -422,7 +422,14 @@ def _test_metamorphic_t_test(
 
 
 def _create_test_result(
-    critical_quantile, dataset, direction, messages, model, p_value, result_df, debug: bool = False
+    critical_quantile,
+    dataset,
+    direction,
+    messages,
+    model,
+    p_value,
+    result_df,
+    debug: bool = False,    # noqa: NOSONAR - old version tests will call this under legacy debug mode
 ):
     passed = bool(p_value < critical_quantile)
     # --- debug ---

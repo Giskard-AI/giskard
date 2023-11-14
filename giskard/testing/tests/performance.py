@@ -45,7 +45,13 @@ def _get_rmse(y_actual, y_predicted):
     return np.sqrt(mean_squared_error(y_actual, y_predicted))
 
 
-def _test_classification_score(score_fn, model: BaseModel, dataset: Dataset, threshold: float = 1.0, debug: bool = False):
+def _test_classification_score(
+    score_fn,
+    model: BaseModel,
+    dataset: Dataset,
+    threshold: float = 1.0,
+    debug: bool = False,  # noqa: NOSONAR - old version tests will call this under legacy debug mode
+):
     _verify_target_availability(dataset)
     is_binary_classification = len(model.meta.classification_labels) == 2
     targets = dataset.df[dataset.target]
@@ -67,7 +73,12 @@ def _test_classification_score(score_fn, model: BaseModel, dataset: Dataset, thr
     return TestResult(actual_slices_size=[len(dataset)], metric=metric, passed=passed, failed_indexes=failed_indexes)
 
 
-def _test_accuracy_score(dataset: Dataset, model: BaseModel, threshold: float = 1.0, debug: bool = False):
+def _test_accuracy_score(
+    dataset: Dataset,
+    model: BaseModel,
+    threshold: float = 1.0,
+    debug: bool = False,  # noqa: NOSONAR - old version tests will call this under legacy debug mode
+):
     _verify_target_availability(dataset)
     prediction = model.predict(dataset).prediction
     targets = dataset.df[dataset.target]
