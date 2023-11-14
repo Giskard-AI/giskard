@@ -56,10 +56,12 @@ commands:
           condition: <<parameters.os>> != "windows"
           steps:
             - run: curl -sSL https://pdm-project.org/install-pdm.py | python3 -
+              name: Install PDM (Linux or others)
       - when:
           condition: <<parameters.os>> == "windows"
           steps:
             - run: (Invoke-WebRequest -Uri https://pdm-project.org/install-pdm.py -UseBasicParsing).Content | python3 -
+              name: Install PDM (Windows)
   install-python:
     description: "Install PDM"
     parameters:
@@ -72,12 +74,12 @@ commands:
           name: "Install Python (Windows)"
           condition: <<parameters.os>> == "windows"
           steps:
-            - run: choco install python --version=<<parameters.python-version>>
+            - run: choco install python --version=<<parameters.python-version>> --allow-downgrade
       - when:
           name: "Install Python (MacOs)"
           condition: <<parameters.os>> == "macos"
           steps:
-            - run: (Invoke-WebRequest -Uri https://pdm-project.org/install-pdm.py -UseBasicParsing).Content | python3 -
+            - run: brew install python@<<parameters.python-version>>
       - install-pdm:
           os: <<parameters.os>>
 # See: https://circleci.com/docs/configuration-reference/#jobs
