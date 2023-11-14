@@ -7,7 +7,7 @@ executors:
   # here we can define an executor that will be shared across different jobs
   ubuntu:
     parameters:
-      version:
+      python-version:
         description: "Python version"
         type: string
     docker:
@@ -41,10 +41,10 @@ jobs:
       python-version:
         type: string
       os:
-        type: string
+        type: executor
     executor:
       name: <<parameters.os>>
-      version: <<parameters.python-version>>
+      python-version: <<parameters.python-version>>
     steps:
       - checkout
       - run:
@@ -67,7 +67,7 @@ jobs:
       python-version:
         type: string
       os:
-        type: string
+        type: executor
     executor:
       name: <<parameters.os>>
       version: <<parameters.python-version>>
@@ -97,18 +97,19 @@ workflows:
   python-workflow:
     jobs:
       - install:
-          name: install-<<parameters.os>>-<<parameters.python-version>>
+          name: install-<<matrix.os>>-<<matrix.python-version>>
           matrix:
             parameters:
               os: ["ubuntu"]
               python-version: ["3.9", "3.10", "3.11"]
 
       - unit-tests:
-          name: test-<<parameters.os>>-<<parameters.python-version>>
+          name: test-<<matrix.os>>-<<matrix.python-version>>
           matrix:
             parameters:
               os: ["ubuntu"]
               python-version: ["3.9", "3.10", "3.11"]
           requires:
-            - install-<<parameters.os>>-<<parameters.python-version>>
+            - install-<<matrix.os>>-<<matrix.python-version>>
 # https://circleci.com/docs/using-matrix-jobs/
+# https://circleci.com/docs/configuration-reference/#dependencies-and-matrix-jobs
