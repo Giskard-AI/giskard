@@ -50,8 +50,12 @@ jobs:
       - run:
           name: Run tests
           command: |
+            mkdir -p test-results
             TEST=$(find ./tests -type f | grep -v __ | grep -v '/fixtures/' |  grep -v conftest | circleci tests split --split-by=timings)
-            pdm base-test -m 'not slow' $TEST
+            pdm base-test -m 'not slow' --junitxml=test-results/junit.xml $TEST
+
+      - store_test_results:
+          path: test-results
 
 # Orchestrate jobs using workflows
 # See: https://circleci.com/docs/configuration-reference/#workflows
@@ -62,3 +66,4 @@ workflows:
       - unit-tests:
           requires:
             - install
+# https://circleci.com/docs/using-matrix-jobs/
