@@ -4,7 +4,7 @@ version: 2.1
 
 executors:
   # here we can define an executor that will be shared across different jobs
-  docker-3.10:
+  docker-310:
     docker:
       - image: cimg/python:3.10
         environment:
@@ -12,7 +12,7 @@ executors:
           GISKARD_DEV_MODE: "True"
     # working_directory: /root/engine
     resource_class: medium
-  docker-3.9:
+  docker-39:
     docker:
       - image: cimg/python:3.9
         environment:
@@ -20,7 +20,7 @@ executors:
           GISKARD_DEV_MODE: "True"
     # working_directory: /root/engine
     resource_class: medium
-  docker-3.11:
+  docker-311:
     docker:
       - image: cimg/python:3.11
         environment:
@@ -62,15 +62,15 @@ jobs:
       # Download and cache dependencies
       - restore_cache:
           keys:
-            - python-3.10-{{ checksum "pdm.lock" }}
-            - python-3.10-
+            - python-<<parameters.os>>-<<parameters.python-version>>-{{ checksum "pdm.lock" }}
+            - python-<<parameters.os>>-<<parameters.python-version>>
       - run:
           name: Install deps
           command: pdm install -G :all
       - save_cache:
           paths:
             - .venv
-          key: python-3.10-{{ checksum "pdm.lock" }}
+          key: python-<<parameters.os>>-<<parameters.python-version>>-{{ checksum "pdm.lock" }}
   unit-tests:
     parameters:
       python-version:
@@ -87,7 +87,7 @@ jobs:
       # Download and cache dependencies
       - restore_cache:
           keys:
-            - python-3.10-{{ checksum "pdm.lock" }}
+            - python-<<parameters.os>>-<<parameters.python-version>>-{{ checksum "pdm.lock" }}
       - run:
           name: Run tests
           command: |
@@ -108,14 +108,14 @@ workflows:
           matrix:
             parameters:
               os: [docker]
-              python-version: ["3.9", "3.10", "3.11"]
+              python-version: ["39", "310", "311"]
 
       - unit-tests:
           name: test-<<parameters.os>>-<<parameters.python-version>>
           matrix:
             parameters:
               os: [docker]
-              python-version: ["3.9", "3.10", "3.11"]
+              python-version: ["39", "310", "311"]
           requires:
             - install-<<parameters.os>>-<<parameters.python-version>>
 # https://circleci.com/docs/using-matrix-jobs/
