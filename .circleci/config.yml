@@ -4,7 +4,7 @@ version: 2.1
 
 executors:
   # here we can define an executor that will be shared across different jobs
-  python-executor:
+  docker-3.10:
     docker:
       - image: cimg/python:3.10
         environment:
@@ -12,12 +12,48 @@ executors:
           GISKARD_DEV_MODE: "True"
     # working_directory: /root/engine
     resource_class: medium
+  docker-3.9:
+    docker:
+      - image: cimg/python:3.9
+        environment:
+          GSK_DISABLE_ANALYTICS: "True"
+          GISKARD_DEV_MODE: "True"
+    # working_directory: /root/engine
+    resource_class: medium
+  docker-3.11:
+    docker:
+      - image: cimg/python:3.11
+        environment:
+          GSK_DISABLE_ANALYTICS: "True"
+          GISKARD_DEV_MODE: "True"
+    # working_directory: /root/engine
+    resource_class: medium
+  # macos-3.10:
+  #   macos:
+  #     xcode: 14.2.0
+  #   environment:
+  #     GSK_DISABLE_ANALYTICS: "True"
+  #     GISKARD_DEV_MODE: "True"
+  #   # working_directory: /root/engine
+  #   resource_class: medium
+  # windows-3.10:
+  #   windows:
+  #     environment:
+  #       GSK_DISABLE_ANALYTICS: "True"
+  #       GISKARD_DEV_MODE: "True"
+  #   # working_directory: /root/engine
+  #   resource_class: medium
 
 # Define a job to be invoked later in a workflow.
 # See: https://circleci.com/docs/configuration-reference/#jobs
 jobs:
   install:
-    executor: python-executor
+    parameters:
+      python-version:
+        type: string
+      os:
+        type: string
+    executor: <<parameters.os>>-<<parameters.python-version>>
     steps:
       - checkout
       - run:
@@ -36,7 +72,12 @@ jobs:
             - .venv
           key: python-3.10-{{ checksum "pdm.lock" }}
   unit-tests:
-    executor: python-executor
+    parameters:
+      python-version:
+        type: string
+      os:
+        type: string
+    executor: <<parameters.os>>-<<parameters.python-version>>
     parallelism: 4
     steps:
       - checkout
@@ -66,14 +107,14 @@ workflows:
           name: install-<<parameters.os>>-<<parameters.python-version>>
           matrix:
             parameters:
-              os: [docker, macos]
+              os: [docker]
               python-version: ["3.9", "3.10", "3.11"]
 
       - unit-tests:
           name: test-<<parameters.os>>-<<parameters.python-version>>
           matrix:
             parameters:
-              os: [docker, macos]
+              os: [docker]
               python-version: ["3.9", "3.10", "3.11"]
           requires:
             - install-<<parameters.os>>-<<parameters.python-version>>
