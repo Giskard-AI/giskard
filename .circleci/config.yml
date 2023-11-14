@@ -117,7 +117,7 @@ jobs:
     executor:
       name: <<parameters.os>>
       python-version: <<parameters.python-version>>
-    parallelism: 20
+    parallelism: 10
     steps:
       - checkout
       - install-python:
@@ -132,7 +132,7 @@ jobs:
           command: |
             mkdir -p test-results
             TEST=$(find ./tests -type f | grep '.py$' | grep -v __ | grep -v '/fixtures/' |  grep -v conftest | circleci tests split --split-by=timings)
-            pdm base-test -m 'not slow' --junitxml=test-results/junit.xml $TEST
+            pdm base-test -m 'not slow' --junitxml=test-results/junit.xml -n 2 $TEST
 
       - store_test_results:
           path: test-results
