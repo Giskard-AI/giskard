@@ -9,6 +9,7 @@ import uuid
 from abc import ABC, abstractmethod
 from pathlib import Path
 from typing import Iterable, List, Optional, Type, Union
+import warnings
 
 import cloudpickle
 import numpy as np
@@ -457,6 +458,14 @@ class BaseModel(ABC):
     def read_meta_from_local_dir(cls, local_dir):
         with (Path(local_dir) / META_FILENAME).open(encoding="utf-8") as f:
             file_meta = yaml.load(f, Loader=yaml.Loader)
+            # Detect Python version if applicable
+            if "language" in file_meta and file_meta["language"].upper() == "PYTHON":
+                if "language_version" in file_meta and file_meta["language_version"] != platform.python_version():
+                    warnings.warn(
+                        f"You are loading a model saved by Python {file_meta['language_version']} (currently using Python {platform.python_version()}).\n"
+                        f"Please use Python {file_meta['language_version']}, in case of model loading issues."
+                    )
+
             meta = ModelMeta(
                 name=file_meta["name"],
                 description=None if "description" not in file_meta else file_meta["description"],
