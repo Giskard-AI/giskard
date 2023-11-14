@@ -205,18 +205,24 @@ jobs:
           path: dist/*whl
 
       - name: Run integration tests for python
-        if: ${{ inputs.run-integration-tests && matrix.os != 'windows-2019' }}
+        if: ${{ inputs.run-integration-tests }}
         env:
           PYTEST_XDIST_AUTO_NUM_WORKERS: 2
-        run: pdm test-slow
+        run: pdm test-slow tests/integrations
+
+      - name: Run integration tests for python
+        if: ${{ inputs.run-integration-tests }}
+        env:
+          PYTEST_XDIST_AUTO_NUM_WORKERS: 2
+        run: pdm test-slow tests/ --ignore=tests/integrations
 
       - name: "Memory csv"
-        if: ${{ always() && matrix.os == 'ubuntu-latest' && matrix.python-version == '3.10' }}
+        if: ${{ always() && matrix.os == 'ubuntu-latest' && matrix.python-version == '3.10' && !matrix.langchain_minimal && !matrix.pandas_v1 && !matrix.pydantic_v1 }}
         uses: actions/upload-artifact@v3
         with:
           path: memory*.csv
           name: memory-usage
-          retention-days: 1
+          retention-days: 7
 
   install-poetry:
     name: "Check if wheel can be installed with using Poetry"
