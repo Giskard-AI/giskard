@@ -71,12 +71,10 @@ commands:
         type: string
     steps:
       - when:
-          name: "Install Python (Windows)"
           condition: <<parameters.os>> == "windows"
           steps:
             - run: choco install python --version=<<parameters.python-version>> --allow-downgrade
       - when:
-          name: "Install Python (MacOs)"
           condition: <<parameters.os>> == "macos"
           steps:
             - run: brew install python@<<parameters.python-version>>
