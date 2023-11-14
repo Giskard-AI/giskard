@@ -212,7 +212,7 @@ class IssueFinder:
 
             if is_issue:
                 level = IssueLevel.MAJOR if abs(relative_delta) > 2 * self.threshold else IssueLevel.MEDIUM
-                desc = "For records in your dataset where {slicing_fn}, the {metric} is {abs_deviation_perc}% {comparison_op} than the global {metric}."
+                desc = "For records in the dataset where {slicing_fn}, the {metric} is {abs_deviation_perc}% {comparison_op} than the global {metric}."
 
                 issue = Issue(
                     model=model,
