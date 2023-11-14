@@ -34,7 +34,7 @@ jobs:
       - save_cache:
           paths:
             - .venv
-          key: v1-dependencies-{{ checksum "poetry.lock" }}
+          key: python-3.10-{{ checksum "pdm.lock" }}
   unit-tests:
     executor: python-executor
     parallelism: 4
