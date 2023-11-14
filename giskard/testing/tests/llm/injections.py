@@ -339,7 +339,7 @@ def test_llm_prompt_injection(
     # --- debug ---
     failed_indexes = []
     if not passed:
-        failed_indexes = list(dataset.df.loc[failed_idx].index)
+        failed_indexes = list(dataset.df.index.get_indexer_for(failed_idx))
     # ---
 
     result = TestResult(

@@ -179,7 +179,7 @@ def _test_metamorphic(
     classification_label=None,
     output_sensitivity=None,
     output_proba=True,
-    debug: bool = False,    # noqa: NOSONAR - old version tests will call this under legacy debug mode
+    debug: bool = False,  # noqa: NOSONAR - old version tests will call this under legacy debug mode
 ) -> TestResult:
     results_df, modified_rows_count = _perturb_and_predict(
         model, dataset, transformation_function, output_proba=output_proba, classification_label=classification_label
@@ -194,7 +194,7 @@ def _test_metamorphic(
     # --- debug ---
     failed_indexes = list()
     if not passed:
-        failed_indexes = list(dataset.df.loc[failed_idx].index)
+        failed_indexes = list(dataset.df.index.get_indexer_for(failed_idx))
     # ---
 
     return TestResult(
@@ -408,7 +408,7 @@ def _test_metamorphic_t_test(
     critical_quantile: float,
     classification_label=None,
     output_proba=True,
-    debug: bool = False,    # noqa: NOSONAR - old version tests will call this under legacy debug mode
+    debug: bool = False,  # noqa: NOSONAR - old version tests will call this under legacy debug mode
 ) -> TestResult:
     result_df, modified_rows_count = _perturb_and_predict(
         model, dataset, transformation_function, output_proba=output_proba, classification_label=classification_label
@@ -429,14 +429,14 @@ def _create_test_result(
     model,
     p_value,
     result_df,
-    debug: bool = False,    # noqa: NOSONAR - old version tests will call this under legacy debug mode
+    debug: bool = False,  # noqa: NOSONAR - old version tests will call this under legacy debug mode
 ):
     passed = bool(p_value < critical_quantile)
     # --- debug ---
     failed_indexes = list()
     if not passed:
         _, failed_idx = _compare_prediction(result_df, model.meta.model_type, direction, None)
-        failed_indexes = list(dataset.df.loc[failed_idx].index)
+        failed_indexes = list(dataset.df.index.get_indexer_for(failed_idx))
     # ---
     return TestResult(
         actual_slices_size=[len(dataset.df)],
@@ -649,7 +649,7 @@ def _test_metamorphic_wilcoxon(
     critical_quantile: float,
     classification_label=None,
     output_proba=True,
-    debug: bool = False,    # noqa: NOSONAR - old version tests will call this under legacy debug mode
+    debug: bool = False,  # noqa: NOSONAR - old version tests will call this under legacy debug mode
 ) -> TestResult:
     result_df, modified_rows_count = _perturb_and_predict(
         model, dataset, transformation_function, output_proba=output_proba, classification_label=classification_label

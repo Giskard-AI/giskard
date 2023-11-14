@@ -10,7 +10,6 @@ from giskard.ml_worker.testing.registry.slicing_function import SlicingFunction
 from giskard.ml_worker.testing.test_result import TestMessage, TestMessageLevel, TestResult
 from giskard.ml_worker.testing.utils import check_slice_not_empty, validate_classification_label
 from giskard.models.base import BaseModel
-
 from . import debug_description_prefix
 
 
@@ -71,7 +70,9 @@ def test_right_label(
     # --- debug ---
     failed_indexes = list()
     if not passed:
-        failed_indexes = list(dataset.df.loc[~dataset.df.index.isin(passed_idx)].index)
+        failed_indexes = list(
+            dataset.df.index.get_indexer_for(dataset.df.loc[~dataset.df.index.isin(passed_idx)].index)
+        )
     # ---
 
     return TestResult(
@@ -159,7 +160,9 @@ def test_output_in_range(
     # --- debug ---
     failed_indexes = list()
     if not passed:
-        failed_indexes = list(dataset.df.loc[~dataset.df.index.isin(passed_idx)].index)
+        failed_indexes = list(
+            dataset.df.index.get_indexer_for(dataset.df.loc[~dataset.df.index.isin(passed_idx)].index)
+        )
     # ---
 
     return TestResult(
@@ -277,8 +280,7 @@ def test_disparate_impact(
         failed_unprotected = list(_unprotected_predictions != unprotected_ds.df[dataset.target])
         failed_idx_protected = [i for i, x in enumerate(failed_protected) if x]
         failed_idx_unprotected = [i for i, x in enumerate(failed_unprotected) if x]
-        failed_idx = failed_idx_protected + failed_idx_unprotected
-        failed_indexes = list(dataset.df.iloc[failed_idx].index)
+        failed_indexes = failed_idx_protected + failed_idx_unprotected
     # ---
 
     return TestResult(metric=disparate_impact_score, passed=passed, messages=messages, failed_indexes=failed_indexes)
@@ -317,7 +319,7 @@ def test_nominal_association(
     slicing_function: SlicingFunction,
     method: Optional[str] = "theil_u",
     threshold: float = 0.5,
-    debug: bool = False,    # noqa: NOSONAR - old version tests will call this under legacy debug mode
+    debug: bool = False,  # noqa: NOSONAR - old version tests will call this under legacy debug mode
 ):
     """
     Summary: A statistical test for nominal association between the dataset slice and the model predictions. It aims to
@@ -373,7 +375,7 @@ def test_nominal_association(
     # --- debug ---
     failed_indexes = list()
     if not passed:
-        failed_indexes = list(sliced_dataset.df.index)
+        failed_indexes = list(dataset.df.index.get_indexer_for(sliced_dataset.df.index))
     # ---
 
     messages = [TestMessage(type=TestMessageLevel.INFO, text=f"metric = {metric}, threshold = {threshold}")]

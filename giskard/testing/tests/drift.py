@@ -261,7 +261,11 @@ def test_drift_psi(
         modalities_list = output_data[main_drifting_modalities_bool]["Modality"].tolist()
         if modalities_list:
             filtered_modalities = [w for w in modalities_list if not re.match(other_modalities_pattern, str(w))]
-            failed_indexes = list(actual_dataset.df.loc[actual_series.isin(filtered_modalities)].index)
+            failed_indexes = list(
+                actual_dataset.df.index.get_indexer_for(
+                    actual_dataset.df.loc[actual_series.isin(filtered_modalities)].index
+                )
+            )
             test_name = inspect.stack()[0][3]
             if len(failed_indexes) == 0:
                 raise ValueError(
@@ -357,7 +361,11 @@ def test_drift_chi_square(
         modalities_list = output_data[main_drifting_modalities_bool]["Modality"].tolist()
         if modalities_list:
             filtered_modalities = [w for w in modalities_list if not re.match(other_modalities_pattern, str(w))]
-            failed_indexes = list(actual_dataset.df.loc[actual_series.isin(filtered_modalities)].index)
+            failed_indexes = list(
+                actual_dataset.df.index.get_indexer_for(
+                    actual_dataset.df.loc[actual_series.isin(filtered_modalities)].index
+                )
+            )
     # ---
 
     return TestResult(
@@ -578,7 +586,11 @@ def test_drift_prediction_psi(
         modalities_list = output_data[main_drifting_modalities_bool]["Modality"].tolist()
         if modalities_list:
             filtered_modalities = [w for w in modalities_list if not re.match(other_modalities_pattern, str(w))]
-            failed_indexes = list(actual_dataset.df.loc[prediction_actual.isin(filtered_modalities).values].index)
+            failed_indexes = list(
+                actual_dataset.df.index.get_indexer_for(
+                    actual_dataset.df.loc[prediction_actual.isin(filtered_modalities).values].index
+                )
+            )
             test_name = inspect.stack()[0][3]
             if len(failed_indexes) == 0:
                 raise ValueError(
@@ -704,7 +716,11 @@ def test_drift_prediction_chi_square(
         modalities_list = output_data[main_drifting_modalities_bool]["Modality"].tolist()
         if modalities_list:
             filtered_modalities = [w for w in modalities_list if not re.match(other_modalities_pattern, str(w))]
-            failed_indexes = list(actual_dataset.df.loc[prediction_actual.isin(filtered_modalities).values].index)
+            failed_indexes = list(
+                actual_dataset.df.index.get_indexer_for(
+                    actual_dataset.df.loc[prediction_actual.isin(filtered_modalities).values].index
+                )
+            )
     # ---
 
     return TestResult(

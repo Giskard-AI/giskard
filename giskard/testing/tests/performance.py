@@ -24,7 +24,6 @@ from giskard.testing.tests.debug_slicing_functions import (
     incorrect_rows_slicing_fn,
     nlargest_abs_err_rows_slicing_fn,
 )
-
 from . import debug_description_prefix
 
 
@@ -67,7 +66,7 @@ def _test_classification_score(
     failed_indexes = list()
     if not passed:
         failed_dataset = dataset.slice(incorrect_rows_slicing_fn(dataset.target, prediction=prediction))
-        failed_indexes = list(failed_dataset.df.index)
+        failed_indexes = list(dataset.df.index.get_indexer_for(failed_dataset.df.index))
     # ---
 
     return TestResult(actual_slices_size=[len(dataset)], metric=metric, passed=passed, failed_indexes=failed_indexes)
@@ -89,7 +88,8 @@ def _test_accuracy_score(
     # --- debug ---
     failed_indexes = list()
     if not passed:
-        failed_indexes = list(dataset.slice(incorrect_rows_slicing_fn(dataset.target, prediction=prediction)).df.index)
+        failed_dataset = dataset.slice(incorrect_rows_slicing_fn(dataset.target, prediction=prediction))
+        failed_indexes = list(dataset.df.index.get_indexer_for(failed_dataset.df.index))
     # ---
 
     return TestResult(actual_slices_size=[len(dataset)], metric=metric, passed=passed, failed_indexes=failed_indexes)
@@ -102,7 +102,7 @@ def _test_regression_score(
     threshold: float = 1.0,
     r2=False,
     debug_percent_rows: float = 0.3,
-    debug: bool = False,    # noqa: NOSONAR - old version tests will call this under legacy debug mode
+    debug: bool = False,  # noqa: NOSONAR - old version tests will call this under legacy debug mode
 ):
     _verify_target_availability(dataset)
 
@@ -121,7 +121,7 @@ def _test_regression_score(
                 target=dataset.target, prediction=raw_prediction, debug_percent_rows=debug_percent_rows
             )
         )
-        failed_indexes = list(failed_dataset.df.index)
+        failed_indexes = list(dataset.df.index.get_indexer_for(failed_dataset.df.index))
     # ---
 
     return TestResult(actual_slices_size=[len(dataset)], metric=metric, passed=passed, failed_indexes=failed_indexes)
@@ -136,7 +136,7 @@ def _test_diff_prediction(
     direction: Direction = Direction.Invariant,
     test_name=None,
     debug_percent_rows: float = None,
-    debug: bool = False,    # noqa: NOSONAR - old version tests will call this under legacy debug mode
+    debug: bool = False,  # noqa: NOSONAR - old version tests will call this under legacy debug mode
 ):
     reference_args = {"dataset": reference_dataset, "model": model}
     actual_args = {"dataset": actual_dataset, "model": model}
@@ -167,7 +167,9 @@ def _test_diff_prediction(
     # --- debug ---
     failed_indexes = list()
     if not passed:
-        failed_indexes = list(set(result_reference.failed_indexes + result_actual.failed_indexes))
+        pass
+        # TODO: How to do with dual dataset?
+        #  failed_indexes = list(set(result_reference.failed_indexes + result_actual.failed_indexes))
     # ---
 
     return TestResult(
@@ -237,7 +239,7 @@ def test_auc(
     failed_indexes = list()
     if not passed:
         failed_dataset = dataset.slice(incorrect_rows_slicing_fn(dataset.target, prediction=_predictions.prediction))
-        failed_indexes = list(failed_dataset.df.index)
+        failed_indexes = list(dataset.df.index.get_indexer_for(failed_dataset.df.index))
     # ---
 
     return TestResult(actual_slices_size=[len(dataset)], metric=metric, passed=passed, failed_indexes=failed_indexes)
