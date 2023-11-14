@@ -50,13 +50,13 @@ commands:
     steps:
       - unless:
           condition:
-            equal: [ "windows", <<pipeline.os>>]
+            equal: [ "windows", <<parameters.os>>]
           steps:
             - run: curl -sSL https://pdm-project.org/install-pdm.py | python3 -
               # name: Install PDM (Linux or others)
       - when:
           condition:
-            equal: [ "windows", <<pipeline.os>>]
+            equal: [ "windows", <<parameters.os>>]
           steps:
             - run: (Invoke-WebRequest -Uri https://pdm-project.org/install-pdm.py -UseBasicParsing).Content | python3 -
               # name: Install PDM (Windows)
@@ -70,12 +70,12 @@ commands:
     steps:
       - when:
           condition:
-            equal: [ "windows", <<pipeline.os>>]
+            equal: [ "windows", <<parameters.os>>]
           steps:
             - run: choco install python --version=<<parameters.python-version>> --allow-downgrade
       - when:
           condition:
-            equal: [ "macos", <<pipeline.os>>]
+            equal: [ "macos", <<parameters.os>>]
           steps:
             - run: brew install python@<<parameters.python-version>>
       - install-pdm:
