@@ -48,13 +48,15 @@ commands:
       os:
         type: string
     steps:
-      - when:
-          condition: <<parameters.os>> != "windows"
+      - unless:
+          condition:
+            equal: [ "windows", <<pipeline.os>>]
           steps:
             - run: curl -sSL https://pdm-project.org/install-pdm.py | python3 -
               # name: Install PDM (Linux or others)
       - when:
-          condition: <<parameters.os>> == "windows"
+          condition:
+            equal: [ "windows", <<pipeline.os>>]
           steps:
             - run: (Invoke-WebRequest -Uri https://pdm-project.org/install-pdm.py -UseBasicParsing).Content | python3 -
               # name: Install PDM (Windows)
