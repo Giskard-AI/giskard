@@ -20,12 +20,13 @@ executors:
       GISKARD_DEV_MODE: "True"
     resource_class: medium
   windows:
+    executor:
+      name: win/server-2022
+      size: medium
     parameters:
       python-version:
         description: "Python version"
         type: string
-    name: win/server-2022
-    size: medium
     environment:
       GSK_DISABLE_ANALYTICS: "True"
       GISKARD_DEV_MODE: "True"
