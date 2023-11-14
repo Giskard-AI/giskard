@@ -2,25 +2,63 @@
 # See: https://circleci.com/docs/configuration-reference
 version: 2.1
 
+executors:
+  # here we can define an executor that will be shared across different jobs
+  python-executor:
+    docker:
+    - image: cimg/python:3.10
+      environment:
+        GSK_DISABLE_ANALYTICS: "True"
+        GISKARD_DEV_MODE: "True"
+    # working_directory: /root/engine
+    resource_class: small
+
 # Define a job to be invoked later in a workflow.
 # See: https://circleci.com/docs/configuration-reference/#jobs
 jobs:
-  say-hello:
-    # Specify the execution environment. You can specify an image from Docker Hub or use one of our convenience images from CircleCI's Developer Hub.
-    # See: https://circleci.com/docs/configuration-reference/#executor-job
-    docker:
-      - image: cimg/base:stable
-    # Add steps to the job
-    # See: https://circleci.com/docs/configuration-reference/#steps
+  install:
+    executor: python-executor
     steps:
       - checkout
       - run:
-          name: "Say hello"
-          command: "echo Hello, World!"
+          name: Install PDM
+          command: curl -sSL https://pdm-project.org/install-pdm.py | python3 -
+      # Download and cache dependencies
+      - restore_cache:
+          keys:
+            - python-3.10-{{ checksum "pdm.lock" }}
+            - python-3.10-
+      - run:
+          name: Install deps
+          command: pdm install -G :all
+      - save_cache:
+          paths:
+            - ~/engine/.cache/poetry
+          key: v1-dependencies-{{ checksum "poetry.lock" }}
+  install:
+    executor: python-executor
+    parallelism: 4
+    steps:
+      - checkout
+      - run:
+          name: Install PDM
+          command: curl -sSL https://pdm-project.org/install-pdm.py | python3 -
+      # Download and cache dependencies
+      - restore_cache:
+          keys:
+            - python-3.10-{{ checksum "pdm.lock" }}
+      - run:
+          name: Run tests
+          command: |
+          TEST=$(circleci tests glob "tests/*.py" | circleci tests split --split-by=timings)
+          command: pdm base-test -m 'not slow' $TEST
 
 # Orchestrate jobs using workflows
 # See: https://circleci.com/docs/configuration-reference/#workflows
 workflows:
-  say-hello-workflow:
+  python-workflow:
     jobs:
-      - say-hello
+      - install
+      - unit-test
+          requires:
+            - install
