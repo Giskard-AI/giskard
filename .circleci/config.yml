@@ -33,7 +33,7 @@ jobs:
           command: pdm install -G :all
       - save_cache:
           paths:
-            - ~/engine/.cache/poetry
+            - .venv
           key: v1-dependencies-{{ checksum "poetry.lock" }}
   unit-tests:
     executor: python-executor
@@ -51,7 +51,7 @@ jobs:
           name: Run tests
           command: |
             TEST=$(circleci tests glob "tests/*.py" | circleci tests split --split-by=timings)
-            command: pdm base-test -m 'not slow' $TEST
+            pdm base-test -m 'not slow' $TEST
 
 # Orchestrate jobs using workflows
 # See: https://circleci.com/docs/configuration-reference/#workflows
