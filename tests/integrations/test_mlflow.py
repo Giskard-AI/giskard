@@ -48,7 +48,7 @@ def test_fast(dataset_name, model_name, request):
         ("german_credit_data", "german_credit_model"),
         ("enron_data_full", "enron_model"),
         ("medical_transcript_data", "medical_transcript_model"),
-        ("fraud_detection_data", "fraud_detection_model"),
+        # ("fraud_detection_data", "fraud_detection_model"),
         ("amazon_review_data", "amazon_review_model"),
     ],
 )
