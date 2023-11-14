@@ -152,7 +152,7 @@ workflows:
           name: test-<<matrix.os>>-<<matrix.python-version>>
           matrix:
             parameters:
-              os: [ubuntu, windows, ]
+              os: [ubuntu, windows, macos]
               python-version: ["3.9.18", "3.10.13", "3.11.6"]
           requires:
             - install-<<matrix.os>>-<<matrix.python-version>>
