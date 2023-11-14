@@ -290,7 +290,7 @@ def _generate_performance_tests(issue: Issue):
 
     return {
         f"{metric.name} on data slice “{issue.slicing_fn}”": test_fn(
-            model=issue.model, dataset=issue.dataset, slicing_function=issue.slicing_fn, threshold=abs_threshold
+            slicing_function=issue.slicing_fn, threshold=abs_threshold
         )
     }
 

@@ -1,7 +1,7 @@
 import numpy as np
 import pandas as pd
 
-from giskard import Dataset
+from giskard.datasets import Dataset
 from giskard.models import cache as models_cache
 from giskard.models.base import BaseModel
 from giskard.scanner.decorators import detector
@@ -13,7 +13,7 @@ from ..registry import Detector
 
 @detector(name="data_leakage", tags=["data_leakage", "classification", "regression"])
 class DataLeakageDetector(Detector):
-    def run(self, model: BaseModel, dataset: Dataset):
+    def run(self, model: BaseModel, dataset: Dataset, **kwargs):
         logger.info("DataLeakageDetector: Running")
 
         # Dataset prediction

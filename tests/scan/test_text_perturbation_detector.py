@@ -1,12 +1,12 @@
 import numpy as np
 import pandas as pd
 import pytest
+from langchain import LLMChain, PromptTemplate
 from langchain.llms.fake import FakeListLLM
 
 import giskard
 from giskard import Dataset, Model
 from giskard.scanner.robustness.text_perturbation_detector import TextPerturbationDetector
-from langchain import LLMChain, PromptTemplate
 
 
 def test_perturbation_classification(titanic_model, titanic_dataset):
@@ -40,12 +40,18 @@ def test_text_perturbation_works_with_nan_values():
     assert len(issues) == 0
 
 
-@pytest.mark.slow
+@pytest.mark.memory_expensive
 def test_llm_text_transformation():
     llm = FakeListLLM(responses=["Are you dumb or what?", "I don't know and I don’t want to know."] * 100)
     prompt = PromptTemplate(template="{instruct}: {question}", input_variables=["instruct", "question"])
     chain = LLMChain(llm=llm, prompt=prompt)
-    model = Model(chain, model_type="text_generation")
+    model = Model(
+        chain,
+        model_type="text_generation",
+        name="Test model",
+        description="Test model description",
+        feature_names=["instruct", "question"],
+    )
 
     dataset = Dataset(
         pd.DataFrame(
@@ -57,5 +63,7 @@ def test_llm_text_transformation():
         column_types={"instruct": "text", "question": "text"},
     )
 
-    analyzer = TextPerturbationDetector()
+    from giskard.scanner.robustness.text_transformations import TextTypoTransformation
+
+    analyzer = TextPerturbationDetector(transformations=[TextTypoTransformation])
     analyzer.run(model, dataset)

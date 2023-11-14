@@ -57,10 +57,10 @@ def test_all_global():
     _assert_html_generation_does_no_fail(test_suite_result)
 
 
-def test_argument_overriden():
+def test_argument_not_overriden():
     test_suite_result = Suite().add_test(_test_a_greater_b(a=1, b=2)).run(a=3)
 
-    assert test_suite_result.passed
+    assert not test_suite_result.passed
     _assert_html_generation_does_no_fail(test_suite_result)
 
 
@@ -178,60 +178,60 @@ def test_remove_by_id():
     suite = Suite().add_test(test_f1, "F1").add_test(test_auc, "AUC").add_test(test_diff_f1, "Diff F1")
 
     assert len(suite.tests) == 3
-    assert suite.tests[0].test_name == "F1"
-    assert suite.tests[1].test_name == "AUC"
-    assert suite.tests[2].test_name == "Diff F1"
+    assert suite.tests[0].test_id == "F1"
+    assert suite.tests[1].test_id == "AUC"
+    assert suite.tests[2].test_id == "Diff F1"
 
     suite.remove_test(1)
     assert len(suite.tests) == 2
-    assert suite.tests[0].test_name == "F1"
-    assert suite.tests[1].test_name == "Diff F1"
+    assert suite.tests[0].test_id == "F1"
+    assert suite.tests[1].test_id == "Diff F1"
 
     suite.remove_test(-1)
     assert len(suite.tests) == 1
-    assert suite.tests[0].test_name == "F1"
+    assert suite.tests[0].test_id == "F1"
 
 
 def test_remove_by_name():
     suite = Suite().add_test(test_f1, "F1").add_test(test_auc, "AUC").add_test(test_diff_f1, "Diff F1")
 
     assert len(suite.tests) == 3
-    assert suite.tests[0].test_name == "F1"
-    assert suite.tests[1].test_name == "AUC"
-    assert suite.tests[2].test_name == "Diff F1"
+    assert suite.tests[0].test_id == "F1"
+    assert suite.tests[1].test_id == "AUC"
+    assert suite.tests[2].test_id == "Diff F1"
 
     suite.remove_test("AUC")
     assert len(suite.tests) == 2
-    assert suite.tests[0].test_name == "F1"
-    assert suite.tests[1].test_name == "Diff F1"
+    assert suite.tests[0].test_id == "F1"
+    assert suite.tests[1].test_id == "Diff F1"
 
     suite.remove_test("AUC")
     assert len(suite.tests) == 2
 
     suite.remove_test("Diff F1")
     assert len(suite.tests) == 1
-    assert suite.tests[0].test_name == "F1"
+    assert suite.tests[0].test_id == "F1"
 
 
 def test_remove_by_reference():
     suite = Suite().add_test(test_f1, "F1").add_test(test_auc, "AUC").add_test(test_diff_f1, "Diff F1")
 
     assert len(suite.tests) == 3
-    assert suite.tests[0].test_name == "F1"
-    assert suite.tests[1].test_name == "AUC"
-    assert suite.tests[2].test_name == "Diff F1"
+    assert suite.tests[0].test_id == "F1"
+    assert suite.tests[1].test_id == "AUC"
+    assert suite.tests[2].test_id == "Diff F1"
 
     suite.remove_test(test_auc)
     assert len(suite.tests) == 2
-    assert suite.tests[0].test_name == "F1"
-    assert suite.tests[1].test_name == "Diff F1"
+    assert suite.tests[0].test_id == "F1"
+    assert suite.tests[1].test_id == "Diff F1"
 
     suite.remove_test(test_auc)
     assert len(suite.tests) == 2
 
     suite.remove_test(test_diff_f1)
     assert len(suite.tests) == 1
-    assert suite.tests[0].test_name == "F1"
+    assert suite.tests[0].test_id == "F1"
 
 
 def test_update_params():

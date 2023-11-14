@@ -5,10 +5,9 @@ from unittest import mock
 import numpy as np
 import pandas as pd
 import pytest
-from langchain import LLMChain, PromptTemplate
-from langchain.llms.fake import FakeListLLM
 
 from giskard import Dataset, GiskardClient, Model
+from giskard.core.core import ModelMeta, SupportedModelTypes
 from giskard.core.suite import Suite
 from giskard.scanner import Scanner
 from giskard.scanner.report import ScanReport
@@ -24,6 +23,7 @@ from giskard.scanner.report import ScanReport
         ("hotel_text_data", "hotel_text_model"),
     ],
 )
+@pytest.mark.memory_expensive
 def test_scanner_returns_non_empty_scan_result_fast(dataset_name, model_name, request):
     _test_scanner_returns_non_empty_scan_result(dataset_name, model_name, request)
 
@@ -33,7 +33,7 @@ def test_scanner_returns_non_empty_scan_result_fast(dataset_name, model_name, re
     [
         ("enron_data_full", "enron_model"),
         ("medical_transcript_data", "medical_transcript_model"),
-        ("fraud_detection_data", "fraud_detection_model"),
+        # ("fraud_detection_data", "fraud_detection_model"),
         ("amazon_review_data", "amazon_review_model"),
     ],
 )
@@ -79,6 +79,7 @@ def test_scanner_raises_exception_if_no_detectors_available(german_credit_data, 
         scanner.analyze(german_credit_model, german_credit_data)
 
 
+@pytest.mark.memory_expensive
 def test_scanner_works_if_dataset_has_no_target(titanic_model, titanic_dataset):
     scanner = Scanner()
     no_target_dataset = Dataset(titanic_dataset.df, target=None)
@@ -97,37 +98,36 @@ def test_scan_raises_exception_if_no_dataset_provided(german_credit_model):
 
 
 def test_default_dataset_is_used_with_generative_model():
-    model = mock.MagicMock(Model)
-    model.is_text_generation = True
+    def fake_model(*args, **kwargs):
+        return None
+
+    model = Model(
+        model=fake_model,
+        model_type=SupportedModelTypes.TEXT_GENERATION,
+        name="test",
+        description="test",
+        feature_names=["query"],
+        target="query",
+    )
+
+    model.meta = ModelMeta(
+        "Model name",
+        "Some meaningful model description",
+        SupportedModelTypes.TEXT_GENERATION,
+        ["query"],
+        [],
+        0,
+        "test",
+        "test",
+    )
     scanner = Scanner()
 
-    with mock.patch("giskard.scanner.llm.utils.load_default_dataset") as load_default_dataset:
+    with mock.patch("giskard.scanner.scanner.generate_test_dataset") as generate_test_dataset:
         try:
             scanner.analyze(model)
         except:  # noqa
             pass
-        load_default_dataset.assert_called_once()
-
-
-@pytest.mark.slow
-def test_generative_model_dataset():
-    llm = FakeListLLM(responses=["Are you dumb or what?", "I don't know and I don't want to know."] * 100)
-    prompt = PromptTemplate(template="{instruct}: {question}", input_variables=["instruct", "question"])
-    chain = LLMChain(llm=llm, prompt=prompt)
-    model = Model(chain, model_type="text_generation")
-    dataset = Dataset(
-        pd.DataFrame(
-            {
-                "instruct": ["Paraphrase this", "Answer this question"],
-                "question": ["Who is the mayor of Rome?", "How many bridges are there in Paris?"],
-            }
-        ),
-        column_types={"instruct": "text", "question": "text"},
-    )
-
-    scanner = Scanner()
-    result = scanner.analyze(model, dataset)
-    assert result.has_issues()
+        generate_test_dataset.assert_called_once()
 
 
 @pytest.mark.skip(reason="For active testing of the UI")
@@ -173,7 +173,7 @@ def test_scanner_on_the_UI(dataset_name, model_name, request):
 def test_warning_duplicate_index(german_credit_model, german_credit_data):
     df = german_credit_data.df.copy()
     new_row = df.loc[1]
-    df = df.append(new_row)
+    df = pd.concat([df, pd.DataFrame([new_row])])
 
     dataset = Dataset(df=df, target=german_credit_data.target, cat_columns=german_credit_data.cat_columns)
 

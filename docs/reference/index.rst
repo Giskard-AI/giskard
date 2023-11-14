@@ -1,4 +1,4 @@
-API reference
+API Reference
 ===============
 
 .. toctree::
@@ -7,8 +7,9 @@ API reference
    ../cli/index
    models/index
    datasets/index
+   scan/index
    tests/index
-   suite/index
    slicing-functions/index
    transformation-functions/index
    push/index
+   suite/index

@@ -16,12 +16,13 @@ statistical tests and slicing functions.
 
 The push classes allow converting to gRPC protobuf format via the to_grpc() method.
 """
-from abc import abstractmethod
 from typing import Optional
+
+from abc import abstractmethod
 
 from giskard.core.core import SupportedModelTypes
 from giskard.ml_worker import websocket
-from giskard.ml_worker.websocket import PushKind, CallToActionKind
+from giskard.ml_worker.websocket import CallToActionKind, PushKind
 from giskard.push.push_test_catalog.catalog import (
     one_sample_overconfidence_test,
     one_sample_underconfidence_test,
@@ -30,7 +31,14 @@ from giskard.push.push_test_catalog.catalog import (
     test_metamorphic_invariance_with_mad,
 )
 from giskard.push.utils import TransformationInfo
-from giskard.slicing.slice import EqualTo, GreaterThan, LowerThan, Query, QueryBasedSliceFunction, ContainsWord
+from giskard.slicing.slice import (
+    ContainsWord,
+    EqualTo,
+    GreaterThan,
+    LowerThan,
+    Query,
+    QueryBasedSliceFunction,
+)
 from giskard.testing.tests.metamorphic import test_metamorphic_invariance
 from giskard.testing.tests.statistic import test_theil_u
 
@@ -145,9 +153,9 @@ class OverconfidencePush(ExamplePush):
         self.training_label_proba = training_label_proba
         self.training_label = training_label
         self.saved_example = dataset_row
-
         self.tests = [one_sample_overconfidence_test()]
-        self.test_params = {"saved_example": dataset_row}
+        self.test_params = {"saved_example": self.saved_example}
+
         # if_overconfidence_rate_decrease(rate=rate),
         #     correct_example(saved_example=dataset_row, training_label=training_label),
         #     increase_probability(
@@ -162,13 +170,6 @@ class OverconfidencePush(ExamplePush):
         res = {
             "push_title": "This example is incorrect while having a high confidence.",
             "details": [
-                # Disabled temporarily
-                # {
-                # "action": "Save this example for further inspection and testing",
-                # "explanation": "This may help you identify spurious correlation and create one-sample tests based on these examples",
-                # "button": "Save Example",
-                #  "cta": CallToActionKind.SaveExample,
-                # },
                 {
                     "action": "Generate a one-sample test to automatically check if this example is correctly predicted",
                     "explanation": "This enables you to make sure this specific example is correct for a new model",
@@ -176,11 +177,18 @@ class OverconfidencePush(ExamplePush):
                     "cta": CallToActionKind.CREATE_TEST,
                 },
                 {
-                    "action": "See similar examples",
-                    "explanation": "It will filter this debugging session to show examples with overconfidence only",
-                    "button": "Get similar examples",
+                    "action": "Inspect similar examples",
+                    "explanation": "It will filter this debugging session to show similar examples with overconfidence",
+                    "button": "Inspect similar examples",
                     "cta": CallToActionKind.OPEN_DEBUGGER_OVERCONFIDENCE,
                 },
+                # Disabled temporarily
+                # {
+                # "action": "Save this example for further inspection and testing",
+                # "explanation": "This may help you identify spurious correlation and create one-sample tests based on these examples",
+                # "button": "Save Example",
+                #  "cta": CallToActionKind.SaveExample,
+                # },
             ],
         }
         self.push_title = res["push_title"]
@@ -217,9 +225,9 @@ class BorderlinePush(ExamplePush):
         self.training_label_proba = training_label_proba
         self.training_label = training_label
         self.saved_example = dataset_row
-
         self.tests = [one_sample_underconfidence_test]
-        self.test_params = {"saved_example": dataset_row}
+        self.test_params = {"saved_example": self.saved_example}
+
         # [
         #     if_underconfidence_rate_decrease(rate=rate),
         #     correct_example(saved_example=dataset_row, training_label=training_label),
@@ -235,6 +243,19 @@ class BorderlinePush(ExamplePush):
         res = {
             "push_title": "This example was predicted with very low confidence",
             "details": [
+                {
+                    "action": "Generate a one-sample to check for underconfidence",
+                    "explanation": "This may help you ensure this specific example is not predicted with low "
+                    "confidence for a new model",
+                    "button": "Create one-sample test",
+                    "cta": CallToActionKind.CREATE_TEST,
+                },
+                {
+                    "action": "Inspect similar examples",
+                    "explanation": "It will filter this debugging session to show similar examples with underconfidence",
+                    "button": "Inspect similar examples",
+                    "cta": CallToActionKind.OPEN_DEBUGGER_BORDERLINE,
+                },
                 # Disabled temporarily
                 # {
                 # "action": "Save this example for further inspection and testing",
@@ -242,18 +263,6 @@ class BorderlinePush(ExamplePush):
                 # "button": "Save Example",
                 # "cta": CallToActionKind.SaveExample,
                 # },
-                {
-                    "action": "Generate a one-sample to automatically test the underconfidence",
-                    "explanation": "This may help you ensure this example is not predicted with low confidence for a new model",
-                    "button": "Create one-sample test",
-                    "cta": CallToActionKind.CREATE_TEST,
-                },
-                {
-                    "action": "See similar examples",
-                    "explanation": "It will filter this debugging session to show examples with underconfidence only",
-                    "button": "Get similar examples",
-                    "cta": CallToActionKind.OPEN_DEBUGGER_BORDERLINE,
-                },
             ],
         }
         self.push_title = res["push_title"]
@@ -303,9 +312,9 @@ class ContributionPush(FeaturePush):
         self.model_type = model_type
         self.correct_prediction = correct_prediction
 
-        self._slicing_function()
-        self._set_title_and_details()
+        self._slicing_function()  # Needed for the message
         self._test_selection()
+        self._set_title_and_details()
 
     def _set_title_and_details(self):
         """
@@ -318,22 +327,22 @@ class ContributionPush(FeaturePush):
                 self.push_title = f"`{str(self.feature)}`=={str(self.value)} contributes a lot to the prediction"
             self.details = [
                 {
-                    "action": f"Save the {'quartile' if self.bounds is not None else 'slice'} {self.slicing_function.query} and continue debugging session",
-                    "explanation": "Saving the slice will enable you to create tests more efficiently",
-                    "button": "Save Slice",
-                    "cta": CallToActionKind.CREATE_SLICE,
-                },
-                {
-                    "action": "Automatically generate a test ",
+                    "action": "Generate a Theil`s U test on similar examples",
                     "explanation": f"Theil`s U test will help you check the nominal association between {self.slicing_function.query} and the predicted label on the whole dataset",
                     "button": "Add Test to a test suite",
                     "cta": CallToActionKind.CREATE_TEST,
                 },
                 {
-                    "action": "Get similar examples",
-                    "explanation": "It will filter this debugging session to show examples from this slice only",
-                    "button": "Get similar examples",
+                    "action": "Inspect similar examples",
+                    "explanation": "It will filter this debugging session to show similar examples",
+                    "button": "Inspect similar examples",
                     "cta": CallToActionKind.CREATE_SLICE_OPEN_DEBUGGER,
+                },
+                {
+                    "action": f"Save the {'quartile' if self.bounds is not None else 'slice'} {self.slicing_function.query} and continue debugging session",
+                    "explanation": "Saving the slice will enable you to create tests more efficiently",
+                    "button": "Save Slice",
+                    "cta": CallToActionKind.CREATE_SLICE,
                 },
             ]
         else:
@@ -345,22 +354,22 @@ class ContributionPush(FeaturePush):
                 )
             self.details = [
                 {
-                    "action": f"Save the {'quartile' if self.bounds is not None else 'slice'} {self.slicing_function.query} and continue debugging session",
-                    "explanation": "Saving the slice will enable you to create tests more efficiently",
-                    "button": "Save Slice",
-                    "cta": CallToActionKind.CREATE_SLICE,
-                },
-                {
-                    "action": "Automatically generate a test",
+                    "action": "Generate a performance test on similar examples",
                     "explanation": "Performance (RMSE or F1) test will help you check if this slice performs better than the rest of the dataset",
                     "button": "Add Test to a test suite",
                     "cta": CallToActionKind.CREATE_TEST,
                 },
                 {
-                    "action": "Get similar examples",
-                    "explanation": "It will filter this debugging session to show examples from this slice only",
-                    "button": "Get similar examples",
+                    "action": "Inspect similar examples",
+                    "explanation": "It will filter this debugging session to show similar examples",
+                    "button": "Inspect similar examples",
                     "cta": CallToActionKind.CREATE_SLICE_OPEN_DEBUGGER,
+                },
+                {
+                    "action": f"Save the {'quartile' if self.bounds is not None else 'slice'} {self.slicing_function.query} and continue debugging session",
+                    "explanation": "Saving the slice will enable you to create tests more efficiently",
+                    "button": "Save Slice",
+                    "cta": CallToActionKind.CREATE_SLICE,
                 },
             ]
 
@@ -448,6 +457,4 @@ class PerturbationPush(FeaturePush):
         else:
             self.tests = [test_metamorphic_invariance]
             self.test_params = {"transformation_function": self.transformation_functions[0]}
-            self.push_title = (
-                f"""Perturbing `{self.feature}` into "{self.value_perturbed[0]}" makes the prediction change"""
-            )
+            self.push_title = f"""Perturbing `{self.feature}` ({self.transformation_functions[0].meta.display_name}) into "{self.value_perturbed[0]}" makes the prediction change"""

@@ -2,15 +2,15 @@ from typing import Sequence
 
 import pandas as pd
 
-from ...datasets import Dataset
-from ...ml_worker.testing.registry.slicing_function import SlicingFunction
-from ...models.base import BaseModel
-from ...testing.tests.calibration import _calculate_underconfidence_score
 from ..common.examples import ExampleExtractor
 from ..common.loss_based_detector import LossBasedDetector
 from ..decorators import detector
 from ..issues import Issue, IssueLevel, Underconfidence
 from ..logger import logger
+from ...datasets import Dataset
+from ...ml_worker.testing.registry.slicing_function import SlicingFunction
+from ...models.base import BaseModel
+from ...testing.tests.calibration import _calculate_underconfidence_score
 
 
 @detector(name="underconfidence", tags=["underconfidence", "classification"])
@@ -26,7 +26,7 @@ class UnderconfidenceDetector(LossBasedDetector):
     def _numerical_slicer_method(self):
         return self.method
 
-    def run(self, model: BaseModel, dataset: Dataset):
+    def run(self, model: BaseModel, dataset: Dataset, **kwargs):
         if not model.is_classification:
             raise ValueError("Underconfidence detector only works for classification models.")
 
@@ -128,8 +128,6 @@ def _generate_underconfidence_tests(issue):
 
     tests = {
         f"Underconfidence on data slice “{issue.slicing_fn}”": test_underconfidence_rate(
-            model=issue.model,
-            dataset=issue.dataset,
             slicing_function=issue.slicing_fn,
             threshold=abs_threshold,
             p_threshold=issue.meta["p_threshold"],

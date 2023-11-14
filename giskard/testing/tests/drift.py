@@ -1,11 +1,11 @@
+import inspect
 import numbers
 import re
 import typing
 import uuid
 from collections import Counter
-from typing import Optional, List
+from typing import List, Optional
 
-import inspect
 import numpy as np
 import pandas as pd
 from scipy.stats import chi2, ks_2samp
@@ -14,11 +14,11 @@ from scipy.stats.stats import Ks_2sampResult, wasserstein_distance
 from giskard.datasets.base import Dataset
 from giskard.ml_worker.testing.registry.decorators import test
 from giskard.ml_worker.testing.registry.slicing_function import SlicingFunction
-from giskard.ml_worker.testing.test_result import TestResult, TestMessage, TestMessageLevel
-from giskard.ml_worker.testing.utils import check_slice_not_empty
-from giskard.ml_worker.testing.utils import validate_classification_label
+from giskard.ml_worker.testing.test_result import TestMessage, TestMessageLevel, TestResult
+from giskard.ml_worker.testing.utils import check_slice_not_empty, validate_classification_label
 from giskard.models.base import BaseModel
-from . import debug_prefix, debug_description_prefix
+
+from . import debug_description_prefix, debug_prefix
 
 other_modalities_pattern = "^other_modalities_[a-z0-9]{32}$"
 
@@ -83,20 +83,19 @@ def _calculate_drift_psi(actual_series, reference_series, max_categories):
     expected_distribution = expected_frequencies / len(reference_series)
     actual_distribution = actual_frequencies / len(actual_series)
     total_psi = 0
-    output_data = pd.DataFrame(columns=["Modality", "Reference_distribution", "Actual_distribution", "Psi"])
-    for category in range(len(all_modalities)):
+    output_data = []
+    for category, modality in enumerate(all_modalities):
         modality_psi = _calculate_psi(category, actual_distribution, expected_distribution)
-
         total_psi += modality_psi
-        row = {
-            "Modality": all_modalities[category],
-            "Reference_distribution": expected_distribution[category],
-            "Actual_distribution": expected_distribution[category],
-            "Psi": modality_psi,
-        }
-
-        output_data = output_data.append(pd.Series(row), ignore_index=True)
-    return total_psi, output_data
+        output_data.append(
+            {
+                "Modality": modality,
+                "Reference_distribution": expected_distribution[category],
+                "Actual_distribution": expected_distribution[category],
+                "Psi": modality_psi,
+            }
+        )
+    return total_psi, pd.DataFrame(output_data)
 
 
 def _calculate_ks(actual_series, reference_series) -> Ks_2sampResult:
@@ -131,28 +130,29 @@ def _calculate_chi_square(actual_series, reference_series, max_categories):
     # so that reference and actual has the same size
     # See https://github.com/scipy/scipy/blob/v1.8.0/scipy/stats/_stats_py.py#L6787
     k_norm = actual_series.shape[0] / reference_series.shape[0]
-    output_data = pd.DataFrame(columns=["Modality", "Reference_frequencies", "Actual_frequencies", "Chi_square"])
-    for i in range(len(all_modalities)):
+    output_data = []
+    for i, modality in enumerate(all_modalities):
         chi_square_value = (actual_frequencies[i] - expected_frequencies[i] * k_norm) ** 2 / (
             expected_frequencies[i] * k_norm
         )
         chi_square += chi_square_value
 
-        row = {
-            "Modality": all_modalities[i],
-            "Reference_frequencies": expected_frequencies[i],
-            "Actual_frequencies": actual_frequencies[i],
-            "Chi_square": chi_square_value,
-        }
+        output_data.append(
+            {
+                "Modality": modality,
+                "Reference_frequencies": expected_frequencies[i],
+                "Actual_frequencies": actual_frequencies[i],
+                "Chi_square": chi_square_value,
+            }
+        )
 
-        output_data = output_data.append(pd.Series(row), ignore_index=True)
     # if reference_series and actual_series has only one modality it turns nan (len(all_modalities)=1)
     if len(all_modalities) > 1:
         chi_cdf = chi2.cdf(chi_square, len(all_modalities) - 1)
         p_value = 1 - chi_cdf if chi_cdf != 0 else 0
     else:
         p_value = 0
-    return chi_square, p_value, output_data
+    return chi_square, p_value, pd.DataFrame(output_data)
 
 
 def _validate_feature_type(gsk_dataset, column_name, feature_type):

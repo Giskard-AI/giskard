@@ -4,21 +4,25 @@ from typing import Optional
 import numpy as np
 import pandas as pd
 
-from giskard import test
 from giskard.core.core import SupportedModelTypes
 from giskard.datasets.base import Dataset
+from giskard.llm import LLMImportError
+from giskard.ml_worker.testing.registry.decorators import test
 from giskard.ml_worker.testing.registry.slicing_function import SlicingFunction
 from giskard.ml_worker.testing.registry.transformation_function import TransformationFunction
-from giskard.ml_worker.testing.stat_utils import equivalence_t_test, paired_t_test
-from giskard.ml_worker.testing.stat_utils import equivalence_wilcoxon, paired_wilcoxon
-from giskard.ml_worker.testing.test_result import TestResult, TestMessage, TestMessageLevel
-from giskard.ml_worker.testing.utils import Direction, validate_classification_label
-from giskard.ml_worker.testing.utils import check_slice_not_empty
+from giskard.ml_worker.testing.stat_utils import (
+    equivalence_t_test,
+    equivalence_wilcoxon,
+    paired_t_test,
+    paired_wilcoxon,
+)
+from giskard.ml_worker.testing.test_result import TestMessage, TestMessageLevel, TestResult
+from giskard.ml_worker.testing.utils import Direction, check_slice_not_empty, validate_classification_label
 from giskard.ml_worker.utils.logging import timer
 from giskard.models.base import BaseModel
 from giskard.models.utils import fix_seed
-from giskard.scanner.llm.utils import LLMImportError
-from . import debug_prefix, debug_description_prefix
+
+from . import debug_description_prefix, debug_prefix
 
 
 def _predict_numeric_result(model: BaseModel, ds: Dataset, output_proba=True, classification_label=None):
@@ -193,7 +197,7 @@ def _test_metamorphic(
     output_ds = None
     if not passed and debug:
         output_ds = dataset.copy()  # copy all properties
-        output_ds.df = dataset.df.iloc[failed_idx]
+        output_ds.df = dataset.df.loc[failed_idx]
         test_name = inspect.stack()[1][3]
         output_ds.name = debug_prefix + test_name
     # ---
@@ -440,7 +444,7 @@ def _create_test_result(critical_quantile, dataset, debug, direction, messages, 
     if not passed and debug:
         _, failed_idx = _compare_prediction(result_df, model.meta.model_type, direction, None)
         output_ds = dataset.copy()  # copy all properties
-        output_ds.df = dataset.df.iloc[failed_idx]
+        output_ds.df = dataset.df.loc[failed_idx]
         test_name = inspect.stack()[1][3]
         output_ds.name = debug_prefix + test_name
     # ---

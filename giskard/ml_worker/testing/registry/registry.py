@@ -1,3 +1,5 @@
+from typing import Dict, Optional
+
 import hashlib
 import importlib.util
 import inspect
@@ -6,20 +8,15 @@ import os
 import sys
 import uuid
 from pathlib import Path
-from typing import Optional, Dict
 
 import cloudpickle
 
 from giskard.core.core import SavableMeta
-from giskard.ml_worker.testing.registry.udf_repository import udf_repo_available, udf_root
-from giskard.settings import expand_env_var, settings
+from giskard.settings import settings
 
 
 def find_plugin_location():
-    if udf_repo_available:
-        return udf_root
-    else:
-        return Path(expand_env_var(settings.home)) / "plugins"
+    return settings.home_dir / "plugins"
 
 
 logger = logging.getLogger(__name__)

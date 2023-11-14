@@ -1,5 +1,6 @@
-import logging
 from typing import Any, Callable, Iterable, Optional
+
+import logging
 
 import mlflow
 import pandas as pd
@@ -14,17 +15,17 @@ logger = logging.getLogger(__name__)
 class TensorFlowModel(MLFlowSerializableModel):
     @configured_validate_arguments
     def __init__(
-            self,
-            model,
-            model_type: ModelType,
-            name: Optional[str] = None,
-            data_preprocessing_function: Callable[[pd.DataFrame], Any] = None,
-            model_postprocessing_function: Callable[[Any], Any] = None,
-            feature_names: Optional[Iterable] = None,
-            classification_threshold: Optional[float] = 0.5,
-            classification_labels: Optional[Iterable] = None,
-            id: Optional[str] = None,
-            **kwargs,
+        self,
+        model,
+        model_type: ModelType,
+        name: Optional[str] = None,
+        data_preprocessing_function: Optional[Callable[[pd.DataFrame], Any]] = None,
+        model_postprocessing_function: Optional[Callable[[Any], Any]] = None,
+        feature_names: Optional[Iterable] = None,
+        classification_threshold: Optional[float] = 0.5,
+        classification_labels: Optional[Iterable] = None,
+        id: Optional[str] = None,
+        **kwargs,
     ):
         super().__init__(
             model=model,

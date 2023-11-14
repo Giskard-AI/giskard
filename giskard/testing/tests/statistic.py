@@ -1,17 +1,18 @@
 """Statistical tests"""
-import numbers
-import numpy as np
 import inspect
+import numbers
 from typing import Optional
 
-from giskard import test
+import numpy as np
+
 from giskard.datasets.base import Dataset
-from giskard.ml_worker.testing.test_result import TestResult, TestMessage, TestMessageLevel
-from giskard.ml_worker.testing.utils import validate_classification_label
+from giskard.ml_worker.testing.registry.decorators import test
 from giskard.ml_worker.testing.registry.slicing_function import SlicingFunction
+from giskard.ml_worker.testing.test_result import TestMessage, TestMessageLevel, TestResult
+from giskard.ml_worker.testing.utils import check_slice_not_empty, validate_classification_label
 from giskard.models.base import BaseModel
-from giskard.ml_worker.testing.utils import check_slice_not_empty
-from . import debug_prefix, debug_description_prefix
+
+from . import debug_description_prefix, debug_prefix
 
 
 @test(
@@ -318,8 +319,8 @@ def _mutual_information(x, y):
 
 def _theil_u(x, y):
     import pandas as pd
-    from sklearn.metrics import mutual_info_score
     from scipy import stats
+    from sklearn.metrics import mutual_info_score
 
     return mutual_info_score(x, y) / stats.entropy(pd.Series(y).value_counts(normalize=True))
 

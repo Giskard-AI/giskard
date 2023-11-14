@@ -1,9 +1,11 @@
 import inspect
-import re
 import logging
+import re
 
-from giskard import Model, Dataset, scan
 from giskard.core.core import SupportedModelTypes
+from giskard.datasets import Dataset
+from giskard.models import Model
+from giskard.scanner import scan
 
 logger = logging.getLogger(__name__)
 
@@ -21,6 +23,7 @@ alphanumeric_map = {
     "=": "equal to",
     "!=": "different of",
 }
+control_chars_map = {"\\r": "carriage return", "\\b": "backspace"}
 
 
 def unwrap_python_model_from_pyfunc_if_langchain(pyfunc_model):
@@ -42,6 +45,9 @@ def unwrap_python_model_from_pyfunc_if_langchain(pyfunc_model):
 def process_text(some_string):
     for k, v in alphanumeric_map.items():
         some_string = some_string.replace(k, v)
+    for k, v in control_chars_map.items():
+        some_string = some_string.replace(k, v)
+
     some_string = some_string.replace("data slice", "data slice -")
     some_string = re.sub(r"[^A-Za-z0-9_\-. /]+", "", some_string)
 
@@ -108,7 +114,6 @@ def setup_model(model, model_type, feature_names, evaluator_config):
 
 
 def setup_scan(giskard_model, giskard_dataset, evaluator_config):
-
     scan_config = evaluator_config.get("scan_config", None)
     if scan_config is None:
         return scan(model=giskard_model, dataset=giskard_dataset)

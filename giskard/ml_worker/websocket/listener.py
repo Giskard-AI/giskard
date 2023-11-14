@@ -1,4 +1,4 @@
-from typing import Callable, Dict, Optional, Union
+from typing import Any, Callable, Dict, Optional, Union
 
 import json
 import logging
@@ -10,6 +10,7 @@ import tempfile
 import time
 import traceback
 from concurrent.futures import CancelledError, Future
+from copy import copy
 from dataclasses import dataclass
 from pathlib import Path
 
@@ -21,7 +22,7 @@ import stomp
 
 import giskard
 from giskard.client.giskard_client import GiskardClient
-from giskard.core.suite import Suite
+from giskard.core.suite import Suite, generate_test_partial
 from giskard.datasets.base import Dataset
 from giskard.ml_worker import websocket
 from giskard.ml_worker.core.log_listener import LogListener
@@ -31,6 +32,7 @@ from giskard.ml_worker.ml_worker import MLWorker
 from giskard.ml_worker.testing.registry.giskard_test import GiskardTest
 from giskard.ml_worker.testing.registry.slicing_function import SlicingFunction
 from giskard.ml_worker.testing.registry.transformation_function import TransformationFunction
+from giskard.ml_worker.utils.cache import CACHE
 from giskard.ml_worker.utils.file_utils import get_file_name
 from giskard.ml_worker.websocket import CallToActionKind, GetInfoParam, PushKind
 from giskard.ml_worker.websocket.action import MLWorkerAction
@@ -43,19 +45,20 @@ from giskard.ml_worker.websocket.utils import (
     map_dataset_process_function_meta_ws,
     map_function_meta_ws,
     map_result_to_single_test_result_ws,
-    map_suite_input_ws,
     parse_action_param,
     parse_function_arguments,
 )
 from giskard.models.base import BaseModel
 from giskard.models.model_explanation import explain, explain_text
 from giskard.push import Push
-from giskard.utils import call_in_pool, log_pool_stats, shutdown_pool
+from giskard.push.contribution import create_contribution_push
+from giskard.push.perturbation import create_perturbation_push
+from giskard.push.prediction import create_borderline_push, create_overconfidence_push
+from giskard.utils import call_in_pool, shutdown_pool
 from giskard.utils.analytics_collector import analytics
+from giskard.utils.worker_pool import GiskardMLWorkerException
 
 logger = logging.getLogger(__name__)
-
-
 MAX_STOMP_ML_WORKER_REPLY_SIZE = 1500
 
 
@@ -82,8 +85,6 @@ def wrapped_handle_result(
     action: MLWorkerAction, ml_worker: MLWorker, start: float, rep_id: Optional[str], ignore_timeout: bool
 ):
     def handle_result(future: Union[Future, Callable[..., websocket.WorkerReply]]):
-        log_pool_stats()
-
         info = None  # Needs to be defined in case of cancellation
 
         try:
@@ -97,6 +98,12 @@ def wrapped_handle_result(
                     error_str=str(e), error_type=type(e).__name__, detail=traceback.format_exc()
                 )
                 logger.warning(e)
+        except GiskardMLWorkerException as e:
+            # Retrieve the exception info from worker process
+            info: websocket.WorkerReply = websocket.ErrorReply(
+                error_str=e.info.message, error_type=e.info.type, detail=e.info.stack_trace
+            )
+            logger.warning(e)
         except Exception as e:
             info: websocket.WorkerReply = websocket.ErrorReply(
                 error_str=str(e), error_type=type(e).__name__, detail=traceback.format_exc()
@@ -211,17 +218,19 @@ def dispatch_action(callback, ml_worker, action, req, execute_in_pool, timeout=N
     # If execution should be done in a pool
     if execute_in_pool:
         logger.debug("Submitting for action %s '%s' into the pool", action.name, callback.__name__)
+        kwargs = {
+            "callback": callback,
+            "action": action,
+            "params": params,
+            "ml_worker": MLWorkerInfo(ml_worker),
+            "client_params": client_params,
+        }
         future = call_in_pool(
             parse_and_execute,
-            callback=callback,
-            action=action,
-            params=params,
-            ml_worker=MLWorkerInfo(ml_worker),
-            client_params=client_params,
+            kwargs=kwargs,
             timeout=timeout,
         )
         future.add_done_callback(result_handler)
-        log_pool_stats()
         return
 
     result_handler(
@@ -308,9 +317,7 @@ def on_ml_worker_get_info(ml_worker: MLWorkerInfo, params: GetInfoParam, *args, 
     logger.info("Collecting ML Worker info from WebSocket")
 
     # TODO(Bazire): seems to be deprecated https://setuptools.pypa.io/en/latest/pkg_resources.html#workingset-objects
-    installed_packages = (
-        {p.project_name: p.version for p in pkg_resources.working_set} if params.list_packages else None
-    )
+    installed_packages = {p.project_name: p.version for p in pkg_resources.working_set} if params.list_packages else {}
     current_process = psutil.Process(os.getpid())
     return websocket.GetInfo(
         platform=websocket.Platform(
@@ -395,7 +402,7 @@ def run_other_model(dataset, prediction_results):
 
 
 @websocket_actor(MLWorkerAction.runModel)
-def run_model(client: GiskardClient, params: websocket.RunModelParam, *args, **kwargs) -> websocket.Empty:
+def run_model(client: Optional[GiskardClient], params: websocket.RunModelParam, *args, **kwargs) -> websocket.Empty:
     try:
         model = BaseModel.download(client, params.model.project_key, params.model.id)
         dataset = Dataset.download(
@@ -478,6 +485,8 @@ def run_model_for_data_frame(
             ),
             prediction=list(predictions.prediction.astype(str)),
         )
+    elif model.is_text_generation:
+        return websocket.RunModelForDataFrame(prediction=list(predictions.prediction.astype(str)))
     else:
         return websocket.RunModelForDataFrame(
             prediction=list(predictions.prediction.astype(str)),
@@ -579,8 +588,10 @@ def run_ad_hoc_test(
     test: GiskardTest = GiskardTest.download(params.testUuid, client, None)
 
     arguments = parse_function_arguments(client, params.arguments)
+    if "kwargs" in arguments:
+        arguments.update(**arguments.pop("kwargs"))
 
-    arguments["debug"] = params.debug if params.debug else None
+    arguments["debug"] = params.debug if params.debug is not None else False
     debug_info = extract_debug_info(params.arguments) if params.debug else None
 
     test_result = do_run_adhoc_test(client, arguments, test, debug_info)
@@ -620,13 +631,20 @@ def run_test_suite(
         logger.info(f"Executing test suite: {test_names}")
 
         suite = Suite()
+        updated_test_args = []  # Save final args for building test
         for t in tests:
-            suite.add_test(t["test"].get_builder()(**t["arguments"]), t["id"])
+            test_args = t["arguments"]
+            if "kwargs" in test_args:
+                test_args: Dict[str, Any] = copy(test_args)
+                test_args.update(**test_args.pop("kwargs"))
+            updated_test_args.append(test_args)
+            suite.add_test(t["test"].get_builder()(**test_args), t["id"])
 
         suite_result = suite.run(**global_arguments)
 
         identifier_single_test_results = []
-        for identifier, result, arguments in suite_result.results:
+        for t, (identifier, result, _), test_args in zip(tests, suite_result.results, updated_test_args):
+            arguments = Suite.create_test_params(generate_test_partial(t["test"], **test_args), global_arguments)
             identifier_single_test_results.append(
                 websocket.IdentifierSingleTestResult(
                     id=identifier,
@@ -647,40 +665,109 @@ def run_test_suite(
         return websocket.TestSuite(is_error=True, is_pass=False, results=[], logs=log_listener.close())
 
 
-@websocket_actor(MLWorkerAction.generateTestSuite)
-def generate_test_suite(
-    client: Optional[GiskardClient], params: websocket.GenerateTestSuiteParam, *args, **kwargs
-) -> websocket.GenerateTestSuite:
-    inputs = [map_suite_input_ws(i) for i in params.inputs]
-
-    suite = Suite().generate_tests(inputs).to_dto(client, params.project_key)
-
-    return websocket.GenerateTestSuite(
-        tests=[
-            websocket.GeneratedTestSuite(
-                test_uuid=test.testUuid,
-                inputs=[
-                    websocket.GeneratedTestInput(name=i.name, value=i.value, is_alias=i.is_alias)
-                    for i in test.functionInputs.values()
-                ],
-            )
-            for test in suite.tests
-        ]
-    )
-
-
 @websocket_actor(MLWorkerAction.echo, execute_in_pool=False)
 def echo(params: websocket.EchoMsg, *args, **kwargs) -> websocket.EchoMsg:
     return params
+
+
+def handle_cta(
+    client: Optional[GiskardClient],
+    params: websocket.GetPushParam,
+    push: Optional[Push],
+    push_kind: PushKind,
+    cta_kind: CallToActionKind,
+):
+    if push is None:
+        push = get_push_objects(client, params)
+
+    logger.info("Handling push kind: %s with cta kind: %s", str(push_kind), str(cta_kind))
+
+    object_uuid = ""
+    object_params = {}
+
+    project_key = params.model.project_key
+
+    # Upload related object depending on CTA type
+    if cta_kind == CallToActionKind.CREATE_SLICE or cta_kind == CallToActionKind.CREATE_SLICE_OPEN_DEBUGGER:
+        push.slicing_function.meta.tags.append("generated")
+        object_uuid = push.slicing_function.upload(client, project_key)
+    elif cta_kind == CallToActionKind.SAVE_PERTURBATION:
+        for perturbation in push.transformation_functions:
+            object_uuid = perturbation.upload(client, project_key)
+    elif cta_kind == CallToActionKind.SAVE_EXAMPLE:
+        object_uuid = push.saved_example.upload(client, project_key)
+    elif cta_kind == CallToActionKind.CREATE_TEST or cta_kind == CallToActionKind.ADD_TEST_TO_CATALOG:
+        object_params = {}
+        for test in push.tests:
+            object_uuid = test.upload(client, project_key)
+        for test_param_name, test_param in push.test_params.items():
+            if isinstance(test_param, (RegistryArtifact, Dataset)):
+                object_params[test_param_name] = test_param.upload(client, project_key)
+            else:
+                object_params[test_param_name] = test_param
+
+    if object_uuid:
+        logger.info("Uploaded object for CTA with uuid: %s", object_uuid)
+        return websocket.PushAction(object_uuid=object_uuid, arguments=function_argument_to_ws(object_params))
 
 
 @websocket_actor(MLWorkerAction.getPush, timeout=30, ignore_timeout=True)
 def get_push(
     client: Optional[GiskardClient], params: websocket.GetPushParam, *args, **kwargs
 ) -> websocket.GetPushResponse:
-    object_uuid = ""
-    object_params = {}
-    project_key = params.model.project_key
+    # Save cta_kind and push_kind and remove it from params
+    cta_kind = params.cta_kind
+    push_kind = params.push_kind
+    params.cta_kind = None
+    params.push_kind = None
+
+    kinds = (
+        [push_kind]
+        if push_kind is not None
+        else [
+            PushKind.CONTRIBUTION,
+            PushKind.OVERCONFIDENCE,
+            PushKind.BORDERLINE,
+            PushKind.PERTURBATION,
+        ]
+    )
+    all_ws_res = {}
+    push = None
+    for kind in kinds:
+        params.push_kind = kind
+        logger.info("Getting push for %s", kind)
+
+        # We get a JSON for stability across process
+        json_params = params.json()
+        cache_hit, res = CACHE.get_result(json_params)
+        if not cache_hit:
+            res = get_push_objects(client, params)
+            CACHE.safe_add_result(json_params, res)
+        res_ws = push_to_ws(res)
+
+        all_ws_res[kind] = res_ws
+        if push_kind == kind:
+            push = res
+
+    # CTA part
+    action = None
+    if cta_kind is not None and push_kind is not None:
+        action = handle_cta(client, params, push, push_kind, cta_kind)
+
+    return websocket.GetPushResponse(
+        contribution=all_ws_res.get(PushKind.CONTRIBUTION),
+        perturbation=all_ws_res.get(PushKind.PERTURBATION),
+        overconfidence=all_ws_res.get(PushKind.OVERCONFIDENCE),
+        borderline=all_ws_res.get(PushKind.BORDERLINE),
+        action=action,
+    )
+
+
+def push_to_ws(push: Push):
+    return push.to_ws() if push is not None else None
+
+
+def get_push_objects(client: Optional[GiskardClient], params: websocket.GetPushParam):
     try:
         model = BaseModel.download(client, params.model.project_key, params.model.id)
         dataset = Dataset.download(client, params.dataset.project_key, params.dataset.id)
@@ -711,82 +798,13 @@ def get_push(
 
     # if df is empty, return early
     if df.empty:
-        return
+        return None
 
-    from giskard.push.contribution import create_contribution_push
-    from giskard.push.perturbation import create_perturbation_push
-    from giskard.push.prediction import create_borderline_push, create_overconfidence_push
+    push_functions = {
+        PushKind.CONTRIBUTION: create_contribution_push,
+        PushKind.PERTURBATION: create_perturbation_push,
+        PushKind.OVERCONFIDENCE: create_overconfidence_push,
+        PushKind.BORDERLINE: create_borderline_push,
+    }
 
-    contribs = create_contribution_push(model, dataset, df)
-    perturbs = create_perturbation_push(model, dataset, df)
-    overconf = create_overconfidence_push(model, dataset, df)
-    borderl = create_borderline_push(model, dataset, df)
-
-    contrib_ws = push_to_ws(contribs)
-    perturb_ws = push_to_ws(perturbs)
-    overconf_ws = push_to_ws(overconf)
-    borderl_ws = push_to_ws(borderl)
-
-    if params.cta_kind is not None and params.push_kind is not None:
-        if params.push_kind == PushKind.PERTURBATION:
-            push = perturbs
-        elif params.push_kind == PushKind.CONTRIBUTION:
-            push = contribs
-        elif params.push_kind == PushKind.OVERCONFIDENCE:
-            push = overconf
-        elif params.push_kind == PushKind.BORDERLINE:
-            push = borderl
-        else:
-            raise ValueError("Invalid push kind")
-
-        logger.info("Handling push kind: " + str(params.push_kind) + " with cta kind: " + str(params.cta_kind))
-
-        # Upload related object depending on CTA type
-        if (
-            params.cta_kind == CallToActionKind.CREATE_SLICE
-            or params.cta_kind == CallToActionKind.CREATE_SLICE_OPEN_DEBUGGER
-        ):
-            push.slicing_function.meta.tags.append("generated")
-            object_uuid = push.slicing_function.upload(client, project_key)
-        if params.cta_kind == CallToActionKind.SAVE_PERTURBATION:
-            for perturbation in push.transformation_function:
-                object_uuid = perturbation.upload(client, project_key)
-        if params.cta_kind == CallToActionKind.SAVE_EXAMPLE:
-            object_uuid = push.saved_example.upload(client, project_key)
-        if params.cta_kind == CallToActionKind.CREATE_TEST or params.cta_kind == CallToActionKind.ADD_TEST_TO_CATALOG:
-            for test in push.tests:
-                object_uuid = test.upload(client, project_key)
-            # create empty dict
-            object_params = {}
-            # for every object in push.test_params, check if they're a subclass of Savable and if yes upload them
-            for test_param_name in push.test_params:
-                test_param = push.test_params[test_param_name]
-                if isinstance(test_param, RegistryArtifact):
-                    object_params[test_param_name] = test_param.upload(client, project_key)
-                elif isinstance(test_param, Dataset):
-                    object_params[test_param_name] = test_param.upload(client, project_key)
-                else:
-                    object_params[test_param_name] = test_param
-
-        if object_uuid != "":
-            logger.info(f"Uploaded object for CTA with uuid: {object_uuid}")
-
-    if object_uuid != "":
-        return websocket.GetPushResponse(
-            contribution=contrib_ws,
-            perturbation=perturb_ws,
-            overconfidence=overconf_ws,
-            borderline=borderl_ws,
-            action=websocket.PushAction(object_uuid=object_uuid, arguments=function_argument_to_ws(object_params)),
-        )
-
-    return websocket.GetPushResponse(
-        contribution=contrib_ws,
-        perturbation=perturb_ws,
-        overconfidence=overconf_ws,
-        borderline=borderl_ws,
-    )
-
-
-def push_to_ws(push: Push):
-    return push.to_ws() if push is not None else None
+    return push_functions[params.push_kind](model, dataset, df)

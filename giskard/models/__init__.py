@@ -27,3 +27,7 @@ You can wrap your model in two different ways:
    If this fails, we will ask you to also override the ``save_model`` and ``load_model`` methods where you provide your own
    serialization of the model object.
 """
+
+from .automodel import Model
+
+__all__ = ["Model"]

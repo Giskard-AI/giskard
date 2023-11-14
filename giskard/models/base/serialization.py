@@ -7,6 +7,7 @@ import mlflow
 
 from .wrapper import WrapperModel
 
+
 # @TODO: decouple the serialization logic from models. These abstract classes
 # could be implemented as mixins and then used in the models that need them.
 # The logic of saving the model should be moved to the serialization classes.

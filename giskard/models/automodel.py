@@ -1,7 +1,8 @@
+from typing import Any, Callable, Iterable, Optional
+
 import inspect
 import logging
 from importlib import import_module
-from typing import Any, Callable, Iterable, Optional
 
 import pandas as pd
 
@@ -55,7 +56,9 @@ class Model(CloudpickleSerializableModel):
         * if regression or text_generation: an array of predictions corresponding to data entries
         (rows of pandas.DataFrame) and outputs.
     name : Optional[str]
-        the name of the model.
+        Name of the model.
+    description : Optional[str]
+        Description of the model's task. Mandatory for non-langchain text_generation models.
     model_type : ModelType
         The type of the model: regression, classification or text_generation.
     data_preprocessing_function : Optional[Callable[[pd.DataFrame]
@@ -89,9 +92,10 @@ class Model(CloudpickleSerializableModel):
         cls,
         model: Any,
         model_type: ModelType,
-        data_preprocessing_function: Callable[[pd.DataFrame], Any] = None,
-        model_postprocessing_function: Callable[[Any], Any] = None,
+        data_preprocessing_function: Optional[Callable[[pd.DataFrame], Any]] = None,
+        model_postprocessing_function: Optional[Callable[[Any], Any]] = None,
         name: Optional[str] = None,
+        description: Optional[str] = None,
         feature_names: Optional[Iterable] = None,
         classification_threshold: Optional[float] = 0.5,
         classification_labels: Optional[Iterable] = None,
@@ -128,8 +132,6 @@ class Model(CloudpickleSerializableModel):
                     giskard_cls = CloudpickleSerializableModel
                 # if save_model and load_model are overriden, replace them, if not, these equalities will be identities.
                 possibly_overriden_cls = cls
-                possibly_overriden_cls.save_model = giskard_cls.save_model
-                possibly_overriden_cls.load_model = giskard_cls.load_model
                 possibly_overriden_cls.should_save_model_class = True
             elif giskard_cls:
                 input_type = "'prediction_function'" if giskard_cls == PredictionFunctionModel else "'model'"
@@ -147,7 +149,7 @@ class Model(CloudpickleSerializableModel):
                     "\n- Pass a prediction_function to the Model class "
                     '(we will try to serialize it with "cloudpickle").'
                     "\n- Extend the Model class and override "
-                    'the abstract "model_predict" method. Upon upload to the Giskard server, we will try to serialise'
+                    'the abstract "model_predict" method. Upon upload to the Giskard hub, we will try to serialise'
                     'it with "cloudpickle", if that does not work, we will ask you to override the "save_model" and'
                     '"load_model" with your own serialization methods.'
                     "\nWe recommend that you follow our documentation page: "
@@ -163,6 +165,7 @@ class Model(CloudpickleSerializableModel):
                 data_preprocessing_function=data_preprocessing_function,
                 model_postprocessing_function=model_postprocessing_function,
                 name=name,
+                description=description,
                 feature_names=list(feature_names) if feature_names is not None else None,
                 classification_threshold=classification_threshold,
                 classification_labels=classification_labels,

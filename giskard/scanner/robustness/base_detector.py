@@ -5,15 +5,17 @@ import numpy as np
 import pandas as pd
 
 from ...datasets.base import Dataset
+from ...llm import LLMImportError
 from ...models.base import BaseModel
 from ..issues import Issue, IssueLevel, Robustness
-from ..llm.utils import LLMImportError
 from ..logger import logger
 from ..registry import Detector
 from .text_transformations import TextTransformation
 
 
 class BaseTextPerturbationDetector(Detector):
+    """Base class for metamorphic detectors based on text transformations."""
+
     _issue_group = Robustness
 
     def __init__(
@@ -23,12 +25,32 @@ class BaseTextPerturbationDetector(Detector):
         output_sensitivity=None,
         num_samples: Optional[int] = None,
     ):
+        """Creates a new instance of the detector.
+
+        Parameters
+        ----------
+        transformations: Sequence[TextTransformation], optional
+            The text transformations used in the metamorphic testing. See :ref:`transformation_functions` for details
+            about the available transformations. If not provided, a default set of transformations will be used.
+        threshold: float, optional
+            The threshold for the fail rate, which is defined as the proportion of samples for which the model
+            prediction has changed. If the fail rate is greater than the threshold, an issue is created.
+            If not provided, a default threshold will be used.
+        output_sensitivity: float, optional
+            For regression models, the output sensitivity is the maximum relative change in the prediction that is
+            considered acceptable. If the relative change is greater than the output sensitivity, an issue is created.
+            This parameter is ignored for classification models. If not provided, a default output sensitivity will be
+            used.
+        num_samples: int, optional
+            The maximum number of samples to use for the metamorphic testing. If not provided, a default number of
+            samples will be used.
+        """
         self.transformations = transformations
         self.threshold = threshold
         self.num_samples = num_samples
         self.output_sensitivity = output_sensitivity
 
-    def run(self, model: BaseModel, dataset: Dataset) -> Sequence[Issue]:
+    def run(self, model: BaseModel, dataset: Dataset, **kwargs) -> Sequence[Issue]:
         transformations = self.transformations or self._get_default_transformations(model, dataset)
         features = [
             col
@@ -195,8 +217,6 @@ def _generate_robustness_tests(issue: Issue):
     # Only generates a single metamorphic test
     return {
         f"Invariance to “{issue.transformation_fn}”": test_metamorphic_invariance(
-            model=issue.model,
-            dataset=issue.dataset,
             transformation_function=issue.transformation_fn,
             slicing_function=None,
             threshold=1 - issue.meta["threshold"],

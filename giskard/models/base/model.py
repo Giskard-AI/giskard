@@ -1,5 +1,3 @@
-from typing import Iterable, Optional, Union
-
 import builtins
 import importlib
 import logging
@@ -10,11 +8,14 @@ import tempfile
 import uuid
 from abc import ABC, abstractmethod
 from pathlib import Path
+from typing import Iterable, List, Optional, Type, Union
 
 import cloudpickle
 import numpy as np
 import pandas as pd
 import yaml
+
+from giskard.client.dtos import ModelMetaInfo
 
 from ...client.giskard_client import GiskardClient
 from ...core.core import ModelMeta, ModelType, SupportedModelTypes
@@ -34,6 +35,23 @@ META_FILENAME = "giskard-model-meta.yaml"
 MODEL_CLASS_PKL = "ModelClass.pkl"
 
 logger = logging.getLogger(__name__)
+
+
+def _validate_text_generation_params(name, description, feature_names):
+    if not name or not description:
+        raise ValueError(
+            "The parameters 'name' and 'description' are required for 'text_generation' models, please make sure you "
+            "pass them when wrapping your model. Both are very important in order for the LLM-assisted testing and "
+            "scan to work properly. Name and description should briefly describe the expected behavior of your model. "
+            "Check our documentation for more information."
+        )
+
+    if not feature_names:
+        raise ValueError(
+            "The parameter 'feature_names' is required for 'text_generation' models. It is a list of the input "
+            "variables for your model, e.g. ['question', 'user_language']. Please make sure to set this parameter "
+            "when wrapping your model."
+        )
 
 
 class BaseModel(ABC):
@@ -80,6 +98,7 @@ class BaseModel(ABC):
         self,
         model_type: ModelType,
         name: Optional[str] = None,
+        description: Optional[str] = None,
         feature_names: Optional[Iterable] = None,
         classification_threshold: Optional[float] = 0.5,
         classification_labels: Optional[Iterable] = None,
@@ -92,6 +111,7 @@ class BaseModel(ABC):
         Parameters:
             model_type (ModelType): Type of the model, either ModelType.REGRESSION or ModelType.CLASSIFICATION.
             name (str, optional): Name of the model. If not provided, defaults to the class name.
+            description (str, optional): Description of the model's task. Mandatory for non-langchain text_generation models.
             feature_names (Iterable, optional): A list of names of the input features.
             classification_threshold (float, optional): Threshold value used for classification models. Defaults to 0.5.
             classification_labels (Iterable, optional): A list of labels for classification models.
@@ -126,8 +146,12 @@ class BaseModel(ABC):
         if model_type == SupportedModelTypes.CLASSIFICATION and not classification_labels:
             raise ValueError("The parameter 'classification_labels' is required if 'model_type' is 'classification'.")
 
+        if model_type == SupportedModelTypes.TEXT_GENERATION:
+            _validate_text_generation_params(name, description, feature_names)
+
         self.meta = ModelMeta(
             name=name if name is not None else self.__class__.__name__,
+            description=description if description is not None else "No description",
             model_type=model_type,
             feature_names=list(feature_names) if feature_names is not None else None,
             classification_labels=np_types_to_native(classification_labels),
@@ -177,7 +201,7 @@ class BaseModel(ABC):
             return getattr(importlib.import_module(meta.loader_module), meta.loader_class)
 
     def save_meta(self, local_path):
-        with open(Path(local_path) / META_FILENAME, "w") as f:
+        with (Path(local_path) / META_FILENAME).open(mode="w", encoding="utf-8") as f:
             yaml.dump(
                 {
                     "language_version": platform.python_version(),
@@ -190,6 +214,7 @@ class BaseModel(ABC):
                     "loader_class": self.meta.loader_class,
                     "id": str(self.id),
                     "name": self.meta.name,
+                    "description": self.meta.description,
                     "size": get_size(local_path),
                 },
                 f,
@@ -379,10 +404,10 @@ class BaseModel(ABC):
     @classmethod
     def download(cls, client: Optional[GiskardClient], project_key, model_id):
         """
-        Downloads the specified model from the Giskard server and loads it into memory.
+        Downloads the specified model from the Giskard hub and loads it into memory.
 
         Args:
-            client (GiskardClient): The client instance that will connect to the Giskard server.
+            client (GiskardClient): The client instance that will connect to the Giskard hub.
             project_key (str): The key for the project that the model belongs to.
             model_id (str): The ID of the model to download.
 
@@ -399,18 +424,20 @@ class BaseModel(ABC):
             _, meta = cls.read_meta_from_local_dir(local_dir)
         else:
             client.load_artifact(local_dir, posixpath.join(project_key, "models", model_id))
-            meta_response = client.load_model_meta(project_key, model_id)
+            meta_response: ModelMetaInfo = client.load_model_meta(project_key, model_id)
             # internal worker case, no token based http client
-            assert local_dir.exists(), f"Cannot find existing model {project_key}.{model_id} in {local_dir}"
-            with open(Path(local_dir) / META_FILENAME) as f:
+            if not local_dir.exists():
+                raise RuntimeError(f"Cannot find existing model {project_key}.{model_id} in {local_dir}")
+            with (Path(local_dir) / META_FILENAME).open(encoding="utf-8") as f:
                 file_meta = yaml.load(f, Loader=yaml.Loader)
                 classification_labels = cls.cast_labels(meta_response)
                 meta = ModelMeta(
-                    name=meta_response["name"],
-                    model_type=SupportedModelTypes[meta_response["modelType"]],
-                    feature_names=meta_response["featureNames"],
+                    name=meta_response.name,
+                    description=meta_response.description,
+                    model_type=SupportedModelTypes[meta_response.modelType],
+                    feature_names=meta_response.featureNames,
                     classification_labels=classification_labels,
-                    classification_threshold=meta_response["threshold"],
+                    classification_threshold=meta_response.threshold,
                     loader_module=file_meta["loader_module"],
                     loader_class=file_meta["loader_class"],
                 )
@@ -428,10 +455,11 @@ class BaseModel(ABC):
 
     @classmethod
     def read_meta_from_local_dir(cls, local_dir):
-        with open(Path(local_dir) / META_FILENAME) as f:
+        with (Path(local_dir) / META_FILENAME).open(encoding="utf-8") as f:
             file_meta = yaml.load(f, Loader=yaml.Loader)
             meta = ModelMeta(
                 name=file_meta["name"],
+                description=None if "description" not in file_meta else file_meta["description"],
                 model_type=SupportedModelTypes[file_meta["model_type"]],
                 feature_names=file_meta["feature_names"],
                 classification_labels=file_meta["classification_labels"],
@@ -443,9 +471,9 @@ class BaseModel(ABC):
         return file_meta["id"], meta
 
     @classmethod
-    def cast_labels(cls, meta_response):
-        labels_ = meta_response["classificationLabels"]
-        labels_dtype = meta_response["classificationLabelsDtype"]
+    def cast_labels(cls, meta_response: ModelMetaInfo) -> List[Union[str, Type]]:
+        labels_ = meta_response.classificationLabels
+        labels_dtype = meta_response.classificationLabelsDtype
         if labels_ and labels_dtype and builtins.hasattr(builtins, labels_dtype):
             dtype = builtins.getattr(builtins, labels_dtype)
             labels_ = [dtype(i) for i in labels_]
@@ -475,31 +503,4 @@ class BaseModel(ABC):
             )
 
     def to_mlflow(self):
-        raise NotImplementedError
-
-    def _llm_agent(self, dataset=None, allow_dataset_queries: bool = False, scan_result=None):
-        from ...llm.config import llm_config
-        from ...llm.talk.talk import create_ml_llm
-
-        data_source_tools = []
-        if allow_dataset_queries:
-            if dataset is None:
-                raise ValueError("Please provide a dataset to allow_dataset_queries")
-            from langchain.agents import create_pandas_dataframe_agent
-            from langchain.tools import Tool
-
-            agent = create_pandas_dataframe_agent(llm_config.default_llm, dataset.df, verbose=False)
-            data_source_tools.append(
-                Tool.from_function(
-                    func=agent.run,
-                    name=f"{self.meta.name if self.meta.name is not None else 'model'}_info",
-                    description="Useful for when you need to find information to predict the model. "
-                    + "The input is a natural language request. "
-                    + "Example: 'give me all info of the row about ...'",
-                )
-            )
-
-        return create_ml_llm(llm_config.default_llm, self, dataset, data_source_tools, scan_result)
-
-    def talk(self, question: str, dataset=None, allow_dataset_queries: bool = False, scan_report=None):
-        return self._llm_agent(dataset, allow_dataset_queries, scan_report).run(question)
+        raise NotImplementedError()

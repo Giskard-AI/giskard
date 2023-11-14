@@ -4,24 +4,17 @@
 </p>
 <h1 align="center" weight='300' >The testing framework dedicated to ML models, from tabular to LLMs</h1>
 <h3 align="center" weight='300' >Scan AI models to detect risks of biases, performance issues and errors. In 4 lines of code. </h3>
-<p align="center">
-   <a href="https://github.com/Giskard-AI/giskard/releases">
-      <img alt="GitHub release" src="https://img.shields.io/github/v/release/Giskard-AI/giskard">
-  </a>
- <a href="https://github.com/Giskard-AI/giskard/blob/main/LICENSE">
-     <img alt="GitHub" src="https://img.shields.io/badge/License-Apache_2.0-blue.svg">
- </a>
-  <a href="https://github.com/Giskard-AI/giskard/actions/workflows/build_backend.yml?query=branch%3Amain">
-    <img alt="build" src="https://github.com/Giskard-AI/giskard/actions/workflows/build_backend.yml/badge.svg?branch=main"/>
- </a>
-  <a href="https://sonarcloud.io/summary/new_code?id=giskard">
-    <img alt="build" src="https://sonarcloud.io/api/project_badges/measure?project=giskard&metric=alert_status"/>
- </a>
-  <a href="https://gisk.ar/discord">
-    <img alt="Giskard on Discord" src="https://img.shields.io/discord/939190303397666868?label=Discord"/>
-  </a>
+<div align="center">
+
+  [![GitHub release](https://img.shields.io/github/v/release/Giskard-AI/giskard)](https://github.com/Giskard-AI/giskard/releases)
+  [![License](https://img.shields.io/badge/License-Apache_2.0-blue.svg)](https://github.com/Giskard-AI/giskard/blob/main/LICENSE)
+  [![CI](https://github.com/Giskard-AI/giskard/actions/workflows/build-python.yml/badge.svg?branch=main)](https://github.com/Giskard-AI/giskard/actions/workflows/build-python.yml?query=branch%3Amain)
+  [![Sonar](https://sonarcloud.io/api/project_badges/measure?project=giskard&metric=alert_status)](https://sonarcloud.io/summary/new_code?id=giskard)
+  [![Giskard on Discord](https://img.shields.io/discord/939190303397666868?label=Discord)](https://gisk.ar/discord)
+
   <a rel="me" href="https://fosstodon.org/@Giskard"></a>
-</p>
+
+</div>
 <h3 align="center">
    <a href="https://docs.giskard.ai/en/latest/getting-started/quickstart.html"><b>Documentation</b></a> &bull;
    <a href="https://www.giskard.ai/knowledge-categories/blog/?utm_source=github&utm_medium=github&utm_campaign=github_readme&utm_id=readmeblog"><b>Blog</b></a> &bull;
@@ -34,11 +27,11 @@
 ## Install Giskard 🐢
 You can install the latest version of Giskard from PyPi using pip :
 ```sh
-pip install "giskard[server]>=2.0.0b" -U
+pip install giskard -U
 ```
-We officially support Python 3.8, 3.9, 3.10 and 3.11.
+We officially support Python 3.9, 3.10 and 3.11.
 ## Try in Colab 📙
-[Open Colab notebook](https://colab.research.google.com/github/giskard-ai/giskard/blob/main/docs/getting-started/quickstart.ipynb)
+[Open Colab notebook](https://colab.research.google.com/github/giskard-ai/giskard/blob/main/docs/getting_started/quickstart/quickstart_llm.ipynb)
 
 ______________________________________________________________________
 
@@ -112,7 +105,6 @@ giskard_model = giskard.Model(
     classification_labels=demo_sklearn_model.classes_,  # Their order MUST be identical to the prediction_function's output order
     feature_names=['PassengerId', 'Pclass', 'Name', 'Sex', 'Age', 'SibSp', 'Parch', 'Fare', 'Embarked'],  # Default: all columns of your dataset
 )
-
 ```
 
 ✨✨✨Then run giskard's magical scan✨✨✨
@@ -124,7 +116,7 @@ Once the scan completes, you can display the results directly in your notebook:
 ```python
 display(scan_results)
 ```
-*If you're facing issues, check out our wrapping [model](https://docs.giskard.ai/en/latest/guides/wrap_model/index.html) & [dataset](https://docs.giskard.ai/en/latest/guides/wrap_dataset/index.html) docs for more information.*
+*If you're facing issues, check out our wrapping [model](https://docs.giskard.ai/en/latest/open_source/scan/scan_tabular/index.html) & [dataset](https://docs.giskard.ai/en/latest/open_source/scan/scan_tabular/index.html) docs for more information.*
 ## 2. 🪄 Automatically generate a test suite
 
 If the scan found potential issues in your model, you can automatically generate a **test suite** based on the vulnerabilities found:
@@ -137,11 +129,11 @@ You can then run the test suite locally to verify that it reproduces the issues:
 test_suite.run()
 ```
 
-Test suites are reusable objects that provide a way to apply consistent checks on your models. To drill down on failing tests and get even more out of the giskard library, we recommend heading over to the Giskard server ⤵️
+Test suites are reusable objects that provide a way to apply consistent checks on your models. To drill down on failing tests and get even more out of the giskard library, we recommend heading over to the Giskard hub ⤵️
 
 # ⭐️ Premium Features
 
-The Giskard server is Giskard's premium offering. It provides a number of additional capabilities that are not available in the open-source version of Giskard, including:
+The Giskard hub is Giskard's premium offering. It provides a number of additional capabilities that are not available in the open-source version of Giskard, including:
 
 - **Advanced test generation**: This includes the ability to to diagnose failing tests, debug your models and create more domain-specific tests.
 - **Model comparison**: This includes the ability to compare models in order to decide which one to promote,
@@ -154,39 +146,40 @@ If you are interested in learning more about Giskard's premium offering, please 
   <img src="readme/catalog_example.png" alt="Scan Example" width="700px">
 </p>
 
-## 1. Start the Giskard server
+## 1. Start the Giskard hub
 
-To start the **Giskard server**, run the following command:
+To start the **Giskard hub**, run the following command:
 ```sh
-giskard server start
+pip install giskard[hub] -U
+giskard hub start
 ```
 
 🚀 That's it! Access it at http://localhost:19000
 
-## 2. Upload your test suite to the Giskard server
+## 2. Upload your test suite to the Giskard hub
 
-You can then **upload the test suite** created using the `giskard` Python library to the Giskard server. This will enable you to:
+You can then **upload the test suite** created using the `giskard` Python library to the Giskard hub. This will enable you to:
 - Compare the quality of different models to decide which one to promote
 - Debug your tests to diagnose identified vulnerabilities
 - Create more domain-specific tests relevant to your use-case
 - Share results, and collaborate with your team to integrate business feedback
 
-1. First, make sure Giskard server is installed
+1. First, make sure Giskard hub is installed
     <details>
-      <summary>How to check if the Giskard server is running</summary>
+      <summary>How to check if the Giskard hub is running</summary>
 
       - check if http://localhost:19000 is running
-      - or use `giskard server status`
+      - or use `giskard hub status`
     </details>
 
 2. Then execute the ML worker in your notebook:
     ```python
-       !giskard worker start -d -k YOUR_KEY
+    !giskard worker start -d -k YOUR_KEY
     ```
 
-3. Finally upload your test suite to the giskard server using the following code:
+3. Finally upload your test suite to the giskard hub using the following code:
     ```python
-    key = "API_KEY"  # Find it in Settings in the Giskard server
+    key = "API_KEY"  # Find it in Settings in the Giskard hub
     client = giskard.GiskardClient(
         url="http://localhost:19000", key=key  # URL of your Giskard instance
     )
@@ -197,7 +190,7 @@ You can then **upload the test suite** created using the `giskard` Python librar
     test_suite.upload(client, "my_project")
     ```
 
-> **The Giskard server is installed on your infrastructure.**
+> **The Giskard hub is installed on your infrastructure.**
 >
 > Giskard as a company does not have access to your datasets and models, so you can keep everything private.
 
@@ -213,17 +206,17 @@ You can then **upload the test suite** created using the `giskard` Python librar
 <details>
   <summary>How to get the API key</summary>
 
-  Access the API key in the Settings tab of the Giskard server.
+  Access the API key in the Settings tab of the Giskard hub.
 </details>
 
 <details>
-  <summary>If Giskard server/ML worker is not installed</summary>
+  <summary>If Giskard hub/ML worker is not installed</summary>
 
-  Go to the [Run the Giskard Server](https://docs.giskard.ai/en/latest/guides/installation_app/index.html) page.
+  Go to the [Install the Giskard Hub](https://docs.giskard.ai/en/latest/giskard_hub/installation_hub/index.html) page.
 </details>
 
 <details>
-  <summary>If Giskard server is installed on an external server</summary>
+  <summary>If Giskard hub is installed on an external server</summary>
 
   ```python
     !giskard worker start -d -k YOUR_KEY -u http://ec2-13-50-XXXX.compute.amazonaws.com:19000/
@@ -231,9 +224,9 @@ You can then **upload the test suite** created using the `giskard` Python librar
 </details>
 
 <details>
-  <summary>For more information on uploading to your local Giskard server</summary>
+  <summary>For more information on uploading to your local Giskard hub</summary>
 
-  Go to the [Upload an object to the Giskard server](https://docs.giskard.ai/en/latest/guides/upload/index.html) page.
+  Go to the [Upload an object to the Giskard hub](https://docs.giskard.ai/en/latest/giskard_hub/upload/index.html) page.
 </details>
 
 For any other questions and doubts, head over to our [Discord](https://gisk.ar/discord).

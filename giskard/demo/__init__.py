@@ -1,4 +1,4 @@
-from . import titanic_classification, linear_regression
+from . import linear_regression, titanic_classification
 
 
 def titanic_df():

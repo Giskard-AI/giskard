@@ -38,7 +38,7 @@ def check_latest_giskard_version():
         current_version = giskard.__version__
         if not is_pre_release(current_version):
             return
-        respose = requests.get("https://pypi.org/pypi/giskard/json").json()
+        respose = requests.get("https://pypi.org/pypi/giskard/json", timeout=3).json()
         releases = respose.get("releases")
         releases_dates = {}
         if current_version not in releases:

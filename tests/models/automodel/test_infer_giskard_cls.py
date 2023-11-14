@@ -1,3 +1,5 @@
+import pytest
+
 from giskard.models.automodel import _infer_giskard_cls
 from giskard.models.catboost import CatboostModel
 from giskard.models.function import PredictionFunctionModel
@@ -54,6 +56,7 @@ def huggingface_model():
     return AutoModelForSequenceClassification.from_pretrained("camembert-base").to("cpu")
 
 
+@pytest.mark.memory_expensive
 def test_infer_giskard_cls(german_credit_raw_model, german_credit_catboost_raw_model):
     giskard_cls = _infer_giskard_cls(lambda x: x**2)
     assert giskard_cls == PredictionFunctionModel

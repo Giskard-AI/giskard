@@ -2,9 +2,7 @@ from typing import Any, Dict, List, Optional
 
 import logging
 import os
-import posixpath
 import shutil
-from pathlib import Path
 
 from mlflow.store.artifact.artifact_repo import verify_artifact_path
 
@@ -22,7 +20,6 @@ from giskard.ml_worker.websocket import (
     EchoMsg,
     ExplainParam,
     ExplainTextParam,
-    GenerateTestSuiteParam,
     GetInfoParam,
     GetPushParam,
     RunAdHocTestParam,
@@ -57,8 +54,6 @@ def parse_action_param(action: MLWorkerAction, params):
         return ExplainTextParam.parse_obj(params)
     elif action == MLWorkerAction.echo:
         return EchoMsg.parse_obj(params)
-    elif action == MLWorkerAction.generateTestSuite:
-        return GenerateTestSuiteParam.parse_obj(params)
     elif action == MLWorkerAction.getPush:
         return GetPushParam.parse_obj(params)
     return params
@@ -118,9 +113,11 @@ def log_artifact_local(local_file, artifact_path=None):
 
     file_name = os.path.basename(local_file)
 
-    paths = (projects_dir, artifact_path, file_name) if artifact_path else (projects_dir, file_name)
-    artifact_file = posixpath.join("/", *paths)
-    Path(artifact_file).parent.mkdir(parents=True, exist_ok=True)
+    if artifact_path:
+        artifact_file = projects_dir / artifact_path / file_name
+    else:
+        artifact_file = projects_dir / file_name
+    artifact_file.parent.mkdir(parents=True, exist_ok=True)
 
     shutil.copy(local_file, artifact_file)
 
@@ -194,7 +191,7 @@ def parse_function_arguments(client: Optional[GiskardClient], request_arguments:
         elif arg.kwargs is not None:
             kwargs = dict()
             exec(arg.kwargs, {"kwargs": kwargs})
-            arguments.update(kwargs)
+            arguments[arg.name] = kwargs
         else:
             raise IllegalArgumentError("Unknown argument type")
     return arguments
@@ -251,7 +248,9 @@ def do_run_adhoc_test(client, arguments, test, debug_info=None):
                 + "but extract_debug_info did not return the information needed."
             )
 
-        test_result.output_df.name += debug_info["suffix"]
+        if test_result.output_df.name is not None:
+            # Dataset can have empty name
+            test_result.output_df.name += debug_info["suffix"]
 
         test_result.output_df_id = test_result.output_df.upload(client=client, project_key=debug_info["project_key"])
         # We won't return output_df from WS, rather upload it
@@ -277,6 +276,7 @@ def map_suite_input_ws(i: websocket.SuiteInput):
 
 def function_argument_to_ws(value: Dict[str, Any]):
     args = list()
+    kwargs = dict()
 
     for v in value:
         obj = value[v]
@@ -295,8 +295,6 @@ def function_argument_to_ws(value: Dict[str, Any]):
                 args=function_argument_to_ws(obj.params),
                 none=False,
             )
-        #     arguments[arg.name] = SlicingFunction.load(arg.slicingFunction.id, self.client, None)(
-        #         **self.parse_function_arguments(arg.args))
         elif isinstance(obj, TransformationFunction):
             funcargs = websocket.FuncArgument(
                 name=v,
@@ -304,20 +302,26 @@ def function_argument_to_ws(value: Dict[str, Any]):
                 args=function_argument_to_ws(obj.params),
                 none=False,
             )
-        #     arguments[arg.name] = TransformationFunction.load(arg.transformationFunction.id, self.client, None)(
-        #         **self.parse_function_arguments(arg.args))
         elif isinstance(obj, float):
             funcargs = websocket.FuncArgument(name=v, float=obj, none=False)
-        elif isinstance(obj, int):
+        elif isinstance(obj, int) and not isinstance(obj, bool):  # Avoid bool being considered as int
             funcargs = websocket.FuncArgument(name=v, int=obj, none=False)
         elif isinstance(obj, str):
             funcargs = websocket.FuncArgument(name=v, str=obj, none=False)
         elif isinstance(obj, bool):
             funcargs = websocket.FuncArgument(name=v, bool=obj, none=False)
-        elif isinstance(obj, dict):
-            funcargs = websocket.FuncArgument(name=v, kwargs=str(obj), none=False)
         else:
-            raise IllegalArgumentError("Unknown argument type")
+            kwargs[v] = obj
+            continue
         args.append(funcargs)
+
+    if len(kwargs) > 0:
+        args.append(
+            websocket.FuncArgument(
+                name="kwargs",
+                kwargs="\n".join([f"kwargs[{repr(key)}] = {repr(value)}" for key, value in kwargs.items()]),
+                none=False,
+            )
+        )
 
     return args

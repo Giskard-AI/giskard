@@ -1,18 +1,17 @@
 import datetime
-from time import perf_counter
-import pandas as pd
-from typing import Sequence
 from abc import abstractmethod
+from time import perf_counter
+from typing import Sequence
 
-from ...slicing.slice_finder import SliceFinder
+import pandas as pd
 
-from ..registry import Detector
-
-from ...models.base import BaseModel
 from ...datasets.base import Dataset
 from ...ml_worker.testing.registry.slicing_function import SlicingFunction
-from ..logger import logger
+from ...models.base import BaseModel
+from ...slicing.slice_finder import SliceFinder
 from ..issues import Issue
+from ..logger import logger
+from ..registry import Detector
 
 
 class LossBasedDetector(Detector):
@@ -22,7 +21,7 @@ class LossBasedDetector(Detector):
 
     _needs_target = True
 
-    def run(self, model: BaseModel, dataset: Dataset):
+    def run(self, model: BaseModel, dataset: Dataset, **kwargs):
         if self._needs_target and dataset.target is None:
             logger.info(f"{self.__class__.__name__}: Skipping detection because the dataset has no target column.")
             return []
@@ -96,8 +95,11 @@ class LossBasedDetector(Detector):
         sliced = sf.run(dataset_with_meta, features, target=self.LOSS_COLUMN_NAME)
         slices = sum(sliced.values(), start=[])
 
-        # Keep only slices of size at least 5% of the dataset or 20 samples (whatever is larger)
-        slices = [s for s in slices if max(0.05 * len(dataset), 20) <= len(dataset_with_meta.slice(s))]
+        # Keep only slices of size at least 5% of the dataset or 20 samples (whatever is larger) and conversely exclude
+        # slices which are larger than 95% of the dataset
+        slices = [
+            s for s in slices if max(0.05 * len(dataset), 20) <= len(dataset_with_meta.slice(s)) <= 0.95 * len(dataset)
+        ]
 
         return slices
 

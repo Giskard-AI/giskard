@@ -5,8 +5,12 @@ import pytest
 import giskard.testing.tests.metamorphic as metamorphic
 from giskard import Dataset, Model
 from giskard.ml_worker.testing.registry.transformation_function import transformation_function
-from giskard.ml_worker.testing.stat_utils import equivalence_t_test, paired_t_test
-from giskard.ml_worker.testing.stat_utils import equivalence_wilcoxon, paired_wilcoxon
+from giskard.ml_worker.testing.stat_utils import (
+    equivalence_t_test,
+    equivalence_wilcoxon,
+    paired_t_test,
+    paired_wilcoxon,
+)
 from giskard.ml_worker.testing.utils import Direction
 
 
@@ -249,6 +253,7 @@ def test_metamorphic_invariance_wilcoxon_nopert(german_credit_test_data, german_
     assert results.passed, f"metric = {results.metric}"
 
 
+@pytest.mark.memory_expensive
 def test_metamorphic_invariance_llm():
     from langchain.chains import LLMChain
     from langchain.llms.fake import FakeListLLM
@@ -267,7 +272,9 @@ def test_metamorphic_invariance_llm():
     )
     chain = LLMChain(llm=llm, prompt=prompt)
 
-    wrapped_model = Model(chain, model_type="text_generation")
+    wrapped_model = Model(
+        chain, model_type="text_generation", name="demo", description="demo", feature_names=["product"]
+    )
     df = pd.DataFrame(["colorful socks", "electric car"], columns=["product"])
 
     wrapped_dataset = Dataset(df, cat_columns=[])

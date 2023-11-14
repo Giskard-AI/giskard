@@ -1,3 +1,5 @@
+from typing import Generic, Optional, Set
+
 import inspect
 import logging
 import os
@@ -6,7 +8,6 @@ import posixpath
 import sys
 from abc import ABC, abstractmethod
 from pathlib import Path
-from typing import Optional, Generic
 
 import cloudpickle
 import yaml
@@ -28,6 +29,10 @@ class Artifact(Generic[SMT], ABC):
     def save(self, local_dir: Path):
         self._save_locally(local_dir)
         self._save_meta_locally(local_dir)
+
+    @property
+    def dependencies(self) -> Set["Artifact"]:
+        return set()
 
     @abstractmethod
     def _save_locally(self, local_dit: Path):
@@ -64,20 +69,35 @@ class Artifact(Generic[SMT], ABC):
             return None
 
         with open(file, "r") as f:
-            return cls._get_meta_class(**yaml.load(f, Loader=yaml.FullLoader))
+            # PyYAML prohibits the arbitary execution so our class cannot be loaded safely,
+            # see: https://github.com/yaml/pyyaml/wiki/PyYAML-yaml.load(input)-Deprecation
+            return yaml.load(f, Loader=yaml.UnsafeLoader)
 
-    def upload(self, client: GiskardClient, project_key: Optional[str] = None) -> str:
+    def upload(
+        self,
+        client: GiskardClient,
+        project_key: Optional[str] = None,
+        uploaded_dependencies: Optional[Set["Artifact"]] = None,
+    ) -> str:
         """
-        Uploads the slicing function and its metadata to the Giskard server.
+        Uploads the slicing function and its metadata to the Giskard hub.
 
         Args:
-            client (GiskardClient): The Giskard client instance used for communication with the server.
+            client (GiskardClient): The Giskard client instance used for communication with the hub.
             project_key (str, optional): The project key where the slicing function will be uploaded. If None, the function
                 will be uploaded to the global scope. Defaults to None.
 
         Returns:
             str: The UUID of the uploaded slicing function.
         """
+
+        # Upload dependencies and prevent cycle/multiple upload
+        uploaded_dependencies = uploaded_dependencies or set()
+        uploaded_dependencies.add(self)
+        for dependency in self.dependencies:
+            if dependency not in uploaded_dependencies:
+                dependency.upload(client, project_key, uploaded_dependencies)
+
         name = self._get_name()
 
         local_dir = settings.home_dir / settings.cache_dir / (project_key or "global") / name / self.meta.uuid
@@ -95,11 +115,11 @@ class Artifact(Generic[SMT], ABC):
     @classmethod
     def download(cls, uuid: str, client: Optional[GiskardClient], project_key: Optional[str]) -> "Artifact":
         """
-        Downloads the artifact from the Giskard server or retrieves it from the local cache.
+        Downloads the artifact from the Giskard hub or retrieves it from the local cache.
 
         Args:
             uuid (str): The UUID of the artifact to download.
-            client (GiskardClient, optional): The Giskard client instance used for communication with the server. If None,
+            client (GiskardClient, optional): The Giskard client instance used for communication with the hub. If None,
                 the artifact will be retrieved from the local cache if available. Defaults to None.
             project_key (str, optional): The project key where the artifact is located. If None, the artifact will be
                 retrieved from the global scope. Defaults to None.

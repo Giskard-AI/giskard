@@ -36,7 +36,7 @@ class MLWorker:
     ws_conn: stomp.WSStompConnection
     ws_stopping: bool = False
     ws_attempts: int = 0
-    ws_max_attemps: int = 10
+    ws_max_attemps: int = settings.worker_ws_max_attemps
     ws_max_reply_payload_size: int = 8192
     ml_worker_id: str
     client: GiskardClient
@@ -64,8 +64,9 @@ class MLWorker:
             self.ml_worker_id = EXTERNAL_WORKER_ID
             # Use the URL path component provided by settings
 
-            port = backend_url.port
-            # Use 443 port if https and no given port
+            # Use 80 port by default
+            port = backend_url.port if backend_url.port else 80
+            # Fix 443 port if https and no given port
             if backend_url.scheme == "https" and backend_url.port is None:
                 port = 443
             backend_url = validate_url(
@@ -86,7 +87,7 @@ class MLWorker:
 
     def connect_websocket_client(self):
         if self.ws_attempts >= self.ws_max_attemps:
-            logger.warn("Maximum reconnection attemps reached, please retry.")
+            logger.warning("Maximum reconnection attempts reached, please retry.")
             # Exit the process
             self.stop()
             return
@@ -131,9 +132,7 @@ class MLWorker:
             if isinstance(e, WebSocketBadStatusException):
                 if e.status_code == 404:
                     # Backend may need upgrade or private HF Spaces
-                    logger.error(
-                        f"Please make sure that the version of Giskard server is above '{giskard.__version__}'"
-                    )
+                    logger.error(f"Please make sure that the version of Giskard hub is above '{giskard.__version__}'")
                 else:
                     logger.error(
                         f"WebSocket connection error {e.status_code}: "

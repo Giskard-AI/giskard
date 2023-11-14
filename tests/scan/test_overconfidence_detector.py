@@ -76,8 +76,13 @@ def test_overconfidence_issue_detection():
 
     the_test = tests[0][0]
     assert the_test.meta.name == "test_overconfidence_rate"
-    assert the_test.params["model"] == model
-    assert the_test.params["dataset"] == dataset
+
+    # model and dataset are set as default params in `Suite`
+    assert "model" not in the_test.params
+    the_test.params.update({"model": model})
+    assert "dataset" not in the_test.params
+    the_test.params.update({"dataset": dataset})
+
     assert the_test.params["p_threshold"] == approx(0.5)
 
     # Global rate is 50%, we accept a 10% deviation, thus up to 55%:

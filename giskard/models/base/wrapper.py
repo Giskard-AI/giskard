@@ -11,10 +11,10 @@ import numpy as np
 import pandas as pd
 import yaml
 
+from .model import BaseModel
+from ..utils import warn_once
 from ...core.core import ModelType
 from ...core.validation import configured_validate_arguments
-from ..utils import warn_once
-from .model import BaseModel
 
 logger = logging.getLogger(__name__)
 
@@ -242,6 +242,12 @@ class WrapperModel(BaseModel, ABC):
 
     @classmethod
     def load(cls, local_dir, **kwargs):
+        constructor_params = cls.load_constructor_params(local_dir, **kwargs)
+
+        return cls(model=cls.load_model(local_dir), **constructor_params)
+
+    @classmethod
+    def load_constructor_params(cls, local_dir, **kwargs):
         params = cls.load_wrapper_meta(local_dir)
         params["data_preprocessing_function"] = cls.load_data_preprocessing_function(local_dir)
         params["model_postprocessing_function"] = cls.load_model_postprocessing_function(local_dir)
@@ -253,7 +259,7 @@ class WrapperModel(BaseModel, ABC):
         constructor_params = constructor_params.copy()
         constructor_params.update(params)
 
-        return cls(model=cls.load_model(local_dir), **constructor_params)
+        return constructor_params
 
     @classmethod
     @abstractmethod
