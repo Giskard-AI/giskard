@@ -59,8 +59,8 @@ class LLMPromptInjectionDetector(Detector):
         for group in set(generator.groups_mapping):
             group_idx = meta_df.index[meta_df["group_mapping"] == group].tolist()
             group_dataset = dataset.slice(group_slice(group_idx=group_idx))
-            evaluator_config = meta_df.iloc[group_idx].to_dict("records")
-            evaluation_results = evaluator.evaluate(model, group_dataset, evaluator_config)
+            group_meta_df = meta_df.iloc[group_idx]
+            evaluation_results = evaluator.evaluate(model, group_dataset, group_meta_df.to_dict("records"))
             number_of_failed_prompts = len(evaluation_results.failure_examples)
             if number_of_failed_prompts == 0:
                 continue
@@ -104,7 +104,7 @@ class LLMPromptInjectionDetector(Detector):
                         "deviation": f"{number_of_failed_prompts}/{len(group_idx)} " + group_deviation_description,
                         "hide_index": True,
                         "input_prompts": dataset.df.loc[:, model.meta.feature_names],
-                        "evaluator_config": evaluator_config,
+                        "meta_df": group_meta_df,
                     },
                     examples=pd.DataFrame(evaluation_results.failure_examples),
                     tests=_generate_prompt_injection_tests,
@@ -121,6 +121,6 @@ def _generate_prompt_injection_tests(issue: Issue):
         f"Prompt injection ({issue.meta['domain'].encode('unicode_escape').decode('ascii')})": test_llm_output_against_strings(
             dataset=dataset,
             threshold=issue.meta["threshold"],
-            evaluator_config=issue.meta["evaluator_config"],
+            evaluator_config=issue.meta["meta_df"],
         )
     }

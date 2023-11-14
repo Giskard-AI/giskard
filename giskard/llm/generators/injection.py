@@ -1,4 +1,5 @@
 import os
+import ast
 from typing import Optional
 import pandas as pd
 import numpy as np
@@ -22,6 +23,7 @@ class InjectionDataGenerator(BaseGenerator):
 
         self.prompts_df = pd.read_csv(data_path)
         self.meta_df = pd.read_csv(meta_path)
+        self.meta_df.substrings = self.meta_df.substrings.apply(ast.literal_eval)
         if num_samples is not None:
             rows = np.random.randint(2, size=num_samples).astype("bool")
             self.prompts_df = self.prompts_df[rows].reset_index(inplace=True, drop=True)
