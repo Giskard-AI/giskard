@@ -42,7 +42,8 @@ jobs:
         type: string
       os:
         type: executor
-    executor: <<parameters.os>>
+    executor:
+      name: <<parameters.os>>
       python-version: <<parameters.python-version>>
     steps:
       - checkout
@@ -66,7 +67,7 @@ jobs:
       python-version:
         type: string
       os:
-        type: executor
+        type: string
     executor:
       name: <<parameters.os>>
       python-version: <<parameters.python-version>>
