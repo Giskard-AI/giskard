@@ -22,7 +22,7 @@ executors:
   windows:
     machine:
       image: windows-server-2022-gui
-    resource_class: medium
+    # resource_class: medium
     parameters:
       python-version:
         description: "Python version"
