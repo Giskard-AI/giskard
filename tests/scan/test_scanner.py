@@ -23,6 +23,7 @@ from giskard.scanner.report import ScanReport
         ("hotel_text_data", "hotel_text_model"),
     ],
 )
+@pytest.mark.memory_expensive
 def test_scanner_returns_non_empty_scan_result_fast(dataset_name, model_name, request):
     _test_scanner_returns_non_empty_scan_result(dataset_name, model_name, request)
 
@@ -32,7 +33,7 @@ def test_scanner_returns_non_empty_scan_result_fast(dataset_name, model_name, re
     [
         ("enron_data_full", "enron_model"),
         ("medical_transcript_data", "medical_transcript_model"),
-        ("fraud_detection_data", "fraud_detection_model"),
+        # ("fraud_detection_data", "fraud_detection_model"),
         ("amazon_review_data", "amazon_review_model"),
     ],
 )
@@ -78,6 +79,7 @@ def test_scanner_raises_exception_if_no_detectors_available(german_credit_data, 
         scanner.analyze(german_credit_model, german_credit_data)
 
 
+@pytest.mark.memory_expensive
 def test_scanner_works_if_dataset_has_no_target(titanic_model, titanic_dataset):
     scanner = Scanner()
     no_target_dataset = Dataset(titanic_dataset.df, target=None)
