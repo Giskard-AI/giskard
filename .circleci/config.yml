@@ -42,8 +42,7 @@ jobs:
         type: string
       os:
         type: executor
-    executor:
-      name: <<parameters.os>>
+    executor: <<parameters.os>>
       python-version: <<parameters.python-version>>
     steps:
       - checkout
@@ -70,7 +69,7 @@ jobs:
         type: executor
     executor:
       name: <<parameters.os>>
-      version: <<parameters.python-version>>
+      python-version: <<parameters.python-version>>
     parallelism: 10
     steps:
       - checkout
