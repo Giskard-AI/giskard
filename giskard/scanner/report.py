@@ -1,3 +1,4 @@
+import datetime
 import random
 import string
 import tempfile
@@ -296,3 +297,85 @@ class ScanReport:
             ) from e
 
         run.log({wandb_artifact_name: wandb.Html(html, inject=False)})
+
+    def to_avid(self, filename=None):
+        from avidtools.datamodels.components import (
+            Artifact,
+            ArtifactTypeEnum,
+            AvidTaxonomy,
+            ClassEnum,
+            Detection,
+            Impact,
+            LangValue,
+            LifecycleEnum,
+            MethodEnum,
+            Metric,
+            Problemtype,
+            Reference,
+            SepEnum,
+            TypeEnum,
+        )
+        from avidtools.datamodels.report import Affects, Report
+
+        import giskard
+
+        # Prepare artifacts
+        artifacts = [Artifact(type=ArtifactTypeEnum.model, name=self.model.meta.name)]
+        if self.dataset:
+            artifacts.append(Artifact(type=ArtifactTypeEnum.dataset, name=self.dataset.meta.name))
+
+        affects = Affects(
+            developer=[],
+            deployer=[],
+            artifacts=artifacts,
+        )
+        references = [Reference(type="source", label="Giskard Scanner", url="https://giskard.ai")]
+
+        # One report for each issue
+        date = datetime.date.today()
+        reports = []
+        for issue in self.issues:
+            report = Report(
+                affects=affects,
+                references=references,
+                reported_date=date,
+            )
+            report.description = LangValue(
+                lang="eng", value=f"The model was evaluated by Giskard Scanner {giskard.__version__}."
+            )
+            report.problemtype = Problemtype(
+                classof=ClassEnum.llm if self.model.meta.model_type == "text_generation" else ClassEnum.na,
+                type=TypeEnum.detection,
+                description=LangValue(lang="eng", value=issue.description),
+                credit=[LangValue(lang="eng", value="Giskard")],
+            )
+            if issue.meta.get("metric"):
+                report.metrics = [
+                    Metric(
+                        name=issue.meta.get("metric"),
+                        detection_method=Detection(type=MethodEnum.thres, name="Giskard Scan detector"),
+                        results={"value": issue.meta.get("metric_value")},
+                    )
+                ]
+
+            tags = [tag.split(":") for tag in issue.taxonomy if tag.startswith("avid-effect:")]
+            risk_domain = list(set([rd.title() for _, rd, _ in tags]))
+            sep_view = [SepEnum[sep.upper()] for _, _, sep in tags]
+
+            report.impact = Impact(
+                avid=AvidTaxonomy(
+                    risk_domain=risk_domain,
+                    sep_view=sep_view,
+                    lifecycle_view=[LifecycleEnum.L05],
+                    taxonomy_version="0.2",
+                )
+            )
+
+            reports.append(report)
+
+        if filename is not None:
+            with open(filename, "w") as f:
+                f.writelines(r.json() for r in reports)
+            return
+
+        return reports
