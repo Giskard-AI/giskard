@@ -20,9 +20,9 @@ executors:
       GISKARD_DEV_MODE: "True"
     resource_class: medium
   windows:
-    executor:
-      name: win/server-2022
-      size: medium
+    machine:
+      image: windows-server-2022-gui
+    resource_class: medium
     parameters:
       python-version:
         description: "Python version"
