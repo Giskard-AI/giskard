@@ -23,7 +23,7 @@ executors:
         type: string
     machine:
       image: 'windows-server-2022-gui:current'
-      resource_class: windows.medium
+      # resource_class: windows.medium
       shell: powershell.exe -ExecutionPolicy Bypass
     environment:
       GSK_DISABLE_ANALYTICS: "True"
@@ -146,13 +146,13 @@ workflows:
           name: install-<<matrix.os>>-<<matrix.python-version>>
           matrix:
             parameters:
-              os: [ubuntu, windows]
+              os: [ubuntu, windows, macos]
               python-version: ["3.9.18", "3.10.13", "3.11.6"]
       - unit-tests:
           name: test-<<matrix.os>>-<<matrix.python-version>>
           matrix:
             parameters:
-              os: [ubuntu, windows]
+              os: [ubuntu, windows, macos]
               python-version: ["3.9.18", "3.10.13", "3.11.6"]
           requires:
             - install-<<matrix.os>>-<<matrix.python-version>>
