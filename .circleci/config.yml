@@ -147,13 +147,13 @@ workflows:
           matrix:
             parameters:
               os: [ubuntu, windows, macos]
-              python-version: ["3.9.18", "3.10.13", "3.11.6"]
+              python-version: ["3.9.13", "3.10.11", "3.11.6"]
       - unit-tests:
           name: test-<<matrix.os>>-<<matrix.python-version>>
           matrix:
             parameters:
               os: [ubuntu, windows, macos]
-              python-version: ["3.9.18", "3.10.13", "3.11.6"]
+              python-version: ["3.9.13", "3.10.11", "3.11.6"]
           requires:
             - install-<<matrix.os>>-<<matrix.python-version>>
 # https://circleci.com/docs/using-matrix-jobs/
