@@ -2,27 +2,16 @@
 # See: https://circleci.com/docs/configuration-reference
 version: 2.1
 
+# https://circleci.com/docs/reusing-config/#example-of-using-an-executor-declared-in-configyml-with-matrix-jobs
 executors:
   # here we can define an executor that will be shared across different jobs
-  docker-310:
+  ubuntu:
+    parameters:
+      version:
+        description: "Python version"
+        type: string
     docker:
-      - image: cimg/python:3.10
-        environment:
-          GSK_DISABLE_ANALYTICS: "True"
-          GISKARD_DEV_MODE: "True"
-    # working_directory: /root/engine
-    resource_class: medium
-  docker-39:
-    docker:
-      - image: cimg/python:3.9
-        environment:
-          GSK_DISABLE_ANALYTICS: "True"
-          GISKARD_DEV_MODE: "True"
-    # working_directory: /root/engine
-    resource_class: medium
-  docker-311:
-    docker:
-      - image: cimg/python:3.11
+      - image: cimg/python:<<parameters.python-version>>
         environment:
           GSK_DISABLE_ANALYTICS: "True"
           GISKARD_DEV_MODE: "True"
@@ -53,7 +42,9 @@ jobs:
         type: string
       os:
         type: string
-    executor: <<parameters.os>>-<<parameters.python-version>>
+    executor:
+      name: <<parameters.os>>
+      version: <<parameters.python-version>>
     steps:
       - checkout
       - run:
@@ -77,7 +68,9 @@ jobs:
         type: string
       os:
         type: string
-    executor: <<parameters.os>>-<<parameters.python-version>>
+    executor:
+      name: <<parameters.os>>
+      version: <<parameters.python-version>>
     parallelism: 10
     steps:
       - checkout
@@ -107,15 +100,15 @@ workflows:
           name: install-<<parameters.os>>-<<parameters.python-version>>
           matrix:
             parameters:
-              os: [docker]
-              python-version: ["39", "310", "311"]
+              os: ["ubuntu"]
+              python-version: ["3.9", "3.10", "3.11"]
 
       - unit-tests:
           name: test-<<parameters.os>>-<<parameters.python-version>>
           matrix:
             parameters:
-              os: [docker]
-              python-version: ["39", "310", "311"]
+              os: ["ubuntu"]
+              python-version: ["3.9", "3.10", "3.11"]
           requires:
             - install-<<parameters.os>>-<<parameters.python-version>>
 # https://circleci.com/docs/using-matrix-jobs/
