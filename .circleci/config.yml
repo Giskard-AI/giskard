@@ -23,7 +23,7 @@ executors:
         type: string
     machine:
       image: 'windows-server-2022-gui:current'
-      # resource_class: windows.medium
+      resource_class: windows.medium
       shell: powershell.exe -ExecutionPolicy Bypass
     environment:
       GSK_DISABLE_ANALYTICS: "True"
