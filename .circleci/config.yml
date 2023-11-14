@@ -6,10 +6,10 @@ executors:
   # here we can define an executor that will be shared across different jobs
   python-executor:
     docker:
-    - image: cimg/python:3.10
-      environment:
-        GSK_DISABLE_ANALYTICS: "True"
-        GISKARD_DEV_MODE: "True"
+      - image: cimg/python:3.10
+        environment:
+          GSK_DISABLE_ANALYTICS: "True"
+          GISKARD_DEV_MODE: "True"
     # working_directory: /root/engine
     resource_class: small
 
@@ -35,7 +35,7 @@ jobs:
           paths:
             - ~/engine/.cache/poetry
           key: v1-dependencies-{{ checksum "poetry.lock" }}
-  install:
+  unit-tests:
     executor: python-executor
     parallelism: 4
     steps:
@@ -50,8 +50,8 @@ jobs:
       - run:
           name: Run tests
           command: |
-          TEST=$(circleci tests glob "tests/*.py" | circleci tests split --split-by=timings)
-          command: pdm base-test -m 'not slow' $TEST
+            TEST=$(circleci tests glob "tests/*.py" | circleci tests split --split-by=timings)
+            command: pdm base-test -m 'not slow' $TEST
 
 # Orchestrate jobs using workflows
 # See: https://circleci.com/docs/configuration-reference/#workflows
@@ -59,6 +59,6 @@ workflows:
   python-workflow:
     jobs:
       - install
-      - unit-test
+      - unit-tests:
           requires:
             - install
