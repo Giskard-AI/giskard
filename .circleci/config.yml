@@ -72,12 +72,12 @@ commands:
           condition:
             equal: [ "windows", <<parameters.os>>]
           steps:
-            - run: choco install python --version=<<parameters.python-version>> --allow-downgrade
+            - run: choco install python --version=<<parameters.python-version>> --allow-downgrade -y
       - when:
           condition:
             equal: [ "macos", <<parameters.os>>]
           steps:
-            - run: brew install python@<<parameters.python-version>>
+            - run: brew install python@$(sed -e 's/^\([0-9]\+\.[0-9]\)\+\.[0-9]\+.*$/\1/p' <<parameters.python-version>>)
       - install-pdm:
           os: <<parameters.os >>
 # See: https://circleci.com/docs/configuration-reference/#jobs
