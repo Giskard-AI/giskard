@@ -52,13 +52,13 @@ commands:
           condition:
             equal: [ "windows", <<parameters.os>>]
           steps:
-            - run: curl -sSL https://pdm-project.org/install-pdm.py | python3 -
+            - run: curl -sSL https://pdm-project.org/install-pdm.py | python -
               # name: Install PDM (Linux or others)
       - when:
           condition:
             equal: [ "windows", <<parameters.os>>]
           steps:
-            - run: (Invoke-WebRequest -Uri https://pdm-project.org/install-pdm.py -UseBasicParsing).Content | python3 -
+            - run: (Invoke-WebRequest -Uri https://pdm-project.org/install-pdm.py -UseBasicParsing).Content | python -
               # name: Install PDM (Windows)
   install-python:
     description: "Install PDM"
