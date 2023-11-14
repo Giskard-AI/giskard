@@ -87,6 +87,7 @@ def create_report_from_issue(issue: Issue, model: BaseModel, dataset: Dataset = 
 
     report.impact = Impact(
         avid=AvidTaxonomy(
+            vuln_id=None,
             risk_domain=risk_domain,
             sep_view=sep_view,
             lifecycle_view=[LifecycleEnum.L05],  # L05: Evaluation
