@@ -67,11 +67,11 @@ commands:
         type: string
     steps:
       - when:
-          condition: <<parameters.os>> == "windows"
+          condition: equal: [ "windows", <<pipeline.os>>]
           steps:
             - run: choco install python --version=<<parameters.python-version>> --allow-downgrade
       - when:
-          condition: <<parameters.os>> == "macos"
+          condition: equal: [ "macos", <<pipeline.os>>]
           steps:
             - run: brew install python@<<parameters.python-version>>
       - install-pdm:
