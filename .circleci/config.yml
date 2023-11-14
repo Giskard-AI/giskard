@@ -62,8 +62,19 @@ jobs:
 workflows:
   python-workflow:
     jobs:
-      - install
+      - install:
+          name: install-<<parameters.os>>-<<parameters.python-version>>
+          matrix:
+            parameters:
+              os: [docker, macos]
+              python-version: ["3.9", "3.10", "3.11"]
+
       - unit-tests:
+          name: test-<<parameters.os>>-<<parameters.python-version>>
+          matrix:
+            parameters:
+              os: [docker, macos]
+              python-version: ["3.9", "3.10", "3.11"]
           requires:
-            - install
+            - install-<<parameters.os>>-<<parameters.python-version>>
 # https://circleci.com/docs/using-matrix-jobs/
