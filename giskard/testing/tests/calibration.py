@@ -1,15 +1,14 @@
-import inspect
 from typing import Optional
 
 import numpy as np
 import pandas as pd
 
+from . import debug_description_prefix
 from ...datasets.base import Dataset
 from ...ml_worker.testing.registry.decorators import test
 from ...ml_worker.testing.registry.slicing_function import SlicingFunction
 from ...ml_worker.testing.test_result import TestResult
 from ...models.base import BaseModel
-from . import debug_description_prefix, debug_prefix
 
 
 def _calculate_overconfidence_score(model: BaseModel, dataset: Dataset) -> pd.Series:
@@ -42,7 +41,6 @@ def test_overconfidence_rate(
     slicing_function: Optional[SlicingFunction] = None,
     threshold: Optional[float] = 0.10,
     p_threshold: Optional[float] = None,
-    debug: bool = False,
 ):
     """Tests that the rate of overconfident predictions is below a threshold.
 
@@ -72,9 +70,6 @@ def test_overconfidence_rate(
             over which a prediction is considered overconfident. If not
             provided, it will be determined automatically depending on the
             number of classes.
-        debug(bool):
-            If True and the test fails,
-            a dataset will be provided containing the rows that have an overconfidence score larger than p_threshold.
     """
     if not model.is_classification:
         raise ValueError("This test is only applicable to classification models.")
@@ -92,15 +87,14 @@ def test_overconfidence_rate(
     passed = rate < threshold
 
     # --- debug ---
-    output_ds = None
-    if not passed and debug:
-        output_ds = dataset.copy()
-        output_ds.df = dataset.df.loc[overconfidence_mask[overconfidence_mask].index]
-        test_name = inspect.stack()[0][3]
-        output_ds.name = debug_prefix + test_name
+    failed_indexes = dict()
+    if not passed:
+        failed_indexes[str(dataset.original_id)] = list(
+            dataset.df.index.get_indexer_for(overconfidence_mask[overconfidence_mask].index)
+        )
     # ---
 
-    return TestResult(passed=bool(passed), metric=rate, output_df=output_ds)
+    return TestResult(passed=bool(passed), metric=rate, failed_indexes=failed_indexes)
 
 
 def _calculate_underconfidence_score(model: BaseModel, dataset: Dataset) -> pd.Series:
@@ -126,7 +120,6 @@ def test_underconfidence_rate(
     slicing_function: Optional[SlicingFunction] = None,
     threshold: Optional[float] = 0.10,
     p_threshold: float = 0.90,
-    debug: bool = False,
 ):
     """Tests that the rate of underconfident predictions is below a threshold.
 
@@ -156,9 +149,6 @@ def test_underconfidence_rate(
             underconfident. Default is 0.90, i.e. when the second most probable
             prediction is 90% or more with respect to the highest probability,
             the sample prediction is considered underconfident.
-        debug(bool):
-            If True and the test fails,
-            a dataset will be provided containing the rows that have an underconfidence score larger than p_threshold.
     """
     if not model.is_classification:
         raise ValueError("This test is only applicable to classification models.")
@@ -173,12 +163,11 @@ def test_underconfidence_rate(
     passed = rate < threshold
 
     # --- debug ---
-    output_ds = None
-    if not passed and debug:
-        output_ds = dataset.copy()
-        output_ds.df = dataset.df.loc[underconfidence_mask[underconfidence_mask].index]
-        test_name = inspect.stack()[0][3]
-        output_ds.name = debug_prefix + test_name
+    failed_indexes = dict()
+    if not passed:
+        failed_indexes[str(dataset.original_id)] = list(
+            dataset.df.index.get_indexer_for(underconfidence_mask[underconfidence_mask].index)
+        )
     # ---
 
-    return TestResult(passed=bool(passed), metric=rate, output_df=output_ds)
+    return TestResult(passed=bool(passed), metric=rate, failed_indexes=failed_indexes)

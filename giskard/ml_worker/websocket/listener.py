@@ -35,6 +35,7 @@ from giskard.ml_worker.utils.file_utils import get_file_name
 from giskard.ml_worker.websocket import CallToActionKind, GetInfoParam, PushKind
 from giskard.ml_worker.websocket.action import ActionPayload, MLWorkerAction
 from giskard.ml_worker.websocket.utils import (
+    do_create_sub_dataset,
     do_run_adhoc_test,
     extract_debug_info,
     function_argument_to_ws,
@@ -52,6 +53,7 @@ from giskard.push.contribution import create_contribution_push
 from giskard.push.perturbation import create_perturbation_push
 from giskard.push.prediction import create_borderline_push, create_overconfidence_push
 from giskard.settings import settings
+from giskard.testing.tests import debug_prefix
 from giskard.utils import call_in_pool
 from giskard.utils.analytics_collector import analytics
 from giskard.utils.worker_pool import GiskardMLWorkerException
@@ -497,13 +499,44 @@ def run_ad_hoc_test(
     test: GiskardTest = GiskardTest.download(params.testUuid, client, None)
 
     arguments = parse_function_arguments(client, params.arguments)
+    if params.debug:
+        arguments.update({"debug": True})
     if "kwargs" in arguments:
         arguments.update(**arguments.pop("kwargs"))
 
-    arguments["debug"] = params.debug if params.debug is not None else False
-    debug_info = extract_debug_info(params.arguments) if params.debug else None
+    test_result = do_run_adhoc_test(arguments, test)
 
-    test_result = do_run_adhoc_test(client, arguments, test, debug_info)
+    if params.debug:
+        debug_info = extract_debug_info(params.arguments)
+        dataset = None
+        if test_result.output_df is not None:
+            # For legacy debug returning output_df
+            if test_result.output_df.name:
+                # Dataset can have empty name
+                test_result.output_df.name += debug_info["suffix"]
+            dataset = test_result.output_df
+        elif len(test_result.failed_indexes) != 0:
+            # For legacy test calling new functions that return TestResult with failed_indexes
+            dataset_name = debug_prefix + test.meta.name + debug_info["suffix"]
+            parent_datasets = {
+                dataset_id: Dataset.download(
+                    client=client,
+                    project_key=debug_info["datasets"][dataset_id].project_key,
+                    dataset_id=dataset_id,
+                    sample=debug_info["datasets"][dataset_id].sample,
+                )
+                for dataset_id in test_result.failed_indexes.keys()
+            }
+            dataset = do_create_sub_dataset(parent_datasets, dataset_name, test_result.failed_indexes)
+        else:
+            raise ValueError(
+                "This test does not return any examples to debug. "
+                "Check the debugging method associated to this test at "
+                "https://docs.giskard.ai/en/latest/reference/tests/index.html"
+            )
+
+        # Upload the sub-dataset
+        test_result.output_df_id = dataset.upload(client, debug_info["project_key"])
 
     return websocket.RunAdHocTest(
         results=[
@@ -717,3 +750,19 @@ def get_push_objects(client: Optional[GiskardClient], params: websocket.GetPushP
     }
 
     return push_functions[params.push_kind](model, dataset, df)
+
+
+@websocket_actor(MLWorkerAction.createSubDataset)
+def create_sub_dataset(
+    client: Optional[GiskardClient], params: websocket.CreateSubDatasetParam, *arg, **kwargs
+) -> websocket.CreateSubDataset:
+    datasets = {
+        dateset_id: Dataset.download(
+            client=client, project_key=params.projectKey, dataset_id=dateset_id, sample=params.sample
+        )
+        for dateset_id in params.copiedRows.keys()
+    }
+
+    sub_dataset = do_create_sub_dataset(datasets, params.name, params.copiedRows)
+
+    return websocket.CreateSubDataset(datasetUuid=sub_dataset.upload(client=client, project_key=params.projectKey))
