@@ -25,7 +25,7 @@ MANDATORY_FIELDS = {
     "ArtifactRef": ["id"],
     "Catalog": ["tests", "slices", "transformations"],
     "CreateSubDataset": ["datasetUuid"],
-    "CreateSubDatasetParam": ["dataset", "projectKey", "name", "rowIndexes"],
+    "CreateSubDatasetParam": ["projectKey", "sample", "name", "copiedRows"],
     "DataFrame": ["rows"],
     "DataRow": ["columns"],
     "DatasetMeta": [],
