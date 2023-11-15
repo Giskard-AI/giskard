@@ -74,7 +74,6 @@ def test_overconfidence_rate(
     if not model.is_classification:
         raise ValueError("This test is only applicable to classification models.")
 
-    dataset_id = str(dataset.id)
     if slicing_function is not None:
         dataset = dataset.slice(slicing_function)
 
@@ -90,7 +89,7 @@ def test_overconfidence_rate(
     # --- debug ---
     failed_indexes = dict()
     if not passed:
-        failed_indexes[dataset_id] = list(
+        failed_indexes[str(dataset.original_id)] = list(
             dataset.df.index.get_indexer_for(overconfidence_mask[overconfidence_mask].index)
         )
     # ---
@@ -154,7 +153,6 @@ def test_underconfidence_rate(
     if not model.is_classification:
         raise ValueError("This test is only applicable to classification models.")
 
-    dataset_id = str(dataset.id)
     if slicing_function is not None:
         dataset = dataset.slice(slicing_function)
 
@@ -167,7 +165,7 @@ def test_underconfidence_rate(
     # --- debug ---
     failed_indexes = dict()
     if not passed:
-        failed_indexes[dataset_id] = list(
+        failed_indexes[str(dataset.original_id)] = list(
             dataset.df.index.get_indexer_for(underconfidence_mask[underconfidence_mask].index)
         )
     # ---

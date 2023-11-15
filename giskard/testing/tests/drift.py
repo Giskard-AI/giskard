@@ -261,7 +261,7 @@ def test_drift_psi(
         modalities_list = output_data[main_drifting_modalities_bool]["Modality"].tolist()
         if modalities_list:
             filtered_modalities = [w for w in modalities_list if not re.match(other_modalities_pattern, str(w))]
-            failed_indexes[str(actual_dataset.id)] = list(
+            failed_indexes[str(actual_dataset.original_id)] = list(
                 actual_dataset.df.index.get_indexer_for(
                     actual_dataset.df.loc[actual_series.isin(filtered_modalities)].index
                 )
@@ -361,7 +361,7 @@ def test_drift_chi_square(
         modalities_list = output_data[main_drifting_modalities_bool]["Modality"].tolist()
         if modalities_list:
             filtered_modalities = [w for w in modalities_list if not re.match(other_modalities_pattern, str(w))]
-            failed_indexes[str(actual_dataset.id)] = list(
+            failed_indexes[str(actual_dataset.original_id)] = list(
                 actual_dataset.df.index.get_indexer_for(
                     actual_dataset.df.loc[actual_series.isin(filtered_modalities)].index
                 )
@@ -586,7 +586,7 @@ def test_drift_prediction_psi(
         modalities_list = output_data[main_drifting_modalities_bool]["Modality"].tolist()
         if modalities_list:
             filtered_modalities = [w for w in modalities_list if not re.match(other_modalities_pattern, str(w))]
-            failed_indexes[str(actual_dataset.df)] = list(
+            failed_indexes[str(actual_dataset.original_id)] = list(
                 actual_dataset.df.index.get_indexer_for(
                     actual_dataset.df.loc[prediction_actual.isin(filtered_modalities).values].index
                 )
@@ -716,7 +716,7 @@ def test_drift_prediction_chi_square(
         modalities_list = output_data[main_drifting_modalities_bool]["Modality"].tolist()
         if modalities_list:
             filtered_modalities = [w for w in modalities_list if not re.match(other_modalities_pattern, str(w))]
-            failed_indexes[str(actual_dataset.id)] = list(
+            failed_indexes[str(actual_dataset.original_id)] = list(
                 actual_dataset.df.index.get_indexer_for(
                     actual_dataset.df.loc[prediction_actual.isin(filtered_modalities).values].index
                 )

@@ -66,7 +66,7 @@ def _test_classification_score(
     failed_indexes = dict()
     if not passed:
         failed_dataset = dataset.slice(incorrect_rows_slicing_fn(dataset.target, prediction=prediction))
-        failed_indexes[str(dataset.id)] = list(dataset.df.index.get_indexer_for(failed_dataset.df.index))
+        failed_indexes[str(dataset.original_id)] = list(dataset.df.index.get_indexer_for(failed_dataset.df.index))
     # ---
 
     return TestResult(actual_slices_size=[len(dataset)], metric=metric, passed=passed, failed_indexes=failed_indexes)
@@ -89,7 +89,7 @@ def _test_accuracy_score(
     failed_indexes = dict()
     if not passed:
         failed_dataset = dataset.slice(incorrect_rows_slicing_fn(dataset.target, prediction=prediction))
-        failed_indexes[str(dataset.id)] = list(dataset.df.index.get_indexer_for(failed_dataset.df.index))
+        failed_indexes[str(dataset.original_id)] = list(dataset.df.index.get_indexer_for(failed_dataset.df.index))
     # ---
 
     return TestResult(actual_slices_size=[len(dataset)], metric=metric, passed=passed, failed_indexes=failed_indexes)
@@ -121,7 +121,7 @@ def _test_regression_score(
                 target=dataset.target, prediction=raw_prediction, debug_percent_rows=debug_percent_rows
             )
         )
-        failed_indexes[str(dataset.id)] = list(dataset.df.index.get_indexer_for(failed_dataset.df.index))
+        failed_indexes[str(dataset.original_id)] = list(dataset.df.index.get_indexer_for(failed_dataset.df.index))
     # ---
 
     return TestResult(actual_slices_size=[len(dataset)], metric=metric, passed=passed, failed_indexes=failed_indexes)
@@ -251,7 +251,7 @@ def test_auc(
     failed_indexes = dict()
     if not passed:
         failed_dataset = dataset.slice(incorrect_rows_slicing_fn(dataset.target, prediction=_predictions.prediction))
-        failed_indexes[str(dataset.id)] = list(dataset.df.index.get_indexer_for(failed_dataset.df.index))
+        failed_indexes[str(dataset.original_id)] = list(dataset.df.index.get_indexer_for(failed_dataset.df.index))
     # ---
 
     return TestResult(actual_slices_size=[len(dataset)], metric=metric, passed=passed, failed_indexes=failed_indexes)

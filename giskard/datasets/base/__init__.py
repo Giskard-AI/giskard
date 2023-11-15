@@ -1,5 +1,3 @@
-from typing import Dict, Hashable, List, Optional, Union
-
 import inspect
 import logging
 import posixpath
@@ -7,6 +5,7 @@ import tempfile
 import uuid
 from functools import cached_property
 from pathlib import Path
+from typing import Dict, Hashable, List, Optional, Union
 
 import numpy as np
 import pandas
@@ -21,6 +20,7 @@ from giskard.client.giskard_client import GiskardClient
 from giskard.client.io_utils import compress, save_df
 from giskard.client.python_utils import warning
 from giskard.core.core import DatasetMeta, SupportedColumnTypes
+from giskard.core.errors import GiskardImportError
 from giskard.core.validation import configured_validate_arguments
 from giskard.ml_worker.testing.registry.slicing_function import SlicingFunction, SlicingFunctionType
 from giskard.ml_worker.testing.registry.transformation_function import (
@@ -28,10 +28,8 @@ from giskard.ml_worker.testing.registry.transformation_function import (
     TransformationFunctionType,
 )
 from giskard.settings import settings
-from giskard.core.errors import GiskardImportError
-
-from ...ml_worker.utils.file_utils import get_file_name
 from ..metadata.indexing import ColumnMetadataMixin
+from ...ml_worker.utils.file_utils import get_file_name
 
 try:
     import wandb  # noqa
@@ -94,6 +92,7 @@ class DataProcessor:
                 cat_columns=ds.cat_columns,
                 column_types=ds.column_types,
                 validation=False,
+                original_id=dataset.original_id,
             )
 
             if apply_only_last:
@@ -149,6 +148,7 @@ class Dataset(ColumnMetadataMixin):
     column_types: Dict[str, str]
     df: pd.DataFrame
     id: uuid.UUID
+    original_id: uuid.UUID
     data_processor: DataProcessor
 
     @configured_validate_arguments
@@ -161,6 +161,7 @@ class Dataset(ColumnMetadataMixin):
         column_types: Optional[Dict[Hashable, str]] = None,
         id: Optional[uuid.UUID] = None,
         validation=True,
+        original_id: Optional[uuid.UUID] = None,
     ) -> None:
         """
         Initializes a Dataset object.
@@ -181,6 +182,8 @@ class Dataset(ColumnMetadataMixin):
             self.id = uuid.uuid4()
         else:
             self.id = id
+        self.original_id = original_id or self.id
+
         self.name = name
         self.df = pd.DataFrame(df)
         self.target = target
