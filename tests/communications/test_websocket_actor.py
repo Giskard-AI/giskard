@@ -579,14 +579,11 @@ def test_websocket_actor_create_sub_dataset(request):
         utils.register_uri_for_any_dataset_artifact_info_upload(mr, register_files=True)
 
         params = websocket.CreateSubDatasetParam(
-            dataset=websocket.ArtifactRef(
-                project_key=project_key,
-                id=str(dataset.id),
-                sample=False,
-            ),
             projectKey=project_key,
             name="Generated sub-dataset",
-            rowIndexes=[0],
+            copiedRows={
+                str(dataset.id): [0],
+            },
         )
 
         reply = listener.create_sub_dataset(client=client, params=params)
