@@ -15,7 +15,7 @@ mlflow_model_types = {
 def _evaluate(dataset, model, evaluator_config):
 
     with TemporaryDirectory() as f:
-        mlflow.set_tracking_uri(Path("file://" + f))
+        mlflow.set_tracking_uri(Path(f))
         experiment_id = mlflow.create_experiment("test", artifact_location=f)
         with mlflow.start_run(experiment_id=experiment_id):
             model_info = model.to_mlflow()
