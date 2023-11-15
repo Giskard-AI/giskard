@@ -54,10 +54,10 @@ from giskard.push import Push
 from giskard.push.contribution import create_contribution_push
 from giskard.push.perturbation import create_perturbation_push
 from giskard.push.prediction import create_borderline_push, create_overconfidence_push
+from giskard.testing.tests import debug_prefix
 from giskard.utils import call_in_pool, shutdown_pool
 from giskard.utils.analytics_collector import analytics
 from giskard.utils.worker_pool import GiskardMLWorkerException
-from giskard.testing.tests import debug_prefix
 
 logger = logging.getLogger(__name__)
 MAX_STOMP_ML_WORKER_REPLY_SIZE = 1500
@@ -844,13 +844,13 @@ def get_push_objects(client: Optional[GiskardClient], params: websocket.GetPushP
 def create_sub_dataset(
     client: Optional[GiskardClient], params: websocket.CreateSubDatasetParam, *arg, **kwargs
 ) -> websocket.CreateSubDataset:
-    dataset = Dataset.download(
-        client=client,
-        project_key=params.projectKey,
-        dataset_id=params.dataset.id,
-        sample=params.dataset.sample
-    )
+    datasets = {
+        dateset_id: Dataset.download(
+            client=client, project_key=params.projectKey, dataset_id=dateset_id, sample=params.sample
+        )
+        for dateset_id in params.copiedRows.keys()
+    }
 
-    sub_dataset = do_create_sub_dataset(dataset, params.name, params.rowIndexes)
+    sub_dataset = do_create_sub_dataset(datasets, params.name, params.copiedRows)
 
     return websocket.CreateSubDataset(datasetUuid=sub_dataset.upload(client=client, project_key=params.projectKey))

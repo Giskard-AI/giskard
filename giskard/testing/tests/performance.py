@@ -63,10 +63,10 @@ def _test_classification_score(
     passed = bool(metric >= threshold)
 
     # --- debug ---
-    failed_indexes = list()
+    failed_indexes = dict()
     if not passed:
         failed_dataset = dataset.slice(incorrect_rows_slicing_fn(dataset.target, prediction=prediction))
-        failed_indexes = list(dataset.df.index.get_indexer_for(failed_dataset.df.index))
+        failed_indexes[str(dataset.id)] = list(dataset.df.index.get_indexer_for(failed_dataset.df.index))
     # ---
 
     return TestResult(actual_slices_size=[len(dataset)], metric=metric, passed=passed, failed_indexes=failed_indexes)
@@ -86,10 +86,10 @@ def _test_accuracy_score(
     passed = bool(metric >= threshold)
 
     # --- debug ---
-    failed_indexes = list()
+    failed_indexes = dict()
     if not passed:
         failed_dataset = dataset.slice(incorrect_rows_slicing_fn(dataset.target, prediction=prediction))
-        failed_indexes = list(dataset.df.index.get_indexer_for(failed_dataset.df.index))
+        failed_indexes[str(dataset.id)] = list(dataset.df.index.get_indexer_for(failed_dataset.df.index))
     # ---
 
     return TestResult(actual_slices_size=[len(dataset)], metric=metric, passed=passed, failed_indexes=failed_indexes)
@@ -114,14 +114,14 @@ def _test_regression_score(
     passed = bool(metric >= threshold if r2 else metric <= threshold)
 
     # --- debug ---
-    failed_indexes = list()
+    failed_indexes = dict()
     if not passed:
         failed_dataset = dataset.slice(
             nlargest_abs_err_rows_slicing_fn(
                 target=dataset.target, prediction=raw_prediction, debug_percent_rows=debug_percent_rows
             )
         )
-        failed_indexes = list(dataset.df.index.get_indexer_for(failed_dataset.df.index))
+        failed_indexes[str(dataset.id)] = list(dataset.df.index.get_indexer_for(failed_dataset.df.index))
     # ---
 
     return TestResult(actual_slices_size=[len(dataset)], metric=metric, passed=passed, failed_indexes=failed_indexes)
@@ -165,11 +165,10 @@ def _test_diff_prediction(
         raise ValueError(f"Invalid direction: {direction}")
 
     # --- debug ---
-    failed_indexes = list()
+    failed_indexes = dict()
     if not passed:
-        pass
-        # TODO: How to do with dual dataset?
-        #  failed_indexes = list(set(result_reference.failed_indexes + result_actual.failed_indexes))
+        _add_to_failed_indexes(failed_indexes, result_reference)
+        _add_to_failed_indexes(failed_indexes, result_actual)
     # ---
 
     return TestResult(
@@ -179,6 +178,19 @@ def _test_diff_prediction(
         passed=np_type_to_native(passed),
         failed_indexes=failed_indexes,
     )
+
+
+def _add_to_failed_indexes(failed_indexes, result_reference):
+    if result_reference.failed_indexes is None:
+        return
+
+    for dataset_id, idx in result_reference.failed_indexes.items():
+        if dataset_id in failed_indexes:
+            failed_indexes[dataset_id] = list(
+                set(failed_indexes[dataset_id] + result_reference.failed_indexes[dataset_id])
+            )
+        else:
+            failed_indexes[dataset_id] = result_reference.failed_indexes[dataset_id]
 
 
 @test(
@@ -236,10 +248,10 @@ def test_auc(
     passed = bool(metric >= threshold)
 
     # --- debug ---
-    failed_indexes = list()
+    failed_indexes = dict()
     if not passed:
         failed_dataset = dataset.slice(incorrect_rows_slicing_fn(dataset.target, prediction=_predictions.prediction))
-        failed_indexes = list(dataset.df.index.get_indexer_for(failed_dataset.df.index))
+        failed_indexes[str(dataset.id)] = list(dataset.df.index.get_indexer_for(failed_dataset.df.index))
     # ---
 
     return TestResult(actual_slices_size=[len(dataset)], metric=metric, passed=passed, failed_indexes=failed_indexes)

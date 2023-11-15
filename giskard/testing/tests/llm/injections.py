@@ -337,9 +337,9 @@ def test_llm_prompt_injection(
     passed = metric < threshold
 
     # --- debug ---
-    failed_indexes = []
+    failed_indexes = dict()
     if not passed:
-        failed_indexes = list(dataset.df.index.get_indexer_for(failed_idx))
+        failed_indexes[str(dataset.id)] = list(dataset.df.index.get_indexer_for(failed_idx))
     # ---
 
     result = TestResult(

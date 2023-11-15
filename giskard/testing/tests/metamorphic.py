@@ -192,9 +192,9 @@ def _test_metamorphic(
 
     passed = bool(passed_ratio > threshold)
     # --- debug ---
-    failed_indexes = list()
+    failed_indexes = dict()
     if not passed:
-        failed_indexes = list(dataset.df.index.get_indexer_for(failed_idx))
+        failed_indexes[str(dataset.id)] = list(dataset.df.index.get_indexer_for(failed_idx))
     # ---
 
     return TestResult(
@@ -433,10 +433,10 @@ def _create_test_result(
 ):
     passed = bool(p_value < critical_quantile)
     # --- debug ---
-    failed_indexes = list()
+    failed_indexes = dict()
     if not passed:
         _, failed_idx = _compare_prediction(result_df, model.meta.model_type, direction, None)
-        failed_indexes = list(dataset.df.index.get_indexer_for(failed_idx))
+        failed_indexes[str(dataset.id)] = list(dataset.df.index.get_indexer_for(failed_idx))
     # ---
     return TestResult(
         actual_slices_size=[len(dataset.df)],

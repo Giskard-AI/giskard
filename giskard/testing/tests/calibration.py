@@ -87,9 +87,11 @@ def test_overconfidence_rate(
     passed = rate < threshold
 
     # --- debug ---
-    failed_indexes = list()
+    failed_indexes = dict()
     if not passed:
-        failed_indexes = list(dataset.df.index.get_indexer_for(overconfidence_mask[overconfidence_mask].index))
+        failed_indexes[str(dataset.id)] = list(
+            dataset.df.index.get_indexer_for(overconfidence_mask[overconfidence_mask].index)
+        )
     # ---
 
     return TestResult(passed=bool(passed), metric=rate, failed_indexes=failed_indexes)
@@ -161,9 +163,11 @@ def test_underconfidence_rate(
     passed = rate < threshold
 
     # --- debug ---
-    failed_indexes = list()
+    failed_indexes = dict()
     if not passed:
-        failed_indexes = list(dataset.df.index.get_indexer_for(underconfidence_mask[underconfidence_mask].index))
+        failed_indexes[str(dataset.id)] = list(
+            dataset.df.index.get_indexer_for(underconfidence_mask[underconfidence_mask].index)
+        )
     # ---
 
     return TestResult(passed=bool(passed), metric=rate, failed_indexes=failed_indexes)

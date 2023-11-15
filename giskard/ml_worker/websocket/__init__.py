@@ -262,7 +262,7 @@ class SingleTestResult(ConfiguredBaseModel):
     actual_slices_size: Optional[List[int]] = None
     reference_slices_size: Optional[List[int]] = None
     output_df_id: Optional[str] = None
-    failed_indexes: Optional[List[int]] = None
+    failed_indexes: Optional[Dict[str, List[int]]] = None
 
 
 class IdentifierSingleTestResult(ConfiguredBaseModel):
@@ -389,10 +389,10 @@ class GetPushResponse(ConfiguredBaseModel):
 
 
 class CreateSubDatasetParam(ConfiguredBaseModel):
-    dataset: ArtifactRef
     projectKey: str
+    sample: bool
     name: str
-    rowIndexes: List[int]
+    copiedRows: Dict[str, List[int]]
 
 
 class CreateSubDataset(WorkerReply):

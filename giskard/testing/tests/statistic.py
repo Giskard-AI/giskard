@@ -68,9 +68,9 @@ def test_right_label(
     passed = bool(passed_ratio > threshold)
 
     # --- debug ---
-    failed_indexes = list()
+    failed_indexes = dict()
     if not passed:
-        failed_indexes = list(
+        failed_indexes[str(dataset.id)] = list(
             dataset.df.index.get_indexer_for(dataset.df.loc[~dataset.df.index.isin(passed_idx)].index)
         )
     # ---
@@ -274,13 +274,13 @@ def test_disparate_impact(
     passed = bool((disparate_impact_score > min_threshold) * (disparate_impact_score < max_threshold))
 
     # --- debug ---
-    failed_indexes = list()
+    failed_indexes = dict()
     if not passed:
         failed_protected = list(_protected_predictions != protected_ds.df[dataset.target])
         failed_unprotected = list(_unprotected_predictions != unprotected_ds.df[dataset.target])
         failed_idx_protected = [i for i, x in enumerate(failed_protected) if x]
         failed_idx_unprotected = [i for i, x in enumerate(failed_unprotected) if x]
-        failed_indexes = failed_idx_protected + failed_idx_unprotected
+        failed_indexes[str(dataset.id)] = failed_idx_protected + failed_idx_unprotected
     # ---
 
     return TestResult(metric=disparate_impact_score, passed=passed, messages=messages, failed_indexes=failed_indexes)
@@ -373,9 +373,9 @@ def test_nominal_association(
     passed = metric < threshold
 
     # --- debug ---
-    failed_indexes = list()
+    failed_indexes = dict()
     if not passed:
-        failed_indexes = list(dataset.df.index.get_indexer_for(sliced_dataset.df.index))
+        failed_indexes[str(dataset.id)] = list(dataset.df.index.get_indexer_for(sliced_dataset.df.index))
     # ---
 
     messages = [TestMessage(type=TestMessageLevel.INFO, text=f"metric = {metric}, threshold = {threshold}")]

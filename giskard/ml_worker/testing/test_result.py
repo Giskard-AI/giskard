@@ -59,7 +59,7 @@ class TestResult:
     reference_slices_size: List[int] = field(default_factory=list, repr=False)
     output_df: Optional[bytes] = None
     output_df_id: Optional[str] = None
-    failed_indexes: List[int] = field(default_factory=list, repr=False)
+    failed_indexes: Dict[str, List[int]] = field(default_factory=dict, repr=False)
     is_error: bool = False
 
     def _repr_html_(self):
