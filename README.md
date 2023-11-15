@@ -39,7 +39,7 @@ ______________________________________________________________________
   <img src="readme/architechture_giskard.png" alt="Giskard Architechture" width="800">
 </p>
 
-Giskard is a Python library that automatically **detects vulnerabilities** of AI models, from tabular models to LLM, including: performance biases, data leakage, spurious correlation, hallucination, toxicity, security issues and many more.
+Giskard is a Python library that automatically **detects vulnerabilities** in AI models, from tabular models to LLM, including performance biases, data leakage, spurious correlation, hallucination, toxicity, security issues and many more.
 
 It's a powerful tool that helps data scientists **save time and effort** drilling down on model issues, and produce more **reliable and trustworthy models**.
 
@@ -54,7 +54,7 @@ Instantaneously generate test suites for your models ⤵️
 </p>
 
 
-Giskard works with any model, any environment and integrates seamlessly with your favorite tools ⤵️ <br/>
+Giskard works with any model, in any environment and integrates seamlessly with your favorite tools ⤵️ <br/>
 
 <p align="center">
   <img width='600' src="readme/tools.png">
@@ -73,7 +73,7 @@ Giskard works with any model, any environment and integrates seamlessly with you
 # 🤸‍♀️ Quickstart
 
 ## 1. 🔎 Scan your model
-Here's an example of Giskard scan on the famous titanic survival prediction dataset:
+Here's an example of a Giskard scan on the famous Titanic survival prediction dataset:
 
 ```python
 import giskard
@@ -107,7 +107,7 @@ giskard_model = giskard.Model(
 )
 ```
 
-✨✨✨Then run giskard's magical scan✨✨✨
+✨✨✨Then run Giskard's magical scan✨✨✨
 ```python
 scan_results = giskard.scan(giskard_model, giskard_dataset)
 ```
@@ -129,14 +129,14 @@ You can then run the test suite locally to verify that it reproduces the issues:
 test_suite.run()
 ```
 
-Test suites are reusable objects that provide a way to apply consistent checks on your models. To drill down on failing tests and get even more out of the giskard library, we recommend heading over to the Giskard hub ⤵️
+Test suites are reusable objects that provide a way to apply consistent checks on your models. To drill down on failing tests and get even more out of the Giskard library, we recommend heading over to the Giskard hub ⤵️
 
 # ⭐️ Premium Features
 
 The Giskard hub is Giskard's premium offering. It provides a number of additional capabilities that are not available in the open-source version of Giskard, including:
 
-- **Advanced test generation**: This includes the ability to to diagnose failing tests, debug your models and create more domain-specific tests.
-- **Model comparison**: This includes the ability to compare models in order to decide which one to promote,
+- **Advanced test generation**: This includes the ability to diagnose failing tests, debug your models and create more domain-specific tests.
+- **Model comparison**: This includes the ability to compare models to decide which one to promote.
 - **Test hub**: This includes a place to gather all of your team's tests in one place to collaborate more efficiently.
 - **Business feedback**: This includes the ability to share your results and collect business feedback from your team.
 
@@ -161,10 +161,10 @@ giskard hub start
 You can then **upload the test suite** created using the `giskard` Python library to the Giskard hub. This will enable you to:
 - Compare the quality of different models to decide which one to promote
 - Debug your tests to diagnose identified vulnerabilities
-- Create more domain-specific tests relevant to your use-case
+- Create more domain-specific tests relevant to your use case
 - Share results, and collaborate with your team to integrate business feedback
 
-1. First, make sure Giskard hub is installed
+1. First, make sure the Giskard hub is installed
     <details>
       <summary>How to check if the Giskard hub is running</summary>
 
@@ -172,12 +172,12 @@ You can then **upload the test suite** created using the `giskard` Python librar
       - or use `giskard hub status`
     </details>
 
-2. Then execute the ML worker in your notebook:
+2. Then, execute the ML worker in your notebook:
     ```python
     !giskard worker start -d -k YOUR_KEY
     ```
 
-3. Finally upload your test suite to the giskard hub using the following code:
+3. Finally, upload your test suite to the Giskard hub using the following code:
     ```python
     key = "API_KEY"  # Find it in Settings in the Giskard hub
     client = giskard.GiskardClient(
@@ -200,7 +200,7 @@ You can then **upload the test suite** created using the `giskard` Python librar
 <details>
   <summary>What is a ML worker?</summary>
 
-  Giskard executes your model using a worker that runs the model directly in your Python environment containing all the dependencies required by your model. You can either execute the ML worker from a local notebook, a Colab notebook or a terminal.
+  Giskard executes your model using a worker that runs the model directly in your Python environment containing all the dependencies required by your model. You can execute the ML worker either from a local notebook, a Colab notebook or a terminal.
   </details>
 
 <details>
@@ -234,7 +234,7 @@ For any other questions and doubts, head over to our [Discord](https://gisk.ar/d
 # 👋 Community
 We welcome contributions from the Machine Learning community! Read this [guide](CONTRIBUTING.md) to get started.
 
-Join our thriving community on our Discord server : [join Discord server](https://gisk.ar/discord)
+Join our thriving community on our Discord server: [join Discord server](https://gisk.ar/discord)
 
 🌟 [Leave us a star](https://github.com/Giskard-AI/giskard), it helps the project to get discovered by others and keeps us motivated to build awesome open-source tools! 🌟
 
