@@ -24,7 +24,7 @@ executors:
     machine:
       image: 'windows-server-2022-gui:current'
       resource_class: windows.medium
-      shell: powershell.exe -ExecutionPolicy Bypass
+      shell: bash.exe
     environment:
       GSK_DISABLE_ANALYTICS: "True"
       GISKARD_DEV_MODE: "True"
@@ -58,7 +58,21 @@ commands:
           condition:
             equal: [ "windows", <<parameters.os>>]
           steps:
-            - run: (Invoke-WebRequest -Uri https://pdm-project.org/install-pdm.py -UseBasicParsing).Content | python -
+            - run:
+                name: Install PDM (powershell)
+                command: (Invoke-WebRequest -Uri https://pdm-project.org/install-pdm.py -UseBasicParsing).Content | python -
+                shell: powershell.exe
+      - when:
+          condition:
+            equal: [ "windows", <<parameters.os>>]
+          steps:
+            - run: echo 'export PATH="c:\users\circleci\appdata\roaming\python\scripts:"$PATH"' >> "$BASH_ENV"
+
+      - when:
+          condition:
+            equal: [ "macos", <<parameters.os>>]
+          steps:
+            - run: echo 'export PATH=/Users/distiller/.local/bin:"$PATH"' >> "$BASH_ENV"
   install-python:
     description: "Install PDM"
     parameters:
@@ -131,7 +145,7 @@ jobs:
           command: |
             mkdir -p test-results
             TEST=$(find ./tests -type f | grep '.py$' | grep -v __ | grep -v '/fixtures/' |  grep -v conftest | circleci tests split --split-by=timings)
-            pdm base-test -m 'not slow' --junitxml=test-results/junit.xml -n 2 $TEST
+            pdm base-test -m 'not slow' --junitxml=test-results/junit.xml $TEST
 
       - store_test_results:
           path: test-results
