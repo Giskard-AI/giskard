@@ -161,20 +161,22 @@ jobs:
       - when:
           condition: <<parameters.ram-intensive>>
           steps:
-            - name: Run tests (RAM intensive)
-              command: |
-                mkdir -p test-results
-                TEST=$(find ./tests -type f | grep '.py$' | grep -v __ | grep -v '/fixtures/' |  grep -v conftest | circleci tests split --split-by=timings)
-                pdm base-test -m 'not slow and memory_expensive' --junitxml=test-results/junit.xml $TEST
+            - run:
+                name: Run tests (RAM intensive)
+                command: |
+                  mkdir -p test-results
+                  TEST=$(find ./tests -type f | grep '.py$' | grep -v __ | grep -v '/fixtures/' |  grep -v conftest | circleci tests split --split-by=timings)
+                  pdm base-test -m 'not slow and memory_expensive' --junitxml=test-results/junit.xml $TEST
       - when:
           condition:
             not: <<parameters.ram-intensive>>
           steps:
-            - name: Run tests
-              command: |
-                mkdir -p test-results
-                TEST=$(find ./tests -type f | grep '.py$' | grep -v __ | grep -v '/fixtures/' |  grep -v conftest | circleci tests split --split-by=timings)
-                pdm base-test -m 'not slow and not memory_expensive' --junitxml=test-results/junit.xml $TEST
+            - run:
+                name: Run tests
+                command: |
+                  mkdir -p test-results
+                  TEST=$(find ./tests -type f | grep '.py$' | grep -v __ | grep -v '/fixtures/' |  grep -v conftest | circleci tests split --split-by=timings)
+                  pdm base-test -m 'not slow and not memory_expensive' --junitxml=test-results/junit.xml $TEST
       - store_test_results:
           path: test-results
       - cancel_on_fail
