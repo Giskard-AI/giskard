@@ -429,7 +429,7 @@ def get_ablation_dan_11_0_prompts():
     return prompts
 
 
-def get_prompts_from_pi(max_prompts=50):
+def get_prompts_from_pi():
     """
     "pi" refers to the PromptInjection library https://github.com/agencyenterprise/promptinject
     """

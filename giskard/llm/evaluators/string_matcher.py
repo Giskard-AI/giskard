@@ -1,7 +1,7 @@
 import re
 import string
 import logging
-from typing import Tuple, Dict
+from typing import Tuple, Dict, List
 from dataclasses import dataclass
 
 
@@ -70,7 +70,7 @@ class StringMatcher(BaseEvaluator):
 
         return failed
 
-    def evaluate(self, model: BaseModel, dataset: Dataset, evaluator_config):
+    def evaluate(self, model: BaseModel, dataset: Dataset, evaluator_config: List):
         model_outputs = model.predict(dataset).prediction
 
         succeeded = []
