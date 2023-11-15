@@ -59,9 +59,9 @@ def test_threshold(titanic_model, titanic_dataset):
 @pytest.mark.parametrize(
     "method,expected_name,expected_value",
     [
-        ("theil", "Theil", 0.70),
-        ("cramer", "Cramer", 0.89),
-        ("mutual_information", "Mutual information", 0.70),
+        pytest.param("theil", "Theil", 0.70, id="theil"),
+        pytest.param("cramer", "Cramer", 0.89, id="cramer"),
+        pytest.param("mutual_information", "Mutual information", 0.70, id="mutual"),
     ],
 )
 @pytest.mark.memory_expensive
