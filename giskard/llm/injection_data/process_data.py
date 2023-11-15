@@ -451,7 +451,7 @@ def get_prompts_from_pi(max_prompts=50):
         for group, rogue_string in rogue_strings.items():
             prompts.append(
                 Prompt(
-                    content=attack.replace("rogue_string", rogue_string),
+                    content=attack.replace("{rogue_string}", rogue_string),
                     evaluation_method=StringMatchingMethod(
                         substrings=(rogue_string,), punctuation_sensitive=False, exact_matching=True
                     ),
