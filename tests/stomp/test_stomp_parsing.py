@@ -58,7 +58,7 @@ def test_body_is_optional(stomp_frame: StompFrame, headers: Dict[str, str], body
 @pytest.mark.parametrize(
     "raw_frame,command,headers,body",
     [
-        (
+        pytest.param(
             """CONNECT
 host:localhost
 accept-version:1.2
@@ -68,8 +68,9 @@ content-length:0
             StompCommand.CONNECT,
             {"host": "localhost", "accept-version": "1.2", "content-length": "0"},
             None,
+            id="CONNECT",
         ),
-        (
+        pytest.param(
             """SEND
 destination:/home
 
@@ -77,8 +78,9 @@ some content""",
             StompCommand.SEND,
             {"destination": "/home"},
             b"some content",
+            id="SEND",
         ),
-        (
+        pytest.param(
             """SUBSCRIBE
 destination:/home
 id:some-id
@@ -87,8 +89,9 @@ id:some-id
             StompCommand.SUBSCRIBE,
             {"destination": "/home", "id": "some-id"},
             None,
+            id="SUBSCRIBE",
         ),
-        (
+        pytest.param(
             """MESSAGE
 destination:/home
 content-type:text/plain
@@ -104,8 +107,9 @@ some content""",
                 "subscription": "/toto",
             },
             "some content",
+            id="MESSAGE",
         ),
-        (
+        pytest.param(
             """MESSAGE
 destination:/home
 content-type:application/json
@@ -121,6 +125,7 @@ subscription:/toto
                 "subscription": "/toto",
             },
             '["azea", 1n, true]',
+            id="MESSAGE-json",
         ),
     ],
 )

@@ -67,10 +67,23 @@ commands:
                   pdm use ./.venv/bin/python
                   pdm venv activate
                   TEST=$(./.venv/bin/pytest --collect-only -m '<<parameters.markers>>' tests/ --quiet --no-header --no-summary |  tail -r | tail -n +3 | tail -r | circleci tests split --split-by=timings)
-                  ./.venv/bin/pytest -c pyproject.toml --cov=giskard --cov-report=xml --cov-append --disable-warnings --no-header -vv --durations=0 --junitxml=test-results/junit.xml -n <<parameters.nb_workers>> $TEST
-      - unless:
+                  ./.venv/bin/pytest -c pyproject.toml --cov=giskard --cov-report=xml --cov-append --disable-warnings --no-header -vv --durations=0 --junitxml=test-results/junit.xml $TEST
+      - when:
           condition:
-            equal: ["macos", <<parameters.os>>]
+            equal: ["windows", <<parameters.os>>]
+          steps:
+            - run:
+                name: Pytest -m <<parameters.markers>> (<<parameters.os>>)
+                no_output_timeout: "20m"
+                command: |
+                  mkdir -p test-results
+                  pdm use ./.venv/bin/python.exe
+                  pdm venv activate
+                  TEST=$(./.venv/bin/pytest.exe --collect-only -m '<<parameters.markers>>' tests/ --quiet --no-header --no-summary |  head -n -2 | circleci tests split --split-by=timings)
+                  ./.venv/bin/pytest.exe -c pyproject.toml --cov=giskard --cov-report=xml --cov-append --disable-warnings --no-header -vv --durations=0 --junitxml=test-results/junit.xml $TEST
+      - when:
+          condition:
+            equal: ["ubuntu", <<parameters.os>>]
           steps:
             - run:
                 name: Pytest -m <<parameters.markers>> (<<parameters.os>>)
