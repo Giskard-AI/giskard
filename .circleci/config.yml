@@ -139,7 +139,7 @@ jobs:
     executor:
       name: <<parameters.os>>
       python-version: <<parameters.python-version>>
-    parallelism: 10
+    parallelism: 4
     steps:
       - checkout
       - install-python:
