@@ -28,6 +28,7 @@ executors:
     environment:
       GSK_DISABLE_ANALYTICS: "True"
       GISKARD_DEV_MODE: "True"
+      PATH: "C:\Users\circleci\AppData\Roaming\Python\Scripts"
   macos:
     parameters:
       python-version:
@@ -39,7 +40,7 @@ executors:
     environment:
       GSK_DISABLE_ANALYTICS: "True"
       GISKARD_DEV_MODE: "True"
-
+      PATH: "/Users/distiller/.local/bin"
 # Define a job to be invoked later in a workflow.
 commands:
   install-pdm:
@@ -53,13 +54,11 @@ commands:
             equal: [ "windows", <<parameters.os>>]
           steps:
             - run: curl -sSL https://pdm-project.org/install-pdm.py | python -
-              # name: Install PDM (Linux or others)
       - when:
           condition:
             equal: [ "windows", <<parameters.os>>]
           steps:
             - run: (Invoke-WebRequest -Uri https://pdm-project.org/install-pdm.py -UseBasicParsing).Content | python -
-              # name: Install PDM (Windows)
   install-python:
     description: "Install PDM"
     parameters:
@@ -80,16 +79,6 @@ commands:
             - run: brew install python@$(echo <<parameters.python-version>> | sed -e 's|^\([0-9]*\.[0-9]*\)\..*$|\1|g')
       - install-pdm:
           os: <<parameters.os >>
-      - when:
-          condition:
-            equal: [ "windows", <<parameters.os>>]
-          steps:
-            - run: $Env:PATH += ";C:\Users\circleci\AppData\Roaming\Python\Scripts\"
-      - when:
-          condition:
-            equal: [ "macos", <<parameters.os>>]
-          steps:
-            - run: export PATH=/Users/distiller/.local/bin:$PATH
 # See: https://circleci.com/docs/configuration-reference/#jobs
 jobs:
   install:
