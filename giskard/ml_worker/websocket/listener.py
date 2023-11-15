@@ -1,8 +1,7 @@
 from typing import Any, Callable, Dict, Optional, Union
 
-import json
+import asyncio
 import logging
-import math
 import os
 import platform
 import sys
@@ -18,7 +17,6 @@ import numpy as np
 import pandas as pd
 import pkg_resources
 import psutil
-import stomp
 
 import giskard
 from giskard.client.giskard_client import GiskardClient
@@ -28,18 +26,17 @@ from giskard.ml_worker import websocket
 from giskard.ml_worker.core.log_listener import LogListener
 from giskard.ml_worker.core.savable import RegistryArtifact
 from giskard.ml_worker.exceptions.giskard_exception import GiskardException
-from giskard.ml_worker.ml_worker import MLWorker
+from giskard.ml_worker.stomp.parsing import Frame
 from giskard.ml_worker.testing.registry.giskard_test import GiskardTest
 from giskard.ml_worker.testing.registry.slicing_function import SlicingFunction
 from giskard.ml_worker.testing.registry.transformation_function import TransformationFunction
 from giskard.ml_worker.utils.cache import CACHE
 from giskard.ml_worker.utils.file_utils import get_file_name
 from giskard.ml_worker.websocket import CallToActionKind, GetInfoParam, PushKind
-from giskard.ml_worker.websocket.action import MLWorkerAction
+from giskard.ml_worker.websocket.action import ActionPayload, MLWorkerAction
 from giskard.ml_worker.websocket.utils import (
     do_run_adhoc_test,
     extract_debug_info,
-    fragment_message,
     function_argument_to_ws,
     log_artifact_local,
     map_dataset_process_function_meta_ws,
@@ -54,7 +51,8 @@ from giskard.push import Push
 from giskard.push.contribution import create_contribution_push
 from giskard.push.perturbation import create_perturbation_push
 from giskard.push.prediction import create_borderline_push, create_overconfidence_push
-from giskard.utils import call_in_pool, shutdown_pool
+from giskard.settings import settings
+from giskard.utils import call_in_pool
 from giskard.utils.analytics_collector import analytics
 from giskard.utils.worker_pool import GiskardMLWorkerException
 
@@ -67,29 +65,27 @@ class MLWorkerInfo:
     id: str
     is_remote: bool
 
-    def __init__(self, worker: MLWorker):
-        self.id = worker.ml_worker_id
-        self.is_remote = worker.is_remote_worker()
 
-
-def websocket_log_actor(ml_worker: MLWorkerInfo, req: Dict, *args, **kwargs):
-    param = req["param"] if "param" in req.keys() else {}
-    action = req["action"] if "action" in req.keys() else ""
-    logger.info(f"ML Worker {ml_worker.id} performing {action} params: {param}")
+def websocket_log_actor(ml_worker: MLWorkerInfo, req: ActionPayload, *args, **kwargs):
+    logger.info("ML Worker %s performing %s params: %s", {ml_worker.id}, {req.action}, {req.param})
 
 
 WEBSOCKET_ACTORS = dict((action.name, websocket_log_actor) for action in MLWorkerAction)
 
 
 def wrapped_handle_result(
-    action: MLWorkerAction, ml_worker: MLWorker, start: float, rep_id: Optional[str], ignore_timeout: bool
+    action: MLWorkerAction, start: float, rep_id: Optional[str], worker_info: MLWorkerInfo, ignore_timeout: bool
 ):
-    def handle_result(future: Union[Future, Callable[..., websocket.WorkerReply]]):
+    async def handle_result(future: Union[Future, Callable[..., websocket.WorkerReply]]):
         info = None  # Needs to be defined in case of cancellation
 
         try:
-            info: websocket.WorkerReply = future.result() if isinstance(future, Future) else future()
-        except CancelledError as e:
+            info: websocket.WorkerReply = (
+                await asyncio.wait_for(asyncio.wrap_future(future, loop=asyncio.get_running_loop()), timeout=None)
+                if isinstance(future, Future)
+                else future()
+            )
+        except (CancelledError, asyncio.exceptions.CancelledError) as e:
             if ignore_timeout:
                 info: websocket.WorkerReply = websocket.Empty()
                 logger.warning("Task for %s has timed out and been cancelled", action.name)
@@ -108,13 +104,13 @@ def wrapped_handle_result(
             info: websocket.WorkerReply = websocket.ErrorReply(
                 error_str=str(e), error_type=type(e).__name__, detail=traceback.format_exc()
             )
-            logger.warning(e)
+            logger.exception(e)
         finally:
             analytics.track(
                 "mlworker:websocket:action",
                 {
                     "name": action.name,
-                    "worker": ml_worker.ml_worker_id,
+                    "worker": worker_info.id,
                     "language": "PYTHON",
                     "type": "ERROR" if isinstance(info, websocket.ErrorReply) else "SUCCESS",
                     "action_time": time.process_time() - start,
@@ -124,47 +120,9 @@ def wrapped_handle_result(
             )
 
         if rep_id:
-            # Reply if there is an ID
-            logger.debug(
-                f"[WRAPPED_CALLBACK] replying {len(info.json(by_alias=True))} {info.json(by_alias=True)} for {action.name}"
-            )
-            # Message fragmentation
-            FRAG_LEN = max(ml_worker.ws_max_reply_payload_size, MAX_STOMP_ML_WORKER_REPLY_SIZE)
-            payload = info.json(by_alias=True) if info else "{}"
-            frag_count = math.ceil(len(payload) / FRAG_LEN)
-            for frag_i in range(frag_count):
-                ml_worker.ws_conn.send(
-                    f"/app/ml-worker/{ml_worker.ml_worker_id}/rep",
-                    json.dumps(
-                        {
-                            "id": rep_id,
-                            "action": action.name,
-                            "payload": fragment_message(payload, frag_i, FRAG_LEN),
-                            "f_index": frag_i,
-                            "f_count": frag_count,
-                        }
-                    ),
-                )
-
-            analytics.track(
-                "mlworker:websocket:action:reply",
-                {
-                    "name": action.name,
-                    "worker": ml_worker.ml_worker_id,
-                    "language": "PYTHON",
-                    "action_time": time.process_time() - start,
-                    "is_error": isinstance(info, websocket.ErrorReply),
-                    "frag_len": FRAG_LEN,
-                    "frag_count": frag_count,
-                    "reply_len": len(payload),
-                },
-            )
-
-        # Post-processing of stopWorker
-        if action == MLWorkerAction.stopWorker:
-            ml_worker.ws_stopping = True
-            ml_worker.ws_conn.disconnect()
-            shutdown_pool()
+            if isinstance(info, Frame):
+                return info
+            return info.json(by_alias=True) if info else "{}"
 
     return handle_result
 
@@ -186,62 +144,57 @@ def parse_and_execute(
     )
 
 
-def dispatch_action(callback, ml_worker, action, req, execute_in_pool, timeout=None, ignore_timeout=False):
+async def dispatch_action(
+    callback: Callable,
+    action: MLWorkerAction,
+    req: ActionPayload,
+    client_params: Dict[str, Any],
+    worker_info: MLWorkerInfo,
+    execute_in_pool: bool,
+    timeout: Optional[float] = None,
+    ignore_timeout=False,
+):
     # Parse the response ID
-    rep_id = req["id"] if "id" in req.keys() else None
+    rep_id = req.id
     # Parse the param
-    params = req["param"] if "param" in req.keys() else {}
+    params = req.param
 
     # Track usage frequency to optimize action param parsing
     analytics.track(
         "mlworker:websocket:action:type",
         {
             "name": action.name,
-            "worker": ml_worker.ml_worker_id,
+            "worker": worker_info.id,
             "language": "PYTHON",
         },
     )
-    # Ws connection is lock pickable, so not usable as args
-    # GiskardClient is losing Session when pickling
-    client_params = (
-        {
-            "url": ml_worker.client.host_url,
-            "key": ml_worker.client.key,
-            "hf_token": ml_worker.client.hf_token,
-        }
-        if ml_worker.client is not None
-        else None
-    )
     start = time.process_time()
 
-    result_handler = wrapped_handle_result(action, ml_worker, start, rep_id, ignore_timeout=ignore_timeout)
+    result_handler = wrapped_handle_result(action, start, rep_id, worker_info, ignore_timeout=ignore_timeout)
     # If execution should be done in a pool
-    if execute_in_pool:
+    if execute_in_pool and settings.use_pool:
         logger.debug("Submitting for action %s '%s' into the pool", action.name, callback.__name__)
         kwargs = {
             "callback": callback,
             "action": action,
             "params": params,
-            "ml_worker": MLWorkerInfo(ml_worker),
+            "ml_worker": worker_info,
             "client_params": client_params,
         }
+
         future = call_in_pool(
             parse_and_execute,
             kwargs=kwargs,
             timeout=timeout,
         )
-        future.add_done_callback(result_handler)
-        return
+    else:
 
-    result_handler(
-        lambda: parse_and_execute(
-            callback=callback,
-            action=action,
-            params=params,
-            ml_worker=MLWorkerInfo(ml_worker),
-            client_params=client_params,
-        )
-    )
+        def future():
+            return parse_and_execute(
+                callback=callback, action=action, params=params, ml_worker=worker_info, client_params=client_params
+            )
+
+    return await result_handler(future)
 
 
 def websocket_actor(
@@ -254,62 +207,18 @@ def websocket_actor(
     def websocket_actor_callback(callback: callable):
         if action not in MLWorkerAction:
             raise NotImplementedError(f"Missing implementation for {action}, not in MLWorkerAction")
-        logger.debug(f'Registered "{callback.__name__}" for ML Worker "{action.name}"')
+        logger.debug('Registered "%s" for ML Worker "%s"', {callback.__name__}, {action.name})
 
-        def wrapped_callback(ml_worker: MLWorker, req: dict, *args, **kwargs):
-            dispatch_action(callback, ml_worker, action, req, execute_in_pool, timeout, ignore_timeout)
+        async def wrapped_callback(req: ActionPayload, client_params: Dict, worker_info, *args, **kwargs):
+            return await dispatch_action(
+                callback, action, req, client_params, worker_info, execute_in_pool, timeout, ignore_timeout
+            )
 
         WEBSOCKET_ACTORS[action.name] = wrapped_callback
 
         return callback
 
     return websocket_actor_callback
-
-
-class MLWorkerWebSocketListener(stomp.ConnectionListener):
-    subscribe_failed: bool = False
-
-    def __init__(self, worker):
-        self.ml_worker = worker
-
-    def on_connected(self, frame):
-        logger.debug(f"Connected: {frame}")
-        self.ml_worker.ws_conn.subscribe(
-            f"/ml-worker/{self.ml_worker.ml_worker_id}/action", f"ws-worker-{self.ml_worker.ml_worker_id}"
-        )
-        self.ml_worker.ws_conn.subscribe(
-            f"/ml-worker/{self.ml_worker.ml_worker_id}/config", f"ws-worker-{self.ml_worker.ml_worker_id}"
-        )
-
-    def on_error(self, frame):
-        logger.debug("received an error")
-        if "message" in frame.headers.keys() and "Cannot find available worker" in frame.headers["message"]:
-            self.subscribe_failed = True
-
-    def on_disconnected(self):
-        logger.debug("disconnected")
-        if not self.subscribe_failed:
-            # Attemp to reconnect
-            self.ml_worker.connect_websocket_client()
-        else:
-            self.ml_worker.stop()
-
-    def on_message(self, frame):
-        logger.debug(f"received a message {frame.cmd} {frame.headers} {frame.body}")
-        req = json.loads(frame.body)
-        if "action" in req.keys() and req["action"] in WEBSOCKET_ACTORS:
-            # Dispatch the action
-            WEBSOCKET_ACTORS[req["action"]](self.ml_worker, req)
-        elif "config" in req.keys():
-            # Change the configuration
-            if req["config"] == "MAX_STOMP_ML_WORKER_REPLY_SIZE" and "value" in req.keys():
-                mtu = MAX_STOMP_ML_WORKER_REPLY_SIZE
-                try:
-                    mtu = max(mtu, int(req["value"]))
-                except ValueError:
-                    mtu = MAX_STOMP_ML_WORKER_REPLY_SIZE
-                self.ml_worker.ws_max_reply_payload_size = mtu
-                logger.info(f"MAX_STOMP_ML_WORKER_REPLY_SIZE set to {mtu}")
 
 
 @websocket_actor(MLWorkerAction.getInfo, execute_in_pool=False)
@@ -340,10 +249,10 @@ def on_ml_worker_get_info(ml_worker: MLWorkerInfo, params: GetInfoParam, *args, 
 
 
 @websocket_actor(MLWorkerAction.stopWorker, execute_in_pool=False)
-def on_ml_worker_stop_worker(*args, **kwargs) -> websocket.Empty:
+def on_ml_worker_stop_worker(*args, **kwargs) -> None:
     # Stop the server properly after sending disconnect
     logger.info("Stopping ML Worker")
-    return websocket.Empty()
+    return None
 
 
 def run_classification_mode(model, dataset, prediction_results):
@@ -631,18 +540,20 @@ def run_test_suite(
         logger.info(f"Executing test suite: {test_names}")
 
         suite = Suite()
+        updated_test_args = []  # Save final args for building test
         for t in tests:
             test_args = t["arguments"]
             if "kwargs" in test_args:
                 test_args: Dict[str, Any] = copy(test_args)
                 test_args.update(**test_args.pop("kwargs"))
+            updated_test_args.append(test_args)
             suite.add_test(t["test"].get_builder()(**test_args), t["id"])
 
         suite_result = suite.run(**global_arguments)
 
         identifier_single_test_results = []
-        for t, (identifier, result, _) in zip(tests, suite_result.results):
-            arguments = Suite.create_test_params(generate_test_partial(t["test"], t["arguments"]), global_arguments)
+        for t, (identifier, result, _), test_args in zip(tests, suite_result.results, updated_test_args):
+            arguments = Suite.create_test_params(generate_test_partial(t["test"], **test_args), global_arguments)
             identifier_single_test_results.append(
                 websocket.IdentifierSingleTestResult(
                     id=identifier,

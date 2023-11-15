@@ -66,6 +66,9 @@ def start_pool(max_workers: int = None):
     Args:
         max_workers (int, optional): _description_. Defaults to None.
     """
+    if not settings.use_pool:
+        LOGGER.warning("Execution in pool is disabled, this should only happen for test and debug")
+        return
     POOL.start(max_workers=max_workers)
     # Warmup the pool
     for _ in range(100):
@@ -74,6 +77,10 @@ def start_pool(max_workers: int = None):
 
 def shutdown_pool():
     """Stop the pool"""
+    if not settings.use_pool:
+        LOGGER.warning("Execution in pool is disabled, this should only happen for test and debug")
+        return
+
     POOL.shutdown(wait=True)
 
 

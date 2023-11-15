@@ -34,7 +34,7 @@ test.cmd = "pdm base-test tests/"
 # for some reason github runners don't work when calling 'pdm test -m "not slow"'
 base-test.cmd = "pytest -c pyproject.toml --cov=giskard --cov-report=xml --cov-append --disable-warnings --no-header -vv --durations=0"
 test-fast.cmd = "pdm base-test -n auto -m 'not slow and not concurrency and not memory_expensive' tests"
-test-slow.cmd = "pdm base-test -m 'slow and not concurrency and not memory_expensive' tests"
+test-slow.cmd = "pdm base-test -m 'slow and not concurrency and not memory_expensive'"
 test-ram.cmd = "pdm base-test -m 'memory_expensive'"
 test-worker.cmd = "pdm base-test -m 'concurrency' tests/"
 lint = "ruff giskard tests"
@@ -61,6 +61,7 @@ dev = [
     "mlflow>2",
     "black[d]>=22.12.0",
     "pip>=23.1.2",
+    "pytest-asyncio>=0.21.1",
     "pydantic>=2",
 ]
 ml_runtime = [
@@ -132,7 +133,7 @@ giskard = "giskard.integrations.mlflow.giskard_evaluator:GiskardEvaluator"
 name = "giskard"
 readme = "README.md"
 license = { text = "Apache Software License 2.0" }
-version = "2.0.2"
+version = "2.0.3"
 description = "The testing framework dedicated to ML models, from tabular to LLMs"
 authors = [{ name = "Giskard AI", email = "hello@giskard.ai" }]
 keywords = ["Artificial Intelligence", "Machine Learning", "Quality", "MLOps"]
@@ -168,26 +169,26 @@ dependencies = [
     "chardet",                  # text metadata
     "jinja2>=3",                # scan template
     "requests-toolbelt>=0.9.1",
-    "stomp-py>=8.1.0",
-    "setuptools",               # used in ml worker for pkg_resources
+    "setuptools",               # used for pkg_resources
     "typing_extensions",        # used in registry/decorators, for python <3.10
-    "websocket-client",         # used in worker, to get exception from stomp
-    "pyyaml",                   # cli_hub
-    "packaging",                # cli_hub
+    "pyyaml",
+    "packaging",                # used in settings
     "markdown",                 # needed for display of scan results in notebook
     "colorama",                 # needed for the scan
-
 ]
 
 [project.optional-dependencies]
 llm = [
-    "langchain<=0.0.301", # Weirdly fails with newer version, see https://linear.app/giskard/issue/GSK-1853/updating-lanchain-version-over-00301-weirdly-fails
     "openai",
     "evaluate>=0.4.1",
     "bert-score>=0.3.13",
 ]
 
 hub = [
+    # Worker deps
+    "websockets>=11.0",                        # Not sure what is the minimal version, let's say 11 to handle python 3.11
+    "uvloop>=0.18.0; sys_platform != 'win32'",
+    # Server deps
     "tenacity>=4.11.0",
     "psutil>=5.4.6",
     "click>=7.0",
@@ -296,7 +297,6 @@ norecursedirs = [
     ".tox",
     ".git",
     "__pycache__",
-    "concurrency: test that should not be run with parallelism (no xdist)",
 ]
 doctest_optionflags = [
     "ELLIPSIS",
