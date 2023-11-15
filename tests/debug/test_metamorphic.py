@@ -41,17 +41,17 @@ def test_metamorphic(model, dataset, request):
     failed_idx = [i for i, x in enumerate(failed_predictions) if x]
 
     result = test_metamorphic_invariance(model, dataset, transformation_func, threshold=1, debug=True).execute()
-    assert result.failed_indexes == failed_idx
+    assert result.failed_indexes == {str(dataset.id): failed_idx}
 
     result_t_test = test_metamorphic_invariance_t_test(
         model, dataset, transformation_func, critical_quantile=0, debug=True
     ).execute()
-    assert result_t_test.failed_indexes == failed_idx
+    assert result_t_test.failed_indexes == {str(dataset.id): failed_idx}
 
     result_wilcoxon = test_metamorphic_invariance_wilcoxon(
         model, dataset, transformation_func, critical_quantile=0, debug=True
     ).execute()
-    assert result_wilcoxon.failed_indexes == failed_idx
+    assert result_wilcoxon.failed_indexes == {str(dataset.id): failed_idx}
 
     classification_label = "Default"
 
@@ -65,15 +65,15 @@ def test_metamorphic(model, dataset, request):
     result = test_metamorphic_increasing(
         model, dataset, transformation_func, classification_label=classification_label, threshold=1, debug=True
     ).execute()
-    assert result.failed_indexes == failed_idx
+    assert result.failed_indexes == {str(dataset.id): failed_idx}
     result_t_test = test_metamorphic_increasing_t_test(
         model, dataset, transformation_func, classification_label=classification_label, critical_quantile=0, debug=True
     ).execute()
-    assert result_t_test.failed_indexes == failed_idx
+    assert result_t_test.failed_indexes == {str(dataset.id): failed_idx}
     result_wilcoxon = test_metamorphic_increasing_wilcoxon(
         model, dataset, transformation_func, classification_label=classification_label, critical_quantile=0, debug=True
     ).execute()
-    assert result_wilcoxon.failed_indexes == failed_idx
+    assert result_wilcoxon.failed_indexes == {str(dataset.id): failed_idx}
 
     # Decreasing
     failed_predictions = predictions <= perturbed_predictions
@@ -82,12 +82,12 @@ def test_metamorphic(model, dataset, request):
     result = test_metamorphic_decreasing(
         model, dataset, transformation_func, classification_label=classification_label, threshold=1, debug=True
     ).execute()
-    assert result.failed_indexes == failed_idx
+    assert result.failed_indexes == {str(dataset.id): failed_idx}
     result_t_test = test_metamorphic_decreasing_t_test(
         model, dataset, transformation_func, classification_label=classification_label, critical_quantile=0, debug=True
     ).execute()
-    assert result_t_test.failed_indexes == failed_idx
+    assert result_t_test.failed_indexes == {str(dataset.id): failed_idx}
     result_wilcoxon = test_metamorphic_decreasing_wilcoxon(
         model, dataset, transformation_func, classification_label=classification_label, critical_quantile=0, debug=True
     ).execute()
-    assert result_wilcoxon.failed_indexes == failed_idx
+    assert result_wilcoxon.failed_indexes == {str(dataset.id): failed_idx}
