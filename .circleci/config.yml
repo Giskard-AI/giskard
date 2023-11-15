@@ -85,6 +85,11 @@ commands:
             equal: [ "windows", <<parameters.os>>]
           steps:
             - run: $Env:PATH += ";C:\Users\circleci\AppData\Roaming\Python\Scripts\"
+      - when:
+          condition:
+            equal: [ "macos", <<parameters.os>>]
+          steps:
+            - run: export PATH=/Users/distiller/.local/bin:$PATH
 # See: https://circleci.com/docs/configuration-reference/#jobs
 jobs:
   install:
