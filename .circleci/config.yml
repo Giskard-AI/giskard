@@ -43,6 +43,15 @@ executors:
       # PATH: "/Users/distiller/.local/bin:$PATH"
 # Define a job to be invoked later in a workflow.
 commands:
+  cancel_on_fail:
+    description: Command to make the workflow cancelled as soons as possible
+    steps:
+      - run:
+          name: Fail Fast
+          when: on_fail
+          command: |
+            echo "Canceling workflow as a step resulted in failure"
+            curl -X POST --header "Content-Type: application/json" "https://circleci.com/api/v2/workflow/${CIRCLE_WORKFLOW_ID}/cancel?circle-token=${CIRCLE_TOKEN}"
   install-pdm:
     description: "Install PDM"
     parameters:
@@ -66,7 +75,7 @@ commands:
           condition:
             equal: [ "windows", <<parameters.os>>]
           steps:
-            - run: echo 'export PATH=c:\users\circleci\appdata\roaming\python\scripts:"$PATH"' >> "$BASH_ENV"
+            - run: echo 'export PATH="c:\users\circleci\appdata\roaming\python\scripts:$PATH"' >> "$BASH_ENV"
       - when:
           condition:
             equal: [ "macos", <<parameters.os>>]
@@ -120,6 +129,7 @@ jobs:
           paths:
             - .venv
           key: python-<<parameters.os>>-<<parameters.python-version>>-{{ checksum "pdm.lock" }}
+      - cancel_on_fail
   unit-tests:
     parameters:
       python-version:
@@ -145,10 +155,9 @@ jobs:
             mkdir -p test-results
             TEST=$(find ./tests -type f | grep '.py$' | grep -v __ | grep -v '/fixtures/' |  grep -v conftest | circleci tests split --split-by=timings)
             pdm base-test -m 'not slow' --junitxml=test-results/junit.xml $TEST
-
       - store_test_results:
           path: test-results
-
+      - cancel_on_fail
 # Orchestrate jobs using workflows
 # See: https://circleci.com/docs/configuration-reference/#workflows
 workflows:
@@ -191,3 +200,4 @@ workflows:
 
 # https://circleci.com/docs/using-matrix-jobs/
 # https://circleci.com/docs/configuration-reference/#dependencies-and-matrix-jobs
+# https://support.circleci.com/hc/en-us/articles/360052058811-Exit-Build-Early-if-Any-Test-Fails
