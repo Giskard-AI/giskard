@@ -1,8 +1,10 @@
-import uuid
-import pytest
-import pandas as pd
 import shutil
+import uuid
 
+import pandas as pd
+import pytest
+
+from giskard import slicing_function, transformation_function
 from giskard.datasets.base import Dataset
 from giskard.ml_worker import ml_worker, websocket
 from giskard.ml_worker.utils.file_utils import get_file_name
@@ -10,11 +12,7 @@ from giskard.ml_worker.websocket import listener
 from giskard.ml_worker.websocket.action import MLWorkerAction
 from giskard.models.base.model import BaseModel
 from giskard.settings import settings
-from giskard import slicing_function, transformation_function
-
-
 from tests import utils
-
 
 NOT_USED_WEBSOCKET_ACTOR = [
     MLWorkerAction.generateQueryBasedSlicingFunction,
@@ -37,15 +35,15 @@ def test_websocket_actor_echo():
 
 
 def test_websocket_actor_get_info():
-    internal_ml_worker = utils.MockedWebSocketMLWorker(is_server=True)    # Internal worker
-    external_ml_worker = utils.MockedWebSocketMLWorker(is_server=False)   # External worker
+    internal_ml_worker = utils.MockedWebSocketMLWorker(is_server=True)  # Internal worker
+    external_ml_worker = utils.MockedWebSocketMLWorker(is_server=False)  # External worker
 
     without_package_params = websocket.GetInfoParam(list_packages=False)
     with_package_params = websocket.GetInfoParam(list_packages=True)
 
     # Internal worker, without packages
     server_ml_worker_info = listener.on_ml_worker_get_info(
-        ml_worker=listener.MLWorkerInfo(internal_ml_worker),
+        ml_worker=listener.MLWorkerInfo(internal_ml_worker.ml_worker_id, internal_ml_worker.is_remote_worker()),
         params=without_package_params,
     )
     assert isinstance(server_ml_worker_info, websocket.GetInfo)
@@ -55,7 +53,7 @@ def test_websocket_actor_get_info():
 
     # Internal worker, with packages
     server_ml_worker_info = listener.on_ml_worker_get_info(
-        ml_worker=listener.MLWorkerInfo(internal_ml_worker),
+        ml_worker=listener.MLWorkerInfo(internal_ml_worker.ml_worker_id, internal_ml_worker.is_remote_worker()),
         params=with_package_params,
     )
     assert isinstance(server_ml_worker_info, websocket.GetInfo)
@@ -65,7 +63,7 @@ def test_websocket_actor_get_info():
 
     # External worker, without packages
     remote_ml_worker_info = listener.on_ml_worker_get_info(
-        ml_worker=listener.MLWorkerInfo(external_ml_worker),
+        ml_worker=listener.MLWorkerInfo(external_ml_worker.ml_worker_id, external_ml_worker.is_remote_worker()),
         params=without_package_params,
     )
     assert isinstance(remote_ml_worker_info, websocket.GetInfo)
@@ -75,7 +73,7 @@ def test_websocket_actor_get_info():
 
     # External worker, with packages
     remote_ml_worker_info = listener.on_ml_worker_get_info(
-        ml_worker=listener.MLWorkerInfo(external_ml_worker),
+        ml_worker=listener.MLWorkerInfo(external_ml_worker.ml_worker_id, external_ml_worker.is_remote_worker()),
         params=with_package_params,
     )
     assert isinstance(remote_ml_worker_info, websocket.GetInfo)
@@ -86,7 +84,7 @@ def test_websocket_actor_get_info():
 
 def test_websocket_actor_stop_worker():
     reply = listener.on_ml_worker_stop_worker()
-    assert isinstance(reply, websocket.Empty)
+    assert reply is None
 
 
 def test_websocket_actor_get_catalog():
@@ -114,17 +112,20 @@ def test_websocket_actor_get_catalog():
         assert "giskard" in t.tags
 
 
-@pytest.mark.parametrize("data,model,sample", [
-    ("enron_data", "enron_model", False),
-    ("enron_data", "enron_model", True),
-    ("enron_data", "enron_model", None),
-    ("hotel_text_data", "hotel_text_model", False)
-])
+@pytest.mark.parametrize(
+    "data,model,sample",
+    [
+        ("enron_data", "enron_model", False),
+        ("enron_data", "enron_model", True),
+        ("enron_data", "enron_model", None),
+        ("hotel_text_data", "hotel_text_model", False),
+    ],
+)
 def test_websocket_actor_run_model_internal(data, model, sample, request):
     dataset: Dataset = request.getfixturevalue(data)
     model: BaseModel = request.getfixturevalue(model)
 
-    project_key = str(uuid.uuid4()) # Use a UUID to separate the resources used by the tests
+    project_key = str(uuid.uuid4())  # Use a UUID to separate the resources used by the tests
     inspection_id = 0
 
     with utils.MockedProjectCacheDir(project_key):
@@ -149,18 +150,21 @@ def test_websocket_actor_run_model_internal(data, model, sample, request):
         shutil.rmtree(inspection_path, ignore_errors=True)
 
 
-@pytest.mark.parametrize("data,model,sample", [
-    ("enron_data", "enron_model", False),
-    ("enron_data", "enron_model", True),
-    ("enron_data", "enron_model", None),
-    ("hotel_text_data", "hotel_text_model", False)
-])
+@pytest.mark.parametrize(
+    "data,model,sample",
+    [
+        ("enron_data", "enron_model", False),
+        ("enron_data", "enron_model", True),
+        ("enron_data", "enron_model", None),
+        ("hotel_text_data", "hotel_text_model", False),
+    ],
+)
 @pytest.mark.slow
 def test_websocket_actor_run_model(data, model, sample, request):
     dataset: Dataset = request.getfixturevalue(data)
     model: BaseModel = request.getfixturevalue(model)
 
-    project_key = str(uuid.uuid4()) # Use a UUID to separate the resources used by the tests
+    project_key = str(uuid.uuid4())  # Use a UUID to separate the resources used by the tests
     inspection_id = 0
 
     with utils.MockedProjectCacheDir(project_key):
@@ -185,14 +189,12 @@ def test_websocket_actor_run_model(data, model, sample, request):
             assert isinstance(reply, websocket.Empty)
 
 
-@pytest.mark.parametrize("internal", [
-    True, False
-])
+@pytest.mark.parametrize("internal", [True, False])
 def test_websocket_actor_run_model_for_data_frame_regression(internal, request):
     dataset: Dataset = request.getfixturevalue("hotel_text_data")
     model: BaseModel = request.getfixturevalue("hotel_text_model")
 
-    project_key = str(uuid.uuid4()) # Use a UUID to separate the resources used by the tests
+    project_key = str(uuid.uuid4())  # Use a UUID to separate the resources used by the tests
 
     with utils.MockedProjectCacheDir(project_key), utils.MockedClient(mock_all=False) as (client, mr):
         # Prepare model
@@ -205,9 +207,7 @@ def test_websocket_actor_run_model_for_data_frame_regression(internal, request):
         # Prepare dataframe
         dataframe = websocket.DataFrame(
             rows=[
-                websocket.DataRow(columns={
-                    str(k): str(v) for k, v in row.items()
-                }) for _, row in dataset.df.iterrows()
+                websocket.DataRow(columns={str(k): str(v) for k, v in row.items()}) for _, row in dataset.df.iterrows()
             ],
         )
 
@@ -229,14 +229,12 @@ def test_websocket_actor_run_model_for_data_frame_regression(internal, request):
         assert not reply.probabilities
 
 
-@pytest.mark.parametrize("internal", [
-    True, False
-])
+@pytest.mark.parametrize("internal", [True, False])
 def test_websocket_actor_run_model_for_data_frame_classification(internal, request):
     dataset: Dataset = request.getfixturevalue("enron_data")
     model: BaseModel = request.getfixturevalue("enron_model")
 
-    project_key = str(uuid.uuid4()) # Use a UUID to separate the resources used by the tests
+    project_key = str(uuid.uuid4())  # Use a UUID to separate the resources used by the tests
 
     with utils.MockedProjectCacheDir(project_key), utils.MockedClient(mock_all=False) as (client, mr):
         # Prepare model
@@ -249,9 +247,7 @@ def test_websocket_actor_run_model_for_data_frame_classification(internal, reque
         # Prepare dataframe
         dataframe = websocket.DataFrame(
             rows=[
-                websocket.DataRow(columns={
-                    str(k): str(v) for k, v in row.items()
-                }) for _, row in dataset.df.iterrows()
+                websocket.DataRow(columns={str(k): str(v) for k, v in row.items()}) for _, row in dataset.df.iterrows()
             ],
         )
 
@@ -273,15 +269,12 @@ def test_websocket_actor_run_model_for_data_frame_classification(internal, reque
         assert not reply.probabilities
 
 
-@pytest.mark.parametrize("data,model", [
-    ("enron_data", "enron_model"),
-    ("hotel_text_data", "hotel_text_model")
-])
+@pytest.mark.parametrize("data,model", [("enron_data", "enron_model"), ("hotel_text_data", "hotel_text_model")])
 def test_websocket_actor_explain_ws_internal(data, model, request):
     dataset: Dataset = request.getfixturevalue(data)
     model: BaseModel = request.getfixturevalue(model)
 
-    project_key = str(uuid.uuid4()) # Use a UUID to separate the resources used by the tests
+    project_key = str(uuid.uuid4())  # Use a UUID to separate the resources used by the tests
 
     with utils.MockedProjectCacheDir(project_key):
         # Prepare model and dataset
@@ -297,16 +290,13 @@ def test_websocket_actor_explain_ws_internal(data, model, request):
         assert isinstance(reply, websocket.Explain)
 
 
-@pytest.mark.parametrize("data,model", [
-    ("enron_data", "enron_model"),
-    ("hotel_text_data", "hotel_text_model")
-])
+@pytest.mark.parametrize("data,model", [("enron_data", "enron_model"), ("hotel_text_data", "hotel_text_model")])
 @pytest.mark.slow
 def test_websocket_actor_explain_ws(data, model, request):
     dataset: Dataset = request.getfixturevalue(data)
     model: BaseModel = request.getfixturevalue(model)
 
-    project_key = str(uuid.uuid4()) # Use a UUID to separate the resources used by the tests
+    project_key = str(uuid.uuid4())  # Use a UUID to separate the resources used by the tests
 
     with utils.MockedProjectCacheDir(project_key), utils.MockedClient(mock_all=False) as (client, mr):
         # Prepare model and dataset
@@ -324,14 +314,12 @@ def test_websocket_actor_explain_ws(data, model, request):
         assert isinstance(reply, websocket.Explain)
 
 
-@pytest.mark.parametrize("internal", [
-    True, False
-])
+@pytest.mark.parametrize("internal", [True, False])
 def test_websocket_actor_explain_text_ws_regression(internal, request):
     dataset: Dataset = request.getfixturevalue("hotel_text_data")
     model: BaseModel = request.getfixturevalue("hotel_text_model")
 
-    project_key = str(uuid.uuid4()) # Use a UUID to separate the resources used by the tests
+    project_key = str(uuid.uuid4())  # Use a UUID to separate the resources used by the tests
 
     with utils.MockedProjectCacheDir(project_key), utils.MockedClient(mock_all=False) as (client, mr):
         # Prepare model and dataset
@@ -394,7 +382,7 @@ def test_websocket_actor_explain_text_ws_classification(internal, request):
     dataset: Dataset = request.getfixturevalue("enron_data")
     model: BaseModel = request.getfixturevalue("enron_model")
 
-    project_key = str(uuid.uuid4()) # Use a UUID to separate the resources used by the tests
+    project_key = str(uuid.uuid4())  # Use a UUID to separate the resources used by the tests
 
     with utils.MockedProjectCacheDir(project_key), utils.MockedClient(mock_all=False) as (client, mr):
         # Prepare model and dataset
@@ -403,7 +391,6 @@ def test_websocket_actor_explain_text_ws_classification(internal, request):
         else:
             utils.register_uri_for_model_meta_info(mr, model, project_key)
             utils.register_uri_for_model_artifact_info(mr, model, project_key, register_file_contents=True)
-
 
         text_feature_name = None
         for col_name, col_type in dataset.column_types.items():
@@ -425,13 +412,11 @@ def test_websocket_actor_explain_text_ws_classification(internal, request):
             assert label in reply.weights.keys()
 
 
-@pytest.mark.parametrize("internal", [
-    True, False
-])
+@pytest.mark.parametrize("internal", [True, False])
 def test_websocket_actor_dataset_processing_empty(internal, request):
     dataset: Dataset = request.getfixturevalue("enron_data")
 
-    project_key = str(uuid.uuid4()) # Use a UUID to separate the resources used by the tests
+    project_key = str(uuid.uuid4())  # Use a UUID to separate the resources used by the tests
 
     with utils.MockedProjectCacheDir(project_key), utils.MockedClient(mock_all=False) as (client, mr):
         # Prepare dataset
@@ -453,7 +438,7 @@ def test_websocket_actor_dataset_processing_empty(internal, request):
         reply = listener.dataset_processing(client=None if internal else client, params=params)
         assert isinstance(reply, websocket.DatasetProcessing)
         assert reply.datasetId == str(dataset.id)
-        assert reply.totalRows == len(list(dataset.df.index))   
+        assert reply.totalRows == len(list(dataset.df.index))
         # No line filtered
         assert reply.filteredRows is not None and 0 == len(reply.filteredRows)
         # No line modified
@@ -467,13 +452,11 @@ def head_slice(df: pd.DataFrame) -> pd.DataFrame:
 
 
 # FIXME: Internal worker cannot yet load callable due to yaml deserialization issue
-@pytest.mark.parametrize("callable_under_project", [
-    False, True
-])
+@pytest.mark.parametrize("callable_under_project", [False, True])
 def test_websocket_actor_dataset_processing_head_slicing_with_cache(callable_under_project, request):
     dataset: Dataset = request.getfixturevalue("enron_data")
 
-    project_key = str(uuid.uuid4()) # Use a UUID to separate the resources used by the tests
+    project_key = str(uuid.uuid4())  # Use a UUID to separate the resources used by the tests
     callable_function_project_key = project_key if callable_under_project else None
 
     with utils.MockedProjectCacheDir(project_key):
@@ -506,7 +489,7 @@ def test_websocket_actor_dataset_processing_head_slicing_with_cache(callable_und
             reply = listener.dataset_processing(client=client, params=params)
             assert isinstance(reply, websocket.DatasetProcessing)
             assert reply.datasetId == str(dataset.id)
-            assert reply.totalRows == len(list(dataset.df.index))   
+            assert reply.totalRows == len(list(dataset.df.index))
             # One line not filtered
             assert reply.filteredRows is not None and reply.totalRows - 1 == len(reply.filteredRows)
             # No line modified
@@ -520,13 +503,11 @@ def do_nothing(row):
 
 
 # FIXME: Internal worker cannot yet load callable due to yaml deserialization issue
-@pytest.mark.parametrize("callable_under_project", [
-    False, True
-])
+@pytest.mark.parametrize("callable_under_project", [False, True])
 def test_websocket_actor_dataset_processing_do_nothing_transform_with_cache(callable_under_project, request):
     dataset: Dataset = request.getfixturevalue("enron_data")
 
-    project_key = str(uuid.uuid4()) # Use a UUID to separate the resources used by the tests
+    project_key = str(uuid.uuid4())  # Use a UUID to separate the resources used by the tests
 
     with utils.MockedProjectCacheDir(project_key):
         # Prepare dataset
@@ -559,7 +540,7 @@ def test_websocket_actor_dataset_processing_do_nothing_transform_with_cache(call
             reply = listener.dataset_processing(client=client, params=params)
             assert isinstance(reply, websocket.DatasetProcessing)
             assert reply.datasetId == str(dataset.id)
-            assert reply.totalRows == len(list(dataset.df.index))   
+            assert reply.totalRows == len(list(dataset.df.index))
             # No line filtered
             assert reply.filteredRows is not None and 0 == len(reply.filteredRows)
             # No line modified

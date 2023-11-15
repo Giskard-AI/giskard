@@ -1,6 +1,7 @@
+from typing import Optional
+
 import os
 from pathlib import Path
-from typing import Optional
 
 import pydantic
 from packaging import version
@@ -33,8 +34,8 @@ class Settings(BaseModel):
     loglevel: str = "INFO"
     cache_dir: str = "cache"
     disable_analytics: bool = False
-    worker_ws_max_attemps: int = 10
-    min_workers: int = 1
+    min_workers: int = 2
+    use_pool: bool = True  # For testing/debugging only, do not disable
 
     class Config:
         env_prefix = "GSK_"

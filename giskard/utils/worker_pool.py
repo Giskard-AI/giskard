@@ -134,7 +134,9 @@ def _process_worker(tasks_queue: Queue, tasks_results: Queue, running_process: D
                         message=str(e),
                         stack_trace=traceback.format_exc(),
                     )
-                    to_return = GiskardResult(id=task.id, exception=exception, logs=f.getvalue() + "\n" + str(exception.stack_trace))
+                    to_return = GiskardResult(
+                        id=task.id, exception=exception, logs=f.getvalue() + "\n" + str(exception.stack_trace)
+                    )
                 finally:
                     running_process.pop(task.id)
                     tasks_results.put(to_return)
