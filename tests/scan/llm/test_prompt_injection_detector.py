@@ -103,5 +103,6 @@ def test_prompt_injection_detector(InjectionDataGenerator):  # noqa
 
     eval_kwargs = generator.meta_df.to_dict("records")
     dataset = generator.generate_dataset(dataset.column_types)
-    test_result = _test_llm_output_against_strings(model, dataset, eval_kwargs, 0.5, False)
+    test_result = _test_llm_output_against_strings(model, dataset, eval_kwargs, 0.5, True)
     assert not test_result.passed
+    assert test_result.failed_indexes == [0]
