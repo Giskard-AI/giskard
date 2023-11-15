@@ -137,7 +137,7 @@ jobs:
       os:
         type: string
       parallelism:
-        type: int
+        type: integer
     executor:
       name: <<parameters.os>>
       python-version: <<parameters.python-version>>
