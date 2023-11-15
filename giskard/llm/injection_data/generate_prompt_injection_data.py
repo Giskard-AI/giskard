@@ -488,10 +488,11 @@ def get_all_prompts():
     )
 
 
-if __name__ == "__main__":
+def generate_injection_prompts_data():
     import pandas as pd
 
     prompts = get_all_prompts()
+    df = {"prompt": [], "name": [], "group": [], "source": [], "language": []}
     group_map = {
         "DAN": "Jailbreak",
         "DAN Jailbreak": "Jailbreak",
@@ -504,8 +505,23 @@ if __name__ == "__main__":
         "Violence Speech": "Hijacking attacks",
         "Long Prompt": "Hijacking attacks",
     }
+    for i, prompt in enumerate(prompts):
+        df["prompt"].append(prompt.content)
+        prompt_name = prompt.name if prompt.name is not None else prompt.group.name
+        df["name"].append(prompt_name)
+        group_name = prompt.group.name if prompt.group.name not in group_map.keys() else group_map[prompt.group.name]
+        df["group"].append(group_name)
+        df["source"].append(prompt.source)
+        df["language"].append(prompt.language)
+    df = pd.DataFrame(df)
+    df.to_csv("injection_prompts_data.csv", index=False)
 
-    df = {"prompt": [], "name": [], "group": [], "source": [], "language": []}
+
+def generate_giskard_meta_data():
+    import pandas as pd
+
+    prompts = get_all_prompts()
+
     meta_df = {
         "substrings": [],
         "all_substrings_must_be_found": [],
@@ -519,14 +535,6 @@ if __name__ == "__main__":
         "deviation_description": [],
     }
     for i, prompt in enumerate(prompts):
-        df["prompt"].append(prompt.content)
-        prompt_name = prompt.name if prompt.name is not None else prompt.group.name
-        df["name"].append(prompt_name)
-        group_name = prompt.group.name if prompt.group.name not in group_map.keys() else group_map[prompt.group.name]
-        df["group"].append(group_name)
-        df["source"].append(prompt.source)
-        df["language"].append(prompt.language)
-
         for k in meta_df.keys():
             if k == "evaluation_method_name":
                 meta_df[k].append(getattr(prompt.evaluation_method, "name"))
@@ -536,9 +544,10 @@ if __name__ == "__main__":
                 meta_df[k].append(getattr(prompt.group, k))
             else:
                 meta_df[k].append(getattr(prompt.evaluation_method, k))
-
-    df = pd.DataFrame(df)
     meta_df = pd.DataFrame(meta_df)
-
-    df.to_csv("injection_prompts_data.csv", index=False)
     meta_df.to_csv("giskard_meta_data.csv", index=False)
+
+
+if __name__ == "__main__":
+    generate_injection_prompts_data()
+    generate_giskard_meta_data()
