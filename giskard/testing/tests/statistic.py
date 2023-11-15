@@ -158,9 +158,9 @@ def test_output_in_range(
     passed = bool(passed_ratio >= threshold)
 
     # --- debug ---
-    failed_indexes = list()
+    failed_indexes = dict()
     if not passed:
-        failed_indexes = list(
+        failed_indexes[str(dataset.original_id)] = list(
             dataset.df.index.get_indexer_for(dataset.df.loc[~dataset.df.index.isin(passed_idx)].index)
         )
     # ---
