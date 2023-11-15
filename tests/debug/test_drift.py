@@ -114,11 +114,11 @@ def test_prediction_drift_globally(model, dataset, request):
     results = test_drift_prediction_psi(
         model=model, actual_dataset=actual_dataset, reference_dataset=reference_dataset, debug=True
     ).execute()
-    assert len(results.failed_indexes) == len(actual_df)
+    assert len(results.failed_indexes[str(actual_dataset.original_id)]) == len(actual_df)
 
     actual_prediction = pd.Series(model.predict(actual_dataset).prediction)
     benchmark_len = len(actual_dataset.df.loc[actual_prediction.isin(["Default"]).values])
     results = test_drift_prediction_chi_square(
         model=model, actual_dataset=actual_dataset, reference_dataset=reference_dataset, debug=True
     ).execute()
-    assert len(results.failed_indexes) == benchmark_len
+    assert len(results.failed_indexes[str(actual_dataset.original_id)]) == benchmark_len

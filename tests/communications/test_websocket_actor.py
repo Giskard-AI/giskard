@@ -584,6 +584,7 @@ def test_websocket_actor_create_sub_dataset(request):
             copiedRows={
                 str(dataset.id): [0],
             },
+            sample=False,
         )
 
         reply = listener.create_sub_dataset(client=client, params=params)
