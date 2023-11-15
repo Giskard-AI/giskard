@@ -1,5 +1,3 @@
-from typing import Dict, Hashable, List, Optional, Union
-
 import inspect
 import logging
 import posixpath
@@ -7,6 +5,7 @@ import tempfile
 import uuid
 from functools import cached_property
 from pathlib import Path
+from typing import Dict, Hashable, List, Optional, Union
 
 import numpy as np
 import pandas
@@ -20,7 +19,8 @@ from zstandard import ZstdDecompressor
 from giskard.client.giskard_client import GiskardClient
 from giskard.client.io_utils import compress, save_df
 from giskard.client.python_utils import warning
-from giskard.core.core import DatasetMeta, SupportedColumnTypes
+from giskard.core.core import DatasetMeta, SupportedColumnTypes, NotGiven, NOT_GIVEN
+from giskard.core.errors import GiskardImportError
 from giskard.core.validation import configured_validate_arguments
 from giskard.ml_worker.testing.registry.slicing_function import SlicingFunction, SlicingFunctionType
 from giskard.ml_worker.testing.registry.transformation_function import (
@@ -28,10 +28,8 @@ from giskard.ml_worker.testing.registry.transformation_function import (
     TransformationFunctionType,
 )
 from giskard.settings import settings
-from giskard.core.errors import GiskardImportError
-
-from ...ml_worker.utils.file_utils import get_file_name
 from ..metadata.indexing import ColumnMetadataMixin
+from ...ml_worker.utils.file_utils import get_file_name
 
 try:
     import wandb  # noqa
@@ -145,7 +143,7 @@ class Dataset(ColumnMetadataMixin):
     """
 
     name: Optional[str]
-    target: Optional[str]
+    _target: Optional[str] | NotGiven
     column_types: Dict[str, str]
     df: pd.DataFrame
     id: uuid.UUID
@@ -156,7 +154,7 @@ class Dataset(ColumnMetadataMixin):
         self,
         df: pd.DataFrame,
         name: Optional[str] = None,
-        target: Optional[Hashable] = None,
+        target: Optional[Hashable] | NotGiven = NOT_GIVEN,
         cat_columns: Optional[List[str]] = None,
         column_types: Optional[Dict[Hashable, str]] = None,
         id: Optional[uuid.UUID] = None,
@@ -183,7 +181,7 @@ class Dataset(ColumnMetadataMixin):
             self.id = id
         self.name = name
         self.df = pd.DataFrame(df)
-        self.target = target
+        self._target = target
 
         if validation:
             from giskard.core.dataset_validation import validate_dtypes, validate_target_exists
@@ -226,7 +224,13 @@ class Dataset(ColumnMetadataMixin):
 
         logger.info("Your 'pandas.DataFrame' is successfully wrapped by Giskard's 'Dataset' wrapper class.")
 
-        self.data_processor = DataProcessor()
+    @property
+    def is_target_given(self) -> bool:
+        return self._target is not NOT_GIVEN
+
+    @property
+    def target(self) -> Optional[str]:
+        return self._target if self.is_target_given else self._target
 
     def add_slicing_function(self, slicing_function: SlicingFunction):
         """

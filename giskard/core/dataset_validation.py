@@ -9,7 +9,7 @@ from giskard.datasets.base import Dataset
 
 
 def validate_optional_target(ds: Dataset):
-    if ds.target is None:
+    if not ds.is_target_given:
         warning(
             "You did not provide the optional argument 'target'. "
             "'target' is the column name in df corresponding to the actual target variable (ground truth)."
