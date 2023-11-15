@@ -12,7 +12,6 @@ from concurrent.futures import CancelledError, Future
 from copy import copy
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Any, Callable, Dict, Optional, Union
 
 import numpy as np
 import pandas as pd
@@ -36,7 +35,9 @@ from giskard.ml_worker.utils.file_utils import get_file_name
 from giskard.ml_worker.websocket import CallToActionKind, GetInfoParam, PushKind
 from giskard.ml_worker.websocket.action import ActionPayload, MLWorkerAction
 from giskard.ml_worker.websocket.utils import (
+    do_create_sub_dataset,
     do_run_adhoc_test,
+    extract_debug_info,
     function_argument_to_ws,
     log_artifact_local,
     map_dataset_process_function_meta_ws,
@@ -44,8 +45,6 @@ from giskard.ml_worker.websocket.utils import (
     map_result_to_single_test_result_ws,
     parse_action_param,
     parse_function_arguments,
-    extract_debug_info,
-    do_create_sub_dataset,
 )
 from giskard.models.base import BaseModel
 from giskard.models.model_explanation import explain, explain_text
@@ -53,8 +52,8 @@ from giskard.push import Push
 from giskard.push.contribution import create_contribution_push
 from giskard.push.perturbation import create_perturbation_push
 from giskard.push.prediction import create_borderline_push, create_overconfidence_push
-from giskard.testing.tests import debug_prefix
 from giskard.settings import settings
+from giskard.testing.tests import debug_prefix
 from giskard.utils import call_in_pool
 from giskard.utils.analytics_collector import analytics
 from giskard.utils.worker_pool import GiskardMLWorkerException
@@ -521,7 +520,10 @@ def run_ad_hoc_test(
             dataset_name = debug_prefix + test.meta.name + debug_info["suffix"]
             parent_datasets = {
                 dataset_id: Dataset.download(
-                    client=client, project_key=debug_info["datasets"][dataset_id].project_key, dataset_id=dataset_id, sample=debug_info["datasets"][dataset_id].sample
+                    client=client,
+                    project_key=debug_info["datasets"][dataset_id].project_key,
+                    dataset_id=dataset_id,
+                    sample=debug_info["datasets"][dataset_id].sample,
                 )
                 for dataset_id in test_result.failed_indexes.keys()
             }
