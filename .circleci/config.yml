@@ -28,7 +28,7 @@ executors:
     environment:
       GSK_DISABLE_ANALYTICS: "True"
       GISKARD_DEV_MODE: "True"
-      PATH: 'C:\Users\circleci\AppData\Roaming\Python\Scripts\'
+      # PATH: 'C:\Users\circleci\AppData\Roaming\Python\Scripts\'
   macos:
     parameters:
       python-version:
@@ -40,7 +40,7 @@ executors:
     environment:
       GSK_DISABLE_ANALYTICS: "True"
       GISKARD_DEV_MODE: "True"
-      PATH: "/Users/distiller/.local/bin:$PATH"
+      # PATH: "/Users/distiller/.local/bin:$PATH"
 # Define a job to be invoked later in a workflow.
 commands:
   install-pdm:
