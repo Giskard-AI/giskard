@@ -60,7 +60,7 @@ commands:
             equal: ["macos", <<parameters.os>>]
           steps:
             - run:
-                name: Pytest -m <<parameter.markers>> (<<parameters.os>>)
+                name: Pytest -m <<parameters.markers>> (<<parameters.os>>)
                 no_output_timeout: "20m"
                 command: |
                   mkdir -p test-results
@@ -71,7 +71,7 @@ commands:
             equal: ["macos", <<parameters.os>>]
           steps:
             - run:
-                name: Pytest -m <<parameter.markers>> (<<parameters.os>>)
+                name: Pytest -m <<parameters.markers>> (<<parameters.os>>)
                 no_output_timeout: "20m"
                 command: |
                   mkdir -p test-results
