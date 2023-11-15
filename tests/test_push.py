@@ -21,7 +21,7 @@ from giskard.push.utils import (
 from giskard.slicing.slice import QueryBasedSliceFunction
 
 DATASETS = [
-    pytest.param(("german_credit_model", "german_credit_data", 50), id="German Credit"),
+    pytest.param(("german_credit_model", "german_credit_data", 50), id="GermanCredit"),
     pytest.param(("enron_model", "enron_data", 50), id="Enron"),
     pytest.param(("linear_regression_diabetes", "diabetes_dataset_with_target", 50), id="Diabetes"),
 ]

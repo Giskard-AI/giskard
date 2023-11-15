@@ -17,10 +17,10 @@ from giskard.scanner.llm import (
 @pytest.mark.parametrize(
     "Detector,issue_match",
     [
-        (LLMStereotypesDetector, "Stereotypes & Discrimination"),
-        (LLMInformationDisclosureDetector, "Disclosure of Sensitive Information"),
-        (LLMHarmfulContentDetector, "Generation of Harmful Content"),
-        (LLMOutputFormattingDetector, "Output formatting"),
+        pytest.param(LLMStereotypesDetector, "Stereotypes & Discrimination", id="stereotype"),
+        pytest.param(LLMInformationDisclosureDetector, "Disclosure of Sensitive Information", id="disclosure"),
+        pytest.param(LLMHarmfulContentDetector, "Generation of Harmful Content", id="harmful"),
+        pytest.param(LLMOutputFormattingDetector, "Output formatting", id="formatting"),
     ],
 )
 def test_requirement_based_detector_flow(Detector, issue_match):

@@ -211,8 +211,8 @@ def test_drift_reg_output_ks(data, model, threshold, expected_metric, request):
 @pytest.mark.parametrize(
     "data,model,threshold,expected_metric,classification_label",
     [
-        ("german_credit_data", "german_credit_model", 0.05, 0.15, "Default"),
-        ("enron_data", "enron_model", 0.05, 0.29, "CALIFORNIA CRISIS"),
+        pytest.param("german_credit_data", "german_credit_model", 0.05, 0.15, "Default", id="german_credit"),
+        pytest.param("enron_data", "enron_model", 0.05, 0.29, "CALIFORNIA CRISIS", id="enron"),
     ],
 )
 def test_drift_model_prob_ks(data, model, threshold, expected_metric, classification_label, request):
@@ -296,8 +296,8 @@ def test_drift_reg_output_earth_movers_distance(data, model, threshold, expected
 @pytest.mark.parametrize(
     "data,model,threshold,expected_metric,classification_label",
     [
-        ("german_credit_data", "german_credit_model", 0.05, 0.03, "Default"),
-        ("enron_data", "enron_model", 0.2, 0.12, "CALIFORNIA CRISIS"),
+        pytest.param("german_credit_data", "german_credit_model", 0.05, 0.03, "Default", id="german_credit"),
+        pytest.param("enron_data", "enron_model", 0.2, 0.12, "CALIFORNIA CRISIS", id="enron"),
     ],
 )
 def test_drift_model_prob_earth_movers_distance(data, model, threshold, expected_metric, classification_label, request):
