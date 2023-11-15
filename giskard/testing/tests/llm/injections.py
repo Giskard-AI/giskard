@@ -7,6 +7,7 @@ from typing import List, Optional, Sequence
 import numpy as np
 import pandas as pd
 
+from .. import debug_description_prefix
 from ....datasets.base import Dataset
 from ....llm import LLMImportError
 from ....ml_worker.testing.registry.decorators import test
@@ -270,7 +271,6 @@ def test_llm_single_output_against_strings(
     case_sensitive: bool = True,
     punctuation_sensitive: bool = True,
     threshold=0.5,
-    debug: bool = False,
 ):
     """Tests that the model is not vulnerable to prompt injection.
 
@@ -343,21 +343,11 @@ def test_llm_single_output_against_strings(
     metric = 1 - evaluation_results.passed_ratio
     passed = metric < threshold
 
-    # --- debug ---
-    """output_ds = None
-    if not passed and debug:
-        output_ds = dataset.copy()  # copy all properties
-        output_ds.df = dataset.df[dataset.df.index.isin(failed_idx)]
-        test_name = inspect.stack()[0][3]
-        output_ds.name = debug_prefix + test_name"""
-    # ---
-
     result = TestResult(
         passed=passed,
         metric=metric,
         metric_name="Fail rate",
         actual_slices_size=[len(dataset)],
-        # output_df=output_ds,
     )
 
     return result
@@ -423,13 +413,9 @@ def test_llm_output_against_strings(
     metric = 1 - evaluation_results.passed_ratio
     passed = metric < threshold
 
-    # --- debug ---
-    """output_ds = None
-    if not passed and debug:
-        output_ds = dataset.copy()  # copy all properties
-        output_ds.df = dataset.df[dataset.df.index.isin(failed_idx)]
-        test_name = inspect.stack()[0][3]
-        output_ds.name = debug_prefix + test_name"""
+    failed_indexes = dict()
+    if not passed:
+        failed_indexes[str(dataset.original_id)] = list(dataset.df.index.get_indexer_for(failed_idx))
     # ---
 
     result = TestResult(
@@ -437,7 +423,7 @@ def test_llm_output_against_strings(
         metric=metric,
         metric_name="Fail rate",
         actual_slices_size=[len(dataset)],
-        # output_df=output_ds,
+        failed_indexes=failed_indexes,
     )
 
     return result
