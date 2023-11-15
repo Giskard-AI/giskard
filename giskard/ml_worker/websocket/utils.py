@@ -68,14 +68,14 @@ def fragment_message(payload: str, frag_i: int, frag_length: int):
 
 def extract_debug_info(request_arguments):
     template_info = " | <xxx:xxx_id>"
-    info = {"suffix": "", "project_key": "", "dataset": None}
+    info = {"suffix": "", "project_key": "", "datasets": dict()}
     for arg in request_arguments:
         if arg.model:
             filled_info = template_info.replace("xxx", arg.name)
             info["suffix"] += filled_info.replace(arg.name + "_id", arg.model.id)
             info["project_key"] = arg.model.project_key  # in case model is in the args and dataset is not
         elif arg.dataset:
-            info["dataset"] = arg.dataset  # retrieve the dataset
+            info["datasets"][arg.dataset.id] = arg.dataset  # retrieve the dataset info
             filled_info = template_info.replace("xxx", arg.name)
             info["suffix"] += filled_info.replace(arg.name + "_id", arg.dataset.id)
             info["project_key"] = arg.dataset.project_key  # in case dataset is in the args and model is not

@@ -609,13 +609,13 @@ def run_ad_hoc_test(
         elif len(test_result.failed_indexes) != 0:
             # For legacy test calling new functions that return TestResult with failed_indexes
             dataset_name = debug_prefix + test.meta.name + debug_info["suffix"]
-            parent_dataset = Dataset.download(
-                client=client,
-                project_key=debug_info["dataset"].project_key,
-                dataset_id=debug_info["dataset"].id,
-                sample=debug_info["dataset"].sample,
-            )
-            dataset = do_create_sub_dataset(parent_dataset, dataset_name, test_result.failed_indexes)
+            parent_datasets = {
+                dataset_id: Dataset.download(
+                    client=client, project_key=debug_info["datasets"][dataset_id].project_key, dataset_id=dataset_id, sample=debug_info["datasets"][dataset_id].sample
+                )
+                for dataset_id in test_result.failed_indexes.keys()
+            }
+            dataset = do_create_sub_dataset(parent_datasets, dataset_name, test_result.failed_indexes)
         else:
             raise ValueError(
                 "This test does not return any examples to debug. "
