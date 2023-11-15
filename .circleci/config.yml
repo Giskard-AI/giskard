@@ -193,14 +193,18 @@ jobs:
       - restore_cache:
           keys:
             - python-<<parameters.os>>-<<parameters.python-version>>-{{ checksum "pdm.lock" }}
-      - pytest-parallel:
-          when: <<parameters.ram-intensive>>
-          markers: "not slow and memory_expensive"
-          os: <<parameters.os>>
-      - pytest-parallel:
-          unless: <<parameters.ram-intensive>>
-          markers: "not slow and not memory_expensive"
-          os: <<parameters.os>>
+      - when:
+          condition: <<parameters.ram-intensive>>
+          steps:
+            - pytest-parallel:
+                markers: "not slow and memory_expensive"
+                os: <<parameters.os>>
+      - unless:
+          condition: <<parameters.ram-intensive>>
+          steps:
+            - pytest-parallel:
+                markers: "not slow and not memory_expensive"
+                os: <<parameters.os>>
       # - cancel_on_fail
 
 # Orchestrate jobs using workflows
