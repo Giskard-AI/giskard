@@ -1,5 +1,5 @@
 from dataclasses import dataclass
-from typing import Sequence
+from typing import Sequence, Optional
 from abc import ABC, abstractmethod
 
 from ...datasets.base import Dataset
@@ -34,6 +34,7 @@ class EvaluationResult:
     failure_examples: Sequence[dict]
     success_examples: Sequence[dict]
     errors: Sequence[dict]
+    failed_indices: Optional[Sequence[int]] = None
 
     @property
     def passed(self):

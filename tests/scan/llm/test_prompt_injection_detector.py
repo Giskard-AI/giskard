@@ -6,6 +6,7 @@ import pandas as pd
 from giskard.datasets.base import Dataset
 from giskard.llm.generators.injection import InjectionDataGenerator
 from giskard.scanner.llm.llm_prompt_injection_detector import LLMPromptInjectionDetector
+from giskard.testing.tests.llm.injections import _test_llm_output_against_strings
 
 
 def test_prompt_injection_data_generator_properties():
@@ -97,6 +98,10 @@ def test_prompt_injection_detector(InjectionDataGenerator):  # noqa
 
     # First run
     issues = detector.run(model, dataset)
-
     assert len(issues) == 1
     assert issues[0].is_major
+
+    eval_kwargs = generator.meta_df.to_dict("records")
+    dataset = generator.generate_dataset(dataset.column_types)
+    test_result = _test_llm_output_against_strings(model, dataset, eval_kwargs, 0.5, False)
+    assert not test_result.passed

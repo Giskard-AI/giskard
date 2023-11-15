@@ -75,6 +75,7 @@ class StringMatcher(BaseEvaluator):
 
         succeeded = []
         failed = []
+        failed_indices = []
         errored = []
         zipped = zip(dataset.df.loc[:, model.meta.feature_names].to_dict("records"), model_outputs)
 
@@ -95,9 +96,11 @@ class StringMatcher(BaseEvaluator):
                 succeeded.append({"input_vars": input_vars, "model_output": model_output})
             else:
                 failed.append({"input_vars": input_vars, "model_output": model_output})
+                failed_indices.append(i)
 
         return EvaluationResult(
             failure_examples=failed,
+            failed_indices=failed_indices,
             success_examples=succeeded,
             errors=errored,
         )

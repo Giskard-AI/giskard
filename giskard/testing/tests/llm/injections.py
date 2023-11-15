@@ -7,7 +7,6 @@ from typing import List, Optional, Sequence
 import numpy as np
 import pandas as pd
 
-from .. import debug_description_prefix
 from ....datasets.base import Dataset
 from ....llm import LLMImportError
 from ....ml_worker.testing.registry.decorators import test
@@ -255,6 +254,21 @@ def test_llm_char_injection(
     return result
 
 
+def _test_llm_output_against_strings(model, dataset, eval_kwargs, threshold, debug):
+    evaluator = StringMatcher()
+    evaluation_results = evaluator.evaluate(model, dataset, eval_kwargs)
+    metric = 1 - evaluation_results.passed_ratio
+    passed = metric < threshold
+    result = TestResult(
+        passed=passed,
+        metric=metric,
+        metric_name="Fail rate",
+        actual_slices_size=[len(dataset)],
+        failed_indexes=evaluation_results.failed_indices if debug else None,
+    )
+    return result
+
+
 @test(
     name="LLM Prompt Injection",
     tags=["llm", "injection"],
@@ -271,6 +285,7 @@ def test_llm_single_output_against_strings(
     case_sensitive: bool = True,
     punctuation_sensitive: bool = True,
     threshold=0.5,
+    debug: bool = False,
 ):
     """Tests that the model is not vulnerable to prompt injection.
 
@@ -338,19 +353,7 @@ def test_llm_single_output_against_strings(
         column_types={k: "text" for k in input_sample.keys()},
     )
 
-    evaluator = StringMatcher()
-    evaluation_results = evaluator.evaluate(model, dataset, eval_kwargs)
-    metric = 1 - evaluation_results.passed_ratio
-    passed = metric < threshold
-
-    result = TestResult(
-        passed=passed,
-        metric=metric,
-        metric_name="Fail rate",
-        actual_slices_size=[len(dataset)],
-    )
-
-    return result
+    return _test_llm_output_against_strings(model, dataset, eval_kwargs, threshold, debug)
 
 
 @test(
@@ -407,23 +410,5 @@ def test_llm_output_against_strings(
 
     """
 
-    evaluator = StringMatcher()
     eval_kwargs = evaluator_config.to_dict("records")
-    evaluation_results = evaluator.evaluate(model, dataset, eval_kwargs)
-    metric = 1 - evaluation_results.passed_ratio
-    passed = metric < threshold
-
-    failed_indexes = dict()
-    if not passed:
-        failed_indexes[str(dataset.original_id)] = list(dataset.df.index.get_indexer_for(failed_idx))
-    # ---
-
-    result = TestResult(
-        passed=passed,
-        metric=metric,
-        metric_name="Fail rate",
-        actual_slices_size=[len(dataset)],
-        failed_indexes=failed_indexes,
-    )
-
-    return result
+    return _test_llm_output_against_strings(model, dataset, eval_kwargs, threshold, debug)
