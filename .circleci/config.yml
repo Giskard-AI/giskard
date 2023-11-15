@@ -134,7 +134,7 @@ jobs:
           paths:
             - .venv
           key: python-<<parameters.os>>-<<parameters.python-version>>-{{ checksum "pdm.lock" }}
-      - cancel_on_fail
+      # - cancel_on_fail
   unit-tests:
     parameters:
       python-version:
@@ -179,7 +179,7 @@ jobs:
                   pdm base-test -m 'not slow and not memory_expensive' --junitxml=test-results/junit.xml $TEST
       - store_test_results:
           path: test-results
-      - cancel_on_fail
+      # - cancel_on_fail
 
 # Orchestrate jobs using workflows
 # See: https://circleci.com/docs/configuration-reference/#workflows
