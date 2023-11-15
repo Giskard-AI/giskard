@@ -99,6 +99,11 @@ commands:
             equal: [ "macos", <<parameters.os>>]
           steps:
             - run: brew install python@$(echo <<parameters.python-version>> | sed -e 's|^\([0-9]*\.[0-9]*\)\..*$|\1|g')
+      - when:
+          condition:
+            equal: [ "macos", <<parameters.os>>]
+          steps:
+            - run: brew install libomp
       - install-pdm:
           os: <<parameters.os >>
 # See: https://circleci.com/docs/configuration-reference/#jobs
