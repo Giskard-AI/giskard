@@ -66,8 +66,7 @@ commands:
           condition:
             equal: [ "windows", <<parameters.os>>]
           steps:
-            - run: echo 'export PATH="c:\users\circleci\appdata\roaming\python\scripts:"$PATH"' >> "$BASH_ENV"
-
+            - run: echo 'export PATH=c:\users\circleci\appdata\roaming\python\scripts:"$PATH"' >> "$BASH_ENV"
       - when:
           condition:
             equal: [ "macos", <<parameters.os>>]
@@ -159,15 +158,36 @@ workflows:
           name: install-<<matrix.os>>-<<matrix.python-version>>
           matrix:
             parameters:
-              os: [ubuntu, windows, macos]
+              os: [ubuntu]
               python-version: ["3.9.13", "3.10.11", "3.11.6"]
+      - install:
+          name: install-<<parameters.os>>-<<parameters.python-version>>
+          os: macos
+          python-version: "3.10.11"
+      - install:
+          name: install-<<parameters.os>>-<<parameters.python-version>>
+          os: windows
+          python-version: "3.10.11"
       - unit-tests:
           name: test-<<matrix.os>>-<<matrix.python-version>>
           matrix:
             parameters:
-              os: [ubuntu, windows, macos]
+              os: [ubuntu]
               python-version: ["3.9.13", "3.10.11", "3.11.6"]
           requires:
             - install-<<matrix.os>>-<<matrix.python-version>>
+      - unit-tests:
+          name: install-<<parameters.os>>-<<parameters.python-version>>
+          os: macos
+          python-version: "3.10.11"
+          requires:
+            - install-<<matrix.os>>-<<matrix.python-version>>
+      - unit-tests:
+          name: install-<<parameters.os>>-<<parameters.python-version>>
+          os: windows
+          python-version: "3.10.11"
+          requires:
+            - install-<<matrix.os>>-<<matrix.python-version>>
+
 # https://circleci.com/docs/using-matrix-jobs/
 # https://circleci.com/docs/configuration-reference/#dependencies-and-matrix-jobs
