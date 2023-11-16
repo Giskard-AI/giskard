@@ -64,9 +64,8 @@ commands:
                 no_output_timeout: "20m"
                 command: |
                   mkdir -p test-results
-                  pdm use ./.venv/bin/python
+                  TEST=$(pdm run pytest --collect-only -m '<<parameters.markers>>' tests/ --quiet --no-header --no-summary |  tail -r | tail -n +3 | tail -r | circleci tests split --split-by=timings)
                   pdm venv activate
-                  TEST=$(./.venv/bin/pytest --collect-only -m '<<parameters.markers>>' tests/ --quiet --no-header --no-summary |  tail -r | tail -n +3 | tail -r | circleci tests split --split-by=timings)
                   ./.venv/bin/pytest -c pyproject.toml --cov=giskard --cov-report=xml --cov-append --disable-warnings --no-header -vv --durations=0 --junitxml=test-results/junit.xml $TEST
       - when:
           condition:
@@ -77,10 +76,9 @@ commands:
                 no_output_timeout: "20m"
                 command: |
                   mkdir -p test-results
-                  pdm use ./.venv/bin/python.exe
+                  TEST=$(pdm run pytest --collect-only -m '<<parameters.markers>>' tests/ --quiet --no-header --no-summary |  head -n -2 | circleci tests split --split-by=timings)
                   pdm venv activate
-                  TEST=$(./.venv/bin/pytest.exe --collect-only -m '<<parameters.markers>>' tests/ --quiet --no-header --no-summary |  head -n -2 | circleci tests split --split-by=timings)
-                  ./.venv/bin/pytest.exe -c pyproject.toml --cov=giskard --cov-report=xml --cov-append --disable-warnings --no-header -vv --durations=0 --junitxml=test-results/junit.xml $TEST
+                  python -m pytest -c pyproject.toml --cov=giskard --cov-report=xml --cov-append --disable-warnings --no-header -vv --durations=0 --junitxml=test-results/junit.xml $TEST
       - when:
           condition:
             equal: ["ubuntu", <<parameters.os>>]
@@ -90,9 +88,8 @@ commands:
                 no_output_timeout: "20m"
                 command: |
                   mkdir -p test-results
-                  pdm use ./.venv/bin/python
+                  TEST=$(pdm run pytest --collect-only -m '<<parameters.markers>>' tests/ --quiet --no-header --no-summary |  head -n -2 | circleci tests split --split-by=timings)
                   pdm venv activate
-                  TEST=$(./.venv/bin/pytest --collect-only -m '<<parameters.markers>>' tests/ --quiet --no-header --no-summary |  head -n -2 | circleci tests split --split-by=timings)
                   ./.venv/bin/pytest -c pyproject.toml --cov=giskard --cov-report=xml --cov-append --disable-warnings --no-header -vv --durations=0 --junitxml=test-results/junit.xml $TEST
       - store_test_results:
           path: test-results
@@ -134,6 +131,11 @@ commands:
             equal: ["macos", <<parameters.os>>]
           steps:
             - run: echo 'export PATH=/Users/distiller/.local/bin:"$PATH"' >> "$BASH_ENV"
+      - when:
+          condition:
+            equal: ["ubuntu", <<parameters.os>>]
+          steps:
+            - run: sudo apt update && sudo apt install -y openssl
   install-python:
     description: "Install PDM"
     parameters:
