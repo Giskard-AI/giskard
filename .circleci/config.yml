@@ -231,6 +231,7 @@ jobs:
 # See: https://circleci.com/docs/configuration-reference/#workflows
 workflows:
   python-workflow:
+    unless: { equal: [scheduled_pipeline, << pipeline.trigger_source >>] }
     jobs:
       - install:
           name: install-ubuntu-<<matrix.python-version>>
@@ -260,7 +261,7 @@ workflows:
           name: unit-tests-mac
           os: macos
           python-version: "3.10"
-          parallelism: 2
+          parallelism: 1
           slow-tests: False
           requires:
             - install-macos
@@ -273,6 +274,9 @@ workflows:
           requires:
             - install-windows
   python-nightly:
+    when: { equal: [scheduled_pipeline, << pipeline.trigger_source >>] }
+    # https://circleci.com/docs/pipeline-variables/
+    # https://dev.to/aws-heroes/trigger-circleci-workflow-aka-simple-deploy-button-3ocl
     jobs:
       - install:
           name: install-ubuntu-<<matrix.python-version>>
@@ -302,7 +306,7 @@ workflows:
           name: integ-tests-mac
           os: macos
           python-version: "3.10"
-          parallelism: 2
+          parallelism: 1
           slow-tests: True
           requires:
             - install-macos
