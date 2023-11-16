@@ -236,7 +236,7 @@ workflows:
         or:
           [
             { equal: [scheduled_pipeline, << pipeline.trigger_source >>] },
-            { equal: [scheduled_pipeline, << pipeline.trigger_source >>] },
+            { equal: [api, << pipeline.trigger_source >>] },
           ],
       }
     jobs:
@@ -281,7 +281,14 @@ workflows:
           requires:
             - install-windows
   python-nightly:
-    when: { equal: [scheduled_pipeline, << pipeline.trigger_source >>] }
+    when:
+      {
+        or:
+          [
+            { equal: [scheduled_pipeline, << pipeline.trigger_source >>] },
+            { equal: [api, << pipeline.trigger_source >>] },
+          ],
+      }
     # https://circleci.com/docs/pipeline-variables/
     # https://dev.to/aws-heroes/trigger-circleci-workflow-aka-simple-deploy-button-3ocl
     jobs:
