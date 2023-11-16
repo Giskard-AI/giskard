@@ -230,7 +230,7 @@ class Dataset(ColumnMetadataMixin):
 
     @property
     def target(self) -> Optional[str]:
-        return self._target if self.is_target_given else None
+        return self._target or None
 
     def add_slicing_function(self, slicing_function: SlicingFunction):
         """
