@@ -195,7 +195,7 @@ jobs:
       nb_workers:
         type: integer
         default: 1
-      ram-intensive:
+      slow-tests:
         type: boolean
     executor:
       name: <<parameters.os>>
@@ -210,19 +210,21 @@ jobs:
       - restore_cache:
           keys:
             - python-{{ .Environment.CACHE_VERSION }}-<<parameters.os>>-<<parameters.python-version>>-{{ checksum "pdm.lock" }}
+      - pytest-parallel:
+          markers: "not slow and memory_expensive"
+          os: <<parameters.os>>
+      - pytest-parallel:
+          markers: "not slow and not memory_expensive"
+          os: <<parameters.os>>
+          nb_workers: <<parameters.nb_workers>>
       - when:
-          condition: <<parameters.ram-intensive>>
+          condition: <<parameters.slow-tests>>
           steps:
             - pytest-parallel:
-                markers: "not slow and memory_expensive"
-                os: <<parameters.os>>
-      - unless:
-          condition: <<parameters.ram-intensive>>
-          steps:
-            - pytest-parallel:
-                markers: "not slow and not memory_expensive"
+                markers: "slow"
                 os: <<parameters.os>>
                 nb_workers: <<parameters.nb_workers>>
+
       # - cancel_on_fail
 
 # Orchestrate jobs using workflows
@@ -232,9 +234,9 @@ workflows:
     jobs:
       - install:
           name: install-<<matrix.os>>-<<matrix.python-version>>
+          os: ubuntu
           matrix:
             parameters:
-              os: [ubuntu]
               python-version: ["3.9", "3.10", "3.11"]
       - install:
           name: install-macos
@@ -246,12 +248,12 @@ workflows:
           python-version: "3.10.11"
       - unit-tests:
           name: test-<<matrix.os>>-<<matrix.python-version>>
+          slow-tests: False
+          os: ubuntu
+          parallelism: 4
           matrix:
             parameters:
-              os: [ubuntu]
               python-version: ["3.9", "3.10", "3.11"]
-              parallelism: [4]
-              ram-intensive: [True, False]
           requires:
             - install-<<matrix.os>>-<<matrix.python-version>>
       - unit-tests:
@@ -260,9 +262,7 @@ workflows:
           python-version: "3.10"
           parallelism: 1
           nb_workers: 4
-          matrix:
-            parameters:
-              ram-intensive: [True, False]
+          slow-tests: False
           requires:
             - install-macos
       - unit-tests:
@@ -270,9 +270,50 @@ workflows:
           os: windows
           parallelism: 4
           python-version: "3.10.11"
+          slow-tests: False
+          requires:
+            - install-windows
+  python-nightly:
+    jobs:
+      - install:
+          name: install-<<matrix.os>>-<<matrix.python-version>>
+          os: ubuntu
           matrix:
             parameters:
-              ram-intensive: [True, False]
+              python-version: ["3.9", "3.10", "3.11"]
+      - install:
+          name: install-macos
+          os: macos
+          python-version: "3.10"
+      - install:
+          name: install-windows
+          os: windows
+          python-version: "3.10.11"
+      - unit-tests:
+          name: test-<<matrix.os>>-<<matrix.python-version>>
+          slow-tests: True
+          os: ubuntu
+          parallelism: 4
+          matrix:
+            parameters:
+              python-version: ["3.9", "3.10", "3.11"]
+          requires:
+            - install-<<matrix.os>>-<<matrix.python-version>>
+      - unit-tests:
+          name: unit-tests-mac
+          os: macos
+          python-version: "3.10"
+          parallelism: 1
+          nb_workers: 4
+          slow-tests: True
+          requires:
+            - install-macos
+      - unit-tests:
+          name: unit-tests-windows
+          os: windows
+          parallelism: 4
+          python-version: "3.10.11"
+          slow-tests: True
           requires:
             - install-windows
 # https://circleci.com/docs/using-matrix-jobs/
