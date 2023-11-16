@@ -1,9 +1,9 @@
-from typing import Any, Dict, List, Optional
-
 import logging
 import os
 import shutil
+from typing import Any, Dict, List, Optional
 
+import pandas as pd
 from mlflow.store.artifact.artifact_repo import verify_artifact_path
 
 from giskard.client.giskard_client import GiskardClient
@@ -16,6 +16,7 @@ from giskard.ml_worker.testing.registry.slicing_function import SlicingFunction
 from giskard.ml_worker.testing.registry.transformation_function import TransformationFunction
 from giskard.ml_worker.testing.test_result import TestMessageLevel, TestResult
 from giskard.ml_worker.websocket import (
+    CreateSubDatasetParam,
     DatasetProcessingParam,
     EchoMsg,
     ExplainParam,
@@ -56,6 +57,8 @@ def parse_action_param(action: MLWorkerAction, params):
         return EchoMsg.parse_obj(params)
     elif action == MLWorkerAction.getPush:
         return GetPushParam.parse_obj(params)
+    elif action == MLWorkerAction.createSubDataset:
+        return CreateSubDatasetParam.parse_obj(params)
     return params
 
 
@@ -65,13 +68,14 @@ def fragment_message(payload: str, frag_i: int, frag_length: int):
 
 def extract_debug_info(request_arguments):
     template_info = " | <xxx:xxx_id>"
-    info = {"suffix": "", "project_key": ""}
+    info = {"suffix": "", "project_key": "", "datasets": dict()}
     for arg in request_arguments:
         if arg.model:
             filled_info = template_info.replace("xxx", arg.name)
             info["suffix"] += filled_info.replace(arg.name + "_id", arg.model.id)
             info["project_key"] = arg.model.project_key  # in case model is in the args and dataset is not
         elif arg.dataset:
+            info["datasets"][arg.dataset.id] = arg.dataset  # retrieve the dataset info
             filled_info = template_info.replace("xxx", arg.name)
             info["suffix"] += filled_info.replace(arg.name + "_id", arg.dataset.id)
             info["project_key"] = arg.dataset.project_key  # in case dataset is in the args and model is not
@@ -226,11 +230,11 @@ def map_result_to_single_test_result_ws(result) -> websocket.SingleTestResult:
                 for puc in result.partial_unexpected_index_list
             ],
             unexpected_index_list=result.unexpected_index_list,
-            output_df=None,
             number_of_perturbed_rows=result.number_of_perturbed_rows,
             actual_slices_size=result.actual_slices_size,
             reference_slices_size=result.reference_slices_size,
-            output_df_id=result.output_df_id,
+            output_df_id=result.output_df_id,  # For legacy debug
+            failed_indexes=result.failed_indexes,
         )
     elif isinstance(result, bool):
         return websocket.SingleTestResult(passed=result)
@@ -238,31 +242,9 @@ def map_result_to_single_test_result_ws(result) -> websocket.SingleTestResult:
         raise ValueError("Result of test can only be 'TestResult' or 'bool'")
 
 
-def do_run_adhoc_test(client, arguments, test, debug_info=None):
+def do_run_adhoc_test(arguments, test):
     logger.info(f"Executing {test.meta.display_name or f'{test.meta.module}.{test.meta.name}'}")
-    test_result = test.get_builder()(**arguments).execute()
-    if test_result.output_df is not None:  # i.e. if debug is True and test has failed
-        if debug_info is None:
-            raise ValueError(
-                "You have requested to debug the test, "
-                + "but extract_debug_info did not return the information needed."
-            )
-
-        if test_result.output_df.name is not None:
-            # Dataset can have empty name
-            test_result.output_df.name += debug_info["suffix"]
-
-        test_result.output_df_id = test_result.output_df.upload(client=client, project_key=debug_info["project_key"])
-        # We won't return output_df from WS, rather upload it
-        test_result.output_df = None
-    elif arguments["debug"]:
-        raise ValueError(
-            "This test does not return any examples to debug. "
-            "Check the debugging method associated to this test at "
-            "https://docs.giskard.ai/en/latest/reference/tests/index.html"
-        )
-
-    return test_result
+    return test.get_builder()(**arguments).execute()
 
 
 def map_suite_input_ws(i: websocket.SuiteInput):
@@ -325,3 +307,17 @@ def function_argument_to_ws(value: Dict[str, Any]):
         )
 
     return args
+
+
+def do_create_sub_dataset(datasets: Dict[str, Dataset], name: Optional[str], row_indexes: Dict[str, List[int]]):
+    # TODO: validate all dataset have same target and column types before
+    dataset_list = list(datasets.values())
+
+    return Dataset(
+        df=pd.concat([dataset.df.iloc[row_indexes[dataset_id]] for dataset_id, dataset in datasets.items()]),
+        name=name,
+        target=dataset_list[0].target,
+        cat_columns=dataset_list[0].cat_columns,
+        column_types=dataset_list[0].column_types,
+        validation=False,
+    )
