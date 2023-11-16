@@ -260,7 +260,7 @@ workflows:
           name: unit-tests-mac
           os: macos
           python-version: "3.10"
-          parallelism: 4
+          parallelism: 2
           slow-tests: False
           requires:
             - install-macos
@@ -302,7 +302,7 @@ workflows:
           name: integ-tests-mac
           os: macos
           python-version: "3.10"
-          parallelism: 4
+          parallelism: 2
           slow-tests: True
           requires:
             - install-macos
