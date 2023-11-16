@@ -180,15 +180,14 @@ jobs:
       # Download and cache dependencies
       - restore_cache:
           keys:
-            - python-<<parameters.os>>-<<parameters.python-version>>-{{ checksum "pdm.lock" }}
-            - python-<<parameters.os>>-<<parameters.python-version>>
+            - python-{{ .Environment.CACHE_VERSION }}-<<parameters.os>>-<<parameters.python-version>>-{{ checksum "pdm.lock" }}
       - run:
           name: Install deps
           command: pdm install -G :all
       - save_cache:
           paths:
             - .venv
-          key: python-<<parameters.os>>-<<parameters.python-version>>-{{ checksum "pdm.lock" }}
+          key: python-{{ .Environment.CACHE_VERSION }}-<<parameters.os>>-<<parameters.python-version>>-{{ checksum "pdm.lock" }}
       # - cancel_on_fail
   unit-tests:
     parameters:
@@ -215,7 +214,7 @@ jobs:
       # Download and cache dependencies
       - restore_cache:
           keys:
-            - python-<<parameters.os>>-<<parameters.python-version>>-{{ checksum "pdm.lock" }}
+            - python-{{ .Environment.CACHE_VERSION }}-<<parameters.os>>-<<parameters.python-version>>-{{ checksum "pdm.lock" }}
       - when:
           condition: <<parameters.ram-intensive>>
           steps:
