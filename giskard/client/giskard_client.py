@@ -1,9 +1,10 @@
 """API Client to interact with the Giskard app"""
+from typing import List
+
 import logging
 import os
 import posixpath
 from pathlib import Path
-from typing import List
 from urllib.parse import urljoin
 from uuid import UUID
 

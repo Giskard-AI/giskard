@@ -1,6 +1,5 @@
-from typing import Dict, List, Optional
-
 from enum import Enum
+from typing import Dict, List, Optional
 
 import pydantic
 from packaging import version
@@ -259,11 +258,11 @@ class SingleTestResult(ConfiguredBaseModel):
     partial_unexpected_index_list: Optional[List[int]] = None
     partial_unexpected_counts: Optional[List[PartialUnexpectedCounts]] = None
     unexpected_index_list: Optional[List[int]] = None
-    output_df: Optional[bytes] = None
     number_of_perturbed_rows: Optional[int] = None
     actual_slices_size: Optional[List[int]] = None
     reference_slices_size: Optional[List[int]] = None
     output_df_id: Optional[str] = None
+    failed_indexes: Optional[Dict[str, List[int]]] = None
 
 
 class IdentifierSingleTestResult(ConfiguredBaseModel):
@@ -387,3 +386,14 @@ class GetPushResponse(ConfiguredBaseModel):
     overconfidence: Optional[Push] = None
     borderline: Optional[Push] = None
     action: Optional[PushAction] = None
+
+
+class CreateSubDatasetParam(ConfiguredBaseModel):
+    projectKey: str
+    sample: bool
+    name: str
+    copiedRows: Dict[str, List[int]]
+
+
+class CreateSubDataset(WorkerReply):
+    datasetUuid: str
