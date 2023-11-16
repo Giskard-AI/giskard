@@ -247,7 +247,7 @@ workflows:
           os: windows
           python-version: "3.10.11"
       - unit-tests:
-          name: test-ubuntu>>-<<matrix.python-version>>
+          name: test-ubuntu-<<matrix.python-version>>
           slow-tests: False
           os: ubuntu
           parallelism: 4
@@ -255,7 +255,7 @@ workflows:
             parameters:
               python-version: ["3.9", "3.10", "3.11"]
           requires:
-            - install-ubuntu>>-<<matrix.python-version>>
+            - install-ubuntu-<<matrix.python-version>>
       - unit-tests:
           name: unit-tests-mac
           os: macos
