@@ -1,5 +1,6 @@
 from dataclasses import dataclass
-from typing import Sequence
+from typing import Sequence, Optional
+from abc import ABC, abstractmethod
 
 from ...datasets.base import Dataset
 from ...models.base.model import BaseModel
@@ -34,6 +35,7 @@ class EvaluationResult:
     failure_examples: Sequence[dict]
     success_examples: Sequence[dict]
     errors: Sequence[dict]
+    failed_indices: Optional[Sequence[int]] = None
 
     @property
     def passed(self):
@@ -52,7 +54,15 @@ class EvaluationResult:
         return len(self.success_examples) / (len(self.success_examples) + len(self.failure_examples))
 
 
-class LLMBasedEvaluator:
+class BaseEvaluator(ABC):
+    """Base class for evaluators that define a way of detecting a LLM failure"""
+
+    @abstractmethod
+    def evaluate(self, model: BaseModel, dataset: Dataset):
+        ...
+
+
+class LLMBasedEvaluator(BaseEvaluator):
     _default_eval_prompt: str
 
     def __init__(self, eval_prompt=None, llm_model="gpt-4", llm_temperature=0.1, llm_client: LLMClient = None):
