@@ -68,7 +68,7 @@ html_theme = "furo"
 html_static_path = ["_static"]
 
 html_css_files = ["css/custom.css"]
-html_js_files = ["js/githubStargazers.js", "js/sidebarKeepScroll.js"]
+html_js_files = ["js/githubStargazers.js", "js/sidebarKeepScroll.js", "js/reodev.js"]
 
 html_theme_options = {
     "light_logo": "logo_black.png",
