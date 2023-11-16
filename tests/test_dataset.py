@@ -64,11 +64,14 @@ def test_validate_optional_target():
         my_dataset = Dataset(valid_df)
         validate_optional_target(my_dataset)
 
-    my_dataset = Dataset(valid_df, target=None)
-    validate_optional_target(my_dataset)
+    with pytest.warns(None) as record:
+        my_dataset = Dataset(valid_df, target=None)
+        validate_optional_target(my_dataset)
 
-    my_dataset = Dataset(valid_df, target="text_column")
-    validate_optional_target(my_dataset)
+        my_dataset = Dataset(valid_df, target="text_column")
+        validate_optional_target(my_dataset)
+
+    assert len(record) == 0
 
 
 def test_valid_df_column_types():
