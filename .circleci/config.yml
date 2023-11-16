@@ -128,11 +128,6 @@ commands:
             equal: ["macos", <<parameters.os>>]
           steps:
             - run: echo 'export PATH=/Users/distiller/.local/bin:"$PATH"' >> "$BASH_ENV"
-      - when:
-          condition:
-            equal: ["ubuntu", <<parameters.os>>]
-          steps:
-            - run: sudo apt update && sudo apt install -y openssl
   install-python:
     description: "Install PDM"
     parameters:
