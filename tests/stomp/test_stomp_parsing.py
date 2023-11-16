@@ -139,7 +139,7 @@ def test_parsing(raw_frame: str, command: StompCommand, headers: Dict[str, str],
 @pytest.mark.parametrize(
     "message,error",
     [
-        (
+        pytest.param(
             """MESSAGE
 destination:/home
 content-type:application/json
@@ -149,8 +149,9 @@ content-length:2
 
 ["azea", 1n, true]""",
             "Got data after content length",
+            id="too-long-data",
         ),
-        (
+        pytest.param(
             """MESSAGE
 destination:/home
 content-type:application/json
@@ -160,8 +161,9 @@ content-length:20000
 
 ["azea", 1n, true]""",
             "Content length is longer than data",
+            id="too-long-length",
         ),
-        (
+        pytest.param(
             """MESSAGE
 destination:/home
 content-type:application/json
@@ -171,6 +173,7 @@ content-length:azeazee
 
 ["azea", 1n, true]""",
             "Invalid content length given, expected an integer",
+            id="invalid-content-length",
         ),
     ],
 )
