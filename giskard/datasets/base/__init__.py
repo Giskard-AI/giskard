@@ -92,6 +92,7 @@ class DataProcessor:
                 cat_columns=ds.cat_columns,
                 column_types=ds.column_types,
                 validation=False,
+                original_id=dataset.original_id,
             )
 
             if apply_only_last:
@@ -147,6 +148,7 @@ class Dataset(ColumnMetadataMixin):
     column_types: Dict[str, str]
     df: pd.DataFrame
     id: uuid.UUID
+    original_id: uuid.UUID
     data_processor: DataProcessor
 
     @configured_validate_arguments
@@ -159,6 +161,7 @@ class Dataset(ColumnMetadataMixin):
         column_types: Optional[Dict[Hashable, str]] = None,
         id: Optional[uuid.UUID] = None,
         validation=True,
+        original_id: Optional[uuid.UUID] = None,
     ) -> None:
         """
         Initializes a Dataset object.
@@ -179,6 +182,8 @@ class Dataset(ColumnMetadataMixin):
             self.id = uuid.uuid4()
         else:
             self.id = id
+        self.original_id = original_id or self.id
+
         self.name = name
         self.df = pd.DataFrame(df)
         self._target = target

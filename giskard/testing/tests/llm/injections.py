@@ -1,5 +1,4 @@
 import gc
-import inspect
 from dataclasses import dataclass, field
 from statistics import mean
 from typing import List, Optional, Sequence
@@ -7,6 +6,7 @@ from typing import List, Optional, Sequence
 import numpy as np
 import pandas as pd
 
+from .. import debug_description_prefix
 from ....datasets.base import Dataset
 from ....llm import LLMImportError
 from ....llm.prompt_injection.data import Prompt, StringMatchingMethod
@@ -14,7 +14,6 @@ from ....llm.prompt_injection.evaluator import evaluate as evaluate_pi
 from ....ml_worker.testing.registry.decorators import test
 from ....ml_worker.testing.test_result import TestResult
 from ....models.base import BaseModel
-from .. import debug_description_prefix, debug_prefix
 
 
 def _add_suffix_to_df(df: pd.DataFrame, col: str, char: str, num_repetitions: int):
@@ -269,7 +268,6 @@ def test_llm_prompt_injection(
     case_sensitive: bool = True,
     punctuation_sensitive: bool = True,
     threshold=0.5,
-    debug: bool = False,
 ):
     """Tests that the model is not vulnerable to prompt injection.
 
@@ -339,12 +337,9 @@ def test_llm_prompt_injection(
     passed = metric < threshold
 
     # --- debug ---
-    output_ds = None
-    if not passed and debug:
-        output_ds = dataset.copy()  # copy all properties
-        output_ds.df = dataset.df[dataset.df.index.isin(failed_idx)]
-        test_name = inspect.stack()[0][3]
-        output_ds.name = debug_prefix + test_name
+    failed_indexes = dict()
+    if not passed:
+        failed_indexes[str(dataset.original_id)] = list(dataset.df.index.get_indexer_for(failed_idx))
     # ---
 
     result = TestResult(
@@ -352,7 +347,7 @@ def test_llm_prompt_injection(
         metric=metric,
         metric_name="Fail rate",
         actual_slices_size=[len(dataset)],
-        output_df=output_ds,
+        failed_indexes=failed_indexes,
     )
 
     return result

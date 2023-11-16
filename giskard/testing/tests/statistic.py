@@ -1,5 +1,4 @@
 """Statistical tests"""
-import inspect
 import numbers
 from typing import Optional
 
@@ -11,8 +10,7 @@ from giskard.ml_worker.testing.registry.slicing_function import SlicingFunction
 from giskard.ml_worker.testing.test_result import TestMessage, TestMessageLevel, TestResult
 from giskard.ml_worker.testing.utils import check_slice_not_empty, validate_classification_label
 from giskard.models.base import BaseModel
-
-from . import debug_description_prefix, debug_prefix
+from . import debug_description_prefix
 
 
 @test(
@@ -27,7 +25,6 @@ def test_right_label(
     classification_label: str,
     slicing_function: Optional[SlicingFunction] = None,
     threshold: float = 0.5,
-    debug: bool = False,
 ) -> TestResult:
     """
     Summary: Test if the model returns the right classification label for a slice
@@ -50,9 +47,6 @@ def test_right_label(
           Slicing function to be applied on the dataset
       threshold(float):
           Threshold for the percentage of passed rows
-      debug(bool):
-          If True and the test fails,
-          a dataset will be provided containing the rows that do not return the right classification label.
 
     Returns:
       actual_slices_size:
@@ -74,15 +68,16 @@ def test_right_label(
     passed = bool(passed_ratio > threshold)
 
     # --- debug ---
-    output_ds = None
-    if not passed and debug:
-        output_ds = dataset.copy()  # copy all properties
-        output_ds.df = dataset.df.loc[~dataset.df.index.isin(passed_idx)]
-        test_name = inspect.stack()[1][3]
-        output_ds.name = debug_prefix + test_name
+    failed_indexes = dict()
+    if not passed:
+        failed_indexes[str(dataset.original_id)] = list(
+            dataset.df.index.get_indexer_for(dataset.df.loc[~dataset.df.index.isin(passed_idx)].index)
+        )
     # ---
 
-    return TestResult(actual_slices_size=[len(dataset)], metric=passed_ratio, passed=passed, output_df=output_ds)
+    return TestResult(
+        actual_slices_size=[len(dataset)], metric=passed_ratio, passed=passed, failed_indexes=failed_indexes
+    )
 
 
 @test(
@@ -99,7 +94,6 @@ def test_output_in_range(
     min_range: float = 0.3,
     max_range: float = 0.7,
     threshold: float = 0.5,
-    debug: bool = False,
 ) -> TestResult:
     """
     Summary: Test if the model output belongs to the right range for a slice
@@ -134,9 +128,6 @@ def test_output_in_range(
             Maximum probability of occurrence of classification label
         threshold(float):
             Threshold for the percentage of passed rows
-        debug(bool):
-            If True and the test fails,
-            a dataset will be provided containing the rows that are out of the given range.
 
     Returns:
         actual_slices_size:
@@ -167,15 +158,16 @@ def test_output_in_range(
     passed = bool(passed_ratio >= threshold)
 
     # --- debug ---
-    output_ds = None
-    if not passed and debug:
-        output_ds = dataset.copy()  # copy all properties
-        output_ds.df = dataset.df.loc[~dataset.df.index.isin(passed_idx)]
-        test_name = inspect.stack()[1][3]
-        output_ds.name = debug_prefix + test_name
+    failed_indexes = dict()
+    if not passed:
+        failed_indexes[str(dataset.original_id)] = list(
+            dataset.df.index.get_indexer_for(dataset.df.loc[~dataset.df.index.isin(passed_idx)].index)
+        )
     # ---
 
-    return TestResult(actual_slices_size=[len(dataset)], metric=passed_ratio, passed=passed, output_df=output_ds)
+    return TestResult(
+        actual_slices_size=[len(dataset)], metric=passed_ratio, passed=passed, failed_indexes=failed_indexes
+    )
 
 
 @test(
@@ -193,7 +185,6 @@ def test_disparate_impact(
     slicing_function: Optional[SlicingFunction] = None,
     min_threshold: float = 0.8,
     max_threshold: float = 1.25,
-    debug: bool = False,
 ) -> TestResult:
     """
     Summary: Tests if the model is biased more towards an unprotected slice of the dataset over a protected slice.
@@ -233,10 +224,6 @@ def test_disparate_impact(
               Threshold below which the DI test is considered to fail, by default 0.8
           max_threshold(float):
               Threshold above which the DI test is considered to fail, by default 1.25
-          debug(bool):
-              If True and the test fails,
-              a dataset will be provided containing the rows from the protected and unprotected slices that were
-              incorrectly predicted on a specific positive outcome.
 
     Returns:
           metric:
@@ -287,20 +274,16 @@ def test_disparate_impact(
     passed = bool((disparate_impact_score > min_threshold) * (disparate_impact_score < max_threshold))
 
     # --- debug ---
-    output_ds = None
-    if not passed and debug:
+    failed_indexes = dict()
+    if not passed:
         failed_protected = list(_protected_predictions != protected_ds.df[dataset.target])
         failed_unprotected = list(_unprotected_predictions != unprotected_ds.df[dataset.target])
         failed_idx_protected = [i for i, x in enumerate(failed_protected) if x]
         failed_idx_unprotected = [i for i, x in enumerate(failed_unprotected) if x]
-        failed_idx = failed_idx_protected + failed_idx_unprotected
-        output_ds = dataset.copy()  # copy all properties
-        output_ds.df = dataset.df.iloc[failed_idx]
-        test_name = inspect.stack()[1][3]
-        output_ds.name = debug_prefix + test_name
+        failed_indexes[str(dataset.original_id)] = failed_idx_protected + failed_idx_unprotected
     # ---
 
-    return TestResult(metric=disparate_impact_score, passed=passed, messages=messages, output_df=output_ds)
+    return TestResult(metric=disparate_impact_score, passed=passed, messages=messages, failed_indexes=failed_indexes)
 
 
 def _cramer_v(x, y):
@@ -336,7 +319,7 @@ def test_nominal_association(
     slicing_function: SlicingFunction,
     method: Optional[str] = "theil_u",
     threshold: float = 0.5,
-    debug: bool = False,
+    debug: bool = False,  # noqa: NOSONAR - old version tests will call this under legacy debug mode
 ):
     """
     Summary: A statistical test for nominal association between the dataset slice and the model predictions. It aims to
@@ -360,8 +343,7 @@ def test_nominal_association(
       threshold(float):
           Threshold value for the Cramer's V score
       debug(bool):
-          If True and the test fails,
-          a dataset will be provided containing the rows of the dataset slice.
+          legacy debug(deprecated)
     """
     import pandas as pd
 
@@ -391,16 +373,14 @@ def test_nominal_association(
     passed = metric < threshold
 
     # --- debug ---
-    output_ds = None
-    if not passed and debug:
-        output_ds = sliced_dataset.copy()  # copy all properties
-        test_name = inspect.stack()[0][3]
-        output_ds.name = debug_prefix + test_name
+    failed_indexes = dict()
+    if not passed:
+        failed_indexes[str(dataset.original_id)] = list(dataset.df.index.get_indexer_for(sliced_dataset.df.index))
     # ---
 
     messages = [TestMessage(type=TestMessageLevel.INFO, text=f"metric = {metric}, threshold = {threshold}")]
 
-    return TestResult(metric=metric, passed=passed, messages=messages, output_df=output_ds)
+    return TestResult(metric=metric, passed=passed, messages=messages, failed_indexes=failed_indexes)
 
 
 @test(
@@ -409,7 +389,7 @@ def test_nominal_association(
     debug_description=debug_description_prefix + "of <b>the data slice that was given as an input of the test</b>.",
 )
 def test_cramer_v(
-    model: BaseModel, dataset: Dataset, slicing_function: SlicingFunction, threshold: float = 0.5, debug: bool = False
+    model: BaseModel, dataset: Dataset, slicing_function: SlicingFunction, threshold: float = 0.5
 ) -> TestResult:
     """
     Summary: Cramer's V is a statistical measure used to assess the strength and nature of association between two
@@ -440,11 +420,8 @@ def test_cramer_v(
           Slicing function to be applied on the dataset
       threshold(float):
           Threshold value for the Cramer's V score
-      debug(bool):
-          If True and the test fails,
-          a dataset will be provided containing the rows of the dataset slice.
     """
-    return test_nominal_association(model, dataset, slicing_function, "cramer_v", threshold, debug).execute()
+    return test_nominal_association(model, dataset, slicing_function, "cramer_v", threshold).execute()
 
 
 @test(
@@ -453,7 +430,7 @@ def test_cramer_v(
     debug_description=debug_description_prefix + "of <b>the data slice that was given as an input of the test</b>.",
 )
 def test_mutual_information(
-    model: BaseModel, dataset: Dataset, slicing_function: SlicingFunction, threshold: float = 0.5, debug: bool = False
+    model: BaseModel, dataset: Dataset, slicing_function: SlicingFunction, threshold: float = 0.5
 ) -> TestResult:
     """
     Summary: The mutual information statistical test is a measure used to quantify the degree of association between two
@@ -483,11 +460,8 @@ def test_mutual_information(
           Slicing function to be applied on the dataset
       threshold(float):
           Threshold value for the mutual information score
-      debug(bool):
-          If True and the test fails,
-          a dataset will be provided containing the rows of the dataset slice.
     """
-    return test_nominal_association(model, dataset, slicing_function, "mutual_information", threshold, debug).execute()
+    return test_nominal_association(model, dataset, slicing_function, "mutual_information", threshold).execute()
 
 
 @test(
@@ -496,7 +470,7 @@ def test_mutual_information(
     debug_description=debug_description_prefix + "of <b>the data slice that was given as an input of the test</b>.",
 )
 def test_theil_u(
-    model: BaseModel, dataset: Dataset, slicing_function: SlicingFunction, threshold: float = 0.5, debug: bool = False
+    model: BaseModel, dataset: Dataset, slicing_function: SlicingFunction, threshold: float = 0.5
 ) -> TestResult:
     """
     Summary: Theil's U statistical test for nominal association is a measure used to assess the strength and direction
@@ -526,8 +500,5 @@ def test_theil_u(
           Slicing function to be applied on the dataset
       threshold(float):
           Threshold value for the Theil's U score
-      debug(bool):
-          If True and the test fails,
-          a dataset will be provided containing the rows of the dataset slice.
     """
-    return test_nominal_association(model, dataset, slicing_function, "theil_u", threshold, debug).execute()
+    return test_nominal_association(model, dataset, slicing_function, "theil_u", threshold).execute()

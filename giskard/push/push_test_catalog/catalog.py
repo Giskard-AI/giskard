@@ -34,7 +34,6 @@ def test_diff_rmse_push(
     slicing_function: Optional[SlicingFunction] = None,
     threshold: float = 0.1,
     direction: Direction = Direction.Decreasing,
-    debug: bool = False,
 ):
     """
     Test for difference in RMSE between a slice and full dataset.
@@ -50,7 +49,6 @@ def test_diff_rmse_push(
         slicing_function: Function to slice dataset
         threshold: Allowed RMSE difference
         direction: Whether slice RMSE should increase or decrease
-        debug: Whether to return debug dataset
 
     Returns:
         TestResult with pass/fail, slice sizes, RMSE diff, debug dataset
@@ -69,7 +67,6 @@ def test_diff_rmse_push(
         threshold=threshold,
         direction=direction,
         test_name="RMSE",
-        debug=debug,
     )
 
 
@@ -80,7 +77,6 @@ def test_diff_f1_push(
     slicing_function: Optional[SlicingFunction] = None,
     threshold: float = -0.1,
     direction: Direction = Direction.Increasing,
-    debug: bool = False,
 ):
     """
     Test for difference in F1 score between a slice and full dataset.
@@ -96,7 +92,6 @@ def test_diff_f1_push(
         slicing_function: Function to slice dataset
         threshold: Allowed F1 score difference
         direction: Whether slice F1 should increase or decrease
-        debug: Whether to return debug dataset
 
     Returns:
        TestResult with pass/fail, slice sizes, F1 diff, debug dataset
@@ -115,7 +110,6 @@ def test_diff_f1_push(
         threshold=threshold,
         direction=direction,
         test_name="f1",
-        debug=debug,
     )
 
 
