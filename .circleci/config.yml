@@ -231,7 +231,14 @@ jobs:
 # See: https://circleci.com/docs/configuration-reference/#workflows
 workflows:
   python-workflow:
-    unless: { equal: [scheduled_pipeline, << pipeline.trigger_source >>] }
+    unless:
+      {
+        or:
+          [
+            { equal: [scheduled_pipeline, << pipeline.trigger_source >>] },
+            { equal: [scheduled_pipeline, << pipeline.trigger_source >>] },
+          ],
+      }
     jobs:
       - install:
           name: install-ubuntu-<<matrix.python-version>>
