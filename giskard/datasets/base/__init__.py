@@ -19,7 +19,7 @@ from zstandard import ZstdDecompressor
 from giskard.client.giskard_client import GiskardClient
 from giskard.client.io_utils import compress, save_df
 from giskard.client.python_utils import warning
-from giskard.core.core import DatasetMeta, SupportedColumnTypes, NotGiven, NOT_GIVEN
+from giskard.core.core import DatasetMeta, SupportedColumnTypes, NOT_GIVEN, NotGivenOr
 from giskard.core.errors import GiskardImportError
 from giskard.core.validation import configured_validate_arguments
 from giskard.ml_worker.testing.registry.slicing_function import SlicingFunction, SlicingFunctionType
@@ -144,7 +144,7 @@ class Dataset(ColumnMetadataMixin):
     """
 
     name: Optional[str]
-    _target: Optional[str] | NotGiven
+    _target: NotGivenOr[Optional[str]]
     column_types: Dict[str, str]
     df: pd.DataFrame
     id: uuid.UUID
@@ -156,7 +156,7 @@ class Dataset(ColumnMetadataMixin):
         self,
         df: pd.DataFrame,
         name: Optional[str] = None,
-        target: Optional[Hashable] | NotGiven = NOT_GIVEN,
+        target: NotGivenOr[Optional[Hashable]] = NOT_GIVEN,
         cat_columns: Optional[List[str]] = None,
         column_types: Optional[Dict[Hashable, str]] = None,
         id: Optional[uuid.UUID] = None,
