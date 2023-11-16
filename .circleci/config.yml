@@ -65,7 +65,6 @@ commands:
                 command: |
                   mkdir -p test-results
                   TEST=$(pdm run pytest --collect-only -m '<<parameters.markers>>' tests/ --quiet --no-header --no-summary |  tail -r | tail -n +3 | tail -r | circleci tests split --split-by=timings)
-                  pdm venv activate
                   ./.venv/bin/pytest -c pyproject.toml --cov=giskard --cov-report=xml --cov-append --disable-warnings --no-header -vv --durations=0 --junitxml=test-results/junit.xml $TEST
       - when:
           condition:
@@ -77,8 +76,7 @@ commands:
                 command: |
                   mkdir -p test-results
                   TEST=$(pdm run pytest --collect-only -m '<<parameters.markers>>' tests/ --quiet --no-header --no-summary |  head -n -2 | circleci tests split --split-by=timings)
-                  pdm venv activate
-                  python -m pytest -c pyproject.toml --cov=giskard --cov-report=xml --cov-append --disable-warnings --no-header -vv --durations=0 --junitxml=test-results/junit.xml $TEST
+                  ./.venv/Scripts/pytest.exe -c pyproject.toml --cov=giskard --cov-report=xml --cov-append --disable-warnings --no-header -vv --durations=0 --junitxml=test-results/junit.xml $TEST
       - when:
           condition:
             equal: ["ubuntu", <<parameters.os>>]
@@ -89,7 +87,6 @@ commands:
                 command: |
                   mkdir -p test-results
                   TEST=$(pdm run pytest --collect-only -m '<<parameters.markers>>' tests/ --quiet --no-header --no-summary |  head -n -2 | circleci tests split --split-by=timings)
-                  pdm venv activate
                   ./.venv/bin/pytest -c pyproject.toml --cov=giskard --cov-report=xml --cov-append --disable-warnings --no-header -vv --durations=0 --junitxml=test-results/junit.xml $TEST
       - store_test_results:
           path: test-results
@@ -153,7 +150,7 @@ commands:
           condition:
             equal: ["macos", <<parameters.os>>]
           steps:
-            - run: brew install python@$(echo <<parameters.python-version>> | sed -e 's|^\([0-9]*\.[0-9]*\)\..*$|\1|g')
+            - run: brew install python@<<parameters.python-version>>
       - when:
           condition:
             equal: ["macos", <<parameters.os>>]
@@ -183,7 +180,10 @@ jobs:
             - python-{{ .Environment.CACHE_VERSION }}-<<parameters.os>>-<<parameters.python-version>>-{{ checksum "pdm.lock" }}
       - run:
           name: Install deps
-          command: pdm install -G :all
+          command: |
+            if [ ! -d ".venv" ]; then
+              pdm install -G :all
+            fi
       - save_cache:
           paths:
             - .venv
@@ -240,11 +240,11 @@ workflows:
           matrix:
             parameters:
               os: [ubuntu]
-              python-version: ["3.9.13", "3.10.11", "3.11.6"]
+              python-version: ["3.9", "3.10", "3.11"]
       - install:
           name: install-macos
           os: macos
-          python-version: "3.10.11"
+          python-version: "3.10"
       - install:
           name: install-windows
           os: windows
@@ -254,7 +254,7 @@ workflows:
           matrix:
             parameters:
               os: [ubuntu]
-              python-version: ["3.9.13", "3.10.11", "3.11.6"]
+              python-version: ["3.9", "3.10", "3.11"]
               parallelism: [4]
               ram-intensive: [True, False]
           requires:
@@ -262,7 +262,7 @@ workflows:
       - unit-tests:
           name: unit-tests-mac
           os: macos
-          python-version: "3.10.11"
+          python-version: "3.10"
           parallelism: 1
           nb_workers: 4
           matrix:
