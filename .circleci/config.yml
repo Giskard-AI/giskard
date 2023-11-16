@@ -260,8 +260,7 @@ workflows:
           name: unit-tests-mac
           os: macos
           python-version: "3.10"
-          parallelism: 1
-          nb_workers: 4
+          parallelism: 4
           slow-tests: False
           requires:
             - install-macos
@@ -290,7 +289,7 @@ workflows:
           os: windows
           python-version: "3.10.11"
       - unit-tests:
-          name: test-ubuntu-<<matrix.python-version>>
+          name: integ-tests-ubuntu-<<matrix.python-version>>
           slow-tests: True
           os: ubuntu
           parallelism: 4
@@ -300,16 +299,15 @@ workflows:
           requires:
             - install-ubuntu-<<matrix.python-version>>
       - unit-tests:
-          name: unit-tests-mac
+          name: integ-tests-mac
           os: macos
           python-version: "3.10"
-          parallelism: 1
-          nb_workers: 4
+          parallelism: 4
           slow-tests: True
           requires:
             - install-macos
       - unit-tests:
-          name: unit-tests-windows
+          name: integ-tests-windows
           os: windows
           parallelism: 4
           python-version: "3.10.11"
