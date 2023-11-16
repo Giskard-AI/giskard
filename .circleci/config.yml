@@ -298,7 +298,7 @@ workflows:
             parameters:
               python-version: ["3.9", "3.10", "3.11"]
           requires:
-            - install-macos-<<matrix.python-version>>
+            - install-ubuntu-<<matrix.python-version>>
       - unit-tests:
           name: unit-tests-mac
           os: macos
