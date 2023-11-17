@@ -67,7 +67,7 @@ def create_report_from_issue(issue: Issue, model: BaseModel, dataset: Dataset = 
         lang="eng", value=f"The model was evaluated by the Giskard Scanner {giskard.__version__}."
     )
     report.problemtype = Problemtype(
-        classof=ClassEnum.llm if model.is_text_generation == "text_generation" else ClassEnum.na,
+        classof=ClassEnum.llm if model.is_text_generation else ClassEnum.na,
         type=TypeEnum.detection,
         description=LangValue(lang="eng", value=issue.description),
         credit=[LangValue(lang="eng", value="Giskard")],
