@@ -1,6 +1,7 @@
 import logging
 import os
 import shutil
+import uuid
 from typing import Any, Dict, List, Optional
 
 import pandas as pd
@@ -201,8 +202,27 @@ def parse_function_arguments(client: Optional[GiskardClient], request_arguments:
     return arguments
 
 
-def map_result_to_single_test_result_ws(result) -> websocket.SingleTestResult:
+def map_result_to_single_test_result_ws(
+    result,
+    datasets: Dict[uuid.UUID, Dataset],
+    client: Optional[GiskardClient] = None,
+    project_key: Optional[str] = None,
+) -> websocket.SingleTestResult:
     if isinstance(result, TestResult):
+        result.output_ds = result.output_ds or []
+
+        if result.output_df is not None:
+            logger.warning("Your using output_df which is a deprecated parameter, please migrate to output_ds")
+            if isinstance(result.output_df, Dataset):
+                if (
+                    result.output_df.original_id not in datasets.keys()
+                    and client is not None
+                    and project_key is not None
+                ):
+                    result.output_df.upload(client, project_key)
+                datasets[result.output_df.original_id] = result.output_df
+                result.output_ds.append(result.output_df)
+
         return websocket.SingleTestResult(
             passed=bool(result.passed),
             is_error=result.is_error,
@@ -233,8 +253,10 @@ def map_result_to_single_test_result_ws(result) -> websocket.SingleTestResult:
             number_of_perturbed_rows=result.number_of_perturbed_rows,
             actual_slices_size=result.actual_slices_size,
             reference_slices_size=result.reference_slices_size,
-            output_df_id=result.output_df_id,  # For legacy debug
-            failed_indexes=result.failed_indexes,
+            failed_indexes={
+                str(dataset.original_id): datasets[dataset.original_id].df.index.get_indexer_for(dataset.df.index)
+                for dataset in (result.output_ds)
+            },
         )
     elif isinstance(result, bool):
         return websocket.SingleTestResult(passed=result)

@@ -68,16 +68,16 @@ def test_right_label(
     passed = bool(passed_ratio > threshold)
 
     # --- debug ---
-    failed_indexes = dict()
+    output_ds = list()
     if not passed:
-        failed_indexes[str(dataset.original_id)] = list(
-            dataset.df.index.get_indexer_for(dataset.df.loc[~dataset.df.index.isin(passed_idx)].index)
+        output_ds.append(
+            dataset.slice(
+                lambda df: df.index.get_indexer_for(dataset.df.loc[~dataset.df.index.isin(passed_idx)], row_level=False)
+            )
         )
     # ---
 
-    return TestResult(
-        actual_slices_size=[len(dataset)], metric=passed_ratio, passed=passed, failed_indexes=failed_indexes
-    )
+    return TestResult(actual_slices_size=[len(dataset)], metric=passed_ratio, passed=passed, output_ds=output_ds)
 
 
 @test(
@@ -158,16 +158,12 @@ def test_output_in_range(
     passed = bool(passed_ratio >= threshold)
 
     # --- debug ---
-    failed_indexes = dict()
+    output_ds = list()
     if not passed:
-        failed_indexes[str(dataset.original_id)] = list(
-            dataset.df.index.get_indexer_for(dataset.df.loc[~dataset.df.index.isin(passed_idx)].index)
-        )
+        output_ds.append(dataset.slice(lambda df: df.loc[~dataset.df.index.isin(passed_idx)], row_level=False))
     # ---
 
-    return TestResult(
-        actual_slices_size=[len(dataset)], metric=passed_ratio, passed=passed, failed_indexes=failed_indexes
-    )
+    return TestResult(actual_slices_size=[len(dataset)], metric=passed_ratio, passed=passed, output_ds=output_ds)
 
 
 @test(
@@ -274,16 +270,18 @@ def test_disparate_impact(
     passed = bool((disparate_impact_score > min_threshold) * (disparate_impact_score < max_threshold))
 
     # --- debug ---
-    failed_indexes = dict()
+    output_ds = list()
     if not passed:
         failed_protected = list(_protected_predictions != protected_ds.df[dataset.target])
         failed_unprotected = list(_unprotected_predictions != unprotected_ds.df[dataset.target])
         failed_idx_protected = [i for i, x in enumerate(failed_protected) if x]
         failed_idx_unprotected = [i for i, x in enumerate(failed_unprotected) if x]
-        failed_indexes[str(dataset.original_id)] = failed_idx_protected + failed_idx_unprotected
+        output_ds.append(
+            dataset.slice(lambda df: df.iloc[failed_idx_protected + failed_idx_unprotected], row_level=False)
+        )
     # ---
 
-    return TestResult(metric=disparate_impact_score, passed=passed, messages=messages, failed_indexes=failed_indexes)
+    return TestResult(metric=disparate_impact_score, passed=passed, messages=messages, output_ds=output_ds)
 
 
 def _cramer_v(x, y):
@@ -373,14 +371,14 @@ def test_nominal_association(
     passed = metric < threshold
 
     # --- debug ---
-    failed_indexes = dict()
+    output_ds = list()
     if not passed:
-        failed_indexes[str(dataset.original_id)] = list(dataset.df.index.get_indexer_for(sliced_dataset.df.index))
+        output_ds.append(sliced_dataset)
     # ---
 
     messages = [TestMessage(type=TestMessageLevel.INFO, text=f"metric = {metric}, threshold = {threshold}")]
 
-    return TestResult(metric=metric, passed=passed, messages=messages, failed_indexes=failed_indexes)
+    return TestResult(metric=metric, passed=passed, messages=messages, output_ds=output_ds)
 
 
 @test(
