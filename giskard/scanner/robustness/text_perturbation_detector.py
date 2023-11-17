@@ -30,6 +30,7 @@ class TextPerturbationDetector(BaseTextPerturbationDetector):
             TextTitleCase,
             TextTypoTransformation,
             TextUppercase,
+            TextNumberToWordTransformation,
         )
 
         return [
@@ -38,4 +39,5 @@ class TextPerturbationDetector(BaseTextPerturbationDetector):
             TextTitleCase,
             TextTypoTransformation,
             TextPunctuationRemovalTransformation,
+            TextNumberToWordTransformation,
         ]

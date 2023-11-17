@@ -5,7 +5,7 @@
 groups = ["default", "dev", "doc", "hub", "llm", "ml_runtime", "test"]
 strategy = ["cross_platform"]
 lock_version = "4.4"
-content_hash = "sha256:929986b7c5b102cc2ad283774095c10f92dad9b3d15dfcb1e82ae0d98f650d56"
+content_hash = "sha256:fae75dda5560fdb4158c291bf59fa88e3bcb6818ad29ea75a35cd7e13d45f459"
 
 [[package]]
 name = "absl-py"
@@ -2834,6 +2834,18 @@ files = [
 ]
 
 [[package]]
+name = "num2words"
+version = "0.5.13"
+summary = "Modules to convert numbers to words. Easily extensible."
+dependencies = [
+    "docopt>=0.6.2",
+]
+files = [
+    {file = "num2words-0.5.13-py3-none-any.whl", hash = "sha256:39e662c663f0a7e15415431ea68eb3dc711b49e3b776d93403e1da0a219ca4ee"},
+    {file = "num2words-0.5.13.tar.gz", hash = "sha256:a3064716fbbf90d75c449450cebfbc73a6a13e63b2531d09bdecc3ab1a2209cf"},
+]
+
+[[package]]
 name = "numba"
 version = "0.58.1"
 requires_python = ">=3.8"
@@ -4843,9 +4855,7 @@ dependencies = [
     "setuptools",
     "six>=1.12.0",
     "tensorboard<2.15,>=2.14",
-    "tensorflow-cpu-aws==2.14.0; platform_system == \"Linux\" and (platform_machine == \"arm64\" or platform_machine == \"aarch64\")",
     "tensorflow-estimator<2.15,>=2.14.0",
-    "tensorflow-intel==2.14.0; platform_system == \"Windows\"",
     "tensorflow-io-gcs-filesystem>=0.23.1",
     "termcolor>=1.1.0",
     "typing-extensions>=3.6.6",
@@ -4870,41 +4880,6 @@ files = [
 ]
 
 [[package]]
-name = "tensorflow-cpu-aws"
-version = "2.14.0"
-requires_python = ">=3.9"
-summary = "TensorFlow is an open source machine learning framework for everyone."
-dependencies = [
-    "absl-py>=1.0.0",
-    "astunparse>=1.6.0",
-    "flatbuffers>=23.5.26",
-    "gast!=0.5.0,!=0.5.1,!=0.5.2,>=0.2.1",
-    "google-pasta>=0.1.1",
-    "grpcio<2.0,>=1.24.3",
-    "h5py>=2.9.0",
-    "keras<2.15,>=2.14.0",
-    "libclang>=13.0.0",
-    "ml-dtypes==0.2.0",
-    "numpy>=1.23.5",
-    "opt-einsum>=2.3.2",
-    "packaging",
-    "protobuf!=4.21.0,!=4.21.1,!=4.21.2,!=4.21.3,!=4.21.4,!=4.21.5,<5.0.0dev,>=3.20.3",
-    "setuptools",
-    "six>=1.12.0",
-    "tensorboard<2.15,>=2.14",
-    "tensorflow-estimator<2.15,>=2.14.0",
-    "tensorflow-io-gcs-filesystem>=0.23.1",
-    "termcolor>=1.1.0",
-    "typing-extensions>=3.6.6",
-    "wrapt<1.15,>=1.11.0",
-]
-files = [
-    {file = "tensorflow_cpu_aws-2.14.0-cp310-cp310-manylinux_2_17_aarch64.manylinux2014_aarch64.whl", hash = "sha256:947b83ca3bfc22d6fc292364be456f2f56507169890e8c6db21399009bda8ab0"},
-    {file = "tensorflow_cpu_aws-2.14.0-cp311-cp311-manylinux_2_17_aarch64.manylinux2014_aarch64.whl", hash = "sha256:497b400494fa693e8037fa0e2892714aecc257a5752a878b210b3a512b66668c"},
-    {file = "tensorflow_cpu_aws-2.14.0-cp39-cp39-manylinux_2_17_aarch64.manylinux2014_aarch64.whl", hash = "sha256:114526a11d38246fc94c1573e0088a8bf7381ac8b1d549a5f7423b2afa7bbb84"},
-]
-
-[[package]]
 name = "tensorflow-estimator"
 version = "2.14.0"
 requires_python = ">=3.7"
@@ -4923,41 +4898,6 @@ dependencies = [
 ]
 files = [
     {file = "tensorflow_hub-0.15.0-py2.py3-none-any.whl", hash = "sha256:8af12cb2d1fc0d1a9509a620e7589daf173714e99f08aaf090a4748ff20b45c8"},
-]
-
-[[package]]
-name = "tensorflow-intel"
-version = "2.14.0"
-requires_python = ">=3.9"
-summary = "TensorFlow is an open source machine learning framework for everyone."
-dependencies = [
-    "absl-py>=1.0.0",
-    "astunparse>=1.6.0",
-    "flatbuffers>=23.5.26",
-    "gast!=0.5.0,!=0.5.1,!=0.5.2,>=0.2.1",
-    "google-pasta>=0.1.1",
-    "grpcio<2.0,>=1.24.3",
-    "h5py>=2.9.0",
-    "keras<2.15,>=2.14.0",
-    "libclang>=13.0.0",
-    "ml-dtypes==0.2.0",
-    "numpy>=1.23.5",
-    "opt-einsum>=2.3.2",
-    "packaging",
-    "protobuf!=4.21.0,!=4.21.1,!=4.21.2,!=4.21.3,!=4.21.4,!=4.21.5,<5.0.0dev,>=3.20.3",
-    "setuptools",
-    "six>=1.12.0",
-    "tensorboard<2.15,>=2.14",
-    "tensorflow-estimator<2.15,>=2.14.0",
-    "tensorflow-io-gcs-filesystem>=0.23.1",
-    "termcolor>=1.1.0",
-    "typing-extensions>=3.6.6",
-    "wrapt<1.15,>=1.11.0",
-]
-files = [
-    {file = "tensorflow_intel-2.14.0-cp310-cp310-win_amd64.whl", hash = "sha256:f4824c9ff48f9a89b0df494fe61795db05304c95f0e0d661b8d1fd6b855c0324"},
-    {file = "tensorflow_intel-2.14.0-cp311-cp311-win_amd64.whl", hash = "sha256:51f96c729d61ff8e2e340df5b3b4db81a938258f1c9282ab09277896d0c408ae"},
-    {file = "tensorflow_intel-2.14.0-cp39-cp39-win_amd64.whl", hash = "sha256:a9d0b57170993b717bad7bc0c07c2df7fe6f9fb5ce946c2a48f8535d49d119fe"},
 ]
 
 [[package]]

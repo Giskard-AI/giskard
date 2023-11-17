@@ -3,6 +3,7 @@ import json
 import random
 import re
 from pathlib import Path
+from num2words import num2words
 
 import numpy as np
 import pandas as pd
@@ -145,6 +146,22 @@ class TextPunctuationRemovalTransformation(TextTransformation):
             pieces[i] = self._regex.sub(" ", pieces[i]).translate(self._trans_table)
 
         return "".join(pieces)
+
+
+class TextNumberToWordTransformation(TextTransformation):
+    name = "Transform numbers to words"
+
+    def __init__(self, column, lang="en"):
+        super().__init__(column)
+        # Target language
+        self.lang = lang
+
+        # Regex to match numbers in text
+        self._regex = re.compile(r"(?<!\d/)(?<!\d\.)\b\d+(?:\.\d+)?\b(?!(?:\.\d+)?@|\d?/?\d)")
+
+    def make_perturbation(self, text):
+        # Replace numbers with words
+        return self._regex.sub(lambda x: num2words(x.group(), lang=self.lang), text)
 
 
 class TextLanguageBasedTransformation(TextTransformation):
