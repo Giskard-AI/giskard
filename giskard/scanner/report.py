@@ -317,7 +317,7 @@ class ScanReport:
         if filename is not None:
             with open(filename, "w") as f, warnings.catch_warnings():
                 warnings.filterwarnings("ignore", category=DeprecationWarning)  # we need to support both pydantic 1 & 2
-                f.writelines(r.json() for r in reports)
+                f.writelines(r.json() + "\n" for r in reports)
             return
 
         return reports
