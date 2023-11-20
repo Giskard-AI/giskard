@@ -2,15 +2,18 @@ from typing import Sequence
 
 import pandas as pd
 
+from ...datasets import Dataset
+from ...ml_worker.testing.registry.slicing_function import SlicingFunction
+from ...models.base import BaseModel
+from ...testing.tests.calibration import (
+    _calculate_overconfidence_score,
+    _default_overconfidence_threshold,
+)
 from ..common.examples import ExampleExtractor
 from ..common.loss_based_detector import LossBasedDetector
 from ..decorators import detector
 from ..issues import Issue, IssueLevel, Overconfidence
 from ..logger import logger
-from ...datasets import Dataset
-from ...ml_worker.testing.registry.slicing_function import SlicingFunction
-from ...models.base import BaseModel
-from ...testing.tests.calibration import _calculate_overconfidence_score, _default_overconfidence_threshold
 
 
 @detector(name="overconfidence", tags=["overconfidence", "classification"])

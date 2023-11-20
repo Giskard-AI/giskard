@@ -1,10 +1,11 @@
+import typing
+from typing import List, Optional
+
 import inspect
 import numbers
 import re
-import typing
 import uuid
 from collections import Counter
-from typing import List, Optional
 
 import numpy as np
 import pandas as pd
@@ -17,6 +18,7 @@ from giskard.ml_worker.testing.registry.slicing_function import SlicingFunction
 from giskard.ml_worker.testing.test_result import TestMessage, TestMessageLevel, TestResult
 from giskard.ml_worker.testing.utils import check_slice_not_empty, validate_classification_label
 from giskard.models.base import BaseModel
+
 from . import debug_description_prefix
 
 other_modalities_pattern = "^other_modalities_[a-z0-9]{32}$"

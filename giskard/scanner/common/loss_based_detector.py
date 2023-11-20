@@ -1,7 +1,8 @@
+from typing import Sequence
+
 import datetime
 from abc import abstractmethod
 from time import perf_counter
-from typing import Sequence
 
 import pandas as pd
 

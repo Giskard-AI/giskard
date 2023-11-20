@@ -1,7 +1,8 @@
+import typing
+
 import inspect
 import logging
 import re
-import typing
 from abc import ABC
 from dataclasses import dataclass
 from enum import Enum
@@ -14,7 +15,7 @@ try:
 except ImportError:
     # types.NoneType is only available from python >=3.10
     NoneType = type(None)
-from typing import Optional, Dict, List, Union, Literal, TypeVar, Callable, Type, Any
+from typing import Any, Callable, Dict, List, Literal, Optional, Type, TypeVar, Union
 
 logger = logging.getLogger(__name__)
 
@@ -379,10 +380,10 @@ SMT = TypeVar("SMT", bound=SavableMeta)
 
 
 def unknown_annotations_to_kwargs(parameters: List[FunctionArgument]) -> List[FunctionArgument]:
-    from giskard.models.base import BaseModel
     from giskard.datasets.base import Dataset
     from giskard.ml_worker.testing.registry.slicing_function import SlicingFunction
     from giskard.ml_worker.testing.registry.transformation_function import TransformationFunction
+    from giskard.models.base import BaseModel
 
     allowed_types = [str, bool, int, float, BaseModel, Dataset, SlicingFunction, TransformationFunction]
     allowed_types = list(map(lambda x: x.__qualname__, allowed_types))

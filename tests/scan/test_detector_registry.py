@@ -1,5 +1,5 @@
-from giskard.scanner.registry import DetectorRegistry
 from giskard.scanner.decorators import detector
+from giskard.scanner.registry import DetectorRegistry
 
 
 def test_detector_registry():

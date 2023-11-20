@@ -2,10 +2,7 @@ import pytest
 
 from giskard.ml_worker import websocket
 from giskard.ml_worker.exceptions.IllegalArgumentError import IllegalArgumentError
-from giskard.ml_worker.websocket.listener import (
-    function_argument_to_ws,
-    parse_function_arguments,
-)
+from giskard.ml_worker.websocket.listener import function_argument_to_ws, parse_function_arguments
 
 TEST_PROJECT_KEY = "123"
 TEST_MODEL_ID = "231"

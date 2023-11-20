@@ -1,5 +1,6 @@
-from dataclasses import dataclass
 from typing import Sequence
+
+from dataclasses import dataclass
 
 from ...datasets.base import Dataset
 from ...models.base.model import BaseModel

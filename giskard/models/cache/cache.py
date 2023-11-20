@@ -1,6 +1,7 @@
+from typing import Any, Iterable, List, Optional
+
 import csv
 from pathlib import Path
-from typing import Any, Iterable, List, Optional
 
 import numpy as np
 import pandas as pd

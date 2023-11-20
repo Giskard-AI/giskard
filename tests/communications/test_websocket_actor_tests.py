@@ -1,13 +1,14 @@
 import uuid
+
 import pytest
 
+from giskard import test
 from giskard.datasets.base import Dataset
 from giskard.ml_worker import websocket
-from giskard.ml_worker.testing.test_result import TestResult as GiskardTestResult, TestMessage, TestMessageLevel
+from giskard.ml_worker.testing.test_result import TestMessage, TestMessageLevel
+from giskard.ml_worker.testing.test_result import TestResult as GiskardTestResult
 from giskard.ml_worker.websocket import listener
 from giskard.testing.tests import debug_prefix
-from giskard import test
-
 from tests import utils
 
 
@@ -26,9 +27,7 @@ def my_simple_test_error():
     raise ValueError("Actively raise an error in the test.")
 
 
-@pytest.mark.parametrize("debug", [
-    False, None
-])
+@pytest.mark.parametrize("debug", [False, None])
 def test_websocket_actor_run_ad_hoc_test_no_debug(debug):
     project_key = str(uuid.uuid4())
 
@@ -261,7 +260,7 @@ def test_websocket_actor_run_ad_hoc_test_legacy_debug_no_name(enron_data: Datase
 def test_websocket_actor_run_test_suite():
     with utils.MockedClient(mock_all=False) as (client, mr):
         params = websocket.TestSuiteParam(
-            tests= [
+            tests=[
                 websocket.SuiteTestArgument(
                     id=0,
                     testUuid=my_simple_test.meta.uuid,
@@ -275,7 +274,7 @@ def test_websocket_actor_run_test_suite():
                     testUuid=my_simple_test_error.meta.uuid,
                 ),
             ],
-            globalArguments=[]
+            globalArguments=[],
         )
         utils.register_uri_for_artifact_meta_info(mr, my_simple_test, None)
         utils.register_uri_for_artifact_meta_info(mr, my_simple_test_successful, None)
@@ -301,13 +300,13 @@ def test_websocket_actor_run_test_suite():
 def test_websocket_actor_run_test_suite_raise_error():
     with utils.MockedClient(mock_all=False) as (client, mr):
         params = websocket.TestSuiteParam(
-            tests= [
+            tests=[
                 websocket.SuiteTestArgument(
                     id=0,
                     testUuid=my_simple_test.meta.uuid,
                 ),
             ],
-            globalArguments=[]
+            globalArguments=[],
         )
         # The test is not registerd, will raise error when downloading
 
@@ -334,7 +333,7 @@ def my_test_return(value: int = MY_TEST_DEFAULT_VALUE):
 def test_websocket_actor_run_test_suite_with_global_arguments():
     with utils.MockedClient(mock_all=False) as (client, mr):
         params = websocket.TestSuiteParam(
-            tests= [
+            tests=[
                 websocket.SuiteTestArgument(
                     id=0,
                     testUuid=my_test_return.meta.uuid,
@@ -343,7 +342,7 @@ def test_websocket_actor_run_test_suite_with_global_arguments():
             ],
             globalArguments=[
                 websocket.FuncArgument(name="value", int=MY_TEST_GLOBAL_VALUE, none=False),
-            ]
+            ],
         )
         utils.register_uri_for_artifact_meta_info(mr, my_test_return, None)
 
@@ -359,24 +358,25 @@ def test_websocket_actor_run_test_suite_with_global_arguments():
         # Globals fill the missing
         assert str(MY_TEST_GLOBAL_VALUE) == reply.results[0].result.messages[0].text
         assert 1 == len(reply.results[0].arguments)
-        assert "value" == reply.results[0].arguments[0].name and MY_TEST_GLOBAL_VALUE == reply.results[0].arguments[0].int_arg
+        assert (
+            "value" == reply.results[0].arguments[0].name
+            and MY_TEST_GLOBAL_VALUE == reply.results[0].arguments[0].int_arg
+        )
 
 
 def test_websocket_actor_run_test_suite_with_test_input():
     with utils.MockedClient(mock_all=False) as (client, mr):
         params = websocket.TestSuiteParam(
-            tests= [
+            tests=[
                 websocket.SuiteTestArgument(
                     id=0,
                     testUuid=my_test_return.meta.uuid,
-                    arguments=[
-                        websocket.FuncArgument(name="value", int=MY_TEST_INPUT_VALUE, none=False)
-                    ],
+                    arguments=[websocket.FuncArgument(name="value", int=MY_TEST_INPUT_VALUE, none=False)],
                 ),
             ],
             globalArguments=[
                 websocket.FuncArgument(name="value", int=MY_TEST_GLOBAL_VALUE, none=False),
-            ]
+            ],
         )
         utils.register_uri_for_artifact_meta_info(mr, my_test_return, None)
 
@@ -392,25 +392,30 @@ def test_websocket_actor_run_test_suite_with_test_input():
         # Globals will not replace test input
         assert str(MY_TEST_INPUT_VALUE) == reply.results[0].result.messages[0].text
         assert 1 == len(reply.results[0].arguments)
-        assert "value" == reply.results[0].arguments[0].name and MY_TEST_INPUT_VALUE == reply.results[0].arguments[0].int_arg
+        assert (
+            "value" == reply.results[0].arguments[0].name
+            and MY_TEST_INPUT_VALUE == reply.results[0].arguments[0].int_arg
+        )
 
 
 def test_websocket_actor_run_test_suite_with_kwargs():
     with utils.MockedClient(mock_all=False) as (client, mr):
         params = websocket.TestSuiteParam(
-            tests= [
+            tests=[
                 websocket.SuiteTestArgument(
                     id=0,
                     testUuid=my_test_return.meta.uuid,
                     arguments=[
                         websocket.FuncArgument(name="value", int=MY_TEST_INPUT_VALUE, none=False),
-                        websocket.FuncArgument(name="kwargs", kwargs=f"kwargs['value'] = {MY_TEST_KWARGS_VALUE}", none=False),
+                        websocket.FuncArgument(
+                            name="kwargs", kwargs=f"kwargs['value'] = {MY_TEST_KWARGS_VALUE}", none=False
+                        ),
                     ],
                 ),
             ],
             globalArguments=[
                 websocket.FuncArgument(name="value", int=MY_TEST_GLOBAL_VALUE, none=False),
-            ]
+            ],
         )
         utils.register_uri_for_artifact_meta_info(mr, my_test_return, None)
 
@@ -426,4 +431,7 @@ def test_websocket_actor_run_test_suite_with_kwargs():
         # Kwargs will replace test input
         assert str(MY_TEST_KWARGS_VALUE) == reply.results[0].result.messages[0].text
         assert 1 == len(reply.results[0].arguments)
-        assert "value" == reply.results[0].arguments[0].name and MY_TEST_KWARGS_VALUE == reply.results[0].arguments[0].int_arg
+        assert (
+            "value" == reply.results[0].arguments[0].name
+            and MY_TEST_KWARGS_VALUE == reply.results[0].arguments[0].int_arg
+        )

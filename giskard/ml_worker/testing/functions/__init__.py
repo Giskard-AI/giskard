@@ -1,4 +1,3 @@
-from giskard.ml_worker.testing.functions import slicing
-from giskard.ml_worker.testing.functions import transformation
+from giskard.ml_worker.testing.functions import slicing, transformation
 
 __all__ = ["slicing", "transformation"]

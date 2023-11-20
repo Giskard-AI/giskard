@@ -2,7 +2,7 @@ import numpy as np
 import pandas as pd
 import pytest
 
-from giskard import slicing_function, Dataset, SlicingFunction
+from giskard import Dataset, SlicingFunction, slicing_function
 from giskard.ml_worker.testing.registry.transformation_function import transformation_function
 
 

@@ -1,6 +1,7 @@
+from typing import List, Optional
+
 from dataclasses import dataclass
 from enum import Enum
-from typing import List, Optional
 
 import pandas as pd
 

@@ -2,7 +2,11 @@ import pandas as pd
 import pytest
 
 from giskard.ml_worker.testing.registry.slicing_function import slicing_function
-from giskard.testing.tests.statistic import test_right_label, test_output_in_range, test_disparate_impact
+from giskard.testing.tests.statistic import (
+    test_disparate_impact,
+    test_output_in_range,
+    test_right_label,
+)
 
 
 @pytest.mark.parametrize(
@@ -52,9 +56,7 @@ def test_statistic(model, dataset, request):
     failed_unprotected = list(_unprotected_predictions != unprotected_ds.df[dataset.target])
     failed_idx_protected = [i for i, x in enumerate(failed_protected) if x]
     failed_idx_unprotected = [i for i, x in enumerate(failed_unprotected) if x]
-    benchmark_failed_idx = {
-        str(dataset.original_id): failed_idx_protected + failed_idx_unprotected
-    }
+    benchmark_failed_idx = {str(dataset.original_id): failed_idx_protected + failed_idx_unprotected}
 
     result = test_disparate_impact(
         model,

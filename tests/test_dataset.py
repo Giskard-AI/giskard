@@ -1,18 +1,16 @@
-import pandas as pd
-import numpy as np
-from pydantic import ValidationError
-import pytest
 import uuid
 
+import numpy as np
+import pandas as pd
+import pytest
 import requests_mock
+from pydantic import ValidationError
 
-from giskard.datasets.base import Dataset
-from giskard.core.dataset_validation import validate_optional_target
 from giskard.client.dtos import DatasetMetaInfo
-
+from giskard.core.dataset_validation import validate_optional_target
+from giskard.datasets.base import Dataset
 from tests import utils
-from tests.communications.test_dto_serialization import is_required, get_fields, get_name
-
+from tests.communications.test_dto_serialization import get_fields, get_name, is_required
 
 # FIXME: conflict on `name` between Giskard Hub (@NotBlank) and Python client (optional in DatasetMeta and DatasetMetaInfo)
 MANDATORY_FIELDS = [
@@ -158,7 +156,6 @@ def test_numeric_column_names():
 
 
 def test_infer_column_types():
-
     # if df_size >= 100     ==> category_threshold = floor(log10(df_size))
     assert Dataset(pd.DataFrame({"f": [1, 2] * 50})).column_types["f"] == "category"
     assert Dataset(pd.DataFrame({"f": ["a", "b"] * 50})).column_types["f"] == "category"
@@ -228,8 +225,9 @@ def test_dataset_meta_info():
     mandatory_field_names = []
     optional_field_names = []
     for name, field in get_fields(klass).items():
-        mandatory_field_names.append(get_name(name, field)) if is_required(field) else \
-            optional_field_names.append(get_name(name, field))
+        mandatory_field_names.append(get_name(name, field)) if is_required(field) else optional_field_names.append(
+            get_name(name, field)
+        )
     assert set(mandatory_field_names) == set(MANDATORY_FIELDS)
     assert set(optional_field_names) == set(OPTIONAL_FIELDS)
 
@@ -242,7 +240,9 @@ def test_fetch_dataset_meta(request):
         with utils.MockedClient(mock_all=False) as (client, mr):
             meta_info = utils.mock_dataset_meta_info(dataset, project_key)
             meta_info.pop(op)
-            mr.register_uri(method=requests_mock.GET, url=utils.get_url_for_dataset(dataset, project_key), json=meta_info)
+            mr.register_uri(
+                method=requests_mock.GET, url=utils.get_url_for_dataset(dataset, project_key), json=meta_info
+            )
 
             # Should not raise
             client.load_dataset_meta(project_key, uuid=str(dataset.id))
@@ -251,7 +251,9 @@ def test_fetch_dataset_meta(request):
         with utils.MockedClient(mock_all=False) as (client, mr):
             meta_info = utils.mock_dataset_meta_info(dataset, project_key)
             meta_info.pop(op)
-            mr.register_uri(method=requests_mock.GET, url=utils.get_url_for_dataset(dataset, project_key), json=meta_info)
+            mr.register_uri(
+                method=requests_mock.GET, url=utils.get_url_for_dataset(dataset, project_key), json=meta_info
+            )
 
             # Should raise due to missing of values
             with pytest.raises(ValidationError):

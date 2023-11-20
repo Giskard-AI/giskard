@@ -1,6 +1,6 @@
 import pytest
 
-from giskard.testing import test_underconfidence_rate, test_overconfidence_rate
+from giskard.testing import test_overconfidence_rate, test_underconfidence_rate
 
 
 @pytest.mark.parametrize(
@@ -17,7 +17,9 @@ def test_confidence(model, dataset, request):
     )
 
     rest_dataset_overconfidence = dataset.copy()
-    rest_dataset_overconfidence.df = rest_dataset_overconfidence.df.drop(result_overconfidence.failed_indexes[str(dataset.original_id)])
+    rest_dataset_overconfidence.df = rest_dataset_overconfidence.df.drop(
+        result_overconfidence.failed_indexes[str(dataset.original_id)]
+    )
     rest_predictions_overconfidence = model.predict(rest_dataset_overconfidence)
 
     assert len(result_overconfidence.failed_indexes[str(dataset.original_id)]) == 59
@@ -29,7 +31,9 @@ def test_confidence(model, dataset, request):
     )
 
     rest_dataset_underconfidence = dataset.copy()
-    rest_dataset_underconfidence.df = rest_dataset_underconfidence.df.drop(result_underconfidence.failed_indexes[str(dataset.original_id)])
+    rest_dataset_underconfidence.df = rest_dataset_underconfidence.df.drop(
+        result_underconfidence.failed_indexes[str(dataset.original_id)]
+    )
     rest_predictions_underconfidence = model.predict(rest_dataset_underconfidence)
 
     assert len(result_underconfidence.failed_indexes[str(dataset.original_id)]) == 45

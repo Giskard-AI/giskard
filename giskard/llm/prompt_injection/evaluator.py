@@ -1,7 +1,8 @@
+import logging
 import re
 import string
-import logging
 from abc import ABC
+
 from colorama import Fore, Style
 
 from .data import Prompt, StringMatchingMethod

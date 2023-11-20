@@ -3,7 +3,7 @@ from unittest import mock
 import pandas as pd
 
 from giskard.datasets import Dataset
-from giskard.datasets.metadata import MetadataProviderRegistry, MetadataProvider
+from giskard.datasets.metadata import MetadataProvider, MetadataProviderRegistry
 from giskard.datasets.metadata.indexing import ColumnMetadataMixin, MetadataIndexer
 from giskard.datasets.metadata.text_metadata_provider import TextMetadataProvider
 

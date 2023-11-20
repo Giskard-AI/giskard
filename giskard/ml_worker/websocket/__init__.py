@@ -1,5 +1,6 @@
-from enum import Enum
 from typing import Dict, List, Optional
+
+from enum import Enum
 
 import pydantic
 from packaging import version

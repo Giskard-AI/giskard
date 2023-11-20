@@ -16,10 +16,15 @@ from giskard.ml_worker.testing.stat_utils import (
     paired_wilcoxon,
 )
 from giskard.ml_worker.testing.test_result import TestMessage, TestMessageLevel, TestResult
-from giskard.ml_worker.testing.utils import Direction, check_slice_not_empty, validate_classification_label
+from giskard.ml_worker.testing.utils import (
+    Direction,
+    check_slice_not_empty,
+    validate_classification_label,
+)
 from giskard.ml_worker.utils.logging import timer
 from giskard.models.base import BaseModel
 from giskard.models.utils import fix_seed
+
 from . import debug_description_prefix
 
 

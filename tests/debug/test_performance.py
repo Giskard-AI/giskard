@@ -1,9 +1,20 @@
 import pytest
 
 from giskard.datasets.base import Dataset
-from giskard.testing.tests.performance import test_auc, test_recall, test_accuracy, test_precision, test_f1
-from giskard.testing.tests.performance import test_diff_f1, test_diff_accuracy, test_diff_recall, test_diff_precision
-from giskard.testing.tests.performance import test_mae, test_r2, test_rmse
+from giskard.testing.tests.performance import (
+    test_accuracy,
+    test_auc,
+    test_diff_accuracy,
+    test_diff_f1,
+    test_diff_precision,
+    test_diff_recall,
+    test_f1,
+    test_mae,
+    test_precision,
+    test_r2,
+    test_recall,
+    test_rmse,
+)
 
 
 @pytest.mark.parametrize(

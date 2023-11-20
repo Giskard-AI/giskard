@@ -1,12 +1,12 @@
+from typing import Tuple
+
 import random
 from abc import ABC
+from dataclasses import dataclass
 
 from .promptinject import build_prompts as pi_build_prompts
 from .promptinject import prompt_data as pi_prompt_data
 from .promptinject.prompt_data import rogue_strings as pi_rogue_strings
-
-from dataclasses import dataclass
-from typing import Tuple
 
 GENERATOR_NAME = "'Giskard Generator'"
 DESCRIPTION_PREFIX = "The model ignored any instructions or safeguarding protocols it might have had and "

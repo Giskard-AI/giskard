@@ -4,7 +4,7 @@ import numpy as np
 import pandas as pd
 import pytest
 
-from giskard import test, slicing_function, transformation_function
+from giskard import slicing_function, test, transformation_function
 from giskard.ml_worker.testing.registry.slicing_function import SlicingFunction
 from giskard.ml_worker.testing.registry.transformation_function import TransformationFunction
 from giskard.ml_worker.testing.test_result import TestResult as GiskardTestResult

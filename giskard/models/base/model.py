@@ -1,3 +1,5 @@
+from typing import Iterable, List, Optional, Type, Union
+
 import builtins
 import importlib
 import logging
@@ -8,7 +10,6 @@ import tempfile
 import uuid
 from abc import ABC, abstractmethod
 from pathlib import Path
-from typing import Iterable, List, Optional, Type, Union
 
 import cloudpickle
 import numpy as np

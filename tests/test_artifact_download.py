@@ -1,19 +1,15 @@
-
 import posixpath
-import uuid
-import pandas as pd
-
 import tempfile
+import uuid
 from pathlib import Path
 
+import pandas as pd
 import pytest
 import requests_mock
 
-from giskard import slicing_function, transformation_function
+from giskard import slicing_function, test, transformation_function
 from giskard.ml_worker.core.savable import Artifact
 from giskard.ml_worker.testing.test_result import TestResult as GiskardTestResult
-from giskard import test
-
 from tests.utils import (
     CALLABLE_FUNCTION_META_CACHE,
     CALLABLE_FUNCTION_PKL_CACHE,
@@ -21,14 +17,13 @@ from tests.utils import (
     MockedProjectCacheDir,
     fixup_mocked_artifact_meta_version,
     get_local_cache_callable_artifact,
-    register_uri_for_artifact_meta_info,
-    register_uri_for_artifact_info,
     get_url_for_artifact_meta_info,
     get_url_for_artifacts_base,
-    local_save_artifact_under_giskard_home_cache,
     is_url_requested,
+    local_save_artifact_under_giskard_home_cache,
+    register_uri_for_artifact_info,
+    register_uri_for_artifact_meta_info,
 )
-
 
 BASE_CLIENT_URL = "http://giskard-host:12345/api/v2"
 
@@ -65,15 +60,15 @@ def test_download_global_test_function_from_registry():
 @pytest.mark.parametrize(
     "cf",
     [
-        my_custom_test, # Test
-        head_slice,     # Slice
-        do_nothing,     # Transformation
+        my_custom_test,  # Test
+        head_slice,  # Slice
+        do_nothing,  # Transformation
     ],
 )
 def test_download_global_test_function_from_local(cf):
     project_key = str(uuid.uuid4())
     with MockedProjectCacheDir(project_key):
-        cf.meta.uuid = str(uuid.uuid4())    # Regenerate a UUID to ensure not loading from registry
+        cf.meta.uuid = str(uuid.uuid4())  # Regenerate a UUID to ensure not loading from registry
 
         local_save_artifact_under_giskard_home_cache(cf, project_key=None)
 
@@ -88,14 +83,14 @@ def test_download_global_test_function_from_local(cf):
 @pytest.mark.parametrize(
     "cf",
     [
-        my_custom_test, # Test
-        head_slice,     # Slice
-        do_nothing,     # Transformation
+        my_custom_test,  # Test
+        head_slice,  # Slice
+        do_nothing,  # Transformation
     ],
 )
 def test_download_callable_function(cf: Artifact):
     with MockedClient(mock_all=False) as (client, mr):
-        cf.meta.uuid = str(uuid.uuid4())    # Regenerate a UUID to ensure not loading from registry
+        cf.meta.uuid = str(uuid.uuid4())  # Regenerate a UUID to ensure not loading from registry
         cache_dir = get_local_cache_callable_artifact(project_key=None, artifact=cf)
 
         # Save to temp
@@ -110,9 +105,11 @@ def test_download_callable_function(cf: Artifact):
             # Fixup the differences from Backend
             meta_info = fixup_mocked_artifact_meta_version(cf.meta.to_json())
             # Fixup the name to avoid load from module
-            meta_info.update({
-                "name": f"fake_{cf._get_name()}",
-            })
+            meta_info.update(
+                {
+                    "name": f"fake_{cf._get_name()}",
+                }
+            )
             url = get_url_for_artifact_meta_info(cf, project_key=None)
             mr.register_uri(method=requests_mock.GET, url=url, json=meta_info)
             requested_urls.append(url)
@@ -148,14 +145,14 @@ def test_download_callable_function(cf: Artifact):
 @pytest.mark.parametrize(
     "cf",
     [
-        my_custom_test, # Test
-        head_slice,     # Slice
-        do_nothing,     # Transformation
+        my_custom_test,  # Test
+        head_slice,  # Slice
+        do_nothing,  # Transformation
     ],
 )
 def test_download_global_callable_function_from_module(cf: Artifact):
     with MockedClient(mock_all=False) as (client, mr):
-        cf.meta.uuid = str(uuid.uuid4())    # Regenerate a UUID to ensure not loading from registry
+        cf.meta.uuid = str(uuid.uuid4())  # Regenerate a UUID to ensure not loading from registry
         cache_dir = get_local_cache_callable_artifact(project_key=None, artifact=cf)
 
         requested_urls = []
@@ -179,14 +176,14 @@ def test_download_global_callable_function_from_module(cf: Artifact):
 @pytest.mark.parametrize(
     "cf",
     [
-        my_custom_test, # Test
-        head_slice,     # Slice
-        do_nothing,     # Transformation
+        my_custom_test,  # Test
+        head_slice,  # Slice
+        do_nothing,  # Transformation
     ],
 )
 def test_download_global_callable_function_from_cache(cf: Artifact):
     with MockedClient(mock_all=False) as (client, mr):
-        cf.meta.uuid = str(uuid.uuid4())    # Regenerate a UUID
+        cf.meta.uuid = str(uuid.uuid4())  # Regenerate a UUID
         cache_dir = get_local_cache_callable_artifact(project_key=None, artifact=cf)
 
         # Save to local cache
@@ -207,19 +204,18 @@ def test_download_global_callable_function_from_cache(cf: Artifact):
         assert download_cf.meta.uuid == cf.meta.uuid
 
 
-
 @pytest.mark.parametrize(
     "cf",
     [
-        my_custom_test, # Test
-        head_slice,     # Slice
-        do_nothing,     # Transformation
+        my_custom_test,  # Test
+        head_slice,  # Slice
+        do_nothing,  # Transformation
     ],
 )
 def test_download_callable_function_in_project(cf: Artifact):
     project_key = str(uuid.uuid4())
     with MockedClient(mock_all=False) as (client, mr), MockedProjectCacheDir(project_key=project_key):
-        cf.meta.uuid = str(uuid.uuid4())    # Regenerate a UUID to ensure not loading from registry
+        cf.meta.uuid = str(uuid.uuid4())  # Regenerate a UUID to ensure not loading from registry
         cache_dir = get_local_cache_callable_artifact(project_key=project_key, artifact=cf)
 
         # Save to temp
@@ -234,9 +230,11 @@ def test_download_callable_function_in_project(cf: Artifact):
             # Fixup the differences from Backend
             meta_info = fixup_mocked_artifact_meta_version(cf.meta.to_json())
             # Fixup the name to avoid load from module
-            meta_info.update({
-                "name": f"fake_{cf._get_name()}",
-            })
+            meta_info.update(
+                {
+                    "name": f"fake_{cf._get_name()}",
+                }
+            )
             url = get_url_for_artifact_meta_info(cf, project_key=project_key)
             mr.register_uri(method=requests_mock.GET, url=url, json=meta_info)
             requested_urls.append(url)
@@ -272,15 +270,15 @@ def test_download_callable_function_in_project(cf: Artifact):
 @pytest.mark.parametrize(
     "cf",
     [
-        my_custom_test, # Test
-        head_slice,     # Slice
-        do_nothing,     # Transformation
+        my_custom_test,  # Test
+        head_slice,  # Slice
+        do_nothing,  # Transformation
     ],
 )
 def test_download_callable_function_from_module_in_project(cf: Artifact):
     project_key = str(uuid.uuid4())
     with MockedClient(mock_all=False) as (client, mr), MockedProjectCacheDir(project_key):
-        cf.meta.uuid = str(uuid.uuid4())    # Regenerate a UUID to ensure not loading from registry
+        cf.meta.uuid = str(uuid.uuid4())  # Regenerate a UUID to ensure not loading from registry
         cache_dir = get_local_cache_callable_artifact(project_key=project_key, artifact=cf)
 
         requested_urls = []
@@ -304,15 +302,15 @@ def test_download_callable_function_from_module_in_project(cf: Artifact):
 @pytest.mark.parametrize(
     "cf",
     [
-        my_custom_test, # Test
-        head_slice,     # Slice
-        do_nothing,     # Transformation
+        my_custom_test,  # Test
+        head_slice,  # Slice
+        do_nothing,  # Transformation
     ],
 )
 def test_download_callable_function_from_cache_in_project(cf: Artifact):
     project_key = str(uuid.uuid4())
     with MockedClient(mock_all=False) as (client, mr), MockedProjectCacheDir(project_key):
-        cf.meta.uuid = str(uuid.uuid4())    # Regenerate a UUID to ensure not loading from registry
+        cf.meta.uuid = str(uuid.uuid4())  # Regenerate a UUID to ensure not loading from registry
         cache_dir = get_local_cache_callable_artifact(project_key=project_key, artifact=cf)
 
         # Save to local cache

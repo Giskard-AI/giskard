@@ -1,6 +1,7 @@
 """Statistical tests"""
-import numbers
 from typing import Optional
+
+import numbers
 
 import numpy as np
 
@@ -10,6 +11,7 @@ from giskard.ml_worker.testing.registry.slicing_function import SlicingFunction
 from giskard.ml_worker.testing.test_result import TestMessage, TestMessageLevel, TestResult
 from giskard.ml_worker.testing.utils import check_slice_not_empty, validate_classification_label
 from giskard.models.base import BaseModel
+
 from . import debug_description_prefix
 
 

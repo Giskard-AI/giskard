@@ -24,6 +24,7 @@ from giskard.testing.tests.debug_slicing_functions import (
     incorrect_rows_slicing_fn,
     nlargest_abs_err_rows_slicing_fn,
 )
+
 from . import debug_description_prefix
 
 

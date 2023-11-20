@@ -1,9 +1,10 @@
+from typing import Optional, Sequence
+
 import datetime
 import uuid
 import warnings
 from collections import Counter
 from time import perf_counter
-from typing import Optional, Sequence
 
 import pandas as pd
 
@@ -15,7 +16,12 @@ from ..llm.errors import LLMGenerationError
 from ..llm.utils import generate_test_dataset
 from ..models.base import BaseModel
 from ..utils import fullname
-from ..utils.analytics_collector import analytics, analytics_method, get_dataset_properties, get_model_properties
+from ..utils.analytics_collector import (
+    analytics,
+    analytics_method,
+    get_dataset_properties,
+    get_model_properties,
+)
 from .issues import DataLeakage, Issue, Stochasticity
 from .logger import logger
 from .registry import DetectorRegistry

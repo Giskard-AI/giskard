@@ -1,5 +1,6 @@
+from typing import Any, Callable, Dict, Iterable, Optional, Union
+
 from pathlib import Path
-from typing import Any, Callable, Iterable, Optional, Union, Dict
 
 import pandas as pd
 

@@ -1,8 +1,9 @@
+from typing import Optional
+
 import random
 import string
 import tempfile
 from pathlib import Path
-from typing import Optional
 
 import mlflow
 import pandas as pd

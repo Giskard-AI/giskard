@@ -1,12 +1,12 @@
+from typing import Union
+
 import pickle
 from pathlib import Path
-from typing import Union
 
 import cloudpickle
 import mlflow
 
 from .wrapper import WrapperModel
-
 
 # @TODO: decouple the serialization logic from models. These abstract classes
 # could be implemented as mixins and then used in the models that need them.

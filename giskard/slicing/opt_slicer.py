@@ -1,8 +1,9 @@
-import pandas as pd
 from typing import List
 
-from .slice import GreaterThan, LowerThan, Query, QueryBasedSliceFunction
+import pandas as pd
+
 from .base import BaseSlicer
+from .slice import GreaterThan, LowerThan, Query, QueryBasedSliceFunction
 
 
 class OptSlicer(BaseSlicer):

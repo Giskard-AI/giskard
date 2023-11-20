@@ -93,7 +93,7 @@ class GiskardClient:
                 f"Your giskard client version ({giskard.__version__}) does not match the hub version "
                 f"({server_settings.serverVersion}). "
                 f"Please upgrade your client to the latest version. "
-                f"pip install \"giskard[hub]>=2.0.0b\" -U"
+                f'pip install "giskard[hub]>=2.0.0b" -U'
             )
         analytics.init_server_info(server_settings)
 

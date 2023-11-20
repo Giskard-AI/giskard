@@ -1,10 +1,9 @@
-import pytest
-import pandas as pd
 import numpy as np
+import pandas as pd
+import pytest
 
 from giskard import Dataset
-from giskard.slicing.slice import QueryBasedSliceFunction
-from giskard.slicing.slice import GreaterThan, LowerThan
+from giskard.slicing.slice import GreaterThan, LowerThan, QueryBasedSliceFunction
 from giskard.slicing.text_slicer import TextSlicer
 from giskard.slicing.tree_slicer import DecisionTreeSlicer
 

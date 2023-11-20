@@ -1,8 +1,9 @@
 """Various input/output utility functions"""
 
+from typing import Any, Optional
+
 import re
 from io import BytesIO
-from typing import Any, Optional
 
 import cloudpickle
 import pandas as pd

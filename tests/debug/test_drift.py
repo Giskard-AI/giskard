@@ -6,10 +6,10 @@ import pytest
 
 from giskard.datasets.base import Dataset
 from giskard.testing.tests.drift import (
-    test_drift_psi,
     test_drift_chi_square,
     test_drift_prediction_chi_square,
     test_drift_prediction_psi,
+    test_drift_psi,
 )
 
 

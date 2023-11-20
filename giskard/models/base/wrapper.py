@@ -1,9 +1,10 @@
+from typing import Any, Callable, Iterable, Optional, Union
+
 import logging
 import pickle
 from abc import ABC, abstractmethod
 from inspect import isfunction, signature
 from pathlib import Path
-from typing import Any, Callable, Iterable, Optional, Union
 
 import cloudpickle
 import mlflow
@@ -11,10 +12,10 @@ import numpy as np
 import pandas as pd
 import yaml
 
-from .model import BaseModel
-from ..utils import warn_once
 from ...core.core import ModelType
 from ...core.validation import configured_validate_arguments
+from ..utils import warn_once
+from .model import BaseModel
 
 logger = logging.getLogger(__name__)
 

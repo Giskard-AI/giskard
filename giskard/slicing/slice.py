@@ -1,11 +1,12 @@
 # @TODO: simplify this module, don’t need this complexity.
+from typing import Callable, Dict, List, Sequence
+
 import itertools
 import operator
 import re
 import uuid
 from abc import ABC, abstractmethod
 from collections import defaultdict
-from typing import Callable, Sequence, List, Dict
 
 import numpy as np
 import pandas as pd

@@ -1,4 +1,5 @@
 from contextlib import AbstractContextManager
+
 from .cache import ModelCache
 
 # This is a global switch that controls model prediction cache.

@@ -1,3 +1,5 @@
+from typing import Dict, Hashable, List, Optional, Union
+
 import inspect
 import logging
 import posixpath
@@ -5,7 +7,6 @@ import tempfile
 import uuid
 from functools import cached_property
 from pathlib import Path
-from typing import Dict, Hashable, List, Optional, Union
 
 import numpy as np
 import pandas
@@ -28,8 +29,9 @@ from giskard.ml_worker.testing.registry.transformation_function import (
     TransformationFunctionType,
 )
 from giskard.settings import settings
-from ..metadata.indexing import ColumnMetadataMixin
+
 from ...ml_worker.utils.file_utils import get_file_name
+from ..metadata.indexing import ColumnMetadataMixin
 
 try:
     import wandb  # noqa

@@ -1,21 +1,20 @@
-import os
-import copy
 from typing import Optional, Sequence
+
+import copy
+import os
 
 import numpy as np
 import pandas as pd
 
-from ..ml_worker.testing.registry.registry import get_object_uuid
-
-from ..core.core import DatasetProcessFunctionMeta
-
-from .base import BaseSlicer
-from .slice import Query, QueryBasedSliceFunction, ContainsWord
-from .utils import get_slicer
 from ..client.python_utils import warning
+from ..core.core import DatasetProcessFunctionMeta
 from ..datasets.base import Dataset
+from ..ml_worker.testing.registry.registry import get_object_uuid
 from ..ml_worker.testing.registry.slicing_function import SlicingFunction
 from ..slicing.category_slicer import CategorySlicer
+from .base import BaseSlicer
+from .slice import ContainsWord, Query, QueryBasedSliceFunction
+from .utils import get_slicer
 
 
 class TextSlicer(BaseSlicer):
@@ -159,7 +158,8 @@ class VectorizerError(ValueError):
 
 
 def _make_vectorizer(data: pd.Series, tfidf=False, **kwargs):
-    from sklearn.feature_extraction.text import TfidfVectorizer, CountVectorizer
+    from sklearn.feature_extraction.text import CountVectorizer, TfidfVectorizer
+
     from .stop_words import sw_en, sw_fr
 
     raw_stopwords = sw_en + sw_fr

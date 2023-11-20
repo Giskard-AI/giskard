@@ -1,17 +1,18 @@
+from typing import Any, Callable, Iterable, List, Optional, Union
+
 import tempfile
-from typing import List, Iterable, Union, Callable, Any, Optional
 
 import numpy as np
 import pandas as pd
 import yaml
 
 from giskard.client.python_utils import warning
-from giskard.core.core import ModelMeta, ModelType
-from giskard.core.core import SupportedModelTypes
-from giskard.core.validation import validate_is_pandasdataframe, configured_validate_arguments
+from giskard.core.core import ModelMeta, ModelType, SupportedModelTypes
+from giskard.core.validation import configured_validate_arguments, validate_is_pandasdataframe
 from giskard.datasets.base import Dataset
 from giskard.ml_worker.testing.registry.slicing_function import SlicingFunction
 from giskard.models.base import BaseModel, WrapperModel
+
 from ..utils import fullname
 from ..utils.analytics_collector import analytics, get_dataset_properties, get_model_properties
 from .dataset_validation import validate_optional_target

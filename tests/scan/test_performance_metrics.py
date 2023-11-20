@@ -1,10 +1,11 @@
-import pytest
 import numpy as np
 import pandas as pd
+import pytest
 import sklearn.metrics
 from pytest import approx
+
+from giskard import Dataset, Model
 from giskard.scanner.performance import metrics
-from giskard import Model, Dataset
 
 
 def test_classification_metrics_fail_on_regression_model(linear_regression_diabetes, diabetes_dataset_with_target):

@@ -1,6 +1,7 @@
-from collections import defaultdict
-from typing import Sequence, Dict, Optional
+from typing import Dict, Optional, Sequence
+
 from abc import ABC, abstractmethod
+from collections import defaultdict
 
 from ..datasets.base import Dataset
 from ..models.base import BaseModel

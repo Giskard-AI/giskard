@@ -1,7 +1,8 @@
+from typing import Literal, Optional, Union, get_args
+
 import collections
 import importlib
 from pathlib import Path
-from typing import Literal, Optional, Union, get_args
 
 import mlflow
 import pandas as pd
@@ -10,10 +11,10 @@ import yaml
 from torch.utils.data import DataLoader
 from torch.utils.data import Dataset as torch_dataset
 
-from .base.serialization import MLFlowSerializableModel
-from .utils import map_to_tuples
 from ..client.python_utils import warning
 from ..core.core import ModelType
+from .base.serialization import MLFlowSerializableModel
+from .utils import map_to_tuples
 
 TorchDType = Literal[
     "float32",
