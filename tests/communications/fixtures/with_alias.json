@@ -2195,15 +2195,18 @@
     {
       "testUuid": "gSNnzxHPebRwNaxLlXUb",
       "arguments": [],
-      "debug": true
+      "debug": true,
+      "projectKey": "CSmAXExoCXaOQUMQADwc"
     },
     {
       "testUuid": "HaTJYLBNWCrJNXWvVVfG",
       "arguments": [],
-      "debug": false
+      "debug": false,
+      "projectKey": "CSmAXExoCXaOQUMQADwc"
     },
     {
       "testUuid": "SgrLKWvRIpETSAEbmPvi",
+      "projectKey": "CSmAXExoCXaOQUMQADwc",
       "arguments": [
         {
           "name": "CKJtwAOBuzbcKZEuiAZO",
