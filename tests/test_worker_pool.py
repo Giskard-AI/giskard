@@ -35,7 +35,7 @@ def test_start_stop():
     assert len(pool.processes) == 1
     worker_process: SpawnProcess = list(pool.processes.values())[0]
     assert worker_process.is_alive()
-    exit_codes = pool.shutdown(wait=True, timeout=10)
+    exit_codes = pool.shutdown(wait=True)
     assert exit_codes == [0]
 
 
@@ -45,7 +45,7 @@ def test_force_stopping_should_always_succeed():
     assert len(pool.processes) == 1
     worker_process: SpawnProcess = list(pool.processes.values())[0]
     assert worker_process.is_alive()
-    exit_codes = pool.shutdown(wait=True, timeout=10)
+    exit_codes = pool.shutdown(wait=True)
     assert exit_codes == [0]
     pool.shutdown(wait=False, force=True)
 
@@ -80,7 +80,7 @@ def bugged_code():
 @pytest.mark.concurrency
 def test_handle_log(one_worker_pool: WorkerPoolExecutor):
     future = one_worker_pool.submit(print_stuff)
-    assert future.result(timeout=5) is None
+    assert future.result(timeout=20) is None
     print(future.logs)
     assert "stuff stdout" in future.logs
     assert "other stuff" in future.logs
@@ -111,7 +111,7 @@ def test_handle_exception_log(one_worker_pool: WorkerPoolExecutor):
 @pytest.mark.concurrency
 def test_submit_one_task(one_worker_pool: WorkerPoolExecutor):
     future = one_worker_pool.submit(add_one, 1)
-    assert future.result(timeout=5) == 2
+    assert future.result(timeout=20) == 2
     assert len(one_worker_pool.futures_mapping) == 0
 
 

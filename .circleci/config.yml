@@ -90,6 +90,7 @@ commands:
                   pdm run base-test --junitxml=test-results/junit.xml <<parameters.options>> $TEST
       - store_test_results:
           path: test-results
+      - run: rm -rf test-results/junit.xml
   cancel_on_fail:
     description: Command to make the workflow cancelled as soons as possible
     steps:
