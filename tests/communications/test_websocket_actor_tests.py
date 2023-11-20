@@ -75,6 +75,7 @@ def test_websocket_actor_run_ad_hoc_test_legacy_debug(enron_data: Dataset):
                 ),
             ],
             debug=True,
+            projectKey="projectKey",
         )
         with utils.MockedClient(mock_all=False) as (client, mr):
             utils.register_uri_for_artifact_meta_info(mr, my_simple_test_legacy_debug, None)
@@ -88,6 +89,31 @@ def test_websocket_actor_run_ad_hoc_test_legacy_debug(enron_data: Dataset):
             assert not reply.results[0].result.passed
             assert not reply.results[0].result.is_error
             assert reply.results[0].result.failed_indexes
+
+
+def test_websocket_actor_run_ad_hoc_test_legacy_no_client(enron_data: Dataset):
+    project_key = str(uuid.uuid4())
+
+    with utils.MockedProjectCacheDir(project_key):
+        utils.local_save_dataset_under_giskard_home_cache(enron_data, project_key)
+
+        params = websocket.RunAdHocTestParam(
+            testUuid=my_simple_test_legacy_debug.meta.uuid,
+            arguments=[
+                websocket.FuncArgument(
+                    name="dataset",
+                    none=False,
+                    dataset=websocket.ArtifactRef(
+                        project_key=project_key,
+                        id=str(enron_data.id),
+                    ),
+                ),
+            ],
+            debug=True,
+        )
+
+        with pytest.raises(RuntimeError):
+            listener.run_ad_hoc_test(client=None, params=params)
 
 
 @test
@@ -226,6 +252,7 @@ def test_websocket_actor_run_ad_hoc_test_legacy_debug_no_name(enron_data: Datase
                 ),
             ],
             debug=True,
+            projectKey="projectKey",
         )
         with utils.MockedClient(mock_all=False) as (client, mr):
             utils.register_uri_for_artifact_meta_info(mr, my_simple_test_legacy_debug_no_name, None)
