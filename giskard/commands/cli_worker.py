@@ -160,14 +160,11 @@ def _start_command(is_server, url: AnyHttpUrl, api_key, is_daemon, hf_token=None
 
             run_daemon(is_server, url, api_key, hf_token)
         else:
-            ml_worker = MLWorker(is_server, url, api_key, hf_token)
-            started = ml_worker.start(nb_workers, restart=True)
             if sys.platform == "win32":
                 from asyncio import run
             else:
                 from uvloop import run
-
-            run(started)
+            run(_start_worker(is_server, url, api_key, hf_token, nb_workers))
     except KeyboardInterrupt:
         logger.info("Exiting")
         if ml_worker:
@@ -188,6 +185,13 @@ def _start_command(is_server, url: AnyHttpUrl, api_key, is_daemon, hf_token=None
 
 def _ml_worker_description(is_server, url):
     return "server" if is_server else f"client for {url}"
+
+
+async def _start_worker(is_server, url, api_key, hf_token, nb_workers):
+    from giskard.ml_worker.ml_worker import MLWorker
+
+    ml_worker = MLWorker(is_server, url, api_key, hf_token)
+    await ml_worker.start(nb_workers, restart=True)
 
 
 @worker.command("stop", help="Stop running ML Workers")
