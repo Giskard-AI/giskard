@@ -1,8 +1,9 @@
+from pathlib import Path
+from tempfile import TemporaryDirectory
+
 import mlflow
 import pytest
-from pathlib import Path
 
-from tempfile import TemporaryDirectory
 from giskard.core.core import SupportedModelTypes
 
 mlflow_model_types = {
@@ -13,8 +14,8 @@ mlflow_model_types = {
 
 
 def _evaluate(dataset, model, evaluator_config):
-    import platform
     import os
+    import platform
 
     with TemporaryDirectory() as f:
         if platform.system() == "Windows":

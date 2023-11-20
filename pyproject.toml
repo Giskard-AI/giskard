@@ -38,6 +38,7 @@ test-slow.cmd = "pdm base-test -m 'slow and not concurrency and not memory_expen
 test-ram.cmd = "pdm base-test -m 'memory_expensive'"
 test-worker.cmd = "pdm base-test -m 'concurrency' tests/"
 lint = "ruff giskard tests"
+format = "bash -c 'black ./giskard ./tests && isort ./giskard ./tests'"
 doc = "sphinx-build docs docs/_build/html"
 watch-doc = "python -m sphinx_autobuild --watch giskard docs docs/_build/html"
 clean = "rm -rf coverage.xml coverage* .coverage*"
@@ -235,6 +236,7 @@ exclude = '''
 # https://github.com/timothycrosley/isort/
 py_version = 38
 line_length = 100
+skip_glob = ["**/.history*", "**/.venv/*"]
 
 known_typing = [
     "typing",
