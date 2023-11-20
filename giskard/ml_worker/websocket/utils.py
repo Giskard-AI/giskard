@@ -254,7 +254,7 @@ def map_result_to_single_test_result_ws(
             actual_slices_size=result.actual_slices_size,
             reference_slices_size=result.reference_slices_size,
             failed_indexes={
-                str(dataset.original_id): datasets[dataset.original_id].df.index.get_indexer_for(dataset.df.index)
+                str(dataset.original_id): list(datasets[dataset.original_id].df.index.get_indexer_for(dataset.df.index))
                 for dataset in (result.output_ds)
             },
         )
