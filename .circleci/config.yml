@@ -163,7 +163,7 @@ jobs:
       - checkout
       - run:
           name: Install needed packages
-          command: pip install black isort ruff -y
+          command: pip install black isort ruff
       - run:
           name: Check for black formatting
           command: black ./giskard ./tests/ --check
