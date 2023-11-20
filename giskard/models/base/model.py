@@ -22,7 +22,7 @@ from ...client.giskard_client import GiskardClient
 from ...core.core import ModelMeta, ModelType, SupportedModelTypes
 from ...core.validation import configured_validate_arguments
 from ...datasets.base import Dataset
-from ...ml_worker.exceptions.giskard_exception import GiskardException
+from ...ml_worker.exceptions.giskard_exception import GiskardException, GiskardPythonVerException
 from ...ml_worker.utils.logging import Timer
 from ...models.cache import ModelCache
 from ...path_utils import get_size
@@ -195,12 +195,11 @@ class BaseModel(ABC):
         if class_file.exists():
             with open(class_file, "rb") as f:
                 try:
+                    # According to https://github.com/cloudpipe/cloudpickle#cloudpickle:
+                    # Cloudpickle can only be used to send objects between the exact same version of Python.
                     clazz = cloudpickle.load(f)
                 except Exception as e:
-                    raise GiskardException(
-                        f"Failed to load '{cls.__name__}' due to {e.__class__.__name__}.\n"
-                        "Make sure you are loading it in the environment with matched Python version."
-                    )
+                    raise GiskardPythonVerException(cls.__name__, e)
                 if not issubclass(clazz, BaseModel):
                     raise ValueError(f"Unknown model class: {clazz}. Models should inherit from 'BaseModel' class")
                 return clazz
@@ -506,15 +505,12 @@ class BaseModel(ABC):
 
         if class_file.exists():
             with open(class_file, "rb") as f:
-                # https://github.com/cloudpipe/cloudpickle#cloudpickle
-                # Cloudpickle can only be used to send objects between the exact same version of Python.
                 try:
+                    # According to https://github.com/cloudpipe/cloudpickle#cloudpickle:
+                    # Cloudpickle can only be used to send objects between the exact same version of Python.
                     clazz = cloudpickle.load(f)
                 except Exception as e:
-                    raise GiskardException(
-                        f"Failed to load '{cls.__name__}' due to {e.__class__.__name__}.\n"
-                        "Make sure you are loading it in the environment with matched Python version."
-                    )
+                    raise GiskardPythonVerException(cls.__name__, e)
                 clazz_kwargs = {}
                 clazz_kwargs.update(constructor_params)
                 clazz_kwargs.update(kwargs)

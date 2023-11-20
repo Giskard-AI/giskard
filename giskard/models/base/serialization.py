@@ -5,7 +5,7 @@ from typing import Union
 import cloudpickle
 import mlflow
 
-from giskard.ml_worker.exceptions.giskard_exception import GiskardException
+from giskard.ml_worker.exceptions.giskard_exception import GiskardPythonVerException
 
 from .wrapper import WrapperModel
 
@@ -57,12 +57,11 @@ class CloudpickleSerializableModel(WrapperModel):
         if model_path.exists():
             with open(model_path, "rb") as f:
                 try:
+                    # According to https://github.com/cloudpipe/cloudpickle#cloudpickle:
+                    # Cloudpickle can only be used to send objects between the exact same version of Python.
                     model = cloudpickle.load(f)
                 except Exception as e:
-                    raise GiskardException(
-                        f"Failed to load '{cls.__name__}' due to {e.__class__.__name__}.\n"
-                        "Make sure you are loading it in the environment with matched Python version."
-                    )
+                    raise GiskardPythonVerException(cls.__name__, e)
                 return model
         else:
             raise ValueError(

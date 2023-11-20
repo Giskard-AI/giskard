@@ -12,7 +12,7 @@ import cloudpickle
 from giskard.core.core import SMT, TestFunctionMeta
 from giskard.core.validation import configured_validate_arguments
 from giskard.ml_worker.core.savable import Artifact
-from giskard.ml_worker.exceptions.giskard_exception import GiskardException
+from giskard.ml_worker.exceptions.giskard_exception import GiskardPythonVerException
 from giskard.ml_worker.testing.registry.registry import get_object_uuid, tests_registry
 from giskard.ml_worker.testing.test_result import TestResult
 from giskard.utils.analytics_collector import analytics
@@ -79,10 +79,7 @@ class GiskardTest(Artifact[TestFunctionMeta], ABC):
                 try:
                     func = pickle.load(f)
                 except Exception as e:
-                    raise GiskardException(
-                        f"Failed to load '{cls.__name__}' due to {e.__class__.__name__}.\n"
-                        "Make sure you are loading it in the environment with matched Python version."
-                    )
+                    raise GiskardPythonVerException(cls.__name__, e)
         elif hasattr(sys.modules[meta.module], meta.name):
             func = getattr(sys.modules[meta.module], meta.name)
         else:

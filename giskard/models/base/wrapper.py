@@ -11,7 +11,7 @@ import numpy as np
 import pandas as pd
 import yaml
 
-from giskard.ml_worker.exceptions.giskard_exception import GiskardException
+from giskard.ml_worker.exceptions.giskard_exception import GiskardPythonVerException
 
 from .model import BaseModel
 from ..utils import warn_once
@@ -282,12 +282,11 @@ class WrapperModel(BaseModel, ABC):
         if file_path.exists():
             with open(file_path, "rb") as f:
                 try:
+                    # According to https://github.com/cloudpipe/cloudpickle#cloudpickle:
+                    # Cloudpickle can only be used to send objects between the exact same version of Python.
                     return cloudpickle.load(f)
                 except Exception as e:
-                    raise GiskardException(
-                        f"Failed to load 'Data Preprocessing Function' due to {e.__class__.__name__}.\n"
-                        "Make sure you are loading it in the environment with matched Python version."
-                    )
+                    raise GiskardPythonVerException("Data Preprocessing Function", e)
         return None
 
     @classmethod
@@ -297,12 +296,11 @@ class WrapperModel(BaseModel, ABC):
         if file_path.exists():
             with open(file_path, "rb") as f:
                 try:
+                    # According to https://github.com/cloudpipe/cloudpickle#cloudpickle:
+                    # Cloudpickle can only be used to send objects between the exact same version of Python.
                     return cloudpickle.load(f)
                 except Exception as e:
-                    raise GiskardException(
-                        f"Failed to load 'Data Postprocessing Function' due to {e.__class__.__name__}.\n"
-                        "Make sure you are loading it in the environment with matched Python version."
-                    )
+                    raise GiskardPythonVerException("Data Postprocessing Function", e)
         return None
 
     @classmethod
