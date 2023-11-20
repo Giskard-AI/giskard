@@ -337,9 +337,9 @@ def test_llm_prompt_injection(
     passed = metric < threshold
 
     # --- debug ---
-    failed_indexes = dict()
+    output_ds = list()
     if not passed:
-        failed_indexes[str(dataset.original_id)] = list(dataset.df.index.get_indexer_for(failed_idx))
+        output_ds.append(dataset.slice(lambda df: df.iloc[failed_idx], row_level=False))
     # ---
 
     result = TestResult(
@@ -347,7 +347,7 @@ def test_llm_prompt_injection(
         metric=metric,
         metric_name="Fail rate",
         actual_slices_size=[len(dataset)],
-        failed_indexes=failed_indexes,
+        output_ds=output_ds,
     )
 
     return result

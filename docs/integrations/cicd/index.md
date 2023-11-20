@@ -4,7 +4,7 @@ new models are not introducing new vulnerabilities.**
 <br><br>
 :::{warning}
 First, you'll need to know how to run Giskard's scan function
-see [Scan your ML Model](../../../open_source/scan/index.md)
+see [Scan your ML Model](../../open_source/scan/index.md)
 :::
 
 With Giskard, you can easily automate scan or test execution publication in your CI/CD every time you have a new version of you model. For instance, you can:
@@ -14,14 +14,14 @@ With Giskard, you can easily automate scan or test execution publication in your
 ## Publish the scan report as a discussion of your PR
 Publishing a scan report or test suite execution as a discussion of your PR is useful when you update your model (retrain your model after new data, change of hyperparameter, etc.).
 
-![discussion](../../../assets/GH-discussion.png)
+![discussion](../../assets/gh_discussion.png)
 
 You can then trigger the execution and publishing of the scan when the PR is open. To see how to do please look at the GitHub Action workflow in this [repo](https://github.com/rabah-khalek/Healthcare-Analytics/pull/23).
 
 ## Add a paragraph in the Read Me of your repo by opening a PR
 You can even automatically add a paragraph in your repo Read Me about some vulnerabilities of your model. For instance, you can add a paragraph on Bias, Risk and limitations. 
 
-![readme](../../../assets/GH-readme.png)
+![readme](../../assets/gh_readme.png)
 
 To automate it yourself for your own model, see an example of a Read Me PR [here](https://github.com/rabah-khalek/Healthcare-Analytics/pull/24).
 
