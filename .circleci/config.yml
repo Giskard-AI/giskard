@@ -250,6 +250,7 @@ jobs:
       - pytest-parallel:
           markers: "not slow and memory_expensive"
           os: <<parameters.os>>
+          options: <<parameters.options>>
       - pytest-parallel:
           markers: "not slow and not memory_expensive"
           os: <<parameters.os>>
@@ -312,6 +313,7 @@ workflows:
           slow-tests: False
           os: ubuntu
           parallelism: 4
+          options: "-n 4"
           legacy-packages: True
           python-version: "3.10"
           requires:
@@ -322,13 +324,14 @@ workflows:
           python-version: "3.10"
           parallelism: 1
           slow-tests: False
-          options: "-n 3"
+          options: "-n 4"
           requires:
             - install-macos
       - unit-tests:
           name: unit-tests-windows
           os: windows
           parallelism: 4
+          options: "-n 3"
           python-version: "3.10.11"
           slow-tests: False
           requires:
