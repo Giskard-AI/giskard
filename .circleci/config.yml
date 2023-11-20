@@ -51,9 +51,9 @@ commands:
         default: ""
       os:
         type: string
-      nb_workers:
-        type: integer
-        default: 1
+      options:
+        type: string
+        default: ""
     steps:
       - when:
           condition:
@@ -65,7 +65,7 @@ commands:
                 command: |
                   mkdir -p test-results
                   TEST=$(pdm run pytest --collect-only -m '<<parameters.markers>>' tests/ --quiet --no-header --no-summary |  tail -r | tail -n +3 | tail -r | circleci tests split --split-by=timings)
-                  ./.venv/bin/pytest -c pyproject.toml --cov=giskard --cov-report=xml --cov-append --disable-warnings --no-header -vv --durations=0 --junitxml=test-results/junit.xml -n 2 $TEST
+                  ./.venv/bin/pytest -c pyproject.toml --cov=giskard --cov-report=xml --cov-append --disable-warnings --no-header -vv --durations=0 --junitxml=test-results/junit.xml <<parameters.options>> $TEST
       - when:
           condition:
             equal: ["windows", <<parameters.os>>]
@@ -76,7 +76,7 @@ commands:
                 command: |
                   mkdir -p test-results
                   TEST=$(pdm run pytest --collect-only -m '<<parameters.markers>>' tests/ --quiet --no-header --no-summary |  head -n -2 | circleci tests split --split-by=timings)
-                  ./.venv/Scripts/pytest.exe -c pyproject.toml --cov=giskard --cov-report=xml --cov-append --disable-warnings --no-header -vv --durations=0 --junitxml=test-results/junit.xml $TEST
+                  ./.venv/Scripts/pytest.exe -c pyproject.toml --cov=giskard --cov-report=xml --cov-append --disable-warnings --no-header -vv --durations=0 --junitxml=test-results/junit.xml <<parameters.options>> $TEST
       - when:
           condition:
             equal: ["ubuntu", <<parameters.os>>]
@@ -87,7 +87,7 @@ commands:
                 command: |
                   mkdir -p test-results
                   TEST=$(pdm run pytest --collect-only -m '<<parameters.markers>>' tests/ --quiet --no-header --no-summary |  head -n -2 | circleci tests split --split-by=timings)
-                  ./.venv/bin/pytest -c pyproject.toml --cov=giskard --cov-report=xml --cov-append --disable-warnings --no-header -vv --durations=0 --junitxml=test-results/junit.xml $TEST
+                  ./.venv/bin/pytest -c pyproject.toml --cov=giskard --cov-report=xml --cov-append --disable-warnings --no-header -vv --durations=0 --junitxml=test-results/junit.xml <<parameters.options>> $TEST
       - store_test_results:
           path: test-results
   cancel_on_fail:
@@ -210,11 +210,14 @@ jobs:
         type: string
       parallelism:
         type: integer
-      nb_workers:
-        type: integer
-        default: 1
       slow-tests:
         type: boolean
+      legacy-packages:
+        type: boolean
+        default: False
+      options:
+        type: string
+        default: "-n 2"
     executor:
       name: <<parameters.os>>
       python-version: <<parameters.python-version>>
@@ -228,20 +231,35 @@ jobs:
       - restore_cache:
           keys:
             - python-{{ .Environment.CACHE_VERSION }}-<<parameters.os>>-<<parameters.python-version>>-{{ checksum "pdm.lock" }}
+      - when:
+          condition: <<parameters.legacy-packages>>
+          steps:
+            - run: |
+                pdm run pip uninstall pydantic pydantic_core langchain pandas -y
+                pdm run pip install "langchain==0.0.275" "pydantic>=1,<2" "pandas<2"
+                pdm run pip freeze | grep -q '^pandas==1\.'
+                pdm run pip freeze | grep -q '^langchain==0.0.275'
+                pdm run pip freeze | grep -q '^^pydantic==1\.'
+      - unless:
+          condition: <<parameters.legacy-packages>>
+          steps:
+            - run: |
+                pdm run pip freeze | grep -q '^pandas==2\.'
+                pdm run pip freeze | grep -q '^^pydantic==2\.'
+
       - pytest-parallel:
           markers: "not slow and memory_expensive"
           os: <<parameters.os>>
       - pytest-parallel:
           markers: "not slow and not memory_expensive"
           os: <<parameters.os>>
-          nb_workers: <<parameters.nb_workers>>
+          options: <<parameters.options>>
       - when:
           condition: <<parameters.slow-tests>>
           steps:
             - pytest-parallel:
                 markers: "slow"
                 os: <<parameters.os>>
-                nb_workers: <<parameters.nb_workers>>
 
       # - cancel_on_fail
 
@@ -290,11 +308,21 @@ workflows:
           requires:
             - install-ubuntu-<<matrix.python-version>>
       - unit-tests:
+          name: test-ubuntu-3.10-legacy-version
+          slow-tests: False
+          os: ubuntu
+          parallelism: 4
+          legacy-packages: True
+          python-version: "3.10"
+          requires:
+            - install-ubuntu-3.10
+      - unit-tests:
           name: unit-tests-mac
           os: macos
           python-version: "3.10"
           parallelism: 1
           slow-tests: False
+          options: "-n 3"
           requires:
             - install-macos
       - unit-tests:
@@ -342,11 +370,21 @@ workflows:
           requires:
             - install-ubuntu-<<matrix.python-version>>
       - unit-tests:
+          name: test-ubuntu-3.10-legacy-version
+          slow-tests: False
+          os: ubuntu
+          parallelism: 4
+          legacy-packages: True
+          python-version: "3.10"
+          requires:
+            - install-ubuntu-3.10
+      - unit-tests:
           name: integ-tests-mac
           os: macos
           python-version: "3.10"
           parallelism: 1
           slow-tests: True
+          options: "-n 3"
           requires:
             - install-macos
       - unit-tests:
