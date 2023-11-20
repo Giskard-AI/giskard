@@ -70,11 +70,7 @@ def test_right_label(
     # --- debug ---
     output_ds = list()
     if not passed:
-        output_ds.append(
-            dataset.slice(
-                lambda df: df.index.get_indexer_for(dataset.df.loc[~dataset.df.index.isin(passed_idx)], row_level=False)
-            )
-        )
+        output_ds.append(dataset.slice(lambda df: df.loc[~dataset.df.index.isin(passed_idx)], row_level=False))
     # ---
 
     return TestResult(actual_slices_size=[len(dataset)], metric=passed_ratio, passed=passed, output_ds=output_ds)

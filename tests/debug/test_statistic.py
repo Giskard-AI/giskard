@@ -19,19 +19,18 @@ def test_statistic(model, dataset, request):
 
     # test_right_label
     predictions = _predictions.prediction
-    benchmark_failed_idx = {
-        str(dataset.original_id): list(dataset.df.loc[predictions != classification_label].index.values)
-    }
+    benchmark_failed_idx = list(dataset.df.loc[predictions != classification_label].index.values)
+
     result = test_right_label(model, dataset, classification_label=classification_label, debug=True).execute()
-    assert result.failed_indexes == benchmark_failed_idx
+    result_ds = result.output_ds[0]
+    assert list(result_ds.df.index) == benchmark_failed_idx
 
     # test_output_in_range
     predictions = _predictions.all_predictions[classification_label]
-    benchmark_failed_idx = {
-        str(dataset.original_id): list(dataset.df.loc[(predictions > 0.7) | (predictions < 0.3)].index.values)
-    }
+    benchmark_failed_idx = list(dataset.df.loc[(predictions > 0.7) | (predictions < 0.3)].index.values)
     result = test_output_in_range(model, dataset, classification_label=classification_label, debug=True).execute()
-    assert result.failed_indexes == benchmark_failed_idx
+    result_ds = result.output_ds[0]
+    assert list(result_ds.df.index) == benchmark_failed_idx
 
     # test_disparate_impact
     @slicing_function(row_level=False)
@@ -52,9 +51,7 @@ def test_statistic(model, dataset, request):
     failed_unprotected = list(_unprotected_predictions != unprotected_ds.df[dataset.target])
     failed_idx_protected = [i for i, x in enumerate(failed_protected) if x]
     failed_idx_unprotected = [i for i, x in enumerate(failed_unprotected) if x]
-    benchmark_failed_idx = {
-        str(dataset.original_id): failed_idx_protected + failed_idx_unprotected
-    }
+    benchmark_failed_idx = failed_idx_protected + failed_idx_unprotected
 
     result = test_disparate_impact(
         model,
@@ -65,4 +62,5 @@ def test_statistic(model, dataset, request):
         positive_outcome="Not default",
         debug=True,
     ).execute()
-    assert result.failed_indexes == benchmark_failed_idx
+    result_ds = result.output_ds[0]
+    assert list(result_ds.df.index) == benchmark_failed_idx
