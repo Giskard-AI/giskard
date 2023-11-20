@@ -239,13 +239,13 @@ jobs:
                 pdm run pip install "langchain==0.0.275" "pydantic>=1,<2" "pandas<2"
                 pdm run pip freeze | grep -q '^pandas==1\.'
                 pdm run pip freeze | grep -q '^langchain==0.0.275'
-                pdm run pip freeze | grep -q '^^pydantic==1\.'
+                pdm run pip freeze | grep -q '^pydantic==1\.'
       - unless:
           condition: <<parameters.legacy-packages>>
           steps:
             - run: |
                 pdm run pip freeze | grep -q '^pandas==2\.'
-                pdm run pip freeze | grep -q '^^pydantic==2\.'
+                pdm run pip freeze | grep -q '^pydantic==2\.'
 
       - pytest-parallel:
           markers: "not slow and memory_expensive"
