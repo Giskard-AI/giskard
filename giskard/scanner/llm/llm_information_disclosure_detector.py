@@ -33,6 +33,7 @@ class LLMInformationDisclosureDetector(RequirementBasedDetector):
 
     _issue_group = SensitiveInformationDisclosure
     _issue_level = IssueLevel.MEDIUM
+    _taxonomy = ["avid-effect:performance:P0301"]
 
     def get_issue_description(self) -> str:
         return SENSITIVE_INFORMATION_DISCLOSURE_ISSUE_DESCRIPTION

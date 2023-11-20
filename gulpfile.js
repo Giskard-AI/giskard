@@ -43,7 +43,7 @@ const scan_widget = gulp.parallel(scan_widget_css, scan_widget_js_external, scan
 
 exports.scan_widget = scan_widget;
 exports.default = function () {
-    gulp.watch('./giskard/visualization/templates/scan_report/*.html', scan_widget);
+    gulp.watch('./giskard/visualization/templates/scan_report/html/*.html', scan_widget);
     gulp.watch('./src/scan-widget/*.html', scan_widget);
     gulp.watch('./src/scan-widget/*.js', scan_widget);
 }

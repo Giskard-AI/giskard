@@ -62,7 +62,7 @@ def test_performance_bias_detector_with_tabular(german_credit_model, german_cred
     # Check that descriptions are coherent
     assert (
         issues[0].description
-        == 'For records in your dataset where `purpose` == "business", the Precision is 5.33% lower than the global Precision.'
+        == 'For records in the dataset where `purpose` == "business", the Precision is 5.33% lower than the global Precision.'
     )
     for issue in issues:
         assert issue.meta["metric"] in issue.description

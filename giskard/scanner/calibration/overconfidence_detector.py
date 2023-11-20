@@ -2,15 +2,15 @@ from typing import Sequence
 
 import pandas as pd
 
+from ...datasets import Dataset
+from ...ml_worker.testing.registry.slicing_function import SlicingFunction
+from ...models.base import BaseModel
+from ...testing.tests.calibration import _calculate_overconfidence_score, _default_overconfidence_threshold
 from ..common.examples import ExampleExtractor
 from ..common.loss_based_detector import LossBasedDetector
 from ..decorators import detector
 from ..issues import Issue, IssueLevel, Overconfidence
 from ..logger import logger
-from ...datasets import Dataset
-from ...ml_worker.testing.registry.slicing_function import SlicingFunction
-from ...models.base import BaseModel
-from ...testing.tests.calibration import _calculate_overconfidence_score, _default_overconfidence_threshold
 
 
 @detector(name="overconfidence", tags=["overconfidence", "classification"])
@@ -75,7 +75,7 @@ class OverconfidenceDetector(LossBasedDetector):
             if relative_delta > self.threshold:
                 level = IssueLevel.MAJOR if relative_delta > 2 * self.threshold else IssueLevel.MEDIUM
                 description = (
-                    "For records in your dataset where {slicing_fn}, we found a significantly higher number of "
+                    "For records in the dataset where {slicing_fn}, we found a significantly higher number of "
                     "overconfident wrong predictions ({num_overconfident_samples} samples, corresponding to "
                     "{metric_value_perc}% of the wrong predictions in the data slice)."
                 )
@@ -100,6 +100,7 @@ class OverconfidenceDetector(LossBasedDetector):
                     },
                     tests=_generate_overconfidence_tests,
                     importance=relative_delta,
+                    taxonomy=["avid-effect:performance:P0204"],
                 )
 
                 # Add examples

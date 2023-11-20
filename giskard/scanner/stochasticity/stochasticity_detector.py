@@ -54,5 +54,6 @@ class StochasticityDetector(Detector):
                     "num_stochastic_samples": len(fail_samples),
                 },
                 examples=fail_samples,
+                taxonomy=["avid-effect:performance:P0201"],
             )
         ]

@@ -14,6 +14,8 @@ from ..scanner import logger
 
 
 class RequirementBasedDetector(Detector):
+    _taxonomy = []
+
     def __init__(self, num_requirements=4, num_samples=5):
         self.num_requirements = num_requirements
         self.num_samples = num_samples
@@ -96,6 +98,7 @@ class RequirementBasedDetector(Detector):
                 "hide_index": True,
             },
             tests=_generate_output_requirement_tests,
+            taxonomy=self._taxonomy,
         )
 
 
