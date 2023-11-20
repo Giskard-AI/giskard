@@ -14,7 +14,7 @@ executors:
     environment:
       GSK_DISABLE_ANALYTICS: "True"
       GISKARD_DEV_MODE: "True"
-    resource_class: medium
+    resource_class: medium+
   # https://circleci.com/developer/machine/image/windows-server-2022-gui
   windows:
     parameters:
@@ -61,35 +61,32 @@ commands:
           steps:
             - run:
                 name: Pytest -m <<parameters.markers>> (<<parameters.os>>)
-                no_output_timeout: "20m"
+                no_output_timeout: "60m"
                 command: |
                   mkdir -p test-results
                   TEST=$(pdm run pytest --collect-only -m '<<parameters.markers>>' tests/ --quiet --no-header --no-summary |  tail -r | tail -n +3 | tail -r | circleci tests split --split-by=timings)
-                  pdm venv activate
-                  ./.venv/bin/pytest -c pyproject.toml --cov=giskard --cov-report=xml --cov-append --disable-warnings --no-header -vv --durations=0 --junitxml=test-results/junit.xml $TEST
+                  ./.venv/bin/pytest -c pyproject.toml --cov=giskard --cov-report=xml --cov-append --disable-warnings --no-header -vv --durations=0 --junitxml=test-results/junit.xml -n 2 $TEST
       - when:
           condition:
             equal: ["windows", <<parameters.os>>]
           steps:
             - run:
                 name: Pytest -m <<parameters.markers>> (<<parameters.os>>)
-                no_output_timeout: "20m"
+                no_output_timeout: "60m"
                 command: |
                   mkdir -p test-results
                   TEST=$(pdm run pytest --collect-only -m '<<parameters.markers>>' tests/ --quiet --no-header --no-summary |  head -n -2 | circleci tests split --split-by=timings)
-                  pdm venv activate
-                  python -m pytest -c pyproject.toml --cov=giskard --cov-report=xml --cov-append --disable-warnings --no-header -vv --durations=0 --junitxml=test-results/junit.xml $TEST
+                  ./.venv/Scripts/pytest.exe -c pyproject.toml --cov=giskard --cov-report=xml --cov-append --disable-warnings --no-header -vv --durations=0 --junitxml=test-results/junit.xml $TEST
       - when:
           condition:
             equal: ["ubuntu", <<parameters.os>>]
           steps:
             - run:
                 name: Pytest -m <<parameters.markers>> (<<parameters.os>>)
-                no_output_timeout: "20m"
+                no_output_timeout: "60m"
                 command: |
                   mkdir -p test-results
                   TEST=$(pdm run pytest --collect-only -m '<<parameters.markers>>' tests/ --quiet --no-header --no-summary |  head -n -2 | circleci tests split --split-by=timings)
-                  pdm venv activate
                   ./.venv/bin/pytest -c pyproject.toml --cov=giskard --cov-report=xml --cov-append --disable-warnings --no-header -vv --durations=0 --junitxml=test-results/junit.xml $TEST
       - store_test_results:
           path: test-results
@@ -131,11 +128,6 @@ commands:
             equal: ["macos", <<parameters.os>>]
           steps:
             - run: echo 'export PATH=/Users/distiller/.local/bin:"$PATH"' >> "$BASH_ENV"
-      - when:
-          condition:
-            equal: ["ubuntu", <<parameters.os>>]
-          steps:
-            - run: sudo apt update && sudo apt install -y openssl
   install-python:
     description: "Install PDM"
     parameters:
@@ -153,7 +145,7 @@ commands:
           condition:
             equal: ["macos", <<parameters.os>>]
           steps:
-            - run: brew install python@$(echo <<parameters.python-version>> | sed -e 's|^\([0-9]*\.[0-9]*\)\..*$|\1|g')
+            - run: brew install python@<<parameters.python-version>>
       - when:
           condition:
             equal: ["macos", <<parameters.os>>]
@@ -200,7 +192,10 @@ jobs:
             - python-{{ .Environment.CACHE_VERSION }}-<<parameters.os>>-<<parameters.python-version>>-{{ checksum "pdm.lock" }}
       - run:
           name: Install deps
-          command: pdm install -G :all
+          command: |
+            if [ ! -d ".venv" ]; then
+              pdm install -G :all
+            fi
       - save_cache:
           paths:
             - .venv
@@ -217,7 +212,7 @@ jobs:
       nb_workers:
         type: integer
         default: 1
-      ram-intensive:
+      slow-tests:
         type: boolean
     executor:
       name: <<parameters.os>>
@@ -232,40 +227,48 @@ jobs:
       - restore_cache:
           keys:
             - python-{{ .Environment.CACHE_VERSION }}-<<parameters.os>>-<<parameters.python-version>>-{{ checksum "pdm.lock" }}
+      - pytest-parallel:
+          markers: "not slow and memory_expensive"
+          os: <<parameters.os>>
+      - pytest-parallel:
+          markers: "not slow and not memory_expensive"
+          os: <<parameters.os>>
+          nb_workers: <<parameters.nb_workers>>
       - when:
-          condition: <<parameters.ram-intensive>>
+          condition: <<parameters.slow-tests>>
           steps:
             - pytest-parallel:
-                markers: "not slow and memory_expensive"
-                os: <<parameters.os>>
-      - unless:
-          condition: <<parameters.ram-intensive>>
-          steps:
-            - pytest-parallel:
-                markers: "not slow and not memory_expensive"
+                markers: "slow"
                 os: <<parameters.os>>
                 nb_workers: <<parameters.nb_workers>>
+
       # - cancel_on_fail
 
 # Orchestrate jobs using workflows
 # See: https://circleci.com/docs/configuration-reference/#workflows
 workflows:
   python-workflow:
+    unless:
+      {
+        or:
+          [
+            { equal: [scheduled_pipeline, << pipeline.trigger_source >>] },
+            { equal: [api, << pipeline.trigger_source >>] },
+          ],
+      }
     jobs:
       - pre-check:
         name: pre-check
       - install:
-          name: install-<<matrix.os>>-<<matrix.python-version>>
+          name: install-ubuntu-<<matrix.python-version>>
+          os: ubuntu
           matrix:
             parameters:
-              os: [ubuntu]
-              python-version: ["3.9.13", "3.10.11", "3.11.6"]
-          require:
-            - pre-check
+              python-version: ["3.9", "3.10", "3.11"]
       - install:
           name: install-macos
           os: macos
-          python-version: "3.10.11"
+          python-version: "3.10"
           require:
             - pre-check
       - install:
@@ -275,34 +278,81 @@ workflows:
           require:
             - pre-check
       - unit-tests:
-          name: test-<<matrix.os>>-<<matrix.python-version>>
+          name: test-ubuntu-<<matrix.python-version>>
+          slow-tests: False
+          os: ubuntu
+          parallelism: 4
           matrix:
             parameters:
-              os: [ubuntu]
-              python-version: ["3.9.13", "3.10.11", "3.11.6"]
-              parallelism: [4]
-              ram-intensive: [True, False]
+              python-version: ["3.9", "3.10", "3.11"]
           requires:
-            - install-<<matrix.os>>-<<matrix.python-version>>
+            - install-ubuntu-<<matrix.python-version>>
       - unit-tests:
           name: unit-tests-mac
           os: macos
-          python-version: "3.10.11"
+          python-version: "3.10"
           parallelism: 1
-          nb_workers: 4
-          matrix:
-            parameters:
-              ram-intensive: [True, False]
+          slow-tests: False
           requires:
             - install-macos
       - unit-tests:
           name: unit-tests-windows
           os: windows
-          parallelism: 2
+          parallelism: 4
           python-version: "3.10.11"
+          slow-tests: False
+          requires:
+            - install-windows
+  python-nightly:
+    when:
+      {
+        or:
+          [
+            { equal: [scheduled_pipeline, << pipeline.trigger_source >>] },
+            { equal: [api, << pipeline.trigger_source >>] },
+          ],
+      }
+    # https://circleci.com/docs/pipeline-variables/
+    # https://dev.to/aws-heroes/trigger-circleci-workflow-aka-simple-deploy-button-3ocl
+    jobs:
+      - install:
+          name: install-ubuntu-<<matrix.python-version>>
+          os: ubuntu
           matrix:
             parameters:
-              ram-intensive: [True, False]
+              python-version: ["3.9", "3.10", "3.11"]
+      - install:
+          name: install-macos
+          os: macos
+          python-version: "3.10"
+      - install:
+          name: install-windows
+          os: windows
+          python-version: "3.10.11"
+      - unit-tests:
+          name: integ-tests-ubuntu-<<matrix.python-version>>
+          slow-tests: True
+          os: ubuntu
+          parallelism: 4
+          matrix:
+            parameters:
+              python-version: ["3.9", "3.10", "3.11"]
+          requires:
+            - install-ubuntu-<<matrix.python-version>>
+      - unit-tests:
+          name: integ-tests-mac
+          os: macos
+          python-version: "3.10"
+          parallelism: 1
+          slow-tests: True
+          requires:
+            - install-macos
+      - unit-tests:
+          name: integ-tests-windows
+          os: windows
+          parallelism: 4
+          python-version: "3.10.11"
+          slow-tests: True
           requires:
             - install-windows
 # https://circleci.com/docs/using-matrix-jobs/
