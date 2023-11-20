@@ -254,20 +254,18 @@ def test_drift_psi(
     )
 
     # --- debug ---
-    failed_indexes = dict()
+    output_ds = list()
     if not passed:
         check_if_debuggable(actual_dataset, reference_dataset)
         main_drifting_modalities_bool = output_data["Psi"] > psi_contribution_percent * total_psi
         modalities_list = output_data[main_drifting_modalities_bool]["Modality"].tolist()
         if modalities_list:
             filtered_modalities = [w for w in modalities_list if not re.match(other_modalities_pattern, str(w))]
-            failed_indexes[str(actual_dataset.original_id)] = list(
-                actual_dataset.df.index.get_indexer_for(
-                    actual_dataset.df.loc[actual_series.isin(filtered_modalities)].index
-                )
+            output_ds.append(
+                actual_dataset.slice(lambda df: df.loc[actual_series.isin(filtered_modalities)], row_level=False)
             )
             test_name = inspect.stack()[0][3]
-            if len(failed_indexes) == 0:
+            if len(output_ds[0].df.index) == 0:
                 raise ValueError(
                     test_name
                     + f": the categories {filtered_modalities} completely drifted as they are not present in the "
@@ -281,7 +279,7 @@ def test_drift_psi(
         passed=passed,
         metric=total_psi,
         messages=messages,
-        failed_indexes=failed_indexes,
+        output_ds=output_ds,
     )
 
 
@@ -354,17 +352,15 @@ def test_drift_chi_square(
     )
 
     # --- debug ---
-    failed_indexes = dict()
+    output_ds = list()
     if not passed:
         check_if_debuggable(actual_dataset, reference_dataset)
         main_drifting_modalities_bool = output_data["Chi_square"] > chi_square_contribution_percent * chi_square
         modalities_list = output_data[main_drifting_modalities_bool]["Modality"].tolist()
         if modalities_list:
             filtered_modalities = [w for w in modalities_list if not re.match(other_modalities_pattern, str(w))]
-            failed_indexes[str(actual_dataset.original_id)] = list(
-                actual_dataset.df.index.get_indexer_for(
-                    actual_dataset.df.loc[actual_series.isin(filtered_modalities)].index
-                )
+            output_ds.append(
+                actual_dataset.slice(lambda df: df.loc[actual_series.isin(filtered_modalities)], row_level=False)
             )
     # ---
 
@@ -374,7 +370,7 @@ def test_drift_chi_square(
         passed=passed,
         metric=p_value,
         messages=messages,
-        failed_indexes=failed_indexes,
+        output_ds=output_ds,
     )
 
 
@@ -579,20 +575,21 @@ def test_drift_prediction_psi(
     )
 
     # --- debug ---
-    failed_indexes = dict()
+    output_ds = list()
     if not passed:
         check_if_debuggable(actual_dataset, reference_dataset)
         main_drifting_modalities_bool = output_data["Psi"] > psi_contribution_percent * total_psi
         modalities_list = output_data[main_drifting_modalities_bool]["Modality"].tolist()
         if modalities_list:
             filtered_modalities = [w for w in modalities_list if not re.match(other_modalities_pattern, str(w))]
-            failed_indexes[str(actual_dataset.original_id)] = list(
-                actual_dataset.df.index.get_indexer_for(
-                    actual_dataset.df.loc[prediction_actual.isin(filtered_modalities).values].index
+            output_ds.append(
+                actual_dataset.slice(
+                    lambda df: df.loc[prediction_actual.isin(filtered_modalities).values], row_level=False
                 )
             )
+
             test_name = inspect.stack()[0][3]
-            if len(failed_indexes) == 0:
+            if len(output_ds[0].df.index) == 0:
                 raise ValueError(
                     test_name + f": the categories {filtered_modalities} completely drifted as they are not present "
                     f"in the 'actual_dataset'"
@@ -605,7 +602,7 @@ def test_drift_prediction_psi(
         passed=passed,
         metric=total_psi,
         messages=messages,
-        failed_indexes=failed_indexes,
+        output_ds=output_ds,
     )
 
 
@@ -709,16 +706,16 @@ def test_drift_prediction_chi_square(
     )
 
     # --- debug ---
-    failed_indexes = dict()
+    output_ds = list()
     if not passed:
         check_if_debuggable(actual_dataset, reference_dataset)
         main_drifting_modalities_bool = output_data["Chi_square"] > chi_square_contribution_percent * chi_square
         modalities_list = output_data[main_drifting_modalities_bool]["Modality"].tolist()
         if modalities_list:
             filtered_modalities = [w for w in modalities_list if not re.match(other_modalities_pattern, str(w))]
-            failed_indexes[str(actual_dataset.original_id)] = list(
-                actual_dataset.df.index.get_indexer_for(
-                    actual_dataset.df.loc[prediction_actual.isin(filtered_modalities).values].index
+            output_ds.append(
+                actual_dataset.slice(
+                    lambda df: df.loc[prediction_actual.isin(filtered_modalities).values], row_level=False
                 )
             )
     # ---
@@ -729,7 +726,7 @@ def test_drift_prediction_chi_square(
         passed=passed,
         metric=p_value,
         messages=messages,
-        failed_indexes=failed_indexes,
+        output_ds=output_ds,
     )
 
 
