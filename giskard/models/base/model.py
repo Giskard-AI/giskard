@@ -198,9 +198,8 @@ class BaseModel(ABC):
                     clazz = cloudpickle.load(f)
                 except Exception as e:
                     raise GiskardException(
-                        f"Failed to load '{cls.__name__}' due to {e.__class__.__name__}. "
+                        f"Failed to load '{cls.__name__}' due to {e.__class__.__name__}.\n"
                         "Make sure you are loading it in the environment with matched Python version."
-                        f"Detail: {e}"
                     )
                 if not issubclass(clazz, BaseModel):
                     raise ValueError(f"Unknown model class: {clazz}. Models should inherit from 'BaseModel' class")
@@ -513,9 +512,8 @@ class BaseModel(ABC):
                     clazz = cloudpickle.load(f)
                 except Exception as e:
                     raise GiskardException(
-                        f"Failed to load '{cls.__name__}' due to {e.__class__.__name__}. "
+                        f"Failed to load '{cls.__name__}' due to {e.__class__.__name__}.\n"
                         "Make sure you are loading it in the environment with matched Python version."
-                        f"Detail: {e}"
                     )
                 clazz_kwargs = {}
                 clazz_kwargs.update(constructor_params)

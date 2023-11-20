@@ -60,9 +60,8 @@ class CloudpickleSerializableModel(WrapperModel):
                     model = cloudpickle.load(f)
                 except Exception as e:
                     raise GiskardException(
-                        f"Failed to load '{cls.__name__}' due to {e.__class__.__name__}. "
+                        f"Failed to load '{cls.__name__}' due to {e.__class__.__name__}.\n"
                         "Make sure you are loading it in the environment with matched Python version."
-                        f"Detail: {e}"
                     )
                 return model
         else:

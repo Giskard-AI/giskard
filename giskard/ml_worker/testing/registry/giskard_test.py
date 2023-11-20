@@ -80,9 +80,8 @@ class GiskardTest(Artifact[TestFunctionMeta], ABC):
                     func = pickle.load(f)
                 except Exception as e:
                     raise GiskardException(
-                        f"Failed to load '{cls.__name__}' due to {e.__class__.__name__}. "
+                        f"Failed to load '{cls.__name__}' due to {e.__class__.__name__}.\n"
                         "Make sure you are loading it in the environment with matched Python version."
-                        f"Detail: {e}"
                     )
         elif hasattr(sys.modules[meta.module], meta.name):
             func = getattr(sys.modules[meta.module], meta.name)
