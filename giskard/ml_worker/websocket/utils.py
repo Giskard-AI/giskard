@@ -270,6 +270,9 @@ def _upload_generated_output_df(client, datasets, project_key, result):
         if not client:
             raise RuntimeError("Legacy test debugging using `output_df` is not supported internal ML worker")
 
+        if not project_key:
+            raise ValueError("Unable to upload debug dataset due to missing `project_key`")
+
         result.output_df.upload(client, project_key)
 
     datasets[result.output_df.original_id] = result.output_df
