@@ -12,6 +12,7 @@ import cloudpickle
 from giskard.core.core import SMT, TestFunctionMeta
 from giskard.core.validation import configured_validate_arguments
 from giskard.ml_worker.core.savable import Artifact
+from giskard.ml_worker.exceptions.giskard_exception import GiskardException
 from giskard.ml_worker.testing.registry.registry import get_object_uuid, tests_registry
 from giskard.ml_worker.testing.test_result import TestResult
 from giskard.utils.analytics_collector import analytics
@@ -75,7 +76,14 @@ class GiskardTest(Artifact[TestFunctionMeta], ABC):
     def load(cls, local_dir: Path, uuid: str, meta: TestFunctionMeta):
         if local_dir.exists():
             with open(Path(local_dir) / "data.pkl", "rb") as f:
-                func = pickle.load(f)
+                try:
+                    func = pickle.load(f)
+                except Exception as e:
+                    raise GiskardException(
+                        f"Failed to load '{cls.__name__}' due to {e.__class__.__name__}. "
+                        "Make sure you are loading it in the environment with matched Python version."
+                        f"Detail: {e}"
+                    )
         elif hasattr(sys.modules[meta.module], meta.name):
             func = getattr(sys.modules[meta.module], meta.name)
         else:

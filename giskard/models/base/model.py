@@ -194,7 +194,14 @@ class BaseModel(ABC):
         class_file = Path(local_dir) / MODEL_CLASS_PKL
         if class_file.exists():
             with open(class_file, "rb") as f:
-                clazz = cloudpickle.load(f)
+                try:
+                    clazz = cloudpickle.load(f)
+                except Exception as e:
+                    raise GiskardException(
+                        f"Failed to load '{cls.__name__}' due to {e.__class__.__name__}. "
+                        "Make sure you are loading it in the environment with matched Python version."
+                        f"Detail: {e}"
+                    )
                 if not issubclass(clazz, BaseModel):
                     raise ValueError(f"Unknown model class: {clazz}. Models should inherit from 'BaseModel' class")
                 return clazz
@@ -500,7 +507,16 @@ class BaseModel(ABC):
 
         if class_file.exists():
             with open(class_file, "rb") as f:
-                clazz = cloudpickle.load(f)
+                # https://github.com/cloudpipe/cloudpickle#cloudpickle
+                # Cloudpickle can only be used to send objects between the exact same version of Python.
+                try:
+                    clazz = cloudpickle.load(f)
+                except Exception as e:
+                    raise GiskardException(
+                        f"Failed to load '{cls.__name__}' due to {e.__class__.__name__}. "
+                        "Make sure you are loading it in the environment with matched Python version."
+                        f"Detail: {e}"
+                    )
                 clazz_kwargs = {}
                 clazz_kwargs.update(constructor_params)
                 clazz_kwargs.update(kwargs)

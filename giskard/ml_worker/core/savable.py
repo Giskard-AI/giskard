@@ -14,6 +14,7 @@ import yaml
 
 from giskard.client.giskard_client import GiskardClient
 from giskard.core.core import SMT, SavableMeta
+from giskard.ml_worker.exceptions.giskard_exception import GiskardException
 from giskard.ml_worker.testing.registry.registry import tests_registry
 from giskard.settings import settings
 
@@ -173,7 +174,16 @@ class RegistryArtifact(Artifact[SMT], ABC):
 
         if local_dir.exists():
             with open(local_dir / "data.pkl", "rb") as f:
-                _function = cloudpickle.load(f)
+                try:
+                    # According to https://github.com/cloudpipe/cloudpickle#cloudpickle:
+                    # Cloudpickle can only be used to send objects between the exact same version of Python.
+                    _function = cloudpickle.load(f)
+                except Exception as e:
+                    raise GiskardException(
+                        f"Failed to load '{cls.__name__}' due to {e.__class__.__name__}. "
+                        "Make sure you are loading it in the environment with matched Python version."
+                        f"Detail: {e}"
+                    )
         else:
             try:
                 func = getattr(sys.modules[meta.module], meta.name)

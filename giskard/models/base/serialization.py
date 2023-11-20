@@ -5,6 +5,8 @@ from typing import Union
 import cloudpickle
 import mlflow
 
+from giskard.ml_worker.exceptions.giskard_exception import GiskardException
+
 from .wrapper import WrapperModel
 
 
@@ -54,7 +56,14 @@ class CloudpickleSerializableModel(WrapperModel):
         model_path = local_path / "model.pkl"
         if model_path.exists():
             with open(model_path, "rb") as f:
-                model = cloudpickle.load(f)
+                try:
+                    model = cloudpickle.load(f)
+                except Exception as e:
+                    raise GiskardException(
+                        f"Failed to load '{cls.__name__}' due to {e.__class__.__name__}. "
+                        "Make sure you are loading it in the environment with matched Python version."
+                        f"Detail: {e}"
+                    )
                 return model
         else:
             raise ValueError(

@@ -11,6 +11,8 @@ import numpy as np
 import pandas as pd
 import yaml
 
+from giskard.ml_worker.exceptions.giskard_exception import GiskardException
+
 from .model import BaseModel
 from ..utils import warn_once
 from ...core.core import ModelType
@@ -279,7 +281,14 @@ class WrapperModel(BaseModel, ABC):
         file_path = local_path / "giskard-data-preprocessing-function.pkl"
         if file_path.exists():
             with open(file_path, "rb") as f:
-                return cloudpickle.load(f)
+                try:
+                    return cloudpickle.load(f)
+                except Exception as e:
+                    raise GiskardException(
+                        f"Failed to load '{cls.__name__}' due to {e.__class__.__name__}. "
+                        "Make sure you are loading it in the environment with matched Python version."
+                        f"Detail: {e}"
+                    )
         return None
 
     @classmethod
@@ -288,7 +297,14 @@ class WrapperModel(BaseModel, ABC):
         file_path = local_path / "giskard-model-postprocessing-function.pkl"
         if file_path.exists():
             with open(file_path, "rb") as f:
-                return cloudpickle.load(f)
+                try:
+                    return cloudpickle.load(f)
+                except Exception as e:
+                    raise GiskardException(
+                        f"Failed to load '{cls.__name__}' due to {e.__class__.__name__}. "
+                        "Make sure you are loading it in the environment with matched Python version."
+                        f"Detail: {e}"
+                    )
         return None
 
     @classmethod
