@@ -1,3 +1,6 @@
+import json
+import tempfile
+from pathlib import Path
 from unittest.mock import Mock
 
 from avidtools.datamodels.components import ArtifactTypeEnum
@@ -66,3 +69,13 @@ def test_scan_report_can_be_exported_to_avid():
 
     assert avid_reports[2].metrics is None
     assert avid_reports[2].problemtype.description.value == "There is a minor issue"
+
+    # Check that we can write the AVID report to file and read it back
+    with tempfile.TemporaryDirectory() as tmpdir:
+        dest_path = Path(tmpdir).joinpath("test_report.avid")
+        report.to_avid(dest_path)
+
+        with dest_path.open("r") as f:
+            avid_reports_read = [json.loads(line) for line in f.readlines()]
+
+    assert len(avid_reports_read) == len(avid_reports)
