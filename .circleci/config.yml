@@ -265,6 +265,8 @@ workflows:
           matrix:
             parameters:
               python-version: ["3.9", "3.10", "3.11"]
+          requires:
+            - pre-check
       - install:
           name: install-macos
           os: macos
