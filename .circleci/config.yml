@@ -249,6 +249,7 @@ jobs:
       - pytest-parallel:
           markers: "concurrency"
           os: <<parameters.os>>
+          options: <<parameters.options>>
       - pytest-parallel:
           markers: "not concurrency and not slow and memory_expensive"
           os: <<parameters.os>>
