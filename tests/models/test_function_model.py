@@ -1,9 +1,11 @@
+from pathlib import Path
 import numpy as np
 import pandas as pd
 import pytest
+import platform
 
-import tests.utils
 from giskard import Dataset, Model
+from giskard.ml_worker.exceptions.giskard_exception import GiskardPythonVerException
 from giskard.models.function import PredictionFunctionModel
 
 
@@ -21,6 +23,8 @@ def test_prediction_function_upload():
     gsk_model = PredictionFunctionModel(
         lambda df: np.ones(len(df)), model_type="classification", classification_labels=[0, 1]
     )
+
+    import tests.utils
 
     tests.utils.verify_model_upload(gsk_model, Dataset(df=pd.DataFrame({"x": [1, 2, 3], "y": [1, 0, 1]}), target="y"))
 
@@ -64,3 +68,20 @@ def test_single_feature():
     with pytest.raises(Exception) as e:
         validate_model(giskard_model, giskard_dataset)
     assert e.match(r"Your model returned an error when we passed a 'pandas.Dataframe' as input.*")
+
+
+def test_prediction_function_load():
+    py_ver = ".".join(platform.python_version_tuple()[:2])
+    model_path = Path(__file__).parent / "fixtures" / "func" / py_ver
+    if platform.python_version_tuple()[:2] == ("3", "10"):
+        model = Model.load(model_path)
+        assert model is not None
+    else:
+        with pytest.raises(GiskardPythonVerException):
+            Model.load(model_path)
+
+
+if __name__ == "__main__":
+    py_ver = ".".join(platform.python_version_tuple()[:2])
+    model_path = Path(__file__).parent / "fixtures" / "func" / py_ver
+    Model(lambda df: np.ones(len(df)), model_type="classification", classification_labels=[0, 1]).save(model_path)
