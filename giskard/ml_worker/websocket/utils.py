@@ -212,16 +212,7 @@ def map_result_to_single_test_result_ws(
         result.output_ds = result.output_ds or []
 
         if result.output_df is not None:
-            logger.warning("Your using output_df which is a deprecated parameter, please migrate to output_ds")
-            if isinstance(result.output_df, Dataset):
-                if (
-                    result.output_df.original_id not in datasets.keys()
-                    and client is not None
-                    and project_key is not None
-                ):
-                    result.output_df.upload(client, project_key)
-                datasets[result.output_df.original_id] = result.output_df
-                result.output_ds.append(result.output_df)
+            _upload_generated_output_df(client, datasets, project_key, result)
 
         return websocket.SingleTestResult(
             passed=bool(result.passed),
@@ -262,6 +253,27 @@ def map_result_to_single_test_result_ws(
         return websocket.SingleTestResult(passed=result)
     else:
         raise ValueError("Result of test can only be 'TestResult' or 'bool'")
+
+
+def _upload_generated_output_df(client, datasets, project_key, result):
+    if not isinstance(result.output_df, Dataset):
+        raise ValueError("The test result `output_df` provided must be a dataset instance")
+
+    logger.warning(
+        """
+    Your using legacy test debugging though `output_df`. This feature will be removed in the future.
+    Please migrate to `output_ds`.
+    """
+    )
+
+    if result.output_df.original_id not in datasets.keys():
+        if not client:
+            raise ValueError("Legacy test debugging using `output_df` is not supported internal ML worker")
+
+        result.output_df.upload(client, project_key)
+
+    datasets[result.output_df.original_id] = result.output_df
+    result.output_ds.append(result.output_df)
 
 
 def do_run_adhoc_test(arguments, test):
