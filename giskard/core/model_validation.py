@@ -12,15 +12,15 @@ from giskard.core.validation import validate_is_pandasdataframe, configured_vali
 from giskard.datasets.base import Dataset
 from giskard.ml_worker.testing.registry.slicing_function import SlicingFunction
 from giskard.models.base import BaseModel, WrapperModel
+from .dataset_validation import validate_optional_target
 from ..utils import fullname
 from ..utils.analytics_collector import analytics, get_dataset_properties, get_model_properties
-from .dataset_validation import validate_optional_target
 
 
 @configured_validate_arguments
 def validate_model(model: BaseModel, validate_ds: Optional[Dataset] = None, print_validation_message: bool = True):
     try:
-        if model.meta.model_type != SupportedModelTypes.TEXT_GENERATION and validate_ds is not None:
+        if validate_ds is not None:
             validate_optional_target(validate_ds)
         _do_validate_model(model, validate_ds)
     except (ValueError, TypeError) as err:
