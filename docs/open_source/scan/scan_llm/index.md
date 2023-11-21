@@ -38,6 +38,8 @@ os.environ["OPENAI_API_KEY"] = "sk-…"
 ::::::
 ::::::{tab-item} Azure OpenAI
 
+Require `openai>=1.0.0`
+
 ```python
 import os
 
