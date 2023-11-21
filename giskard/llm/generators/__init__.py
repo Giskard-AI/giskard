@@ -8,5 +8,4 @@ __all__ = [
     "SycophancyDataGenerator",
     "ImplausibleDataGenerator",
     "AdversarialDataGenerator",
-    "PromptInjectionDataLoader",
 ]
