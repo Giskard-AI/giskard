@@ -4,7 +4,7 @@ import ast
 import pandas as pd
 
 from giskard.datasets.base import Dataset
-from giskard.llm.generators.injection import InjectionDataGenerator
+from giskard.llm.injection_data.injection import InjectionDataGenerator
 from giskard.scanner.llm.llm_prompt_injection_detector import LLMPromptInjectionDetector
 from giskard.testing.tests.llm.injections import _test_llm_output_against_strings
 
@@ -24,12 +24,12 @@ def test_prompt_injection_data_generator_sampling():
     generator = InjectionDataGenerator(num_samples=num_samples)
 
     column_types = {"feat": "text"}
-    dataset = generator.generate_dataset(column_types=column_types)
+    dataset = generator.load_dataset(column_types=column_types)
     assert len(dataset) == num_samples
     assert len(dataset.df.columns) == len(column_types)
 
 
-@patch("giskard.scanner.llm.llm_prompt_injection_detector.InjectionDataGenerator")
+@patch("giskard.scanner.llm.llm_prompt_injection_detector.PromptInjectionDataLoader")
 def test_prompt_injection_detector(InjectionDataGenerator):  # noqa
     model = Mock()
     dataset = Mock()
