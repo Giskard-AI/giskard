@@ -63,15 +63,14 @@ reference/index
 :maxdepth: 1
 :hidden:
 
-integrations/index
 community/discord/index
 community/github/index
 community/contribution_guidelines/index
 ```
 
 <h1 align="center" weight='300' style="color: var(--sd-color-card-text);" >The testing framework dedicated to  ML models, from tabular to LLMs</h1>
-<p align="center"> 
-   <a href="https://www.giskard.ai/knowledge-categories/blog/?utm_source=github&utm_medium=github&utm_campaign=github_readme&utm_id=readmeblog"><b>Blog</b></a> &bull;  
+<p align="center">
+   <a href="https://www.giskard.ai/knowledge-categories/blog/?utm_source=github&utm_medium=github&utm_campaign=github_readme&utm_id=readmeblog"><b>Blog</b></a> &bull;
   <a href="https://www.giskard.ai/?utm_source=github&utm_medium=github&utm_campaign=github_readme&utm_id=readmeblog"><b>Website</b></a> &bull;
   <a href="https://gisk.ar/discord"><b>Discord</b></a>
  </p>

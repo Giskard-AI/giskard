@@ -19,7 +19,7 @@ Publishing a scan report or test suite execution as a discussion of your PR is u
 You can then trigger the execution and publishing of the scan when the PR is open. To see how to do please look at the GitHub Action workflow in this [repo](https://github.com/rabah-khalek/Healthcare-Analytics/pull/23).
 
 ## Add a paragraph in the Read Me of your repo by opening a PR
-You can even automatically add a paragraph in your repo Read Me about some vulnerabilities of your model. For instance, you can add a paragraph on Bias, Risk and limitations. 
+You can even automatically add a paragraph in your repo Read Me about some vulnerabilities of your model. For instance, you can add a paragraph on Bias, Risk and limitations.
 
 ![readme](../../assets/gh_readme.png)
 
@@ -46,3 +46,13 @@ else:
     print("Your model is safe")
     exit(0)
 ```
+
+## Notebook examples
+::::::{grid} 1 1 2 2
+:gutter: 1
+
+:::::{grid-item}
+:::{card} <br><h3><center>📊 Tabular</center></h3>
+:link: pipeline.ipynb
+:::
+:::::

@@ -19,7 +19,7 @@ To run the Giskard hub you need **3 requirements**:
 
 1. A **Linux**, **macOS** machine, or **WSL2 in Windows**
 2. To install the Giskard **Python library**, see [here](../../open_source/installation_library/index.md).
-3. A **running** ``docker``. After [installation](https://docs.docker.com/engine/install/debian/) of Docker, you can run it in the background by just opening the Docker app (Mac or Windows). 
+3. A **running** ``docker``. After [installation](https://docs.docker.com/engine/install/debian/) of Docker, you can run it in the background by just opening the Docker app (Mac or Windows).
 
 > For an easy **installation of Docker** you can execute:
 > ```
@@ -78,7 +78,7 @@ The API Access Key (`YOUR_KEY`) can be found in the Settings tab of the Giskard 
 >!giskard worker --help
 >```
 
-You're all set to try Giskard in action. Upload your first model, dataset or test suite by following the [upload an object](../upload/index.html) page.
+You're all set to try Giskard in action. Upload your first model, dataset or test suite by following the [upload an object](../../../upload/index.html) page.
 
 ::::::
 ::::::{tab-item} From Colab notebook
@@ -104,7 +104,7 @@ The API Access Key (`YOUR_KEY`) can be found in the Settings tab of the Giskard 
 >!giskard worker --help
 >```
 
-You're all set to try Giskard in action. Upload your first model, dataset or test suite by following the [upload an object](../upload/index.html) page.
+You're all set to try Giskard in action. Upload your first model, dataset or test suite by following the [upload an object](../../../upload/index.html) page.
 
 ::::::
 ::::::{tab-item} From your terminal
@@ -123,7 +123,7 @@ You then will be asked to provide your API Access Key. The API Access key can be
 >!giskard worker --help
 >```
 
-You're all set to try Giskard in action. Upload your first model, dataset or test suite by following the [upload an object](../upload/index.html) page.
+You're all set to try Giskard in action. Upload your first model, dataset or test suite by following the [upload an object](../../../upload/index.html) page.
 
 ::::::
 :::::::

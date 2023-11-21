@@ -95,7 +95,7 @@ The API Access Key (`YOUR_KEY`) can be found in the Settings tab of the Giskard 
 >!giskard worker --help
 >```
 
-You're all set to try Giskard in action. Upload your first model, dataset or test suite by following the [upload an object](../upload/index.html) page.
+You're all set to try Giskard in action. Upload your first model, dataset or test suite by following the [upload an object](../../../upload/index.html) page.
 
 ::::::
 ::::::{tab-item} From Colab notebook
@@ -113,7 +113,7 @@ The API Access Key (`YOUR_KEY`) can be found in the Settings tab of the Giskard 
 >!giskard worker --help
 >```
 
-You're all set to try Giskard in action. Upload your first model, dataset or test suite by following the [upload an object](../upload/index.html) page.
+You're all set to try Giskard in action. Upload your first model, dataset or test suite by following the [upload an object](../../../upload/index.html) page.
 
 ::::::
 ::::::{tab-item} From your terminal
@@ -131,7 +131,7 @@ The API Access Key (`YOUR_KEY`) can be found in the Settings tab of the Giskard 
 >!giskard worker --help
 >```
 
-You're all set to try Giskard in action. Upload your first model, dataset or test suite by following the [upload an object](../upload/index.html) page.
+You're all set to try Giskard in action. Upload your first model, dataset or test suite by following the [upload an object](../../../upload/index.html) page.
 
 ::::::
 :::::::
