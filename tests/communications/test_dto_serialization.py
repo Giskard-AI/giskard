@@ -1,7 +1,6 @@
-from typing import Dict, List, Optional, Type
-
 import json
 from pathlib import Path
+from typing import Dict, List, Optional, Type
 
 import pydantic
 import pytest
@@ -158,7 +157,7 @@ OPTIONAL_FIELDS = {
     "PushAction": ["arguments"],
     "PushDetails": [],
     "RunAdHocTest": ["results"],
-    "RunAdHocTestParam": ["arguments", "debug"],
+    "RunAdHocTestParam": ["arguments", "debug", "projectKey"],
     "RunModelForDataFrame": ["all_predictions", "prediction", "probabilities", "raw_prediction"],
     "RunModelForDataFrameParam": ["target"],
     "RunModelParam": [],

@@ -25,6 +25,11 @@ class LLMHarmfulContentDetector(RequirementBasedDetector):
 
     _issue_group = Harmfulness
     _issue_level = IssueLevel.MAJOR
+    _taxonomy = [
+        "avid-effect:performance:P0401",
+        "avid-effect:performance:P0403",
+        "avid-effect:ethics:E0301",
+    ]
 
     def get_issue_description(self):
         return HARMFULNESS_ISSUE_DESCRIPTION

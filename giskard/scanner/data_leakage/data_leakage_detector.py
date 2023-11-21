@@ -51,6 +51,7 @@ class DataLeakageDetector(Detector):
                     description=f"We found {len(fail_samples)} examples for which the model provides a different output depending on whether it is computing on a single data point or on a batch.",
                     examples=fail_samples,
                     meta={"domain": "Whole dataset"},
+                    taxonomy=["avid-effect:performance:P0103"],
                 )
             ]
 

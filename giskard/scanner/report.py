@@ -1,6 +1,7 @@
 import random
 import string
 import tempfile
+import warnings
 from pathlib import Path
 from typing import Optional
 
@@ -296,3 +297,27 @@ class ScanReport:
             ) from e
 
         run.log({wandb_artifact_name: wandb.Html(html, inject=False)})
+
+    def to_avid(self, filename=None):
+        """Renders the scan report as an AVID report.
+
+        Saves or returns the AVID representation of the scan report.
+
+        Parameters
+        ----------
+        filename : str, optional
+            If provided, the AVID report will be written to the file.
+        """
+        from ..integrations import avid
+
+        reports = [
+            avid.create_report_from_issue(issue=issue, model=self.model, dataset=self.dataset) for issue in self.issues
+        ]
+
+        if filename is not None:
+            with open(filename, "w") as f, warnings.catch_warnings():
+                warnings.filterwarnings("ignore", category=DeprecationWarning)  # we need to support both pydantic 1 & 2
+                f.writelines(r.json() + "\n" for r in reports)
+            return
+
+        return reports

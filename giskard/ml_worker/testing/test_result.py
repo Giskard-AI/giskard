@@ -1,7 +1,8 @@
 from dataclasses import dataclass, field
 from enum import Enum
-
 from typing import List, Dict, Optional
+
+from ...datasets.base import Dataset
 
 
 class TestMessageLevel(Enum):
@@ -57,9 +58,8 @@ class TestResult:
     number_of_perturbed_rows: int = 0
     actual_slices_size: List[int] = field(default_factory=list, repr=False)
     reference_slices_size: List[int] = field(default_factory=list, repr=False)
-    output_df: Optional[bytes] = None
-    output_df_id: Optional[str] = None
-    failed_indexes: Dict[str, List[int]] = field(default_factory=dict, repr=False)
+    output_df: Optional[bytes] = None  # Legacy output, use output_ds instead as this will be removed in the future
+    output_ds: Optional[List[Dataset]] = None
     is_error: bool = False
 
     def _repr_html_(self):

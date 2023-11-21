@@ -24,6 +24,7 @@ class EthicalBiasDetector(BaseTextPerturbationDetector):
     """
 
     _issue_group = Ethical
+    _taxonomy = ["avid-effect:ethics:E0101", "avid-effect:performance:P0201"]
 
     def _get_default_transformations(self, model: BaseModel, dataset: Dataset) -> Sequence[TextTransformation]:
         from .text_transformations import (
