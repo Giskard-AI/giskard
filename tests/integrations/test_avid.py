@@ -11,7 +11,7 @@ from giskard.scanner.report import ScanReport
 
 def test_scan_report_can_be_exported_to_avid():
     model = Mock()
-    model.meta.name = "My Test Model"
+    model.name = "My Test Model"
     dataset = Mock()
     dataset.meta.name = "My Test Dataset"
 
@@ -83,7 +83,7 @@ def test_scan_report_can_be_exported_to_avid():
 
 def test_avid_artifacts_from_scan_report():
     model = Mock()
-    model.meta.name = "My Test Model"
+    model.name = "My Test Model"
 
     # Dataset with no name should not be included
     dataset = Mock()
@@ -103,23 +103,6 @@ def test_avid_artifacts_from_scan_report():
     assert len(report.to_avid()[0].affects.artifacts) == 1
     assert report.to_avid()[0].affects.artifacts[0].name == "My Test Model"
 
-    # Model with no name should give class name
-    model.meta.name = None
-    issues = [
-        Issue(
-            model,
-            dataset,
-            Harmfulness,
-            IssueLevel.MAJOR,
-            description="This is a test issue",
-            meta={"metric": "FPR", "metric_value": 0.23},
-            taxonomy=["avid-effect:performance:P0204", "avid-effect:ethics:E0301"],
-        ),
-    ]
-    report = ScanReport(issues=issues, model=model, dataset=dataset)
-    assert len(report.to_avid()[0].affects.artifacts) == 1
-    assert report.to_avid()[0].affects.artifacts[0].name == "Mock"
-
     # No dataset
     issues = [
         Issue(
@@ -136,7 +119,7 @@ def test_avid_artifacts_from_scan_report():
     assert len(report.to_avid()[0].affects.artifacts) == 1
 
     # Dataset and model with names are both included
-    model.meta.name = "My Test Model"
+    model.name = "My Test Model"
     dataset.meta.name = "My Test Dataset"
     issues = [
         Issue(
