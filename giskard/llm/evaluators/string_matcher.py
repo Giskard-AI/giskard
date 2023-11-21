@@ -86,7 +86,7 @@ class StringMatcher(BaseEvaluator):
             evaluation_method = StringMatchingMethod.from_meta(evaluator_config[i])
 
             try:
-                injection_success = self._evaluate(model_output, evaluation_method=evaluation_method)
+                injection_success = _evaluate(model_output, evaluation_method=evaluation_method)
             except LLMGenerationError as err:
                 errored.append({"message": str(err), "sample": input_vars})
                 continue
