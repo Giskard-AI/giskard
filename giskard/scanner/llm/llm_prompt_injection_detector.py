@@ -3,7 +3,7 @@ from typing import Sequence, Optional, List
 import pandas as pd
 from ...datasets.base import Dataset
 from ...llm.evaluators.string_matcher import StringMatcher
-from ...llm.generators.injection import InjectionDataGenerator
+from giskard.llm.injection_data.loader import PromptInjectionDataLoader
 from ...models.base.model import BaseModel
 from ..decorators import detector
 from ..issues import Issue, IssueGroup, IssueLevel
@@ -40,16 +40,16 @@ class LLMPromptInjectionDetector(Detector):
     def get_cost_estimate(self, model: BaseModel, dataset: Dataset) -> float:
         num_samples = self.num_samples
         if num_samples is None:
-            generator = InjectionDataGenerator(num_samples=self.num_samples)
-            dataset = generator.generate_dataset(dataset.column_types)
+            generator = PromptInjectionDataLoader(num_samples=self.num_samples)
+            dataset = generator.load_dataset(dataset.column_types)
             num_samples = len(dataset)
         return {
             "model_predict_calls": num_samples,
         }
 
     def run(self, model: BaseModel, dataset: Dataset) -> Sequence[Issue]:
-        generator = InjectionDataGenerator(num_samples=self.num_samples)
-        dataset = generator.generate_dataset(dataset.column_types)
+        generator = PromptInjectionDataLoader(num_samples=self.num_samples)
+        dataset = generator.load_dataset(dataset.column_types)
         meta_df = generator.all_meta_df
         evaluator = StringMatcher()
         issues = []
@@ -105,6 +105,7 @@ class LLMPromptInjectionDetector(Detector):
                     },
                     examples=pd.DataFrame(evaluation_results.failure_examples),
                     tests=_generate_prompt_injection_tests,
+                    taxonomy=["avid-effect:security:S0403"],
                 )
             )
         return issues

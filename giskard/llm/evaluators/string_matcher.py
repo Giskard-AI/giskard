@@ -24,52 +24,51 @@ class StringMatchingMethod:
     punctuation_sensitive: bool = True
     evaluation_method_name: str = "StringMatchingMethod"
 
+    @classmethod
+    def from_meta(cls, kwargs: Dict):
+        kwargs = {k: v for k, v in kwargs.items() if k in list(cls.__annotations__.keys())}
 
-def get_evaluation_method_from_meta(kwargs: Dict):
-    kwargs = {k: v for k, v in kwargs.items() if k in list(StringMatchingMethod.__annotations__.keys())}
+        return cls(**kwargs)
 
-    return StringMatchingMethod(**kwargs)
+
+def _normalize_text(text, evaluation_method):
+    if not evaluation_method.case_sensitive:
+        text = text.lower()
+    if not evaluation_method.punctuation_sensitive:
+        text = text.translate(str.maketrans("", "", string.punctuation))
+    return text
+
+
+def _evaluate_single_substring(substring, prediction, evaluation_method):
+    if evaluation_method.exact_matching:
+        return substring == prediction
+    if evaluation_method.word_matching:
+        return re.search(r"\b" + re.escape(substring) + r"\b", prediction) is not None
+    return substring in prediction
+
+
+def _evaluate_all_substrings(prediction, evaluation_method):
+    injection_success = 0
+    for s in evaluation_method.substrings:
+        normalized_s = _normalize_text(s, evaluation_method)
+        normalized_prediction = _normalize_text(prediction, evaluation_method)
+        if _evaluate_single_substring(normalized_s, normalized_prediction, evaluation_method):
+            injection_success += 1
+    return injection_success
+
+
+def _evaluate(prediction: str, evaluation_method):
+    injection_success = _evaluate_all_substrings(prediction, evaluation_method)
+
+    if evaluation_method.all_substrings_must_be_found:
+        injection_success = 1 if injection_success == len(evaluation_method.substrings) else 0
+    else:
+        injection_success = 1 if injection_success != 0 else 0
+
+    return injection_success
 
 
 class StringMatcher(BaseEvaluator):
-    @staticmethod
-    def normalize_text(text, case_sensitive, punctuation_sensitive):
-        if not case_sensitive:
-            text = text.lower()
-        if not punctuation_sensitive:
-            text = text.translate(str.maketrans("", "", string.punctuation))
-        return text
-
-    @staticmethod
-    def evaluate_substring(substring, prediction, exact_matching, word_matching):
-        if exact_matching:
-            return substring == prediction
-        if word_matching:
-            return re.search(r"\b" + re.escape(substring) + r"\b", prediction) is not None
-        return substring in prediction
-
-    @staticmethod
-    def _evaluate(prediction: str, evaluation_method):
-        failed = 0
-        for s in evaluation_method.substrings:
-            normalized_s = StringMatcher.normalize_text(
-                s, evaluation_method.case_sensitive, evaluation_method.punctuation_sensitive
-            )
-            normalized_prediction = StringMatcher.normalize_text(
-                prediction, evaluation_method.case_sensitive, evaluation_method.punctuation_sensitive
-            )
-            if StringMatcher.evaluate_substring(
-                normalized_s, normalized_prediction, evaluation_method.exact_matching, evaluation_method.word_matching
-            ):
-                failed += 1
-
-        if evaluation_method.all_substrings_must_be_found:
-            failed = 1 if failed == len(evaluation_method.substrings) else 0
-        else:
-            failed = 1 if failed != 0 else 0
-
-        return failed
-
     def evaluate(self, model: BaseModel, dataset: Dataset, evaluator_config: List):
         model_outputs = model.predict(dataset).prediction
 
@@ -77,22 +76,22 @@ class StringMatcher(BaseEvaluator):
         failed = []
         failed_indices = []
         errored = []
-        zipped = zip(dataset.df.loc[:, model.meta.feature_names].to_dict("records"), model_outputs)
+        model_inputs = dataset.df.loc[:, model.meta.feature_names].to_dict("records")
 
-        for i, items in enumerate(zipped):
-            input_vars, model_output = items[0], items[1]
+        for i, (input_vars, model_output) in enumerate(zip(model_inputs, model_outputs)):
+            if not evaluator_config[i].get("substrings", None):
+                raise ValueError(
+                    f"{self.__class__.__name__}: substrings for {input_vars} are needed for the evaluation."
+                )
+            evaluation_method = StringMatchingMethod.from_meta(evaluator_config[i])
+
             try:
-                if not evaluator_config[i].get("substrings", None):
-                    raise ValueError(
-                        f"{self.__class__.__name__}: substrings for {input_vars} are needed for the evaluation."
-                    )
-                evaluation_method = get_evaluation_method_from_meta(evaluator_config[i])
-
-                prompt_failed = self._evaluate(model_output, evaluation_method=evaluation_method)
+                injection_success = self._evaluate(model_output, evaluation_method=evaluation_method)
             except LLMGenerationError as err:
                 errored.append({"message": str(err), "sample": input_vars})
                 continue
-            if not prompt_failed:
+
+            if not injection_success:
                 succeeded.append({"input_vars": input_vars, "model_output": model_output})
             else:
                 failed.append({"input_vars": input_vars, "model_output": model_output})

@@ -1,5 +1,3 @@
-from typing import Any, Callable, Dict, Optional, Union
-
 import asyncio
 import logging
 import os
@@ -12,6 +10,7 @@ from concurrent.futures import CancelledError, Future
 from copy import copy
 from dataclasses import dataclass
 from pathlib import Path
+from typing import Any, Callable, Dict, Optional, Union
 
 import numpy as np
 import pandas as pd
@@ -37,7 +36,6 @@ from giskard.ml_worker.websocket.action import ActionPayload, MLWorkerAction
 from giskard.ml_worker.websocket.utils import (
     do_create_sub_dataset,
     do_run_adhoc_test,
-    extract_debug_info,
     function_argument_to_ws,
     log_artifact_local,
     map_dataset_process_function_meta_ws,
@@ -53,7 +51,6 @@ from giskard.push.contribution import create_contribution_push
 from giskard.push.perturbation import create_perturbation_push
 from giskard.push.prediction import create_borderline_push, create_overconfidence_push
 from giskard.settings import settings
-from giskard.testing.tests import debug_prefix
 from giskard.utils import call_in_pool
 from giskard.utils.analytics_collector import analytics
 from giskard.utils.worker_pool import GiskardMLWorkerException
@@ -504,44 +501,15 @@ def run_ad_hoc_test(
     if "kwargs" in arguments:
         arguments.update(**arguments.pop("kwargs"))
 
+    datasets = {arg.original_id: arg for arg in arguments.values() if isinstance(arg, Dataset)}
+
     test_result = do_run_adhoc_test(arguments, test)
-
-    if params.debug:
-        debug_info = extract_debug_info(params.arguments)
-        dataset = None
-        if test_result.output_df is not None:
-            # For legacy debug returning output_df
-            if test_result.output_df.name:
-                # Dataset can have empty name
-                test_result.output_df.name += debug_info["suffix"]
-            dataset = test_result.output_df
-        elif len(test_result.failed_indexes) != 0:
-            # For legacy test calling new functions that return TestResult with failed_indexes
-            dataset_name = debug_prefix + test.meta.name + debug_info["suffix"]
-            parent_datasets = {
-                dataset_id: Dataset.download(
-                    client=client,
-                    project_key=debug_info["datasets"][dataset_id].project_key,
-                    dataset_id=dataset_id,
-                    sample=debug_info["datasets"][dataset_id].sample,
-                )
-                for dataset_id in test_result.failed_indexes.keys()
-            }
-            dataset = do_create_sub_dataset(parent_datasets, dataset_name, test_result.failed_indexes)
-        else:
-            raise ValueError(
-                "This test does not return any examples to debug. "
-                "Check the debugging method associated to this test at "
-                "https://docs.giskard.ai/en/latest/reference/tests/index.html"
-            )
-
-        # Upload the sub-dataset
-        test_result.output_df_id = dataset.upload(client, debug_info["project_key"])
 
     return websocket.RunAdHocTest(
         results=[
             websocket.NamedSingleTestResult(
-                testUuid=test.meta.uuid, result=map_result_to_single_test_result_ws(test_result)
+                testUuid=test.meta.uuid,
+                result=map_result_to_single_test_result_ws(test_result, datasets, client, params.projectKey),
             )
         ]
     )
@@ -563,6 +531,10 @@ def run_test_suite(
         ]
 
         global_arguments = parse_function_arguments(client, params.globalArguments)
+
+        datasets = {arg.original_id: arg for arg in global_arguments.values() if isinstance(arg, Dataset)}
+        for test in tests:
+            datasets.update({arg.original_id: arg for arg in test["arguments"].values() if isinstance(arg, Dataset)})
 
         test_names = list(
             map(
@@ -590,7 +562,7 @@ def run_test_suite(
             identifier_single_test_results.append(
                 websocket.IdentifierSingleTestResult(
                     id=identifier,
-                    result=map_result_to_single_test_result_ws(result),
+                    result=map_result_to_single_test_result_ws(result, datasets),
                     arguments=function_argument_to_ws(arguments),
                 )
             )

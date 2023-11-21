@@ -2,21 +2,24 @@ import os
 import ast
 from typing import Optional
 import pandas as pd
+from pathlib import Path
 
-from ...datasets.base import Dataset
-from .base import BaseGenerator
+from giskard.datasets.base import Dataset
 
 
-class InjectionDataGenerator(BaseGenerator):
+INJECTION_DATA_FILENAME = "injection_prompts_data.csv"
+GISKARD_META_FILENAME = "giskard_meta_data.csv"
+
+
+class PromptInjectionDataLoader:
     def __init__(
         self,
-        local_path: str = os.path.join(os.path.dirname(__file__), "../injection_data/"),
+        local_path: str = os.path.dirname(__file__),
         num_samples: Optional[int] = None,
     ):
-        injection_data_filename = "injection_prompts_data.csv"
-        giskard_meta_filename = "giskard_meta_data.csv"
-        data_path = os.path.join(local_path, injection_data_filename)
-        meta_path = os.path.join(local_path, giskard_meta_filename)
+
+        data_path = Path(local_path) / INJECTION_DATA_FILENAME
+        meta_path = Path(local_path) / GISKARD_META_FILENAME
 
         for path in [local_path, data_path, meta_path]:
             if not os.path.exists(path):
@@ -27,7 +30,7 @@ class InjectionDataGenerator(BaseGenerator):
 
         if len(self.prompts_df) != len(self.meta_df):
             raise ValueError(
-                f"{self.__class__.__name__}: {injection_data_filename} and {giskard_meta_filename} should "
+                f"{self.__class__.__name__}: {INJECTION_DATA_FILENAME} and {GISKARD_META_FILENAME} should "
                 "have the same length and should be a one-to-one mapping of each other."
             )
 
@@ -38,7 +41,7 @@ class InjectionDataGenerator(BaseGenerator):
             self.prompts_df.reset_index(inplace=True, drop=True)
             self.meta_df = self.meta_df.iloc[idx_list].reset_index(drop=True)
 
-    def generate_dataset(self, column_types) -> Dataset:
+    def load_dataset(self, column_types) -> Dataset:
         formatted_df = pd.DataFrame(
             {col: self.prompts_df.prompt for col, col_type in column_types.items() if col_type == "text"}
         )
