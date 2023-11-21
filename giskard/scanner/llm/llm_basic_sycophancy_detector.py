@@ -9,7 +9,7 @@ from ...models.base.model import BaseModel
 from ...testing.tests.llm.hallucination import test_llm_output_coherency
 from ..decorators import detector
 from ..issues import Hallucination, Issue, IssueLevel
-from ...utils.xprint import xprint, Catalog
+from giskard.scanner.xprint import xprint, Catalog
 from .base import _estimate_base_token_counts
 
 

@@ -20,7 +20,7 @@ from .issues import DataLeakage, Issue, Stochasticity
 from .logger import logger
 from .registry import DetectorRegistry
 from .report import ScanReport
-from ..utils.xprint import xprint, Catalog
+from giskard.scanner.xprint import xprint, Catalog
 
 MAX_ISSUES_PER_DETECTOR = 15
 

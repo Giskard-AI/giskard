@@ -1,4 +1,4 @@
-from giskard.utils.xprint import (
+from giskard.scanner.xprint import (
     CHARS_LIMIT,
     PLACEHOLDER,
     BLACK_COLOR,

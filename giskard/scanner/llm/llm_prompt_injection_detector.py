@@ -8,7 +8,6 @@ from ...models.base.model import BaseModel
 from ..decorators import detector
 from ..issues import Issue, IssueGroup, IssueLevel
 from ..registry import Detector
-from ...utils.xprint import xprint, Catalog, CHARS_LIMIT
 from ...ml_worker.testing.registry.slicing_function import slicing_function
 
 

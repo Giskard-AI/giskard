@@ -9,7 +9,7 @@ from ..decorators import detector
 from ..issues import Issue, IssueLevel, Robustness
 from ..logger import logger
 from ..registry import Detector
-from ...utils.xprint import xprint, Catalog
+from giskard.scanner.xprint import xprint, Catalog
 
 
 @detector(

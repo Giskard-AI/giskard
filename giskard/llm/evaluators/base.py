@@ -6,7 +6,7 @@ from ...datasets.base import Dataset
 from ...models.base.model import BaseModel
 from ..client import LLMClient, get_default_client
 from ..errors import LLMGenerationError
-from ...utils.xprint import xprint, Catalog
+from giskard.scanner.xprint import xprint, Catalog
 
 EVALUATE_MODEL_FUNCTIONS = [
     {
