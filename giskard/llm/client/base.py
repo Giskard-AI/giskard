@@ -1,5 +1,6 @@
 from abc import ABC, abstractmethod
 from dataclasses import dataclass
+
 from typing import Any, Dict, Optional
 
 from .logger import LLMLogger
@@ -28,7 +29,6 @@ class LLMClient(ABC):
         self,
         messages,
         functions=None,
-        model="gpt-4",
         temperature=0.5,
         max_tokens=None,
         function_call: Optional[Dict] = None,

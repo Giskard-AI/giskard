@@ -1,13 +1,35 @@
+import os
+from enum import Enum
+
 from .base import LLMClient, LLMFunctionCall, LLMOutput
 from .logger import LLMLogger
-from .utils import autodetect_client, ApiType, get_scan_model
+
+
+class LLMClientAPI(Enum):
+    OPENAI = 1
+    AZURE = 2
+
 
 _default_client = None
+_default_llm_api = os.getenv(
+    "GSK_LLM_API", LLMClientAPI.AZURE if "AZURE_OPENAI_API_KEY" in os.environ else LLMClientAPI.OPENAI
+)
+_default_llm_model = os.getenv("GSK_LLM_MODEL", "gpt-4")
 
 
 def set_default_client(client: LLMClient):
     global _default_client
     _default_client = client
+
+
+def set_llm_api(llm__api: LLMClientAPI):
+    global _default_llm_api
+    _default_llm_api = llm__api
+
+
+def set_llm_model(llm_model: str):
+    global _default_llm_model
+    _default_llm_model = llm_model
 
 
 def get_default_client() -> LLMClient:
@@ -19,23 +41,30 @@ def get_default_client() -> LLMClient:
     # Setup the default client
     from .openai import LegacyOpenAIClient, OpenAIClient
 
-    api_type = autodetect_client()
-    model = get_scan_model(api_type)
-
     try:
         # For openai>=1.0.0
         from openai import OpenAI, AzureOpenAI
 
-        client = AzureOpenAI() if api_type is ApiType.azure else OpenAI()
+        client = AzureOpenAI() if _default_llm_api is LLMClientAPI.AZURE else OpenAI()
 
-        _default_client = OpenAIClient(client, model)
+        _default_client = OpenAIClient(_default_llm_model, client)
     except ImportError:
         # Fallback for openai<=0.28.1
-        if api_type is not ApiType.openai:
-            raise ValueError(f"LLM scan using {api_type.name} require openai>=1.0.0")
-        _default_client = LegacyOpenAIClient()
+        if _default_llm_api is not LLMClientAPI.OPENAI:
+            raise ValueError(f"LLM scan using {_default_llm_api.name} require openai>=1.0.0")
+        _default_client = LegacyOpenAIClient(_default_llm_model)
 
     return _default_client
 
 
-__all__ = ["LLMClient", "LLMFunctionCall", "LLMOutput", "LLMLogger", "get_default_client"]
+__all__ = [
+    "LLMClient",
+    "LLMFunctionCall",
+    "LLMOutput",
+    "LLMLogger",
+    "get_default_client",
+    "set_llm_model",
+    "set_llm_api",
+    "set_default_client",
+    "LLMClientAPI",
+]
