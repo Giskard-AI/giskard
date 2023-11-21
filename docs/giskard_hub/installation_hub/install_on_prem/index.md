@@ -18,7 +18,7 @@ To know more about the 3 different licenses of the Hub (Trial, Startup and Enter
 To run the Giskard hub you need **3 requirements**:
 
 1. A **Linux**, **macOS** machine, or **WSL2 in Windows**
-2. To install the Giskard **Python library**, see [here](../../open_source/installation_library/index.md).
+2. To install the Giskard **Python library**, see [here](../../../open_source/installation_library/index.md).
 3. A **running** ``docker``. After [installation](https://docs.docker.com/engine/install/debian/) of Docker, you can run it in the background by just opening the Docker app (Mac or Windows).
 
 > For an easy **installation of Docker** you can execute:
@@ -40,7 +40,7 @@ You'll then be able to open Giskard at `http://localhost:19000/`
 
 > ### ⚠️ Warning
 > - Make sure to **run Docker** before starting the Giskard hub
-> - If the giskard command is not found then you need first to install the Giskard Python library (see the doc section [here](../../open_source/installation_library/index.md)).
+> - If the giskard command is not found then you need first to install the Giskard Python library (see the doc section [here](../../../open_source/installation_library/index.md)).
 > - To see the available commands of the giskard hub, you can execute:
 > ```
 > giskard hub --help
@@ -78,12 +78,12 @@ The API Access Key (`YOUR_KEY`) can be found in the Settings tab of the Giskard 
 >!giskard worker --help
 >```
 
-You're all set to try Giskard in action. Upload your first model, dataset or test suite by following the [upload an object](../../../upload/index.html) page.
+You're all set to try Giskard in action. Upload your first model, dataset or test suite by following the [upload an object](../../upload/index.md) page.
 
 ::::::
 ::::::{tab-item} From Colab notebook
 
-To start the ML worker from your Colab notebook, read the following [instructions](https://docs.giskard.ai/en/latest/cli/ngrok/index.html) in order to get the
+To start the ML worker from your Colab notebook, read the following [instructions](../../../cli/ngrok/index.rst) in order to get the
 `ngrok_API_token`. Once you got your token, run in your **local** terminal (**not the the terminal from Colab**):
 
 ```
@@ -104,7 +104,7 @@ The API Access Key (`YOUR_KEY`) can be found in the Settings tab of the Giskard 
 >!giskard worker --help
 >```
 
-You're all set to try Giskard in action. Upload your first model, dataset or test suite by following the [upload an object](../../../upload/index.html) page.
+You're all set to try Giskard in action. Upload your first model, dataset or test suite by following the [upload an object](../../upload/index.md) page.
 
 ::::::
 ::::::{tab-item} From your terminal
@@ -123,7 +123,7 @@ You then will be asked to provide your API Access Key. The API Access key can be
 >!giskard worker --help
 >```
 
-You're all set to try Giskard in action. Upload your first model, dataset or test suite by following the [upload an object](../../../upload/index.html) page.
+You're all set to try Giskard in action. Upload your first model, dataset or test suite by following the [upload an object](../../upload/index.md) page.
 
 ::::::
 :::::::

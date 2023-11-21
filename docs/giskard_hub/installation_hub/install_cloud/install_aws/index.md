@@ -1,11 +1,11 @@
 # AWS
 
-### 1. Initialize EC2 instance
+## 1. Initialize EC2 instance
 
 * In the AWS console, go to the service EC2 and select one of the following zones: N. Virginia (`us-east-1`), Paris (`eu-west-3`), or Singapore (`ap-southeast-1`)
 * Launch an EC2 instance
 
-### 2. Configure your EC2 instance
+## 2. Configure your EC2 instance
 
 * **Application and OS image**: Select the default Ubuntu server 22.04 LTS 64-bit (x86)
 * **Instance type**: We recommend you to choose at least a `t2.large` instance type (2vCPU, 8GB memory)
@@ -16,7 +16,7 @@
 
 * **Storage**: Choose a minimum of 30 Gigs of SSD (this will mainly depend on the size of your datasets)
 
-### 3. Launch the instance and install Giskard
+## 3. Launch the instance and install Giskard
 
 * Click on Launch instance to create the instance
 * Connect in SSH to your instance. You can for example use the `EC2 Instance connect` to open a terminal directly in your AWS platform
@@ -33,7 +33,7 @@
 giskard hub start
 ```
 
-### 4. Connect to your instance
+## 4. Connect to your instance
 * **Get your IP address**: Click on the ID of the instance you just created and copy its **Public IPv4** address (or **Public IPv4 DNS**)
 * Go to **`http://<your IP address>:19000`** in your web browser. For instance, `http://ec2-13-50-XXXX.compute.amazonaws.com:19000`
 * The user id is `admin` and the password is `admin`
@@ -42,7 +42,7 @@ giskard hub start
 You can stop the instance and restart it when you need to save AWS compute costs. However, note that the **IP address will not necessarily be the same**. So make sure you copy it again when it's launched
 :::
 
-### 5. Start the ML worker
+## 5. Start the ML worker
 
 Giskard executes your model using a worker that runs the model directly in **your Python environment**, with all the dependencies required by your model. You can either execute the ML worker:
 
@@ -73,7 +73,7 @@ The API Access Key (`YOUR_KEY`) can be found in the Settings tab of the Giskard 
 >!giskard worker --help
 >```
 
-You're all set to try Giskard in action. Upload your first model, dataset or test suite by following the [upload an object](../../../upload/index.html) page.
+You're all set to try Giskard in action. Upload your first model, dataset or test suite by following the [upload an object](../../../upload/index.md) page.
 
 ::::::
 ::::::{tab-item} From Colab notebook
@@ -91,7 +91,7 @@ The API Access Key (`YOUR_KEY`) can be found in the Settings tab of the Giskard 
 >!giskard worker --help
 >```
 
-You're all set to try Giskard in action. Upload your first model, dataset or test suite by following the [upload an object](../../../upload/index.html) page.
+You're all set to try Giskard in action. Upload your first model, dataset or test suite by following the [upload an object](../../../upload/index.md) page.
 
 ::::::
 ::::::{tab-item} From your terminal
@@ -109,7 +109,7 @@ The API Access Key (`YOUR_KEY`) can be found in the Settings tab of the Giskard 
 >!giskard worker --help
 >```
 
-You're all set to try Giskard in action. Upload your first model, dataset or test suite by following the [upload an object](../../../upload/index.html) page.
+You're all set to try Giskard in action. Upload your first model, dataset or test suite by following the [upload an object](../../../upload/index.md) page.
 
 ::::::
 :::::::

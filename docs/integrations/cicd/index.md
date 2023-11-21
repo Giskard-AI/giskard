@@ -27,7 +27,7 @@ To automate it yourself for your own model, see an example of a Read Me PR [here
 
 ## Create a script to scan your model
 
-By referring to the [Scan your ML Model](../../open-source/scan/index.md) guide, you can create a script that will scan your model.
+By referring to the [Scan your ML Model](../../open_source/scan/index.md) guide, you can create a script that will scan your model.
 
 ```python
 import giskard

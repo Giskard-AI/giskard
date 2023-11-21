@@ -1,6 +1,5 @@
 ```{toctree}
 :caption: Getting Started
-:name: mastertoc
 :maxdepth: 1
 :hidden:
 
@@ -10,7 +9,6 @@ getting_started/quickstart/index
 
 ```{toctree}
 :caption: Open-Source Library
-:name: mastertoc
 :maxdepth: 1
 :hidden:
 
@@ -22,7 +20,6 @@ open_source/integrate_tests/index
 
 ```{toctree}
 :caption: Giskard Hub
-:name: mastertoc
 :maxdepth: 1
 :hidden:
 
@@ -36,10 +33,10 @@ giskard_hub/collaborate/index
 
 ```{toctree}
 :caption: Tutorials
-:name: mastertoc
 :maxdepth: 1
 :hidden:
 
+tutorials/index
 tutorials/llm_tutorials/index
 tutorials/tabular_tutorials/index
 tutorials/nlp_tutorials/index
@@ -47,7 +44,6 @@ tutorials/nlp_tutorials/index
 
 ```{toctree}
 :caption: Knowledge Bank
-:name: mastertoc
 :maxdepth: 1
 :hidden:
 
@@ -59,7 +55,6 @@ reference/index
 
 ```{toctree}
 :caption: Community
-:name: mastertoc
 :maxdepth: 1
 :hidden:
 
@@ -77,32 +72,30 @@ community/contribution_guidelines/index
 <br />
 
 
-::::::{grid} 1 1 3 3
-:child-align:
+:::::{grid} 1 1 3 3
 :gutter: 1
 
-:::::{grid-item}
-:child-align:
-::::{grid} 1 1 1 1
-:child-align:
-:gutter: 1
-
+::::{grid-item}
 :::{card} <h2><center> Getting Started </center></h2>
 :margin: 1
 :width: 100%
-:text-align:
+:text-align: center
 :link: getting_started/index.html
 :img-bottom: assets/intro/coffee.png
 :::
+::::
 
+::::{grid-item}
 :::{card} <h2><center> Tutorials </center></h2>
 :margin: 1
 :width: 100%
-:text-align:
+:text-align: center
 :link: tutorials/index.html
 :img-bottom: assets/intro/test_turtle.png
 :::
+::::
 
+::::{grid-item}
 :::{card} <h2><center> API Reference </center></h2>
 :margin: 1
 :width: 100%
@@ -111,54 +104,45 @@ community/contribution_guidelines/index
 :::
 ::::
 
-:::::
-
-:::::{grid-item}
-:child-align:
-::::{grid} 1 1 1 1
-:child-align:
-:gutter: 1
-
+::::{grid-item}
 :::{card} <h2><center> Open-Source Library </center></h2>
 :margin: 1
 :width: 100%
-:text-align:
+:text-align: center
 :link: open_source/installation_library/index.html
 :img-bottom: assets/intro/ninja.png
 :::
+::::
 
+::::{grid-item}
 :::{card} <h2><center> Knowledge </center></h2>
 :margin: 1
 :width: 100%
-:text-align:
+:text-align: center
 :link: knowledge/llm_vulnerabilities/index.html
 :img-bottom: assets/intro/integrations.png
 :::
 ::::
-:::::
 
-:::::{grid-item}
-:child-align:
-::::{grid} 1 1 1 1
-:child-align:
-:gutter: 1
-
+::::{grid-item}
 :::{card} <h2><center> Giskard Hub </center></h2>
 :margin: 1
 :width: 100%
-:text-align:
+:text-align: center
 :link: giskard_hub/installation_hub/index.html
 :img-bottom: assets/intro/Giskard_Turtle_SK8.png
 :::
+::::
 
+::::{grid-item}
 :::{card} <h2><center> Integrations & Community </center></h2>
 :margin: 1
 :width: 100%
-:text-align:
+:text-align: center
 :link: integrations/index.html
 :img-bottom: assets/intro/hey.png
 :::
-
 ::::
+
 :::::
 
