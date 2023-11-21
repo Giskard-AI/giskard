@@ -11,7 +11,7 @@ from giskard.scanner.report import ScanReport
 
 def test_scan_report_can_be_exported_to_avid():
     model = Mock()
-    model.meta.name = "My Test Model"
+    model.name = "My Test Model"
     dataset = Mock()
     dataset.meta.name = "My Test Dataset"
 
@@ -79,3 +79,58 @@ def test_scan_report_can_be_exported_to_avid():
             avid_reports_read = [json.loads(line) for line in f.readlines()]
 
     assert len(avid_reports_read) == len(avid_reports)
+
+
+def test_avid_artifacts_from_scan_report():
+    model = Mock()
+    model.name = "My Test Model"
+
+    # Dataset with no name should not be included
+    dataset = Mock()
+    dataset.meta.name = None
+    issues = [
+        Issue(
+            model,
+            dataset,
+            Harmfulness,
+            IssueLevel.MAJOR,
+            description="This is a test issue",
+            meta={"metric": "FPR", "metric_value": 0.23},
+            taxonomy=["avid-effect:performance:P0204", "avid-effect:ethics:E0301"],
+        ),
+    ]
+    report = ScanReport(issues=issues, model=model, dataset=dataset)
+    assert len(report.to_avid()[0].affects.artifacts) == 1
+    assert report.to_avid()[0].affects.artifacts[0].name == "My Test Model"
+
+    # No dataset
+    issues = [
+        Issue(
+            model,
+            None,
+            Harmfulness,
+            IssueLevel.MAJOR,
+            description="This is a test issue",
+            meta={"metric": "FPR", "metric_value": 0.23},
+            taxonomy=["avid-effect:performance:P0204", "avid-effect:ethics:E0301"],
+        ),
+    ]
+    report = ScanReport(issues=issues, model=model, dataset=dataset)
+    assert len(report.to_avid()[0].affects.artifacts) == 1
+
+    # Dataset and model with names are both included
+    model.name = "My Test Model"
+    dataset.meta.name = "My Test Dataset"
+    issues = [
+        Issue(
+            model,
+            dataset,
+            Harmfulness,
+            IssueLevel.MAJOR,
+            description="This is a test issue",
+            meta={"metric": "FPR", "metric_value": 0.23},
+            taxonomy=["avid-effect:performance:P0204", "avid-effect:ethics:E0301"],
+        ),
+    ]
+    report = ScanReport(issues=issues, model=model, dataset=dataset)
+    assert len(report.to_avid()[0].affects.artifacts) == 2
