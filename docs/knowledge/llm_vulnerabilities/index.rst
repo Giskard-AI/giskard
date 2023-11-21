@@ -4,7 +4,7 @@ LLM Vulnerabilities
 Key vulnerability categories
 ----------------------------
 
-Large Language Model (LLM) vulnerabilities are different from those in traditional ML models. It's crucial to have a comprehensive understanding of these unique critical vulnerabilities that can impact your model. Giskard provides an `automatic scan functionality <../../guides/scan/index.rst>`_ that is designed to automatically detect a variety of risks associated with your LLMs. You can learn more about the different vulnerabilities it can detect here:
+Large Language Model (LLM) vulnerabilities are different from those in traditional ML models. It's crucial to have a comprehensive understanding of these unique critical vulnerabilities that can impact your model. Giskard provides an `automatic scan functionality <../../open_source/scan/index.md>`_ that is designed to automatically detect a variety of risks associated with your LLMs. You can learn more about the different vulnerabilities it can detect here:
 
 .. toctree::
    :maxdepth: 1
@@ -14,10 +14,10 @@ Large Language Model (LLM) vulnerabilities are different from those in tradition
    injection/index
    robustness/index
    formatting/index
-   disclosure/index 
+   disclosure/index
    stereotypes/index
 
-By conducting a `Giskard scan <../../guides/scan/index.rst>`_, you can proactively identify and address these vulnerabilities to ensure the reliability, fairness, and robustness of your LLMs.
+By conducting a `Giskard scan <../../open_source/scan/index.md>`_, you can proactively identify and address these vulnerabilities to ensure the reliability, fairness, and robustness of your LLMs.
 
 
 How does the LLM Scan work?
@@ -65,7 +65,7 @@ Traditional detectors
 In traditional detectors, the phases described above are implemented using a set of techniques and heuristics and
 simple checks on the model output.
 
-Example: character injection detection 
+Example: character injection detection
 """"""""""""""""""""""""""""""""""""""
 
 For example, the character injection detector (see
@@ -139,7 +139,7 @@ We will then query the model with both questions and collect its answers:
     management, improved forest and crop/grassland management, and reduced food waste and loss. These options are
     technically viable, cost-effective, and generally supported by the public, allowing for expanded deployment in many
     regions.
-    
+
     ---
 
     **Input #2**: Why are mitigation strategies ineffective in combating climate change?
