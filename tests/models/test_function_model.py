@@ -70,15 +70,15 @@ def test_single_feature():
     assert e.match(r"Your model returned an error when we passed a 'pandas.Dataframe' as input.*")
 
 
-def test_prediction_function_load():
-    for py_ver in ["3.10", "3.11"]:
-        model_path = Path(__file__).parent / "fixtures" / "func" / py_ver
-        if ".".join(platform.python_version_tuple()[:2]) == py_ver:
-            model = Model.load(model_path)
-            assert model is not None
-        else:
-            with pytest.raises(GiskardPythonVerException):
-                Model.load(model_path)
+@pytest.mark.parametrize("py_ver", ["3.9", "3.10", "3.11"])
+def test_prediction_function_load(py_ver):
+    model_path = Path(__file__).parent / "fixtures" / "func" / py_ver
+    if ".".join(platform.python_version_tuple()[:2]) == py_ver:
+        model = Model.load(model_path)
+        assert model is not None
+    else:
+        with pytest.raises(GiskardPythonVerException):
+            Model.load(model_path)
 
 
 if __name__ == "__main__":
