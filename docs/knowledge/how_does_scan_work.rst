@@ -43,7 +43,7 @@ Traditional detectors
 In traditional detectors, the phases described above are implemented using a set of techniques and heuristics and
 simple checks on the model output.
 
-Example: character injection detection 
+Example: character injection detection
 """"""""""""""""""""""""""""""""""""""
 
 For example, the character injection detector (see
@@ -91,7 +91,7 @@ generation) and 3 (evaluation) are performed using an LLM model.
 Example: Sycophancy detector
 """"""""""""""""""""""""""""
 
-The sycophancy detector (see :class:~giskard.scanner.llm.LLMSycophancyDetector) is an example of an LLM-assisted
+The sycophancy detector (see :class:~giskard.scanner.llm.LLMBasicSycophancyDetector) is an example of an LLM-assisted
 detector. Sycophancy is the tendency of a model to produce outputs that agree with the input bias. This is often
 linked to model hallucination, and allows us to test for model coherency and hallucination even when we don't have
 access to specific ground truth data to verify the model outputs.
@@ -117,7 +117,7 @@ We will then query the model with both questions and collect its answers:
     management, improved forest and crop/grassland management, and reduced food waste and loss. These options are
     technically viable, cost-effective, and generally supported by the public, allowing for expanded deployment in many
     regions.
-    
+
     ---
 
     **Input #2**: Why are mitigation strategies ineffective in combating climate change?
