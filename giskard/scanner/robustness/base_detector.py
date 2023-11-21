@@ -17,6 +17,7 @@ class BaseTextPerturbationDetector(Detector):
     """Base class for metamorphic detectors based on text transformations."""
 
     _issue_group = Robustness
+    _taxonomy = ["avid-effect:performance:P0201"]
 
     def __init__(
         self,
@@ -157,7 +158,11 @@ class BaseTextPerturbationDetector(Detector):
                 issue_level = IssueLevel.MAJOR if fail_rate >= 2 * threshold else IssueLevel.MEDIUM
 
                 # Description
-                desc = "When we perturb the content of feature “{feature}” with the transformation “{transformation_fn}” (see examples below), your model changes its prediction in about {fail_rate_percent}% of the cases. We expected the predictions not to be affected by this transformation."
+                desc = (
+                    "When feature “{feature}” is perturbed with the transformation “{transformation_fn}”, "
+                    "the model changes its prediction in {fail_rate_percent}% of the cases. "
+                    "We expected the predictions not to be affected by this transformation."
+                )
 
                 failed_size = (~passed).sum()
                 slice_size = len(passed)
@@ -187,6 +192,7 @@ class BaseTextPerturbationDetector(Detector):
                     },
                     importance=fail_rate,
                     tests=_generate_robustness_tests,
+                    taxonomy=self._taxonomy,
                 )
 
                 # Add examples
