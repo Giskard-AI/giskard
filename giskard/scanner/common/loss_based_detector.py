@@ -37,10 +37,7 @@ class LossBasedDetector(Detector):
             return []
 
         # If the dataset is very large, limit to a subsample
-        max_data_size = self.MAX_DATASET_SIZE // len(model.meta.feature_names or dataset.columns)
-        if len(dataset) > max_data_size:
-            logger.info(f"{self.__class__.__name__}: Limiting dataset size to {max_data_size} samples.")
-            dataset = dataset.slice(lambda df: df.sample(max_data_size, random_state=42), row_level=False)
+        dataset = self._slice_dataset(dataset, model)
 
         # Calculate loss
         logger.info(f"{self.__class__.__name__}: Calculating loss")
@@ -72,6 +69,30 @@ class LossBasedDetector(Detector):
     @property
     def _numerical_slicer_method(self):
         return "tree"
+
+    def _slice_dataset(self, dataset, model):
+        max_data_size = self.MAX_DATASET_SIZE // len(dataset.columns)
+        if len(dataset) <= max_data_size:
+            return dataset
+        logger.info(f"{self.__class__.__name__}: Limiting dataset size to {max_data_size} samples.")
+        if not model.is_classification:
+            # not a classification model, slice without worrying about class proportions
+            return dataset.slice(lambda df: df.sample(max_data_size, random_state=42), row_level=False)
+        # for each target value, find the proportion of original samples with that value
+        values = dataset.df[dataset.target].value_counts().index
+        props = []
+        for i in range(len(values)):
+            num = dataset.df[dataset.target].value_counts()[i]
+            props.append(num / len(dataset))
+        # sample the dataset while keeping the original proportion of each class
+        sliced_dataset = Dataset(
+            pd.DataFrame(), target=dataset.target, column_types=dataset.column_types, validation=False
+        )
+        for i in range(len(values)):
+            part_dataset = dataset.df[dataset.df[dataset.target] == values[i]]
+            part_dataset = part_dataset.sample(int(max_data_size * props[i]), random_state=42)
+            sliced_dataset.df = pd.concat([sliced_dataset.df, part_dataset])
+        return sliced_dataset
 
     def _find_slices(self, model: BaseModel, dataset: Dataset, meta: pd.DataFrame):
         features = model.meta.feature_names or dataset.columns.drop(dataset.target, errors="ignore")
