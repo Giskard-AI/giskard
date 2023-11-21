@@ -27,7 +27,7 @@ def autodetect_client():
 def get_scan_model(api_type: ApiType) -> Optional[str]:
     scan_model = os.environ.get("GISKARD_SCAN_LLM_MODEL")
 
-    if api_type is ApiType.azure and "GISKARD_SCAN_LLM_MODEL" == None:
+    if api_type is ApiType.azure and scan_model is None:
         raise ValueError("Please provide your LLM model using GISKARD_SCAN_LLM_MODEL environment variable")
 
     if scan_model is not None:
