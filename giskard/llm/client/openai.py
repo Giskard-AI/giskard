@@ -5,9 +5,9 @@ from typing import Dict, Optional
 from git import Sequence
 from tenacity import retry, retry_if_exception_type, stop_after_attempt, wait_exponential
 
+from . import LLMClient, LLMFunctionCall, LLMLogger, LLMOutput
 from ..config import LLMConfigurationError
 from ..errors import LLMGenerationError, LLMImportError
-from . import LLMClient, LLMFunctionCall, LLMLogger, LLMOutput
 
 try:
     import openai
@@ -125,8 +125,10 @@ class LegacyOpenAIClient(BaseOpenAIClient):
 
 
 class OpenAIClient(BaseOpenAIClient):
-    def __init__(self, client=None):
+    def __init__(self, client=None, model=None):
         self._client = client or openai.OpenAI()
+        self._model = model
+
         super().__init__()
 
     def _completion(
@@ -147,7 +149,7 @@ class OpenAIClient(BaseOpenAIClient):
 
         try:
             completion = self._client.chat.completions.create(
-                model=model,
+                model=self._model or model,
                 messages=messages,
                 temperature=temperature,
                 max_tokens=max_tokens,
@@ -159,7 +161,7 @@ class OpenAIClient(BaseOpenAIClient):
         self._logger.log_call(
             prompt_tokens=completion.usage.prompt_tokens,
             sampled_tokens=completion.usage.completion_tokens,
-            model=model,
+            model=self._model or model,
             client_class=self.__class__.__name__,
             caller_id=caller_id,
         )
