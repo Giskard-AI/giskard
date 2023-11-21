@@ -26,11 +26,33 @@ pip install "giskard[llm]"
 For the LLM-assisted detectors to work, you need to have an OpenAI API key. You can set it in your notebook
 like this:
 
+:::::::{tab-set}
+::::::{tab-item} OpenAI
+
 ```python
 import os
 
 os.environ["OPENAI_API_KEY"] = "sk-…"
 ```
+
+::::::
+::::::{tab-item} Azure OpenAI
+
+```python
+import os
+
+os.environ['AZURE_OPENAI_API_KEY'] = '...'
+os.environ['AZURE_OPENAI_ENDPOINT'] = 'https://xxx.openai.azure.com'
+
+# You'll need to provide the name of the model that you've deployed
+# Beware, the model provided must be capable of using function calls
+os.environ['GISKARD_SCAN_LLM_MODEL'] = 'my-gpt-4-model'
+os.environ['OPENAI_API_VERSION'] = '2023-07-01-preview'
+```
+
+::::::
+:::::::
+
 We are now ready to start.
 
 
