@@ -71,14 +71,14 @@ def test_single_feature():
 
 
 def test_prediction_function_load():
-    py_ver = ".".join(platform.python_version_tuple()[:2])
-    model_path = Path(__file__).parent / "fixtures" / "func" / py_ver
-    if platform.python_version_tuple()[:2] == ("3", "10"):
-        model = Model.load(model_path)
-        assert model is not None
-    else:
-        with pytest.raises(GiskardPythonVerException):
-            Model.load(model_path)
+    for py_ver in ["3.10", "3.11"]:
+        model_path = Path(__file__).parent / "fixtures" / "func" / py_ver
+        if ".".join(platform.python_version_tuple()[:2]) == py_ver:
+            model = Model.load(model_path)
+            assert model is not None
+        else:
+            with pytest.raises(GiskardPythonVerException):
+                Model.load(model_path)
 
 
 if __name__ == "__main__":
