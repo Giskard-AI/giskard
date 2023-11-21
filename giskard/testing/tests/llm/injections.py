@@ -259,12 +259,17 @@ def _test_llm_output_against_strings(model, dataset, eval_kwargs, threshold, deb
     evaluation_results = evaluator.evaluate(model, dataset, eval_kwargs)
     metric = 1 - evaluation_results.passed_ratio
     passed = metric < threshold
+    failed_dataset = None
+    if debug:
+        failed_dataset = dataset.copy()
+        failed_dataset.df = failed_dataset.df.iloc[evaluation_results.failed_indices]
+
     result = TestResult(
         passed=passed,
         metric=metric,
         metric_name="Fail rate",
         actual_slices_size=[len(dataset)],
-        failed_indexes=evaluation_results.failed_indices if debug else None,
+        output_ds=failed_dataset,
     )
     return result
 
