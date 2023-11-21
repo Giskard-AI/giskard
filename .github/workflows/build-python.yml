@@ -103,11 +103,6 @@ jobs:
           python-version: ${{ matrix.python-version }}
           cache: true
 
-      - name: Set up Pandoc (needed for doc)
-        uses: r-lib/actions/setup-pandoc@v2
-        with:
-          pandoc-version: '3.1.7' # https://github.com/jgm/pandoc/releases
-
       - name: Cache Giskard test resources
         uses: actions/cache@v3
         if: ${{ github.event_name == 'pull_request' || inputs.use-cache }}
@@ -190,10 +185,6 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
-
-      - name: Build doc
-        if : ${{ matrix.os == 'ubuntu-latest' && matrix.python-version == '3.10'}}
-        run: pdm run doc
 
       - name: Build
         run: pdm build
@@ -300,3 +291,31 @@ jobs:
           sed -i 's/^\(requires-python *= *\).*$/\1">=3.10,<3.12"/' pyproject.toml
           pdm add "$(ls ../dist/*.whl)"
           pdm run python -c "import giskard"
+  check-doc:
+    name: "Build and check doc"
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4.1.0
+        with:
+          fetch-depth: 0
+
+      - name: Setup PDM
+        uses: pdm-project/setup-pdm@v3
+        with:
+          python-version: 3.10
+          cache: true
+
+      - name: Set up Pandoc (needed for doc)
+        uses: r-lib/actions/setup-pandoc@v2
+        with:
+          pandoc-version: '3.1.7' # https://github.com/jgm/pandoc/releases
+
+      - name: Install dependencies
+        run: pdm install -G :all
+
+      - name: Build doc
+        run: pdm  doc
+
+      - name: Check doc
+        run: pdm check-doc
