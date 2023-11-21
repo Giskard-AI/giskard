@@ -7,7 +7,7 @@ The Giskard python library provides an automatic scan functionality designed to 
 The LLM scan combines both **heuristics-based** and **LLM-assisted detectors.** The heuristics-based detectors use known
 techniques and patterns to test for vulnerabilities which are not specific to the model. The LLM-assisted detectors are
 designed to detect vulnerabilities that are specific to your business case. They use another LLM model to probe
-your LLM system (specifically, we use OpenAI GPT-4).
+your LLM system (specifically, we use **OpenAI GPT-4**).
 
 Differently from other techniques that focus on benchmarking a foundation LLM, Giskard's LLM scan focuses on performing
 **in-depth assessments on domain-specific models.** This includes chatbots, **question answering systems, and
