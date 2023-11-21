@@ -1,12 +1,23 @@
+import os
 from unittest.mock import Mock, patch
 
+import pytest
 from openai.types import CompletionUsage
 from openai.types.chat import ChatCompletion, ChatCompletionMessage
 from openai.types.chat.chat_completion import Choice
 from openai.types.chat.chat_completion_message import FunctionCall
 
-from giskard.llm.client import LLMFunctionCall, LLMOutput
+from giskard.llm.client import LLMFunctionCall, LLMOutput, get_default_client
 from giskard.llm.client.openai import LegacyOpenAIClient, OpenAIClient
+
+OLD_OPEN_AI = False
+try:
+    from openai import OpenAI, AzureOpenAI
+except ImportError:
+    OLD_OPEN_AI = True
+    OpenAI = None
+    AzureOpenAI = None
+
 
 DEMO_OPENAI_RESPONSE = ChatCompletion(
     id="chatcmpl-abc123",
@@ -144,3 +155,28 @@ def test_legacy_llm_function_call(openai):
     assert isinstance(res.function_call, LLMFunctionCall)
     assert res.function_call.function == "my_test_function"
     assert res.function_call.args == {"my_parameter": "Parameter Value"}
+
+
+@pytest.mark.skipif(OLD_OPEN_AI, reason="Azure is not supported with openai<1.0.0")
+def test_autodetect_azure_given_api_in_env():
+    os.environ["AZURE_OPENAI_API_KEY"] = "AZURE_OPENAI_API_KEY"
+    os.environ["AZURE_OPENAI_ENDPOINT"] = "https://xxx.openai.azure.com"
+    os.environ["OPENAI_API_VERSION"] = "2023-07-01-preview"
+
+    with pytest.raises(ValueError):
+        get_default_client()
+
+    os.environ["GISKARD_SCAN_LLM_MODEL"] = "my-gtp-4-model"
+
+    default_client = get_default_client()
+
+    assert isinstance(default_client._client, AzureOpenAI)
+
+
+@pytest.mark.skipif(OLD_OPEN_AI, reason="Azure is not supported with openai<1.0.0")
+def test_autodetect_openai():
+    os.environ["OPENAI_API_KEY"] = "sk-..."
+
+    default_client = get_default_client()
+
+    assert isinstance(default_client._client, OpenAI)
