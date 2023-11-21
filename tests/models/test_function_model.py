@@ -70,10 +70,17 @@ def test_single_feature():
     assert e.match(r"Your model returned an error when we passed a 'pandas.Dataframe' as input.*")
 
 
+COMPAT_TABLE = {
+    "3.9": ["3.9", "3.10"],
+    "3.10": ["3.9", "3.10"],
+    "3.11": ["3.11"],
+}
+
+
 @pytest.mark.parametrize("py_ver", ["3.9", "3.10", "3.11"])
 def test_prediction_function_load(py_ver):
     model_path = Path(__file__).parent / "fixtures" / "func" / py_ver
-    if ".".join(platform.python_version_tuple()[:2]) == py_ver:
+    if ".".join(platform.python_version_tuple()[:2]) in COMPAT_TABLE[py_ver]:
         model = Model.load(model_path)
         assert model is not None
     else:
