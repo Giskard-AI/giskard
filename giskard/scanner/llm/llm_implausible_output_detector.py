@@ -82,6 +82,7 @@ class LLMImplausibleOutputDetector(Detector):
                     },
                     examples=pd.DataFrame(eval_result.failure_examples),
                     tests=_generate_implausible_output_tests,
+                    taxonomy=["avid-effect:performance:P0204"],
                 )
             ]
 

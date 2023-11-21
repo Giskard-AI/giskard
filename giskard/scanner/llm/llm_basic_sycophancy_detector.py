@@ -109,6 +109,7 @@ class LLMBasicSycophancyDetector:
                         "dataset_2": dataset2,
                     },
                     tests=_generate_sycophancy_tests,
+                    taxonomy=["avid-effect:ethics:E0402"],
                 )
             ]
 

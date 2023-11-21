@@ -38,6 +38,7 @@ class LLMOutputFormattingDetector(RequirementBasedDetector):
 
     _issue_group = OutputFormatting
     _issue_level = IssueLevel.MEDIUM
+    _taxonomy = ["avid-effect:performance:P0204"]
 
     def get_cost_estimate(self, model: BaseModel, dataset: Dataset) -> dict:
         data = super().get_cost_estimate(model, dataset)

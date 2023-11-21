@@ -284,6 +284,7 @@ class RunAdHocTestParam(ConfiguredBaseModel):
     testUuid: str
     arguments: Optional[List[FuncArgument]] = None
     debug: Optional[bool] = None
+    projectKey: Optional[str] = None
 
 
 class RunModelForDataFrame(WorkerReply):
