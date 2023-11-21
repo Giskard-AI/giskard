@@ -29,7 +29,7 @@ def test_prompt_injection_data_loader_sampling():
     assert len(dataset.df.columns) == len(column_types)
 
 
-@patch("giskard.scanner.llm.llm_prompt_injection_detector.PromptInjectionDataLoader")
+@patch("giskard.llm.injection_data.loader.PromptInjectionDataLoader")
 def test_prompt_injection_detector(PromptInjectionDataLoader):  # noqa
     model = Mock()
     dataset = Mock()
