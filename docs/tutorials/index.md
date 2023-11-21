@@ -1,7 +1,6 @@
 # Tutorials
 ```{toctree}
 :caption: Tutorials
-:name: mastertoc
 :maxdepth: 1
 :hidden:
 

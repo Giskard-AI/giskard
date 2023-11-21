@@ -1,9 +1,10 @@
+from typing import Optional
+
 import random
 import string
 import tempfile
 import warnings
 from pathlib import Path
-from typing import Optional
 
 import mlflow
 import pandas as pd
@@ -70,9 +71,9 @@ class ScanReport:
 
         Parameters
         ----------
-        filename : str, optional
+        filename : Optional[str]
             If provided, the HTML will be written to the file.
-        embed : bool, optional
+        embed : Optional[bool]
             Whether to configure the HTML to be embedded in an iframe.
         """
         from ..visualization.widget import ScanReportWidget
@@ -96,9 +97,9 @@ class ScanReport:
 
         Parameters
         ----------
-        filename : str, optional
+        filename : Optional[str]
             If provided, the markdown will be written to the file.
-        template : str, optional
+        template : Optional[str]
             The template to use. Currently, only ``summary`` is supported.
         """
         from ..visualization.widget import ScanReportWidget
@@ -144,7 +145,7 @@ class ScanReport:
 
         Parameters
         ----------
-        with_names : bool, optional
+        with_names : Optional[bool]
             Whether to return the test names as well. If ``True``, the method will return a list of tuples.
 
         Return
@@ -163,7 +164,7 @@ class ScanReport:
 
         Parameters
         ----------
-        name : str, optional
+        name : Optional[str]
             The name of the test suite. If not provided, a default name will be used. You can also change the name
             later by accessing the ``name`` attribute of the returned test suite.
 
@@ -305,7 +306,7 @@ class ScanReport:
 
         Parameters
         ----------
-        filename : str, optional
+        filename : Optional[str]
             If provided, the AVID report will be written to the file.
         """
         from ..integrations import avid

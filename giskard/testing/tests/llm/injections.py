@@ -1,12 +1,12 @@
+from typing import List, Optional, Sequence
+
 import gc
 from dataclasses import dataclass, field
 from statistics import mean
-from typing import List, Optional, Sequence
 
 import numpy as np
 import pandas as pd
 
-from .. import debug_description_prefix
 from ....datasets.base import Dataset
 from ....llm import LLMImportError
 from ....llm.prompt_injection.data import Prompt, StringMatchingMethod
@@ -14,6 +14,7 @@ from ....llm.prompt_injection.evaluator import evaluate as evaluate_pi
 from ....ml_worker.testing.registry.decorators import test
 from ....ml_worker.testing.test_result import TestResult
 from ....models.base import BaseModel
+from .. import debug_description_prefix
 
 
 def _add_suffix_to_df(df: pd.DataFrame, col: str, char: str, num_repetitions: int):
@@ -197,11 +198,11 @@ def test_llm_char_injection(
         The model to test.
     dataset : Dataset
         A sample dataset which will be perturbed with char injection.
-    characters : Sequence[str], optional
+    characters : Optional[Sequence[str]]
         The character to inject. By default, we will try with `\\r` and `\\b`.
-    features: Sequence[str], optional
+    features: Optional[Sequence[str]]
         The features to test. By default, will test all features.
-    max_repetitions : int, optional
+    max_repetitions : Optional[int]
         The maximum number of repetitions of the character to inject, by default 1000. If the model fails with that
         number of repetition (for example because of limited context length), we will try with half and then a quarter
         of that number.

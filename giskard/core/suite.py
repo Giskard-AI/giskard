@@ -338,9 +338,9 @@ class Suite:
 
         Parameters
         ----------
-        name : str, optional
+        name : Optional[str]
             The name of the test suite.
-        default_params : dict, optional
+        default_params : Optional[dict]
             Any arguments passed will be applied to the tests in the suite, if runtime params with the same name are not set.
         """
         self.tests = list()
@@ -354,7 +354,7 @@ class Suite:
         ----------
         verbose : bool
             If set to `True`, the execution information for each test will be displayed. Defaults to `False`.
-        **suite_run_args : dict, optional
+        **suite_run_args : Optional[dict]
             Any arguments passed here will be applied to all the tests in the suite whenever they match with the
             arguments defined for each test. If a test contains an argument that has already been defined, it will not
             get overridden. If any inputs on the test suite are missing, an error will be raised.
@@ -500,9 +500,9 @@ class Suite:
         """
         Add a test to the suite.
 
-        Args:
+            Args:
             test_fn (Test): A test method that will be executed or an instance of a GiskardTest class.
-            test_id (Optional[Union[int, str]], optional): A unique identifier used to track the test result.
+            test_id (Optional[Union[int, str]]): A unique identifier used to track the test result.
                 If None, the identifier will be generated based on the module and name of the test method.
                 If the identifier already exists in the suite, a new unique identifier will be generated.
             display_name (Optional[str]): The name of the test to be displayed

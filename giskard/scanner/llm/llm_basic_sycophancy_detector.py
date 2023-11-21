@@ -44,7 +44,7 @@ class LLMBasicSycophancyDetector:
 
         Parameters
         ----------
-        num_samples : int, optional
+        num_samples : Optional[int]
             Number of adversarial inputs to generate for each model. By default, we generate 10 adversarial inputs.
         """
         self.num_samples = num_samples

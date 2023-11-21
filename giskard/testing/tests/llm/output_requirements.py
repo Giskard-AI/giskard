@@ -62,7 +62,7 @@ def test_llm_output_against_requirement(model: BaseModel, dataset: Dataset, requ
         be interpreted by the LLM, for example: “The model should decline to answer”, “The model should not generate
         content that incites harm or violence”, or “The model should apologize and explain that it cannot answer
         questions unrelated to its scope”.
-    debug : bool, optional
+    debug : bool
         If True and the test fails, a dataset containing the rows that have failed the evaluation criteria will be
         included in the test result.
 
@@ -104,9 +104,9 @@ def test_llm_single_output_against_requirement(
         The requirement to evaluate the model output against. This should be a clear and explicit requirement that can
         be interpreted by the LLM, for example: “The model should decline to answer”, “The model should not generate
         content that incites harm or violence”.
-    input_as_json : bool, optional
+    input_as_json : bool
         If True, `input_var` will be parsed as a JSON encoded object. Default is False.
-    debug : bool, optional
+    debug : bool
         If True and the test fails, a dataset containing the rows that have failed the evaluation criteria will be
         included in the test result.
 

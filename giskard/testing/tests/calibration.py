@@ -3,12 +3,12 @@ from typing import Optional
 import numpy as np
 import pandas as pd
 
-from . import debug_description_prefix
 from ...datasets.base import Dataset
 from ...ml_worker.testing.registry.decorators import test
 from ...ml_worker.testing.registry.slicing_function import SlicingFunction
 from ...ml_worker.testing.test_result import TestResult
 from ...models.base import BaseModel
+from . import debug_description_prefix
 
 
 def _calculate_overconfidence_score(model: BaseModel, dataset: Dataset) -> pd.Series:
@@ -58,14 +58,14 @@ def test_overconfidence_rate(
     Arguments:
         model(BaseModel): The model to test.
         dataset(Dataset): The dataset to test the model on.
-        slicing_function(SlicingFunction, optional): An optional slicing
+        slicing_function(Optional[SlicingFunction]): An optional slicing
             function used to slice the dataset before testing. If not provided,
             the whole dataset will be considered in calculating the
             overconfidence rate.
-        threshold(float, optional): The threshold for overconfident prediction
+        threshold(Optional[float]): The threshold for overconfident prediction
             rate, i.e. the max ratio of overconfident samples over number of
             wrongly predicted samples. Default is 0.10 (10%).
-        p_threshold(float, optional): The threshold for the difference between
+        p_threshold(Optional[float]): The threshold for the difference between
             the probability assigned to the wrong label and the correct label
             over which a prediction is considered overconfident. If not
             provided, it will be determined automatically depending on the
@@ -137,13 +137,13 @@ def test_underconfidence_rate(
     Arguments:
         model(BaseModel): The model to test.
         dataset(Dataset): The dataset to test the model on.
-        slicing_function(SlicingFunction, optional): An optional slicing
+        slicing_function(Optional[SlicingFunction]): An optional slicing
             function used to slice the dataset before testing. If not provided,
             the whole dataset will be considered in calculating the
             underconfidence rate.
-        threshold(float, optional): The threshold for underconfident prediction
+        threshold(Optional[float]): The threshold for underconfident prediction
             rate. Default is 0.10 (10%).
-        p_threshold(float, optional): The threshold for the relative value of
+        p_threshold(Optional[float]): The threshold for the relative value of
             the second most-probable prediction and the max probability. If
             greater that this value, the prediction is considered
             underconfident. Default is 0.90, i.e. when the second most probable

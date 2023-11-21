@@ -65,15 +65,14 @@ class TransformationFunction(RegistryArtifact[DatasetProcessFunctionMeta]):
 
         return set([param.default for param in parameters if isinstance(param.default, Artifact)])
 
-    def execute(self, data: pd.DataFrame) -> pd.DataFrame:
-        """
-        Transforms the data using the transformation function.
+    def execute(self, data: Union[pd.Series, pd.DataFrame]) -> Union[pd.Series, pd.DataFrame]:
+        """_summary_
 
         Args:
-            data (Union[pd.Series, pd.DataFrame]): The data to transform.
+            data (Union[pd.Series, pd.DataFrame]): _description_
 
         Returns:
-            Union[pd.Series, pd.DataFrame]: The transformed data.
+            Union[pd.Series, pd.DataFrame]: _description_
         """
         func = configured_validate_arguments(self.func)
         if self.cell_level:

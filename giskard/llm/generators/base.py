@@ -1,5 +1,6 @@
-from abc import ABC, abstractmethod
 from typing import Optional
+
+from abc import ABC, abstractmethod
 
 import pandas as pd
 from pydantic import BaseModel
@@ -82,9 +83,9 @@ class BaseDataGenerator(LLMGenerator):
         ----------
         model : BaseModel
             The model to generate a test dataset for.
-        num_samples : int, optional
+        num_samples : Optional[int]
             The number of samples to generate, by default 10.
-        column_types : float, optional
+        column_types : Optional[float]
             The column types for the generated datasets.
 
         Raises
