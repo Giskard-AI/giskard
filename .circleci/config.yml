@@ -315,7 +315,7 @@ workflows:
           slow-tests: False
           os: ubuntu
           parallelism: 4
-          options: "-n 4"
+          options: "-n 5"
           legacy-packages: True
           python-version: "3.10"
           requires:
@@ -333,7 +333,7 @@ workflows:
           name: unit-tests-windows
           os: windows
           parallelism: 4
-          options: "-n 3"
+          options: "-n 4"
           python-version: "3.10.11"
           slow-tests: False
           requires:
