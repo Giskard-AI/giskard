@@ -141,7 +141,7 @@ class ScanReport:
         """Automatically generates tests from the scan results.
 
         This method provides a way to generate a list of tests automatically, based on the issues detected by the scan.
-        Usually you will want to generate a test suite directly, see :method:`generate_test_suite` for more details.
+        Usually you will want to generate a test suite directly, see :meth:`generate_test_suite` for more details.
 
         Parameters
         ----------

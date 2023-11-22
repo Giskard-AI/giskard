@@ -101,7 +101,7 @@ def test_llm_single_output_against_requirement(
         a single input variable called ``question``, you can set ``input_var``
         to the question you want to ask the model, ``question = "What is the
         capital of France?"``. If need to pass multiple input variables to the
-        model, set ``input_as_json` to `True` and specify `input_var` as a JSON
+        model, set ``input_as_json`` to `True` and specify `input_var` as a JSON
         encoded object. For example:
         ```
         input_var = '{"question": "What is the capital of France?", "language": "English"}'
