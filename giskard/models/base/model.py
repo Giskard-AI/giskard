@@ -162,6 +162,10 @@ class BaseModel(ABC):
         )
 
     @property
+    def name(self):
+        return self.meta.name if self.meta.name is not None else self.__class__.__name__
+
+    @property
     def is_classification(self):
         """
         Returns True if the model is of type classification, False otherwise.
