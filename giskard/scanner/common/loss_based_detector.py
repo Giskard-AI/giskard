@@ -37,7 +37,7 @@ class LossBasedDetector(Detector):
             return []
 
         # If the dataset is very large, limit to a subsample
-        dataset = self._slice_dataset(dataset, model)
+        dataset = self._slice_dataset(model, dataset)
 
         # Calculate loss
         logger.info(f"{self.__class__.__name__}: Calculating loss")
@@ -70,7 +70,7 @@ class LossBasedDetector(Detector):
     def _numerical_slicer_method(self):
         return "tree"
 
-    def _slice_dataset(self, dataset, model):
+    def _slice_dataset(self, model: BaseModel, dataset: Dataset):
         max_data_size = self.MAX_DATASET_SIZE // len(dataset.columns)
         if len(dataset) <= max_data_size:
             return dataset
