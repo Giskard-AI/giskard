@@ -47,8 +47,8 @@ def create_report_from_issue(issue: Issue, model: BaseModel, dataset: Dataset = 
         AVID Report created from the issue.
     """
     # Prepare artifacts
-    artifacts = [Artifact(type=ArtifactTypeEnum.model, name=model.meta.name)]
-    if dataset:
+    artifacts = [Artifact(type=ArtifactTypeEnum.model, name=model.name)]
+    if dataset and dataset.meta.name:
         artifacts.append(Artifact(type=ArtifactTypeEnum.dataset, name=dataset.meta.name))
 
     affects = Affects(
