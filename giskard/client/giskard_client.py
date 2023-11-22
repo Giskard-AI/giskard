@@ -122,6 +122,29 @@ class GiskardClient:
         response = self._session.get("project", params={"key": project_key}).json()
         return Project(self._session, response["key"], response["id"])
 
+    def delete_project(self, project_key: str) -> str:
+        """
+        Function to delete the project that belongs to the mentioned project key
+        Args:
+            project_key:
+                The unique value of  project provided during project creation
+        """
+        analytics.track("Delete Project", {"project_key": anonymize(project_key)})
+        try:
+            response = self._session.get("project", params={"key": project_key}).json()
+            project_id = response["id"]
+            self._session.delete(f'project/{project_id}')
+        except GiskardError as e:
+            if e.code == "error.http.404":
+                warning(
+                    "This project key does not exist. "
+                    "If you want to create a new project use create_project(“project_key”) instead"
+                )
+            raise e
+        deleted_project_key = response.get("key")
+        print(f"Project with key {deleted_project_key} deleted successfully")
+        return deleted_project_key
+
     def create_project(self, project_key: str, name: str, description: str = None) -> Project:
         """
         Function to create a project in Giskard
