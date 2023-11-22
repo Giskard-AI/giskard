@@ -27,7 +27,7 @@ class GiskardPythonDepException(GiskardPythonEnvException):
 
 
 def python_env_exception_helper(cls_name, e: Exception):
-    if isinstance(e, ValueError):
+    if isinstance(e, TypeError):
         if (
             "code expected at most 16 arguments, got 18" in e.args[0]
             or "code() argument 13 must be str, not int" in e.args[0]
