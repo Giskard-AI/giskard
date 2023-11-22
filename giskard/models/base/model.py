@@ -162,11 +162,13 @@ class BaseModel(ABC):
         )
 
     @property
-    def is_classification(self) -> bool:
-        """Property to know if a model is a classification model.
+    def name(self):
+        return self.meta.name if self.meta.name is not None else self.__class__.__name__
 
-        Returns:
-            bool: True if the model is of type classification, False otherwise.
+    @property
+    def is_classification(self):
+        """
+        Returns True if the model is of type classification, False otherwise.
         """
         return self.meta.model_type == SupportedModelTypes.CLASSIFICATION
 
