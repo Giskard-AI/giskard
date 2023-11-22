@@ -11,7 +11,7 @@ import numpy as np
 import pandas as pd
 import yaml
 
-from giskard.ml_worker.exceptions.giskard_exception import GiskardPythonVerException
+from giskard.ml_worker.exceptions.giskard_exception import python_env_exception_helper
 
 from .model import BaseModel
 from ..utils import warn_once
@@ -286,7 +286,7 @@ class WrapperModel(BaseModel, ABC):
                     # Cloudpickle can only be used to send objects between the exact same version of Python.
                     return cloudpickle.load(f)
                 except Exception as e:
-                    raise GiskardPythonVerException("Data Preprocessing Function", e)
+                    raise python_env_exception_helper("Data Preprocessing Function", e)
         return None
 
     @classmethod
@@ -300,7 +300,7 @@ class WrapperModel(BaseModel, ABC):
                     # Cloudpickle can only be used to send objects between the exact same version of Python.
                     return cloudpickle.load(f)
                 except Exception as e:
-                    raise GiskardPythonVerException("Data Postprocessing Function", e)
+                    raise python_env_exception_helper("Data Postprocessing Function", e)
         return None
 
     @classmethod

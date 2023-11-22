@@ -22,7 +22,7 @@ from ...client.giskard_client import GiskardClient
 from ...core.core import ModelMeta, ModelType, SupportedModelTypes
 from ...core.validation import configured_validate_arguments
 from ...datasets.base import Dataset
-from ...ml_worker.exceptions.giskard_exception import GiskardException, GiskardPythonVerException
+from ...ml_worker.exceptions.giskard_exception import GiskardException, python_env_exception_helper
 from ...ml_worker.utils.logging import Timer
 from ...models.cache import ModelCache
 from ...path_utils import get_size
@@ -203,7 +203,7 @@ class BaseModel(ABC):
                     # Cloudpickle can only be used to send objects between the exact same version of Python.
                     clazz = cloudpickle.load(f)
                 except Exception as e:
-                    raise GiskardPythonVerException(cls.__name__, e)
+                    raise python_env_exception_helper(cls.__name__, e)
                 if not issubclass(clazz, BaseModel):
                     raise ValueError(f"Unknown model class: {clazz}. Models should inherit from 'BaseModel' class")
                 return clazz
@@ -514,7 +514,7 @@ class BaseModel(ABC):
                     # Cloudpickle can only be used to send objects between the exact same version of Python.
                     clazz = cloudpickle.load(f)
                 except Exception as e:
-                    raise GiskardPythonVerException(cls.__name__, e)
+                    raise python_env_exception_helper(cls.__name__, e)
                 clazz_kwargs = {}
                 clazz_kwargs.update(constructor_params)
                 clazz_kwargs.update(kwargs)
