@@ -247,9 +247,13 @@ jobs:
             - run: |
                 pdm run pip freeze | grep -q '^pandas==2\.'
                 pdm run pip freeze | grep -q '^pydantic==2\.'
-      - pytest-parallel:
-          markers: "concurrency"
-          os: <<parameters.os>>
+      - unless:
+          condition:
+            equal: ["windows", <<parameters.os>>]
+          steps:
+            - pytest-parallel:
+                markers: "concurrency"
+                os: <<parameters.os>>
       - pytest-parallel:
           markers: "not concurrency and not slow and memory_expensive"
           os: <<parameters.os>>
