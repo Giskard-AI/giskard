@@ -65,7 +65,7 @@ commands:
                 command: |
                   mkdir -p test-results
                   TEST=$(pdm run pytest --collect-only -m '<<parameters.markers>>' tests/ --quiet --no-header --no-summary |  tail -r | tail -n +3 | tail -r | circleci tests split --split-by=timings)
-                  pdm run base-test --junitxml=test-results/junit.xml <<parameters.options>> $TEST
+                  pdm run base-test --junitxml=test-results/junit-$(date +%s).xml <<parameters.options>> $TEST
       - when:
           condition:
             equal: ["windows", <<parameters.os>>]
@@ -76,7 +76,7 @@ commands:
                 command: |
                   mkdir -p test-results
                   TEST=$(pdm run pytest --collect-only -m '<<parameters.markers>>' tests/ --quiet --no-header --no-summary |  head -n -2 | circleci tests split --split-by=timings)
-                  pdm run base-test --junitxml=test-results/junit.xml <<parameters.options>> $TEST
+                  pdm run base-test --junitxml=test-results/junit-$(date +%s).xml <<parameters.options>> $TEST
       - when:
           condition:
             equal: ["ubuntu", <<parameters.os>>]
@@ -87,10 +87,7 @@ commands:
                 command: |
                   mkdir -p test-results
                   TEST=$(pdm run pytest --collect-only -m '<<parameters.markers>>' tests/ --quiet --no-header --no-summary |  head -n -2 | circleci tests split --split-by=timings)
-                  pdm run base-test --junitxml=test-results/junit.xml <<parameters.options>> $TEST
-      - store_test_results:
-          path: test-results
-      - run: rm -rf test-results/junit.xml
+                  pdm run base-test --junitxml=test-results/junit-$(date +%s).xml <<parameters.options>> $TEST
   cancel_on_fail:
     description: Command to make the workflow cancelled as soons as possible
     steps:
@@ -268,6 +265,8 @@ jobs:
             - pytest-parallel:
                 markers: "slow"
                 os: <<parameters.os>>
+      - store_test_results:
+          path: test-results
 
       # - cancel_on_fail
 
@@ -320,7 +319,7 @@ workflows:
           slow-tests: False
           os: ubuntu
           parallelism: 4
-          options: "-n 4"
+          options: "-n 5"
           legacy-packages: True
           python-version: "3.10"
           requires:
@@ -338,7 +337,7 @@ workflows:
           name: unit-tests-windows
           os: windows
           parallelism: 4
-          options: "-n 3"
+          options: "-n 4"
           python-version: "3.10.11"
           slow-tests: False
           requires:
