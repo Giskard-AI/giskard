@@ -80,7 +80,7 @@ community/contribution_guidelines/index
 :margin: 1
 :width: 100%
 :text-align: center
-:link: getting_started/index.html
+:link: getting_started/index.md
 :img-bottom: assets/intro/coffee.png
 :::
 ::::
@@ -90,7 +90,7 @@ community/contribution_guidelines/index
 :margin: 1
 :width: 100%
 :text-align: center
-:link: tutorials/index.html
+:link: tutorials/index.md
 :img-bottom: assets/intro/test_turtle.png
 :::
 ::::
@@ -99,7 +99,7 @@ community/contribution_guidelines/index
 :::{card} <h2><center> API Reference </center></h2>
 :margin: 1
 :width: 100%
-:link: reference/index.html
+:link: reference/index.rst
 :img-bottom: assets/intro/Giskard_Turtle_Computer.png
 :::
 ::::
@@ -109,7 +109,7 @@ community/contribution_guidelines/index
 :margin: 1
 :width: 100%
 :text-align: center
-:link: open_source/installation_library/index.html
+:link: open_source/installation_library/index.md
 :img-bottom: assets/intro/ninja.png
 :::
 ::::
@@ -119,7 +119,7 @@ community/contribution_guidelines/index
 :margin: 1
 :width: 100%
 :text-align: center
-:link: knowledge/llm_vulnerabilities/index.html
+:link: knowledge/llm_vulnerabilities/index.md
 :img-bottom: assets/intro/integrations.png
 :::
 ::::
@@ -129,17 +129,17 @@ community/contribution_guidelines/index
 :margin: 1
 :width: 100%
 :text-align: center
-:link: giskard_hub/installation_hub/index.html
+:link: giskard_hub/installation_hub/index.md
 :img-bottom: assets/intro/Giskard_Turtle_SK8.png
 :::
 ::::
 
 ::::{grid-item}
-:::{card} <h2><center> Integrations & Community </center></h2>
+:::{card} <h2><center> Integrations </center></h2>
 :margin: 1
 :width: 100%
 :text-align: center
-:link: integrations/index.html
+:link: ./open_source/integrate_tests/index.md
 :img-bottom: assets/intro/hey.png
 :::
 ::::

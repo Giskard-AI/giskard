@@ -21,7 +21,7 @@ Once you've created a test suite for a model, integrating it into existing workf
 
 :::::{grid-item}
 :::{card} <br/><h3><center>🐙️ GitHub</center></h3>
-:link: ../../integrations/cicd/index
+:link: ../../integrations/cicd/index.md
 :::
 :::::
 
@@ -33,24 +33,24 @@ Once you've created a test suite for a model, integrating it into existing workf
 
 :::::{grid-item}
 :::{card} <br/><h3><center>🏃 Evaluate & log with MLflow</center></h3>
-:link: ../../integrations/mlflow/index.html
+:link: ../../integrations/mlflow/index.md
 :::
 :::::
 
 :::::{grid-item}
 :::{card} <br/><h3><center>🐝  Evaluate & log with Weights & Biases</center></h3>
-:link: ../../integrations/wandb/index.html
+:link: ../../integrations/wandb/index.md
 :::
 :::::
 
 :::::{grid-item}
 :::{card} <br/><h3><center>🐶 DagsHub</center></h3>
-:link: ../../integrations/dagshub/index
+:link: ../../integrations/dagshub/index.md
 :::
 :::::
 
 :::::{grid-item}
 :::{card} <br/><h3><center>🤗 HuggingFace</center></h3>
-:link: ../../integrations/huggingface/index
+:link: ../../integrations/huggingface/index.md
 :::
 :::::
