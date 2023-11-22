@@ -61,15 +61,17 @@ class BaseModel(ABC):
 
     Attributes:
        model (Any):
-           Could be any function or ML model. The standard model output required for Giskard is:
+            Could be any function or ML model. The standard model output required for Giskard is:
 
-            * if classification: an array (nxm) of probabilities corresponding to n data entries
-            (rows of pandas.DataFrame)
-            and m classification_labels. In the case of binary classification, an array of (nx1) probabilities is
-            also accepted.
-            Make sure that the probability provided is for the second label provided in classification_labels.
-            * if regression or text_generation: an array of predictions corresponding to data entries
-            (rows of pandas.DataFrame) and outputs.
+            * if classification:
+                an array (nxm) of probabilities corresponding to n data entries (rows of pandas.DataFrame)
+                and m classification_labels. In the case of binary classification, an array of (nx1) probabilities is
+                also accepted.
+                Make sure that the probability provided is for the second label provided in classification_labels.
+            * if regression or text_generation:
+                an array of predictions corresponding to data entries
+                (rows of pandas.DataFrame) and outputs.
+
        name (Optional[str]):
             the name of the model.
        model_type (ModelType):
@@ -124,7 +126,9 @@ class BaseModel(ABC):
         Notes:
             This class uses the @configured_validate_arguments decorator to validate the input arguments.
             The initialized object contains the following attributes:
-                - meta: a ModelMeta object containing metadata about the model.
+
+            - meta: a ModelMeta object containing metadata about the model.
+
         """
         self.id = uuid.UUID(id) if id is not None else uuid.UUID(kwargs.get("id", uuid.uuid4().hex))
         if isinstance(model_type, str):
@@ -166,30 +170,39 @@ class BaseModel(ABC):
         return self.meta.name if self.meta.name is not None else self.__class__.__name__
 
     @property
-    def is_classification(self):
-        """
-        Returns True if the model is of type classification, False otherwise.
+    def is_classification(self) -> bool:
+        """Compute if the model is of type classification.
+
+        Returns:
+            bool: True if the model is of type classification, False otherwise
         """
         return self.meta.model_type == SupportedModelTypes.CLASSIFICATION
 
     @property
-    def is_binary_classification(self):
+    def is_binary_classification(self) -> bool:
+        """Compute if the model is of type binary classification.
+
+        Returns:
+            bool: True if the model is of type binary classification, False otherwise.
         """
-        Returns True if the model is of type binary classification, False otherwise.
-        """
+
         return self.is_classification and len(self.meta.classification_labels) == 2
 
     @property
-    def is_regression(self):
-        """
-        Returns True if the model is of type regression, False otherwise.
+    def is_regression(self) -> bool:
+        """Compute if the model is of type regression.
+
+        Returns:
+            bool: True if the model is of type regression, False otherwise.
         """
         return self.meta.model_type == SupportedModelTypes.REGRESSION
 
     @property
-    def is_text_generation(self):
-        """
-        Returns True if the model is of type text generation, False otherwise.
+    def is_text_generation(self) -> bool:
+        """Compute if the model is of type text generation.
+
+        Returns:
+            bool: True if the model is of type text generation, False otherwise.
         """
         return self.meta.model_type == SupportedModelTypes.TEXT_GENERATION
 

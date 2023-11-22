@@ -27,7 +27,7 @@ def test_llm_output_coherency(
         not passed, we will rerun the model on ``dataset_1``.
     eval_prompt : Optional[str]
         Optional custom prompt to use for evaluation. If not provided, the
-        default prompt of :ref:`CoherencyEvaluator` will be used.
+        default prompt of :class:`.CoherencyEvaluator` will be used.
 
     Returns
     -------
