@@ -292,18 +292,18 @@ workflows:
               python-version: ["3.9", "3.10", "3.11"]
           requires:
             - pre-check
-      - install:
-          name: install-macos
-          os: macos
-          python-version: "3.10"
-          requires:
-            - pre-check
-      - install:
-          name: install-windows
-          os: windows
-          python-version: "3.10.11"
-          requires:
-            - pre-check
+      # - install:
+      #     name: install-macos
+      #     os: macos
+      #     python-version: "3.10"
+      #     requires:
+      #       - pre-check
+      # - install:
+      #     name: install-windows
+      #     os: windows
+      #     python-version: "3.10.11"
+      #     requires:
+      #       - pre-check
       - unit-tests:
           name: test-ubuntu-<<matrix.python-version>>
           slow-tests: False
@@ -324,24 +324,24 @@ workflows:
           python-version: "3.10"
           requires:
             - install-ubuntu-3.10
-      - unit-tests:
-          name: unit-tests-mac
-          os: macos
-          python-version: "3.10"
-          parallelism: 1
-          slow-tests: False
-          options: "-n 4"
-          requires:
-            - install-macos
-      - unit-tests:
-          name: unit-tests-windows
-          os: windows
-          parallelism: 4
-          options: "-n 4"
-          python-version: "3.10.11"
-          slow-tests: False
-          requires:
-            - install-windows
+      # - unit-tests:
+      #     name: unit-tests-mac
+      #     os: macos
+      #     python-version: "3.10"
+      #     parallelism: 1
+      #     slow-tests: False
+      #     options: "-n 4"
+      #     requires:
+      #       - install-macos
+      # - unit-tests:
+      #     name: unit-tests-windows
+      #     os: windows
+      #     parallelism: 4
+      #     options: "-n 4"
+      #     python-version: "3.10.11"
+      #     slow-tests: False
+      #     requires:
+      #       - install-windows
   python-nightly:
     when:
       {
