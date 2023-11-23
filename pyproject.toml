@@ -156,7 +156,7 @@ dependencies = [
     "cloudpickle>=1.1.1",
     "zstandard>=0.10.0",
     "mlflow-skinny>=2",
-    "protobuf<3.21",            # Not compatible with transformers/tensorflow
+    "protobuf>=4.21.0", # Not compatible with transformers/tensorflow
     "numpy>=1.22.0",
     "scikit-learn>=1.0",
     "scipy>=1.7.3",
