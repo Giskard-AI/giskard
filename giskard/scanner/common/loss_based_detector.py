@@ -5,6 +5,8 @@ from typing import Sequence
 
 import pandas as pd
 
+from giskard.scanner.common.utils import get_dataset_subsample
+
 from ...datasets.base import Dataset
 from ...ml_worker.testing.registry.slicing_function import SlicingFunction
 from ...models.base import BaseModel
@@ -40,7 +42,7 @@ class LossBasedDetector(Detector):
         max_data_size = self.MAX_DATASET_SIZE // len(model.meta.feature_names or dataset.columns)
         if len(dataset) > max_data_size:
             logger.info(f"{self.__class__.__name__}: Limiting dataset size to {max_data_size} samples.")
-            dataset = dataset.slice(lambda df: df.sample(max_data_size, random_state=42), row_level=False)
+            dataset = get_dataset_subsample(dataset, model, max_data_size)
 
         # Calculate loss
         logger.info(f"{self.__class__.__name__}: Calculating loss")
