@@ -1,16 +1,14 @@
 import os
-import threading
 from glob import glob
 from io import TextIOWrapper
 from pathlib import Path
-from typing import List, Tuple
 from uuid import uuid4
 
-import pytest
 from _pytest.config import Config, ExitCode
 from _pytest.reports import BaseReport
 from _pytest.terminal import TerminalReporter
 from pytest import CollectReport, TestReport
+from typing import List, Tuple
 
 pytest_plugins = []
 for f in glob("**/fixtures/**/*.py", recursive=True):
@@ -96,30 +94,3 @@ def pytest_terminal_summary(terminalreporter: TerminalReporter, exitstatus: Exit
         writer.write("\n### Failures\n\n")
         for failure in failures:
             _write_report(writer, failure)
-
-
-@pytest.hookimpl(tryfirst=True)
-def pytest_runtest_protocol(item):
-    ihook = item.ihook
-    ihook.pytest_runtest_logstart(nodeid=item.nodeid, location=item.location)
-    reports = threaded_run_report(item)
-    for rep in reports:
-        ihook.pytest_runtest_logreport(report=rep)
-    ihook.pytest_runtest_logfinish(nodeid=item.nodeid, location=item.location)
-    return True
-
-
-def threaded_run_report(item) -> List[TestReport]:
-    # for now, we run setup/teardown in the subprocess
-    # XXX optionally allow sharing of setup/teardown
-    from _pytest.runner import runtestprotocol
-
-    def run_threaded(reports: List[TestReport]):
-        reports.extend(runtestprotocol(item, log=False))
-
-    reports = []
-    thread = threading.Thread(target=run_threaded, args=(reports,))
-    thread.start()
-    thread.join()
-
-    return reports
