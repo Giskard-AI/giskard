@@ -3,6 +3,8 @@ from ...models.base import BaseModel
 
 
 def get_dataset_subsample(dataset: Dataset, model: BaseModel, max_data_size: int):
+    if max_data_size <= 0 or len(dataset) <= max_data_size:  # just double checking
+        return dataset
     if not model.is_classification:
         return dataset.slice(lambda df: df.sample(max_data_size, random_state=42), row_level=False)
 
