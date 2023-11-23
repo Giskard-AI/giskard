@@ -2,6 +2,7 @@ from typing import List, Optional, Union
 
 import logging
 import math
+import secrets
 
 from pydantic import AnyHttpUrl
 from websockets.client import WebSocketClientProtocol
@@ -49,6 +50,10 @@ class MLWorker(StompWSClient):
             # Retrieve from settings for internal ML Worker
             self._worker_type = INTERNAL_WORKER_ID
             backend_url = validate_url(None, None, f"http://{settings.host}:{settings.ws_port}{settings.ws_path}")
+            internal_ml_worker_token = secrets.token_hex(16)
+            headers["token"] = internal_ml_worker_token
+            with open(f"{settings.home_dir / 'run' / 'internal-ml-worker'}", "w") as f:
+                f.write(internal_ml_worker_token)
         else:
             # External ML worker: URL should be provided
             self._worker_type = EXTERNAL_WORKER_ID
@@ -91,7 +96,7 @@ class MLWorker(StompWSClient):
                 "key": self._api_key,
                 "hf_token": self._hf_token,
             }
-            if self._backend_url is not None
+            if self.is_remote_worker()
             else None
         )
         if data.action == MLWorkerAction.stopWorker:
