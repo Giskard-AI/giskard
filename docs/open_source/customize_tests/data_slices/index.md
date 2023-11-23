@@ -132,7 +132,7 @@ my_model = Model(...)
 
 scan_result = scan(my_model, my_dataset)
 test_suite = scan_result.generate_test_suite("My first test suite")
-test_suite.run()[1]
+test_suite.run()
 ```
 
 ## Upload your slicing function to the Giskard hub
