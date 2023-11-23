@@ -182,7 +182,7 @@ dependencies = [
 llm = [
     "openai",
     "evaluate>=0.4.1",
-    "bert-score>=0.3.13",
+    "bert-score>=0.3.13; python_version < '3.12'",
 ]
 
 hub = [
