@@ -149,15 +149,16 @@ classifiers = [
     "Programming Language :: Python :: 3.9",
     "Programming Language :: Python :: 3.10",
     "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
 ]
 
-requires-python = ">=3.9, <3.12"
+requires-python = ">=3.9, <3.13"
 dependencies = [
     "cloudpickle>=1.1.1",
     "zstandard>=0.10.0",
     "mlflow-skinny>=2",
     "protobuf<3.21",            # Not compatible with transformers/tensorflow
-    "numpy>=1.22.0",
+    "numpy>=1.26.0", # Minimum version for python 3.12
     "scikit-learn>=1.0",
     "scipy>=1.7.3",
     "mixpanel>=4.4.0",
