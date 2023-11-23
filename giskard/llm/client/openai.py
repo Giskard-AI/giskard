@@ -1,8 +1,7 @@
 import json
 from abc import ABC, abstractmethod
-from typing import Dict, Optional
+from typing import Dict, Optional, Sequence
 
-from git import Sequence
 from tenacity import retry, retry_if_exception_type, stop_after_attempt, wait_exponential
 
 from ..config import LLMConfigurationError
