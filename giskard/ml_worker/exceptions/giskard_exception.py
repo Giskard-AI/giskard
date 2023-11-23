@@ -28,10 +28,10 @@ class GiskardPythonDepException(GiskardPythonEnvException):
 
 def python_env_exception_helper(cls_name, e: Exception):
     if isinstance(e, TypeError):
-        if (
-            "code expected at most 16 arguments, got 18" in e.args[0]
-            or "code() argument 13 must be str, not int" in e.args[0]
-        ):
+        # Python 3.9: code() takes at most 16 arguments (18 given)
+        # Python 3.10: code expected at most 16 arguments, got 18
+        # Python 3.11: code() argument 13 must be str, not int
+        if "at most 16 arguments" in e.args[0] or "code() argument 13 must be str, not int" in e.args[0]:
             # Python 3.11 introduces `co_qualname` in code
             # See code in Python 3.10: https://docs.python.org/3.10/library/inspect.html#types-and-members
             # and code in Python 3.11: https://docs.python.org/3.11/library/inspect.html#types-and-members
