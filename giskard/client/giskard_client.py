@@ -32,35 +32,31 @@ class GiskardError(Exception):
         self.code = code
 
 
-def explain_error(err_resp):
-    status = err_resp.get("status")
-    code = err_resp.get("message")
-    message = None
+def explain_error(status):
+    message = "Unknown error"
+    code = "error.unknown"
     if status == 401:
-        message = "Access key is invalid or expired. Please generate a new one"
-
-    if message is None:
-        if "title" in err_resp or err_resp.get("detail"):
-            message = f"{err_resp.get('title', 'Unknown error')}: {err_resp.get('detail', 'no details')}"
-        elif "message" in err_resp:
-            message = err_resp["message"]
+        code = "error.http.401"
+        message = "API key is invalid or expired. Please generate a new one"
+    if status == 403:
+        code = "error.http.403"
+        message = "Not authorized to access this resource. Please check your API key"
     return GiskardError(status=status, code=code, message=message)
 
 
 class ErrorHandlingAdapter(HTTPAdapter):
+    def __init__(self, *args, **kwargs):
+        super(ErrorHandlingAdapter, self).__init__(*args, **kwargs)
+
     def build_response(self, req, resp):
-        response = super().build_response(req, resp)
+        # It appears the urllib3 version used by requests
+        # may have a bug where it doesn't properly decode the response
+        # https://github.com/psf/cachecontrol/issues/292
+        # Could be easier if we just handle the response directly
+        if resp.status >= 400:
+            raise explain_error(resp.status)
 
-        if not response.ok:
-            giskard_error = None
-            try:
-                err_resp = response.json()
-
-                giskard_error = explain_error(err_resp)
-            except:  # noqa
-                response.raise_for_status()
-            raise giskard_error
-        return response
+        return super(ErrorHandlingAdapter, self).build_response(req, resp)
 
 
 class BearerAuth(AuthBase):
@@ -81,8 +77,9 @@ class GiskardClient:
         self.hf_token = hf_token
         base_url = urljoin(url, "/api/v2/")
         self._session = sessions.BaseUrlSession(base_url=base_url)
-        self._session.mount(base_url, ErrorHandlingAdapter())
+        self._session.mount(url, ErrorHandlingAdapter())
         self._session.auth = BearerAuth(key)
+
         if hf_token:
             self._session.cookies["spaces-jwt"] = hf_token
 
@@ -93,7 +90,7 @@ class GiskardClient:
                 f"Your giskard client version ({giskard.__version__}) does not match the hub version "
                 f"({server_settings.serverVersion}). "
                 f"Please upgrade your client to the latest version. "
-                f"pip install \"giskard[hub]>=2.0.0b\" -U"
+                f'pip install "giskard[hub]>=2.0.0b" -U'
             )
         analytics.init_server_info(server_settings)
 
@@ -326,7 +323,9 @@ class GiskardClient:
         return meta_class.from_json(self._session.get(endpoint).json())
 
     def get_server_info(self) -> ServerInfo:
-        return ServerInfo.parse_obj(self._session.get("/public-api/ml-worker-connect").json())
+        resp = self._session.get("/public-api/ml-worker-connect")
+        print(resp)
+        return ServerInfo.parse_obj(resp.json())
 
     def save_test_suite(self, dto: TestSuiteDTO):
         return self._session.post(f"testing/project/{dto.project_key}/suites", json=dto.dict()).json()
