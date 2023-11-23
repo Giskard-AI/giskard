@@ -1,19 +1,13 @@
+import logging
 import os
-from enum import Enum
 
 from typing import Optional
 
 from .base import LLMClient, LLMFunctionCall, LLMOutput
 from .logger import LLMLogger
 
-
-class LLMClientAPI(Enum):
-    OPENAI = 1
-    AZURE = 2
-
-
 _default_client = None
-_default_llm_api: Optional[LLMClientAPI] = None
+_default_llm_api: Optional[str] = None
 _default_llm_model = os.getenv("GSK_LLM_MODEL", "gpt-4")
 
 
@@ -22,9 +16,12 @@ def set_default_client(client: LLMClient):
     _default_client = client
 
 
-def set_llm_api(llm__api: LLMClientAPI):
+def set_llm_api(llm_api: str):
+    if llm_api.lower() not in {"azure", "openai"}:
+        raise ValueError("Giskard LLM-based evaluators is only working with `azure` and `openai`")
+
     global _default_llm_api
-    _default_llm_api = llm__api
+    _default_llm_api = llm_api.lower()
 
 
 def set_llm_model(llm_model: str):
@@ -32,12 +29,18 @@ def set_llm_model(llm_model: str):
     _default_llm_model = llm_model
 
 
-def get_default_llm_api() -> LLMClientAPI:
+def get_default_llm_api() -> str:
     global _default_llm_api
     if _default_llm_api is None:
         _default_llm_api = os.getenv(
-            "GSK_LLM_API", LLMClientAPI.AZURE if "AZURE_OPENAI_API_KEY" in os.environ else LLMClientAPI.OPENAI
-        )
+            "GSK_LLM_API", "azure" if "AZURE_OPENAI_API_KEY" in os.environ else "openai"
+        ).lower()
+
+        if _default_llm_api not in {"azure", "openai"}:
+            logging.warning(
+                f"LLM-based evaluation is only working with `azure` and `openai`. Found {_default_llm_api} in GSK_LLM_API, falling back to `openai`"
+            )
+            _default_llm_api = "openai"
 
     return _default_llm_api
 
@@ -57,12 +60,12 @@ def get_default_client() -> LLMClient:
         # For openai>=1.0.0
         from openai import OpenAI, AzureOpenAI
 
-        client = AzureOpenAI() if default_llm_api is LLMClientAPI.AZURE else OpenAI()
+        client = AzureOpenAI() if default_llm_api == "azure" else OpenAI()
 
         _default_client = OpenAIClient(_default_llm_model, client)
     except ImportError:
         # Fallback for openai<=0.28.1
-        if default_llm_api is not LLMClientAPI.OPENAI:
+        if default_llm_api != "openai":
             raise ValueError(f"LLM scan using {default_llm_api.name} require openai>=1.0.0")
         _default_client = LegacyOpenAIClient(_default_llm_model)
 
@@ -78,5 +81,4 @@ __all__ = [
     "set_llm_model",
     "set_llm_api",
     "set_default_client",
-    "LLMClientAPI",
 ]

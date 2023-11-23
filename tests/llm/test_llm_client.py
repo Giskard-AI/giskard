@@ -7,7 +7,7 @@ from openai.types.chat import ChatCompletion, ChatCompletionMessage
 from openai.types.chat.chat_completion import Choice
 from openai.types.chat.chat_completion_message import FunctionCall
 
-from giskard.llm.client import LLMFunctionCall, LLMOutput, get_default_client, set_llm_model, set_llm_api, LLMClientAPI
+from giskard.llm.client import LLMFunctionCall, LLMOutput, get_default_client, set_llm_model, set_llm_api
 from giskard.llm.client.openai import LegacyOpenAIClient, OpenAIClient
 
 OLD_OPEN_AI = False
@@ -166,7 +166,7 @@ def test_autodetect_azure_given_api_in_env():
     os.environ["OPENAI_API_VERSION"] = "2023-07-01-preview"
 
     set_llm_model("my-gtp-4-model")
-    set_llm_api(LLMClientAPI.AZURE)
+    set_llm_api("azure")
 
     default_client = get_default_client()
 
