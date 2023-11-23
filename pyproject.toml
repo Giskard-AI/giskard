@@ -76,7 +76,7 @@ ml_runtime = [
     "transformers>=4.34.1",
     "sentencepiece",                                                                      # needed for some transformers stuff with tokenizer
     "torch>=2.0.0; python_version < '3.12'",
-    "torchdata>=0.6.0",
+    "torchdata>=0.6.0; python_version < '3.12'",
     "portalocker>=2.0.0",                                                                 # Needed by torchdata for test_newspaper_classification_pytorch_dataset
     "torchtext>=0.15.1; python_version < '3.12'",
     "tensorflow-macos==2.14.0; python_version < '3.12' and sys_platform == 'darwin' and platform_machine == 'arm64'",
