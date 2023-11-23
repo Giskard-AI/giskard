@@ -11,6 +11,7 @@ from giskard.core.core import ModelMeta, SupportedModelTypes
 from giskard.core.suite import Suite
 from giskard.scanner import Scanner
 from giskard.scanner.report import ScanReport
+from tests.dill_pool import DillProcessPoolExecutor
 
 
 @pytest.mark.parametrize(
@@ -45,22 +46,24 @@ def test_scanner_returns_non_empty_scan_result_slow(dataset_name, model_name, re
 def _test_scanner_returns_non_empty_scan_result(dataset_name, model_name, request):
     _EXCEPTION_MODELS = ["linear_regression_diabetes"]
 
-    scanner = Scanner()
-
     dataset = request.getfixturevalue(dataset_name)
     model = request.getfixturevalue(model_name)
 
-    result = scanner.analyze(model, dataset, raise_exceptions=True)
+    def _analyze(model, dataset):
+        return Scanner().analyze(model, dataset, raise_exceptions=True)
 
-    assert isinstance(result, ScanReport)
-    assert result.to_html()
+    with DillProcessPoolExecutor() as executor:
+        result = executor.submit_and_wait(_analyze, model, dataset)
 
-    # Do not do below tests for the diabetes regression model.
-    if model_name not in _EXCEPTION_MODELS:
-        assert result.has_issues()
+        assert isinstance(result, ScanReport)
+        assert result.to_html()
 
-        test_suite = result.generate_test_suite()
-        assert isinstance(test_suite, Suite)
+        # Do not do below tests for the diabetes regression model.
+        if model_name not in _EXCEPTION_MODELS:
+            assert result.has_issues()
+
+            test_suite = result.generate_test_suite()
+            assert isinstance(test_suite, Suite)
 
 
 def test_scanner_should_work_with_empty_model_feature_names(german_credit_data, german_credit_model):
@@ -81,13 +84,17 @@ def test_scanner_raises_exception_if_no_detectors_available(german_credit_data, 
 
 @pytest.mark.memory_expensive
 def test_scanner_works_if_dataset_has_no_target(titanic_model, titanic_dataset):
-    scanner = Scanner()
     no_target_dataset = Dataset(titanic_dataset.df, target=None)
-    result = scanner.analyze(titanic_model, no_target_dataset, raise_exceptions=True)
 
-    assert isinstance(result, ScanReport)
-    assert result.has_issues()
-    assert result.to_html()
+    def _analyze(model, dataset):
+        return Scanner().analyze(model, dataset, raise_exceptions=True)
+
+    with DillProcessPoolExecutor() as executor:
+        result = executor.submit_and_wait(_analyze, titanic_model, no_target_dataset)
+
+        assert isinstance(result, ScanReport)
+        assert result.has_issues()
+        assert result.to_html()
 
 
 def test_scan_raises_exception_if_no_dataset_provided(german_credit_model):

@@ -9,6 +9,7 @@ from giskard import Dataset
 from giskard.scanner.issues import Issue
 from giskard.scanner.performance import PerformanceBiasDetector
 from giskard.scanner.performance.performance_bias_detector import _calculate_slice_metrics
+from tests.dill_pool import DillProcessPoolExecutor
 
 
 def test_performance_bias_detector_skips_small_datasets(german_credit_model, german_credit_data, caplog):
@@ -75,31 +76,33 @@ def test_performance_bias_detector_with_text_features(enron_model, enron_data):
     # Augment the dataset with random data
     df = pd.DataFrame({col: enron_data.df[col].sample(100, replace=True).values for col in enron_data.columns})
     dataset = Dataset(df, target=enron_data.target, column_types=enron_data.column_types)
-    detector = PerformanceBiasDetector()
 
-    issues = detector.run(enron_model, dataset)
-    assert len(issues) > 0
-    assert all([isinstance(issue, Issue) for issue in issues])
+    def _run_detector(model, dataset):
+        return PerformanceBiasDetector().run(model, dataset)
+
+    with DillProcessPoolExecutor() as executor:
+        issues = executor.submit_and_wait(_run_detector, enron_model, dataset)
+
+        assert len(issues) > 0
+        assert all([isinstance(issue, Issue) for issue in issues])
 
 
 @pytest.mark.memory_expensive
 def test_selects_issues_with_benjamini_hochberg(titanic_model, titanic_dataset):
     # By default, it does not use the statistical significance
-    detector = PerformanceBiasDetector()
+    def _run_detector(model, dataset, **kwargs):
+        return PerformanceBiasDetector(**kwargs).run(model, dataset)
 
-    issues = detector.run(titanic_model, titanic_dataset)
-    assert len(issues) == 10
+    with DillProcessPoolExecutor() as executor:
+        issues = executor.submit_and_wait(_run_detector, titanic_model, titanic_dataset)
+        assert len(issues) == 10
 
-    # Setting alpha enables the Benjamini–Hochberg procedure
-    detector = PerformanceBiasDetector(alpha=0.10)
+        # Setting alpha enables the Benjamini–Hochberg procedure
+        issues = executor.submit_and_wait(_run_detector, titanic_model, titanic_dataset, alpha=0.10)
+        assert len(issues) == 4
 
-    issues = detector.run(titanic_model, titanic_dataset)
-    assert len(issues) == 4
-
-    detector = PerformanceBiasDetector(alpha=1e-10)
-
-    issues = detector.run(titanic_model, titanic_dataset)
-    assert len(issues) == 2
+        issues = executor.submit_and_wait(_run_detector, titanic_model, titanic_dataset, alpha=1e-10)
+        assert len(issues) == 2
 
 
 def test_calculate_slice_metrics():

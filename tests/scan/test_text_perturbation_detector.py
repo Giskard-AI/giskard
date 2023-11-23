@@ -7,6 +7,7 @@ from langchain.llms.fake import FakeListLLM
 import giskard
 from giskard import Dataset, Model
 from giskard.scanner.robustness.text_perturbation_detector import TextPerturbationDetector
+from tests.dill_pool import DillProcessPoolExecutor
 
 
 def test_perturbation_classification(titanic_model, titanic_dataset):
@@ -63,7 +64,11 @@ def test_llm_text_transformation():
         column_types={"instruct": "text", "question": "text"},
     )
 
-    from giskard.scanner.robustness.text_transformations import TextTypoTransformation
+    def _text_perturbation(model, dataset):
+        from giskard.scanner.robustness.text_transformations import TextTypoTransformation
 
-    analyzer = TextPerturbationDetector(transformations=[TextTypoTransformation])
-    analyzer.run(model, dataset)
+        analyzer = TextPerturbationDetector(transformations=[TextTypoTransformation])
+        analyzer.run(model, dataset)
+
+    with DillProcessPoolExecutor() as executor:
+        executor.submit_and_wait(_text_perturbation, model, dataset)

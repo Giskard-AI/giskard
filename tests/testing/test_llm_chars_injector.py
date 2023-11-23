@@ -9,6 +9,7 @@ from giskard.models.base import BaseModel
 from giskard.models.base.model_prediction import ModelPredictionResults
 from giskard.testing.tests.llm import LLMCharInjector
 from giskard.testing.tests.llm.injections import CharInjectionResult, test_llm_char_injection
+from tests.dill_pool import DillProcessPoolExecutor
 
 
 @pytest.mark.memory_expensive
@@ -25,35 +26,34 @@ def test_single_injection():
         ModelPredictionResults(prediction=["And now for something completely different!!! The Larch!"]),
     ] * 3
 
-    injector = LLMCharInjector(max_repetitions=23, threshold=0.1412, output_sensitivity=0.15)
-    result = injector.run_single_injection(model, dataset, reference_predictions, char="\r", feature="feature_1")
-    injector._cleanup()
+    def _inject(model, dataset, reference_predictions, threshold, output_sensitivity):
+        injector = LLMCharInjector(max_repetitions=23, threshold=threshold, output_sensitivity=output_sensitivity)
+        return injector.run_single_injection(model, dataset, reference_predictions, char="\r", feature="feature_1")
 
-    assert isinstance(result, CharInjectionResult)
-    assert result.fail_rate == pytest.approx(1 / 3)
-    assert result.vulnerable
-    assert result.char == "\r"
-    assert result.vulnerable_mask.tolist() == [False, False, True]
+    with DillProcessPoolExecutor() as executor:
+        result = executor.submit_and_wait(_inject, model, dataset, reference_predictions, 0.1412, 0.15)
 
-    # First sample has suffix of length 23
-    assert result.perturbed_dataset.df.iloc[0]["feature_1"] == "one" + "\r" * 23
+        assert isinstance(result, CharInjectionResult)
+        assert result.fail_rate == pytest.approx(1 / 3)
+        assert result.vulnerable
+        assert result.char == "\r"
+        assert result.vulnerable_mask.tolist() == [False, False, True]
 
-    # Third example got runtime error, and halved the number of repetitions to 11
-    assert result.perturbed_dataset.df.iloc[2]["feature_1"] == "three" + "\r" * 11
+        # First sample has suffix of length 23
+        assert result.perturbed_dataset.df.iloc[0]["feature_1"] == "one" + "\r" * 23
 
-    # Increase sensitivity
-    injector = LLMCharInjector(max_repetitions=23, threshold=0.1412, output_sensitivity=0.2)
-    result = injector.run_single_injection(model, dataset, reference_predictions, char="\r", feature="feature_1")
-    injector._cleanup()
-    assert not result.vulnerable
-    assert result.fail_rate == pytest.approx(0.0)
+        # Third example got runtime error, and halved the number of repetitions to 11
+        assert result.perturbed_dataset.df.iloc[2]["feature_1"] == "three" + "\r" * 11
 
-    # Increase threshold
-    injector = LLMCharInjector(max_repetitions=23, threshold=0.4, output_sensitivity=0.15)
-    result = injector.run_single_injection(model, dataset, reference_predictions, char="\r", feature="feature_1")
-    injector._cleanup()
-    assert not result.vulnerable
-    assert result.fail_rate == pytest.approx(1 / 3)
+        # Increase sensitivity
+        result = executor.submit_and_wait(_inject, model, dataset, reference_predictions, 0.1412, 0.2)
+        assert not result.vulnerable
+        assert result.fail_rate == pytest.approx(0.0)
+
+        # Increase threshold
+        result = executor.submit_and_wait(_inject, model, dataset, reference_predictions, 0.41412, 0.15)
+        assert not result.vulnerable
+        assert result.fail_rate == pytest.approx(1 / 3)
 
 
 @pytest.mark.memory_expensive
@@ -69,16 +69,20 @@ def test_single_injection_with_nonstring_types():
         ModelPredictionResults(prediction=[{"answer": "And now for something completely different!!! The Larch!"}]),
     ]
 
-    injector = LLMCharInjector(max_repetitions=23, threshold=0.1412, output_sensitivity=0.15)
-    result = injector.run_single_injection(model, dataset, reference_predictions, char="@", feature="feature_2")
+    def _inject(model, dataset, reference_predictions):
+        injector = LLMCharInjector(max_repetitions=23, threshold=0.1412, output_sensitivity=0.15)
+        return injector.run_single_injection(model, dataset, reference_predictions, char="@", feature="feature_2")
 
-    assert isinstance(result, CharInjectionResult)
-    assert result.fail_rate == pytest.approx(1 / 2)
-    assert result.vulnerable
-    assert result.char == "@"
-    assert result.vulnerable_mask.tolist() == [False, True]
+    with DillProcessPoolExecutor() as executor:
+        result = executor.submit_and_wait(_inject, model, dataset, reference_predictions)
 
-    assert result.perturbed_dataset.df.iloc[0]["feature_2"] == "1" + "@" * 23
+        assert isinstance(result, CharInjectionResult)
+        assert result.fail_rate == pytest.approx(1 / 2)
+        assert result.vulnerable
+        assert result.char == "@"
+        assert result.vulnerable_mask.tolist() == [False, True]
+
+        assert result.perturbed_dataset.df.iloc[0]["feature_2"] == "1" + "@" * 23
 
 
 def test_runs_on_multiple_features_and_chars():

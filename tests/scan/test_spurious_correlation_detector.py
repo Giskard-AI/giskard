@@ -3,6 +3,7 @@ import pytest
 
 from giskard import Model
 from giskard.scanner.correlation.spurious_correlation_detector import SpuriousCorrelationDetector
+from tests.dill_pool import DillProcessPoolExecutor
 
 
 def _make_titanic_biased_model(minimal=False):
@@ -23,37 +24,43 @@ def _make_titanic_biased_model(minimal=False):
 @pytest.mark.memory_expensive
 def test_spurious_correlation_is_detected(titanic_dataset):
     model = _make_titanic_biased_model()
-    detector = SpuriousCorrelationDetector()
-    issues = detector.run(model, titanic_dataset)
 
-    assert len(issues) > 0
-    assert '`Sex` == "male"' in [str(i.slicing_fn) for i in issues]
+    def _spurious_correlation(model, dataset):
+        return SpuriousCorrelationDetector().run(model, dataset)
 
-    rng = np.random.default_rng(1943)
+    with DillProcessPoolExecutor() as executor:
+        issues = executor.submit_and_wait(_spurious_correlation, model, titanic_dataset)
 
-    def random_classifier(df):
-        p = rng.uniform(size=len(df))
-        return np.stack([p, 1 - p], axis=1)
+        assert len(issues) > 0
+        assert '`Sex` == "male"' in [str(i.slicing_fn) for i in issues]
 
-    random_model = Model(
-        random_classifier,
-        model_type="classification",
-        classification_labels=["no", "yes"],
-    )
-    issues = detector.run(random_model, titanic_dataset)
+        rng = np.random.default_rng(1943)
 
-    assert not issues
+        def random_classifier(df):
+            p = rng.uniform(size=len(df))
+            return np.stack([p, 1 - p], axis=1)
+
+        random_model = Model(
+            random_classifier,
+            model_type="classification",
+            classification_labels=["no", "yes"],
+        )
+        issues = executor.submit_and_wait(_spurious_correlation, random_model, titanic_dataset)
+
+        assert not issues
 
 
 @pytest.mark.memory_expensive
 def test_threshold(titanic_model, titanic_dataset):
-    detector = SpuriousCorrelationDetector(threshold=0.6)
-    issues = detector.run(titanic_model, titanic_dataset)
-    assert len(issues) > 0
+    def _spurious_correlation(model, dataset, threshold):
+        return SpuriousCorrelationDetector(threshold=threshold).run(model, dataset)
 
-    detector = SpuriousCorrelationDetector(threshold=0.9)
-    issues = detector.run(titanic_model, titanic_dataset)
-    assert not issues
+    with DillProcessPoolExecutor() as executor:
+        issues = executor.submit_and_wait(_spurious_correlation, titanic_model, titanic_dataset, 0.6)
+        assert len(issues) > 0
+
+        issues = executor.submit_and_wait(_spurious_correlation, titanic_model, titanic_dataset, 0.9)
+        assert not issues
 
 
 @pytest.mark.parametrize(
@@ -70,17 +77,19 @@ def test_can_choose_association_measures(method, expected_name, expected_value, 
     titanic_model = request.getfixturevalue("titanic_model")
     biased_model = _make_titanic_biased_model()
 
-    detector = SpuriousCorrelationDetector(method=method)
-    issues = detector.run(biased_model, titanic_dataset)
-    assert len(issues) > 0
-    assert issues[0].meta["metric_value"] == pytest.approx(1)
-    assert expected_name in issues[0].meta["metric"]
+    def _spurious_correlation(model, dataset, method):
+        return SpuriousCorrelationDetector(method=method).run(model, dataset)
 
-    detector = SpuriousCorrelationDetector(method=method)
-    issues = detector.run(titanic_model, titanic_dataset)
-    assert len(issues) > 0
-    assert issues[0].meta["metric_value"] == pytest.approx(expected_value, abs=0.01)
-    assert expected_name in issues[0].meta["metric"]
+    with DillProcessPoolExecutor() as executor:
+        issues = executor.submit_and_wait(_spurious_correlation, biased_model, titanic_dataset, method)
+        assert len(issues) > 0
+        assert issues[0].meta["metric_value"] == pytest.approx(1)
+        assert expected_name in issues[0].meta["metric"]
+
+        issues = executor.submit_and_wait(_spurious_correlation, titanic_model, titanic_dataset, method)
+        assert len(issues) > 0
+        assert issues[0].meta["metric_value"] == pytest.approx(expected_value, abs=0.01)
+        assert expected_name in issues[0].meta["metric"]
 
 
 def test_raises_error_for_invalid_measure_method(titanic_model, titanic_dataset):

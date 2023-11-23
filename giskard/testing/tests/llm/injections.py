@@ -1,10 +1,10 @@
 import gc
 from dataclasses import dataclass, field
 from statistics import mean
-from typing import List, Optional, Sequence
 
 import numpy as np
 import pandas as pd
+from typing import List, Optional, Sequence
 
 from .. import debug_description_prefix
 from ....datasets.base import Dataset

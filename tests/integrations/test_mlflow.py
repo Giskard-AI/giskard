@@ -1,9 +1,11 @@
+from pathlib import Path
+from tempfile import TemporaryDirectory
+
 import mlflow
 import pytest
-from pathlib import Path
 
-from tempfile import TemporaryDirectory
 from giskard.core.core import SupportedModelTypes
+from tests.dill_pool import DillProcessPoolExecutor
 
 mlflow_model_types = {
     SupportedModelTypes.CLASSIFICATION: "classifier",
@@ -44,7 +46,8 @@ def _evaluate(dataset, model, evaluator_config):
 )
 @pytest.mark.memory_expensive
 def test_fast(dataset_name, model_name, request):
-    _run_test(dataset_name, model_name, request)
+    with DillProcessPoolExecutor() as executor:
+        executor.submit_and_wait(_run_test, dataset_name, model_name, request)
 
 
 @pytest.mark.parametrize(

@@ -3,6 +3,7 @@ import wandb
 
 from giskard import scan
 from giskard.models.model_explanation import explain_with_shap
+from tests.dill_pool import DillProcessPoolExecutor
 
 NOT_SUPP_TEXT_WARNING_MSG = r"We do not support the wandb logging of ShapResult for text features yet.*"
 
@@ -23,14 +24,15 @@ def test_fast(dataset_name, model_name, request):
     dataset = request.getfixturevalue(dataset_name)
     model = request.getfixturevalue(model_name)
 
-    if dataset_name in exception_fixtures:
-        with pytest.warns(
-            UserWarning,
-            match=NOT_SUPP_TEXT_WARNING_MSG,
-        ):
-            _to_wandb(model, dataset)
-    else:
-        _to_wandb(model, dataset)
+    with DillProcessPoolExecutor() as executor:
+        if dataset_name in exception_fixtures:
+            with pytest.warns(
+                UserWarning,
+                match=NOT_SUPP_TEXT_WARNING_MSG,
+            ):
+                executor.submit_and_wait(_to_wandb, model, dataset)
+        else:
+            executor.submit_and_wait(_to_wandb, model, dataset)
 
 
 @pytest.mark.parametrize(
