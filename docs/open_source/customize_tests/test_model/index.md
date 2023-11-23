@@ -257,13 +257,15 @@ suite = (
 my_first_model = Model(model=model, model_type="classification")
 
 # Run the suite by specifying our model and display the results
-passed_first, results_first = suite.run(model=my_first_model)
+suite_results = suite.run(model=my_first_model)
+passed_first, results_first = suite_results.passed, suite_results.results
 
 # Create an improved version of our model
 my_improved_model = Model(model=model, model_type="classification")
 
 # Run the suite with our new version and check if the results improved
-passed_second, results_second = suite.run(model=my_improved_model)
+suite_results = suite.run(model=my_improved_model)
+passed_second, results_second = suite_results.passed, suite_results.results
 ```
 
 :::
@@ -322,7 +324,8 @@ batch_1 = Dataset(
 )
 
 # Run the suite by specifying our model and display the results
-passed_1, results_1 = suite.run(actual_dataset=batch_1)
+suite_results = suite.run(actual_dataset=batch_1) 
+passed_1, results_1 = suite_results.passed, suite_results.results
 
 # batch_2 can be a second batch of production data
 batch_2 = Dataset(
@@ -332,7 +335,8 @@ batch_2 = Dataset(
 )
 
 # Run the suite with our new version and check if the results improved
-passed_2, results_2 = suite.run(actual_dataset=batch_2)
+suite_results = suite.run(actual_dataset=batch_2)
+passed_2, results_2 = suite_results.passed, suite_results.results
 ```
 :::
 
