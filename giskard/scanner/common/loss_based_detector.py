@@ -1,7 +1,7 @@
 import datetime
 from abc import abstractmethod
 from time import perf_counter
-from typing import Sequence
+from typing import Optional, Sequence
 
 import pandas as pd
 
@@ -23,6 +23,9 @@ class LossBasedDetector(Detector):
 
     _needs_target = True
 
+    def __init__(self, max_dataset_size: Optional[int] = None):
+        self.max_dataset_size = max_dataset_size
+
     def run(self, model: BaseModel, dataset: Dataset, features: Sequence[str]):
         if self._needs_target and dataset.target is None:
             logger.info(f"{self.__class__.__name__}: Skipping detection because the dataset has no target column.")
@@ -39,10 +42,10 @@ class LossBasedDetector(Detector):
             return []
 
         # If the dataset is very large, limit to a subsample
-        max_data_size = self.MAX_DATASET_SIZE // len(features)
-        if len(dataset) > max_data_size:
-            logger.info(f"{self.__class__.__name__}: Limiting dataset size to {max_data_size} samples.")
-            dataset = get_dataset_subsample(dataset, model, max_data_size)
+        self.max_dataset_size = self.max_dataset_size or self.MAX_DATASET_SIZE // len(features)
+        if len(dataset) > self.max_dataset_size:
+            logger.info(f"{self.__class__.__name__}: Limiting dataset size to {self.max_dataset_size} samples.")
+            dataset = get_dataset_subsample(dataset, model, self.max_dataset_size)
 
         # Calculate loss
         logger.info(f"{self.__class__.__name__}: Calculating loss")
