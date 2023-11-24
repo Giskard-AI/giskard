@@ -71,14 +71,12 @@ class LLMCharsInjectionDetector(Detector):
             "model_predict_calls": self.num_samples * len(self.control_chars),
         }
 
-    def run(self, model: BaseModel, dataset: Dataset) -> Sequence[Issue]:
+    def run(self, model: BaseModel, dataset: Dataset, features: Sequence[str]) -> Sequence[Issue]:
         if len(dataset) < 1:
             logger.warning(
                 f"{self.__class__.__name__}: Skipping control character injection test because the dataset is empty."
             )
             return []
-
-        features = model.meta.feature_names or dataset.columns.drop(dataset.target, errors="ignore")
 
         dataset_sample = dataset.slice(
             lambda df: df.sample(min(self.num_samples, len(dataset)), random_state=402),

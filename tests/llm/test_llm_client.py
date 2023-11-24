@@ -1,12 +1,23 @@
+import os
 from unittest.mock import Mock, patch
 
+import pytest
 from openai.types import CompletionUsage
 from openai.types.chat import ChatCompletion, ChatCompletionMessage
 from openai.types.chat.chat_completion import Choice
 from openai.types.chat.chat_completion_message import FunctionCall
 
-from giskard.llm.client import LLMFunctionCall, LLMOutput
+from giskard.llm.client import LLMFunctionCall, LLMOutput, get_default_client, set_llm_model, set_llm_api
 from giskard.llm.client.openai import LegacyOpenAIClient, OpenAIClient
+
+OLD_OPEN_AI = False
+try:
+    from openai import OpenAI, AzureOpenAI
+except ImportError:
+    OLD_OPEN_AI = True
+    OpenAI = None
+    AzureOpenAI = None
+
 
 DEMO_OPENAI_RESPONSE = ChatCompletion(
     id="chatcmpl-abc123",
@@ -76,7 +87,9 @@ DEMO_LEGACY_OPENAI_RESPONSE_FC = {
 def test_llm_complete_message():
     client = Mock()
     client.chat.completions.create.return_value = DEMO_OPENAI_RESPONSE
-    res = OpenAIClient(client).complete([{"role": "system", "content": "Hello"}], temperature=0.11, max_tokens=1)
+    res = OpenAIClient("gpt-4", client).complete(
+        [{"role": "system", "content": "Hello"}], temperature=0.11, max_tokens=1
+    )
 
     client.chat.completions.create.assert_called_once()
     assert client.chat.completions.create.call_args[1]["messages"] == [{"role": "system", "content": "Hello"}]
@@ -93,7 +106,7 @@ def test_llm_function_call(openai):
     client = Mock()
     client.chat.completions.create.return_value = DEMO_OPENAI_RESPONSE_FC
 
-    res = OpenAIClient(client).complete(
+    res = OpenAIClient("gpt-4", client).complete(
         [{"role": "system", "content": "Hello"}], functions=[{"name": "demo"}], temperature=0.11, max_tokens=1
     )
 
@@ -113,7 +126,7 @@ def test_llm_function_call(openai):
 @patch("giskard.llm.client.openai.openai")
 def test_legacy_llm_complete_message(openai):
     openai.ChatCompletion.create.return_value = DEMO_LEGACY_OPENAI_RESPONSE
-    res = LegacyOpenAIClient().complete([{"role": "system", "content": "Hello"}], temperature=0.11, max_tokens=1)
+    res = LegacyOpenAIClient("gpt-4").complete([{"role": "system", "content": "Hello"}], temperature=0.11, max_tokens=1)
 
     openai.ChatCompletion.create.assert_called_once()
     assert openai.ChatCompletion.create.call_args[1]["messages"] == [{"role": "system", "content": "Hello"}]
@@ -129,7 +142,7 @@ def test_legacy_llm_complete_message(openai):
 def test_legacy_llm_function_call(openai):
     openai.ChatCompletion.create.return_value = DEMO_LEGACY_OPENAI_RESPONSE_FC
 
-    res = LegacyOpenAIClient().complete(
+    res = LegacyOpenAIClient("gpt-4").complete(
         [{"role": "system", "content": "Hello"}], functions=[{"name": "demo"}], temperature=0.11, max_tokens=1
     )
 
@@ -144,3 +157,27 @@ def test_legacy_llm_function_call(openai):
     assert isinstance(res.function_call, LLMFunctionCall)
     assert res.function_call.function == "my_test_function"
     assert res.function_call.args == {"my_parameter": "Parameter Value"}
+
+
+@pytest.mark.skipif(OLD_OPEN_AI, reason="Azure is not supported with openai<1.0.0")
+def test_autodetect_azure_given_api_in_env():
+    os.environ["AZURE_OPENAI_API_KEY"] = "AZURE_OPENAI_API_KEY"
+    os.environ["AZURE_OPENAI_ENDPOINT"] = "https://xxx.openai.azure.com"
+    os.environ["OPENAI_API_VERSION"] = "2023-07-01-preview"
+
+    set_llm_model("my-gtp-4-model")
+    set_llm_api("azure")
+
+    default_client = get_default_client()
+
+    assert isinstance(default_client._client, AzureOpenAI)
+    assert default_client.model == "my-gtp-4-model"
+
+
+@pytest.mark.skipif(OLD_OPEN_AI, reason="Azure is not supported with openai<1.0.0")
+def test_autodetect_openai():
+    os.environ["OPENAI_API_KEY"] = "sk-..."
+
+    default_client = get_default_client()
+
+    assert isinstance(default_client._client, OpenAI)

@@ -1,6 +1,6 @@
-from collections import defaultdict
-from typing import Sequence, Dict, Optional
 from abc import ABC, abstractmethod
+from collections import defaultdict
+from typing import Dict, Optional, Sequence
 
 from ..datasets.base import Dataset
 from ..models.base import BaseModel
@@ -9,7 +9,7 @@ from .issues import Issue
 
 class Detector(ABC):
     @abstractmethod
-    def run(self, model: BaseModel, dataset: Dataset) -> Sequence[Issue]:
+    def run(self, model: BaseModel, dataset: Dataset, features: Sequence[str]) -> Sequence[Issue]:
         ...
 
 
