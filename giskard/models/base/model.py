@@ -456,7 +456,7 @@ class BaseModel(ABC):
             else None
         )
 
-        clazz = cls.determine_model_class(meta, local_dir, model_py_version=model_py_ver)
+        clazz = cls.determine_model_class(meta, local_dir, model_py_ver=model_py_ver)
 
         constructor_params = meta.__dict__
         constructor_params["id"] = str(model_id)
@@ -464,7 +464,7 @@ class BaseModel(ABC):
         del constructor_params["loader_module"]
         del constructor_params["loader_class"]
 
-        model = clazz.load(local_dir, model_py_version=model_py_ver, **constructor_params)
+        model = clazz.load(local_dir, model_py_ver=model_py_ver, **constructor_params)
         return model
 
     @classmethod
