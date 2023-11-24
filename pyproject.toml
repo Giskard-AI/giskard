@@ -70,22 +70,22 @@ ml_runtime = [
     "xgboost>=1.7.5",
     "lightgbm>=3.3.5",
     "imbalanced-learn>=0.10.1",
-    "catboost>=1.1.1",
+    "catboost>=1.1.1; python_version < '3.12'",
     "requests-mock>=1.10.0",
     "tensorflow-hub>=0.12.0",
     "transformers>=4.34.1",
     "sentencepiece",                                                                      # needed for some transformers stuff with tokenizer
-    "torch>=2.0.0",
-    "torchdata>=0.6.0",
+    "torch>=2.0.0; python_version < '3.12'",
+    "torchdata>=0.6.0; python_version < '3.12'",
     "portalocker>=2.0.0",                                                                 # Needed by torchdata for test_newspaper_classification_pytorch_dataset
-    "torchtext>=0.15.1",
-    "tensorflow-macos==2.14.0; sys_platform == 'darwin' and platform_machine == 'arm64'",
-    "tensorflow==2.14.0",
+    "torchtext>=0.15.1; python_version < '3.12'",
+    "tensorflow-macos==2.14.0; python_version < '3.12' and sys_platform == 'darwin' and platform_machine == 'arm64'",
+    "tensorflow==2.14.0; python_version < '3.12'",
     # tensorflow-text is only available on linux or mac, but not for arm64 nor windows
     "tensorflow-text==2.14.0; python_version < '3.11' and (sys_platform == 'linux' or sys_platform == 'darwin') and platform_machine == 'x86_64'",
     "mlflow>2",
     "wandb",
-    "tensorflow-io-gcs-filesystem<0.32; platform_machine != 'arm64'",                                                                              # Tensorflow io does not work for windows from 0.32, but does not work for arm64 before...
+    "tensorflow-io-gcs-filesystem<0.32; python_version < '3.12' and platform_machine != 'arm64'",                                                                              # Tensorflow io does not work for windows from 0.32, but does not work for arm64 before...
 ]
 test = [
     "pytest-cov>=4.0.0",
@@ -149,15 +149,16 @@ classifiers = [
     "Programming Language :: Python :: 3.9",
     "Programming Language :: Python :: 3.10",
     "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
 ]
 
-requires-python = ">=3.9, <3.12"
+requires-python = ">=3.9, <3.13"
 dependencies = [
     "cloudpickle>=1.1.1",
     "zstandard>=0.10.0",
     "mlflow-skinny>=2",
     "protobuf<3.21",            # Not compatible with transformers/tensorflow
-    "numpy>=1.22.0",
+    "numpy>=1.26.0", # Minimum version for python 3.12
     "scikit-learn>=1.0",
     "scipy>=1.7.3",
     "mixpanel>=4.4.0",
@@ -181,7 +182,7 @@ dependencies = [
 llm = [
     "openai",
     "evaluate>=0.4.1",
-    "bert-score>=0.3.13",
+    "bert-score>=0.3.13; python_version < '3.12'",
 ]
 
 hub = [
@@ -193,9 +194,9 @@ hub = [
     "psutil>=5.4.6",
     "click>=7.0",
     "docker>=6.0.0",
-    "shap>=0.41.0",
-    "llvmlite>=0.40.0",        # Needed to be installable for Poetry
-    "numba>=0.50.0",           # Needed to be installable for Poetry
+    "shap>=0.41.0; python_version < '3.12'",
+    "llvmlite>=0.40.0; python_version < '3.12'",        # Needed to be installable for Poetry
+    "numba>=0.50.0; python_version < '3.12'",           # Needed to be installable for Poetry
     "lockfile>=0.12.2",
     "python-daemon>=2.2.2,<3",
     "pycryptodome>=3.6.1",
