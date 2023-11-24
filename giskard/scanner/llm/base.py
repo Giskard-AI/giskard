@@ -92,6 +92,8 @@ class RequirementBasedDetector(Detector):
             description="The model does not satisfy the following requirement: " + requirement,
             examples=examples,
             meta={
+                "metric": "Failing samples",
+                "metric_value": len(examples),
                 "domain": requirement,
                 "requirement": requirement,
                 "deviation": f"{len(examples)} failing sample{'s' if len(examples) > 1 else ''} found",

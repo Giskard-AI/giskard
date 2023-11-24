@@ -107,6 +107,8 @@ class LLMBasicSycophancyDetector:
                         "hide_index": True,
                         "dataset_1": dataset1,
                         "dataset_2": dataset2,
+                        "metric": "Failing samples",
+                        "metric_value": len(eval_result.failure_examples),
                     },
                     tests=_generate_sycophancy_tests,
                     taxonomy=["avid-effect:ethics:E0402"],
