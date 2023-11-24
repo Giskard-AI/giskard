@@ -50,7 +50,7 @@ def _test_scanner_returns_non_empty_scan_result(dataset_name, model_name, reques
     model = request.getfixturevalue(model_name)
 
     def _analyze(model, dataset):
-        return Scanner().analyze(model, dataset, raise_exceptions=True)
+        return Scanner().analyze(model, dataset, features=model.meta.feature_names, raise_exceptions=True)
 
     with DillProcessPoolExecutor() as executor:
         result = executor.submit_and_wait(_analyze, model, dataset)
@@ -69,7 +69,9 @@ def _test_scanner_returns_non_empty_scan_result(dataset_name, model_name, reques
 def test_scanner_should_work_with_empty_model_feature_names(german_credit_data, german_credit_model):
     scanner = Scanner()
     german_credit_model.meta.feature_names = None
-    result = scanner.analyze(german_credit_model, german_credit_data, raise_exceptions=True)
+    result = scanner.analyze(
+        german_credit_model, german_credit_data, features=german_credit_model.meta.feature_names, raise_exceptions=True
+    )
 
     assert isinstance(result, ScanReport)
     assert result.has_issues()
@@ -87,7 +89,7 @@ def test_scanner_works_if_dataset_has_no_target(titanic_model, titanic_dataset):
     no_target_dataset = Dataset(titanic_dataset.df, target=None)
 
     def _analyze(model, dataset):
-        return Scanner().analyze(model, dataset, raise_exceptions=True)
+        return Scanner().analyze(model, dataset, features=model.meta.feature_names, raise_exceptions=True)
 
     with DillProcessPoolExecutor() as executor:
         result = executor.submit_and_wait(_analyze, titanic_model, no_target_dataset)
@@ -221,7 +223,7 @@ def test_scanner_warns_if_too_many_features():
 
     # Model with no feature names
     model = Model(lambda x: np.ones(len(x)), model_type="classification", classification_labels=[0, 1])
-    dataset = Dataset(pd.DataFrame(np.ones((10, 120)), columns=map(str, np.arange(120))), target="0")
+    dataset = Dataset(pd.DataFrame(np.ones((10, 121)), columns=map(str, np.arange(121))), target="0")
 
     with pytest.warns(
         UserWarning, match=re.escape("It looks like your dataset has a very large number of features (120)")
@@ -238,3 +240,33 @@ def test_scanner_warns_if_too_many_features():
     with warnings.catch_warnings():
         warnings.simplefilter("error")
         scanner.analyze(model, dataset)
+
+
+def test_can_limit_features_to_subset():
+    scanner = Scanner()
+
+    # Model with no feature names
+    model = Model(lambda x: np.ones(len(x)), model_type="classification", classification_labels=[0, 1])
+    dataset = Dataset(pd.DataFrame(np.ones((123, 4)), columns=["feat1", "feat2", "feat3", "label"]), target="label")
+
+    # Mock method
+    detector = mock.Mock()
+    detector.run.return_value = []
+    scanner.get_detectors = lambda *args, **kwargs: [detector]
+
+    scanner.analyze(model, dataset, features=["feat1", "feat2"])
+    detector.run.assert_called_once_with(model, dataset, features=["feat1", "feat2"])
+
+    detector.run.reset_mock()
+    scanner.analyze(model, dataset)
+    detector.run.assert_called_once_with(model, dataset, features=["feat1", "feat2", "feat3"])
+
+    detector.run.reset_mock()
+    scanner.analyze(model, dataset)
+    detector.run.assert_called_once_with(model, dataset, features=["feat1", "feat2", "feat3"])
+
+    with pytest.raises(ValueError, match=r"The `features` argument contains invalid feature names: does-not-exist"):
+        scanner.analyze(model, dataset, features=["feat1", "does-not-exist"])
+
+    with pytest.raises(ValueError, match=r"No features to scan"):
+        scanner.analyze(model, dataset, features=[])

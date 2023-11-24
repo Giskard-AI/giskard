@@ -12,7 +12,7 @@ from tests.dill_pool import DillProcessPoolExecutor
 
 def test_perturbation_classification(titanic_model, titanic_dataset):
     analyzer = TextPerturbationDetector(threshold=0.01)
-    res = analyzer.run(titanic_model, titanic_dataset)
+    res = analyzer.run(titanic_model, titanic_dataset, features=titanic_model.meta.feature_names)
     assert res
 
 
@@ -24,7 +24,7 @@ def test_text_perturbation_skips_non_textual_dtypes():
 
     model = giskard.Model(lambda df: np.ones(len(df)), model_type="classification", classification_labels=[0, 1])
     analyzer = TextPerturbationDetector(threshold=0.01)
-    issues = analyzer.run(model, ds)
+    issues = analyzer.run(model, ds, features=["feature"])
 
     assert not issues
 
@@ -36,7 +36,7 @@ def test_text_perturbation_works_with_nan_values():
     analyzer = TextPerturbationDetector(threshold=0.01)
     model = giskard.Model(lambda df: np.ones(len(df)), model_type="classification", classification_labels=[0, 1])
 
-    issues = analyzer.run(model, ds)
+    issues = analyzer.run(model, ds, features=["feature"])
 
     assert len(issues) == 0
 
@@ -68,7 +68,7 @@ def test_llm_text_transformation():
         from giskard.scanner.robustness.text_transformations import TextTypoTransformation
 
         analyzer = TextPerturbationDetector(transformations=[TextTypoTransformation])
-        analyzer.run(model, dataset)
+        analyzer.run(model, dataset, features=["instruct", "question"])
 
     with DillProcessPoolExecutor() as executor:
         executor.submit_and_wait(_text_perturbation, model, dataset)

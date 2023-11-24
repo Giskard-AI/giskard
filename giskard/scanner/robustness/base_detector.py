@@ -51,17 +51,15 @@ class BaseTextPerturbationDetector(Detector):
         self.num_samples = num_samples
         self.output_sensitivity = output_sensitivity
 
-    def run(self, model: BaseModel, dataset: Dataset, **kwargs) -> Sequence[Issue]:
+    def run(self, model: BaseModel, dataset: Dataset, features: Sequence[str]) -> Sequence[Issue]:
         transformations = self.transformations or self._get_default_transformations(model, dataset)
-        features = [
-            col
-            for col, col_type in dataset.column_types.items()
-            if col_type == "text" and pd.api.types.is_string_dtype(dataset.df[col].dtype)
-        ]
 
-        # Only analyze the model features
-        if model.meta.feature_names:
-            features = [f for f in features if f in model.meta.feature_names]
+        # Only analyze text features
+        text_features = [
+            f
+            for f in features
+            if dataset.column_types[f] == "text" and pd.api.types.is_string_dtype(dataset.df[f].dtype)
+        ]
 
         logger.info(
             f"{self.__class__.__name__}: Running with transformations={[t.name for t in transformations]} "
@@ -70,7 +68,7 @@ class BaseTextPerturbationDetector(Detector):
 
         issues = []
         for transformation in transformations:
-            issues.extend(self._detect_issues(model, dataset, transformation, features))
+            issues.extend(self._detect_issues(model, dataset, transformation, text_features))
 
         return [i for i in issues if i is not None]
 

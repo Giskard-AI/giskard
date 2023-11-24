@@ -25,11 +25,11 @@ def _make_titanic_biased_model(minimal=False):
 def test_spurious_correlation_is_detected(titanic_dataset):
     model = _make_titanic_biased_model()
 
-    def _spurious_correlation(model, dataset):
-        return SpuriousCorrelationDetector().run(model, dataset)
+    def _spurious_correlation(model, dataset, features):
+        return SpuriousCorrelationDetector().run(model, dataset, features=features)
 
     with DillProcessPoolExecutor() as executor:
-        issues = executor.submit_and_wait(_spurious_correlation, model, titanic_dataset)
+        issues = executor.submit_and_wait(_spurious_correlation, model, titanic_dataset, ["Sex"])
 
         assert len(issues) > 0
         assert '`Sex` == "male"' in [str(i.slicing_fn) for i in issues]
@@ -45,7 +45,7 @@ def test_spurious_correlation_is_detected(titanic_dataset):
             model_type="classification",
             classification_labels=["no", "yes"],
         )
-        issues = executor.submit_and_wait(_spurious_correlation, random_model, titanic_dataset)
+        issues = executor.submit_and_wait(_spurious_correlation, random_model, titanic_dataset, ["Sex", "Name"])
 
         assert not issues
 
@@ -53,7 +53,7 @@ def test_spurious_correlation_is_detected(titanic_dataset):
 @pytest.mark.memory_expensive
 def test_threshold(titanic_model, titanic_dataset):
     def _spurious_correlation(model, dataset, threshold):
-        return SpuriousCorrelationDetector(threshold=threshold).run(model, dataset)
+        return SpuriousCorrelationDetector(threshold=threshold).run(model, dataset, features=model.meta.feature_names)
 
     with DillProcessPoolExecutor() as executor:
         issues = executor.submit_and_wait(_spurious_correlation, titanic_model, titanic_dataset, 0.6)
@@ -78,7 +78,7 @@ def test_can_choose_association_measures(method, expected_name, expected_value, 
     biased_model = _make_titanic_biased_model()
 
     def _spurious_correlation(model, dataset, method):
-        return SpuriousCorrelationDetector(method=method).run(model, dataset)
+        return SpuriousCorrelationDetector(method=method).run(model, dataset, features=["Sex"])
 
     with DillProcessPoolExecutor() as executor:
         issues = executor.submit_and_wait(_spurious_correlation, biased_model, titanic_dataset, method)
@@ -95,4 +95,4 @@ def test_can_choose_association_measures(method, expected_name, expected_value, 
 def test_raises_error_for_invalid_measure_method(titanic_model, titanic_dataset):
     with pytest.raises(ValueError):
         detector = SpuriousCorrelationDetector(method="this does not exist!")
-        detector.run(titanic_model, titanic_dataset)
+        detector.run(titanic_model, titanic_dataset, features=["Sex"])

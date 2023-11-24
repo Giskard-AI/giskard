@@ -1,3 +1,5 @@
+from typing import Sequence
+
 import pandas as pd
 
 from ...datasets.base import Dataset
@@ -17,14 +19,11 @@ class SpuriousCorrelationDetector(Detector):
         self.threshold = threshold
         self.method = method
 
-    def run(self, model: BaseModel, dataset: Dataset, **kwargs):
+    def run(self, model: BaseModel, dataset: Dataset, features: Sequence[str]):
         logger.info(f"{self.__class__.__name__}: Running")
 
         # Dataset prediction
         ds_predictions = pd.Series(model.predict(dataset).prediction, dataset.df.index)
-
-        # Keep only interesting features
-        features = model.meta.feature_names or dataset.columns.drop(dataset.target, errors="ignore")
 
         # Warm up text metadata
         for f in features:
