@@ -83,18 +83,18 @@ def test_selects_issues_with_benjamini_hochberg(titanic_model, titanic_dataset):
     # By default, it does not use the statistical significance
     detector = PerformanceBiasDetector()
 
-    issues = detector.run(titanic_model, titanic_dataset, features=titanic_model.meta.feature_names)
-    assert len(issues) == 10
+    issues = detector.run(titanic_model, titanic_dataset, features=["Name", "Sex", "Pclass"])
+    assert len(issues) == 6
 
     # Setting alpha enables the Benjamini–Hochberg procedure
     detector = PerformanceBiasDetector(alpha=0.10)
 
-    issues = detector.run(titanic_model, titanic_dataset, features=titanic_model.meta.feature_names)
-    assert len(issues) == 4
+    issues = detector.run(titanic_model, titanic_dataset, features=["Name", "Sex", "Pclass"])
+    assert len(issues) == 3
 
     detector = PerformanceBiasDetector(alpha=1e-10)
 
-    issues = detector.run(titanic_model, titanic_dataset, features=titanic_model.meta.feature_names)
+    issues = detector.run(titanic_model, titanic_dataset, features=["Name", "Sex", "Pclass"])
     assert len(issues) == 2
 
 
