@@ -260,6 +260,8 @@ def test_can_limit_features_to_subset():
     scanner.analyze(model, dataset)
     detector.run.assert_called_once_with(model, dataset, features=["feat1", "feat2", "feat3"])
 
-    detector.run.reset_mock()
     with pytest.raises(ValueError, match=r"The `features` argument contains invalid feature names: does-not-exist"):
         scanner.analyze(model, dataset, features=["feat1", "does-not-exist"])
+
+    with pytest.raises(ValueError, match=r"No features to scan"):
+        scanner.analyze(model, dataset, features=[])

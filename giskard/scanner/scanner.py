@@ -240,6 +240,12 @@ class Scanner:
                     f"Valid features for this model are: {', '.join(_default_features)}."
                 )
 
+        if len(features) < 1:
+            raise ValueError(
+                "No features to scan. Please provide a non-empty list of features to scan,"
+                "and ensure that you correctly set the `features_names` argument when wrapping your model."
+            )
+
         if len(features) > 100:
             warning(
                 f"It looks like your dataset has a very large number of features ({len(features)}), "
