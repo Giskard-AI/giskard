@@ -1,7 +1,7 @@
 import collections
 import importlib
 from pathlib import Path
-from typing import Literal, Optional, Union, get_args
+from typing import Literal, Optional, Tuple, Union, get_args
 
 import mlflow
 import pandas as pd
@@ -138,7 +138,7 @@ class PyTorchModel(MLFlowSerializableModel):
             )
 
     @classmethod
-    def load_model(cls, local_dir):
+    def load_model(cls, local_dir, model_py_ver: Optional[Tuple[int, int, int]] = None):
         return mlflow.pytorch.load_model(local_dir)
 
     def save_model(self, local_path, mlflow_meta: mlflow.models.Model):
@@ -215,9 +215,9 @@ class PyTorchModel(MLFlowSerializableModel):
         self.save_pytorch_meta(local_path)
 
     @classmethod
-    def load(cls, local_dir, **kwargs):
+    def load(cls, local_dir, model_py_ver: Optional[Tuple[int, int, int]] = None, **kwargs):
         kwargs.update(cls.load_pytorch_meta(local_dir))
-        return super().load(local_dir, **kwargs)
+        return super().load(local_dir, model_py_ver=model_py_ver, **kwargs)
 
     @classmethod
     def load_pytorch_meta(cls, local_dir):

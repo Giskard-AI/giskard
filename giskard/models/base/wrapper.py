@@ -3,7 +3,7 @@ import pickle
 from abc import ABC, abstractmethod
 from inspect import isfunction, signature
 from pathlib import Path
-from typing import Any, Callable, Iterable, Optional, Union
+from typing import Any, Callable, Iterable, Optional, Tuple, Union
 
 import cloudpickle
 import mlflow
@@ -243,21 +243,21 @@ class WrapperModel(BaseModel, ABC):
             )
 
     @classmethod
-    def load(cls, local_dir, **kwargs):
+    def load(cls, local_dir, model_py_ver: Optional[Tuple[int, int, int]] = None, **kwargs):
         constructor_params = cls.load_constructor_params(local_dir, **kwargs)
 
-        return cls(model=cls.load_model(local_dir), **constructor_params)
+        return cls(model=cls.load_model(local_dir, model_py_ver), **constructor_params)
 
     @classmethod
-    def load_constructor_params(cls, local_dir, **kwargs):
+    def load_constructor_params(cls, local_dir, model_py_ver: Optional[Tuple[int, int, int]] = None, **kwargs):
         params = cls.load_wrapper_meta(local_dir)
         params["data_preprocessing_function"] = cls.load_data_preprocessing_function(local_dir)
         params["model_postprocessing_function"] = cls.load_model_postprocessing_function(local_dir)
         params.update(kwargs)
 
-        model_id, meta = cls.read_meta_from_local_dir(local_dir)
+        extra_meta, meta = cls.read_meta_from_local_dir(local_dir)
         constructor_params = meta.__dict__
-        constructor_params["id"] = model_id
+        constructor_params["id"] = extra_meta.id
         constructor_params = constructor_params.copy()
         constructor_params.update(params)
 
@@ -265,13 +265,15 @@ class WrapperModel(BaseModel, ABC):
 
     @classmethod
     @abstractmethod
-    def load_model(cls, path: Union[str, Path]):
+    def load_model(cls, path: Union[str, Path], model_py_ver: Optional[Tuple[int, int, int]] = None):
         """Loads the wrapped ``model`` object.
 
         Parameters
         ----------
         path : Union[str, Path]
             Path from which the model should be loaded.
+        model_py_ver : Optional[Tuple[int, int, int]]
+            Python version used to save the model, to validate if model loading failed.
         """
         ...
 

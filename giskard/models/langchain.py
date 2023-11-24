@@ -1,5 +1,5 @@
 from pathlib import Path
-from typing import Any, Callable, Iterable, Optional, Union, Dict
+from typing import Any, Callable, Iterable, Optional, Tuple, Union, Dict
 
 import pandas as pd
 
@@ -57,16 +57,16 @@ class LangchainModel(WrapperModel):
         ...
 
     @classmethod
-    def load(cls, local_dir, **kwargs):
+    def load(cls, local_dir, model_py_ver: Optional[Tuple[int, int, int]] = None, **kwargs):
         constructor_params = cls.load_constructor_params(local_dir, **kwargs)
 
         artifacts = cls.load_artifacts(Path(local_dir) / "artifacts") or dict()
         constructor_params.update(artifacts)
 
-        return cls(model=cls.load_model(local_dir, **artifacts), **constructor_params)
+        return cls(model=cls.load_model(local_dir, model_py_ver=model_py_ver, **artifacts), **constructor_params)
 
     @classmethod
-    def load_model(cls, local_dir, **kwargs):
+    def load_model(cls, local_dir, model_py_ver: Optional[Tuple[int, int, int]] = None, **kwargs):
         from langchain.chains import load_chain
 
         path = Path(local_dir)

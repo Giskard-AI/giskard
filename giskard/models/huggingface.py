@@ -94,7 +94,7 @@ raw output of your model and return a numpy array of probabilities.
 """
 import logging
 from pathlib import Path
-from typing import Any, Callable, Iterable, Optional, Union
+from typing import Any, Callable, Iterable, Optional, Tuple, Union
 
 import pandas as pd
 import yaml
@@ -194,7 +194,7 @@ class HuggingFaceModel(WrapperModel):
             pass
 
     @classmethod
-    def load_model(cls, local_path):
+    def load_model(cls, local_path, model_py_ver: Optional[Tuple[int, int, int]] = None):
         huggingface_meta_file = Path(local_path) / "giskard-model-huggingface-meta.yaml"
         if huggingface_meta_file.exists():
             with open(huggingface_meta_file) as f:

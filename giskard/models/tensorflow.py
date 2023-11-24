@@ -1,4 +1,4 @@
-from typing import Any, Callable, Iterable, Optional
+from typing import Any, Callable, Iterable, Optional, Tuple
 
 import logging
 
@@ -41,7 +41,7 @@ class TensorFlowModel(MLFlowSerializableModel):
         )
 
     @classmethod
-    def load_model(cls, local_path):
+    def load_model(cls, local_path, model_py_ver: Optional[Tuple[int, int, int]] = None):
         return mlflow.tensorflow.load_model(local_path)
 
     def save_model(self, local_path, mlflow_meta: mlflow.models.Model):
