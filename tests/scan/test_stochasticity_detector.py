@@ -45,7 +45,7 @@ def test_stochasticity_is_detected():
     dataset = Dataset(pd.DataFrame({"feature": [1, 2, 3]}), target=None)
 
     detector = StochasticityDetector()
-    issues = detector.run(model, dataset)
+    issues = detector.run(model, dataset, features=["feature"])
 
     assert len(issues) == 1
     assert issues[0].group == Stochasticity
