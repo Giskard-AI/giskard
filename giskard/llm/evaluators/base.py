@@ -1,10 +1,11 @@
 from dataclasses import dataclass
+
 from typing import Sequence
 
-from ...datasets.base import Dataset
-from ...models.base.model import BaseModel
 from ..client import LLMClient, get_default_client
 from ..errors import LLMGenerationError
+from ...datasets.base import Dataset
+from ...models.base.model import BaseModel
 
 EVALUATE_MODEL_FUNCTIONS = [
     {
@@ -54,9 +55,8 @@ class EvaluationResult:
 class LLMBasedEvaluator:
     _default_eval_prompt: str
 
-    def __init__(self, eval_prompt=None, llm_model="gpt-4", llm_temperature=0.1, llm_client: LLMClient = None):
+    def __init__(self, eval_prompt=None, llm_temperature=0.1, llm_client: LLMClient = None):
         self.eval_prompt = eval_prompt or self._default_eval_prompt
-        self.llm_model = llm_model
         self.llm_temperature = llm_temperature
         self.llm_client = llm_client if llm_client is not None else get_default_client()
 
@@ -89,7 +89,6 @@ class LLMBasedEvaluator:
                     functions=funcs,
                     function_call={"name": "evaluate_model"},
                     temperature=self.llm_temperature,
-                    model=self.llm_model,
                     caller_id=self.__class__.__name__,
                 )
                 if out.function_call is None or "passed_test" not in out.function_call.args:
