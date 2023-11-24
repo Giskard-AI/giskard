@@ -25,11 +25,11 @@ class OverconfidenceDetector(LossBasedDetector):
     def _numerical_slicer_method(self):
         return self.method
 
-    def run(self, model: BaseModel, dataset: Dataset, **kwargs):
+    def run(self, model: BaseModel, dataset: Dataset, features: Sequence[str]):
         if not model.is_classification:
             raise ValueError("Overconfidence bias detector only works for classification models.")
 
-        return super().run(model, dataset)
+        return super().run(model, dataset, features)
 
     def _calculate_loss(self, model: BaseModel, dataset: Dataset) -> pd.DataFrame:
         loss = _calculate_overconfidence_score(model, dataset).to_frame(self.LOSS_COLUMN_NAME)

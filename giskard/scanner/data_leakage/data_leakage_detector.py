@@ -1,3 +1,5 @@
+from typing import Optional, Sequence
+
 import numpy as np
 import pandas as pd
 
@@ -13,7 +15,7 @@ from ..registry import Detector
 
 @detector(name="data_leakage", tags=["data_leakage", "classification", "regression"])
 class DataLeakageDetector(Detector):
-    def run(self, model: BaseModel, dataset: Dataset, **kwargs):
+    def run(self, model: BaseModel, dataset: Dataset, features: Optional[Sequence[str]] = None):
         logger.info("DataLeakageDetector: Running")
 
         # Dataset prediction
