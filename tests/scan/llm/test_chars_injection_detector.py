@@ -76,7 +76,7 @@ def test_chars_injection_detector_flow(LLMCharInjector):
     )
 
     # First run
-    issues = detector.run(model, dataset)
+    issues = detector.run(model, dataset, features=["feat"])
 
     assert len(issues) == 0
     LLMCharInjector.assert_called_once_with(
@@ -84,7 +84,7 @@ def test_chars_injection_detector_flow(LLMCharInjector):
     )
 
     # Second run
-    issues = detector.run(model, dataset)
+    issues = detector.run(model, dataset, features=["feat"])
     assert len(issues) == 2
     assert issues[0].generate_tests()[0]
 
@@ -96,4 +96,4 @@ def test_chars_injection_detector_skips_if_empty_dataset():
 
     dataset = Dataset(pd.DataFrame({"feat": []}))
     detector = LLMCharsInjectionDetector()
-    assert detector.run(model, dataset) == []
+    assert detector.run(model, dataset, features=["feat"]) == []
