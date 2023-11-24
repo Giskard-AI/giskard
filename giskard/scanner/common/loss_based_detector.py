@@ -1,7 +1,7 @@
 import datetime
 from abc import abstractmethod
 from time import perf_counter
-from typing import Sequence
+from typing import Optional, Sequence
 
 import pandas as pd
 
@@ -23,7 +23,7 @@ class LossBasedDetector(Detector):
 
     _needs_target = True
 
-    def __init__(self, max_dataset_size: int = MAX_DATASET_SIZE):
+    def __init__(self, max_dataset_size: Optional[int] = None):
         self.max_dataset_size = max_dataset_size
 
     def run(self, model: BaseModel, dataset: Dataset, **kwargs):
@@ -42,6 +42,9 @@ class LossBasedDetector(Detector):
             return []
 
         # If the dataset is very large, limit to a subsample
+        self.max_dataset_size = self.max_dataset_size or self.MAX_DATASET_SIZE // len(
+            model.meta.feature_names or dataset.columns
+        )
         if len(dataset) > self.max_dataset_size:
             logger.info(f"{self.__class__.__name__}: Limiting dataset size to {self.max_dataset_size} samples.")
             dataset = get_dataset_subsample(dataset, model, self.max_dataset_size)
