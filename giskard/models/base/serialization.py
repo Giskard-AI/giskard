@@ -51,7 +51,7 @@ class CloudpickleSerializableModel(WrapperModel):
             )
 
     @classmethod
-    def load_model(cls, local_dir, model_py_ver: Optional[Tuple[int, int, int]] = None):
+    def load_model(cls, local_dir, model_py_ver: Optional[Tuple[str, str, str]] = None):
         local_path = Path(local_dir)
         model_path = local_path / "model.pkl"
         if model_path.exists():

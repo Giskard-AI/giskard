@@ -193,7 +193,7 @@ class BaseModel(ABC):
         return self.meta.model_type == SupportedModelTypes.TEXT_GENERATION
 
     @classmethod
-    def determine_model_class(cls, meta, local_dir, model_py_ver: Optional[Tuple[int, int, int]] = None):
+    def determine_model_class(cls, meta, local_dir, model_py_ver: Optional[Tuple[str, str, str]] = None):
         class_file = Path(local_dir) / MODEL_CLASS_PKL
         if class_file.exists():
             with open(class_file, "rb") as f:
@@ -450,10 +450,9 @@ class BaseModel(ABC):
                     loader_module=file_meta["loader_module"],
                     loader_class=file_meta["loader_class"],
                 )
+
         model_py_ver = (
-            tuple(map(int, meta_response.languageVersion.split(".")))
-            if "PYTHON" == meta_response.language.upper()
-            else None
+            tuple(meta_response.languageVersion.split(".")) if "PYTHON" == meta_response.language.upper() else None
         )
 
         clazz = cls.determine_model_class(meta, local_dir, model_py_ver=model_py_ver)
@@ -490,7 +489,9 @@ class BaseModel(ABC):
                 featureNames=meta.feature_names if meta.feature_names is not None else [],
                 threshold=meta.classification_threshold,
                 description=meta.description,
-                classificationLabels=list(map(str, meta.classification_labels)),
+                classificationLabels=meta.classification_labels
+                if meta.classification_labels is None
+                else list(map(str, meta.classification_labels)),
                 languageVersion=file_meta["language_version"],
                 language=file_meta["language"],
                 size=file_meta["size"],
@@ -510,7 +511,7 @@ class BaseModel(ABC):
         return labels_
 
     @classmethod
-    def load(cls, local_dir, model_py_ver: Optional[Tuple[int, int, int]] = None, **kwargs):
+    def load(cls, local_dir, model_py_ver: Optional[Tuple[str, str, str]] = None, **kwargs):
         class_file = Path(local_dir) / MODEL_CLASS_PKL
         model_id, meta = cls.read_meta_from_local_dir(local_dir)
 

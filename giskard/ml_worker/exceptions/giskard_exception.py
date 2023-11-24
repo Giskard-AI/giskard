@@ -30,7 +30,7 @@ class GiskardPythonDepException(GiskardPythonEnvException):
         )
 
 
-def python_env_exception_helper(cls_name, e: Exception, required_py_ver: Optional[Tuple[int, int, int]] = None):
+def python_env_exception_helper(cls_name, e: Exception, required_py_ver: Optional[Tuple[str, str, str]] = None):
     if required_py_ver is not None and required_py_ver[:2] != platform.python_version_tuple[:2]:
         # Python major and minor versions are not matched
         return GiskardPythonVerException(cls_name, e, required_py_ver=required_py_ver)

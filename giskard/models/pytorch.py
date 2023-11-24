@@ -138,7 +138,7 @@ class PyTorchModel(MLFlowSerializableModel):
             )
 
     @classmethod
-    def load_model(cls, local_dir, model_py_ver: Optional[Tuple[int, int, int]] = None):
+    def load_model(cls, local_dir, model_py_ver: Optional[Tuple[str, str, str]] = None):
         return mlflow.pytorch.load_model(local_dir)
 
     def save_model(self, local_path, mlflow_meta: mlflow.models.Model):
@@ -215,7 +215,7 @@ class PyTorchModel(MLFlowSerializableModel):
         self.save_pytorch_meta(local_path)
 
     @classmethod
-    def load(cls, local_dir, model_py_ver: Optional[Tuple[int, int, int]] = None, **kwargs):
+    def load(cls, local_dir, model_py_ver: Optional[Tuple[str, str, str]] = None, **kwargs):
         kwargs.update(cls.load_pytorch_meta(local_dir))
         return super().load(local_dir, model_py_ver=model_py_ver, **kwargs)
 

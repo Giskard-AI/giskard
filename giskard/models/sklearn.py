@@ -66,7 +66,7 @@ class SKLearnModel(MLFlowSerializableModel):
         )
 
     @classmethod
-    def load_model(cls, local_dir, model_py_ver: Optional[Tuple[int, int, int]] = None):
+    def load_model(cls, local_dir, model_py_ver: Optional[Tuple[str, str, str]] = None):
         return mlflow.sklearn.load_model(local_dir)
 
     def model_predict(self, df):

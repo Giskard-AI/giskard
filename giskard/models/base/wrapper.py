@@ -243,13 +243,13 @@ class WrapperModel(BaseModel, ABC):
             )
 
     @classmethod
-    def load(cls, local_dir, model_py_ver: Optional[Tuple[int, int, int]] = None, **kwargs):
+    def load(cls, local_dir, model_py_ver: Optional[Tuple[str, str, str]] = None, **kwargs):
         constructor_params = cls.load_constructor_params(local_dir, **kwargs)
 
         return cls(model=cls.load_model(local_dir, model_py_ver), **constructor_params)
 
     @classmethod
-    def load_constructor_params(cls, local_dir, model_py_ver: Optional[Tuple[int, int, int]] = None, **kwargs):
+    def load_constructor_params(cls, local_dir, model_py_ver: Optional[Tuple[str, str, str]] = None, **kwargs):
         params = cls.load_wrapper_meta(local_dir)
         params["data_preprocessing_function"] = cls.load_data_preprocessing_function(local_dir)
         params["model_postprocessing_function"] = cls.load_model_postprocessing_function(local_dir)
@@ -265,14 +265,14 @@ class WrapperModel(BaseModel, ABC):
 
     @classmethod
     @abstractmethod
-    def load_model(cls, path: Union[str, Path], model_py_ver: Optional[Tuple[int, int, int]] = None):
+    def load_model(cls, path: Union[str, Path], model_py_ver: Optional[Tuple[str, str, str]] = None):
         """Loads the wrapped ``model`` object.
 
         Parameters
         ----------
         path : Union[str, Path]
             Path from which the model should be loaded.
-        model_py_ver : Optional[Tuple[int, int, int]]
+        model_py_ver : Optional[Tuple[str, str, str]]
             Python version used to save the model, to validate if model loading failed.
         """
         ...

@@ -57,7 +57,7 @@ class LangchainModel(WrapperModel):
         ...
 
     @classmethod
-    def load(cls, local_dir, model_py_ver: Optional[Tuple[int, int, int]] = None, **kwargs):
+    def load(cls, local_dir, model_py_ver: Optional[Tuple[str, str, str]] = None, **kwargs):
         constructor_params = cls.load_constructor_params(local_dir, **kwargs)
 
         artifacts = cls.load_artifacts(Path(local_dir) / "artifacts") or dict()
@@ -66,7 +66,7 @@ class LangchainModel(WrapperModel):
         return cls(model=cls.load_model(local_dir, model_py_ver=model_py_ver, **artifacts), **constructor_params)
 
     @classmethod
-    def load_model(cls, local_dir, model_py_ver: Optional[Tuple[int, int, int]] = None, **kwargs):
+    def load_model(cls, local_dir, model_py_ver: Optional[Tuple[str, str, str]] = None, **kwargs):
         from langchain.chains import load_chain
 
         path = Path(local_dir)

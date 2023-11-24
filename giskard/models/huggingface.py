@@ -194,7 +194,7 @@ class HuggingFaceModel(WrapperModel):
             pass
 
     @classmethod
-    def load_model(cls, local_path, model_py_ver: Optional[Tuple[int, int, int]] = None):
+    def load_model(cls, local_path, model_py_ver: Optional[Tuple[str, str, str]] = None):
         huggingface_meta_file = Path(local_path) / "giskard-model-huggingface-meta.yaml"
         if huggingface_meta_file.exists():
             with open(huggingface_meta_file) as f:
