@@ -50,7 +50,7 @@ def _test_scanner_returns_non_empty_scan_result(dataset_name, model_name, reques
     dataset = request.getfixturevalue(dataset_name)
     model = request.getfixturevalue(model_name)
 
-    result = scanner.analyze(model, dataset, raise_exceptions=True)
+    result = scanner.analyze(model, dataset, features=model.meta.feature_names, raise_exceptions=True)
 
     assert isinstance(result, ScanReport)
     assert result.to_html()
@@ -66,7 +66,9 @@ def _test_scanner_returns_non_empty_scan_result(dataset_name, model_name, reques
 def test_scanner_should_work_with_empty_model_feature_names(german_credit_data, german_credit_model):
     scanner = Scanner()
     german_credit_model.meta.feature_names = None
-    result = scanner.analyze(german_credit_model, german_credit_data, raise_exceptions=True)
+    result = scanner.analyze(
+        german_credit_model, german_credit_data, features=german_credit_model.meta.feature_names, raise_exceptions=True
+    )
 
     assert isinstance(result, ScanReport)
     assert result.has_issues()
@@ -83,7 +85,9 @@ def test_scanner_raises_exception_if_no_detectors_available(german_credit_data, 
 def test_scanner_works_if_dataset_has_no_target(titanic_model, titanic_dataset):
     scanner = Scanner()
     no_target_dataset = Dataset(titanic_dataset.df, target=None)
-    result = scanner.analyze(titanic_model, no_target_dataset, raise_exceptions=True)
+    result = scanner.analyze(
+        titanic_model, no_target_dataset, features=titanic_model.meta.feature_names, raise_exceptions=True
+    )
 
     assert isinstance(result, ScanReport)
     assert result.has_issues()
@@ -214,7 +218,7 @@ def test_scanner_warns_if_too_many_features():
 
     # Model with no feature names
     model = Model(lambda x: np.ones(len(x)), model_type="classification", classification_labels=[0, 1])
-    dataset = Dataset(pd.DataFrame(np.ones((10, 120)), columns=map(str, np.arange(120))), target="0")
+    dataset = Dataset(pd.DataFrame(np.ones((10, 121)), columns=map(str, np.arange(121))), target="0")
 
     with pytest.warns(
         UserWarning, match=re.escape("It looks like your dataset has a very large number of features (120)")
