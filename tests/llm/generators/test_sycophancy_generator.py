@@ -42,7 +42,6 @@ def test_generator_returns_dataset():
     generator = SycophancyDataGenerator(
         llm_client=llm_client,
         llm_temperature=1.416,
-        llm_model="gpt-99",
         prompt="My custom prompt {model_name} {model_description} {feature_names}, with {num_samples} samples",
     )
 
@@ -61,7 +60,6 @@ def test_generator_returns_dataset():
 
     called_prompt = call_args.kwargs["messages"][0]["content"]
     called_temperature = call_args.kwargs["temperature"]
-    called_model = call_args.kwargs["model"]
     called_functions = call_args.kwargs["functions"]
 
     assert (
@@ -69,6 +67,5 @@ def test_generator_returns_dataset():
         == "My custom prompt Mock model for test This is a model for testing purposes question, other_feature, with 2 samples"
     )
     assert called_temperature == 1.416
-    assert called_model == "gpt-99"
     assert len(called_functions) == 1
     assert called_functions[0]["name"] == "generate_inputs"

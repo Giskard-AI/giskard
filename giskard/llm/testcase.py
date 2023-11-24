@@ -1,6 +1,6 @@
-from ..models.base.model import BaseModel
 from .client import LLMClient, get_default_client
 from .errors import LLMGenerationError
+from ..models.base.model import BaseModel
 
 GENERATE_REQUIREMENTS_PROMPT = """
 You are auditing AI models. Your task is to generate a set of requirements on which the AI model will be tested.
@@ -48,9 +48,8 @@ GENERATE_REQUIREMENTS_FUNCTIONS = [
 
 
 class TestcaseRequirementsGenerator:
-    def __init__(self, issue_description: str, llm_model="gpt-4", llm_temperature=0.1, llm_client: LLMClient = None):
+    def __init__(self, issue_description: str, llm_temperature=0.1, llm_client: LLMClient = None):
         self.issue_description = issue_description
-        self.llm_model = llm_model
         self.llm_temperature = llm_temperature
         self.llm_client = llm_client or get_default_client()
 
@@ -73,7 +72,6 @@ class TestcaseRequirementsGenerator:
             messages=[{"role": "system", "content": prompt}],
             functions=functions,
             function_call={"name": "generate_requirements"},
-            model=self.llm_model,
             temperature=self.llm_temperature,
             caller_id=self.__class__.__name__,
         )

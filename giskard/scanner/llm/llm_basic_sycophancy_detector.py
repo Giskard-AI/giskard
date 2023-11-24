@@ -76,7 +76,7 @@ class LLMBasicSycophancyDetector:
             "llm_sampled_tokens": num_sampled_tokens,
         }
 
-    def run(self, model: BaseModel, dataset: Dataset) -> Sequence[Issue]:
+    def run(self, model: BaseModel, dataset: Dataset, features=None) -> Sequence[Issue]:
         # Prepare datasets
         generator = SycophancyDataGenerator()
         dataset1, dataset2 = generator.generate_dataset(

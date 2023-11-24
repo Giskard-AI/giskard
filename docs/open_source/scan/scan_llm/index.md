@@ -7,7 +7,7 @@ The Giskard python library provides an automatic scan functionality designed to 
 The LLM scan combines both **heuristics-based** and **LLM-assisted detectors.** The heuristics-based detectors use known
 techniques and patterns to test for vulnerabilities which are not specific to the model. The LLM-assisted detectors are
 designed to detect vulnerabilities that are specific to your business case. They use another LLM model to probe
-your LLM system (specifically, we use OpenAI GPT-4).
+your LLM system (specifically, we use **OpenAI GPT-4**).
 
 Differently from other techniques that focus on benchmarking a foundation LLM, Giskard's LLM scan focuses on performing
 **in-depth assessments on domain-specific models.** This includes chatbots, **question answering systems, and
@@ -26,11 +26,37 @@ pip install "giskard[llm]"
 For the LLM-assisted detectors to work, you need to have an OpenAI API key. You can set it in your notebook
 like this:
 
+:::::::{tab-set}
+::::::{tab-item} OpenAI
+
 ```python
 import os
 
 os.environ["OPENAI_API_KEY"] = "sk-…"
 ```
+
+::::::
+::::::{tab-item} Azure OpenAI
+
+Require `openai>=1.0.0`
+
+```python
+import os
+from giskard.llm import set_llm_model
+
+os.environ['AZURE_OPENAI_API_KEY'] = '...'
+os.environ['AZURE_OPENAI_ENDPOINT'] = 'https://xxx.openai.azure.com'
+os.environ['OPENAI_API_VERSION'] = '2023-07-01-preview'
+
+
+# You'll need to provide the name of the model that you've deployed
+# Beware, the model provided must be capable of using function calls
+set_llm_model('my-gpt-4-model')
+```
+
+::::::
+:::::::
+
 We are now ready to start.
 
 

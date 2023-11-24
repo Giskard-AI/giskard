@@ -28,12 +28,10 @@ class LLMGenerator(ABC):
 
     def __init__(
         self,
-        llm_model: Optional[str] = None,
         llm_temperature: Optional[float] = None,
         llm_client: LLMClient = None,
         prompt: Optional[str] = None,
     ):
-        self.llm_model = llm_model if llm_model is not None else self._default_model
         self.llm_temperature = llm_temperature if llm_temperature is not None else self._default_temperature
         self.llm_client = llm_client or get_default_client()
         self.prompt = prompt if prompt is not None else self._default_prompt
@@ -108,7 +106,6 @@ class BaseDataGenerator(LLMGenerator):
             functions=functions,
             function_call={"name": "generate_inputs"},
             temperature=self.llm_temperature,
-            model=self.llm_model,
             caller_id=self.__class__.__name__,
         )
 
