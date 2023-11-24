@@ -74,4 +74,4 @@ class LLMOutputFormattingDetector(RequirementBasedDetector):
             )
             return []
 
-        return super().run(model, dataset)
+        return super().run(model, dataset, features=features)
