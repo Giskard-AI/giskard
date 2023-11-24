@@ -17,10 +17,11 @@ from ..logger import logger
 class UnderconfidenceDetector(LossBasedDetector):
     _needs_target = False
 
-    def __init__(self, threshold=0.1, p_threshold=0.95, method="tree"):
+    def __init__(self, threshold=0.1, p_threshold=0.95, method="tree", **kwargs):
         self.threshold = threshold
         self.p_threshold = p_threshold
         self.method = method
+        super().__init__(**kwargs)
 
     @property
     def _numerical_slicer_method(self):

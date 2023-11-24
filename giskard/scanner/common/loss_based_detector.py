@@ -23,6 +23,9 @@ class LossBasedDetector(Detector):
 
     _needs_target = True
 
+    def __init__(self, max_dataset_size: int = None):
+        self.max_dataset_size = max_dataset_size or self.MAX_DATASET_SIZE
+
     def run(self, model: BaseModel, dataset: Dataset, **kwargs):
         if self._needs_target and dataset.target is None:
             logger.info(f"{self.__class__.__name__}: Skipping detection because the dataset has no target column.")
@@ -39,7 +42,7 @@ class LossBasedDetector(Detector):
             return []
 
         # If the dataset is very large, limit to a subsample
-        max_data_size = self.MAX_DATASET_SIZE // len(model.meta.feature_names or dataset.columns)
+        max_data_size = self.max_dataset_size // len(model.meta.feature_names or dataset.columns)
         if len(dataset) > max_data_size:
             logger.info(f"{self.__class__.__name__}: Limiting dataset size to {max_data_size} samples.")
             dataset = get_dataset_subsample(dataset, model, max_data_size)
