@@ -22,4 +22,4 @@ class DillProcessPoolExecutor(object):
 
     def submit_and_wait(self, fn, /, *args, **kwargs):
         # Use dill to pickle and unpickle as it works with more object than pickle/cloudpickle
-        return dill.loads(self.executor.submit(safe_fn(dill.dumps(fn), dill.dumps(args), dill.dumps(kwargs))).result())
+        return dill.loads(self.executor.submit(safe_fn, dill.dumps(fn), dill.dumps(args), dill.dumps(kwargs)).result())
