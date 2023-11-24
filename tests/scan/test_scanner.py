@@ -231,3 +231,31 @@ def test_scanner_warns_if_too_many_features():
     with warnings.catch_warnings():
         warnings.simplefilter("error")
         scanner.analyze(model, dataset)
+
+
+def test_can_limit_features_to_subset():
+    scanner = Scanner()
+
+    # Model with no feature names
+    model = Model(lambda x: np.ones(len(x)), model_type="classification", classification_labels=[0, 1])
+    dataset = Dataset(pd.DataFrame(np.ones((123, 4)), columns=["feat1", "feat2", "feat3", "label"]), target="label")
+
+    # Mock method
+    detector = mock.Mock()
+    detector.run.return_value = []
+    scanner.get_detectors = lambda *args, **kwargs: [detector]
+
+    scanner.analyze(model, dataset, features=["feat1", "feat2"])
+    detector.run.assert_called_once_with(model, dataset, features=["feat1", "feat2"])
+
+    detector.run.reset_mock()
+    scanner.analyze(model, dataset)
+    detector.run.assert_called_once_with(model, dataset, features=["feat1", "feat2", "feat3"])
+
+    detector.run.reset_mock()
+    scanner.analyze(model, dataset)
+    detector.run.assert_called_once_with(model, dataset, features=["feat1", "feat2", "feat3"])
+
+    detector.run.reset_mock()
+    with pytest.raises(ValueError, match=r"The `features` argument contains invalid feature names: does-not-exist"):
+        scanner.analyze(model, dataset, features=["feat1", "does-not-exist"])
