@@ -39,6 +39,7 @@ class Issue:
         examples: Optional[pd.DataFrame] = None,
         features: Optional[List[str]] = None,
         tests=None,
+        taxonomy: List[str] = None,
     ):
         """Issue represents a single model vulnerability detected by Giskard.
 
@@ -68,9 +69,12 @@ class Issue:
         features : Optional[List[str]], optional
             List of features affected by the issue.
         tests : Optional[Union[dict, callable]], optional
-            Either a dictionary of tests, keyed by name, or a callable that returns a dictionary of tests. Each test is a test function
-            from the giskard library (or a custom test defined by the `@test` decorator).
-            For example, `{"Test that accuracy is good": giskard.testing.tests.test_accuracy()}`.
+            Either a dictionary of tests, keyed by name, or a callable that returns a dictionary of tests. Each test is
+            a test function from the giskard library (or a custom test defined by the ``@test`` decorator).
+            For example, ``{"Test that accuracy is good": giskard.testing.tests.test_accuracy()}``.
+        taxonomy : Optional[str], optional
+            List of taxonomy machine tags, in MISP format. A machine tag is composed of a namespace (MUST), a predicate
+            (MUST) and an (OPTIONAL) value, like ``namespace:predicate:value``.
         """
         self.group = group
         self.model = model
@@ -84,6 +88,7 @@ class Issue:
         self._examples = examples
         self._features = features
         self._tests = tests
+        self.taxonomy = taxonomy or []
 
     def __repr__(self):
         return f"<{self.__class__.__name__} group='{self.group.name}' level='{self.level}'>"

@@ -74,5 +74,14 @@
             to the rest of the data was asserted with p-value = {{ issue.meta.p_value }}.
         </p>
         {% endif %}
+
+        {% if issue.taxonomy %}
+        <h4 class="font-bold text-sm mt-4">Taxonomy</h4>
+        {% for tag in issue.taxonomy %}
+        <span class="inline-block bg-blue-300/25 text-zinc-100 px-2 py-0.5 rounded-sm text-sm mr-1 my-2">
+            {{ tag }}
+        </span>
+        {% endfor %}
+        {% endif %}
     </td>
 </tr>

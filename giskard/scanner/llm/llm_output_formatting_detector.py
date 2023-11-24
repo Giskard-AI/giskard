@@ -34,10 +34,13 @@ class LLMOutputFormattingDetector(RequirementBasedDetector):
     """Detects output formatting issues in LLM-based models.
 
     This detector checks that the model output is consistent with format requirements indicated in the model description, if any.
+
+    Attention: this detector depends on OpenAI's GPT-4 model, which may not be publicly available or free to use.
     """
 
     _issue_group = OutputFormatting
     _issue_level = IssueLevel.MEDIUM
+    _taxonomy = ["avid-effect:performance:P0204"]
 
     def get_cost_estimate(self, model: BaseModel, dataset: Dataset) -> dict:
         data = super().get_cost_estimate(model, dataset)

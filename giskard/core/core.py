@@ -1,7 +1,8 @@
+import typing
+
 import inspect
 import logging
 import re
-import typing
 from abc import ABC
 from dataclasses import dataclass
 from enum import Enum
@@ -14,7 +15,7 @@ try:
 except ImportError:
     # types.NoneType is only available from python >=3.10
     NoneType = type(None)
-from typing import Optional, Dict, List, Union, Literal, TypeVar, Callable, Type, Any
+from typing import Any, Callable, Dict, List, Literal, Optional, Type, TypeVar, Union
 
 logger = logging.getLogger(__name__)
 
@@ -196,7 +197,7 @@ class CallableMeta(SavableMeta, ABC):
             self.display_name = name or callable_obj.__name__
             self.module = callable_obj.__module__
             self.doc = func_doc
-            self.module_doc = self.extract_module_doc(func_doc)
+            self.module_doc = self.extract_module_doc(callable_obj)
             self.tags = self.populate_tags(tags)
 
             parameters = self.extract_parameters(callable_obj)
@@ -231,8 +232,8 @@ class CallableMeta(SavableMeta, ABC):
         )
 
     @staticmethod
-    def extract_module_doc(func_doc):
-        return inspect.getmodule(func_doc).__doc__.strip() if inspect.getmodule(func_doc).__doc__ else None
+    def extract_module_doc(obj):
+        return inspect.getmodule(obj).__doc__.strip() if inspect.getmodule(obj).__doc__ else None
 
     def populate_tags(self, tags=None):
         tags = [] if not tags else tags.copy()
@@ -410,10 +411,10 @@ SMT = TypeVar("SMT", bound=SavableMeta)
 
 
 def unknown_annotations_to_kwargs(parameters: List[FunctionArgument]) -> List[FunctionArgument]:
-    from giskard.models.base import BaseModel
     from giskard.datasets.base import Dataset
     from giskard.ml_worker.testing.registry.slicing_function import SlicingFunction
     from giskard.ml_worker.testing.registry.transformation_function import TransformationFunction
+    from giskard.models.base import BaseModel
 
     allowed_types = [str, bool, int, float, BaseModel, Dataset, SlicingFunction, TransformationFunction]
     allowed_types = list(map(lambda x: x.__qualname__, allowed_types))
