@@ -1,7 +1,7 @@
 """The scanner module provides a way to automatically detect issues in tabular, NLP, and LLM models. It works by running a
 set of automatic detectors depending on the model type. The detectors analyze the model and report any issues they find.
 """
-from typing import Optional
+from typing import Optional, Sequence
 
 from ..datasets.base import Dataset
 from ..models.base import BaseModel
@@ -26,6 +26,7 @@ _register_default_detectors()
 def scan(
     model: BaseModel,
     dataset: Optional[Dataset] = None,
+    features: Optional[Sequence[str]] = None,
     params=None,
     only=None,
     verbose=True,
@@ -41,6 +42,8 @@ def scan(
         A Giskard model object.
     dataset : Dataset
         A Giskard dataset object.
+    features : Sequence[str]
+        A list of features to use for the scan. If not specified, all features will be used.
     params : dict
         Advanced scanner configuration. See :class:`Scanner` for more details.
     only : list
@@ -58,7 +61,9 @@ def scan(
         A scan report object containing the results of the scan.
     """
     scanner = Scanner(params, only=only)
-    return scanner.analyze(model, dataset, verbose=verbose, raise_exceptions=raise_exceptions)
+    return scanner.analyze(
+        model, dataset=dataset, features=features, verbose=verbose, raise_exceptions=raise_exceptions
+    )
 
 
 __all__ = ["scan", "Scanner", "logger"]

@@ -63,7 +63,12 @@ class Scanner:
         self.uuid = uuid.uuid4()
 
     def analyze(
-        self, model: BaseModel, dataset: Optional[Dataset] = None, verbose=True, raise_exceptions=False
+        self,
+        model: BaseModel,
+        dataset: Optional[Dataset] = None,
+        features: Optional[Sequence[str]] = None,
+        verbose=True,
+        raise_exceptions=False,
     ) -> ScanReport:
         """Runs the analysis of a model and dataset, detecting issues.
 
@@ -73,6 +78,8 @@ class Scanner:
             A Giskard model object.
         dataset : Dataset
             A Giskard dataset object.
+        features : Sequence[str], optional
+            A list of features to analyze. If not provided, all model features will be analyzed.
         verbose : bool
             Whether to print detailed info messages. Enabled by default.
         raise_exceptions : bool
@@ -87,6 +94,9 @@ class Scanner:
 
         # Check that the model and dataset were appropriately wrapped with Giskard
         model, dataset, model_validation_time = self._validate_model_and_dataset(model, dataset)
+
+        # Check that provided features are valid
+        features = self._validate_features(features, model, dataset)
 
         # Initialize LLM logger if needed
         if model.is_text_generation:
@@ -107,7 +117,7 @@ class Scanner:
         with warnings.catch_warnings():
             warnings.simplefilter("ignore")
             issues, errors = self._run_detectors(
-                detectors, model, dataset, verbose=verbose, raise_exceptions=raise_exceptions
+                detectors, model, dataset, features, verbose=verbose, raise_exceptions=raise_exceptions
             )
 
         issues = self._postprocess(issues)
@@ -122,7 +132,7 @@ class Scanner:
 
         return ScanReport(issues, model=model, dataset=dataset)
 
-    def _run_detectors(self, detectors, model, dataset, verbose=True, raise_exceptions=False):
+    def _run_detectors(self, detectors, model, dataset, features, verbose=True, raise_exceptions=False):
         if not detectors:
             raise RuntimeError("No issue detectors available. Scan will not be performed.")
 
@@ -134,7 +144,7 @@ class Scanner:
             maybe_print(f"Running detector {detector.__class__.__name__}…", verbose=verbose)
             detector_start = perf_counter()
             try:
-                detected_issues = detector.run(model, dataset)
+                detected_issues = detector.run(model, dataset, features=features)
             except Exception as err:
                 logger.error(f"Detector {detector.__class__.__name__} failed with error: {err}")
                 errors.append((detector, err))
@@ -213,16 +223,33 @@ class Scanner:
                 column_types=dataset.column_types,
             )
 
-        num_features = len(model.meta.feature_names) if model.meta.feature_names else len(dataset.columns)
-        if num_features > 100:
+        return model, dataset, model_validation_time
+
+    def _validate_features(
+        self, features: Optional[Sequence[str]], model: BaseModel, dataset: Optional[Dataset] = None
+    ):
+        _default_features = model.meta.feature_names or dataset.columns.drop(dataset.target, errors="ignore")
+
+        if features is None:
+            features = _default_features
+        else:
+            if not set(features).issubset(_default_features):
+                raise ValueError(
+                    "The `features` argument contains invalid feature names: "
+                    f"{', '.join(set(features) - set(_default_features))}. "
+                    f"Valid features for this model are: {', '.join(_default_features)}."
+                )
+
+        if len(features) > 100:
             warning(
-                f"It looks like your dataset has a very large number of features ({num_features}), "
+                f"It looks like your dataset has a very large number of features ({len(features)}), "
                 "are you sure this is correct? The giskard.Dataset should be created from raw data *before* "
                 "pre-processing (categorical encoding, vectorization, etc.). "
+                "You can also limit the number of features to scan by setting the `features` argument. "
                 "Check https://docs.giskard.ai/en/latest/guides/wrap_dataset/index.html for more details."
             )
 
-        return model, dataset, model_validation_time
+        return list(features)
 
     def _prepare_model_dataset(self, model: BaseModel, dataset: Optional[Dataset]):
         if model.is_text_generation and dataset is None:
