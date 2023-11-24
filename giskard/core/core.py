@@ -40,7 +40,7 @@ def create_test_function_id(func):
         from giskard.ml_worker.testing.registry.registry import plugins_root
 
         # is_relative_to is only available from python 3.9
-        is_relative = Path(inspect.getfile(func)).relative_to(plugins_root)
+        is_relative = Path(inspect.getfile(func)).is_relative_to(plugins_root)
     except ValueError:
         is_relative = False
     if is_relative:
