@@ -169,7 +169,7 @@ class Dataset(ColumnMetadataMixin):
         Args:
             df (pd.DataFrame): The input dataset as a pandas DataFrame.
             name (Optional[str]): The name of the dataset.
-            target (Optional[str]): The column name in df corresponding to the actual target variable (ground truth).
+            target (Optional[str]): The column name in df corresponding to the actual target variable (ground truth). The target needs to be explicitly set to `None` if the dataset doesn't have any target variable.
             cat_columns (Optional[List[str]]): A list of column names that are categorical.
             column_types (Optional[Dict[str, str]]): A dictionary mapping column names to their types.
             id (Optional[uuid.UUID]): A UUID that uniquely identifies this dataset.
