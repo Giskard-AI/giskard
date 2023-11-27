@@ -5,7 +5,6 @@ import tempfile
 import uuid
 from functools import cached_property
 from pathlib import Path
-from typing import Dict, Hashable, List, Optional, Union
 
 import numpy as np
 import pandas
@@ -13,6 +12,7 @@ import pandas as pd
 import yaml
 from mlflow import MlflowClient
 from pandas.api.types import is_list_like, is_numeric_dtype
+from typing import Dict, Hashable, List, Optional, Union
 from xxhash import xxh3_128_hexdigest
 from zstandard import ZstdDecompressor
 
@@ -189,10 +189,9 @@ class Dataset(ColumnMetadataMixin):
         self._target = target
 
         if validation:
-            from giskard.core.dataset_validation import validate_dtypes, validate_target_exists
+            from giskard.core.dataset_validation import validate_dataset
 
-            validate_dtypes(self)
-            validate_target_exists(self)
+            validate_dataset(self)
 
         self.column_dtypes = self.extract_column_dtypes(self.df)
 
