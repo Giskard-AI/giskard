@@ -54,7 +54,7 @@ class RequirementBasedDetector(Detector):
             "llm_sampled_tokens": num_sampled_tokens,
         }
 
-    def run(self, model: BaseModel, dataset: Dataset) -> Sequence[Issue]:
+    def run(self, model: BaseModel, dataset: Dataset, features=None) -> Sequence[Issue]:
         issue_description = self.get_issue_description()
 
         logger.info(f"{self.__class__.__name__}: Generating test case requirements")
