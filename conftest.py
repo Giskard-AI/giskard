@@ -104,7 +104,7 @@ def pytest_runtest_protocol(item: Function):
     mark = item.get_closest_marker("skip")
     skip = mark is not None
     mark = item.get_closest_marker("skipif")
-    skip |= mark is not None and mark.args[0]
+    skip |= mark is not None and ((len(mark.args) == 1 and mark.args[0]) or mark.kwargs.get("condition", False))
     if not skip and item.get_closest_marker("memory_expensive") and item.config.getoption("--use-subprocess"):
         ihook = item.ihook
         ihook.pytest_runtest_logstart(nodeid=item.nodeid, location=item.location)
