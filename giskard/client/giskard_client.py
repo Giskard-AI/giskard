@@ -37,10 +37,10 @@ def explain_error(status):
     code = "error.unknown"
     if status == 401:
         code = "error.http.401"
-        message = "API key is invalid or expired. Please generate a new one"
+        message = "Not authorized to access this resource. Please check your API key"
     if status == 403:
         code = "error.http.403"
-        message = "Not authorized to access this resource. Please check your API key"
+        message = "The access is denied. Please check your permissions."
     return GiskardError(status=status, code=code, message=message)
 
 
@@ -324,7 +324,6 @@ class GiskardClient:
 
     def get_server_info(self) -> ServerInfo:
         resp = self._session.get("/public-api/ml-worker-connect")
-        print(resp)
         return ServerInfo.parse_obj(resp.json())
 
     def save_test_suite(self, dto: TestSuiteDTO):
