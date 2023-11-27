@@ -12,7 +12,7 @@ This section explains how to create your own slicing function, or customize the 
 
 The [Giskard catalog](../../../knowledge/catalogs/slicing-function-catalog/index.rst) provides you with different slicing functions for NLP such as sentiment, hate, and toxicity detectors:
 
-```
+```python
 #Load sentiment analysis model from the Giskard catalog
 from giskard.ml_worker.testing.functions.slicing import positive_sentiment_analysis
 ```
@@ -27,16 +27,19 @@ To create a Giskard slicing function, you just need to decorate an existing Pyth
 
 When `row_level=True`, you can decorate a function that takes a pandas dataframe **row** as input and returns a boolean. Make sure that the first argument of your function corresponds to the row you want to filter:
 
-```
-from giskard import slicing_function, demo
+```python
 import pandas as pd
+from giskard import slicing_function, demo, Dataset
+
 
 _, df = demo.titanic()
 dataset = Dataset(df=df, target="Survived", cat_columns=['Pclass', 'Sex', "SibSp", "Parch", "Embarked"])
 
+
 @slicing_function(row_level=True)
 def my_func2(row: pd.Series, threshold: int):
     return row['Age'] > threshold
+
 
 dataset.slice(my_func2(threshold=20))
 ```
@@ -47,17 +50,20 @@ dataset.slice(my_func2(threshold=20))
 
 When `row_level=False`, you can decorate a function that takes a full **pandas dataframe** as input and returns a filtered pandas dataframe. Make sure that the first argument of your function corresponds to the pandas dataframe you want to filter:
 
-```
-from giskard import slicing_function, demo
+```python
+from giskard import slicing_function, demo, Dataset
 import pandas as pd
+
 
 _, df = demo.titanic()
 dataset = Dataset(df=df, target="Survived", cat_columns=['Pclass', 'Sex', "SibSp", "Parch", "Embarked"])
+
 
 @slicing_function(row_level=False)
 def my_func1(df: pd.DataFrame, threshold: int):
     df['Age'] = df['Age'] > threshold
     return df
+
 
 dataset.slice(my_func1(threshold=20))
 ```
@@ -68,18 +74,20 @@ dataset.slice(my_func1(threshold=20))
 
 When `cell_level=True` (False by default), you can decorate a function that takes a **value** (string, numeric or text) as an argument and returns a boolean. Make sure that the first argument of your function corresponds to the value and that the second argument defines the **column name** where you want to filter the value:
 
-```
-from giskard import slicing_function, demo
-import pandas as pd
+```python
+from giskard import slicing_function, demo, Dataset
+
 
 _, df = demo.titanic()
 dataset = Dataset(df=df, target="Survived", cat_columns=['Pclass', 'Sex', "SibSp", "Parch", "Embarked"])
 
+
 @slicing_function(cell_level=True)
 def my_func3(cell: int, threshold: int):
-    return cell>threshold
+    return cell > threshold
 
-train_df.slice(my_func3(threshold=20), column_name='Age')
+
+dataset.slice(my_func3(threshold=20), column_name='Age')
 ```
 
 ::::
@@ -89,7 +97,11 @@ train_df.slice(my_func3(threshold=20), column_name='Age')
 
 Slicing functions can be very powerful to detect complex behaviour when they are used as fixtures inside your test suite. With the Giskard framework you can easily create complex slicing functions. For instance:
 
-```
+```python
+import pandas as pd
+from giskard import slicing_function
+
+
 def _sentiment_analysis(x, column_name, threshold, model, emotion):
     from transformers import pipeline
     sentiment_pipeline = pipeline("sentiment-analysis", model=model)
@@ -97,6 +109,7 @@ def _sentiment_analysis(x, column_name, threshold, model, emotion):
     sentences = list(map(lambda txt: txt[:512], list(x[column_name])))
     return x.iloc[list(
         map(lambda s: s['label'] == emotion and s['score'] >= threshold, sentiment_pipeline(sentences)))]
+
 
 @slicing_function(name="Emotion sentiment", row_level=False, tags=["sentiment", "text"])
 def emotion_sentiment_analysis(x: pd.DataFrame, column_name: str, emotion: str, threshold: float = 0.9) -> pd.DataFrame:
@@ -110,15 +123,16 @@ def emotion_sentiment_analysis(x: pd.DataFrame, column_name: str, emotion: str, 
 
 Giskard enables you to automatically generate the slicing functions that are the most insightul for your ML models. You can easily extract the results of the [scan feature](../../scan/index.md) using the following code:
 
-```
-from giskard import Dataset, Model
+```python
+from giskard import Dataset, Model, scan
+
 
 my_dataset = Dataset(...)
 my_model = Model(...)
 
-scan_result = giskard.scan(my_model, my_dataset)
+scan_result = scan(my_model, my_dataset)
 test_suite = scan_result.generate_test_suite("My first test suite")
-test_suite.run()[1]
+test_suite.run()
 ```
 
 ## Upload your slicing function to the Giskard hub

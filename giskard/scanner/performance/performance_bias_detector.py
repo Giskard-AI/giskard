@@ -29,6 +29,7 @@ class PerformanceBiasDetector(LossBasedDetector):
         threshold: float = 0.05,
         alpha: Optional[float] = None,
         method: str = "tree",
+        **kwargs,
     ):
         """Performance bias detector.
 
@@ -57,6 +58,7 @@ class PerformanceBiasDetector(LossBasedDetector):
         self.method = method
         self.alpha = alpha
         self.loss = loss
+        super().__init__(**kwargs)
 
     @property
     def _numerical_slicer_method(self):

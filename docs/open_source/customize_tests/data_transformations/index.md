@@ -11,8 +11,8 @@ This section explains how to create your own transformation function, or customi
 
 The [Giskard catalog](../../../knowledge/catalogs/transformation-function-catalog/index.rst) provides you with different transformation functions for NLP use cases such as *adding typos*, or *punctuation stripping*.
 
-```
-#Import keyboard typo transformations
+```python
+# Import keyboard typo transformations
 from giskard.ml_worker.testing.functions.transformation import keyboard_typo_transformation
 ```
 
@@ -26,17 +26,20 @@ To create a Giskard transformation function, you just need to decorate an existi
 
 When `row_level=True`, you can decorate a function that takes a pandas dataframe **row** as input, and returns a boolean. Make sure that the first argument of your function corresponds to the row you want to filter:
 
-```
-from giskard import transformation_function, demo
+```python
 import pandas as pd
+from giskard import transformation_function, demo, Dataset
+
 
 _, my_df = demo.titanic()
 dataset = Dataset(df=my_df, target="Survived", cat_columns=['Pclass', 'Sex', "SibSp", "Parch", "Embarked"])
+
 
 @transformation_function(row_level=True)
 def my_func2(row: pd.Series, offset: int):
     row['Age'] = row['Age'] + offset
     return row
+
 
 transformed_dataset = dataset.transform(my_func2(offset=20))
 ```
@@ -47,17 +50,20 @@ transformed_dataset = dataset.transform(my_func2(offset=20))
 
 When `row_level=False`, you can decorate a function that takes a full **pandas dataframe** as input, and returns a filtered pandas dataframe. Make sure that the first argument of your function corresponds to the pandas dataframe you want to filter:
 
-```
-from giskard import transformation_function, demo
+```python
 import pandas as pd
+from giskard import transformation_function, demo, Dataset
+
 
 _, df = demo.titanic()
 dataset = Dataset(df=df, target="Survived", cat_columns=['Pclass', 'Sex', "SibSp", "Parch", "Embarked"])
+
 
 @transformation_function(row_level=False)
 def my_func1(df: pd.DataFrame, offset: int):
     df['Age'] = df['Age'] + offset
     return df
+
 
 transformed_dataset = dataset.transform(my_func1(offset=20))
 ```
@@ -68,16 +74,18 @@ transformed_dataset = dataset.transform(my_func1(offset=20))
 
 When `cell_level=True` (False by default), you can decorate a function that takes as argument a **value** (string, numeric or text), and returns a boolean. Make sure that the first argument of your function corresponds to the value, and that the second argument defines the **column name** where you want to filter the value:
 
-```
-from giskard import transformation_function, demo
-import pandas as pd
+```python
+from giskard import transformation_function, demo, Dataset
+
 
 _, df = demo.titanic()
 dataset = Dataset(df=df, target="Survived", cat_columns=['Pclass', 'Sex', "SibSp", "Parch", "Embarked"])
 
+
 @transformation_function(cell_level=True)
 def my_func3(cell: int, offset: int):
     return cell + offset
+
 
 transformed_dataset = dataset.transform(my_func3(offset=20), column_name='Age')
 ```
@@ -89,11 +97,22 @@ transformed_dataset = dataset.transform(my_func3(offset=20), column_name='Age')
 
 Transformation functions can be very powerful to detect complex behaviour when they are used as fixtures inside your test suite. With the Giskard framework you can easily create complex transformation functions. For example:
 
-```
+```python
+import os
+import pandas as pd
+from giskard import transformation_function
+
+
 @transformation_function(name="Change writing style", row_level=False, tags=['text'])
-def change_writing_style(x: pd.DataFrame, index: int, column_name: str, style: str,
-                         OPENAI_API_KEY: str) -> pd.DataFrame:
-    os.environ["OPENAI_API_KEY"] = OPENAI_API_KEY
+def change_writing_style(
+        x: pd.DataFrame,
+        index: int,
+        column_name: str,
+        style: str,
+        openai_api_key: str
+) -> pd.DataFrame:
+    os.environ["OPENAI_API_KEY"] = openai_api_key
+    
     rewrite_prompt_template = """
     As a text rewriting robot, your task is to rewrite a given text using a specified rewriting style. You will receive a prompt with the following format:
     ```
@@ -115,10 +134,9 @@ def change_writing_style(x: pd.DataFrame, index: int, column_name: str, style: s
     ```
     """
 
-    from langchain import PromptTemplate
-    from langchain import LLMChain
-    from langchain import OpenAI
+    from langchain import PromptTemplate, LLMChain, OpenAI
 
+    
     rewrite_prompt = PromptTemplate(input_variables=['text', 'style'], template=rewrite_prompt_template)
     chain_rewrite = LLMChain(llm=OpenAI(), prompt=rewrite_prompt)
 
@@ -129,15 +147,16 @@ def change_writing_style(x: pd.DataFrame, index: int, column_name: str, style: s
 
 Giskard enables you to automatically generate the transformation functions that are the most insightul for your ML models. You can easily extract the results of the [scan feature](../../scan/index.md) using the following code:
 
-```
-from giskard import Dataset, Model
+```python
+from giskard import Dataset, Model, scan
+
 
 my_dataset = Dataset(...)
 my_model = Model(...)
 
-scan_result = giskard.scan(my_model, my_dataset)
+scan_result = scan(my_model, my_dataset)
 test_suite = scan_result.generate_test_suite("My first test suite")
-test_suite.run()[1]
+test_suite.run()
 ```
 
 ## Save your transformation function
