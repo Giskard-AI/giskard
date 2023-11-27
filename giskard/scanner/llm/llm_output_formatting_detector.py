@@ -34,6 +34,8 @@ class LLMOutputFormattingDetector(RequirementBasedDetector):
     """Detects output formatting issues in LLM-based models.
 
     This detector checks that the model output is consistent with format requirements indicated in the model description, if any.
+
+    Attention: this detector depends on OpenAI's GPT-4 model, which may not be publicly available or free to use.
     """
 
     _issue_group = OutputFormatting
@@ -53,7 +55,7 @@ class LLMOutputFormattingDetector(RequirementBasedDetector):
     def get_issue_description(self) -> str:
         return OUTPUT_FORMAT_ISSUE_DESCRIPTION
 
-    def run(self, model: BaseModel, dataset: Dataset) -> Sequence[Issue]:
+    def run(self, model: BaseModel, dataset: Dataset, features=None) -> Sequence[Issue]:
         # Let’s check whether the model description provides information about the output format.
         llm_client = get_default_client()
         out = llm_client.complete(
@@ -72,4 +74,4 @@ class LLMOutputFormattingDetector(RequirementBasedDetector):
             )
             return []
 
-        return super().run(model, dataset)
+        return super().run(model, dataset, features=features)

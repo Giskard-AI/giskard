@@ -29,7 +29,7 @@ class LLMFaithfulnessDetector(RequirementBasedDetector):
     def get_issue_description(self) -> str:
         return FAITHFULNESS_ISSUE_DESCRIPTION
 
-    def run(self, model: BaseModel, dataset: Dataset) -> Sequence[Issue]:
+    def run(self, model: BaseModel, dataset: Dataset, features=None) -> Sequence[Issue]:
         # Let’s check whether the model is performing reformulation/summarization.
         llm_client = get_default_client()
         out = llm_client.complete(
@@ -48,4 +48,4 @@ class LLMFaithfulnessDetector(RequirementBasedDetector):
             )
             return []
 
-        return super().run(model, dataset)
+        return super().run(model, dataset, features=features)
