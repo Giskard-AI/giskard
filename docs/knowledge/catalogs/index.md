@@ -2,7 +2,6 @@
 
 ```{toctree}
 :caption: Table of Contents
-:name: mastertoc
 :maxdepth: 2
 :hidden:
 
@@ -30,5 +29,5 @@ transformation-function-catalog/index
 :::{card} <h3><center>Transformation functions</center></h3>
 :link: transformation-function-catalog/index.html
 :::
-:::::   
+:::::
 ::::::

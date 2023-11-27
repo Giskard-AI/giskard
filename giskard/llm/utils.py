@@ -13,22 +13,24 @@ def generate_test_dataset(
     ----------
     model : BaseModel
         The model to generate a test dataset for.
-    num_samples : int, optional
+    num_samples : int
         The number of samples to generate, by default 10.
-    prompt : Optional[str], optional
+    prompt : Optional[str]
         The prompt to use for the generation, if not specified a default will be used.
-    temperature : float, optional
+    temperature : Optional[float]
         The temperature to use for the generation, by default 0.5.
-
-    Raises
-    ------
-    LLMGenerationError
-        If the generation fails.
+    column_types :
+        (Default value = None)
 
     Returns
     -------
     Dataset
         The generated dataset.
+
+    Raises
+    ------
+    LLMGenerationError
+        If the generation fails.
 
     See also
     --------

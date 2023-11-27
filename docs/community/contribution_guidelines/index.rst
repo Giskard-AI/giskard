@@ -21,15 +21,15 @@ Push your tests in the Giskard repo
 * Clone the Giskard repository
 * Create a GitHub branch with the base as main, starting with `test-contribution/name-of-your-branch`
 * From the root of the cloned repo run `./gradlew generateProto`. This will generate the module`generated` that you will need to create your tests.
-* Write your test inside one of the classes (`MetamorphicTests`, `HeuristicTests`, `PerformanceTests` or `DriftTests`) inside this `repo <https://github.com/Giskard-AI/giskard/tree/main/giskard-ml-worker/ml\_worker/testing>`_. If your test does not fit these classes, you can also create a custom class in a new file.
-* We recommend writing unit tests for your test functions: this is the way you can execute and debug your test! Unit tests should be placed in `this directory <https://github.com/Giskard-AI/giskard/tree/main/giskard-ml-worker/test>`_.
+* Write your test inside one of the classes (`MetamorphicTests`, `HeuristicTests`, `PerformanceTests` or `DriftTests`) inside this `repo <https://github.com/Giskard-AI/giskard/tree/main/giskard-ml-worker/ml\_worker/testing>`__. If your test does not fit these classes, you can also create a custom class in a new file.
+* We recommend writing unit tests for your test functions: this is the way you can execute and debug your test! Unit tests should be placed in `this directory <https://github.com/Giskard-AI/giskard/tree/main/giskard-ml-worker/test>`__.
 
 .. hint::
     **Fixtures**
 
     A unit test is executed with a *test model* and *test data* provided as fixtures.
 
-    For example, in `test_precision <https://github.com/Giskard-AI/giskard/blob/main/giskard-ml-worker/test/test\_performance.py#L73>`_ function, we use *german_credit_data* and *german_credit_model* as fixtures. If necessary, you can create your own fixtures; check `this directory <https://github.com/Giskard-AI/giskard/tree/main/giskard-ml-worker/test/fixtures>`_ to know how.
+    For example, in `test_precision <https://github.com/Giskard-AI/giskard/blob/main/giskard-ml-worker/test/test\_performance.py#L73>`_ function, we use *german_credit_data* and *german_credit_model* as fixtures. If necessary, you can create your own fixtures; check `this directory <https://github.com/Giskard-AI/giskard/tree/main/giskard-ml-worker/test/fixtures>`__ to know how.
 
 * Create a Pull Request
 
