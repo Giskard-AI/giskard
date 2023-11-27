@@ -74,12 +74,12 @@ class BearerAuth(AuthBase):
 
 
 def _limit_str_size(json, field, limit=255):
-    if field not in json or not isinstance(json["field"], str):
+    if field not in json or not isinstance(json[field], str):
         return
 
     if len(json[field]) > limit:
         logger.warning(f"Field '{field} exceeded the limit of {limit} characters and has been truncated")
-        json[field] = json[field][0, limit]
+        json[field] = json[field][0:limit]
 
 
 class GiskardClient:
