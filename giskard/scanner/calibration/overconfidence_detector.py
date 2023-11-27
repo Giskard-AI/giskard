@@ -15,10 +15,11 @@ from ..logger import logger
 
 @detector(name="overconfidence", tags=["overconfidence", "classification"])
 class OverconfidenceDetector(LossBasedDetector):
-    def __init__(self, threshold=0.10, p_threshold=None, method="tree"):
+    def __init__(self, threshold=0.10, p_threshold=None, method="tree", **kwargs):
         self.threshold = threshold
         self.p_threshold = p_threshold
         self.method = method
+        super().__init__(**kwargs)
 
     @property
     def _numerical_slicer_method(self):

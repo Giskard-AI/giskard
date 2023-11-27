@@ -3,4 +3,4 @@ description: Giskard process architecture
 ---
 
 # Giskard architecture
-![](<../assets/Architecture.jpg>)
+![](<../../assets/Architecture.jpg>)
