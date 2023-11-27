@@ -1,10 +1,9 @@
-import pytest
-import pandas as pd
 import numpy as np
+import pandas as pd
+import pytest
 
 from giskard import Dataset
-from giskard.slicing.slice import QueryBasedSliceFunction
-from giskard.slicing.slice import GreaterThan, LowerThan
+from giskard.slicing.slice import GreaterThan, LowerThan, QueryBasedSliceFunction
 from giskard.slicing.text_slicer import TextSlicer
 from giskard.slicing.tree_slicer import DecisionTreeSlicer
 
@@ -74,7 +73,18 @@ def test_text_slicer_enforces_cast_to_string():
     dataset = _make_demo_dataset(column_types={"feature1": "text", "loss": "numeric"})
 
     slicer = TextSlicer(dataset)
-    slices = slicer.find_metadata_slices("feature1", "loss")
+    slices = slicer.find_slices(["feature1"], "loss")
+    assert len(slices) > 0
+
+
+def test_text_slicer_works_with_na_values():
+    dataset = _make_demo_dataset(column_types={"feature1": "text", "loss": "numeric"})
+    dataset.df.loc[3, "feature1"] = pd.NA
+    dataset.df.loc[10, "feature1"] = np.nan
+    dataset.df.loc[5, "feature1"] = None
+
+    slicer = TextSlicer(dataset)
+    slices = slicer.find_slices(["feature1"], "loss")
     assert len(slices) > 0
 
 

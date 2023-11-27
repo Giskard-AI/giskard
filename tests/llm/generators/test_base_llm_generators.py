@@ -46,7 +46,6 @@ def test_generator_returns_dataset(Generator, args, kwargs):
         **kwargs,
         llm_client=llm_client,
         llm_temperature=1.416,
-        llm_model="gpt-99",
         prompt="My custom prompt {model_name} {model_description} {feature_names}, with {num_samples} samples",
     )
 
@@ -61,7 +60,6 @@ def test_generator_returns_dataset(Generator, args, kwargs):
 
     called_prompt = llm_client.complete.call_args[1]["messages"][0]["content"]
     called_temperature = llm_client.complete.call_args[1]["temperature"]
-    called_model = llm_client.complete.call_args[1]["model"]
     called_functions = llm_client.complete.call_args[1]["functions"]
 
     assert (
@@ -69,7 +67,6 @@ def test_generator_returns_dataset(Generator, args, kwargs):
         == "My custom prompt Mock model for test This is a model for testing purposes question, other_feature, with 2 samples"
     )
     assert called_temperature == 1.416
-    assert called_model == "gpt-99"
     assert len(called_functions) == 1
     assert called_functions[0]["name"] == "generate_inputs"
 
@@ -147,7 +144,6 @@ def test_generator_casts_based_on_column_types(Generator, args, kwargs):
         **kwargs,
         llm_client=llm_client,
         llm_temperature=1.416,
-        llm_model="gpt-99",
         prompt="My custom prompt {model_name} {model_description} {feature_names}, with {num_samples} samples",
     )
     generator = BaseDataGenerator(llm_client=llm_client)

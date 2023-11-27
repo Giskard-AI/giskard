@@ -93,8 +93,9 @@ class TextSlicer(BaseSlicer):
         return [QueryBasedSliceFunction(Query([ContainsWord(feature, token)])) for token in tokens]
 
     def _get_top_tokens(self, feature, target):
-        vectorizer = _make_vectorizer(self.dataset.df[feature], tfidf=True)
-        tfidf = vectorizer.transform(self.dataset.df[feature])
+        data = self.dataset.df[feature].astype(str)
+        vectorizer = _make_vectorizer(data, tfidf=True)
+        tfidf = vectorizer.transform(data)
 
         # Get top tokens by TF-IDF
         order = np.argsort(tfidf.max(axis=0).toarray().squeeze())[::-1]
@@ -106,8 +107,9 @@ class TextSlicer(BaseSlicer):
         from scipy import stats
 
         max_tokens = self.MAX_TOKENS
-        vectorizer = _make_vectorizer(self.dataset.df[feature], tfidf=True)
-        tfidf = vectorizer.transform(self.dataset.df[feature])
+        data = self.dataset.df[feature].astype(str)
+        vectorizer = _make_vectorizer(data, tfidf=True)
+        tfidf = vectorizer.transform(data)
 
         lrank = self.dataset.df[target].rank(pct=True)
 
@@ -128,8 +130,9 @@ class TextSlicer(BaseSlicer):
     def _get_deviant_tokens(self, feature, target):
         from scipy import stats
 
-        vectorizer = _make_vectorizer(self.dataset.df[feature], tfidf=False, binary=True)
-        X = vectorizer.transform(self.dataset.df[feature])
+        data = self.dataset.df[feature].astype(str)
+        vectorizer = _make_vectorizer(data, tfidf=False, binary=True)
+        X = vectorizer.transform(data)
 
         critical_target = self.dataset.df[target].quantile(0.75)
         y = self.dataset.df[target] > critical_target

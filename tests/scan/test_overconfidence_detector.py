@@ -60,7 +60,7 @@ def test_overconfidence_issue_detection():
     model = giskard.Model(prediction_fn, model_type="classification", classification_labels=[0, 1])
 
     detector = OverconfidenceDetector()
-    issues = detector.run(model, dataset)
+    issues = detector.run(model, dataset, features=["feat"])
 
     assert len(issues) == 1
 

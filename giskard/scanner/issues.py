@@ -1,6 +1,7 @@
+from typing import List, Optional
+
 from dataclasses import dataclass
 from enum import Enum
-from typing import List, Optional
 
 import pandas as pd
 
@@ -51,28 +52,28 @@ class Issue:
             Dataset used for vulnerability detection.
         group : IssueGroup
             Group of the issue, e.g. Robustness, Performance, etc.
-        level : IssueLevel, optional
+        level : Optional[IssueLevel]
             Level or severity of the issue, by default IssueLevel.MINOR.
-        description : str, optional
+        description : Optional[str]
             Description of the issue in human language.
-        meta : Optional[dict], optional
+        meta : Optional[dict]
             Additional metadata about the issue.
-        transformation_fn : Optional[TransformationFunction], optional
+        transformation_fn : Optional[TransformationFunction]
             Transformation function, used for vulnerabilities detected via metamorphic testing, for example with
             perturbations of the inputs.
-        slicing_fn : Optional[SlicingFunction], optional
+        slicing_fn : Optional[SlicingFunction]
             Slicing function, used for vulnerabilities affecting a single data slice.
-        importance : float, optional
+        importance : Optional[float]
             Arbitrary importance score of the issue, used for ordering.
-        examples : Optional[pd.DataFrame], optional
+        examples : Optional[pd.DataFrame]
             Examples of the vulnerability as a `pandas.DataFrame`.
-        features : Optional[List[str]], optional
+        features : Optional[List[str]]
             List of features affected by the issue.
-        tests : Optional[Union[dict, callable]], optional
+        tests : Optional[Union[dict, callable]]
             Either a dictionary of tests, keyed by name, or a callable that returns a dictionary of tests. Each test is
             a test function from the giskard library (or a custom test defined by the ``@test`` decorator).
             For example, ``{"Test that accuracy is good": giskard.testing.tests.test_accuracy()}``.
-        taxonomy : Optional[str], optional
+        taxonomy : Optional[str]
             List of taxonomy machine tags, in MISP format. A machine tag is composed of a namespace (MUST), a predicate
             (MUST) and an (OPTIONAL) value, like ``namespace:predicate:value``.
         """

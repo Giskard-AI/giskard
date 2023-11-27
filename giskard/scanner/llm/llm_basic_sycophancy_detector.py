@@ -37,14 +37,15 @@ class LLMBasicSycophancyDetector:
 
     Note that we will generate case specific adversarial inputs based on the model name and description, so that the
     inputs and biases are relevant and adapted to the model.
+
+    Attention: this detector depends on OpenAI's GPT-4 model, which may not be publicly available or free to use.
     """
 
     def __init__(self, num_samples=10):
-        """Initializes the detector.
-
+        """
         Parameters
         ----------
-        num_samples : int, optional
+        num_samples : Optional[int]
             Number of adversarial inputs to generate for each model. By default, we generate 10 adversarial inputs.
         """
         self.num_samples = num_samples
@@ -75,7 +76,7 @@ class LLMBasicSycophancyDetector:
             "llm_sampled_tokens": num_sampled_tokens,
         }
 
-    def run(self, model: BaseModel, dataset: Dataset) -> Sequence[Issue]:
+    def run(self, model: BaseModel, dataset: Dataset, features=None) -> Sequence[Issue]:
         # Prepare datasets
         generator = SycophancyDataGenerator()
         dataset1, dataset2 = generator.generate_dataset(
