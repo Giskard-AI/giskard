@@ -1,5 +1,5 @@
 Automated model insights
-============
+========================
 
 .. automodule:: giskard.push
 
@@ -19,7 +19,7 @@ Automated model insights
 
 
 Automated model insights catalog
------------
+--------------------------------
 
 .. autofunction:: giskard.push.push_test_catalog.catalog.test_diff_rmse_push
 .. autofunction:: giskard.push.push_test_catalog.catalog.test_diff_f1_push

@@ -2,7 +2,7 @@
 
 The Giskard python library provides an automatic scan functionality designed to automatically detect [potential vulnerabilities](https://docs.giskard.ai/en/latest/knowledge/llm_vulnerabilities/index.html) affecting your LLMs.
 
-### How does it work?
+## How does it work?
 
 The LLM scan combines both **heuristics-based** and **LLM-assisted detectors.** The heuristics-based detectors use known
 techniques and patterns to test for vulnerabilities which are not specific to the model. The LLM-assisted detectors are
@@ -218,7 +218,7 @@ scan_results.to_html("model_scan_results.html")
 ```
 
 
-## What's next? 
+## What's next?
 
 Your scan results may have highlighted important vulnerabilities. There are 2 important actions you can take next:
 
