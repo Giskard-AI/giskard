@@ -32,15 +32,23 @@ class GiskardError(Exception):
         self.code = code
 
 
-def explain_error(status):
+def explain_error(resp):
+    status = resp.status
     message = "Unknown error"
     code = "error.unknown"
     if status == 401:
         code = "error.http.401"
         message = "Not authorized to access this resource. Please check your API key"
-    if status == 403:
+    elif status == 403:
         code = "error.http.403"
         message = "The access is denied. Please check your permissions."
+    elif status >= 500:
+        code = f"error.http.{status}"
+        if "title" in resp or resp.get("detail"):
+            message = f"{resp.get('title', 'Unknown error')}: {resp.get('detail', 'no details')}"
+        elif "message" in resp:
+            message = resp["message"]
+
     return GiskardError(status=status, code=code, message=message)
 
 
@@ -54,7 +62,7 @@ class ErrorHandlingAdapter(HTTPAdapter):
         # https://github.com/psf/cachecontrol/issues/292
         # Could be easier if we just handle the response directly
         if resp.status >= 400:
-            raise explain_error(resp.status)
+            raise explain_error(resp)
 
         return super(ErrorHandlingAdapter, self).build_response(req, resp)
 
