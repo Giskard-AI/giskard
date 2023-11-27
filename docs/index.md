@@ -73,75 +73,48 @@ community/contribution_guidelines/index
 
 
 :::::{grid} 1 1 3 3
-:gutter: 1
+:gutter: 0 5
 
-::::{grid-item}
-:::{card} <h2><center> Getting Started </center></h2>
-:margin: 1
-:width: 100%
+::::{grid-item-card} <h2><center> Getting Started </center></h2>
 :text-align: center
 :link: getting_started/index.md
 :img-bottom: assets/intro/coffee.png
-:::
 ::::
 
-::::{grid-item}
-:::{card} <h2><center> Tutorials </center></h2>
-:margin: 1
-:width: 100%
-:text-align: center
-:link: tutorials/index.md
-:img-bottom: assets/intro/test_turtle.png
-:::
-::::
-
-::::{grid-item}
-:::{card} <h2><center> API Reference </center></h2>
-:margin: 1
-:width: 100%
-:link: reference/index.rst
-:img-bottom: assets/intro/Giskard_Turtle_Computer.png
-:::
-::::
-
-::::{grid-item}
-:::{card} <h2><center> Open-Source Library </center></h2>
-:margin: 1
-:width: 100%
+::::{grid-item-card} <h2><center> Open-Source Library </center></h2>
 :text-align: center
 :link: open_source/installation_library/index.md
 :img-bottom: assets/intro/ninja.png
-:::
 ::::
 
-::::{grid-item}
-:::{card} <h2><center> Knowledge </center></h2>
-:margin: 1
-:width: 100%
-:text-align: center
-:link: knowledge/llm_vulnerabilities/index.md
-:img-bottom: assets/intro/integrations.png
-:::
-::::
-
-::::{grid-item}
-:::{card} <h2><center> Giskard Hub </center></h2>
-:margin: 1
-:width: 100%
+::::{grid-item-card} <h2><center> Giskard Hub </center></h2>
 :text-align: center
 :link: giskard_hub/installation_hub/index.md
 :img-bottom: assets/intro/Giskard_Turtle_SK8.png
-:::
 ::::
 
-::::{grid-item}
-:::{card} <h2><center> Integrations </center></h2>
-:margin: 1
-:width: 100%
+::::{grid-item-card} <h2><center> Tutorials </center></h2>
+:text-align: center
+:link: tutorials/index.md
+:img-bottom: assets/intro/test_turtle.png
+::::
+
+::::{grid-item-card} <h2><center> Knowledge </center></h2>
+:text-align: center
+:link: knowledge/llm_vulnerabilities/index.md
+:img-bottom: assets/intro/integrations.png
+::::
+
+::::{grid-item-card} <h2><center> Integrations </center></h2>
 :text-align: center
 :link: ./open_source/integrate_tests/index.md
 :img-bottom: assets/intro/hey.png
-:::
+::::
+
+::::{grid-item-card} <h2><center> API Reference </center></h2>
+:text-align: center
+:link: reference/index.rst
+:img-bottom: assets/intro/Giskard_Turtle_Computer.png
 ::::
 
 :::::
