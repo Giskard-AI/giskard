@@ -100,16 +100,11 @@ def separate_process(item: Function) -> List[TestReport]:
 
 # https://docs.pytest.org/en/7.1.x/reference/reference.html#pytest.hookspec.pytest_runtest_protocol
 @pytest.hookimpl(tryfirst=True)
-def pytest_runtest_protocol(item: Function):
+def pytest_runtest_call(item: Function):
     mark = item.get_closest_marker("skip")
     skip = mark is not None
     mark = item.get_closest_marker("skipif")
     skip |= mark is not None and ((len(mark.args) == 1 and mark.args[0]) or mark.kwargs.get("condition", False))
     if not skip and item.get_closest_marker("memory_expensive") and item.config.getoption("--use-subprocess"):
-        ihook = item.ihook
-        ihook.pytest_runtest_logstart(nodeid=item.nodeid, location=item.location)
         reports = separate_process(item)
-        for rep in reports:
-            ihook.pytest_runtest_logreport(report=rep)
-        ihook.pytest_runtest_logfinish(nodeid=item.nodeid, location=item.location)
-        return True
+        return reports
