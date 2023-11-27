@@ -14,6 +14,7 @@ from mlflow.utils.rest_utils import augmented_raise_for_status
 from requests.adapters import HTTPAdapter
 from requests.auth import AuthBase
 from requests_toolbelt import sessions
+from requests import Response
 
 import giskard
 from giskard.client.dtos import DatasetMetaInfo, ModelMetaInfo, ServerInfo, SuiteInfo, TestSuiteDTO
@@ -33,17 +34,20 @@ class GiskardError(Exception):
 
 
 def explain_error(resp):
-    status = resp.status
-    message = "Unknown error"
-    code = "error.unknown"
+    if isinstance(resp, Response):
+        status = resp.status_code
+    else:
+        status = resp.status
+        message = "Unknown error"
+
+    code = f"error.http.{status}"
+    print("debug error >>>>> ", status)
+
     if status == 401:
-        code = "error.http.401"
         message = "Not authorized to access this resource. Please check your API key"
     elif status == 403:
-        code = "error.http.403"
-        message = "The access is denied. Please check your permissions."
-    elif status >= 500:
-        code = f"error.http.{status}"
+        message = "Access denied. Please check your permissions."
+    else:
         if "title" in resp or resp.get("detail"):
             message = f"{resp.get('title', 'Unknown error')}: {resp.get('detail', 'no details')}"
         elif "message" in resp:
@@ -54,17 +58,14 @@ def explain_error(resp):
 
 class ErrorHandlingAdapter(HTTPAdapter):
     def __init__(self, *args, **kwargs):
-        super(ErrorHandlingAdapter, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
 
     def build_response(self, req, resp):
-        # It appears the urllib3 version used by requests
-        # may have a bug where it doesn't properly decode the response
-        # https://github.com/psf/cachecontrol/issues/292
-        # Could be easier if we just handle the response directly
+        print("debug error >>>>> ", resp.status)
         if resp.status >= 400:
             raise explain_error(resp)
 
-        return super(ErrorHandlingAdapter, self).build_response(req, resp)
+        return super().build_response(req, resp)
 
 
 class BearerAuth(AuthBase):
@@ -84,14 +85,21 @@ class GiskardClient:
         self.key = key
         self.hf_token = hf_token
         base_url = urljoin(url, "/api/v2/")
+
         self._session = sessions.BaseUrlSession(base_url=base_url)
-        self._session.mount(url, ErrorHandlingAdapter())
+
+        adapter = ErrorHandlingAdapter()
+
+        self._session.mount(url, adapter)
+
         self._session.auth = BearerAuth(key)
 
         if hf_token:
             self._session.cookies["spaces-jwt"] = hf_token
 
         server_settings: ServerInfo = self.get_server_info()
+
+        print("degbug error >>>>> ", key)
 
         if server_settings.serverVersion != giskard.__version__:
             warning(
@@ -332,7 +340,10 @@ class GiskardClient:
 
     def get_server_info(self) -> ServerInfo:
         resp = self._session.get("/public-api/ml-worker-connect")
-        return ServerInfo.parse_obj(resp.json())
+        try:
+            return ServerInfo.parse_obj(resp.json())
+        except Exception:
+            raise explain_error(resp)
 
     def save_test_suite(self, dto: TestSuiteDTO):
         return self._session.post(f"testing/project/{dto.project_key}/suites", json=dto.dict()).json()
