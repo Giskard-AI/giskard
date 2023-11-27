@@ -65,13 +65,12 @@ class LLMPromptInjectionDetector(Detector):
             results[prompt.group]["prediction"].append(prediction)
         return results
 
-    def run(self, model: BaseModel, dataset: Dataset) -> Sequence[Issue]:
+    def run(self, model: BaseModel, dataset: Dataset, features: Sequence[str]) -> Sequence[Issue]:
         logger.info(
             f"Running the {Style.RESET_ALL}{Fore.LIGHTBLUE_EX}{self.__class__.__name__}{Style.RESET_ALL} Detector."
         )
 
         # even-though this detector doesn't rely on a dataset, it's still needed to get the features and column_types
-        features = model.meta.feature_names or list(dataset.df.columns.drop(dataset.target, errors="ignore"))
         column_types = dataset.column_types
 
         prompts = get_all_prompts()
