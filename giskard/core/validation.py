@@ -14,9 +14,12 @@ else:
 
 
 def configured_validate_arguments(func):
-    """
-    Decorator to enforce a function args to be compatible with their type hints.
-    :return: A wrapper function decorated by pydantic validate_arguments configured to allow arbitrary types check.
+    """Decorator to enforce a function args to be compatible with their type hints.
+
+    Returns
+    -------
+    validated_func
+        A wrapped function decorated by pydantic validate_arguments configured to allow arbitrary types check.
     """
     # https://docs.pydantic.dev/2.3/usage/validation_decorator/
     # Actually, this is more than just validation
