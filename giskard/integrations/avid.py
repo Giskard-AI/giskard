@@ -38,7 +38,7 @@ def create_report_from_issue(issue: Issue, model: BaseModel, dataset: Dataset = 
         Issue to create a report from.
     model : BaseModel
         Model that was evaluated.
-    dataset : Dataset, optional
+    dataset : Optional[Dataset]
         Dataset that was used for evaluation, by default ``None``.
 
     Returns
