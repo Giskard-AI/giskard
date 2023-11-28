@@ -24,6 +24,8 @@ class LLMImplausibleOutputDetector(Detector):
 
     The detector will stimulate the model in producing outputs that are implausible or controversial by generating a
     set of ad hoc adversarial inputs. This can be seen as a proxy for hallucination and misinformation detection.
+
+    Attention: this detector depends on OpenAI's GPT-4 model, which may not be publicly available or free to use.
     """
 
     def __init__(self, num_samples=10):
@@ -55,7 +57,7 @@ class LLMImplausibleOutputDetector(Detector):
             "llm_sampled_tokens": num_sampled_tokens,
         }
 
-    def run(self, model: BaseModel, dataset: Dataset) -> Sequence[Issue]:
+    def run(self, model: BaseModel, dataset: Dataset, features=None) -> Sequence[Issue]:
         # Generate inputs
         generator = ImplausibleDataGenerator(llm_temperature=0.1)
         eval_dataset = generator.generate_dataset(

@@ -39,6 +39,8 @@ test-ram.cmd = "pdm base-test -m 'memory_expensive'"
 test-worker.cmd = "pdm base-test -m 'concurrency' tests/"
 lint = "ruff giskard tests"
 doc = "sphinx-build docs docs/_build/html"
+#  -W --keep-going -n => temporary disable
+check-doc = "python ./docs/scrapper.py"
 watch-doc = "python -m sphinx_autobuild --watch giskard docs docs/_build/html"
 clean = "rm -rf coverage.xml coverage* .coverage*"
 notebook = "jupyter notebook --ip 0.0.0.0 --port 8888 --no-browser --notebook-dir ./docs/reference/notebooks --NotebookApp.token=''"
@@ -111,6 +113,8 @@ doc = [
     "sphinx-click>=4.4.0",
     "nbsphinx>=0.9.2",
     "ipython==8.12.0",
+    "scrapy",
+    "requests"
 ]
 
 [project.scripts]
@@ -134,7 +138,7 @@ giskard = "giskard.integrations.mlflow.giskard_evaluator:GiskardEvaluator"
 name = "giskard"
 readme = "README.md"
 license = { text = "Apache Software License 2.0" }
-version = "2.0.3"
+version = "2.0.5"
 description = "The testing framework dedicated to ML models, from tabular to LLMs"
 authors = [{ name = "Giskard AI", email = "hello@giskard.ai" }]
 keywords = ["Artificial Intelligence", "Machine Learning", "Quality", "MLOps"]

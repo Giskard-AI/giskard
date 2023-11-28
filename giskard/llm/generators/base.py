@@ -1,5 +1,6 @@
-from abc import ABC, abstractmethod
 from typing import Optional
+
+from abc import ABC, abstractmethod
 
 import pandas as pd
 from pydantic import BaseModel
@@ -33,12 +34,10 @@ class LLMGenerator(BaseGenerator, ABC):
 
     def __init__(
         self,
-        llm_model: Optional[str] = None,
         llm_temperature: Optional[float] = None,
         llm_client: LLMClient = None,
         prompt: Optional[str] = None,
     ):
-        self.llm_model = llm_model if llm_model is not None else self._default_model
         self.llm_temperature = llm_temperature if llm_temperature is not None else self._default_temperature
         self.llm_client = llm_client or get_default_client()
         self.prompt = prompt if prompt is not None else self._default_prompt
@@ -84,20 +83,22 @@ class BaseDataGenerator(LLMGenerator):
         ----------
         model : BaseModel
             The model to generate a test dataset for.
-        num_samples : int, optional
+        num_samples : int
             The number of samples to generate, by default 10.
         column_types : float, optional
-            The column types for the generated datasets.
+            The column types for the generated datasets. (Default value = None)
+
+        Returns
+        -------
+        Dataset
+            The generated dataset.
 
         Raises
         ------
         LLMGenerationError
             If the generation fails.
 
-        Returns
-        -------
-        Dataset
-            The generated dataset.
+
         """
         prompt = self._make_generate_input_prompt(model, num_samples)
         functions = self._make_generate_input_functions(model, num_samples)
@@ -107,7 +108,6 @@ class BaseDataGenerator(LLMGenerator):
             functions=functions,
             function_call={"name": "generate_inputs"},
             temperature=self.llm_temperature,
-            model=self.llm_model,
             caller_id=self.__class__.__name__,
         )
 

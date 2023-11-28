@@ -16,7 +16,7 @@ Injection attacks
 Hallucination & misinformation
 ------------------------------
 
-.. autoclass :: giskard.scanner.llm.LLMSycophancyDetector
+.. autoclass :: giskard.scanner.llm.LLMBasicSycophancyDetector
    :members:
    :show-inheritance:
 

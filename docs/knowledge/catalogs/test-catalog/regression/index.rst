@@ -16,7 +16,6 @@ Regression tests
   - :func:`~.giskard.testing.test_mae`
   - :func:`~.giskard.testing.test_rmse`
   - :func:`~.giskard.testing.test_diff_rmse`
-  - :func:`~.giskard.testing.test_diff_reference_actual_rmse`
   - :func:`~.giskard.testing.test_r2`
 
 - **Drift tests**

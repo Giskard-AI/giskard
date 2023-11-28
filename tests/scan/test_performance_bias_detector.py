@@ -15,7 +15,7 @@ def test_performance_bias_detector_skips_small_datasets(german_credit_model, ger
     small_dataset = german_credit_data.slice(lambda df: df.sample(50), row_level=False)
     detector = PerformanceBiasDetector()
     with caplog.at_level(logging.WARNING):
-        issues = detector.run(german_credit_model, small_dataset)
+        issues = detector.run(german_credit_model, small_dataset, features=german_credit_model.meta.feature_names)
     record = caplog.records[-1]
 
     assert len(issues) == 0
@@ -30,10 +30,8 @@ def test_performance_bias_detector_trims_large_dataset(german_credit_model, germ
 
     detector = PerformanceBiasDetector()
     try:
-        detector.run(german_credit_model, large_dataset)
-    except ValueError:
-        pass
-    except TypeError:
+        detector.run(german_credit_model, large_dataset, features=german_credit_model.meta.feature_names)
+    except (ValueError, TypeError):
         pass
     assert large_dataset.slice.called
     assert large_dataset.df.sample.assert_called_once
@@ -43,10 +41,8 @@ def test_performance_bias_detector_trims_large_dataset(german_credit_model, germ
 
     detector = PerformanceBiasDetector()
     try:
-        detector.run(german_credit_model, normal_dataset)
-    except ValueError:
-        pass
-    except TypeError:
+        detector.run(german_credit_model, normal_dataset, features=german_credit_model.meta.feature_names)
+    except (ValueError, TypeError):
         pass
 
     assert normal_dataset.slice.not_called
@@ -55,7 +51,7 @@ def test_performance_bias_detector_trims_large_dataset(german_credit_model, germ
 def test_performance_bias_detector_with_tabular(german_credit_model, german_credit_data):
     detector = PerformanceBiasDetector()
 
-    issues = detector.run(german_credit_model, german_credit_data)
+    issues = detector.run(german_credit_model, german_credit_data, features=german_credit_model.meta.feature_names)
     assert len(issues) > 0
     assert all([isinstance(issue, Issue) for issue in issues])
 
@@ -77,7 +73,7 @@ def test_performance_bias_detector_with_text_features(enron_model, enron_data):
     dataset = Dataset(df, target=enron_data.target, column_types=enron_data.column_types)
     detector = PerformanceBiasDetector()
 
-    issues = detector.run(enron_model, dataset)
+    issues = detector.run(enron_model, dataset, enron_model.meta.feature_names)
     assert len(issues) > 0
     assert all([isinstance(issue, Issue) for issue in issues])
 
@@ -87,18 +83,18 @@ def test_selects_issues_with_benjamini_hochberg(titanic_model, titanic_dataset):
     # By default, it does not use the statistical significance
     detector = PerformanceBiasDetector()
 
-    issues = detector.run(titanic_model, titanic_dataset)
-    assert len(issues) == 10
+    issues = detector.run(titanic_model, titanic_dataset, features=["Name", "Sex", "Pclass"])
+    assert len(issues) == 6
 
     # Setting alpha enables the Benjamini–Hochberg procedure
     detector = PerformanceBiasDetector(alpha=0.10)
 
-    issues = detector.run(titanic_model, titanic_dataset)
-    assert len(issues) == 4
+    issues = detector.run(titanic_model, titanic_dataset, features=["Name", "Sex", "Pclass"])
+    assert len(issues) == 3
 
     detector = PerformanceBiasDetector(alpha=1e-10)
 
-    issues = detector.run(titanic_model, titanic_dataset)
+    issues = detector.run(titanic_model, titanic_dataset, features=["Name", "Sex", "Pclass"])
     assert len(issues) == 2
 
 

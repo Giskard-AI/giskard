@@ -14,19 +14,20 @@ def test_llm_output_coherency(
 ):
     """Tests that the model output is coherent for multiple inputs.
 
-
     Parameters
     ----------
     model : BaseModel
         The model to test.
     dataset_1 : Dataset
-        A sample dataset of inputs.
-    dataset_1 : Dataset, optional
-        Another sample dataset of inputs, with same index as `dataset_1`. If not passed, we will run a again predictions
-        on the first inputs `dataset_1`, and check that the outputs are coherent.
-    eval_prompt : str, optional
-        Optional custom prompt to use for evaluation. If not provided, the default prompt of :ref:`CoherencyEvaluator` will
-        be used.
+        Another sample dataset of inputs, with same index as ``dataset_1``. If
+        not passed, we will run a again predictions on the first inputs
+        ``dataset_1``, and check that the outputs are coherent.
+    dataset_2 : Optional[Dataset]
+        Another sample dataset of inputs, with same index as ``dataset_1``. If
+        not passed, we will rerun the model on ``dataset_1``.
+    eval_prompt : Optional[str]
+        Optional custom prompt to use for evaluation. If not provided, the
+        default prompt of :class:`.CoherencyEvaluator` will be used.
 
     Returns
     -------
@@ -48,16 +49,15 @@ def test_llm_output_coherency(
 def test_llm_output_plausibility(model: BaseModel, dataset: Dataset, eval_prompt: Optional[str] = None):
     """Tests that the model output is plausible.
 
-
     Parameters
     ----------
     model : BaseModel
         The model to test.
     dataset : Dataset
         A sample dataset of inputs.
-    eval_prompt : str, optional
-        Optional custom prompt to use for evaluation. If not provided, the default prompt of `CoherencyEvaluator` will
-        be used.
+    eval_prompt : Optional[str]
+        Optional custom prompt to use for evaluation. If not provided, the
+        default prompt of `CoherencyEvaluator` will be used.
 
     Returns
     -------

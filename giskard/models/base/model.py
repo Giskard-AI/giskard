@@ -1,3 +1,5 @@
+from typing import Iterable, List, Optional, Type, Union
+
 import builtins
 import importlib
 import logging
@@ -8,7 +10,6 @@ import tempfile
 import uuid
 from abc import ABC, abstractmethod
 from pathlib import Path
-from typing import Iterable, List, Optional, Type, Union
 
 import cloudpickle
 import numpy as np
@@ -60,15 +61,17 @@ class BaseModel(ABC):
 
     Attributes:
        model (Any):
-           Could be any function or ML model. The standard model output required for Giskard is:
+            Could be any function or ML model. The standard model output required for Giskard is:
 
-           * if classification: an array (nxm) of probabilities corresponding to n data entries
-             (rows of pandas.DataFrame)
-             and m classification_labels. In the case of binary classification, an array of (nx1) probabilities is
-             also accepted.
-             Make sure that the probability provided is for the second label provided in classification_labels.
-           * if regression or text_generation: an array of predictions corresponding to data entries
-             (rows of pandas.DataFrame) and outputs.
+            * if classification:
+                an array (nxm) of probabilities corresponding to n data entries (rows of pandas.DataFrame)
+                and m classification_labels. In the case of binary classification, an array of (nx1) probabilities is
+                also accepted.
+                Make sure that the probability provided is for the second label provided in classification_labels.
+            * if regression or text_generation:
+                an array of predictions corresponding to data entries
+                (rows of pandas.DataFrame) and outputs.
+
        name (Optional[str]):
             the name of the model.
        model_type (ModelType):
@@ -110,11 +113,11 @@ class BaseModel(ABC):
 
         Parameters:
             model_type (ModelType): Type of the model, either ModelType.REGRESSION or ModelType.CLASSIFICATION.
-            name (str, optional): Name of the model. If not provided, defaults to the class name.
-            description (str, optional): Description of the model's task. Mandatory for non-langchain text_generation models.
-            feature_names (Iterable, optional): A list of names of the input features.
-            classification_threshold (float, optional): Threshold value used for classification models. Defaults to 0.5.
-            classification_labels (Iterable, optional): A list of labels for classification models.
+            name (Optional[str]): Name of the model. If not provided, defaults to the class name.
+            description (Optional[str]): Description of the model's task. Mandatory for non-langchain text_generation models.
+            feature_names (Optional[Iterable]): A list of names of the input features.
+            classification_threshold (Optional[float]): Threshold value used for classification models. Defaults to 0.5.
+            classification_labels (Optional[Iterable]): A list of labels for classification models.
 
         Raises:
             ValueError: If an invalid model_type value is provided.
@@ -123,7 +126,9 @@ class BaseModel(ABC):
         Notes:
             This class uses the @configured_validate_arguments decorator to validate the input arguments.
             The initialized object contains the following attributes:
-                - meta: a ModelMeta object containing metadata about the model.
+
+            - meta: a ModelMeta object containing metadata about the model.
+
         """
         self.id = uuid.UUID(id) if id is not None else uuid.UUID(kwargs.get("id", uuid.uuid4().hex))
         if isinstance(model_type, str):
@@ -165,30 +170,39 @@ class BaseModel(ABC):
         return self.meta.name if self.meta.name is not None else self.__class__.__name__
 
     @property
-    def is_classification(self):
-        """
-        Returns True if the model is of type classification, False otherwise.
+    def is_classification(self) -> bool:
+        """Compute if the model is of type classification.
+
+        Returns:
+            bool: True if the model is of type classification, False otherwise
         """
         return self.meta.model_type == SupportedModelTypes.CLASSIFICATION
 
     @property
-    def is_binary_classification(self):
+    def is_binary_classification(self) -> bool:
+        """Compute if the model is of type binary classification.
+
+        Returns:
+            bool: True if the model is of type binary classification, False otherwise.
         """
-        Returns True if the model is of type binary classification, False otherwise.
-        """
+
         return self.is_classification and len(self.meta.classification_labels) == 2
 
     @property
-    def is_regression(self):
-        """
-        Returns True if the model is of type regression, False otherwise.
+    def is_regression(self) -> bool:
+        """Compute if the model is of type regression.
+
+        Returns:
+            bool: True if the model is of type regression, False otherwise.
         """
         return self.meta.model_type == SupportedModelTypes.REGRESSION
 
     @property
-    def is_text_generation(self):
-        """
-        Returns True if the model is of type text generation, False otherwise.
+    def is_text_generation(self) -> bool:
+        """Compute if the model is of type text generation.
+
+        Returns:
+            bool: True if the model is of type text generation, False otherwise.
         """
         return self.meta.model_type == SupportedModelTypes.TEXT_GENERATION
 
@@ -284,26 +298,27 @@ class BaseModel(ABC):
         return df
 
     def predict(self, dataset: Dataset) -> ModelPredictionResults:
-        """
-        Generates predictions for the input giskard dataset.
+        """Generates predictions for the input giskard dataset.
         This method uses the `prepare_dataframe()` method to preprocess the input dataset before making predictions.
         The `predict_df()` method is used to generate raw predictions for the preprocessed data.
         The type of predictions generated by this method depends on the model type:
+
         * For regression models, the `prediction` field of the returned `ModelPredictionResults` object will contain the same
-          values as the `raw_prediction` field.
+            values as the `raw_prediction` field.
         * For binary or multiclass classification models, the `prediction` field of the returned `ModelPredictionResults` object
-          will contain the predicted class labels for each example in the input dataset.
-          The `probabilities` field will contain the predicted probabilities for the predicted class label.
-          The `all_predictions` field will contain the predicted probabilities for all class labels for each example in the input dataset.
+            will contain the predicted class labels for each example in the input dataset.
+            The `probabilities` field will contain the predicted probabilities for the predicted class label.
+            The `all_predictions` field will contain the predicted probabilities for all class labels for each example in the input dataset.
+
 
         Args:
             dataset (Dataset): The input dataset to make predictions on.
 
-        Returns:
-            ModelPredictionResults: The prediction results for the input dataset.
-
         Raises:
             ValueError: If the prediction task is not supported by the model.
+
+        Returns:
+            ModelPredictionResults: The prediction results for the input dataset.
         """
         if not len(dataset.df):
             return ModelPredictionResults()
@@ -379,7 +394,7 @@ class BaseModel(ABC):
         Args:
             client (GiskardClient): A Giskard client instance to use for uploading the model.
             project_key (str): The project key to use for the upload.
-            validate_ds (Dataset, optional): A validation dataset to use for validating the model. Defaults to None.
+            validate_ds (Optional[Dataset]): A validation dataset to use for validating the model. Defaults to None.
 
         Notes:
             This method saves the model to a temporary directory before uploading it. The temporary directory

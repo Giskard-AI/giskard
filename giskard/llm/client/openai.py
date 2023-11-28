@@ -1,13 +1,12 @@
 import json
 from abc import ABC, abstractmethod
-from typing import Dict, Optional
+from typing import Dict, Optional, Sequence
 
-from git import Sequence
 from tenacity import retry, retry_if_exception_type, stop_after_attempt, wait_exponential
 
+from . import LLMClient, LLMFunctionCall, LLMLogger, LLMOutput
 from ..config import LLMConfigurationError
 from ..errors import LLMGenerationError, LLMImportError
-from . import LLMClient, LLMFunctionCall, LLMLogger, LLMOutput
 
 try:
     import openai
@@ -21,8 +20,9 @@ AUTH_ERROR_MESSAGE = (
 
 
 class BaseOpenAIClient(LLMClient, ABC):
-    def __init__(self):
+    def __init__(self, model: str):
         self._logger = LLMLogger()
+        self.model = model
 
     @property
     def logger(self) -> LLMLogger:
@@ -32,7 +32,6 @@ class BaseOpenAIClient(LLMClient, ABC):
     def _completion(
         self,
         messages: Sequence,
-        model: str,
         functions: Sequence = None,
         temperature: float = 1.0,
         function_call: Optional[Dict] = None,
@@ -45,7 +44,6 @@ class BaseOpenAIClient(LLMClient, ABC):
         self,
         messages,
         functions=None,
-        model="gpt-4",
         temperature=0.5,
         max_tokens=None,
         function_call: Optional[Dict] = None,
@@ -53,7 +51,6 @@ class BaseOpenAIClient(LLMClient, ABC):
     ):
         cc = self._completion(
             messages=messages,
-            model=model,
             temperature=temperature,
             functions=functions,
             function_call=function_call,
@@ -78,16 +75,15 @@ class BaseOpenAIClient(LLMClient, ABC):
 class LegacyOpenAIClient(BaseOpenAIClient):
     """OpenAI client for versions <= 0.28.1"""
 
-    def __init__(self, openai_api_key=None, openai_organization=None):
+    def __init__(self, model: str, openai_api_key=None, openai_organization=None):
         self.openai_api_key = openai_api_key
         self.openai_organization = openai_organization
-        super().__init__()
+        super().__init__(model)
 
     @retry(retry=retry_if_exception_type(openai.OpenAIError), stop=stop_after_attempt(3), wait=wait_exponential(3))
     def _completion(
         self,
         messages: Sequence,
-        model: str,
         functions: Sequence = None,
         temperature: float = 1.0,
         function_call: Optional[Dict] = None,
@@ -102,7 +98,7 @@ class LegacyOpenAIClient(BaseOpenAIClient):
 
         try:
             completion = openai.ChatCompletion.create(
-                model=model,
+                model=self.model,
                 messages=messages,
                 temperature=temperature,
                 max_tokens=max_tokens,
@@ -116,7 +112,7 @@ class LegacyOpenAIClient(BaseOpenAIClient):
         self._logger.log_call(
             prompt_tokens=completion["usage"]["prompt_tokens"],
             sampled_tokens=completion["usage"]["completion_tokens"],
-            model=model,
+            model=self.model,
             client_class=self.__class__.__name__,
             caller_id=caller_id,
         )
@@ -125,14 +121,14 @@ class LegacyOpenAIClient(BaseOpenAIClient):
 
 
 class OpenAIClient(BaseOpenAIClient):
-    def __init__(self, client=None):
+    def __init__(self, model: str, client=None):
         self._client = client or openai.OpenAI()
-        super().__init__()
+
+        super().__init__(model)
 
     def _completion(
         self,
         messages: Sequence,
-        model: str,
         functions: Sequence = None,
         temperature: float = 1.0,
         function_call: Optional[Dict] = None,
@@ -147,7 +143,7 @@ class OpenAIClient(BaseOpenAIClient):
 
         try:
             completion = self._client.chat.completions.create(
-                model=model,
+                model=self.model,
                 messages=messages,
                 temperature=temperature,
                 max_tokens=max_tokens,
@@ -159,7 +155,7 @@ class OpenAIClient(BaseOpenAIClient):
         self._logger.log_call(
             prompt_tokens=completion.usage.prompt_tokens,
             sampled_tokens=completion.usage.completion_tokens,
-            model=model,
+            model=self.model,
             client_class=self.__class__.__name__,
             caller_id=caller_id,
         )

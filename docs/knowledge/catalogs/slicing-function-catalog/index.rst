@@ -1,5 +1,5 @@
 Slicing functions
-============
+=================
 
 - **Textual slicing function**
 
