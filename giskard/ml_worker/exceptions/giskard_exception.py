@@ -33,16 +33,7 @@ class GiskardPythonDepException(GiskardPythonEnvException):
 def python_env_exception_helper(cls_name, e: Exception, required_py_ver: Optional[Tuple[str, str, str]] = None):
     if required_py_ver is not None and required_py_ver[:2] != platform.python_version_tuple[:2]:
         # Python major and minor versions are not matched
+        # Notice that there could be some false positive, check: https://github.com/Giskard-AI/giskard/pull/1620
         return GiskardPythonVerException(cls_name, e, required_py_ver=required_py_ver)
-    elif isinstance(e, TypeError):
-        # Try to infer Python version issues from exceptions
-        # Python 3.9: code() takes at most 16 arguments (18 given)
-        # Python 3.10: code expected at most 16 arguments, got 18
-        # Python 3.11: code() argument 13 must be str, not int
-        if "at most 16 arguments" in e.args[0] or "code() argument 13 must be str, not int" in e.args[0]:
-            # Python 3.11 introduces `co_qualname` in code
-            # See code in Python 3.10: https://docs.python.org/3.10/library/inspect.html#types-and-members
-            # and code in Python 3.11: https://docs.python.org/3.11/library/inspect.html#types-and-members
-            return GiskardPythonVerException(cls_name, e, required_py_ver=required_py_ver)
     # We assume the other cases as the dependency issues
     return GiskardPythonDepException(cls_name, e)
