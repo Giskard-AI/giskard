@@ -5,7 +5,7 @@ import pandas as pd
 
 from ...datasets.base import Dataset
 from ...llm.evaluators.string_matcher import StringMatcher
-from giskard.llm.injection_data.loader import PromptInjectionDataLoader
+from giskard.llm.loaders.prompt_injections import PromptInjectionDataLoader
 from ...models.base.model import BaseModel
 from ..decorators import detector
 from ..issues import Issue, IssueGroup, IssueLevel

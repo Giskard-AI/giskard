@@ -6,7 +6,7 @@ import pandas as pd
 from giskard.datasets.base import Dataset
 from giskard.scanner.llm.llm_prompt_injection_detector import LLMPromptInjectionDetector
 from giskard.testing.tests.llm.injections import _test_llm_output_against_strings
-from giskard.llm.injection_data.loader import PromptInjectionDataLoader
+from giskard.llm.loaders.prompt_injections import PromptInjectionDataLoader
 
 
 def test_prompt_injection_data_loader_properties():
@@ -24,12 +24,12 @@ def test_prompt_injection_data_loader_sampling():
     loader = PromptInjectionDataLoader(num_samples=num_samples)
 
     column_types = {"feat": "text"}
-    dataset = loader.load_dataset(column_types=column_types)
+    dataset = loader.load_dataset(features=["feat"])
     assert len(dataset) == num_samples
     assert len(dataset.df.columns) == len(column_types)
 
 
-@patch("giskard.llm.injection_data.loader.PromptInjectionDataLoader")
+@patch("giskard.llm.loaders.prompt_injections.PromptInjectionDataLoader")
 def test_prompt_injection_detector(PromptInjectionDataLoader):  # noqa
     model = Mock()
     dataset = Mock()
@@ -73,7 +73,7 @@ def test_prompt_injection_detector(PromptInjectionDataLoader):  # noqa
 
     loader.meta_df.substrings = loader.meta_df.substrings.apply(ast.literal_eval)
 
-    loader.generate_dataset.return_value = Dataset(
+    loader.load_dataset.return_value = Dataset(
         df=loader.prompts_df.rename(columns={"prompt": "feat"}),
         name="Injection Prompts",
         target=None,
@@ -97,12 +97,12 @@ def test_prompt_injection_detector(PromptInjectionDataLoader):  # noqa
     detector = LLMPromptInjectionDetector()
 
     # First run
-    issues = detector.run(model, dataset)
+    issues = detector.run(model, dataset, model.meta.feature_names)
     assert len(issues) == 1
     assert issues[0].is_major
 
     eval_kwargs = loader.meta_df.to_dict("records")
-    dataset = loader.generate_dataset(dataset.column_types)
+    dataset = loader.load_dataset(model.meta.feature_names)
     test_result = _test_llm_output_against_strings(model, dataset, eval_kwargs, 0.5, True)
     assert not test_result.passed
     assert len(test_result.output_ds.df) == len(dataset.df) == 1
