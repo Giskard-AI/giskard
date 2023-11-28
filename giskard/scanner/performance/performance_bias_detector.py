@@ -1,5 +1,6 @@
-from collections import defaultdict
 from typing import Callable, Optional, Sequence, Union
+
+from collections import defaultdict
 
 import numpy as np
 import pandas as pd
@@ -28,26 +29,27 @@ class PerformanceBiasDetector(LossBasedDetector):
         threshold: float = 0.05,
         alpha: Optional[float] = None,
         method: str = "tree",
+        **kwargs,
     ):
         """Performance bias detector.
 
         Parameters
         ----------
-        metrics : Sequence, optional
+        metrics : Optional[Sequence]
             List of metrics to use for the bias detection. If not provided, the default metrics for the model type
             will be used. Available metrics are: `accuracy`, `balanced_accuracy`, `auc`, `f1`, `precision`, `recall`,
             `mse`, `mae`.
-        loss : str or callable, optional
+        loss : Optional[Union[str,callable]
             Loss function to use for the slice search. If not provided, will use `log_loss` for classification models
             and `mse` for regression models.
-        threshold : float, optional
+        threshold : Optional[float]
             Threshold for the deviation of metrics between slices and the overall dataset. If the deviation is larger
             than the threshold, an issue will be reported.
-        alpha : float, optional
+        alpha : Optional[float]
             Experimental: false discovery rate for issue detection. If a value is provided, false discovery rate will be
             controlled with a Benjamini–Hochberg procedure, and only statistically significant issues will be reported.
             This is disabled by default because only a subset of metrics are currently supported.
-        method : str, optional
+        method : Optional[str]
             The slicing method used to find the data slices. Available methods are: `tree`, `bruteforce`, `optimal`,
             `multiscale`. Default is `tree`.
         """
@@ -56,6 +58,7 @@ class PerformanceBiasDetector(LossBasedDetector):
         self.method = method
         self.alpha = alpha
         self.loss = loss
+        super().__init__(**kwargs)
 
     @property
     def _numerical_slicer_method(self):

@@ -2,7 +2,7 @@
 
 Installing Giskard in Azure enables you to inspect & test models that you created in the Microsoft Azure environment (ex: Azure Machine Learning, Synapse Analytics, etc.). Here are the 3 steps to install Giskard in a new VM instance in Azure:
 
-### 1. Create a Giskard VM Instance in Azure
+## 1. Create a Giskard VM Instance in Azure
 
 1. Select "Create a resource" and choose Virtual Machine
 2. In the configuration of your VM, select the default configuration:
@@ -24,7 +24,7 @@ sudo ssh -i /Users/bob/Downloads/Giskard2_key.cer azureuser@52.142.236.215
 
 :::
 
-### 2. Install Giskard in the VM
+## 2. Install Giskard in the VM
 
 * Installation of the Giskard requirements (`git` and `docker`)
 
@@ -39,7 +39,7 @@ sudo ssh -i /Users/bob/Downloads/Giskard2_key.cer azureuser@52.142.236.215
 giskard hub start
 ```
 
-### 3. Connect to your instance
+## 3. Connect to your instance
 
 * Get the Public IP address of your Giskard VM by clicking on the `Overview` tab
 * Go to **`http://<your IP address>:19000`** in your web browser
@@ -55,7 +55,7 @@ You can stop the instance and restart it when you need to save your Azure comput
 
 * The user id is `admin` and the password is `admin`
 
-### 4. Start the ML worker
+## 4. Start the ML worker
 
 Giskard executes your model using a worker that runs the model directly in **your Python environment**, with all the dependencies required by your model. You can either execute the ML worker:
 
@@ -86,7 +86,7 @@ The API Access Key (`YOUR_KEY`) can be found in the Settings tab of the Giskard 
 >!giskard worker --help
 >```
 
-You're all set to try Giskard in action. Upload your first model, dataset or test suite by following the [upload an object](../upload/index.html) page.
+You're all set to try Giskard in action. Upload your first model, dataset or test suite by following the [upload an object](../../../upload/index.md) page.
 
 ::::::
 ::::::{tab-item} From Colab notebook
@@ -104,7 +104,7 @@ The API Access Key (`YOUR_KEY`) can be found in the Settings tab of the Giskard 
 >!giskard worker --help
 >```
 
-You're all set to try Giskard in action. Upload your first model, dataset or test suite by following the [upload an object](../upload/index.html) page.
+You're all set to try Giskard in action. Upload your first model, dataset or test suite by following the [upload an object](../../../upload/index.md) page.
 
 ::::::
 ::::::{tab-item} From your terminal
@@ -122,7 +122,7 @@ The API Access Key (`YOUR_KEY`) can be found in the Settings tab of the Giskard 
 >!giskard worker --help
 >```
 
-You're all set to try Giskard in action. Upload your first model, dataset or test suite by following the [upload an object](../upload/index.html) page.
+You're all set to try Giskard in action. Upload your first model, dataset or test suite by following the [upload an object](../../../upload/index.md) page.
 
 ::::::
 :::::::

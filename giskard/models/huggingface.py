@@ -92,9 +92,10 @@ from this behavior, you can provide a custom postprocessing function using
 the `model_postprocessing_function` argument. This function should take the
 raw output of your model and return a numpy array of probabilities.
 """
+from typing import Any, Callable, Iterable, Optional, Tuple, Union
+
 import logging
 from pathlib import Path
-from typing import Any, Callable, Iterable, Optional, Tuple, Union
 
 import pandas as pd
 import yaml
@@ -103,6 +104,7 @@ from scipy import special
 from giskard.core.core import ModelType
 from giskard.core.validation import configured_validate_arguments
 from giskard.models.base import WrapperModel
+
 from ..client.python_utils import warning
 
 try:
@@ -146,19 +148,19 @@ class HuggingFaceModel(WrapperModel):
             (e.g. from the ``transformers`` library).
         model_type : ModelType
             The type of the model, either ``regression`` or ``classification``.
-        name : str, optional
+        name : Optional[str]
             The name of the model, used in the Giskard UI.
-        data_preprocessing_function : callable, optional
+        data_preprocessing_function : Optional[callable]
             A function to preprocess the input data.
-        model_postprocessing_function : callable, optional
+        model_postprocessing_function : Optional[callable]
             A function to postprocess the model output.
-        feature_names : iterable, optional
+        feature_names : Optional[iterable]
             The names of the model features.
-        classification_threshold : float, optional
+        classification_threshold : Optional[float]
             The classification probability threshold for binary classification models.
-        classification_labels : iterable, optional
+        classification_labels : Optional[iterable]
             The labels for classification models.
-        batch_size : int, optional
+        batch_size : Optional[int]
             The batch size used for inference. Default to 1. We recommend to increase the batch size to improve
             performance, but your mileage may vary. See *Notes* for more information.
 

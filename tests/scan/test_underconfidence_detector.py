@@ -59,7 +59,7 @@ def test_underconfidence_issue_detection():
     model = giskard.Model(prediction_fn, model_type="classification", classification_labels=[0, 1])
 
     detector = UnderconfidenceDetector(p_threshold=0.94)
-    issues = detector.run(model, dataset)
+    issues = detector.run(model, dataset, features=["feat"])
 
     assert len(issues) == 1
 

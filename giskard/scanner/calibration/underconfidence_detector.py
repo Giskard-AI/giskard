@@ -17,20 +17,21 @@ from ..logger import logger
 class UnderconfidenceDetector(LossBasedDetector):
     _needs_target = False
 
-    def __init__(self, threshold=0.1, p_threshold=0.95, method="tree"):
+    def __init__(self, threshold=0.1, p_threshold=0.95, method="tree", **kwargs):
         self.threshold = threshold
         self.p_threshold = p_threshold
         self.method = method
+        super().__init__(**kwargs)
 
     @property
     def _numerical_slicer_method(self):
         return self.method
 
-    def run(self, model: BaseModel, dataset: Dataset, **kwargs):
+    def run(self, model: BaseModel, dataset: Dataset, features: Sequence[str]):
         if not model.is_classification:
             raise ValueError("Underconfidence detector only works for classification models.")
 
-        return super().run(model, dataset)
+        return super().run(model, dataset, features)
 
     def _calculate_loss(self, model: BaseModel, dataset: Dataset) -> pd.DataFrame:
         return _calculate_underconfidence_score(model, dataset).to_frame(self.LOSS_COLUMN_NAME)

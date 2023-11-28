@@ -44,19 +44,19 @@ class LLMCharsInjectionDetector(Detector):
 
         Parameters
         ----------
-        control_chars : Sequence[str], optional
+        control_chars : Optional[Sequence[str]]
             List of control characters to inject. By default, we inject ``\\r`` and ``\\b``.
-        num_repetitions : int, optional
+        num_repetitions : Optional[int]
             Number of repetitions of the control characters to inject. By default, we inject 1000 repetitions.
             If we encounter errors, for example due to context window limits, we progressively reduce the number of
             injected characters.
-        num_samples : int, optional
+        num_samples : Optional[int]
             Maximum number of samples to test. By default, we limit the test to 100 samples.
-        threshold : float, optional
+        threshold : Optional[float]
             Proportion of the model's output that can change before we consider that the model is vulnerable. By
             default, set to 0.1, meaning that we will report injections that significantly change more than 10% of
             the outputs.
-        output_sensitivity : float, optional
+        output_sensitivity : Optional[float]
             Threshold on the F1 BERT score to consider that the model output has changed. By default, set to 0.2.
         """
 
@@ -71,14 +71,12 @@ class LLMCharsInjectionDetector(Detector):
             "model_predict_calls": self.num_samples * len(self.control_chars),
         }
 
-    def run(self, model: BaseModel, dataset: Dataset) -> Sequence[Issue]:
+    def run(self, model: BaseModel, dataset: Dataset, features: Sequence[str]) -> Sequence[Issue]:
         if len(dataset) < 1:
             logger.warning(
                 f"{self.__class__.__name__}: Skipping control character injection test because the dataset is empty."
             )
             return []
-
-        features = model.meta.feature_names or dataset.columns.drop(dataset.target, errors="ignore")
 
         dataset_sample = dataset.slice(
             lambda df: df.sample(min(self.num_samples, len(dataset)), random_state=402),
