@@ -6,6 +6,8 @@ from giskard.client.giskard_client import explain_error
 from requests import Response
 import requests_mock
 
+UNKNOWN_ERROR = "Unknown error"
+
 
 def test_init_giskard_client_with_wrong_api_key():
     """
@@ -38,3 +40,19 @@ def test_explain_error_raw():
     with pytest.raises(Exception) as exc_info:
         raise explain_error(response403)
     assert "Access denied. Please check your permissions." in str(exc_info)
+
+
+def test_explain_error_generic():
+    response500 = Response()
+    response500.status_code = 500
+    response500.title = UNKNOWN_ERROR
+    response500.detail = UNKNOWN_ERROR
+    with pytest.raises(Exception) as exc_info:
+        raise explain_error(response500)
+    assert UNKNOWN_ERROR in str(exc_info)
+
+    response500 = Response()
+    response500.status_code = 500
+    with pytest.raises(Exception) as exc_info:
+        raise explain_error(response500)
+    assert "No details or messages available" in str(exc_info)

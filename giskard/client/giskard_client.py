@@ -38,34 +38,38 @@ def explain_error(resp):
         status = resp.status_code
     else:
         status = resp.status
-        message = "Unknown error"
 
+    message = "Unknown error"
     code = f"error.http.{status}"
-    print("debug error >>>>> ", status)
 
     if status == 401:
-        message = "Not authorized to access this resource. Please check your API key"
+        message = "Not authorized to access this resource. Please check your API key."
     elif status == 403:
         message = "Access denied. Please check your permissions."
     else:
-        if "title" in resp or resp.get("detail"):
-            message = f"{resp.get('title', 'Unknown error')}: {resp.get('detail', 'no details')}"
-        elif "message" in resp:
-            message = resp["message"]
+        try:
+            if resp.title:
+                message = f"{resp.title}: "
+            elif resp.detail:
+                message += f"{resp.detail}\n"
+            else:
+                message = resp.message
+        except Exception:
+            message = "No details or messages available."
 
     return GiskardError(status=status, code=code, message=message)
 
 
 class ErrorHandlingAdapter(HTTPAdapter):
     def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
+        super(ErrorHandlingAdapter, self).__init__(*args, **kwargs)
 
     def build_response(self, req, resp):
-        print("debug error >>>>> ", resp.status)
+        resp = super(ErrorHandlingAdapter, self).build_response(req, resp)
         if resp.status >= 400:
             raise explain_error(resp)
 
-        return super().build_response(req, resp)
+        return resp
 
 
 class BearerAuth(AuthBase):
