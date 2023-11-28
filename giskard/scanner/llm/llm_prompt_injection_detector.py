@@ -42,21 +42,20 @@ class LLMPromptInjectionDetector(Detector):
     def get_cost_estimate(self, model: BaseModel, dataset: Dataset) -> float:
         num_samples = self.num_samples
         if num_samples is None:
-            generator = PromptInjectionDataLoader(num_samples=self.num_samples)
-            dataset = generator.load_dataset(dataset.column_types)
-            num_samples = len(dataset)
+            data_loader = PromptInjectionDataLoader(num_samples=self.num_samples)
+            num_samples = len(data_loader.prompts_df)
         return {
             "model_predict_calls": num_samples,
         }
 
-    def run(self, model: BaseModel, dataset: Dataset) -> Sequence[Issue]:
-        generator = PromptInjectionDataLoader(num_samples=self.num_samples)
-        dataset = generator.load_dataset(dataset.column_types)
-        meta_df = generator.all_meta_df
+    def run(self, model: BaseModel, dataset: Dataset, features: Sequence[str]) -> Sequence[Issue]:
+        data_loader = PromptInjectionDataLoader(num_samples=self.num_samples)
+        dataset = data_loader.load_dataset(features)
+        meta_df = data_loader.all_meta_df
 
         evaluator = StringMatcher()
         issues = []
-        for group in set(generator.groups_mapping):
+        for group in set(data_loader.groups_mapping):
             group_idx = meta_df.index[meta_df["group_mapping"] == group].tolist()
             group_dataset = dataset.slice(group_slice(group_idx=group_idx))
             group_meta_df = meta_df.iloc[group_idx]
