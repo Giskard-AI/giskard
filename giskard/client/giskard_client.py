@@ -73,13 +73,38 @@ class BearerAuth(AuthBase):
         return r
 
 
+def _cut_str_to_bytes(s, max_bytes):
+    # cut it twice to avoid encoding potentially GBs of `s` just to get e.g. 10 bytes?
+    b = s[:max_bytes].encode("utf-8")[:max_bytes]
+
+    if b[-1] & 0b10000000:
+        last_11xxxxxx_index = [i for i in range(-1, -5, -1) if b[i] & 0b11000000 == 0b11000000][0]
+        # note that last_11xxxxxx_index is negative
+
+        last_11xxxxxx = b[last_11xxxxxx_index]
+        if not last_11xxxxxx & 0b00100000:
+            last_char_length = 2
+        elif not last_11xxxxxx & 0b0010000:
+            last_char_length = 3
+        elif not last_11xxxxxx & 0b0001000:
+            last_char_length = 4
+
+        if last_char_length > -last_11xxxxxx_index:
+            # remove the incomplete character
+            b = b[:last_11xxxxxx_index]
+
+    return b.decode("utf-8")
+
+
 def _limit_str_size(json, field, limit=255):
     if field not in json or not isinstance(json[field], str):
         return
 
-    if len(json[field]) > limit:
-        logger.warning(f"Field '{field} exceeded the limit of {limit} characters and has been truncated")
-        json[field] = json[field][0:limit]
+    original_size = len(json[field])
+    json[field] = _cut_str_to_bytes(json[field][0:limit], limit)
+
+    if original_size > len(json[field]):
+        logger.warning(f"Field '{field}' exceeded the limit of {limit} bytes and has been truncated")
 
 
 class GiskardClient:
