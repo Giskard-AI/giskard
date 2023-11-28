@@ -13,15 +13,13 @@ def test_init_giskard_client_with_wrong_api_key():
     """
     url = "http://giskard-host:9000"
     api_key = "<wrong api key>"
-    mocked_requests = requests_mock.Mocker()
-    mocked_requests.__enter__()
-    mocked_requests.register_uri(requests_mock.GET, url, json={})
-    mocked_requests.register_uri(requests_mock.GET, f"{url}/public-api/ml-worker-connect", status_code=401)
+    with requests_mock.Mocker() as mocked_requests:
+        mocked_requests.register_uri(requests_mock.GET, url, json={})
+        mocked_requests.register_uri(requests_mock.GET, f"{url}/public-api/ml-worker-connect", status_code=401)
 
-    with pytest.raises(Exception) as exc_info:
-        GiskardClient(url, api_key)
-    print(exc_info)
-    assert "Not authorized to access this resource. Please check your API key" in str(exc_info)
+        with pytest.raises(Exception) as exc_info:
+            GiskardClient(url, api_key)
+        assert "Not authorized to access this resource. Please check your API key" in str(exc_info)
 
 
 def test_explain_error_raw():
