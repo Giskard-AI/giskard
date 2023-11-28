@@ -262,7 +262,7 @@ def _test_llm_output_against_strings(model, dataset, eval_kwargs, threshold, deb
     failed_dataset = None
     if debug:
         failed_dataset = dataset.copy()
-        failed_dataset.df = failed_dataset.df.iloc[evaluation_results.failed_indices]
+        failed_dataset.df = failed_dataset.df.loc[evaluation_results.failed_indices]
 
     result = TestResult(
         passed=passed,

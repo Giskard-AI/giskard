@@ -4,7 +4,6 @@ import logging
 from typing import Tuple, Dict, List
 from dataclasses import dataclass
 
-
 from .base import BaseEvaluator, EvaluationResult
 from ...datasets.base import Dataset
 from ...models.base.model import BaseModel
@@ -69,21 +68,23 @@ def _evaluate(prediction: str, evaluation_method):
 
 
 class StringMatcher(BaseEvaluator):
-    def evaluate(self, model: BaseModel, dataset: Dataset, evaluator_config: List):
+    def evaluate(self, model: BaseModel, dataset: Dataset, evaluator_configs: List):
         model_outputs = model.predict(dataset).prediction
 
         succeeded = []
         failed = []
         failed_indices = []
         errored = []
-        model_inputs = dataset.df.loc[:, model.meta.feature_names].to_dict("records")
+        model_inputs = dataset.df.loc[:, model.meta.feature_names].to_dict("index")
 
-        for i, (input_vars, model_output) in enumerate(zip(model_inputs, model_outputs)):
-            if not evaluator_config[i].get("substrings", None):
+        for (input_idx, input_vars), model_output, evaluator_config in zip(
+            model_inputs.items(), model_outputs, evaluator_configs
+        ):
+            if not evaluator_config.get("substrings", None):
                 raise ValueError(
                     f"{self.__class__.__name__}: substrings for {input_vars} are needed for the evaluation."
                 )
-            evaluation_method = StringMatchingMethod.from_meta(evaluator_config[i])
+            evaluation_method = StringMatchingMethod.from_meta(evaluator_config)
 
             try:
                 injection_success = _evaluate(model_output, evaluation_method=evaluation_method)
@@ -95,7 +96,7 @@ class StringMatcher(BaseEvaluator):
                 succeeded.append({"input_vars": input_vars, "model_output": model_output})
             else:
                 failed.append({"input_vars": input_vars, "model_output": model_output})
-                failed_indices.append(i)
+                failed_indices.append(input_idx)
 
         return EvaluationResult(
             failure_examples=failed,
