@@ -6,12 +6,12 @@ import yaml
 from typing import List, Iterable, Union, Callable, Any, Optional
 
 from giskard.client.python_utils import warning
-from giskard.core.core import ModelMeta, ModelType
-from giskard.core.core import SupportedModelTypes
-from giskard.core.validation import validate_is_pandasdataframe, configured_validate_arguments
+from giskard.core.core import ModelMeta, ModelType, SupportedModelTypes
+from giskard.core.validation import configured_validate_arguments, validate_is_pandasdataframe
 from giskard.datasets.base import Dataset
 from giskard.ml_worker.testing.registry.slicing_function import SlicingFunction
 from giskard.models.base import BaseModel, WrapperModel
+
 from ..utils import fullname
 from ..utils.analytics_collector import analytics, get_dataset_properties, get_model_properties
 
@@ -131,9 +131,7 @@ def validate_model_execution(model: BaseModel, dataset: Dataset, deterministic: 
 
 @configured_validate_arguments
 def validate_deterministic_model(model: BaseModel, validate_ds: Dataset, prev_prediction):
-    """
-    Asserts if the model is deterministic by asserting previous and current prediction on same data
-    """
+    """Asserts if the model is deterministic by asserting previous and current prediction on same data are same"""
     new_prediction = model.predict(validate_ds)
 
     if not np.allclose(prev_prediction.raw, new_prediction.raw):
@@ -145,9 +143,7 @@ def validate_deterministic_model(model: BaseModel, validate_ds: Dataset, prev_pr
 
 @configured_validate_arguments
 def validate_model_loading_and_saving(model: BaseModel):
-    """
-    Validates if the model can be serialised and deserialised
-    """
+    """Validates if the model can be serialised and deserialised from local disk"""
     try:
         with tempfile.TemporaryDirectory(prefix="giskard-model-") as f:
             model.save(f)
