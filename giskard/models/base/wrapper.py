@@ -246,6 +246,13 @@ class WrapperModel(BaseModel, ABC):
     def load(cls, local_dir, model_py_ver: Optional[Tuple[str, str, str]] = None, **kwargs):
         constructor_params = cls.load_constructor_params(local_dir, **kwargs)
 
+        if model_py_ver is None:
+            # Try to extract Python version from meta info under local dir
+            meta_response, _ = cls.read_meta_from_local_dir(local_dir)
+            model_py_ver = (
+                tuple(meta_response.languageVersion.split(".")) if "PYTHON" == meta_response.language.upper() else None
+            )
+
         return cls(model=cls.load_model(local_dir, model_py_ver), **constructor_params)
 
     @classmethod
