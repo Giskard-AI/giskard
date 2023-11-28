@@ -41,16 +41,13 @@ class PromptInjectionDataLoader:
             self.prompts_df.reset_index(inplace=True, drop=True)
             self.meta_df = self.meta_df.iloc[idx_list].reset_index(drop=True)
 
-    def load_dataset(self, column_types) -> Dataset:
-        formatted_df = pd.DataFrame(
-            {col: self.prompts_df.prompt for col, col_type in column_types.items() if col_type == "text"}
-        )
+    def load_dataset(self, features) -> Dataset:
+        formatted_df = pd.DataFrame({feature: self.prompts_df.prompt for feature in features})
         return Dataset(
             df=formatted_df,
             name="Injection Prompts",
             target=None,
             cat_columns=None,
-            column_types=column_types,
             validation=False,
         )
 
