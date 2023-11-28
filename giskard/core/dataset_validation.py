@@ -30,16 +30,20 @@ def validate_dtypes(ds: Dataset):
 
 
 def _check_hashability(df):
-    """
-    This is a static method that checks if a given pandas DataFrame is hashable or not.
+    """This is a static method that checks if a given pandas DataFrame is hashable or not.
+
     It checks if all the columns containing object types in the input DataFrame are hashable or not.
     If any column is not hashable, it raises a TypeError indicating which columns are not hashable.
 
-    Args:
-    df (pandas.DataFrame): The DataFrame to be checked for hashability.
+    Parameters
+    ----------
+    df : pandas.DataFrame
+        The DataFrame to be checked for hashability.
 
-    Raises:
-    TypeError: If any column containing object types in the input DataFrame is not hashable.
+    Raises
+    ------
+    TypeError
+        If any column containing object types in the input DataFrame is not hashable.
     """
     df_objects = df.select_dtypes(include="object")
     non_hashable_cols = []
@@ -66,9 +70,13 @@ def _check_mixed_dtypes(df):
 
 
 def validate_column_types(ds: Dataset):
-    """
-    Verifies that declared column_types are correct with regard to SupportedColumnTypes
-    :param ds: Dataset to be validated
+    """Verifies that declared column_types are correct with regard to SupportedColumnTypes
+
+    Parameters
+    ----------
+    ds : Dataset
+        Dataset to be validated
+
     """
     if ds.column_types and isinstance(ds.column_types, dict):
         if not set(ds.column_types.values()).issubset(set(column_type.value for column_type in SupportedColumnTypes)):

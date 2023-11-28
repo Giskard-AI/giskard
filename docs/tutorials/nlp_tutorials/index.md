@@ -1,5 +1,21 @@
 # NLP Tutorials
+```{toctree}
+:caption: Table of Contents
+:maxdepth: 1
+:hidden:
 
+../../reference/notebooks/twitter_sentiment_analysis_roberta.ipynb
+../../reference/notebooks/airline_tweets_sentiment_analysis.ipynb
+../../reference/notebooks/amazon_review_classification_sklearn.ipynb
+../../reference/notebooks/enron_email_classification_sklearn.ipynb
+../../reference/notebooks/fake_real_news_classification.ipynb
+../../reference/notebooks/hotel_text_regression.ipynb
+../../reference/notebooks/medical_transcript_classification_sklearn.ipynb
+../../reference/notebooks/movie_review_sentiment_classification_pytorch_sklearn.ipynb
+../../reference/notebooks/newspaper_classification_pytorch.ipynb
+../../reference/notebooks/tripadvisor_sentiment_classification.ipynb
+
+```
 <div style="border: 1px solid #ccc; padding: 10px; margin: 10px; border-radius: 5px; box-shadow: 2px 2px 5px #888;">
 
   <h3><a href="../../reference/notebooks/twitter_sentiment_analysis_roberta.html">Twitter Sentiment Analysis</a> - Text Classification (HuggingFace Transformers)</h3>

@@ -1,5 +1,20 @@
 # Tabular Tutorials
+```{toctree}
+:caption: Table of Contents
+:maxdepth: 1
+:hidden:
 
+../../getting_started/quickstart/quickstart_tabular.ipynb
+../../reference/notebooks/cancer_detection_xgboost.ipynb
+../../reference/notebooks/churn_prediction_lgbm.ipynb
+../../reference/notebooks/credit_scoring.ipynb
+../../reference/notebooks/drug_classification_sklearn.ipynb
+../../reference/notebooks/ieee_fraud_detection_adversarial_validation.ipynb
+../../reference/notebooks/insurance_prediction_lgbm.ipynb
+../../reference/notebooks/m5_sales_prediction_lgbm.ipynb
+../../reference/notebooks/wage_classification.ipynb
+
+```
 <div style="border: 1px solid #ccc; padding: 10px; margin: 10px; border-radius: 5px; box-shadow: 2px 2px 5px #888;">
 
   <h3><a href="../../getting_started/quickstart/quickstart_tabular.html">Titanic Survival Prediction</a> - Binary Classification (scikit-learn)</h3>

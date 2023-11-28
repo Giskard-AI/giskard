@@ -1,6 +1,5 @@
 ```{toctree}
 :caption: Getting Started
-:name: mastertoc
 :maxdepth: 1
 :hidden:
 
@@ -10,7 +9,6 @@ getting_started/quickstart/index
 
 ```{toctree}
 :caption: Open-Source Library
-:name: mastertoc
 :maxdepth: 1
 :hidden:
 
@@ -22,7 +20,6 @@ open_source/integrate_tests/index
 
 ```{toctree}
 :caption: Giskard Hub
-:name: mastertoc
 :maxdepth: 1
 :hidden:
 
@@ -36,10 +33,10 @@ giskard_hub/collaborate/index
 
 ```{toctree}
 :caption: Tutorials
-:name: mastertoc
 :maxdepth: 1
 :hidden:
 
+tutorials/index
 tutorials/llm_tutorials/index
 tutorials/tabular_tutorials/index
 tutorials/nlp_tutorials/index
@@ -47,7 +44,6 @@ tutorials/nlp_tutorials/index
 
 ```{toctree}
 :caption: Knowledge Bank
-:name: mastertoc
 :maxdepth: 1
 :hidden:
 
@@ -59,107 +55,67 @@ reference/index
 
 ```{toctree}
 :caption: Community
-:name: mastertoc
 :maxdepth: 1
 :hidden:
 
-integrations/index
 community/discord/index
 community/github/index
 community/contribution_guidelines/index
 ```
 
 <h1 align="center" weight='300' style="color: var(--sd-color-card-text);" >The testing framework dedicated to  ML models, from tabular to LLMs</h1>
-<p align="center"> 
-   <a href="https://www.giskard.ai/knowledge-categories/blog/?utm_source=github&utm_medium=github&utm_campaign=github_readme&utm_id=readmeblog"><b>Blog</b></a> &bull;  
+<p align="center">
+   <a href="https://www.giskard.ai/knowledge-categories/blog/?utm_source=github&utm_medium=github&utm_campaign=github_readme&utm_id=readmeblog"><b>Blog</b></a> &bull;
   <a href="https://www.giskard.ai/?utm_source=github&utm_medium=github&utm_campaign=github_readme&utm_id=readmeblog"><b>Website</b></a> &bull;
   <a href="https://gisk.ar/discord"><b>Discord</b></a>
  </p>
 <br />
 
 
-::::::{grid} 1 1 3 3
-:child-align:
-:gutter: 1
+:::::{grid} 1 1 3 3
+:gutter: 0 5
 
-:::::{grid-item}
-:child-align:
-::::{grid} 1 1 1 1
-:child-align:
-:gutter: 1
-
-:::{card} <h2><center> Getting Started </center></h2>
-:margin: 1
-:width: 100%
-:text-align:
-:link: getting_started/index.html
+::::{grid-item-card} <h2><center> Getting Started </center></h2>
+:text-align: center
+:link: getting_started/index.md
 :img-bottom: assets/intro/coffee.png
-:::
-
-:::{card} <h2><center> Tutorials </center></h2>
-:margin: 1
-:width: 100%
-:text-align:
-:link: tutorials/index.html
-:img-bottom: assets/intro/test_turtle.png
-:::
-
-:::{card} <h2><center> API Reference </center></h2>
-:margin: 1
-:width: 100%
-:link: reference/index.html
-:img-bottom: assets/intro/Giskard_Turtle_Computer.png
-:::
 ::::
 
-:::::
-
-:::::{grid-item}
-:child-align:
-::::{grid} 1 1 1 1
-:child-align:
-:gutter: 1
-
-:::{card} <h2><center> Open-Source Library </center></h2>
-:margin: 1
-:width: 100%
-:text-align:
-:link: open_source/installation_library/index.html
+::::{grid-item-card} <h2><center> Open-Source Library </center></h2>
+:text-align: center
+:link: open_source/installation_library/index.md
 :img-bottom: assets/intro/ninja.png
-:::
-
-:::{card} <h2><center> Knowledge </center></h2>
-:margin: 1
-:width: 100%
-:text-align:
-:link: knowledge/llm_vulnerabilities/index.html
-:img-bottom: assets/intro/integrations.png
-:::
 ::::
-:::::
 
-:::::{grid-item}
-:child-align:
-::::{grid} 1 1 1 1
-:child-align:
-:gutter: 1
-
-:::{card} <h2><center> Giskard Hub </center></h2>
-:margin: 1
-:width: 100%
-:text-align:
-:link: giskard_hub/installation_hub/index.html
+::::{grid-item-card} <h2><center> Giskard Hub </center></h2>
+:text-align: center
+:link: giskard_hub/installation_hub/index.md
 :img-bottom: assets/intro/Giskard_Turtle_SK8.png
-:::
-
-:::{card} <h2><center> Integrations & Community </center></h2>
-:margin: 1
-:width: 100%
-:text-align:
-:link: integrations/index.html
-:img-bottom: assets/intro/hey.png
-:::
-
 ::::
+
+::::{grid-item-card} <h2><center> Tutorials </center></h2>
+:text-align: center
+:link: tutorials/index.md
+:img-bottom: assets/intro/test_turtle.png
+::::
+
+::::{grid-item-card} <h2><center> Knowledge </center></h2>
+:text-align: center
+:link: knowledge/llm_vulnerabilities/index.md
+:img-bottom: assets/intro/integrations.png
+::::
+
+::::{grid-item-card} <h2><center> Integrations </center></h2>
+:text-align: center
+:link: ./open_source/integrate_tests/index.md
+:img-bottom: assets/intro/hey.png
+::::
+
+::::{grid-item-card} <h2><center> API Reference </center></h2>
+:text-align: center
+:link: reference/index.rst
+:img-bottom: assets/intro/Giskard_Turtle_Computer.png
+::::
+
 :::::
 

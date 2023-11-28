@@ -19,15 +19,15 @@ class ModelPredictionResults(ConfiguredBaseModel):
 
     Attributes
     ----------
-    raw : Any, optional
+    raw : Optional[Any]
         The predicted probabilities.
-    prediction : Any, optional
+    prediction : Optional[Any]
         The predicted class labels for each example in the input dataset.
-    raw_prediction : Any, optional
+    raw_prediction : Optional[Any]
         The predicted class label.
-    probabilities : Any, optional
+    probabilities : Optional[Any]
         The predicted probabilities for the predicted class label.
-    all_predictions : Any, optional
+    all_predictions : Optional[Any]
         The predicted probabilities for all class labels for each example in the input dataset.
     """
 

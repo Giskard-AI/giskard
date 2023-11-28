@@ -64,7 +64,7 @@ def start_pool(max_workers: int = None):
     """Start the pool and warm it up, to get all workers up.
 
     Args:
-        max_workers (int, optional): _description_. Defaults to None.
+        max_workers (Optional[int]): _description_. Defaults to None.
     """
     if not settings.use_pool:
         LOGGER.warning("Execution in pool is disabled, this should only happen for test and debug")

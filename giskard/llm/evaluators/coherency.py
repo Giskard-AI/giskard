@@ -1,10 +1,10 @@
 from typing import Optional
 
+from .base import EVALUATE_MODEL_FUNCTIONS, EvaluationResult, LLMBasedEvaluator
+from ..errors import LLMGenerationError
 from ...datasets.base import Dataset
 from ...models import cache as model_cache
 from ...models.base import BaseModel
-from ..errors import LLMGenerationError
-from .base import EVALUATE_MODEL_FUNCTIONS, EvaluationResult, LLMBasedEvaluator
 
 COHERENCY_EVAL_PROMPT = """You are a QA specialist evaluating an AI model for coherency. Please evaluate if the model provided coherent, consistent outputs.
 
@@ -101,7 +101,6 @@ class CoherencyEvaluator(LLMBasedEvaluator):
             functions=EVALUATE_MODEL_FUNCTIONS,
             function_call={"name": "evaluate_model"},  # force function call
             temperature=self.llm_temperature,
-            model=self.llm_model,
             caller_id=self.__class__.__name__,
         )
 

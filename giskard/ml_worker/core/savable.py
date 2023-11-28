@@ -84,7 +84,7 @@ class Artifact(Generic[SMT], ABC):
 
         Args:
             client (GiskardClient): The Giskard client instance used for communication with the hub.
-            project_key (str, optional): The project key where the slicing function will be uploaded. If None, the function
+            project_key (Optional[str]): The project key where the slicing function will be uploaded. If None, the function
                 will be uploaded to the global scope. Defaults to None.
 
         Returns:
@@ -119,9 +119,9 @@ class Artifact(Generic[SMT], ABC):
 
         Args:
             uuid (str): The UUID of the artifact to download.
-            client (GiskardClient, optional): The Giskard client instance used for communication with the hub. If None,
+            client (Optional[GiskardClient]): The Giskard client instance used for communication with the hub. If None,
                 the artifact will be retrieved from the local cache if available. Defaults to None.
-            project_key (str, optional): The project key where the artifact is located. If None, the artifact will be
+            project_key (Optional[str]): The project key where the artifact is located. If None, the artifact will be
                 retrieved from the global scope. Defaults to None.
 
         Returns:
