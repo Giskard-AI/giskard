@@ -73,27 +73,20 @@ class BearerAuth(AuthBase):
         return r
 
 
-def _cut_str_to_bytes(s, max_bytes):
-    # cut it twice to avoid encoding potentially GBs of `s` just to get e.g. 10 bytes?
-    b = s[:max_bytes].encode("utf-8")[:max_bytes]
+def _cut_str_to_real_char(s, max_chars):
+    result = ""
+    length = 0
 
-    if b[-1] & 0b10000000:
-        last_11xxxxxx_index = [i for i in range(-1, -5, -1) if b[i] & 0b11000000 == 0b11000000][0]
-        # note that last_11xxxxxx_index is negative
+    for char in s:
+        b = bytes(char, "utf-8")
+        length += len(b) // 2 + (len(b) % 2 > 0)
 
-        last_11xxxxxx = b[last_11xxxxxx_index]
-        if not last_11xxxxxx & 0b00100000:
-            last_char_length = 2
-        elif not last_11xxxxxx & 0b0010000:
-            last_char_length = 3
-        elif not last_11xxxxxx & 0b0001000:
-            last_char_length = 4
+        if length > max_chars:
+            return result
 
-        if last_char_length > -last_11xxxxxx_index:
-            # remove the incomplete character
-            b = b[:last_11xxxxxx_index]
+        result += char
 
-    return b.decode("utf-8")
+    return result
 
 
 def _limit_str_size(json, field, limit=255):
@@ -101,7 +94,7 @@ def _limit_str_size(json, field, limit=255):
         return
 
     original_size = len(json[field])
-    json[field] = _cut_str_to_bytes(json[field][0:limit], limit)
+    json[field] = _cut_str_to_real_char(json[field], limit)
 
     if original_size > len(json[field]):
         logger.warning(f"Field '{field}' exceeded the limit of {limit} bytes and has been truncated")
