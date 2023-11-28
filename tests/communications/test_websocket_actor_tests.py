@@ -299,6 +299,7 @@ def test_websocket_actor_run_ad_hoc_test_legacy_debug_no_name(enron_data: Datase
 def test_websocket_actor_run_test_suite():
     with utils.MockedClient(mock_all=False) as (client, mr):
         params = websocket.TestSuiteParam(
+            projectKey=str(uuid.uuid4()),
             tests=[
                 websocket.SuiteTestArgument(
                     id=0,
@@ -339,6 +340,7 @@ def test_websocket_actor_run_test_suite():
 def test_websocket_actor_run_test_suite_raise_error():
     with utils.MockedClient(mock_all=False) as (client, mr):
         params = websocket.TestSuiteParam(
+            projectKey=str(uuid.uuid4()),
             tests=[
                 websocket.SuiteTestArgument(
                     id=0,
@@ -372,6 +374,7 @@ def my_test_return(value: int = MY_TEST_DEFAULT_VALUE):
 def test_websocket_actor_run_test_suite_with_global_arguments():
     with utils.MockedClient(mock_all=False) as (client, mr):
         params = websocket.TestSuiteParam(
+            projectKey=str(uuid.uuid4()),
             tests=[
                 websocket.SuiteTestArgument(
                     id=0,
@@ -406,6 +409,7 @@ def test_websocket_actor_run_test_suite_with_global_arguments():
 def test_websocket_actor_run_test_suite_with_test_input():
     with utils.MockedClient(mock_all=False) as (client, mr):
         params = websocket.TestSuiteParam(
+            projectKey=str(uuid.uuid4()),
             tests=[
                 websocket.SuiteTestArgument(
                     id=0,
@@ -440,6 +444,7 @@ def test_websocket_actor_run_test_suite_with_test_input():
 def test_websocket_actor_run_test_suite_with_kwargs():
     with utils.MockedClient(mock_all=False) as (client, mr):
         params = websocket.TestSuiteParam(
+            projectKey=str(uuid.uuid4()),
             tests=[
                 websocket.SuiteTestArgument(
                     id=0,
