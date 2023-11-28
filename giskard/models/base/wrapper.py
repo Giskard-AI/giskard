@@ -1,9 +1,10 @@
+from typing import Any, Callable, Iterable, Optional, Union
+
 import logging
 import pickle
 from abc import ABC, abstractmethod
 from inspect import isfunction, signature
 from pathlib import Path
-from typing import Any, Callable, Iterable, Optional, Union
 
 import cloudpickle
 import mlflow
@@ -11,10 +12,10 @@ import numpy as np
 import pandas as pd
 import yaml
 
-from .model import BaseModel
-from ..utils import warn_once
 from ...core.core import ModelType
 from ...core.validation import configured_validate_arguments
+from ..utils import warn_once
+from .model import BaseModel
 
 logger = logging.getLogger(__name__)
 
@@ -52,20 +53,20 @@ class WrapperModel(BaseModel, ABC):
         model_type : ModelType
             The type of the model. Must be a value from the :class:`ModelType`
             enumeration.
-        data_preprocessing_function : Callable[[pd.DataFrame], Any], optional
+        data_preprocessing_function : Optional[Callable[[pd.DataFrame], Any]]
             A function that will be applied to incoming data. Default is ``None``.
-        model_postprocessing_function : Callable[[Any], Any], optional
+        model_postprocessing_function : Optional[Callable[[Any], Any]]
             A function that will be applied to the model's predictions. Default
             is ``None``.
-        name : str, optional
+        name : Optional[str]
             A name for the wrapper. Default is ``None``.
-        feature_names : Optional[Iterable], optional
+        feature_names : Optional[Iterable]
             A list of feature names. Default is ``None``.
-        classification_threshold : float, optional
+        classification_threshold : Optional[float]
             The probability threshold for classification. Default is 0.5.
-        classification_labels : Optional[Iterable], optional
+        classification_labels : Optional[Iterable]
             A list of classification labels. Default is None.
-        batch_size : Optional[int], optional
+        batch_size : Optional[int]
             The batch size to use for inference. Default is ``None``, which
             means inference will be done on the full dataframe.
         """

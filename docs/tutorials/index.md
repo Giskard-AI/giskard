@@ -1,4 +1,13 @@
 # Tutorials
+```{toctree}
+:caption: Tutorials
+:maxdepth: 1
+:hidden:
+
+llm_tutorials/index
+tabular_tutorials/index
+nlp_tutorials/index
+```
 
 ::::::{grid} 1 1 2 2
 :gutter: 1
