@@ -73,31 +73,16 @@ class BearerAuth(AuthBase):
         return r
 
 
-def _cut_str_to_real_char(s, max_chars):
-    result = ""
-    length = 0
-
-    for char in s:
-        b = bytes(char, "utf-8")
-        length += len(b) // 2 + (len(b) % 2 > 0)
-
-        if length > max_chars:
-            return result
-
-        result += char
-
-    return result
-
-
 def _limit_str_size(json, field, limit=255):
-    if field not in json or not isinstance(json[field], str):
+    if field not in json or not isinstance(json["field"], str):
         return
 
-    original_size = len(json[field])
-    json[field] = _cut_str_to_real_char(json[field], limit)
+    original_len = len(json[field])
+    json[field] = json[field][:limit].encode("utf-16-le")[: limit * 2].decode("utf-16-le", "ignore")
 
-    if original_size > len(json[field]):
-        logger.warning(f"Field '{field}' exceeded the limit of {limit} bytes and has been truncated")
+    # Java, js, h2 and postgres use UTF-16 surrogate pairs to calculate str length while python count characters
+    if original_len > len(json[field]):
+        logger.warning(f"Field '{field} exceeded the limit of {limit} characters and has been truncated")
 
 
 class GiskardClient:
