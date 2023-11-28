@@ -80,7 +80,7 @@ class StringMatcher(BaseEvaluator):
         for (input_idx, input_vars), model_output, evaluator_config in zip(
             model_inputs.items(), model_outputs, evaluator_configs
         ):
-            if not evaluator_config.get("substrings", None):
+            if "substrings" not in evaluator_config:
                 raise ValueError(
                     f"{self.__class__.__name__}: substrings for {input_vars} are needed for the evaluation."
                 )
