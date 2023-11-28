@@ -113,8 +113,9 @@ class TestSuiteResult:
 
         Parameters
         ----------
-        run :
-            WandB run.
+        run : Optional["wandb.wandb_sdk.wandb_run.Run"]
+            WandB run. (Default value = None)
+
         """
         try:
             import wandb  # noqa
@@ -152,22 +153,20 @@ class TestSuiteResult:
 
 
 class SuiteInput:
-    """
-    Represents an input parameter for a test suite.
+    """Represents an input parameter for a test suite.
 
-    Attributes:
-        name (str): The name of the input parameter.
-        type (Any): The type of the input parameter.
+    Raises
+    ------
+    AssertionError
+        If the input type is not supported.
 
-    Raises:
-        AssertionError: If the input type is not supported.
-
-    Example:
-        >>> input_param = SuiteInput("age", int)
-        >>> input_param.name
-        'age'
-        >>> input_param.type
-        <class 'int'>
+    Examples
+    --------
+    >>> input_param = SuiteInput("age", int)
+    >>> input_param.name
+    'age'
+    >>> input_param.type
+    <class 'int'>
     """
 
     type: Any
@@ -180,23 +179,17 @@ class SuiteInput:
 
 
 class DatasetInput(SuiteInput):
-    """
-    Represents a dataset input parameter for a test suite.
+    """Represents a dataset input parameter for a test suite.
 
-    Inherits from `SuiteInput`.
-
-    Attributes:
-        name (str): The name of the dataset input parameter.
-        target (Optional[str]): The target column of the dataset.
-
-    Example:
-        >>> dataset_input = DatasetInput("data", target="label")
-        >>> dataset_input.name
-        'data'
-        >>> dataset_input.type
-        <class 'Dataset'>
-        >>> dataset_input.target
-        'label'
+    Examples
+    --------
+    >>> dataset_input = DatasetInput("data", target="label")
+    >>> dataset_input.name
+    'data'
+    >>> dataset_input.type
+    <class 'Dataset'>
+    >>> dataset_input.target
+    'label'
     """
 
     target: Optional[str] = None
@@ -207,21 +200,15 @@ class DatasetInput(SuiteInput):
 
 
 class ModelInput(SuiteInput):
-    """
-    Represents a model input parameter for a test suite.
+    """Represents a model input parameter for a test suite.
 
-    Inherits from `SuiteInput`.
-
-    Attributes:
-        name (str): The name of the model input parameter.
-        model_type (Optional[str]): The type or name of the model.
-
-    Example:
-        >>> model_input = ModelInput("model", model_type="SKLearnModel")
-        >>> model_input.name
-        'model'
-        >>> model_input.model_type
-        'SKLearnModel'
+    Examples
+    --------
+    >>> model_input = ModelInput("model", model_type="SKLearnModel")
+    >>> model_input.name
+    'model'
+    >>> model_input.model_type
+    'SKLearnModel'
     """
 
     model_type: Optional[str] = None
@@ -312,20 +299,10 @@ def generate_test_partial(
 
 
 class Suite:
-    """
+    """A test suite.
+
     A class representing a test suite that groups a collection of test cases together. The Suite class provides
     methods to add new tests, execute all tests, and save the suite to a Giskard instance.
-
-    Attributes:
-        id : int
-            An integer identifying the suite.
-        tests : List[TestPartial]
-            A list of TestPartial objects representing the test cases in the suite.
-            A mapping of suite parameters with their corresponding SuiteInput objects.
-        name : str
-            A string representing the name of the suite.
-        default_params : Dict[str, Any]
-            A dictionary containing the default parameters for the tests in the suite.
     """
 
     id: int
@@ -338,10 +315,11 @@ class Suite:
 
         Parameters
         ----------
-        name : str, optional
+        name : Optional[str]
             The name of the test suite.
         default_params : dict, optional
-            Any arguments passed will be applied to the tests in the suite, if runtime params with the same name are not set.
+            Any arguments passed will be applied to the tests in the suite, if runtime params with the same name are
+            not set.
         """
         self.tests = list()
         self.name = name
@@ -354,7 +332,7 @@ class Suite:
         ----------
         verbose : bool
             If set to `True`, the execution information for each test will be displayed. Defaults to `False`.
-        **suite_run_args : dict, optional
+        **suite_run_args : Optional[dict]
             Any arguments passed here will be applied to all the tests in the suite whenever they match with the
             arguments defined for each test. If a test contains an argument that has already been defined, it will not
             get overridden. If any inputs on the test suite are missing, an error will be raised.
@@ -363,6 +341,7 @@ class Suite:
         -------
         TestSuiteResult
             containing test execution information
+
         """
         run_args = self.default_params.copy()
         run_args.update(suite_run_args)
@@ -430,12 +409,20 @@ class Suite:
         return test_params
 
     def upload(self, client: GiskardClient, project_key: str):
-        """
-        Saves the test suite to the Giskard backend and sets its ID.
+        """Saves the test suite to the Giskard backend and sets its ID.
 
-        :param client: A GiskardClient instance to connect to the backend.
-        :param project_key: The key of the project that the test suite belongs to.
-        :return: The current instance of the test Suite to allow chained call.
+        Parameters
+        ----------
+        client : GiskardClient
+            A GiskardClient instance to connect to the backend.
+        project_key : str
+            The key of the project that the test suite belongs to.
+
+        Returns
+        -------
+        Suite
+            The current instance of the test Suite to allow chained call.
+
         """
         if self.name is None:
             self.name = "Unnamed test suite"
@@ -497,20 +484,26 @@ class Suite:
     def add_test(
         self, test_fn: Test, test_id: Optional[Union[int, str]] = None, display_name: Optional[str] = None, **params
     ) -> "Suite":
-        """
-        Add a test to the suite.
+        """Add a test to the suite.
 
-        Args:
-            test_fn (Test): A test method that will be executed or an instance of a GiskardTest class.
-            test_id (Optional[Union[int, str]], optional): A unique identifier used to track the test result.
-                If None, the identifier will be generated based on the module and name of the test method.
-                If the identifier already exists in the suite, a new unique identifier will be generated.
-            display_name (Optional[str]): The name of the test to be displayed
-            **params: Default parameters to be passed to the test method.
-                This parameter will be ignored if `test_fn` is an instance of GiskardTest.
+        Parameters
+        ----------
+        test_fn : Test
+            A test method that will be executed or an instance of a GiskardTest class.
+        test_id : Optional[Union[int, str]]
+            A unique identifier used to track the test result.
+            If None, the identifier will be generated based on the module and name of the test method.
+            If the identifier already exists in the suite, a new unique identifier will be generated. (Default value = None)
+        display_name : Optional[str]
+            The name of the test to be displayed (Default value = None)
+        **params :
+            Default parameters to be passed to the test method.
+            This parameter will be ignored if `test_fn` is an instance of GiskardTest.
 
-        Returns:
-            Suite: The current instance of the test suite to allow chained calls.
+        Returns
+        -------
+        Suite
+            The current instance of the test suite to allow chained calls.
 
         """
         self.tests.append(generate_test_partial(test_fn, test_id, display_name, **params))
@@ -519,17 +512,19 @@ class Suite:
 
     @singledispatchmethod
     def remove_test(self, arg):
-        """
-        Remove a test from the suite.
+        """Remove a test from the suite.
 
-        Args:
-            arg (int|str|GiskardTest):
-                If int: remove the test by index.
-                If str: remove the test by name passed during the add_test method
-                If GiskardTest: remove the test(s) by reference
+        Parameters
+        ----------
+        arg : int|str|GiskardTest
+            If int: remove the test by index.
+            If str: remove the test by name passed during the add_test method
+            If GiskardTest: remove the test(s) by reference
 
-        Returns:
-            Suite: The current instance of the test suite to allow chained calls.
+        Returns
+        -------
+        Suite
+            The current instance of the test suite to allow chained calls.
 
         """
         raise NotImplementedError("To remove a test from the suite please pass its index, its name or its reference")
@@ -550,15 +545,19 @@ class Suite:
         return self
 
     def update_test_params(self, index: int, **params):
-        """
-        Update a test from the suite.
+        """Update a test from the suite.
 
-        Args:
-            index (int): The index of the test to be updated
-            **params: The params to be added/updated to the current one
+        Parameters
+        ----------
+        index : int
+            The index of the test to be updated
+        **params :
+            The params to be added/updated to the current one
 
-        Returns:
-            Suite: The current instance of the test suite to allow chained calls.
+        Returns
+        -------
+        Suite
+            The current instance of the test suite to allow chained calls.
 
         """
         test = self.tests[index]

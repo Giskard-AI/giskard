@@ -49,6 +49,7 @@ def validate_classification_label(func):
         ), f'"{classification_label}" is not part of model labels: {model.meta.classification_labels}'
         return func(*args, **kwargs)
 
+    wrapper.test_fn = func
     return wrapper
 
 
