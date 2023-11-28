@@ -74,7 +74,7 @@ class BearerAuth(AuthBase):
 
 
 def _limit_str_size(json, field, limit=255):
-    if field not in json or not isinstance(json["field"], str):
+    if field not in json or not isinstance(json[field], str):
         return
 
     original_len = len(json[field])
