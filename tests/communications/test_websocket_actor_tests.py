@@ -1,5 +1,6 @@
 import uuid
 
+import pandas as pd
 import pytest
 
 from giskard import test
@@ -19,6 +20,11 @@ def my_simple_test():
 @test
 def my_simple_test_successful():
     return GiskardTestResult(passed=True)
+
+
+@test
+def my_simple_test__legacy_debug():
+    return GiskardTestResult(passed=True, output_df=Dataset(pd.DataFrame({"test": [1]})))
 
 
 @test
@@ -439,6 +445,37 @@ def test_websocket_actor_run_test_suite_with_test_input():
             "value" == reply.results[0].arguments[0].name
             and MY_TEST_INPUT_VALUE == reply.results[0].arguments[0].int_arg
         )
+
+
+def test_websocket_actor_run_test_suite_with_legacy_debug():
+    with utils.MockedClient(mock_all=False) as (client, mr):
+        params = websocket.TestSuiteParam(
+            projectKey=str(uuid.uuid4()),
+            tests=[
+                websocket.SuiteTestArgument(
+                    id=0,
+                    testUuid=my_simple_test__legacy_debug.meta.uuid,
+                    arguments=[
+                        websocket.FuncArgument(name="value", int=MY_TEST_INPUT_VALUE, none=False),
+                    ],
+                ),
+            ],
+            globalArguments=[
+                websocket.FuncArgument(name="value", int=MY_TEST_GLOBAL_VALUE, none=False),
+            ],
+        )
+        utils.register_uri_for_artifact_meta_info(mr, my_simple_test__legacy_debug, None)
+        utils.register_uri_for_any_dataset_artifact_info_upload(mr, True)
+
+        reply = listener.run_test_suite(client, params)
+
+        assert isinstance(reply, websocket.TestSuite)
+        assert not reply.is_error, reply.logs
+        assert reply.is_pass
+
+        assert 1 == len(reply.results)
+        assert 0 == reply.results[0].id
+        assert reply.results[0].result.passed
 
 
 def test_websocket_actor_run_test_suite_with_kwargs():
