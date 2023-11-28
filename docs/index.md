@@ -43,13 +43,28 @@ tutorials/nlp_tutorials/index
 ```
 
 ```{toctree}
-:caption: Knowledge Bank
+:caption: Knowledge
 :maxdepth: 1
 :hidden:
 
 knowledge/llm_vulnerabilities/index
 knowledge/key_vulnerabilities/index
 knowledge/catalogs/index
+```
+
+```{toctree}
+:caption: Integrations
+:maxdepth: 1
+:hidden:
+
+integrations/index
+```
+
+```{toctree}
+:caption: API Reference
+:maxdepth: 1
+:hidden:
+
 reference/index
 ```
 
@@ -83,13 +98,13 @@ community/contribution_guidelines/index
 
 ::::{grid-item-card} <h2><center> Open-Source Library </center></h2>
 :text-align: center
-:link: open_source/installation_library/index.md
+:link: open_source/index.rst
 :img-bottom: assets/intro/ninja.png
 ::::
 
 ::::{grid-item-card} <h2><center> Giskard Hub </center></h2>
 :text-align: center
-:link: giskard_hub/installation_hub/index.md
+:link: giskard_hub/index.rst
 :img-bottom: assets/intro/Giskard_Turtle_SK8.png
 ::::
 
@@ -101,13 +116,13 @@ community/contribution_guidelines/index
 
 ::::{grid-item-card} <h2><center> Knowledge </center></h2>
 :text-align: center
-:link: knowledge/llm_vulnerabilities/index.md
-:img-bottom: assets/intro/integrations.png
+:link: knowledge/index.rst
+:img-bottom: assets/intro/Giskard_Turtle_new_set_FINAL_05.png
 ::::
 
 ::::{grid-item-card} <h2><center> Integrations </center></h2>
 :text-align: center
-:link: ./open_source/integrate_tests/index.md
+:link: integrations/index.rst
 :img-bottom: assets/intro/hey.png
 ::::
 
@@ -116,6 +131,12 @@ community/contribution_guidelines/index
 :link: reference/index.rst
 :img-bottom: assets/intro/Giskard_Turtle_Computer.png
 ::::
+
+::::{grid-item-card} <h2><center> Community </center></h2>
+:text-align: center
+:link: community/index.rst
+:img-bottom: assets/intro/integrations.png
+::::    
 
 :::::
 
