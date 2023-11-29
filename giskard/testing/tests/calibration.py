@@ -41,7 +41,7 @@ def test_overconfidence_rate(
     slicing_function: Optional[SlicingFunction] = None,
     threshold: Optional[float] = 0.10,
     p_threshold: Optional[float] = None,
-):
+) -> TestResult:
     """Tests that the rate of overconfident predictions is below a threshold.
 
     Overconfident predictions are defined as predictions where the model
