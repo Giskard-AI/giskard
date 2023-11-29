@@ -1,4 +1,4 @@
-from typing import Any, Callable, Iterable, Optional
+from typing import Any, Callable, Iterable, Optional, Tuple
 
 import mlflow
 import pandas as pd
@@ -66,7 +66,7 @@ class SKLearnModel(MLFlowSerializableModel):
         )
 
     @classmethod
-    def load_model(cls, local_dir):
+    def load_model(cls, local_dir, model_py_ver: Optional[Tuple[str, str, str]] = None):
         return mlflow.sklearn.load_model(local_dir)
 
     def model_predict(self, df):
