@@ -1,6 +1,4 @@
 """API Client to interact with the Giskard app"""
-from typing import List
-
 import logging
 import os
 import posixpath
@@ -14,6 +12,7 @@ from mlflow.utils.rest_utils import augmented_raise_for_status
 from requests.adapters import HTTPAdapter
 from requests.auth import AuthBase
 from requests_toolbelt import sessions
+from typing import List
 
 import giskard
 from giskard.client.dtos import DatasetMetaInfo, ModelMetaInfo, ServerInfo, SuiteInfo, TestSuiteDTO
@@ -74,6 +73,18 @@ class BearerAuth(AuthBase):
         return r
 
 
+def _limit_str_size(json, field, limit=255):
+    if field not in json or not isinstance(json[field], str):
+        return
+
+    original_len = len(json[field])
+    json[field] = json[field][:limit].encode("utf-16-le")[: limit * 2].decode("utf-16-le", "ignore")
+
+    # Java, js, h2 and postgres use UTF-16 surrogate pairs to calculate str length while python count characters
+    if original_len > len(json[field]):
+        logger.warning(f"Field '{field} exceeded the limit of {limit} characters and has been truncated")
+
+
 class GiskardClient:
     def __init__(self, url: str, key: str, hf_token: str = None):
         self.host_url = url
@@ -93,7 +104,7 @@ class GiskardClient:
                 f"Your giskard client version ({giskard.__version__}) does not match the hub version "
                 f"({server_settings.serverVersion}). "
                 f"Please upgrade your client to the latest version. "
-                f"pip install \"giskard[hub]>=2.0.0b\" -U"
+                f'pip install "giskard[hub]>=2.0.0b" -U'
             )
         analytics.init_server_info(server_settings)
 
@@ -319,7 +330,12 @@ class GiskardClient:
         print(f"Dataset successfully uploaded to project key '{project_key}' with ID = {dataset_id}")
 
     def save_meta(self, endpoint: str, meta: SMT) -> SMT:
-        json = self._session.put(endpoint, json=meta.to_json()).json()
+        meta_json = meta.to_json()
+
+        _limit_str_size(meta_json, "name")
+        _limit_str_size(meta_json, "display_name")
+
+        json = self._session.put(endpoint, json=meta_json).json()
         return meta if json is None or "uuid" not in json else meta.from_json(json)
 
     def load_meta(self, endpoint: str, meta_class: SMT) -> TestFunctionMeta:
