@@ -1,4 +1,4 @@
-# Test Catalog
+# Catalogs
 
 ```{toctree}
 :caption: Table of Contents

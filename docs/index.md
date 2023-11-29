@@ -36,7 +36,6 @@ giskard_hub/collaborate/index
 :maxdepth: 1
 :hidden:
 
-tutorials/index
 tutorials/llm_tutorials/index
 tutorials/tabular_tutorials/index
 tutorials/nlp_tutorials/index
@@ -57,7 +56,11 @@ knowledge/catalogs/index
 :maxdepth: 1
 :hidden:
 
-integrations/index
+integrations/cicd/index
+integrations/mlflow/index
+integrations/wandb/index
+integrations/dagshub/index
+integrations/huggingface/index
 ```
 
 ```{toctree}
@@ -65,7 +68,15 @@ integrations/index
 :maxdepth: 1
 :hidden:
 
-reference/index
+cli/index
+reference/models/index
+reference/datasets/index
+reference/scan/index
+reference/tests/index
+reference/slicing-functions/index
+reference/transformation-functions/index
+reference/push/index
+reference/suite/index
 ```
 
 ```{toctree}

@@ -10,7 +10,7 @@ nlp_tutorials/index
 ```
 
 ::::::{grid} 1 1 2 2
-:gutter: 1
+:gutter: 0 5
 
 :::::{grid-item}
 :::{card} <h3><center>📚  LLM tutorials</center></h3>
