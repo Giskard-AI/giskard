@@ -15,57 +15,50 @@
 ../../reference/notebooks/wage_classification.ipynb
 
 ```
-<div style="border: 1px solid #ccc; padding: 10px; margin: 10px; border-radius: 5px; box-shadow: 2px 2px 5px #888;">
+:::::{grid} 1 1 2 2
+::::{grid-item-card} <h3> Titanic Survival Prediction - Binary Classification (scikit-learn)</h3>
+:text-align: center
+:link: ../../getting_started/quickstart/quickstart_tabular.ipynb
+::::
 
-  <h3><a href="../../getting_started/quickstart/quickstart_tabular.html">Titanic Survival Prediction</a> - Binary Classification (scikit-learn)</h3>
+::::{grid-item-card} <h3> Cancer Detection - Binary Classification (XGBoost)</h3>
+:text-align: center
+:link: ../../reference/notebooks/cancer_detection_xgboost.ipynb
+::::
 
-</div>
+::::{grid-item-card} <h3> Churn Prediction - Binary Classification (LGBM)</h3>
+:text-align: center
+:link: ../../reference/notebooks/churn_prediction_lgbm.ipynb
+::::
 
-<div style="border: 1px solid #ccc; padding: 10px; margin: 10px; border-radius: 5px; box-shadow: 2px 2px 5px #888;">
+::::{grid-item-card} <h3> Credit Scoring - Binary Classification (scikit-learn)</h3>
+:text-align: center
+:link: ../../reference/notebooks/credit_scoring.ipynb
+::::
 
-  <h3><a href="../../reference/notebooks/cancer_detection_xgboost.html">Cancer Detection</a> - Binary Classification (XGBoost)</h3>
+::::{grid-item-card} <h3> Drug Classification - Multinomial Classification (scikit-learn)</h3>
+:text-align: center
+:link: ../../reference/notebooks/drug_classification_sklearn.ipynb
+::::
 
-</div>
+::::{grid-item-card} <h3> Fraud Detection Adversarial Validation - Binary Classification (LGBM)</h3>
+:text-align: center
+:link: ../../reference/notebooks/ieee_fraud_detection_adversarial_validation.ipynb
+::::
 
-<div style="border: 1px solid #ccc; padding: 10px; margin: 10px; border-radius: 5px; box-shadow: 2px 2px 5px #888;">
+::::{grid-item-card} <h3> Insurance Charges Prediction - Regression (LGBM)</h3>
+:text-align: center
+:link: ../../reference/notebooks/insurance_prediction_lgbm.ipynb
+::::
 
-  <h3><a href="../../reference/notebooks/churn_prediction_lgbm.html">Churn Prediction</a> - Binary Classification (LGBM)</h3>
+::::{grid-item-card} <h3> Sales Prediction - Regression (LGBM)</h3>
+:text-align: center
+:link: ../../reference/notebooks/m5_sales_prediction_lgbm.ipynb
+::::
 
-</div>
+::::{grid-item-card} <h3> Wage Classification - Classification (scikit-learn)</h3>
+:text-align: center
+:link: ../../reference/notebooks/wage_classification.ipynb
+::::
 
-<div style="border: 1px solid #ccc; padding: 10px; margin: 10px; border-radius: 5px; box-shadow: 2px 2px 5px #888;">
-
-  <h3><a href="../../reference/notebooks/credit_scoring.html">Credit Scoring</a> - Binary Classification (scikit-learn)</h3>
-
-</div>
-
-<div style="border: 1px solid #ccc; padding: 10px; margin: 10px; border-radius: 5px; box-shadow: 2px 2px 5px #888;">
-
-  <h3><a href="../../reference/notebooks/drug_classification_sklearn.html">Drug Classification</a> - Multinomial Classification (scikit-learn)</h3>
-
-</div>
-
-<div style="border: 1px solid #ccc; padding: 10px; margin: 10px; border-radius: 5px; box-shadow: 2px 2px 5px #888;">
-
-  <h3><a href="../../reference/notebooks/ieee_fraud_detection_adversarial_validation.html">Fraud Detection Adversarial Validation</a> - Binary Classification (LGBM)</h3>
-
-</div>
-
-<div style="border: 1px solid #ccc; padding: 10px; margin: 10px; border-radius: 5px; box-shadow: 2px 2px 5px #888;">
-
-  <h3><a href="../../reference/notebooks/insurance_prediction_lgbm.html">Insurance Charges Prediction</a> - Regression (LGBM)</h3>
-
-</div>
-
-<div style="border: 1px solid #ccc; padding: 10px; margin: 10px; border-radius: 5px; box-shadow: 2px 2px 5px #888;">
-
-  <h3><a href="../../reference/notebooks/m5_sales_prediction_lgbm.html">Sales Prediction</a> - Regression (LGBM)</h3>
-
-</div>
-
-<div style="border: 1px solid #ccc; padding: 10px; margin: 10px; border-radius: 5px; box-shadow: 2px 2px 5px #888;">
-
-  <h3><a href="../../reference/notebooks/wage_classification.html">Wage Classification</a> - Classification (scikit-learn)</h3>
-
-</div>
-
+:::::
