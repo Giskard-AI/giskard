@@ -1,4 +1,5 @@
 import tempfile
+from typing import Optional, Tuple
 
 import numpy as np
 import pandas as pd
@@ -17,7 +18,7 @@ def test_wrapper_model_handles_batching():
             return [0] * len(data)
 
         @classmethod
-        def load_model(cls, path):
+        def load_model(cls, path, model_py_ver: Optional[Tuple[str, str, str]] = None):
             pass
 
         def save_model(self, path):
@@ -62,7 +63,7 @@ def test_wrapper_model_saves_and_loads_batch_size():
             return [0] * len(data)
 
         @classmethod
-        def load_model(cls, path):
+        def load_model(cls, path, model_py_ver: Optional[Tuple[str, str, str]] = None):
             pass
 
         def save_model(self, path):

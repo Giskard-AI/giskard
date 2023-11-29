@@ -1,9 +1,9 @@
 from enum import Enum
-from typing import Dict, List, Optional
 
 import pydantic
 from packaging import version
 from pydantic import Field
+from typing import Dict, List, Optional
 
 from giskard.core.validation import ConfiguredBaseModel
 
@@ -323,6 +323,7 @@ class TestSuite(WorkerReply):
 
 
 class TestSuiteParam(ConfiguredBaseModel):
+    projectKey: str
     tests: Optional[List[SuiteTestArgument]] = None
     globalArguments: Optional[List[FuncArgument]] = None
 

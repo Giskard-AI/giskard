@@ -1,12 +1,12 @@
 import json
 from pathlib import Path
-from typing import Dict, List, Optional, Type
 
 import pydantic
 import pytest
 from packaging import version
 from polyfactory.factories.pydantic_factory import ModelFactory
 from pydantic import BaseModel
+from typing import Dict, List, Optional, Type
 
 import giskard
 import giskard.ml_worker.websocket
@@ -80,7 +80,7 @@ MANDATORY_FIELDS = {
     "TestFunctionArgument": ["name", "type", "optional", "default", "argOrder"],
     "TestMessage": ["type", "text"],
     "TestSuite": ["is_error", "is_pass", "logs"],
-    "TestSuiteParam": [],
+    "TestSuiteParam": ["projectKey"],
     "WeightsPerFeature": [],
     "WorkerReply": [],
 }

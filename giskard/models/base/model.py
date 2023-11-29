@@ -1,4 +1,4 @@
-from typing import Iterable, List, Optional, Type, Union
+from typing import Iterable, List, Optional, Tuple, Type, Union
 
 import builtins
 import importlib
@@ -22,7 +22,7 @@ from ...client.giskard_client import GiskardClient
 from ...core.core import ModelMeta, ModelType, SupportedModelTypes
 from ...core.validation import configured_validate_arguments
 from ...datasets.base import Dataset
-from ...ml_worker.exceptions.giskard_exception import GiskardException
+from ...ml_worker.exceptions.giskard_exception import GiskardException, python_env_exception_helper
 from ...ml_worker.utils.logging import Timer
 from ...models.cache import ModelCache
 from ...path_utils import get_size
@@ -207,11 +207,16 @@ class BaseModel(ABC):
         return self.meta.model_type == SupportedModelTypes.TEXT_GENERATION
 
     @classmethod
-    def determine_model_class(cls, meta, local_dir):
+    def determine_model_class(cls, meta, local_dir, model_py_ver: Optional[Tuple[str, str, str]] = None):
         class_file = Path(local_dir) / MODEL_CLASS_PKL
         if class_file.exists():
             with open(class_file, "rb") as f:
-                clazz = cloudpickle.load(f)
+                try:
+                    # According to https://github.com/cloudpipe/cloudpickle#cloudpickle:
+                    # Cloudpickle can only be used to send objects between the exact same version of Python.
+                    clazz = cloudpickle.load(f)
+                except Exception as e:
+                    raise python_env_exception_helper(cls.__name__, e, required_py_ver=model_py_ver)
                 if not issubclass(clazz, BaseModel):
                     raise ValueError(f"Unknown model class: {clazz}. Models should inherit from 'BaseModel' class")
                 return clazz
@@ -440,7 +445,7 @@ class BaseModel(ABC):
         if client is None:
             # internal worker case, no token based http client [deprecated, to be removed]
             assert local_dir.exists(), f"Cannot find existing model {project_key}.{model_id} in {local_dir}"
-            _, meta = cls.read_meta_from_local_dir(local_dir)
+            meta_response, meta = cls.read_meta_from_local_dir(local_dir)
         else:
             client.load_artifact(local_dir, posixpath.join(project_key, "models", model_id))
             meta_response: ModelMetaInfo = client.load_model_meta(project_key, model_id)
@@ -461,7 +466,11 @@ class BaseModel(ABC):
                     loader_class=file_meta["loader_class"],
                 )
 
-        clazz = cls.determine_model_class(meta, local_dir)
+        model_py_ver = (
+            tuple(meta_response.languageVersion.split(".")) if "PYTHON" == meta_response.language.upper() else None
+        )
+
+        clazz = cls.determine_model_class(meta, local_dir, model_py_ver=model_py_ver)
 
         constructor_params = meta.__dict__
         constructor_params["id"] = str(model_id)
@@ -469,11 +478,11 @@ class BaseModel(ABC):
         del constructor_params["loader_module"]
         del constructor_params["loader_class"]
 
-        model = clazz.load(local_dir, **constructor_params)
+        model = clazz.load(local_dir, model_py_ver=model_py_ver, **constructor_params)
         return model
 
     @classmethod
-    def read_meta_from_local_dir(cls, local_dir):
+    def read_meta_from_local_dir(cls, local_dir) -> Tuple[ModelMetaInfo, ModelMeta]:
         with (Path(local_dir) / META_FILENAME).open(encoding="utf-8") as f:
             file_meta = yaml.load(f, Loader=yaml.Loader)
             meta = ModelMeta(
@@ -486,8 +495,26 @@ class BaseModel(ABC):
                 loader_module=file_meta["loader_module"],
                 loader_class=file_meta["loader_class"],
             )
-        # dirty implementation to return id like this, to be decided if meta properties can just be BaseModel properties
-        return file_meta["id"], meta
+
+            # Bring more information, such as language and language version
+            extra_meta = ModelMetaInfo(
+                id=file_meta["id"],
+                name=meta.name,
+                modelType=file_meta["model_type"],
+                featureNames=meta.feature_names if meta.feature_names is not None else [],
+                threshold=meta.classification_threshold,
+                description=meta.description,
+                classificationLabels=meta.classification_labels
+                if meta.classification_labels is None
+                else list(map(str, meta.classification_labels)),
+                languageVersion=file_meta["language_version"],
+                language=file_meta["language"],
+                size=file_meta["size"],
+                classificationLabelsDtype=None,
+                createdDate="",
+                projectId=-1,
+            )
+        return extra_meta, meta
 
     @classmethod
     def cast_labels(cls, meta_response: ModelMetaInfo) -> List[Union[str, Type]]:
@@ -499,7 +526,7 @@ class BaseModel(ABC):
         return labels_
 
     @classmethod
-    def load(cls, local_dir, **kwargs):
+    def load(cls, local_dir, model_py_ver: Optional[Tuple[str, str, str]] = None, **kwargs):
         class_file = Path(local_dir) / MODEL_CLASS_PKL
         model_id, meta = cls.read_meta_from_local_dir(local_dir)
 
@@ -510,7 +537,12 @@ class BaseModel(ABC):
 
         if class_file.exists():
             with open(class_file, "rb") as f:
-                clazz = cloudpickle.load(f)
+                try:
+                    # According to https://github.com/cloudpipe/cloudpickle#cloudpickle:
+                    # Cloudpickle can only be used to send objects between the exact same version of Python.
+                    clazz = cloudpickle.load(f)
+                except Exception as e:
+                    raise python_env_exception_helper(cls.__name__, e, required_py_ver=model_py_ver)
                 clazz_kwargs = {}
                 clazz_kwargs.update(constructor_params)
                 clazz_kwargs.update(kwargs)
