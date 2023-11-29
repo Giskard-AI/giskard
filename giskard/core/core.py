@@ -9,6 +9,11 @@ from enum import Enum
 from pathlib import Path
 
 from griffe import Docstring
+from griffe.docstrings.dataclasses import (
+    DocstringParameter,
+    DocstringSection,
+    DocstringSectionParameters,
+)
 from griffe.enumerations import DocstringSectionKind
 
 from ..utils.artifacts import serialize_parameter
@@ -246,10 +251,17 @@ class CallableMeta(SavableMeta, ABC):
     def extract_doc(func):
         res: CallableDocumentation = CallableDocumentation()
         if func.__doc__:
-            google_doc_parts = Docstring(func.__doc__).parse("google")
-            sphinx_doc_parts = Docstring(func.__doc__).parse("sphinx")
-            doc_parts = google_doc_parts if len(google_doc_parts) > len(sphinx_doc_parts) else sphinx_doc_parts
-            for d in doc_parts:
+            parsed_docs: List[List[DocstringSection]] = list(
+                sorted(
+                    [Docstring(func.__doc__).parse(parser) for parser in ["numpy", "google", "sphinx"]],
+                    key=len,
+                    reverse=True,
+                )
+            )
+
+            best_doc: List[DocstringSection] = parsed_docs[0]  # We keep the one with most sections
+            res.parameters = {}
+            for d in best_doc:
                 if d.kind == DocstringSectionKind.text:
                     description_value = d.value.strip()
                     if res.description:
@@ -258,9 +270,11 @@ class CallableMeta(SavableMeta, ABC):
                         )
                     res.description = description_value
                 elif d.kind == DocstringSectionKind.parameters:
-                    res.parameters = {d.name: d.description.strip() for d in d.value}
+                    params: DocstringSectionParameters = d
+                    res.parameters = {p.name: p.description.strip() for p in params.value}
                 else:
-                    logger.warning(f"Unexpected documentation element for {func.__name__}: {d.kind}")
+                    if d.kind not in [DocstringSectionKind.returns]:  # List of ignored section
+                        logger.warning(f"Unexpected documentation element for {func.__name__}: {d.kind}")
 
             func_doc = json.dumps(res.to_dict())
         else:
