@@ -24,6 +24,37 @@ class Kwargs:
     pass
 
 
+_T = TypeVar("_T")
+
+
+# Sentinel class used until PEP 0661 is accepted
+class NotGiven:
+    """
+    A sentinel singleton class used to distinguish omitted keyword arguments
+    from those passed in with the value None (which may have different behavior).
+
+    For example:
+
+    ```py
+    def get(timeout: Union[int, NotGiven, None] = NotGiven()) -> Response: ...
+
+    get(timout=1) # 1s timeout
+    get(timout=None) # No timeout
+    get() # Default timeout behavior, which may not be statically known at the method definition.
+    ```
+    """
+
+    def __bool__(self) -> Literal[False]:
+        return False
+
+    def __repr__(self) -> str:
+        return "NOT_GIVEN"
+
+
+NotGivenOr = Union[_T, NotGiven]
+NOT_GIVEN = NotGiven()
+
+
 def _get_plugin_method_full_name(func):
     from giskard.ml_worker.testing.registry.registry import plugins_root
 

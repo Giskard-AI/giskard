@@ -5,7 +5,6 @@ import tempfile
 import uuid
 from functools import cached_property
 from pathlib import Path
-from typing import Dict, Hashable, List, Optional, Union
 
 import numpy as np
 import pandas
@@ -13,13 +12,14 @@ import pandas as pd
 import yaml
 from mlflow import MlflowClient
 from pandas.api.types import is_list_like, is_numeric_dtype
+from typing import Dict, Hashable, List, Optional, Union
 from xxhash import xxh3_128_hexdigest
 from zstandard import ZstdDecompressor
 
 from giskard.client.giskard_client import GiskardClient
 from giskard.client.io_utils import compress, save_df
 from giskard.client.python_utils import warning
-from giskard.core.core import DatasetMeta, SupportedColumnTypes
+from giskard.core.core import DatasetMeta, SupportedColumnTypes, NOT_GIVEN, NotGivenOr
 from giskard.core.errors import GiskardImportError
 from giskard.core.validation import configured_validate_arguments
 from giskard.ml_worker.testing.registry.slicing_function import SlicingFunction, SlicingFunctionType
@@ -144,7 +144,7 @@ class Dataset(ColumnMetadataMixin):
     """
 
     name: Optional[str]
-    target: Optional[str]
+    _target: NotGivenOr[Optional[str]]
     column_types: Dict[str, str]
     df: pd.DataFrame
     id: uuid.UUID
@@ -156,7 +156,7 @@ class Dataset(ColumnMetadataMixin):
         self,
         df: pd.DataFrame,
         name: Optional[str] = None,
-        target: Optional[Hashable] = None,
+        target: NotGivenOr[Optional[Hashable]] = NOT_GIVEN,
         cat_columns: Optional[List[str]] = None,
         column_types: Optional[Dict[Hashable, str]] = None,
         id: Optional[uuid.UUID] = None,
@@ -169,7 +169,7 @@ class Dataset(ColumnMetadataMixin):
         Args:
             df (pd.DataFrame): The input dataset as a pandas DataFrame.
             name (Optional[str]): The name of the dataset.
-            target (Optional[str]): The column name in df corresponding to the actual target variable (ground truth).
+            target (Optional[str]): The column name in df corresponding to the actual target variable (ground truth). The target needs to be explicitly set to `None` if the dataset doesn't have any target variable.
             cat_columns (Optional[List[str]]): A list of column names that are categorical.
             column_types (Optional[Dict[str, str]]): A dictionary mapping column names to their types.
             id (Optional[uuid.UUID]): A UUID that uniquely identifies this dataset.
@@ -186,13 +186,12 @@ class Dataset(ColumnMetadataMixin):
 
         self.name = name
         self.df = pd.DataFrame(df)
-        self.target = target
+        self._target = target
 
         if validation:
-            from giskard.core.dataset_validation import validate_dtypes, validate_target_exists
+            from giskard.core.dataset_validation import validate_dataset
 
-            validate_dtypes(self)
-            validate_target_exists(self)
+            validate_dataset(self)
 
         self.column_dtypes = self.extract_column_dtypes(self.df)
 
@@ -229,7 +228,13 @@ class Dataset(ColumnMetadataMixin):
 
         logger.info("Your 'pandas.DataFrame' is successfully wrapped by Giskard's 'Dataset' wrapper class.")
 
-        self.data_processor = DataProcessor()
+    @property
+    def is_target_given(self) -> bool:
+        return self._target is not NOT_GIVEN
+
+    @property
+    def target(self) -> Optional[str]:
+        return self._target or None
 
     def add_slicing_function(self, slicing_function: SlicingFunction):
         """
