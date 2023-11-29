@@ -36,13 +36,8 @@ def _get_plugin_method_full_name(func):
 
 
 def create_test_function_id(func):
-    try:
-        from giskard.ml_worker.testing.registry.registry import plugins_root
-
-        # is_relative_to is only available from python 3.9
-        is_relative = Path(inspect.getfile(func)).is_relative_to(plugins_root)
-    except ValueError:
-        is_relative = False
+    from giskard.ml_worker.testing.registry.registry import plugins_root
+    is_relative = Path(inspect.getfile(func)).is_relative_to(plugins_root)
     if is_relative:
         full_name = _get_plugin_method_full_name(func)
     else:
