@@ -12,41 +12,37 @@ compare_models/index
 collaborate/index
 ```
 
-::::::{grid} 1 1 2 2
-:gutter: 0 5
+:::::{grid} 1 1 2 2
 
-:::::{grid-item}
-:::{card} <h3><center>🌐 Install the Giskard Hub</center></h3>
+
+::::{grid-item-card} <br/><h3>🌐 Install the Giskard Hub</h3>
+:text-align: center
 :link: installation_hub/index.html
-:::
-:::::
+::::
 
-:::::{grid-item}
-:::{card} <h3><center>⬆️ Log datasets & models in the Hub</center></h3>
+::::{grid-item-card} <br/><h3>⬆️ Log datasets & models in the Hub</h3>
+:text-align: center
 :link: upload/index.html
-:::
-:::::
+::::
 
-:::::{grid-item}
-:::{card} <h3><center>👨‍🔬 Add domain-specific tests</center></h3>
+::::{grid-item-card} <br/><h3>👨‍🔬 Add domain-specific tests</h3>
+:text-align: center
 :link: write_and_debug_tests/index.html
-:::
-:::::
+::::
 
-:::::{grid-item}
-:::{card} <h3><center>🧐 Debug your issues</center></h3>
+::::{grid-item-card} <br/><h3>🧐 Debug your issues</h3>
+:text-align: center
 :link: inspect/index.html
-:::
-:::::
+::::
 
-:::::{grid-item}
-:::{card} <h3><center>⚖️ Compare models</center></h3>
+::::{grid-item-card} <br/><h3>⚖️ Compare models</h3>
+:text-align: center
 :link: compare_models/index.html
-:::
-:::::
+::::
 
-:::::{grid-item}
-:::{card} <h3><center>🤝 Collaborate to build better models</center></h3>
+::::{grid-item-card} <br/><h3>🤝 Collaborate to build better models</h3>
+:text-align: center
 :link: collaborate/index.html
-:::
+::::
+
 :::::

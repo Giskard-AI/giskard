@@ -99,55 +99,54 @@ community/contribution_guidelines/index
 
 
 :::::{grid} 1 1 3 3
-:gutter: 0 5
 
-::::{grid-item-card} <h2><center> Getting Started </center></h2>
+::::{grid-item-card} <h2> Getting Started </h2>
 :text-align: center
 :link: getting_started/index.md
 :img-bottom: assets/intro/coffee.png
 ::::
 
-::::{grid-item-card} <h2><center> Open-Source Library </center></h2>
+::::{grid-item-card} <h2> Open-Source Library </h2>
 :text-align: center
 :link: open_source/index.rst
 :img-bottom: assets/intro/ninja.png
 ::::
 
-::::{grid-item-card} <h2><center> Giskard Hub </center></h2>
+::::{grid-item-card} <h2> Giskard Hub </h2>
 :text-align: center
 :link: giskard_hub/index.rst
 :img-bottom: assets/intro/Giskard_Turtle_SK8.png
 ::::
 
-::::{grid-item-card} <h2><center> Tutorials </center></h2>
+::::{grid-item-card} <h2> Tutorials </h2>
 :text-align: center
 :link: tutorials/index.md
 :img-bottom: assets/intro/test_turtle.png
 ::::
 
-::::{grid-item-card} <h2><center> Knowledge </center></h2>
+::::{grid-item-card} <h2> Knowledge </h2>
 :text-align: center
 :link: knowledge/index.rst
 :img-bottom: assets/intro/Giskard_Turtle_new_set_FINAL_05.png
 ::::
 
-::::{grid-item-card} <h2><center> Integrations </center></h2>
+::::{grid-item-card} <h2> Integrations </h2>
 :text-align: center
 :link: integrations/index.rst
 :img-bottom: assets/intro/hey.png
 ::::
 
-::::{grid-item-card} <h2><center> API Reference </center></h2>
+::::{grid-item-card} <h2> API Reference </h2>
 :text-align: center
 :link: reference/index.rst
 :img-bottom: assets/intro/Giskard_Turtle_Computer.png
 ::::
 
-::::{grid-item-card} <h2><center> Community </center></h2>
+::::{grid-item-card} <h2> Community </h2>
 :text-align: center
 :link: community/index.rst
 :img-bottom: assets/intro/integrations.png
-::::    
+::::
 
 :::::
 

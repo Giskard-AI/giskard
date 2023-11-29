@@ -58,10 +58,11 @@ else:
 
 ## Notebook examples
 ::::::{grid} 1 1 2 2
-:gutter: 1
 
-:::::{grid-item}
-:::{card} <br><h3><center>📊 Tabular</center></h3>
+
+::::{grid-item-card} <br/><h3>📊 Tabular</h3>
+:text-align: center
 :link: pipeline.ipynb
-:::
-:::::
+::::
+
+::::::

@@ -12,34 +12,29 @@ huggingface/index
 ```
 
 ::::::{grid} 1 1 2 2
-:gutter: 0 5
 
-:::::{grid-item}
-:::{card} <h3><center>🐙️ GitHub</center></h3>
+
+::::{grid-item-card} <br/><h3>🐙️ GitHub</h3>
+:text-align: center
 :link: cicd/index.html
-:::
-:::::
+::::
 
-:::::{grid-item}
-:::{card} <h3><center>🤗 HuggingFace</center></h3>
+::::{grid-item-card} <br/><h3>🤗 HuggingFace</h3>
+:text-align: center
 :link: huggingface/index.html
-:::
-:::::
+::::
 
-:::::{grid-item}
-:::{card} <h3><center>🏃 MLflow</center></h3>
+::::{grid-item-card} <br/><h3>🏃 MLflow</h3>
+:text-align: center
 :link: mlflow/index.html
-:::
-:::::
+::::
 
-:::::{grid-item}
-:::{card} <h3><center>🐝 Weights & Biases</center></h3>
+::::{grid-item-card} <br/><h3>🐝 Weights & Biases</h3>
+:text-align: center
 :link: wandb/index.html
-:::
-:::::
+::::
 
-:::::{grid-item}
-:::{card} <h3><center>🐶 DagsHub</center></h3>
+::::{grid-item-card} <br/><h3>🐶 DagsHub</h3>
+:text-align: center
 :link: dagshub/index.html
-:::
-:::::
+::::

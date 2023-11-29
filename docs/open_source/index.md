@@ -11,28 +11,24 @@ integrate_tests/index
 ```
 
 ::::::{grid} 1 1 2 2
-:gutter: 0 5
 
-:::::{grid-item}
-:::{card} <h3><center>📥 Install the Giskard Python Library</center></h3>
+
+::::{grid-item-card} <br/><h3>📥 Install the Giskard Python Library</h3>
+:text-align: center
 :link: installation_library/index.html
-:::
-:::::
+::::
 
-:::::{grid-item}
-:::{card} <h3><center>🔍 Scan a model</center></h3>
+::::{grid-item-card} <br/><h3>🔍 Scan a model</h3>
+:text-align: center
 :link: scan/index.html
-:::
-:::::
+::::
 
-:::::{grid-item}
-:::{card} <h3><center>🧪 Customize your tests</center></h3>
+::::{grid-item-card} <br/><h3>🧪 Customize your tests</h3>
+:text-align: center
 :link: customize_tests/index.html
-:::
-:::::
+::::
 
-:::::{grid-item}
-:::{card} <h3><center>🔁 Integrate your tests</center></h3>
+::::{grid-item-card} <br/><h3>🔁 Integrate your tests</h3>
+:text-align: center
 :link: integrate_tests/index.html
-:::
-:::::
+::::
