@@ -1,9 +1,9 @@
 import tempfile
-from typing import Any, Callable, Iterable, List, Optional, Union
 
 import numpy as np
 import pandas as pd
 import yaml
+from typing import List, Iterable, Union, Callable, Any, Optional
 
 from giskard.client.python_utils import warning
 from giskard.core.core import ModelMeta, ModelType, SupportedModelTypes
@@ -14,14 +14,11 @@ from giskard.models.base import BaseModel, WrapperModel
 
 from ..utils import fullname
 from ..utils.analytics_collector import analytics, get_dataset_properties, get_model_properties
-from .dataset_validation import validate_optional_target
 
 
 @configured_validate_arguments
 def validate_model(model: BaseModel, validate_ds: Optional[Dataset] = None, print_validation_message: bool = True):
     try:
-        if model.meta.model_type != SupportedModelTypes.TEXT_GENERATION and validate_ds is not None:
-            validate_optional_target(validate_ds)
         _do_validate_model(model, validate_ds)
     except (ValueError, TypeError) as err:
         _track_validation_error(err, model, validate_ds)
