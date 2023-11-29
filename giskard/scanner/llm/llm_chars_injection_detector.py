@@ -122,10 +122,11 @@ class LLMCharsInjectionDetector(Detector):
                 description=f"Injecting long sequences of control characters `{encoded_char}` in the value of `{res.feature}` can alter the model's output significantly, producing unexpected or off-topic outputs.",
                 features=[res.feature],
                 meta={
+                    "metric": "Fail rate",
+                    "metric_value": res.fail_rate,
                     "domain": "Control character injection",
                     "deviation": f"Adding special chars `{encoded_char}` in `{res.feature}` can make the model to produce unexpected outputs.",
                     "special_char": res.char,
-                    "fail_rate": res.fail_rate,
                     "perturbed_data_slice": res.perturbed_dataset,
                     "perturbed_data_slice_predictions": res.predictions,
                     "fail_data_idx": dataset_sample.df[~np.array(res.vulnerable_mask)].index.values,

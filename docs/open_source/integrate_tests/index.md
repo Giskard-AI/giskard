@@ -7,50 +7,28 @@ Once you've created a test suite for a model, integrating it into existing workf
 :maxdepth: 2
 :hidden:
 
-../../integrations/cicd/index
 ../../integrations/cicd/pipeline.ipynb
 ../../integrations/mlflow/index
 ../../integrations/wandb/index
-../../integrations/dagshub/index
-../../integrations/huggingface/index
 
 ```
 
-::::::{grid} 1 1 2 2
-:gutter: 1
+:::::{grid} 1 1 2 2
 
-:::::{grid-item}
-:::{card} <br/><h3><center>🐙️ GitHub</center></h3>
-:link: ../../integrations/cicd/index.md
-:::
-:::::
 
-:::::{grid-item}
-:::{card} <br/><h3><center>🚀 Execute your test suite in your CI/CD pipeline</center></h3>
+::::{grid-item-card} <br/><h3>🚀 Execute your test suite in your CI/CD pipeline</h3>
+:text-align: center
 :link: ../../integrations/cicd/pipeline.ipynb
-:::
-:::::
+::::
 
-:::::{grid-item}
-:::{card} <br/><h3><center>🏃 Evaluate & log with MLflow</center></h3>
+::::{grid-item-card} <br/><h3>🏃 Evaluate & log with MLflow</h3>
+:text-align: center
 :link: ../../integrations/mlflow/index.md
-:::
-:::::
+::::
 
-:::::{grid-item}
-:::{card} <br/><h3><center>🐝  Evaluate & log with Weights & Biases</center></h3>
+::::{grid-item-card} <br/><h3>🐝  Evaluate & log with Weights & Biases</h3>
+:text-align: center
 :link: ../../integrations/wandb/index.md
-:::
-:::::
+::::
 
-:::::{grid-item}
-:::{card} <br/><h3><center>🐶 DagsHub</center></h3>
-:link: ../../integrations/dagshub/index.md
-:::
-:::::
-
-:::::{grid-item}
-:::{card} <br/><h3><center>🤗 HuggingFace</center></h3>
-:link: ../../integrations/huggingface/index.md
-:::
 :::::

@@ -25,23 +25,22 @@ install_on_prem/index
 install_cloud/index
 ```
 
-::::::{grid} 1 1 2 2
-:gutter: 1
+:::::{grid} 1 1 2 2
 
-:::::{grid-item}
-:::{card} <h3><center>🤗 HuggingFace Spaces</center></h3>
+
+::::{grid-item-card} <br/><h3>🤗 HuggingFace Spaces</h3>
+:text-align: center
 :link: install_hfs/index.html
-:::
-:::::
+::::
 
-:::::{grid-item}
-:::{card} <h3><center>🏠 On-Premise</center></h3>
+::::{grid-item-card} <br/><h3>🏠 On-Premise</h3>
+:text-align: center
 :link: install_on_prem/index.html
-:::
-:::::
+::::
 
-:::::{grid-item}
-:::{card} <h3><center>☁️ Private Cloud</center></h3>
+::::{grid-item-card} <br/><h3>☁️ Private Cloud</h3>
+:text-align: center
 :link: install_cloud/index.html
-:::
+::::
+
 :::::

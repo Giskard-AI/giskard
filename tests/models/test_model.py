@@ -1,4 +1,5 @@
 import tempfile
+from typing import Optional, Tuple
 from pathlib import Path
 
 import numpy as np
@@ -73,7 +74,7 @@ def test_model_save_and_load_not_overriden():
             Path(path).joinpath("custom_data").touch()
 
         @classmethod
-        def load_model(cls, path):
+        def load_model(cls, path, model_py_ver: Optional[Tuple[str, str, str]] = None):
             call_count["load"] = call_count["load"] + 1
 
             def model(x):

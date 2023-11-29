@@ -36,21 +36,47 @@ giskard_hub/collaborate/index
 :maxdepth: 1
 :hidden:
 
-tutorials/index
 tutorials/llm_tutorials/index
 tutorials/tabular_tutorials/index
 tutorials/nlp_tutorials/index
 ```
 
 ```{toctree}
-:caption: Knowledge Bank
+:caption: Knowledge
 :maxdepth: 1
 :hidden:
 
 knowledge/llm_vulnerabilities/index
 knowledge/key_vulnerabilities/index
 knowledge/catalogs/index
-reference/index
+```
+
+```{toctree}
+:caption: Integrations
+:maxdepth: 1
+:hidden:
+
+integrations/cicd/index
+integrations/mlflow/index
+integrations/wandb/index
+integrations/dagshub/index
+integrations/huggingface/index
+```
+
+```{toctree}
+:caption: API Reference
+:maxdepth: 1
+:hidden:
+
+cli/index
+reference/models/index
+reference/datasets/index
+reference/scan/index
+reference/tests/index
+reference/slicing-functions/index
+reference/transformation-functions/index
+reference/push/index
+reference/suite/index
 ```
 
 ```{toctree}
@@ -73,48 +99,53 @@ community/contribution_guidelines/index
 
 
 :::::{grid} 1 1 3 3
-:gutter: 0 5
 
-::::{grid-item-card} <h2><center> Getting Started </center></h2>
+::::{grid-item-card} <h3> Getting Started </h3>
 :text-align: center
 :link: getting_started/index.md
 :img-bottom: assets/intro/coffee.png
 ::::
 
-::::{grid-item-card} <h2><center> Open-Source Library </center></h2>
+::::{grid-item-card} <h3> Open-Source Library </h3>
 :text-align: center
-:link: open_source/installation_library/index.md
+:link: open_source/index.rst
 :img-bottom: assets/intro/ninja.png
 ::::
 
-::::{grid-item-card} <h2><center> Giskard Hub </center></h2>
+::::{grid-item-card} <h3> Giskard Hub </h3>
 :text-align: center
-:link: giskard_hub/installation_hub/index.md
+:link: giskard_hub/index.rst
 :img-bottom: assets/intro/Giskard_Turtle_SK8.png
 ::::
 
-::::{grid-item-card} <h2><center> Tutorials </center></h2>
+::::{grid-item-card} <h3> Tutorials </h3>
 :text-align: center
 :link: tutorials/index.md
 :img-bottom: assets/intro/test_turtle.png
 ::::
 
-::::{grid-item-card} <h2><center> Knowledge </center></h2>
+::::{grid-item-card} <h3> Knowledge </h3>
 :text-align: center
-:link: knowledge/llm_vulnerabilities/index.md
-:img-bottom: assets/intro/integrations.png
+:link: knowledge/index.rst
+:img-bottom: assets/intro/Giskard_Turtle_new_set_FINAL_05.png
 ::::
 
-::::{grid-item-card} <h2><center> Integrations </center></h2>
+::::{grid-item-card} <h3> Integrations </h3>
 :text-align: center
-:link: ./open_source/integrate_tests/index.md
+:link: integrations/index.rst
 :img-bottom: assets/intro/hey.png
 ::::
 
-::::{grid-item-card} <h2><center> API Reference </center></h2>
+::::{grid-item-card} <h3> API Reference </h3>
 :text-align: center
 :link: reference/index.rst
 :img-bottom: assets/intro/Giskard_Turtle_Computer.png
+::::
+
+::::{grid-item-card} <h3> Community </h3>
+:text-align: center
+:link: community/index.rst
+:img-bottom: assets/intro/integrations.png
 ::::
 
 :::::
