@@ -1,4 +1,4 @@
-from typing import Any, Callable, Iterable, Optional, Union
+from typing import Any, Callable, Iterable, Optional, Tuple, Union
 
 import logging
 import pickle
@@ -16,6 +16,7 @@ from ...core.core import ModelType
 from ...core.validation import configured_validate_arguments
 from ..utils import warn_once
 from .model import BaseModel
+from giskard.ml_worker.exceptions.giskard_exception import python_env_exception_helper
 
 logger = logging.getLogger(__name__)
 
@@ -242,21 +243,28 @@ class WrapperModel(BaseModel, ABC):
             )
 
     @classmethod
-    def load(cls, local_dir, **kwargs):
+    def load(cls, local_dir, model_py_ver: Optional[Tuple[str, str, str]] = None, **kwargs):
         constructor_params = cls.load_constructor_params(local_dir, **kwargs)
 
-        return cls(model=cls.load_model(local_dir), **constructor_params)
+        if model_py_ver is None:
+            # Try to extract Python version from meta info under local dir
+            meta_response, _ = cls.read_meta_from_local_dir(local_dir)
+            model_py_ver = (
+                tuple(meta_response.languageVersion.split(".")) if "PYTHON" == meta_response.language.upper() else None
+            )
+
+        return cls(model=cls.load_model(local_dir, model_py_ver), **constructor_params)
 
     @classmethod
-    def load_constructor_params(cls, local_dir, **kwargs):
+    def load_constructor_params(cls, local_dir, model_py_ver: Optional[Tuple[str, str, str]] = None, **kwargs):
         params = cls.load_wrapper_meta(local_dir)
         params["data_preprocessing_function"] = cls.load_data_preprocessing_function(local_dir)
         params["model_postprocessing_function"] = cls.load_model_postprocessing_function(local_dir)
         params.update(kwargs)
 
-        model_id, meta = cls.read_meta_from_local_dir(local_dir)
+        extra_meta, meta = cls.read_meta_from_local_dir(local_dir)
         constructor_params = meta.__dict__
-        constructor_params["id"] = model_id
+        constructor_params["id"] = extra_meta.id
         constructor_params = constructor_params.copy()
         constructor_params.update(params)
 
@@ -264,13 +272,15 @@ class WrapperModel(BaseModel, ABC):
 
     @classmethod
     @abstractmethod
-    def load_model(cls, path: Union[str, Path]):
+    def load_model(cls, path: Union[str, Path], model_py_ver: Optional[Tuple[str, str, str]] = None):
         """Loads the wrapped ``model`` object.
 
         Parameters
         ----------
         path : Union[str, Path]
             Path from which the model should be loaded.
+        model_py_ver : Optional[Tuple[str, str, str]]
+            Python version used to save the model, to validate if model loading failed.
         """
         ...
 
@@ -280,7 +290,12 @@ class WrapperModel(BaseModel, ABC):
         file_path = local_path / "giskard-data-preprocessing-function.pkl"
         if file_path.exists():
             with open(file_path, "rb") as f:
-                return cloudpickle.load(f)
+                try:
+                    # According to https://github.com/cloudpipe/cloudpickle#cloudpickle:
+                    # Cloudpickle can only be used to send objects between the exact same version of Python.
+                    return cloudpickle.load(f)
+                except Exception as e:
+                    raise python_env_exception_helper("Data Preprocessing Function", e)
         return None
 
     @classmethod
@@ -289,7 +304,12 @@ class WrapperModel(BaseModel, ABC):
         file_path = local_path / "giskard-model-postprocessing-function.pkl"
         if file_path.exists():
             with open(file_path, "rb") as f:
-                return cloudpickle.load(f)
+                try:
+                    # According to https://github.com/cloudpipe/cloudpickle#cloudpickle:
+                    # Cloudpickle can only be used to send objects between the exact same version of Python.
+                    return cloudpickle.load(f)
+                except Exception as e:
+                    raise python_env_exception_helper("Data Postprocessing Function", e)
         return None
 
     @classmethod

@@ -1,6 +1,6 @@
 import re
 from pathlib import Path
-from typing import Union
+from typing import Union, Optional, Tuple
 
 from giskard.core.core import SupportedModelTypes
 from giskard.models.base import BaseModel, WrapperModel
@@ -14,7 +14,7 @@ def test_custom_model(linear_regression_diabetes: BaseModel):
 
         class MyModel(WrapperModel):
             @classmethod
-            def load_model(cls, local_dir):
+            def load_model(cls, local_dir, model_py_ver: Optional[Tuple[str, str, str]] = None):
                 pass
 
             def save_model(self, local_path: Union[str, Path]) -> None:
