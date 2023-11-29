@@ -3,7 +3,6 @@ import typing
 import inspect
 import json
 import logging
-import textwrap
 from abc import ABC
 from dataclasses import dataclass
 from enum import Enum
@@ -11,14 +10,13 @@ from pathlib import Path
 
 from griffe import Docstring
 from griffe.docstrings.dataclasses import (
-    DocstringParameter,
     DocstringSection,
     DocstringSectionParameters,
+    DocstringSectionReturns,
 )
 from griffe.enumerations import DocstringSectionKind
 
 from ..utils.artifacts import serialize_parameter
-from .docscrape import NumpyDocString
 
 try:
     from types import NoneType
@@ -286,9 +284,15 @@ class CallableMeta(SavableMeta, ABC):
                     )
 
                 res.parameters = {p.name: p.description.strip() for p in params.value}
+            elif d.kind == DocstringSectionKind.returns:
+                returns: DocstringSectionReturns = d
+                missing_annotation = [p.name for p in returns.value if p.annotation is None]
+                if len(missing_annotation) > 0:
+                    logger.warning(
+                        f"{func.__name__} is missing type hinting for return elt {', '.join(missing_annotation)}"
+                    )
             else:
-                if d.kind not in [DocstringSectionKind.returns]:  # List of ignored section
-                    logger.warning(f"Unexpected documentation element for {func.__name__}: {d.kind}")
+                logger.warning(f"Unexpected documentation element for {func.__name__}: {d.kind}")
 
         func_doc = json.dumps(res.to_dict())
         return func_doc
