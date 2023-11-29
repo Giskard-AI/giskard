@@ -1,14 +1,13 @@
-from typing import Any, Callable, Iterable, Optional
-
 import numpy
 import pandas as pd
+from typing import Any, Callable, Iterable, Optional
 
+from .. import Model
 from ..core.core import ModelType
 from ..core.validation import configured_validate_arguments
-from .base.serialization import CloudpickleSerializableModel
 
 
-class PredictionFunctionModel(CloudpickleSerializableModel):
+class PredictionFunctionModel(Model):
     @configured_validate_arguments
     def __init__(
         self,

@@ -1,14 +1,12 @@
-from typing import Any, Callable, Iterable, Optional
-
 import inspect
 import logging
 from importlib import import_module
 
 import pandas as pd
+from typing import Any, Callable, Iterable, Optional
 
-from ..core.core import ModelType, SupportedModelTypes
 from .base.serialization import CloudpickleSerializableModel
-from .function import PredictionFunctionModel
+from ..core.core import ModelType, SupportedModelTypes
 
 logger = logging.getLogger(__name__)
 
@@ -28,6 +26,8 @@ def _get_class(_lib, _class):
 
 def _infer_giskard_cls(model: Any):
     if inspect.isfunction(model) or inspect.ismethod(model):
+        from .function import PredictionFunctionModel
+
         return PredictionFunctionModel
     else:
         for _giskard_class, _base_libs in _ml_libraries.items():
@@ -134,6 +134,8 @@ class Model(CloudpickleSerializableModel):
                 possibly_overriden_cls = cls
                 possibly_overriden_cls.should_save_model_class = True
             elif giskard_cls:
+                from .function import PredictionFunctionModel
+
                 input_type = "'prediction_function'" if giskard_cls == PredictionFunctionModel else "'model'"
                 logger.info(
                     "Your "
@@ -159,7 +161,8 @@ class Model(CloudpickleSerializableModel):
             methods = dict(possibly_overriden_cls.__dict__)
             output_cls = type(possibly_overriden_cls.__name__, (giskard_cls,), methods)
 
-            obj = output_cls(
+            obj = super(Model, cls).__new__(output_cls)
+            obj.__init__(
                 model=model,
                 model_type=SupportedModelTypes(model_type) if isinstance(model_type, str) else model_type,
                 data_preprocessing_function=data_preprocessing_function,
