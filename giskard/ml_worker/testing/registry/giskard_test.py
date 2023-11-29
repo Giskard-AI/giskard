@@ -140,6 +140,15 @@ class GiskardTestMethod(GiskardTest):
 
         return set([param.default for param in parameters if isinstance(param.default, Artifact)])
 
+    @property
+    def params(self):
+        params = self.kwargs.copy()
+
+        for idx, arg in enumerate(self.args):
+            params[next(iter([arg.name for arg in self.meta.args.values() if arg.argOrder == idx]))] = arg
+
+        return params
+
     def execute(self) -> Result:
         analytics.track("test:execute", {"test_name": self.meta.full_name})
 
