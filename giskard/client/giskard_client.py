@@ -31,6 +31,7 @@ class GiskardError(Exception):
         super().__init__(message)
         self.status = status
         self.code = code
+        self.message = message
 
 
 def explain_error(resp):
