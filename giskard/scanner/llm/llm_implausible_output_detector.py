@@ -78,6 +78,8 @@ class LLMImplausibleOutputDetector(Detector):
                     level=IssueLevel.MEDIUM,
                     description="The model produces implausible output.",
                     meta={
+                        "metric": "Failing samples",
+                        "metric_value": len(eval_result.failure_examples),
                         "domain": "Implausible or controversial output",
                         "deviation": "The model produces implausible output.",
                         "hide_index": True,
