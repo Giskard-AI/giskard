@@ -16,62 +16,55 @@
 ../../reference/notebooks/tripadvisor_sentiment_classification.ipynb
 
 ```
-<div style="border: 1px solid #ccc; padding: 10px; margin: 10px; border-radius: 5px; box-shadow: 2px 2px 5px #888;">
+:::::{grid} 1 1 1 1
 
-  <h3><a href="../../reference/notebooks/twitter_sentiment_analysis_roberta.html">Twitter Sentiment Analysis</a> - Text Classification (HuggingFace Transformers)</h3>
+::::{grid-item-card} <h3> Twitter Sentiment Analysis </h3> Text Classification (HuggingFace Transformers)
+:text-align: center
+:link: ../../reference/notebooks/twitter_sentiment_analysis_roberta.ipynb
+::::
 
-</div>
+::::{grid-item-card} <h3> Airline Tweets Sentiment Analysis </h3> Text Classification (HuggingFace Transformers)
+:text-align: center
+:link: ../../reference/notebooks/airline_tweets_sentiment_analysis.ipynb
+::::
 
-<div style="border: 1px solid #ccc; padding: 10px; margin: 10px; border-radius: 5px; box-shadow: 2px 2px 5px #888;">
+::::{grid-item-card} <h3> Amazon Review Classification </h3> Text Classification (scikit-learn)
+:text-align: center
+:link: ../../reference/notebooks/amazon_review_classification_sklearn.ipynb
+::::
 
-  <h3><a href="../../reference/notebooks/airline_tweets_sentiment_analysis.html">Airline Tweets Sentiment Analysis</a> - Text Classification (HuggingFace Transformers)</h3>
+::::{grid-item-card} <h3> Email Category Classification </h3> Multinomial Classification (scikit-learn)
+:text-align: center
+:link: ../../reference/notebooks/enron_email_classification_sklearn.ipynb
+::::
 
-</div>
+::::{grid-item-card} <h3> Fake News Classification </h3> Binary Classification (keras)
+:text-align: center
+:link: ../../reference/notebooks/fake_real_news_classification.ipynb
+::::
 
-<div style="border: 1px solid #ccc; padding: 10px; margin: 10px; border-radius: 5px; box-shadow: 2px 2px 5px #888;">
+::::{grid-item-card} <h3> Hotel Score Prediction </h3> Regression (scikit-learn)
+:text-align: center
+:link: ../../reference/notebooks/hotel_text_regression.ipynb
+::::
 
-  <h3><a href="../../reference/notebooks/amazon_review_classification_sklearn.html">Amazon Review Classification</a> - Text Classification (scikit-learn)</h3>
+::::{grid-item-card} <h3> Medical Transcript Classification </h3> Classification (scikit-learn)
+:text-align: center
+:link: ../../reference/notebooks/medical_transcript_classification_sklearn.ipynb
+::::
 
-</div>
+::::{grid-item-card} <h3> Movie Review Sentiment Analysis </h3> Classification (scikit-learn)
+:text-align: center
+:link: ../../reference/notebooks/movie_review_sentiment_classification_pytorch_sklearn.ipynb
+::::
 
-<div style="border: 1px solid #ccc; padding: 10px; margin: 10px; border-radius: 5px; box-shadow: 2px 2px 5px #888;">
+::::{grid-item-card} <h3> Newspaper Topic Classification </h3> Classification (PyTorch)
+:text-align: center
+:link: ../../reference/notebooks/newspaper_classification_pytorch.ipynb
+::::
 
-<h3><a href="../../reference/notebooks/enron_email_classification_sklearn.html">Email Category Classification</a> - Multinomial Classification (scikit-learn)</h3>
-
-</div>
-
-<div style="border: 1px solid #ccc; padding: 10px; margin: 10px; border-radius: 5px; box-shadow: 2px 2px 5px #888;">
-
-<h3><a href="../../reference/notebooks/fake_real_news_classification.html">Fake News Classification</a> - Binary Classification (keras)</h3>
-
-</div>
-
-<div style="border: 1px solid #ccc; padding: 10px; margin: 10px; border-radius: 5px; box-shadow: 2px 2px 5px #888;">
-
-<h3><a href="../../reference/notebooks/hotel_text_regression.html">Hotel Score Prediction</a> - Regression (scikit-learn)</h3>
-
-</div>
-
-<div style="border: 1px solid #ccc; padding: 10px; margin: 10px; border-radius: 5px; box-shadow: 2px 2px 5px #888;">
-
-<h3><a href="../../reference/notebooks/medical_transcript_classification_sklearn.html">Medical Transcript Classification</a> - Classification (scikit-learn)</h3>
-
-</div>
-
-<div style="border: 1px solid #ccc; padding: 10px; margin: 10px; border-radius: 5px; box-shadow: 2px 2px 5px #888;">
-
-<h3><a href="../../reference/notebooks/movie_review_sentiment_classification_pytorch_sklearn.html">Movie Review Sentiment Analysis</a> - Classification (scikit-learn)</h3>
-
-</div>
-
-<div style="border: 1px solid #ccc; padding: 10px; margin: 10px; border-radius: 5px; box-shadow: 2px 2px 5px #888;">
-
-<h3><a href="../../reference/notebooks/newspaper_classification_pytorch.html">Newspaper Topic Classification</a> - Classification (PyTorch)</h3>
-
-</div>
-
-<div style="border: 1px solid #ccc; padding: 10px; margin: 10px; border-radius: 5px; box-shadow: 2px 2px 5px #888;">
-
-<h3><a href="../../reference/notebooks/tripadvisor_sentiment_classification.html">Tripadvisor Review Sentiment Analysis</a> - Classification (HuggingFace)</h3>
-
-</div>
+::::{grid-item-card} <h3> Tripadvisor Review Sentiment Analysis </h3> Classification (HuggingFace)
+:text-align: center
+:link: ../../reference/notebooks/tripadvisor_sentiment_classification.ipynb
+::::
+:::::
