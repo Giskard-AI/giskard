@@ -18,7 +18,7 @@ Once you've created a test suite for a model, integrating it into existing workf
 
 :::::{grid-item}
 :::{card} <br/><h3><center>🚀 Execute your test suite in your CI/CD pipeline</center></h3>
-:link: ../../integrations/cicd/pipeline.ipynb
+:link: ../../integrations/cicd/index.md
 :::
 :::::
 
