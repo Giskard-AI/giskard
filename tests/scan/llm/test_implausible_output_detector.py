@@ -39,3 +39,7 @@ def test_implausible_output_detector_flow(PlausibilityEvaluator, ImplausibleData
     assert len(issues) == 1
     assert issues[0].generate_tests()[0]
     assert issues[0].dataset == eval_dataset
+
+    # Issues must contain the "metric" name
+    assert "metric" in issues[0].meta
+    assert "metric_value" in issues[0].meta
