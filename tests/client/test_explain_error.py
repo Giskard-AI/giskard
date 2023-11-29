@@ -19,10 +19,9 @@ def test_init_giskard_client_with_wrong_api_key():
         mocked_requests.register_uri(requests_mock.GET, url, json={})
         mocked_requests.register_uri(requests_mock.GET, f"{url}/public-api/ml-worker-connect", status_code=401)
 
-        with pytest.raises(Exception) as exc_info:
+        with pytest.raises(GiskardError) as exc_info:
             GiskardClient(url, api_key)
 
-        assert isinstance(exc_info.value, GiskardError)
         assert "Not authorized to access this resource. Please check your API key" in exc_info.value.message
 
 
