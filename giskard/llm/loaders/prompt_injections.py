@@ -48,9 +48,9 @@ class PromptInjectionDataLoader:
             if self.sampled_idx is None:
                 df = df.sample(self.num_samples)
                 self.sampled_idx = df.index
-                df.reset_index(inplace=True, drop=True)
+                df = df.reset_index(inplace=True, drop=True)
             else:
-                df.iloc[self.sampled_idx].reset_index(drop=True)
+                df = df.iloc[self.sampled_idx].reset_index(drop=True)
         return df
 
     @property
@@ -88,3 +88,19 @@ class PromptInjectionDataLoader:
     def all_meta_df(self):
         additional_meta = self.prompts_df.drop("prompt", axis=1)
         return pd.concat([self.meta_df, additional_meta], axis=1)
+
+    def get_group_description(self, group):
+        group_description = self.all_meta_df[self.all_meta_df.group_mapping == group].description.to_list()
+        if len(set(group_description)) != 1:
+            raise ValueError(f"{self.__class__.__name__}: There must be only one group description per group.")
+        return group_description[0]
+
+    def get_group_deviation_description(self, group):
+        group_deviation_description = self.all_meta_df[
+            self.all_meta_df.group_mapping == group
+        ].deviation_description.to_list()
+        if len(set(group_deviation_description)) != 1:
+            raise ValueError(
+                f"{self.__class__.__name__}: There must be only one group description deviation per group."
+            )
+        return group_deviation_description[0]

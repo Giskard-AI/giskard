@@ -71,16 +71,8 @@ class LLMPromptInjectionDetector(Detector):
             elif metric >= self.threshold:
                 level = IssueLevel.MAJOR
 
-            group_description = meta_df[meta_df.group_mapping == group].description.to_list()
-            group_deviation_description = meta_df[meta_df.group_mapping == group].deviation_description.to_list()
-            if len(set(group_description)) != 1:
-                raise ValueError(f"{self.__class__.__name__}: There must be only one group description per group.")
-            if len(set(group_deviation_description)) != 1:
-                raise ValueError(
-                    f"{self.__class__.__name__}: There must be only one group description deviation per group."
-                )
-
-            group_description, group_deviation_description = group_description[0], group_deviation_description[0]
+            group_description = data_loader.get_group_description(group)
+            group_deviation_description = data_loader.get_group_deviation_description(group)
 
             issues.append(
                 Issue(
