@@ -115,8 +115,6 @@ class GiskardClient:
 
         server_settings: ServerInfo = self.get_server_info()
 
-        print("degbug error >>>>> ", key)
-
         if server_settings.serverVersion != giskard.__version__:
             warning(
                 f"Your giskard client version ({giskard.__version__}) does not match the hub version "
