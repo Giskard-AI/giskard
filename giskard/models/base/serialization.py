@@ -1,9 +1,11 @@
 import pickle
 from pathlib import Path
-from typing import Union
+from typing import Optional, Tuple, Union
 
 import cloudpickle
 import mlflow
+
+from giskard.ml_worker.exceptions.giskard_exception import python_env_exception_helper
 
 from .wrapper import WrapperModel
 
@@ -49,12 +51,17 @@ class CloudpickleSerializableModel(WrapperModel):
             )
 
     @classmethod
-    def load_model(cls, local_dir):
+    def load_model(cls, local_dir, model_py_ver: Optional[Tuple[str, str, str]] = None):
         local_path = Path(local_dir)
         model_path = local_path / "model.pkl"
         if model_path.exists():
             with open(model_path, "rb") as f:
-                model = cloudpickle.load(f)
+                try:
+                    # According to https://github.com/cloudpipe/cloudpickle#cloudpickle:
+                    # Cloudpickle can only be used to send objects between the exact same version of Python.
+                    model = cloudpickle.load(f)
+                except Exception as e:
+                    raise python_env_exception_helper(cls.__name__, e, required_py_ver=model_py_ver)
                 return model
         else:
             raise ValueError(

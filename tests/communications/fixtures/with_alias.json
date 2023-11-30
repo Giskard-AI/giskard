@@ -2866,10 +2866,12 @@
   ],
   "TestSuiteParam": [
     {
+      "projectKey": "my_project",
       "tests": [],
       "globalArguments": []
     },
     {
+      "projectKey": "awesome_project",
       "tests": [
         {
           "id": 2201,
@@ -2942,6 +2944,7 @@
       "globalArguments": []
     },
     {
+      "projectKey": "amazing_project",
       "tests": [
         {
           "id": 5848,

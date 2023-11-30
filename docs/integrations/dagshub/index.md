@@ -12,7 +12,7 @@ DagsHub is an ML platform, purpose-built for data scientists and the open-source
 
 - **Easily Customizable:** DagsHub is suitable for various user profiles, including those who collaborate within large data science teams, are passionate about open-source tools, require automation for rapid iteration, deal with evolving data, prefer Git for version control, or believe in the power of collaborative contributions.
 
-In summary, DagsHub is a comprehensive solution for data science projects, promoting effective collaboration, ensuring project reproducibility, and seamlessly integrating with widely adopted open-source tools. 
+In summary, DagsHub is a comprehensive solution for data science projects, promoting effective collaboration, ensuring project reproducibility, and seamlessly integrating with widely adopted open-source tools.
 
 ## Why integrating Giskard?
 Through their own integrations with MLflow, Giskard and Dagshub can be combined to offer a rich environment for ML projects visualisation, tracking and collaboration.
@@ -32,7 +32,7 @@ pip install giskard mlflow dagshub dvc
 DagsHub's MLflow integration supports directly logging artifacts through the tracking server, and this is enabled by a simple credentials set up (dagshub.init(...)) to enable writing access to your MLflow remote server on DagsHub.
 ```python
 # Only DagsHub related lines you need:
-import dagshub 
+import dagshub
 # This will work if you have write access to the repo below, if you cloned it, please change the repo_owner to your user name
 dagshub.init(repo_name="your_repo_name", repo_owner="your_username")
 ```
@@ -51,17 +51,15 @@ Finally, you can access to the evaluation results by clicking on `Remote > Exper
 
 ## Notebook examples
 ::::::{grid} 1 1 2 2
-:gutter: 1
 
-:::::{grid-item}
-:::{card} <br><h3><center>📊 Tabular</center></h3>
+
+::::{grid-item-card} <br/><h3>📊 Tabular</h3>
+:text-align: center
 :link: https://dagshub.com/Dean/Giskard-Integration-Demo/src/main/giskard_dagshub_tabular_demo.ipynb
-:::
-:::::
+::::
 
-:::::{grid-item}
-:::{card} <br><h3><center>📝 LLM</center></h3>
+::::{grid-item-card} <br/><h3>📝 LLM</h3>
+:text-align: center
 :link: https://dagshub.com/Dean/Giskard-Integration-Demo/src/main/giskard_dagshub_LLM_RAG.ipynb
-:::
-:::::
+::::
 ::::::

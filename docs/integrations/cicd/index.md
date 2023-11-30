@@ -1,6 +1,15 @@
 # 🐙️ GitHub
 **Adding Giskard to your CI/CD pipeline will allow you to run the test or scan on every commit to your repository, ensuring
 new models are not introducing new vulnerabilities.**
+
+```{toctree}
+:caption: Table of Contents
+:maxdepth: 1
+:hidden:
+
+./pipeline.ipynb
+```
+
 <br><br>
 :::{warning}
 First, you'll need to know how to run Giskard's scan function
@@ -49,10 +58,11 @@ else:
 
 ## Notebook examples
 ::::::{grid} 1 1 2 2
-:gutter: 1
 
-:::::{grid-item}
-:::{card} <br><h3><center>📊 Tabular</center></h3>
+
+::::{grid-item-card} <br/><h3>📊 Tabular</h3>
+:text-align: center
 :link: pipeline.ipynb
-:::
-:::::
+::::
+
+::::::
