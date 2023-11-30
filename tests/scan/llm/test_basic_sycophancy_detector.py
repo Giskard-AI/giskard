@@ -40,3 +40,7 @@ def test_sycophancy_detector_flow(CoherencyEvaluator, SycophancyDataGenerator):
     assert len(issues) == 1
     assert issues[0].generate_tests()[0]
     assert issues[0].dataset == eval_dataset_2
+
+    # Issues must contain the "metric" name
+    assert "metric" in issues[0].meta
+    assert "metric_value" in issues[0].meta

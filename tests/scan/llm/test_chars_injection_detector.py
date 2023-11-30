@@ -88,6 +88,10 @@ def test_chars_injection_detector_flow(LLMCharInjector):
     assert len(issues) == 2
     assert issues[0].generate_tests()[0]
 
+    # Issues must contain the "metric" name
+    assert "metric" in issues[0].meta
+    assert "metric_value" in issues[0].meta
+
 
 def test_chars_injection_detector_skips_if_empty_dataset():
     model = Mock()

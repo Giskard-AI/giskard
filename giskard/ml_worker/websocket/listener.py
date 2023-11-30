@@ -10,12 +10,12 @@ from concurrent.futures import CancelledError, Future
 from copy import copy
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Any, Callable, Dict, Optional, Union
 
 import numpy as np
 import pandas as pd
 import pkg_resources
 import psutil
+from typing import Any, Callable, Dict, Optional, Union
 
 import giskard
 from giskard.client.giskard_client import GiskardClient
@@ -562,7 +562,7 @@ def run_test_suite(
             identifier_single_test_results.append(
                 websocket.IdentifierSingleTestResult(
                     id=identifier,
-                    result=map_result_to_single_test_result_ws(result, datasets),
+                    result=map_result_to_single_test_result_ws(result, datasets, client, params.projectKey),
                     arguments=function_argument_to_ws(arguments),
                 )
             )

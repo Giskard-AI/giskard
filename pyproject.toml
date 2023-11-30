@@ -33,9 +33,8 @@ _.env = { GSK_DISABLE_ANALYTICS = "True", GISKARD_DEV_MODE = "True" }
 test.cmd = "pdm base-test tests/"
 # for some reason github runners don't work when calling 'pdm test -m "not slow"'
 base-test.cmd = "pytest -c pyproject.toml --cov=giskard --cov-report=xml --cov-append --disable-warnings --no-header -vv --durations=0"
-test-fast.cmd = "pdm base-test -n auto -m 'not slow and not concurrency and not memory_expensive' tests"
-test-slow.cmd = "pdm base-test -m 'slow and not concurrency and not memory_expensive'"
-test-ram.cmd = "pdm base-test -m 'memory_expensive'"
+test-fast.cmd = "pdm base-test -n auto -m 'not slow and not concurrency' --use-subprocess tests"
+test-slow.cmd = "pdm base-test -m 'slow and not concurrency' --use-subprocess"
 test-worker.cmd = "pdm base-test -m 'concurrency' tests/"
 lint = "ruff giskard tests"
 doc = "sphinx-build docs docs/_build/html"
@@ -97,7 +96,8 @@ test = [
     "polyfactory",
     "pytest-env>=1.1.0",
     "openai>=1",
-    "pytest-memray; sys_platform == 'linux' or sys_platform == 'darwin'"
+    "pytest-memray; sys_platform == 'linux' or sys_platform == 'darwin'",
+    "pytest-reportlog>=0.4.0",
 ]
 doc = [
     "furo>=2023.5.20",

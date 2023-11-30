@@ -10,22 +10,19 @@ nlp_tutorials/index
 ```
 
 ::::::{grid} 1 1 2 2
-:gutter: 1
 
-:::::{grid-item}
-:::{card} <h3><center>📚  LLM tutorials</center></h3>
+
+::::{grid-item-card} <br/><h3>📚  LLM tutorials</h3>
+:text-align: center
 :link: llm_tutorials/index.html
-:::
-:::::
+::::
 
-:::::{grid-item}
-:::{card} <h3><center>📊  Tabular tutorials</center></h3>
+::::{grid-item-card} <br/><h3>📊  Tabular tutorials</h3>
+:text-align: center
 :link: tabular_tutorials/index.html
-:::
-:::::
+::::
 
-:::::{grid-item}
-:::{card} <h3><center>🗣️ NLP tutorials</center></h3>
+::::{grid-item-card} <br/><h3>🗣️ NLP tutorials</h3>
+:text-align: center
 :link: nlp_tutorials/index.html
-:::
-:::::
+::::
