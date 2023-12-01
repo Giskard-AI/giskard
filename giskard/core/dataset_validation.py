@@ -1,6 +1,5 @@
-from typing import Hashable
-
 import pandas as pd
+from typing import Hashable
 
 from giskard.client.python_utils import warning
 from giskard.core.core import SupportedColumnTypes
@@ -8,8 +7,14 @@ from giskard.datasets import low_stat_threshold
 from giskard.datasets.base import Dataset
 
 
+def validate_dataset(ds: Dataset):
+    validate_dtypes(ds)
+    validate_target_exists(ds)
+    validate_optional_target(ds)
+
+
 def validate_optional_target(ds: Dataset):
-    if ds.target is None:
+    if not ds.is_target_given:
         warning(
             "You did not provide the optional argument 'target'. "
             "'target' is the column name in df corresponding to the actual target variable (ground truth)."

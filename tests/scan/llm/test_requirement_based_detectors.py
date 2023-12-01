@@ -83,3 +83,7 @@ def test_requirement_based_detector_flow(Detector, issue_match):
 
         adv_gen_1.generate_dataset.assert_called_once_with(model, 3)
         adv_gen_2.generate_dataset.assert_called_once_with(model, 3)
+
+        # Issues must contain the "metric" name
+        assert "metric" in issues[0].meta
+        assert "metric_value" in issues[0].meta

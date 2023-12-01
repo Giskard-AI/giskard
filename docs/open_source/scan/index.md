@@ -11,22 +11,19 @@ scan_nlp/index
 ```
 
 ::::::{grid} 1 1 2 2
-:gutter: 1
 
-:::::{grid-item}
-:::{card} <h3><center>📚  LLM scan</center></h3>
+
+::::{grid-item-card} <br/><h3>📚  LLM scan</h3>
+:text-align: center
 :link: scan_llm/index.html
-:::
-:::::
+::::
 
-:::::{grid-item}
-:::{card} <h3><center>📊  Tabular model scan</center></h3>
+::::{grid-item-card} <br/><h3>📊  Tabular model scan</h3>
+:text-align: center
 :link: scan_tabular/index.html
-:::
-:::::
+::::
 
-:::::{grid-item}
-:::{card} <h3><center>🗣️ NLP model scan</center></h3>
+::::{grid-item-card} <br/><h3>🗣️ NLP model scan</h3>
+:text-align: center
 :link: scan_nlp/index.html
-:::
-:::::
+::::

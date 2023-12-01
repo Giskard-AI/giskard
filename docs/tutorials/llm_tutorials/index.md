@@ -12,39 +12,36 @@
 ../../reference/notebooks/LLM_QA_Documentation.ipynb
 
 ```
+:::::{grid} 1 1 2 2
 
-<div style="border: 1px solid #ccc; padding: 10px; margin: 10px; border-radius: 5px; box-shadow: 2px 2px 5px #888;">
+::::{grid-item-card} <h3> IPCC Climate Change Report </h3> Question Answering (LangChain, FAISS, OpenAI)
+:text-align: center
+:link: ../../reference/notebooks/LLM_QA_IPCC.ipynb
+::::
 
-  <h3><a href="../../reference/notebooks/LLM_QA_IPCC.html">IPCC Climate Change Report</a> - Question Answering (LangChain, FAISS, OpenAI)</h3>
+::::{grid-item-card} <h3> Google Q&A </h3> Question Answering (LangChain, Qdrant, OpenAI)
+:text-align: center
+:link: ../../reference/notebooks/LLM_QA_Google.ipynb
+::::
 
-</div>
+::::{grid-item-card} <h3> 2022 Winter Olympics Q&A </h3> Question Answering (OpenAI)
+:text-align: center
+:link: ../../reference/notebooks/LLM_QA_Winter_Olympics.ipynb
+::::
 
-<div style="border: 1px solid #ccc; padding: 10px; margin: 10px; border-radius: 5px; box-shadow: 2px 2px 5px #888;">
+::::{grid-item-card} <h3> Product Description </h3> Description Generation (LangChain, OpenAI)
+:text-align: center
+:link: ../../reference/notebooks/LLM_Description_Product.ipynb
+::::
 
-  <h3><a href="../../reference/notebooks/LLM_QA_Google.html">Google Q&A</a> - Question Answering (LangChain, Qdrant, OpenAI)</h3>
+::::{grid-item-card} <h3> Newspaper Comment Generation </h3> Description Generation (LangChain, OpenAI)
+:text-align: center
+:link: ../../reference/notebooks/LLM_Newspaper_Comment_Generation.ipynb
+::::
 
-</div>
+::::{grid-item-card} <h3> Documentation Q&A </h3> Question Answering (LangChain, FAISS, OpenAI)
+:text-align: center
+:link: ../../reference/notebooks/LLM_QA_Documentation.ipynb
+::::
 
-<div style="border: 1px solid #ccc; padding: 10px; margin: 10px; border-radius: 5px; box-shadow: 2px 2px 5px #888;">
-
-<h3><a href="../../reference/notebooks/LLM_QA_Winter_Olympics.html">2022 Winter Olympics Q&A</a> - Question Answering (OpenAI)</h3>
-
-</div>
-
-<div style="border: 1px solid #ccc; padding: 10px; margin: 10px; border-radius: 5px; box-shadow: 2px 2px 5px #888;">
-
-<h3><a href="../../reference/notebooks/LLM_Description_Product.html">Product Description</a> - Description Generation (LangChain, OpenAI)</h3>
-
-</div>
-
-<div style="border: 1px solid #ccc; padding: 10px; margin: 10px; border-radius: 5px; box-shadow: 2px 2px 5px #888;">
-
-<h3><a href="../../reference/notebooks/LLM_Newspaper_Comment_Generation.html">Newspaper Comment Generation</a> - Description Generation (LangChain, OpenAI)</h3>
-
-</div>
-
-<div style="border: 1px solid #ccc; padding: 10px; margin: 10px; border-radius: 5px; box-shadow: 2px 2px 5px #888;">
-
-<h3><a href="../../reference/notebooks/LLM_QA_Documentation.html">Documentation Q&A</a> - Question Answering (LangChain, FAISS, OpenAI)</h3>
-
-</div>
+:::::

@@ -123,6 +123,7 @@ class LLMPromptInjectionDetector(Detector):
                     description=group.description,
                     meta={
                         "domain": group.name,
+                        "metric": "Fail rate",
                         "metric_value": metric,
                         "threshold": self.threshold,
                         "test_case": group.name,
