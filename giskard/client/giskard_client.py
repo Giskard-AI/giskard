@@ -33,11 +33,8 @@ class GiskardError(Exception):
         self.message = message
 
 
-def explain_error(resp: Response):
-    if isinstance(resp, Response):
-        status = resp.status_code
-    else:
-        status = resp.status
+def explain_error(resp):
+    status = _get_status(resp)
 
     message = "Unknown error"
     code = f"error.http.{status}"
@@ -60,13 +57,22 @@ def explain_error(resp: Response):
     return GiskardError(status=status, code=code, message=message)
 
 
+def _get_status(resp):
+    if isinstance(resp, Response):
+        status = resp.status_code
+    else:
+        status = resp.status
+
+    return status
+
+
 class ErrorHandlingAdapter(HTTPAdapter):
     def __init__(self, *args, **kwargs):
         super(ErrorHandlingAdapter, self).__init__(*args, **kwargs)
 
     def build_response(self, req, resp):
         resp = super(ErrorHandlingAdapter, self).build_response(req, resp)
-        if resp.status_code >= 400:
+        if _get_status(resp) >= 400:
             raise explain_error(resp)
 
         return resp
