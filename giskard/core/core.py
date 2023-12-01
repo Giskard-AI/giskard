@@ -248,7 +248,7 @@ class CallableMeta(SavableMeta, ABC):
         return code
 
     @staticmethod
-    def extract_doc(func):
+    def extract_doc(func) -> Optional[str]:
         if not func.__doc__:
             return None
 
