@@ -9,10 +9,10 @@ from uuid import UUID
 from mlflow.store.artifact.artifact_repo import verify_artifact_path
 from mlflow.utils.file_utils import relative_path_to_artifact_path
 from mlflow.utils.rest_utils import augmented_raise_for_status
+from requests import Response
 from requests.adapters import HTTPAdapter
 from requests.auth import AuthBase
 from requests_toolbelt import sessions
-from requests import Response
 from typing import List
 
 import giskard
@@ -34,10 +34,7 @@ class GiskardError(Exception):
 
 
 def explain_error(resp):
-    if isinstance(resp, Response):
-        status = resp.status_code
-    else:
-        status = resp.status
+    status = _get_status(resp)
 
     message = "Unknown error"
     code = f"error.http.{status}"
@@ -60,13 +57,22 @@ def explain_error(resp):
     return GiskardError(status=status, code=code, message=message)
 
 
+def _get_status(resp):
+    if isinstance(resp, Response):
+        status = resp.status_code
+    else:
+        status = resp.status
+
+    return status
+
+
 class ErrorHandlingAdapter(HTTPAdapter):
     def __init__(self, *args, **kwargs):
         super(ErrorHandlingAdapter, self).__init__(*args, **kwargs)
 
     def build_response(self, req, resp):
         resp = super(ErrorHandlingAdapter, self).build_response(req, resp)
-        if resp.status >= 400:
+        if _get_status(resp) >= 400:
             raise explain_error(resp)
 
         return resp
