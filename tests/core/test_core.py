@@ -11,7 +11,7 @@ from giskard.ml_worker.testing.utils import Direction
 from giskard.push.push_test_catalog.catalog import test_diff_rmse_push
 
 
-def test_func(model) -> None:
+def func_test_func(model) -> None:
     """Some test func
 
     Parameters
@@ -22,7 +22,7 @@ def test_func(model) -> None:
     pass
 
 
-def test_func_doc_google(
+def func_test_func_doc_google(
     model: BaseModel,
     dataset: Dataset,
     slicing_function: Optional[SlicingFunction] = None,
@@ -57,12 +57,12 @@ def test_extract_doc(caplog):
 
 
 def test_extract_doc_warnings(caplog):
-    CallableMeta.extract_doc(test_func)
+    CallableMeta.extract_doc(func_test_func)
     assert "test_func is missing type hinting for params model" in caplog.text
 
 
 def test_extract_doc_google(caplog):
-    doc = CallableMeta.extract_doc(test_func_doc_google)
+    doc = CallableMeta.extract_doc(func_test_func_doc_google)
     params = json.loads(doc)
     assert "Test for difference in RMSE between a slice and full dataset" in params["description"]
     assert {"model", "dataset", "slicing_function", "threshold", "direction"} == set(params["parameters"].keys())
