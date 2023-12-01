@@ -57,8 +57,7 @@ def test_extract_doc(caplog):
 
 
 def test_extract_doc_warnings(caplog):
-    doc = CallableMeta.extract_doc(test_func)
-    params = json.loads(doc)
+    CallableMeta.extract_doc(test_func)
     assert "test_func is missing type hinting for params model" in caplog.text
 
 
