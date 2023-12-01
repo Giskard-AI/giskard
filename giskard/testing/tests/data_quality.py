@@ -1,7 +1,6 @@
 """
 Module for data quality tests.
 """
-import pandas as pd
 from giskard.ml_worker.testing.test_result import TestResult
 from giskard.ml_worker.testing.registry.decorators import test
 from giskard.datasets.base import Dataset
@@ -40,15 +39,26 @@ def completeness_test(dataset: Dataset):
         completeness_scores[column] = completeness_ratio
     return completeness_scores
 
+@test(name="Data Range and Validity Test")
+def range_validity_test(dataset: Dataset, column: str, min_value=None, max_value=None, valid_values=None):
+    """
+    Test for checking if data in a column falls within a specified range or set of valid values.
 
-# data = {
-#     'column1': [1, 2, 3, 4, 5, None, 7, 8, None, 10],
-#     'column2': ['a', 'b', 'c', 'd', None, 'f', 'g', 'h', 'i', 'j'],
-#     'column3': [1.1, None, 3.3, 4.4, 5.5, 6.6, None, 8.8, 9.9, 10.1],
-#     'column4': [None, None, None, None, None, None, None, None, None, None],
-# }
-# df = pd.DataFrame(data)
+    Args:
+        dataset (Dataset): The dataset to test.
+        column (str): The column to check.
+        min_value (float, optional): The minimum valid value. Defaults to None.
+        max_value (float, optional): The maximum valid value. Defaults to None.
+        valid_values (list, optional): A list of valid values. Defaults to None.
 
-# # Create a Dataset from the DataFrame
-# dataset = Dataset(df)
-# print(completeness_test(dataset).execute())
+    Returns:
+        TestResult: The result of the test.
+    """
+    column_data = dataset.df[column]
+    if valid_values is not None:
+        # Check if all values are in the list of valid values
+        test_passed = all(x in valid_values for x in column_data.dropna())
+    else:
+        # Check if all values are within the specified range
+        test_passed = all(min_value <= x <= max_value for x in column_data.dropna())
+    return TestResult(passed=test_passed)
