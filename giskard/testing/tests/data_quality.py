@@ -128,9 +128,7 @@ def anomaly_detection_test(dataset: Dataset, column: str, eps: float = 0.5, min_
     Returns:
         TestResult: The result of the test, containing the indices of the anomalies.
     """
-    print(dataset.df[column].values)
     column_data = dataset.df[column].values.reshape(-1, 1)
-    print(column_data)
     model = DBSCAN(eps=eps, min_samples=min_samples)
     model.fit(column_data)
     preds = model.labels_
