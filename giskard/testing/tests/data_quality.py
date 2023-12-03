@@ -6,7 +6,7 @@ from giskard.ml_worker.testing.registry.decorators import test
 from giskard.datasets.base import Dataset
 
 @test(name="Data Uniqueness Test")
-def uniqueness_test(dataset: Dataset, column: str):
+def uniqueness_test(dataset: Dataset, column: str, threshold: float = 0.8):
     """
     Test for checking the uniqueness of data in a column.
 
