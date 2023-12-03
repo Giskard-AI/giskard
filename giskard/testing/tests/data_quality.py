@@ -19,7 +19,7 @@ def uniqueness_test(dataset: Dataset, column: str):
     """
     column_data = dataset.df[column]
     uniqueness_ratio = len(column_data.unique()) / len(column_data)
-    return TestResult(passed=uniqueness_ratio == 1)
+    return TestResult(passed=uniqueness_ratio == 1, metric=uniqueness_ratio)
 
 @test(name="Data Completeness Test")
 def completeness_test(dataset: Dataset):
