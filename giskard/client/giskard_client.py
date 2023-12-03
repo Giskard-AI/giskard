@@ -9,6 +9,7 @@ from uuid import UUID
 from mlflow.store.artifact.artifact_repo import verify_artifact_path
 from mlflow.utils.file_utils import relative_path_to_artifact_path
 from mlflow.utils.rest_utils import augmented_raise_for_status
+from requests import Response
 from requests.adapters import HTTPAdapter
 from requests.auth import AuthBase
 from requests_toolbelt import sessions
@@ -29,37 +30,52 @@ class GiskardError(Exception):
         super().__init__(message)
         self.status = status
         self.code = code
+        self.message = message
 
 
-def explain_error(err_resp):
-    status = err_resp.get("status")
-    code = err_resp.get("message")
-    message = None
+def explain_error(resp):
+    status = _get_status(resp)
+
+    message = "Unknown error"
+    code = f"error.http.{status}"
+
     if status == 401:
-        message = "Access key is invalid or expired. Please generate a new one"
+        message = "Not authorized to access this resource. Please check your API key."
+    elif status == 403:
+        message = "Access denied. Please check your permissions."
+    else:
+        try:
+            if resp.title:
+                message = f"{resp.title}: "
+            elif resp.detail:
+                message += f"{resp.detail}\n"
+            else:
+                message = resp.message
+        except Exception:
+            message = "No details or messages available."
 
-    if message is None:
-        if "title" in err_resp or err_resp.get("detail"):
-            message = f"{err_resp.get('title', 'Unknown error')}: {err_resp.get('detail', 'no details')}"
-        elif "message" in err_resp:
-            message = err_resp["message"]
     return GiskardError(status=status, code=code, message=message)
 
 
+def _get_status(resp):
+    if isinstance(resp, Response):
+        status = resp.status_code
+    else:
+        status = resp.status
+
+    return status
+
+
 class ErrorHandlingAdapter(HTTPAdapter):
+    def __init__(self, *args, **kwargs):
+        super(ErrorHandlingAdapter, self).__init__(*args, **kwargs)
+
     def build_response(self, req, resp):
-        response = super().build_response(req, resp)
+        resp = super(ErrorHandlingAdapter, self).build_response(req, resp)
+        if _get_status(resp) >= 400:
+            raise explain_error(resp)
 
-        if not response.ok:
-            giskard_error = None
-            try:
-                err_resp = response.json()
-
-                giskard_error = explain_error(err_resp)
-            except:  # noqa
-                response.raise_for_status()
-            raise giskard_error
-        return response
+        return resp
 
 
 class BearerAuth(AuthBase):
@@ -91,9 +107,15 @@ class GiskardClient:
         self.key = key
         self.hf_token = hf_token
         base_url = urljoin(url, "/api/v2/")
+
         self._session = sessions.BaseUrlSession(base_url=base_url)
-        self._session.mount(base_url, ErrorHandlingAdapter())
+
+        adapter = ErrorHandlingAdapter()
+
+        self._session.mount(url, adapter)
+
         self._session.auth = BearerAuth(key)
+
         if hf_token:
             self._session.cookies["spaces-jwt"] = hf_token
 
@@ -342,7 +364,11 @@ class GiskardClient:
         return meta_class.from_json(self._session.get(endpoint).json())
 
     def get_server_info(self) -> ServerInfo:
-        return ServerInfo.parse_obj(self._session.get("/public-api/ml-worker-connect").json())
+        resp = self._session.get("/public-api/ml-worker-connect")
+        try:
+            return ServerInfo.parse_obj(resp.json())
+        except Exception:
+            raise explain_error(resp)
 
     def save_test_suite(self, dto: TestSuiteDTO):
         return self._session.post(f"testing/project/{dto.project_key}/suites", json=dto.dict()).json()
