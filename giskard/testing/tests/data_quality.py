@@ -19,7 +19,7 @@ def uniqueness_test(dataset: Dataset, column: str, threshold: float = 0.8):
     """
     column_data = dataset.df[column]
     uniqueness_ratio = len(column_data.unique()) / len(column_data)
-    return TestResult(passed=uniqueness_ratio >= threshold, metric=uniqueness_ratio)
+    return TestResult(passed=uniqueness_ratio >= threshold, metric=uniqueness_ratio, metric_name="uniqueness")
 
 @test(name="Data Completeness Test")
 def completeness_test(dataset: Dataset):
@@ -82,3 +82,19 @@ def validity_test(dataset: Dataset, column: str, valid_values=None):
     column_data = dataset.df[column]
     test_passed = all(x in valid_values for x in column_data.dropna())
     return TestResult(passed=test_passed)
+
+@test(name="Data Correlation Test")
+def correlation_test(dataset: Dataset, column1: str, column2: str):
+    """
+    Test for analyzing correlations between two specific features.
+
+    Args:
+        dataset (Dataset): The dataset to test.
+        column1 (str): The first column to check.
+        column2 (str): The second column to check.
+
+    Returns:
+        TestResult: The result of the test, containing the correlation between the two columns.
+    """
+    correlation = dataset.df[[column1, column2]].corr().iloc[0, 1]
+    return TestResult(passed=True, metric=correlation, metric_name="correlation")
