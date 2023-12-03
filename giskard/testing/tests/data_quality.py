@@ -39,26 +39,46 @@ def completeness_test(dataset: Dataset):
         completeness_scores[column] = completeness_ratio
     return completeness_scores
 
-@test(name="Data Range and Validity Test")
-def range_validity_test(dataset: Dataset, column: str, min_value=None, max_value=None, valid_values=None):
+@test(name="Data Range Test")
+def range_test(dataset: Dataset, column: str, min_value=None, max_value=None):
     """
-    Test for checking if data in a column falls within a specified range or set of valid values.
+    Test for checking if data in a column falls within a specified range.
 
     Args:
         dataset (Dataset): The dataset to test.
         column (str): The column to check.
         min_value (float, optional): The minimum valid value. Defaults to None.
         max_value (float, optional): The maximum valid value. Defaults to None.
-        valid_values (list, optional): A list of valid values. Defaults to None.
 
     Returns:
         TestResult: The result of the test.
     """
     column_data = dataset.df[column]
-    if valid_values is not None:
-        # Check if all values are in the list of valid values
-        test_passed = all(x in valid_values for x in column_data.dropna())
-    else:
-        # Check if all values are within the specified range
+    if min_value is not None and max_value is not None:
         test_passed = all(min_value <= x <= max_value for x in column_data.dropna())
+    elif min_value is not None:
+        test_passed = all(min_value <= x for x in column_data.dropna())
+    elif max_value is not None:
+        test_passed = all(x <= max_value for x in column_data.dropna())
+    else:
+        raise ValueError("Neither min_value nor max_value were provided")
+    return TestResult(passed=test_passed)
+
+@test(name="Data Validity Test")
+def validity_test(dataset: Dataset, column: str, valid_values=None):
+    """
+    Test for checking if data in a column is in a set of valid values.
+
+    Args:
+        dataset (Dataset): The dataset to test.
+        column (str): The column to check.
+        valid_values (list, optional): A list of valid values. Defaults to None.
+
+    Returns:
+        TestResult: The result of the test.
+    """
+    if valid_values is None:
+        raise ValueError("valid_values must be provided")
+    column_data = dataset.df[column]
+    test_passed = all(x in valid_values for x in column_data.dropna())
     return TestResult(passed=test_passed)
