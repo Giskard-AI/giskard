@@ -1,6 +1,7 @@
 """
 Module for data quality tests.
 """
+from sklearn.cluster import DBSCAN
 from giskard.ml_worker.testing.test_result import TestResult
 from giskard.ml_worker.testing.registry.decorators import test
 from giskard.datasets.base import Dataset
@@ -94,7 +95,31 @@ def correlation_test(dataset: Dataset, column1: str, column2: str):
         column2 (str): The second column to check.
 
     Returns:
-        TestResult: The result of the test, containing the correlation between the two columns.
+        TestResult: The result of the test, containing the correlation between the two columns and the full correlation matrix in messages.
     """
+    correlation_matrix = dataset.df.corr()
     correlation = dataset.df[[column1, column2]].corr().iloc[0, 1]
-    return TestResult(passed=True, metric=correlation, metric_name="correlation")
+    return TestResult(passed=True, metric=correlation, metric_name="correlation", messages=correlation_matrix)
+
+@test(name="Data Anomaly Detection Test")
+def anomaly_detection_test(dataset: Dataset, column: str, eps: float = 0.5, min_samples: int = 5):
+    """
+    Test for identifying outliers or anomalies in a column of the dataset using DBSCAN.
+
+    Args:
+        dataset (Dataset): The dataset to test.
+        column (str): The column to check for anomalies.
+        eps (float): The maximum distance between two samples for one to be considered as in the neighborhood of the other.
+        min_samples (int): The number of samples in a neighborhood for a point to be considered as a core point.
+
+    Returns:
+        TestResult: The result of the test, containing the indices of the anomalies.
+    """
+    print(dataset.df[column].values)
+    column_data = dataset.df[column].values.reshape(-1, 1)
+    print(column_data)
+    model = DBSCAN(eps=eps, min_samples=min_samples)
+    model.fit(column_data)
+    preds = model.labels_
+    anomalies = [i for i, pred in enumerate(preds) if pred == -1]
+    return TestResult(passed=len(anomalies) == 0, messages=anomalies)
