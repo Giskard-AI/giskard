@@ -2252,7 +2252,7 @@ files = [
 
 [[package]]
 name = "langchain"
-version = "0.0.344"
+version = "0.0.345"
 requires_python = ">=3.8.1,<4.0"
 summary = "Building applications with LLMs through composability"
 dependencies = [
@@ -2263,7 +2263,7 @@ dependencies = [
     "async-timeout<5.0.0,>=4.0.0; python_version < \"3.11\"",
     "dataclasses-json<0.7,>=0.5.7",
     "jsonpatch<2.0,>=1.33",
-    "langchain-core<0.1,>=0.0.8",
+    "langchain-core<0.1,>=0.0.9",
     "langsmith<0.1.0,>=0.0.63",
     "numpy<2,>=1",
     "pydantic<3,>=1",
@@ -2271,8 +2271,8 @@ dependencies = [
     "tenacity<9.0.0,>=8.1.0",
 ]
 files = [
-    {file = "langchain-0.0.344-py3-none-any.whl", hash = "sha256:6dc85e8569a58537bd772a8ba18c629f882e12a73104d79df730be823d630482"},
-    {file = "langchain-0.0.344.tar.gz", hash = "sha256:37a6d72d23aee54fc1dfea3934ed63762f604e8665fe008fb7a30c4591fe808d"},
+    {file = "langchain-0.0.345-py3-none-any.whl", hash = "sha256:461a126ec182834c714589ceec47354401d80b903262efab8d669fe941a0a4df"},
+    {file = "langchain-0.0.345.tar.gz", hash = "sha256:2d366513a46e4620d8fe6fc956b9185c2a252e60e2fc0476113482455aaaa9f0"},
 ]
 
 [[package]]
