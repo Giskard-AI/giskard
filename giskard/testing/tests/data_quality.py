@@ -22,23 +22,32 @@ def uniqueness_test(dataset: Dataset, column: str, threshold: float = 0.8):
     uniqueness_ratio = len(column_data.unique()) / len(column_data)
     return TestResult(passed=uniqueness_ratio >= threshold, metric=uniqueness_ratio, metric_name="uniqueness")
 
-@test(name="Data Completeness Test")
-def completeness_test(dataset: Dataset):
+@test(name="Data Correlation Test")
+def correlation_test(dataset: Dataset, column1: str = None, column2: str = None):
     """
-    Test for checking the completeness of data in a dataset.
+    Test for analyzing correlations between two specific features.
 
     Args:
         dataset (Dataset): The dataset to test.
+        column1 (str, optional): The first column to check. Defaults to None.
+        column2 (str, optional): The second column to check. Defaults to None.
 
     Returns:
-        dict: A dictionary with the completeness score for each column.
+        TestResult: The result of the test, containing the correlation between the two columns (if provided) or the full correlation matrix.
     """
-    completeness_scores = {}
-    for column in dataset.df.columns:
-        column_data = dataset.df[column]
-        completeness_ratio = len(column_data.dropna()) / len(column_data)
-        completeness_scores[column] = completeness_ratio
-    return completeness_scores
+    correlation_matrix = dataset.df.corr()
+
+    if column1 is not None and column2 is not None:
+        correlation = dataset.df[[column1, column2]].corr().iloc[0, 1]
+        return TestResult(passed=True,
+                          metric=correlation,
+                          metric_name="correlation",
+                          messages=correlation_matrix)
+    else:
+        return TestResult(passed=True,
+                          metric=None,
+                          metric_name="correlation",
+                          messages=correlation_matrix)
 
 @test(name="Data Range Test")
 def range_test(dataset: Dataset, column: str, min_value=None, max_value=None):
