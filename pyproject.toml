@@ -178,6 +178,7 @@ dependencies = [
     "packaging",                # used in settings
     "markdown",                 # needed for display of scan results in notebook
     "colorama",                 # needed for the scan
+    "griffe>=0.36.9",
 ]
 
 [project.optional-dependencies]
