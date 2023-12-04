@@ -78,18 +78,16 @@ run.finish()
 
 ## Notebook examples
 ::::::{grid} 1 1 2 2
-:gutter: 1
 
-:::::{grid-item}
-:::{card} <br><h3><center>📊 Tabular</center></h3>
+
+::::{grid-item-card} <br/><h3>📊 Tabular</h3>
+:text-align: center
 :link: wandb-tabular-example.ipynb
-:::
-:::::
+::::
 
-:::::{grid-item}
-:::{card} <br><h3><center>📝 LLM</center></h3>
+::::{grid-item-card} <br/><h3>📝 LLM</h3>
+:text-align: center
 :link: wandb-llm-example.ipynb
-:::
-:::::
+::::
 
 ::::::

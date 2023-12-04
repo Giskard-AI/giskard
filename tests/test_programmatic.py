@@ -21,6 +21,16 @@ def _test_a_greater_b(a: int, b: int):
     return a > b
 
 
+class CustomClass:
+    def __init__(self, val: int):
+        self.val = val
+
+
+@test()
+def _test_with_custom_types(a: CustomClass, b: CustomClass):
+    return a.val > b.val
+
+
 def test_a_greater_b_fail():
     test_suite_result = Suite().add_test(_test_a_greater_b(1, 2)).run()
 
@@ -288,3 +298,11 @@ def test_save_suite_real_debug(german_credit_data: Dataset, german_credit_model:
     )
 
     Suite(name="Test Suite 1").add_test(auc).add_test(diff_accuracy).add_test(invariance).upload(client, "test_debug")
+
+
+def test_with_custom_types():
+    result = _test_with_custom_types(CustomClass(2), CustomClass(3)).execute()
+    assert not result
+
+    result = _test_with_custom_types(b=CustomClass(2), a=CustomClass(3)).execute()
+    assert result

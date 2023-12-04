@@ -1,5 +1,3 @@
-from typing import Callable, List, Optional, Set, Union
-
 import copy
 import inspect
 import pickle
@@ -8,6 +6,7 @@ from abc import ABC, abstractmethod
 from pathlib import Path
 
 import cloudpickle
+from typing import Callable, List, Optional, Set, Union
 
 from giskard.core.core import SMT, TestFunctionMeta
 from giskard.core.validation import configured_validate_arguments
@@ -108,7 +107,9 @@ Test = Union[GiskardTest, Function]
 
 class GiskardTestMethod(GiskardTest):
     def __init__(self, test_fn: Function) -> None:
-        self.params = {}
+        self.args = list()
+        self.kwargs = dict()
+
         self.is_initialized = False
         self.test_fn = test_fn
         test_uuid = get_object_uuid(self.test_fn)
@@ -126,10 +127,8 @@ class GiskardTestMethod(GiskardTest):
         instance = copy.deepcopy(self)
 
         instance.is_initialized = True
-        instance.params = kwargs
-
-        for idx, arg in enumerate(args):
-            instance.params[next(iter([arg.name for arg in instance.meta.args.values() if arg.argOrder == idx]))] = arg
+        instance.args = args
+        instance.kwargs = kwargs
 
         return instance
 
@@ -141,14 +140,23 @@ class GiskardTestMethod(GiskardTest):
 
         return set([param.default for param in parameters if isinstance(param.default, Artifact)])
 
+    @property
+    def params(self):
+        params = self.kwargs.copy()
+
+        for idx, arg in enumerate(self.args):
+            params[next(iter([arg.name for arg in self.meta.args.values() if arg.argOrder == idx]))] = arg
+
+        return params
+
     def execute(self) -> Result:
         analytics.track("test:execute", {"test_name": self.meta.full_name})
 
         # if params contains debug then we check if test_fn has debug argument
-        if "debug" in self.params and "debug" not in list(inspect.signature(self.test_fn).parameters.keys()):
-            self.params.pop("debug")
+        if "debug" in self.kwargs and "debug" not in list(inspect.signature(self.test_fn).parameters.keys()):
+            self.kwargs.pop("debug")
 
-        return configured_validate_arguments(self.test_fn)(**self.params)
+        return configured_validate_arguments(self.test_fn)(*self.args, **self.kwargs)
 
     def __repr__(self) -> str:
         if not self.is_initialized:

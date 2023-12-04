@@ -6,3 +6,4 @@ Tests
 
    classification/index
    regression/index
+   text_generation/index
