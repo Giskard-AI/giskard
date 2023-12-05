@@ -361,7 +361,7 @@ class GiskardClient:
 
         data = json.dumps(meta_json, cls=GiskardJSONSerializer)
 
-        response_json = self._session.put(endpoint, data=data).json()
+        response_json = self._session.put(endpoint, data=data, headers={"Content-Type": "application/json"}).json()
         return meta if response_json is None or "uuid" not in response_json else meta.from_json(response_json)
 
     def load_meta(self, endpoint: str, meta_class: SMT) -> TestFunctionMeta:
