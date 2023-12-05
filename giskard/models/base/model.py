@@ -17,6 +17,7 @@ import pandas as pd
 import yaml
 
 from giskard.client.dtos import ModelMetaInfo
+from ... import analytics
 
 from ...client.giskard_client import GiskardClient
 from ...core.core import ModelMeta, ModelType, SupportedModelTypes
@@ -422,7 +423,6 @@ class BaseModel(ABC):
             if client is not None:
                 client.log_artifacts(f, posixpath.join(project_key, "models", str(self.id)))
                 client.save_model_meta(project_key, self.id, self.meta, platform.python_version(), get_size(f))
-
         return str(self.id)
 
     @classmethod

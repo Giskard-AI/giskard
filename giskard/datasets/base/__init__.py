@@ -29,13 +29,13 @@ from giskard.ml_worker.testing.registry.transformation_function import (
 )
 from giskard.settings import settings
 from ..metadata.indexing import ColumnMetadataMixin
+from ... import analytics
 from ...ml_worker.utils.file_utils import get_file_name
 
 try:
     import wandb  # noqa
 except ImportError:
     pass
-
 
 SAMPLE_SIZE = 1000
 
@@ -153,15 +153,15 @@ class Dataset(ColumnMetadataMixin):
 
     @configured_validate_arguments
     def __init__(
-        self,
-        df: pd.DataFrame,
-        name: Optional[str] = None,
-        target: NotGivenOr[Optional[Hashable]] = NOT_GIVEN,
-        cat_columns: Optional[List[str]] = None,
-        column_types: Optional[Dict[Hashable, str]] = None,
-        id: Optional[uuid.UUID] = None,
-        validation=True,
-        original_id: Optional[uuid.UUID] = None,
+            self,
+            df: pd.DataFrame,
+            name: Optional[str] = None,
+            target: NotGivenOr[Optional[Hashable]] = NOT_GIVEN,
+            cat_columns: Optional[List[str]] = None,
+            column_types: Optional[Dict[Hashable, str]] = None,
+            id: Optional[uuid.UUID] = None,
+            validation=True,
+            original_id: Optional[uuid.UUID] = None,
     ) -> None:
         """
         Initializes a Dataset object.
@@ -225,7 +225,7 @@ class Dataset(ColumnMetadataMixin):
         }
 
         self.data_processor = DataProcessor()
-
+        analytics.track("wrap:dataset:success", {"nb_rows": self.number_of_rows})
         logger.info("Your 'pandas.DataFrame' is successfully wrapped by Giskard's 'Dataset' wrapper class.")
 
     @property
@@ -291,12 +291,12 @@ class Dataset(ColumnMetadataMixin):
 
     @configured_validate_arguments
     def slice(
-        self,
-        slicing_function: Union[SlicingFunction, SlicingFunctionType],
-        row_level: bool = True,
-        get_mask: bool = False,
-        cell_level=False,
-        column_name: Optional[str] = None,
+            self,
+            slicing_function: Union[SlicingFunction, SlicingFunctionType],
+            row_level: bool = True,
+            get_mask: bool = False,
+            cell_level=False,
+            column_name: Optional[str] = None,
     ):
         """
         Slice the dataset using the specified `slicing_function`.
@@ -334,11 +334,11 @@ class Dataset(ColumnMetadataMixin):
 
     @configured_validate_arguments
     def transform(
-        self,
-        transformation_function: Union[TransformationFunction, TransformationFunctionType],
-        row_level: bool = True,
-        cell_level=False,
-        column_name: Optional[str] = None,
+            self,
+            transformation_function: Union[TransformationFunction, TransformationFunctionType],
+            row_level: bool = True,
+            cell_level=False,
+            column_name: Optional[str] = None,
     ):
         """
         Transform the data in the current Dataset by applying a transformation function.
@@ -373,7 +373,7 @@ class Dataset(ColumnMetadataMixin):
             )
 
         assert (
-            not transformation_function.cell_level or "column_name" in transformation_function.params
+                not transformation_function.cell_level or "column_name" in transformation_function.params
         ), "column_name should be provided for TransformationFunction at cell level"
         return self.data_processor.add_step(transformation_function).apply(self, apply_only_last=True)
 
@@ -387,10 +387,10 @@ class Dataset(ColumnMetadataMixin):
         return self.data_processor.apply(self)
 
     def _infer_column_types(
-        self,
-        column_types: Optional[Dict[str, str]],
-        cat_columns: Optional[List[str]],
-        validation: bool = True,
+            self,
+            column_types: Optional[Dict[str, str]],
+            cat_columns: Optional[List[str]],
+            validation: bool = True,
     ):
         """
         This function infers the column types of a given DataFrame based on the number of unique values and column data types. It takes into account the provided column types and categorical columns. The inferred types can be 'text', 'numeric', or 'category'. The function also applies a logarithmic rule to determine the category threshold.

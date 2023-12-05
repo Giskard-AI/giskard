@@ -8,6 +8,7 @@ from functools import singledispatchmethod
 
 from mlflow import MlflowClient
 
+from giskard import analytics
 from giskard.client.dtos import SuiteInfo, SuiteTestDTO, TestInputDTO, TestSuiteDTO
 from giskard.client.giskard_client import GiskardClient
 from giskard.core.core import TestFunctionMeta
@@ -438,6 +439,7 @@ class Suite:
         self.id = client.save_test_suite(self.to_dto(client, project_key, uploaded_uuids))
         project_id = client.get_project(project_key).project_id
         print(f"Test suite has been saved: {client.host_url}/main/projects/{project_id}/test-suite/{self.id}/overview")
+        analytics.track("hub:test_suite:uploaded")
         return self
 
     def to_dto(self, client: GiskardClient, project_key: str, uploaded_uuids: Optional[List[str]] = None):

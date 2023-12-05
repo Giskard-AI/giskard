@@ -5,6 +5,7 @@ import inspect
 
 import pandas as pd
 
+from giskard import analytics
 from giskard.core.core import DatasetProcessFunctionMeta
 from giskard.core.validation import configured_validate_arguments
 from giskard.ml_worker.core.savable import Artifact, RegistryArtifact
@@ -128,6 +129,7 @@ def transformation_function(
             )
         )
 
+        analytics.track("custom:transformation_function:created", {"name": func.__name__})
         if inspect.isclass(func) and issubclass(func, TransformationFunction):
             return func
         return _wrap_transformation_function(func, row_level, cell_level)()
