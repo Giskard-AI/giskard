@@ -1,11 +1,10 @@
-from typing import Iterable, Optional
-
 import numpy as np
 import pandas as pd
+from typing import Iterable, Optional
 
+from .base import BaseModel, ModelPredictionResults
 from ..core.core import ModelType
 from ..datasets.base import Dataset
-from .base import BaseModel, ModelPredictionResults
 
 
 class PrecookedModel(BaseModel):
@@ -52,7 +51,7 @@ class PrecookedModel(BaseModel):
             model.meta.classification_labels,
         )
 
-    def predict(self, dataset: Dataset) -> ModelPredictionResults:
+    def predict(self, dataset: Dataset, *args, **kwargs) -> ModelPredictionResults:
         refs = pd.Series(np.arange(len(self._data)), index=self._data.df.index)
         idx = refs.loc[dataset.df.index]
 
@@ -76,5 +75,5 @@ class PrecookedModel(BaseModel):
             all_predictions=all_predictions,
         )
 
-    def predict_df(self, df: pd.DataFrame):
+    def predict_df(self, df: pd.DataFrame, *args, **kwargs):
         raise NotImplementedError()
