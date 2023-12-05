@@ -1,21 +1,13 @@
-from typing import Sequence, Optional, List
-
+from typing import Sequence, Optional
 import pandas as pd
-
 
 from ...datasets.base import Dataset
 from ...llm.evaluators.string_matcher import StringMatcher
-from giskard.llm.loaders.prompt_injections import PromptInjectionDataLoader
+from ...llm.loaders.prompt_injections import PromptInjectionDataLoader
 from ...models.base.model import BaseModel
 from ..decorators import detector
 from ..issues import Issue, IssueGroup, IssueLevel
 from ..registry import Detector
-from ...ml_worker.testing.registry.slicing_function import slicing_function
-
-
-@slicing_function(row_level=False)
-def group_slice(df: pd.DataFrame, group_idx: List):
-    return df.iloc[group_idx]
 
 
 @detector("llm_prompt_injection", tags=["jailbreak", "prompt_injection", "llm", "generative", "text_generation"])
@@ -43,23 +35,20 @@ class LLMPromptInjectionDetector(Detector):
         num_samples = self.num_samples
         if num_samples is None:
             data_loader = PromptInjectionDataLoader(num_samples=self.num_samples)
-            num_samples = len(data_loader.prompts_df)
+            num_samples = len(data_loader.df)
         return {
             "model_predict_calls": num_samples,
         }
 
     def run(self, model: BaseModel, dataset: Dataset, features: Sequence[str]) -> Sequence[Issue]:
         data_loader = PromptInjectionDataLoader(num_samples=self.num_samples)
-        dataset = data_loader.load_dataset(features)
-        meta_df = data_loader.all_meta_df
 
         evaluator = StringMatcher()
         issues = []
-        for group in set(data_loader.groups_mapping):
-            group_idx = meta_df.index[meta_df["group_mapping"] == group].tolist()
-            group_dataset = dataset.slice(group_slice(group_idx=group_idx))
-            group_meta_df = meta_df.iloc[group_idx]
-            evaluation_results = evaluator.evaluate(model, group_dataset, group_meta_df.to_dict("records"))
+        for group in set(data_loader.groups):
+            group_dataset = data_loader.load_dataset_from_group(features=features, group=group)
+            evaluator_config_df = data_loader.config_df_from_group(group)
+            evaluation_results = evaluator.evaluate(model, group_dataset, evaluator_config_df)
             number_of_failed_prompts = len(evaluation_results.failure_examples)
             if number_of_failed_prompts == 0:
                 continue
@@ -71,8 +60,8 @@ class LLMPromptInjectionDetector(Detector):
             elif metric >= self.threshold:
                 level = IssueLevel.MAJOR
 
-            group_description = data_loader.get_group_description(group)
-            group_deviation_description = data_loader.get_group_deviation_description(group)
+            group_description = data_loader.group_description(group)
+            group_deviation_description = data_loader.group_deviation_description(group)
 
             issues.append(
                 Issue(
@@ -93,10 +82,10 @@ class LLMPromptInjectionDetector(Detector):
                         "metric_value": metric,
                         "threshold": self.threshold,
                         "test_case": group,
-                        "deviation": f"{number_of_failed_prompts}/{len(group_idx)} " + group_deviation_description,
+                        "deviation": f"{number_of_failed_prompts}/{len(group_dataset)} " + group_deviation_description,
                         "hide_index": True,
-                        "input_prompts": dataset.df.loc[:, model.meta.feature_names],
-                        "meta_df": group_meta_df,
+                        "input_prompts": group_dataset.df.loc[:, model.meta.feature_names],
+                        "evaluator_config_df": evaluator_config_df,
                     },
                     examples=pd.DataFrame(evaluation_results.failure_examples),
                     tests=_generate_prompt_injection_tests,

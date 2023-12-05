@@ -16,11 +16,20 @@ def _check_url(url: str):
 
 
 def _check_matching_dfs_len(df1, df2):
-    if df1 is not None and len(df1) != len(df2):
+    if len(df1) != len(df2):
         raise ValueError(
             f"{__name__}: {INJECTION_DATA_URL} and {GISKARD_META_URL} should "
             "have the same length and should be a one-to-one mapping of each other."
         )
+
+
+def _check_meta_df_requirements(df):
+    if "substrings" not in df.columns:
+        raise ValueError(f"{__name__}: substrings are needed for the evaluation.")
+
+    if df.substrings.isnull().values.any():
+        raise ValueError(f"{__name__}: substrings column cannot have any NaN values.")
+    df.substrings = df.substrings.apply(ast.literal_eval)
 
 
 class PromptInjectionDataLoader:
@@ -29,76 +38,61 @@ class PromptInjectionDataLoader:
         num_samples: Optional[int] = None,
     ):
         self.num_samples = num_samples
-        self._prompts_df = None
-        self._meta_df = None
-        self.sampled_idx = None
+        self._df = None
 
-    def load_dataset(self, features) -> Dataset:
-        formatted_df = pd.DataFrame({feature: self.prompts_df.prompt for feature in features})
+    def load_dataset_from_group(self, features, group) -> Dataset:
+        prompts = self.prompts_from_group(group)
+        prompts = pd.DataFrame({feature: prompts for feature in features}, index=prompts.index)
         return Dataset(
-            df=formatted_df,
+            df=prompts,
             name="Injection Prompts",
             target=None,
             cat_columns=None,
             validation=False,
         )
 
-    def _sample_df(self, df):
-        if self.num_samples is not None:
-            if self.sampled_idx is None:
-                df = df.sample(self.num_samples)
-                self.sampled_idx = df.index
-                df = df.reset_index(inplace=True, drop=True)
-            else:
-                df = df.iloc[self.sampled_idx].reset_index(drop=True)
-        return df
-
     @property
-    def prompts_df(self):
-        if self._prompts_df is None:
+    def df(self):
+        if self._df is None:
             _check_url(INJECTION_DATA_URL)
-            self._prompts_df = pd.read_csv(INJECTION_DATA_URL)
-            _check_matching_dfs_len(self._meta_df, self._prompts_df)
-            self._prompts_df = self._sample_df(self._prompts_df)
-        return self._prompts_df
-
-    @property
-    def meta_df(self):
-        if self._meta_df is None:
             _check_url(GISKARD_META_URL)
-            self._meta_df = pd.read_csv(GISKARD_META_URL)
-            _check_matching_dfs_len(self._prompts_df, self._meta_df)
-            self._meta_df.substrings = self._meta_df.substrings.apply(ast.literal_eval)
-            self._meta_df = self._sample_df(self._meta_df)
-        return self._meta_df
+            prompt_injections_df = pd.read_csv(INJECTION_DATA_URL, index_col=["index"])
+            meta_df = pd.read_csv(GISKARD_META_URL, index_col=["index"])
+            _check_matching_dfs_len(meta_df, prompt_injections_df)
+            _check_meta_df_requirements(meta_df)
+            self._df = prompt_injections_df.join(meta_df)
+
+            if self.num_samples is not None:
+                self._df = self._df.sample(self.num_samples)
+                self._df.reset_index(inplace=True, drop=True)
+
+        return self._df
 
     @property
     def names(self):
-        return self.prompts_df.name.tolist()
+        return self.df.name.tolist()
 
     @property
     def groups(self):
-        return self.prompts_df.group.tolist()
+        return list(set(self.df.group_mapping.tolist()))
 
-    @property
-    def groups_mapping(self):
-        return self.meta_df.group_mapping.tolist()
+    def df_from_group(self, group):
+        return self.df.loc[self.df["group_mapping"] == group]
 
-    @property
-    def all_meta_df(self):
-        additional_meta = self.prompts_df.drop("prompt", axis=1)
-        return pd.concat([self.meta_df, additional_meta], axis=1)
+    def prompts_from_group(self, group):
+        return self.df_from_group(group).prompt
 
-    def get_group_description(self, group):
-        group_description = self.all_meta_df[self.all_meta_df.group_mapping == group].description.to_list()
+    def config_df_from_group(self, group):
+        return self.df_from_group(group).drop(["prompt"], axis=1)
+
+    def group_description(self, group):
+        group_description = self.df_from_group(group).description.to_list()
         if len(set(group_description)) != 1:
             raise ValueError(f"{self.__class__.__name__}: There must be only one group description per group.")
         return group_description[0]
 
-    def get_group_deviation_description(self, group):
-        group_deviation_description = self.all_meta_df[
-            self.all_meta_df.group_mapping == group
-        ].deviation_description.to_list()
+    def group_deviation_description(self, group):
+        group_deviation_description = self.df_from_group(group).deviation_description.to_list()
         if len(set(group_deviation_description)) != 1:
             raise ValueError(
                 f"{self.__class__.__name__}: There must be only one group description deviation per group."
