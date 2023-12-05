@@ -112,8 +112,8 @@ def correlation_test(dataset: Dataset, column1: str = None, column2: str = None)
                           metric=None,
                           metric_name="correlation",messages=correlation_matrix)
 
-@test(name="Data Anomaly Detection Test")
-def anomaly_detection_test(dataset: Dataset, column: str, eps: float = 0.5, min_samples: int = 5):
+@test(name="Data Outlier Detection Test")
+def outlier(dataset: Dataset, column: str, eps: float = 0.5, min_samples: int = 5):
     """
     Test for identifying outliers or anomalies in a column of the dataset using DBSCAN.
 
@@ -134,3 +134,25 @@ def anomaly_detection_test(dataset: Dataset, column: str, eps: float = 0.5, min_
     preds = model.labels_
     anomalies = [i for i, pred in enumerate(preds) if pred == -1]
     return TestResult(passed=len(anomalies) == 0, messages=anomalies)
+
+@test(name="Ensure all exists")
+def ensure_all_exists(dataset: Dataset, column: str, target_dataset: Dataset, target_column: str, threshold: float = 0.0):
+    """
+    Ensure that all data in a column of one dataset are present in a column of another dataset.
+
+    Args:
+        dataset (Dataset): The dataset to check.
+        column (str): The column in the dataset to check.
+        target_dataset (Dataset): The dataset to compare against.
+        target_column (str): The column in the target dataset to compare against.
+        threshold (float, optional): The maximum allowed ratio of missing values. Defaults to 0.0.
+
+    Returns:
+        TestResult: The result of the test, indicating whether
+        the test passed and the ratio of missing values.
+    """
+    source = dataset.df[column]
+    referenced = target_dataset.df[target_column]
+    not_included = source[~source.isin(referenced)]
+    missing_ratio = len(not_included) / len(source)
+    return TestResult(passed=missing_ratio <= threshold, metric=missing_ratio)
