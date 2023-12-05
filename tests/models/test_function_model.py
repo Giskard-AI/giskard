@@ -1,8 +1,9 @@
+import platform
 from pathlib import Path
+
 import numpy as np
 import pandas as pd
 import pytest
-import platform
 
 from giskard import Dataset, Model
 from giskard.ml_worker.exceptions.giskard_exception import GiskardPythonVerException
@@ -76,11 +77,13 @@ COMPAT_TABLE = {
     "3.11": ["3.11"],
 }
 
+PYTHON_MAJOR_VERSION = ".".join(platform.python_version_tuple()[:2])
+
 
 @pytest.mark.parametrize("py_ver", ["3.9", "3.10", "3.11"])
 def test_prediction_function_load(py_ver):
     model_path = Path(__file__).parent / "fixtures" / "func" / py_ver
-    if ".".join(platform.python_version_tuple()[:2]) in COMPAT_TABLE[py_ver]:
+    if PYTHON_MAJOR_VERSION in COMPAT_TABLE[py_ver]:
         model = Model.load(model_path)
         assert model is not None
     else:
@@ -88,7 +91,28 @@ def test_prediction_function_load(py_ver):
             Model.load(model_path)
 
 
+@pytest.mark.skipif(
+    PYTHON_MAJOR_VERSION not in ["3.11"], reason=f"No model pickled with Python {PYTHON_MAJOR_VERSION} "
+)
+def test_ensure_backward_compatibility():
+    model_path = Path(__file__).parent / "fixtures" / "ipcc" / PYTHON_MAJOR_VERSION
+
+    import cloudpickle
+
+    with open(model_path / "ModelClass.pkl", "rb") as f:
+        ModelCls = cloudpickle.load(f)
+
+    model = ModelCls.load(model_path)
+    assert model is not None
+
+    expected_results = ["foo", "bar", "baz"]
+
+    predictions = model.predict(Dataset(pd.DataFrame({"query": expected_results}))).raw_prediction
+
+    assert list(predictions) == expected_results
+
+
 if __name__ == "__main__":
-    py_ver = ".".join(platform.python_version_tuple()[:2])
+    py_ver = PYTHON_MAJOR_VERSION
     model_path = Path(__file__).parent / "fixtures" / "func" / py_ver
     Model(lambda df: np.ones(len(df)), model_type="classification", classification_labels=[0, 1]).save(model_path)
