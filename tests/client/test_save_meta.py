@@ -10,6 +10,8 @@ class MetaWithBool(SavableMeta):
         return {
             **super().to_json(),
             "one_numpy_bool": np.bool_(True),
+            "array_of_bool": [np.bool_(True), np.bool_(False)],
+            "dict_of_bool": {"True": np.bool_(True), "False": np.bool_(False)},
         }
 
 
