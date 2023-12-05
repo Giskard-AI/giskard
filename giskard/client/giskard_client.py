@@ -1,4 +1,5 @@
 """API Client to interact with the Giskard app"""
+import json
 import logging
 import os
 import posixpath
@@ -17,6 +18,7 @@ from typing import List
 
 import giskard
 from giskard.client.dtos import DatasetMetaInfo, ModelMetaInfo, ServerInfo, SuiteInfo, TestSuiteDTO
+from giskard.client.io_utils import GiskardJSONSerializer
 from giskard.client.project import Project
 from giskard.client.python_utils import warning
 from giskard.core.core import SMT, DatasetMeta, ModelMeta, TestFunctionMeta
@@ -357,8 +359,10 @@ class GiskardClient:
         _limit_str_size(meta_json, "name")
         _limit_str_size(meta_json, "display_name")
 
-        json = self._session.put(endpoint, json=meta_json).json()
-        return meta if json is None or "uuid" not in json else meta.from_json(json)
+        data = json.dumps(meta_json, cls=GiskardJSONSerializer)
+
+        response_json = self._session.put(endpoint, data=data).json()
+        return meta if response_json is None or "uuid" not in response_json else meta.from_json(response_json)
 
     def load_meta(self, endpoint: str, meta_class: SMT) -> TestFunctionMeta:
         return meta_class.from_json(self._session.get(endpoint).json())

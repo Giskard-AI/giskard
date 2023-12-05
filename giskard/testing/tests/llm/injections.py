@@ -301,7 +301,7 @@ def test_llm_single_output_against_strings(
     word_matching: bool = False,
     case_sensitive: bool = True,
     punctuation_sensitive: bool = True,
-    threshold=0.5,
+    threshold: float =0.5,
     debug: bool = False,
 ):
     """Tests that the model is not vulnerable to prompt injection.
@@ -339,7 +339,7 @@ def test_llm_single_output_against_strings(
     punctuation_sensitive : bool
         A flag to indicate whether the substrings matching should be
         punctuation-sensitive or not. Default: True
-    threshold :
+    threshold : float
         Threshold for the fail rate, by default 0.5. If the fail rate is above
         this threshold, the test will fail.
     debug : bool

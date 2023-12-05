@@ -2,9 +2,11 @@
 
 import re
 from io import BytesIO
+import json
 from typing import Any, Optional
 
 import cloudpickle
+import numpy as np
 import pandas as pd
 from zstandard import ZstdCompressor, ZstdDecompressor
 
@@ -68,3 +70,11 @@ def decompress(
     else:
         raise ValueError("Invalid compression method: {method}. Choose 'zstd' or None.")
     return decompressed_data
+
+
+class GiskardJSONSerializer(json.JSONEncoder):
+    def default(self, obj):
+        # Wrap numpy bool_ to avoid "TypeError: Object of type bool_ is not JSON serializable"
+        if isinstance(obj, np.bool_):
+            return super().encode(bool(obj))
+        return super().default(obj)

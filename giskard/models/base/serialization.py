@@ -1,12 +1,11 @@
 import pickle
 from pathlib import Path
-from typing import Optional, Tuple, Union
 
 import cloudpickle
 import mlflow
+from typing import Optional, Tuple, Union
 
 from giskard.ml_worker.exceptions.giskard_exception import python_env_exception_helper
-
 from .wrapper import WrapperModel
 
 
@@ -24,22 +23,22 @@ class MLFlowSerializableModel(WrapperModel):
     saving functionality.
     """
 
-    def save(self, local_path: Union[str, Path]) -> None:
+    def save(self, local_path: Union[str, Path], *args, **kwargs) -> None:
         # MLFlow requires the target directory to be empty before the model is
         # saved, thus we have to call ``save_model`` first and then save the
         # rest of the metadata.
-        self.save_model(local_path, mlflow.models.Model(model_uuid=str(self.id)))
-        super().save(local_path)
+        self.save_model(local_path, mlflow.models.Model(model_uuid=str(self.id)), *args, **kwargs)
+        super().save(local_path, *args, **kwargs)
 
 
 class CloudpickleSerializableModel(WrapperModel):
     """A base class for models that are serializable by cloudpickle."""
 
-    def save(self, local_path: Union[str, Path]) -> None:
-        super().save(local_path)
-        self.save_model(local_path)
+    def save(self, local_path: Union[str, Path], *args, **kwargs) -> None:
+        super().save(local_path, *args, **kwargs)
+        self.save_model(local_path, *args, **kwargs)
 
-    def save_model(self, local_path: Union[str, Path]) -> None:
+    def save_model(self, local_path: Union[str, Path], *args, **kwargs) -> None:
         try:
             model_file = Path(local_path) / "model.pkl"
             with open(model_file, "wb") as f:
@@ -51,7 +50,7 @@ class CloudpickleSerializableModel(WrapperModel):
             )
 
     @classmethod
-    def load_model(cls, local_dir, model_py_ver: Optional[Tuple[str, str, str]] = None):
+    def load_model(cls, local_dir, model_py_ver: Optional[Tuple[str, str, str]] = None, *args, **kwargs):
         local_path = Path(local_dir)
         model_path = local_path / "model.pkl"
         if model_path.exists():

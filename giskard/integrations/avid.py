@@ -73,11 +73,15 @@ def create_report_from_issue(issue: Issue, model: BaseModel, dataset: Dataset = 
         credit=[LangValue(lang="eng", value="Giskard")],
     )
     if issue.meta.get("metric"):
+        metric_results = {"value": issue.meta.get("metric_value")}
+        if not issue.examples().empty:
+            metric_results["examples"] = issue.examples().to_dict(orient="records")
+
         report.metrics = [
             Metric(
-                name=issue.meta.get("metric"),
+                name=issue.meta.get("metric").replace(" ", " "),
                 detection_method=Detection(type=MethodEnum.thres, name=f"Giskard Scanner {giskard.__version__}"),
-                results={"value": issue.meta.get("metric_value")},
+                results=metric_results,
             )
         ]
 

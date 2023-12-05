@@ -41,7 +41,7 @@ def test_overconfidence_rate(
     slicing_function: Optional[SlicingFunction] = None,
     threshold: Optional[float] = 0.10,
     p_threshold: Optional[float] = None,
-):
+) -> TestResult:
     """Tests that the rate of overconfident predictions is below a threshold.
 
     Overconfident predictions are defined as predictions where the model
@@ -75,9 +75,6 @@ def test_overconfidence_rate(
         wrong label and the correct label over which a prediction is considered
         overconfident. If not provided, it will be determined automatically
         depending on the number of classes.
-    debug : bool
-        If True and the test fails, a dataset will be provided containing the
-        rows that have an overconfidence score larger than p_threshold.
 
     Returns
     -------
@@ -164,10 +161,6 @@ def test_underconfidence_rate(
         prediction is considered underconfident. Default is 0.90, i.e. when the
         second most probable prediction is 90% or more with respect to the
         highest probability, the sample prediction is considered underconfident.
-
-    debug : bool
-        If True and the test fails, a dataset will be provided containing the
-        rows that have an underconfidence score larger than p_threshold.
 
     Returns
     -------
