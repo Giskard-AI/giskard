@@ -105,12 +105,14 @@ def test_ensure_backward_compatibility():
     with open(model_path / "ModelClass.pkl", "rb") as f:
         ModelCls = cloudpickle.load(f)
 
-    model = ModelCls.load(model_path)
+    model = ModelCls.load(model_path, ["Added", "arg"], added_kwarg="Should not break")
     assert model is not None
 
     expected_results = ["foo", "bar", "baz"]
 
-    predictions = model.predict(Dataset(pd.DataFrame({"query": expected_results}))).raw_prediction
+    predictions = model.predict(
+        Dataset(pd.DataFrame({"query": expected_results})), ["Added", "arg"], added_kwarg="Should not break"
+    ).raw_prediction
 
     assert list(predictions) == expected_results
 
