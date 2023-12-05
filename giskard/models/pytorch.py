@@ -138,10 +138,10 @@ class PyTorchModel(MLFlowSerializableModel):
             )
 
     @classmethod
-    def load_model(cls, local_dir, model_py_ver: Optional[Tuple[str, str, str]] = None, *args, **kwargs):
+    def load_model(cls, local_dir, model_py_ver: Optional[Tuple[str, str, str]] = None, *_args, **_kwargs):
         return mlflow.pytorch.load_model(local_dir)
 
-    def save_model(self, local_path, mlflow_meta: mlflow.models.Model, *args, **kwargs):
+    def save_model(self, local_path, mlflow_meta: mlflow.models.Model, *_args, **_kwargs):
         mlflow.pytorch.save_model(self.model, path=local_path, mlflow_model=mlflow_meta)
 
     def _get_predictions_from_iterable(self, data):
@@ -198,7 +198,7 @@ class PyTorchModel(MLFlowSerializableModel):
 
         return super()._convert_to_numpy(raw_predictions)
 
-    def save_pytorch_meta(self, local_path, *args, **kwargs):
+    def save_pytorch_meta(self, local_path, *_args, **_kwargs):
         with open(Path(local_path) / "giskard-model-pytorch-meta.yaml", "w") as f:
             yaml.dump(
                 {

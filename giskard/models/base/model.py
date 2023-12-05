@@ -206,7 +206,7 @@ class BaseModel(ABC):
 
     @classmethod
     def determine_model_class(
-        cls, meta, local_dir, model_py_ver: Optional[Tuple[str, str, str]] = None, *args, **kwargs
+        cls, meta, local_dir, model_py_ver: Optional[Tuple[str, str, str]] = None, *_args, **_kwargs
     ):
         class_file = Path(local_dir) / MODEL_CLASS_PKL
         if class_file.exists():
@@ -223,7 +223,7 @@ class BaseModel(ABC):
         else:
             return getattr(importlib.import_module(meta.loader_module), meta.loader_class)
 
-    def save_meta(self, local_path, *args, **kwargs):
+    def save_meta(self, local_path, *_args, **_kwargs):
         with (Path(local_path) / META_FILENAME).open(mode="w", encoding="utf-8") as f:
             yaml.dump(
                 {
@@ -244,17 +244,17 @@ class BaseModel(ABC):
                 default_flow_style=False,
             )
 
-    def save(self, local_path: Union[str, Path], *args, **kwargs) -> None:
+    def save(self, local_path: Union[str, Path], *_args, **_kwargs) -> None:
         if self.should_save_model_class:
             self.save_model_class(local_path)
         self.save_meta(local_path)
 
-    def save_model_class(self, local_path, *args, **kwargs):
+    def save_model_class(self, local_path, *_args, **_kwargs):
         class_file = Path(local_path) / MODEL_CLASS_PKL
         with open(class_file, "wb") as f:
             cloudpickle.dump(self.__class__, f, protocol=pickle.DEFAULT_PROTOCOL)
 
-    def prepare_dataframe(self, df, column_dtypes=None, target=None, *args, **kwargs):
+    def prepare_dataframe(self, df, column_dtypes=None, target=None, *_args, **_kwargs):
         """
         Prepares a Pandas DataFrame for inference by ensuring the correct columns are present and have the correct data types.
 
@@ -302,7 +302,7 @@ class BaseModel(ABC):
             df = Dataset.cast_column_to_dtypes(df, column_dtypes)
         return df
 
-    def predict(self, dataset: Dataset, *args, **kwargs) -> ModelPredictionResults:
+    def predict(self, dataset: Dataset, *_args, **_kwargs) -> ModelPredictionResults:
         """Generates predictions for the input giskard dataset.
         This method uses the `prepare_dataframe()` method to preprocess the input dataset before making predictions.
         The `predict_df()` method is used to generate raw predictions for the preprocessed data.
@@ -391,7 +391,7 @@ class BaseModel(ABC):
         # TODO: check if there is a better solution
         return np.array(np.array(cached_predictions).tolist())
 
-    def upload(self, client: GiskardClient, project_key, validate_ds=None, *args, **kwargs) -> str:
+    def upload(self, client: GiskardClient, project_key, validate_ds=None, *_args, **_kwargs) -> str:
         """
         Uploads the model to a Giskard project using the provided Giskard client. Also validates the model
         using the given validation dataset, if any.
@@ -426,7 +426,7 @@ class BaseModel(ABC):
         return str(self.id)
 
     @classmethod
-    def download(cls, client: Optional[GiskardClient], project_key, model_id, *args, **kwargs):
+    def download(cls, client: Optional[GiskardClient], project_key, model_id, *_args, **_kwargs):
         """
         Downloads the specified model from the Giskard hub and loads it into memory.
 
@@ -482,7 +482,7 @@ class BaseModel(ABC):
         return model
 
     @classmethod
-    def read_meta_from_local_dir(cls, local_dir, *args, **kwargs) -> Tuple[ModelMetaInfo, ModelMeta]:
+    def read_meta_from_local_dir(cls, local_dir, *_args, **_kwargs) -> Tuple[ModelMetaInfo, ModelMeta]:
         with (Path(local_dir) / META_FILENAME).open(encoding="utf-8") as f:
             file_meta = yaml.load(f, Loader=yaml.Loader)
             meta = ModelMeta(
@@ -517,7 +517,7 @@ class BaseModel(ABC):
         return extra_meta, meta
 
     @classmethod
-    def cast_labels(cls, meta_response: ModelMetaInfo, *args, **kwargs) -> List[Union[str, Type]]:
+    def cast_labels(cls, meta_response: ModelMetaInfo, *_args, **_kwargs) -> List[Union[str, Type]]:
         labels_ = meta_response.classificationLabels
         labels_dtype = meta_response.classificationLabelsDtype
         if labels_ and labels_dtype and builtins.hasattr(builtins, labels_dtype):
@@ -526,7 +526,7 @@ class BaseModel(ABC):
         return labels_
 
     @classmethod
-    def load(cls, local_dir, model_py_ver: Optional[Tuple[str, str, str]] = None, *args, **kwargs):
+    def load(cls, local_dir, model_py_ver: Optional[Tuple[str, str, str]] = None, *_args, **kwargs):
         class_file = Path(local_dir) / MODEL_CLASS_PKL
         model_id, meta = cls.read_meta_from_local_dir(local_dir)
 
@@ -553,5 +553,5 @@ class BaseModel(ABC):
                 f"{MODEL_CLASS_PKL} file not found and 'load' method isn't overriden"
             )
 
-    def to_mlflow(self, *args, **kwargs):
+    def to_mlflow(self, *_args, **_kwargs):
         raise NotImplementedError()

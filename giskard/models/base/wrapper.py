@@ -119,7 +119,7 @@ class WrapperModel(BaseModel, ABC):
         return np.asarray(raw_predictions)
 
     @configured_validate_arguments
-    def predict_df(self, df: pd.DataFrame, *args, **kwargs):
+    def predict_df(self, df: pd.DataFrame, *_args, **_kwargs):
         if self.batch_size and self.batch_size > 0:
             dfs = np.array_split(df, np.arange(self.batch_size, len(df), self.batch_size))
         else:
@@ -223,15 +223,15 @@ class WrapperModel(BaseModel, ABC):
         """
         ...
 
-    def save_data_preprocessing_function(self, local_path: Union[str, Path], *args, **kwargs):
+    def save_data_preprocessing_function(self, local_path: Union[str, Path], *_args, **_kwargs):
         with open(Path(local_path) / "giskard-data-preprocessing-function.pkl", "wb") as f:
             cloudpickle.dump(self.data_preprocessing_function, f, protocol=pickle.DEFAULT_PROTOCOL)
 
-    def save_model_postprocessing_function(self, local_path: Union[str, Path], *args, **kwargs):
+    def save_model_postprocessing_function(self, local_path: Union[str, Path], *_args, **_kwargs):
         with open(Path(local_path) / "giskard-model-postprocessing-function.pkl", "wb") as f:
             cloudpickle.dump(self.model_postprocessing_function, f, protocol=pickle.DEFAULT_PROTOCOL)
 
-    def save_wrapper_meta(self, local_path, *args, **kwargs):
+    def save_wrapper_meta(self, local_path, *_args, **_kwargs):
         with open(Path(local_path) / "giskard-model-wrapper-meta.yaml", "w") as f:
             yaml.dump(
                 {
@@ -255,7 +255,7 @@ class WrapperModel(BaseModel, ABC):
         return cls(model=cls.load_model(local_dir, model_py_ver), **constructor_params)
 
     @classmethod
-    def load_constructor_params(cls, local_dir, model_py_ver: Optional[Tuple[str, str, str]] = None, *args, **kwargs):
+    def load_constructor_params(cls, local_dir, model_py_ver: Optional[Tuple[str, str, str]] = None, *_args, **kwargs):
         params = cls.load_wrapper_meta(local_dir)
         params["data_preprocessing_function"] = cls.load_data_preprocessing_function(local_dir)
         params["model_postprocessing_function"] = cls.load_model_postprocessing_function(local_dir)
@@ -284,7 +284,7 @@ class WrapperModel(BaseModel, ABC):
         ...
 
     @classmethod
-    def load_data_preprocessing_function(cls, local_path: Union[str, Path], *args, **kwargs):
+    def load_data_preprocessing_function(cls, local_path: Union[str, Path], *_args, **_kwargs):
         local_path = Path(local_path)
         file_path = local_path / "giskard-data-preprocessing-function.pkl"
         if file_path.exists():
@@ -298,7 +298,7 @@ class WrapperModel(BaseModel, ABC):
         return None
 
     @classmethod
-    def load_model_postprocessing_function(cls, local_path: Union[str, Path], *args, **kwargs):
+    def load_model_postprocessing_function(cls, local_path: Union[str, Path], *_args, **_kwargs):
         local_path = Path(local_path)
         file_path = local_path / "giskard-model-postprocessing-function.pkl"
         if file_path.exists():
@@ -323,7 +323,7 @@ class WrapperModel(BaseModel, ABC):
             # ensuring backward compatibility
             return {"batch_size": None}
 
-    def to_mlflow(self, artifact_path: str = "prediction-function-from-giskard", *args, **kwargs):
+    def to_mlflow(self, artifact_path: str = "prediction-function-from-giskard", *_args, **_kwargs):
         def _giskard_predict(df):
             return self.predict(df)
 
