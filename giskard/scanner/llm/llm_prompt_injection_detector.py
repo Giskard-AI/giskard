@@ -85,7 +85,7 @@ class LLMPromptInjectionDetector(Detector):
                         "deviation": f"{number_of_failed_prompts}/{len(group_dataset)} " + group_deviation_description,
                         "hide_index": True,
                         "input_prompts": group_dataset.df.loc[:, model.meta.feature_names],
-                        "evaluator_config_df": evaluator_config_df,
+                        "evaluator_configs": evaluator_config_df,
                     },
                     examples=pd.DataFrame(evaluation_results.failure_examples),
                     tests=_generate_prompt_injection_tests,
