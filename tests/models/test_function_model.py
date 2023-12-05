@@ -76,8 +76,8 @@ COMPAT_TABLE = {
     "3.10": ["3.9", "3.10"],
     "3.11": ["3.11"],
 }
-
 PYTHON_MAJOR_VERSION = ".".join(platform.python_version_tuple()[:2])
+BACKWARD_COMPATIBILITY_MODEL_VERSIONS = {"3.9": "3.10", "3.10": "3.10", "3.11": "3.11"}
 
 
 @pytest.mark.parametrize("py_ver", ["3.9", "3.10", "3.11"])
@@ -92,10 +92,13 @@ def test_prediction_function_load(py_ver):
 
 
 @pytest.mark.skipif(
-    PYTHON_MAJOR_VERSION not in ["3.11"], reason=f"No model pickled with Python {PYTHON_MAJOR_VERSION} "
+    PYTHON_MAJOR_VERSION not in BACKWARD_COMPATIBILITY_MODEL_VERSIONS,
+    reason=f"No model pickled with Python {PYTHON_MAJOR_VERSION} ",
 )
 def test_ensure_backward_compatibility():
-    model_path = Path(__file__).parent / "fixtures" / "ipcc" / PYTHON_MAJOR_VERSION
+    model_path = (
+        Path(__file__).parent / "fixtures" / "ipcc" / BACKWARD_COMPATIBILITY_MODEL_VERSIONS[PYTHON_MAJOR_VERSION]
+    )
 
     import cloudpickle
 
