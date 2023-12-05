@@ -3,6 +3,7 @@ import tempfile
 from pathlib import Path
 from unittest.mock import Mock
 
+import pandas as pd
 from avidtools.datamodels.components import ArtifactTypeEnum
 
 from giskard.scanner.issues import Harmfulness, Issue, IssueLevel, Performance
@@ -134,3 +135,39 @@ def test_avid_artifacts_from_scan_report():
     ]
     report = ScanReport(issues=issues, model=model, dataset=dataset)
     assert len(report.to_avid()[0].affects.artifacts) == 2
+
+
+def test_avid_report_includes_examples():
+    model = Mock()
+    model.name = "My Test Model"
+    dataset = Mock()
+    dataset.meta.name = "My Test Dataset"
+
+    issues = [
+        Issue(
+            model,
+            dataset,
+            Harmfulness,
+            IssueLevel.MAJOR,
+            description="This is a test issue",
+            meta={"metric": "FPR", "metric_value": 0.23},
+            taxonomy=["avid-effect:performance:P0204", "avid-effect:ethics:E0301"],
+        ),
+        Issue(
+            model,
+            dataset,
+            Performance,
+            IssueLevel.MINOR,
+            description="There is a minor issue",
+            meta={"metric": "FPR", "metric_value": 0.23},
+            taxonomy=["avid-effect:performance:P0204"],
+            examples=pd.DataFrame({"feature": [1, 2], "value": ["a", "b"]}),
+        ),
+    ]
+
+    report = ScanReport(issues=issues, model=model, dataset=dataset)
+    r1, r2 = report.to_avid()
+
+    assert "examples" not in r1.metrics[0].results
+    assert "examples" in r2.metrics[0].results
+    assert r2.metrics[0].results["examples"] == [{"feature": 1, "value": "a"}, {"feature": 2, "value": "b"}]
