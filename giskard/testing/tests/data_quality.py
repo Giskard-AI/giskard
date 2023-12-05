@@ -2,6 +2,7 @@
 Module for data quality tests.
 """
 from sklearn.cluster import DBSCAN
+from collections import defaultdict
 from giskard.ml_worker.testing.test_result import TestResult
 from giskard.ml_worker.testing.registry.decorators import test
 from giskard.datasets.base import Dataset
@@ -20,7 +21,8 @@ def uniqueness_test(dataset: Dataset, column: str, threshold: float = 0.8):
     """
     column_data = dataset.df[column]
     uniqueness_ratio = len(column_data.unique()) / len(column_data)
-    return TestResult(passed=uniqueness_ratio >= threshold, metric=uniqueness_ratio, metric_name="uniqueness")
+    return TestResult(passed=uniqueness_ratio >= threshold,
+                      metric=uniqueness_ratio, metric_name="uniqueness")
 
 @test(name="Data Completeness Test")
 def completeness_test(dataset: Dataset):
@@ -156,3 +158,33 @@ def ensure_all_exists(dataset: Dataset, column: str, target_dataset: Dataset, ta
     not_included = source[~source.isin(referenced)]
     missing_ratio = len(not_included) / len(source)
     return TestResult(passed=missing_ratio <= threshold, metric=missing_ratio)
+
+@test(name="Label Consistency Test")
+def label_consistency_test(dataset: Dataset, label_column: str):
+    """
+    Test for checking the consistency of datatype across each label throughout dataset.
+
+    Args:
+        dataset (Dataset): The dataset to test.
+        label_column (str): The column containing the labels.
+
+    Returns:
+        TestResult: The result of the test.
+    """
+    # Group the dataset by the label column
+    groups = defaultdict(list)
+    for _, row in dataset.df.iterrows():
+        groups[row[label_column]].append(row)
+
+    # Check that all data in each group is of the same type
+    inconsistencies = []
+    for label, group in groups.items():
+        types_in_group = {type(val) for row in group for col, val in row.items() if col != label_column}
+        if len(types_in_group) > 1:
+            inconsistencies.append((label, types_in_group))
+
+    if inconsistencies:
+        message = f"Inconsistencies found: {inconsistencies}"
+        return TestResult(passed=False, metric_name="consistency", metric=0, messages=message)
+
+    return TestResult(passed=True, metric_name="consistency", metric=1)
