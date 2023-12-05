@@ -1,5 +1,6 @@
 import re
 from pathlib import Path
+
 from typing import Union, Optional, Tuple
 
 from giskard.core.core import SupportedModelTypes
@@ -14,17 +15,17 @@ def test_custom_model(linear_regression_diabetes: BaseModel):
 
         class MyModel(WrapperModel):
             @classmethod
-            def load_model(cls, local_dir, model_py_ver: Optional[Tuple[str, str, str]] = None):
+            def load_model(cls, local_dir, model_py_ver: Optional[Tuple[str, str, str]] = None, *args, **kwargs):
                 pass
 
-            def save_model(self, local_path: Union[str, Path]) -> None:
+            def save_model(self, local_path: Union[str, Path], *args, **kwargs) -> None:
                 pass
 
             def model_predict(self, df):
                 pass
 
-            def save(self, local_path: Union[str, Path]) -> None:
-                super().save(local_path)
+            def save(self, local_path: Union[str, Path], *args, **kwargs) -> None:
+                super().save(local_path, *args, **kwargs)
 
             should_save_model_class = True
 

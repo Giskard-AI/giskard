@@ -1,5 +1,3 @@
-from typing import Literal, Optional, Tuple, Union, get_args
-
 import collections
 import importlib
 from pathlib import Path
@@ -10,11 +8,12 @@ import torch
 import yaml
 from torch.utils.data import DataLoader
 from torch.utils.data import Dataset as torch_dataset
+from typing import Literal, Optional, Tuple, Union, get_args
 
-from ..client.python_utils import warning
-from ..core.core import ModelType
 from .base.serialization import MLFlowSerializableModel
 from .utils import map_to_tuples
+from ..client.python_utils import warning
+from ..core.core import ModelType
 
 TorchDType = Literal[
     "float32",
@@ -139,10 +138,10 @@ class PyTorchModel(MLFlowSerializableModel):
             )
 
     @classmethod
-    def load_model(cls, local_dir, model_py_ver: Optional[Tuple[str, str, str]] = None):
+    def load_model(cls, local_dir, model_py_ver: Optional[Tuple[str, str, str]] = None, *args, **kwargs):
         return mlflow.pytorch.load_model(local_dir)
 
-    def save_model(self, local_path, mlflow_meta: mlflow.models.Model):
+    def save_model(self, local_path, mlflow_meta: mlflow.models.Model, *args, **kwargs):
         mlflow.pytorch.save_model(self.model, path=local_path, mlflow_model=mlflow_meta)
 
     def _get_predictions_from_iterable(self, data):
@@ -199,7 +198,7 @@ class PyTorchModel(MLFlowSerializableModel):
 
         return super()._convert_to_numpy(raw_predictions)
 
-    def save_pytorch_meta(self, local_path):
+    def save_pytorch_meta(self, local_path, *args, **kwargs):
         with open(Path(local_path) / "giskard-model-pytorch-meta.yaml", "w") as f:
             yaml.dump(
                 {
@@ -211,14 +210,14 @@ class PyTorchModel(MLFlowSerializableModel):
                 default_flow_style=False,
             )
 
-    def save(self, local_path: Union[str, Path]) -> None:
-        super().save(local_path)
+    def save(self, local_path: Union[str, Path], *args, **kwargs) -> None:
+        super().save(local_path, *args, **kwargs)
         self.save_pytorch_meta(local_path)
 
     @classmethod
-    def load(cls, local_dir, model_py_ver: Optional[Tuple[str, str, str]] = None, **kwargs):
+    def load(cls, local_dir, model_py_ver: Optional[Tuple[str, str, str]] = None, *args, **kwargs):
         kwargs.update(cls.load_pytorch_meta(local_dir))
-        return super().load(local_dir, model_py_ver=model_py_ver, **kwargs)
+        return super().load(local_dir, model_py_ver=model_py_ver, *args, **kwargs)
 
     @classmethod
     def load_pytorch_meta(cls, local_dir):

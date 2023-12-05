@@ -1,5 +1,3 @@
-from typing import Any, Callable, Dict, Iterable, Optional
-
 import pandas as pd
 import pytest
 from langchain.chains import RetrievalQA
@@ -7,6 +5,7 @@ from langchain.document_loaders import TextLoader
 from langchain.embeddings import FakeEmbeddings
 from langchain.llms.fake import FakeListLLM
 from langchain.text_splitter import CharacterTextSplitter
+from typing import Any, Callable, Dict, Iterable, Optional
 
 import giskard
 from giskard.core.core import SupportedModelTypes
@@ -52,7 +51,7 @@ class FaissRetrieverModel(LangchainModel):
             **kwargs,
         )
 
-    def save_artifacts(self, artifact_dir) -> None:
+    def save_artifacts(self, artifact_dir, *args, **kwargs) -> None:
         self.retriever.save_local(artifact_dir)
 
     @classmethod
