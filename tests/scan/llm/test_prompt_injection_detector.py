@@ -17,7 +17,7 @@ def test_prompt_injection_data_loader_properties():
     assert len(loader.df.columns) == 15
     assert len(loader.groups) == 10
     group = loader.groups[0]
-    assert len(loader.config_df_from_group(group)) == len(loader.df_from_group(group))
+    assert len(loader.evaluator_configs_from_group(group)) == len(loader.df_from_group(group))
 
 
 def test_prompt_injection_data_loader_sampling():

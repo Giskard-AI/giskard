@@ -82,8 +82,8 @@ class PromptInjectionDataLoader:
     def prompts_from_group(self, group):
         return self.df_from_group(group).prompt
 
-    def config_df_from_group(self, group):
-        return self.df_from_group(group).drop(["prompt"], axis=1)
+    def evaluator_configs_from_group(self, group):
+        return self.df_from_group(group).drop(["prompt"], axis=1).to_dict("records")
 
     def group_description(self, group):
         group_description = self.df_from_group(group).description.to_list()
