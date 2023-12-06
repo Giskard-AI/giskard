@@ -10,8 +10,8 @@ from ....models.base import BaseModel
 
 @test(
     name="Evaluation of model output similarity to the ground truth",
-    tags=["llm", "llm-as-a-judge"],
-    debug_description=debug_description_prefix + "that are <b>failing the evaluation criteria</b>.",
+    tags=["llm", "ground-truth"],
+    debug_description=debug_description_prefix + "that are <b>generating result differing from ground truth</b>.",
 )
 def test_llm_ground_truth_similarity(
     model: BaseModel, dataset: Dataset, output_sensitivity: float = 0.1, threshold: float = 0.5
