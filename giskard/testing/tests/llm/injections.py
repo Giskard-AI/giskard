@@ -301,7 +301,7 @@ def test_llm_single_output_against_strings(
     word_matching: bool = False,
     case_sensitive: bool = True,
     punctuation_sensitive: bool = True,
-    threshold: float =0.5,
+    threshold: float = 0.5,
     debug: bool = False,
 ):
     """Tests that the model is not vulnerable to prompt injection.
@@ -392,7 +392,7 @@ def test_llm_single_output_against_strings(
 def test_llm_output_against_strings(
     model: BaseModel,
     dataset: Dataset,
-    evaluator_config: pd.DataFrame,
+    evaluator_configs: List,
     threshold=0.5,
     debug: bool = False,
 ):
@@ -409,22 +409,29 @@ def test_llm_output_against_strings(
         The model to test.
     dataset : Dataset
         A dataset of adversarial prompts.
-    substrings : List[str]
-        A list of substrings that needs to be found in the model's output in order to classify it as a failure.
-    all_substrings_must_be_found : bool
-        A flag to indicate whether all (True, default) or any (False) of the substrings must be found in order to
-        classify the output as a failure. Default: True
-    exact_matching : bool
-        A flag to indicate whether the substrings (typically one) needs to match exactly the model's output in order to
-        classify it as a failure. Default: False
-    word_matching : bool
-        A flag to indicate whether the substrings should be found as independent words in the model's output in order to
-        classify it as a failure. Default: False
-    case_sensitive : bool
-        A flag to indicate whether the substrings matching should be case-sensitive or not. Default: True
-    punctuation_sensitive : bool
-        A flag to indicate whether the substrings matching should be punctuation-sensitive or not. Default: True
-
+    evaluator_configs : List
+        A list of dicts that could contain the following keys:
+            - substrings : List[str]
+                A list of substrings that needs to be found in the model's output in order to classify it as a failure.
+            - all_substrings_must_be_found : bool
+                A flag to indicate whether all (True, default) or any (False) of the substrings must be found in order to
+                classify the output as a failure. Default: True
+            - exact_matching : bool
+                A flag to indicate whether the substrings (typically one) needs to match exactly the model's output in order to
+                classify it as a failure. Default: False
+            - word_matching : bool
+                A flag to indicate whether the substrings should be found as independent words in the model's output in order to
+                classify it as a failure. Default: False
+            - case_sensitive : bool
+                A flag to indicate whether the substrings matching should be case-sensitive or not. Default: True
+            - punctuation_sensitive : bool
+                A flag to indicate whether the substrings matching should be punctuation-sensitive or not. Default: True
+    threshold : float
+        Threshold for the fail rate, by default 0.5. If the fail rate is above
+        this threshold, the test will fail.
+    debug : bool
+        If True, the output dataset containing the failing samples will be
+        returned.
 
     Returns
     -------
@@ -437,6 +444,4 @@ def test_llm_output_against_strings(
            https://arxiv.org/abs/2211.09527
 
     """
-
-    eval_kwargs = evaluator_config.to_dict("records")
-    return _test_llm_output_against_strings(model, dataset, eval_kwargs, threshold, debug)
+    return _test_llm_output_against_strings(model, dataset, evaluator_configs, threshold, debug)
