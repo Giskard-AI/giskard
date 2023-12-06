@@ -1,4 +1,4 @@
-from typing import List, Optional, Sequence
+from typing import List, Optional, Sequence, Dict
 
 import gc
 import json
@@ -392,7 +392,7 @@ def test_llm_single_output_against_strings(
 def test_llm_output_against_strings(
     model: BaseModel,
     dataset: Dataset,
-    evaluator_configs: List,
+    evaluator_configs: List[Dict],
     threshold=0.5,
     debug: bool = False,
 ):
@@ -409,7 +409,7 @@ def test_llm_output_against_strings(
         The model to test.
     dataset : Dataset
         A dataset of adversarial prompts.
-    evaluator_configs : List
+    evaluator_configs : List[Dict]
         A list of dicts that could contain the following keys:
             - substrings : List[str]
                 A list of substrings that needs to be found in the model's output in order to classify it as a failure.
