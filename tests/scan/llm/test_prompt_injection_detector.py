@@ -68,6 +68,7 @@ def test_detector(PromptInjectionDataLoader):  # noqa
     )
     loader._df.substrings = loader._df.substrings.apply(ast.literal_eval)
     loader.df.return_value = loader._df
+    evaluator_configs = loader._df.drop(["prompt"], axis=1).to_dict("records")
 
     group_dataset = Dataset(
         df=pd.DataFrame({feature: loader._df.prompt for feature in features}, index=loader._df.prompt.index),
@@ -79,7 +80,7 @@ def test_detector(PromptInjectionDataLoader):  # noqa
     )
     loader.groups = [group]
     loader.load_dataset_from_group.return_value = group_dataset
-    loader.config_df_from_group.return_value = loader._df.drop(["prompt"], axis=1)
+    loader.evaluator_configs_from_group.return_value = evaluator_configs
     loader.group_description.return_value = group_description
     loader.group_deviation_description.return_value = group_deviation_description
 
@@ -92,7 +93,6 @@ def test_detector(PromptInjectionDataLoader):  # noqa
     assert len(issues) == 1
     assert issues[0].is_major
 
-    eval_kwargs = loader._df
-    test_result = _test_llm_output_against_strings(model, group_dataset, eval_kwargs, 0.5, True)
+    test_result = _test_llm_output_against_strings(model, group_dataset, evaluator_configs, 0.5, True)
     assert not test_result.passed
     assert len(test_result.output_ds.df) == len(group_dataset.df) == 1
