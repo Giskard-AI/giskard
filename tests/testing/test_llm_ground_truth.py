@@ -4,7 +4,70 @@ from langchain.chains import LLMChain
 from langchain.llms.fake import FakeListLLM
 
 from giskard import Model, Dataset
-from giskard.testing.tests.llm import test_llm_ground_truth_similarity
+from giskard.testing.tests.llm import test_llm_ground_truth_similarity, test_llm_ground_truth
+
+
+def test_ground_truth_exact():
+    llm = FakeListLLM(responses=["GREETING", "GREETING", "NOT_GREETING"])
+    chain = LLMChain.from_string(llm=llm, template="Is it a greeting: {text}")
+    model = Model(
+        chain,
+        "text_generation",
+        feature_names=["text"],
+        name="Greeting classification",
+        description="Classify text between GREETING and NOT_GREETING",
+    )
+
+    dataset = Dataset(
+        pd.DataFrame(
+            {
+                "text": ["Bonjour, comment ca va?", "Hi, how are you?", "Je traduis en anglais"],
+                "target": ["GREETING", "GREETING", "NOT_GREETING"],
+            }
+        ),
+        target="target",
+    )
+
+    result = test_llm_ground_truth(model, dataset).execute()
+
+    assert result.passed
+
+    llm = FakeListLLM(responses=["NOT_GREETING" * 3])
+    chain = LLMChain.from_string(llm=llm, template="Is it a greeting: {text}")
+    model = Model(
+        chain,
+        "text_generation",
+        feature_names=["text"],
+        name="Greeting classification",
+        description="Classify text between GREETING and NOT_GREETING",
+    )
+
+    result = test_llm_ground_truth(model, dataset).execute()
+
+    assert not result.passed
+
+
+def test_ground_truth_exact_no_target():
+    llm = FakeListLLM(responses=["GREETING", "GREETING", "NOT_GREETING"])
+    chain = LLMChain.from_string(llm=llm, template="Is it a greeting: {text}")
+    model = Model(
+        chain,
+        "text_generation",
+        feature_names=["text"],
+        name="Greeting classification",
+        description="Classify text between GREETING and NOT_GREETING",
+    )
+
+    dataset = Dataset(
+        pd.DataFrame(
+            {
+                "text": ["Bonjour, comment ca va?", "Hi, how are you?", "Je traduis en anglais"],
+            }
+        )
+    )
+
+    with pytest.raises(ValueError):
+        test_llm_ground_truth(model, dataset).execute()
 
 
 @pytest.mark.memory_expensive
