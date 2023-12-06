@@ -315,7 +315,6 @@ def start(attached, skip_version_check, version, environment, env_file):
     By default, the server starts detached and will run in the background.
     You can attach to it by using -a
     """
-    print(env_file)
     analytics.track(
         "giskard-server:start",
         {
