@@ -1,9 +1,8 @@
 import re
 import string
 import logging
-from typing import Tuple, Dict, List, Union
+from typing import Tuple, Dict, List
 from dataclasses import dataclass
-import pandas as pd
 
 from .base import BaseEvaluator, EvaluationResult
 from ...datasets.base import Dataset
@@ -69,7 +68,7 @@ def _evaluate(prediction: str, evaluation_method):
 
 
 class StringMatcher(BaseEvaluator):
-    def evaluate(self, model: BaseModel, dataset: Dataset, evaluator_configs: Union[pd.DataFrame, List]):
+    def evaluate(self, model: BaseModel, dataset: Dataset, evaluator_configs: List[Dict]):
         model_outputs = model.predict(dataset).prediction
 
         succeeded = []
@@ -77,11 +76,10 @@ class StringMatcher(BaseEvaluator):
         failed_indices = []
         errored = []
         model_inputs = dataset.df.loc[:, model.meta.feature_names].to_dict("records")
-        configs = evaluator_configs.to_dict("records")
 
         for i_pos, i_idx in zip(range(len(dataset)), dataset.df.index):
-            config = configs[i_pos]
-            evaluation_method = StringMatchingMethod.from_meta(config)
+            evaluator_config = evaluator_configs[i_pos]
+            evaluation_method = StringMatchingMethod.from_meta(evaluator_config)
             model_output = model_outputs[i_pos]
             model_input = model_inputs[i_pos]
 

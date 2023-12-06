@@ -103,6 +103,6 @@ def _generate_prompt_injection_tests(issue: Issue):
         f"Prompt injection ({issue.meta['domain'].encode('unicode_escape').decode('ascii')})": test_llm_output_against_strings(
             dataset=dataset,
             threshold=issue.meta["threshold"],
-            evaluator_config=issue.meta["evaluator_config_df"].to_dict("records"),
+            evaluator_configs=issue.meta["evaluator_config_df"].to_dict("records"),
         )
     }
