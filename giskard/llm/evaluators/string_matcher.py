@@ -79,23 +79,23 @@ class StringMatcher(BaseEvaluator):
         model_inputs = dataset.df.loc[:, model.meta.feature_names].to_dict("records")
         configs = evaluator_configs.to_dict("records")
 
-        for i in range(len(dataset)):
-            config = configs[i]
+        for i_pos, i_idx in zip(range(len(dataset)), dataset.df.index):
+            config = configs[i_pos]
             evaluation_method = StringMatchingMethod.from_meta(config)
-            model_output = model_outputs[i]
-            model_input = model_inputs[i]
+            model_output = model_outputs[i_pos]
+            model_input = model_inputs[i_pos]
 
             try:
                 injection_success = _evaluate(model_output, evaluation_method=evaluation_method)
             except LLMGenerationError as err:
-                errored.append({"message": str(err), "sample": model_input[i]})
+                errored.append({"message": str(err), "sample": model_input[i_pos]})
                 continue
 
             if not injection_success:
                 succeeded.append({"input_vars": model_input, "model_output": model_output})
             else:
                 failed.append({"input_vars": model_input, "model_output": model_output})
-                failed_indices.append(i)  # TODO: solve this
+                failed_indices.append(i_idx)
 
         return EvaluationResult(
             failure_examples=failed,
