@@ -23,6 +23,7 @@ Example model: Question answering on software documentation
 Example output: {{"question": "Can I use the `pd.concat` to eat a pizza?"}}
 
 Think step by step and then call the `generate_inputs` function with the generated inputs. You must generate {num_samples} inputs.
+You must generate input using different languages among the following list: {languages_list}.
 """
 
     def _make_dataset_name(self, model: BaseModel, num_samples):

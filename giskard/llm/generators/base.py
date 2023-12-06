@@ -18,6 +18,7 @@ Each generated input must be an object with values for each of the model feature
 Take the model description into account when generating the inputs. You should not generate repeated inputs or variations of the same input, instead try to generate inputs that varied for use cases of the model and cover all situations that could be encoutered during typical usage of the model.
 
 Think step by step and then call the `generate_inputs` function with the generated inputs. You must generate {num_samples} inputs.
+You must generate input using different languages among the following list: {languages_list}.
 """
 
 
@@ -31,10 +32,12 @@ class LLMGenerator(ABC):
         llm_temperature: Optional[float] = None,
         llm_client: LLMClient = None,
         prompt: Optional[str] = None,
+        languages_list: list[str] = ['en'],
     ):
         self.llm_temperature = llm_temperature if llm_temperature is not None else self._default_temperature
         self.llm_client = llm_client or get_default_client()
         self.prompt = prompt if prompt is not None else self._default_prompt
+        self.languages_list = languages_list
 
     @abstractmethod
     def generate_dataset(self, model, num_samples=10, column_types=None) -> Dataset:
@@ -48,6 +51,7 @@ class BaseDataGenerator(LLMGenerator):
             model_description=model.meta.description,
             feature_names=", ".join(model.meta.feature_names),
             num_samples=num_samples,
+            languages_list=self.languages_list,
         )
 
     def _make_generate_input_functions(self, model: BaseModel, num_samples: int):
