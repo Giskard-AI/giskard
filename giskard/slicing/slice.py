@@ -5,10 +5,10 @@ import re
 import uuid
 from abc import ABC, abstractmethod
 from collections import defaultdict
-from typing import Callable, Sequence, List, Dict
 
 import numpy as np
 import pandas as pd
+from typing import Callable, Sequence, List, Dict
 
 from ..core.core import DatasetProcessFunctionMeta, DatasetProcessFunctionType
 from ..ml_worker.testing.registry.slicing_function import SlicingFunction
@@ -304,7 +304,7 @@ class QueryBasedSliceFunction(SlicingFunction):
         self.meta.name = str(self)
         self.meta.display_name = str(self)
         self.meta.tags = ["pickle", "scan"]
-        self.meta.doc = "Automatically generated slicing function"
+        self.meta.doc = '{"description": "Automatically generated slicing function.", "parameters": {}}'
         self.meta.uuid = str(uuid.uuid5(uuid.NAMESPACE_OID, self.meta.name))
 
     def execute(self, data: pd.DataFrame):
