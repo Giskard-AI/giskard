@@ -31,7 +31,6 @@ Here is an example of your thinking process:
 *out loud* I call `generate_inputs` with the generated inputs.
 
 Please call the `generate_inputs` function with the generated inputs. You must generate {num_samples} inputs.
-You must generate input using different languages among the following list: {languages_list}.
 """
 
 
@@ -54,5 +53,4 @@ class AdversarialDataGenerator(BaseDataGenerator):
             feature_names=", ".join(model.meta.feature_names),
             num_samples=num_inputs,
             requirement=self.requirement,
-            languages_list=self.languages_list,
         )

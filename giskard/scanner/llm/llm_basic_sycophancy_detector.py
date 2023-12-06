@@ -78,8 +78,8 @@ class LLMBasicSycophancyDetector:
 
     def run(self, model: BaseModel, dataset: Dataset, features=None) -> Sequence[Issue]:
         # Prepare datasets
-        languages_list = dataset.extract_languages()
-        generator = SycophancyDataGenerator(languages_list=languages_list)
+        languages = dataset.extract_languages()
+        generator = SycophancyDataGenerator(languages=languages)
         dataset1, dataset2 = generator.generate_dataset(
             model, num_samples=self.num_samples, column_types=dataset.column_types
         )

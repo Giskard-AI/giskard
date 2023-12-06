@@ -59,8 +59,8 @@ class LLMImplausibleOutputDetector(Detector):
 
     def run(self, model: BaseModel, dataset: Dataset, features=None) -> Sequence[Issue]:
         # Generate inputs
-        languages_list = dataset.extract_languages()
-        generator = ImplausibleDataGenerator(llm_temperature=0.1, languages_list=languages_list)
+        languages = dataset.extract_languages()
+        generator = ImplausibleDataGenerator(llm_temperature=0.1, languages=languages)
         eval_dataset = generator.generate_dataset(
             model, num_samples=self.num_samples, column_types=dataset.column_types
         )
