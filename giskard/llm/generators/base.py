@@ -33,7 +33,7 @@ class LLMGenerator(ABC):
         llm_temperature: Optional[float] = None,
         llm_client: LLMClient = None,
         prompt: Optional[str] = None,
-        languages: set[str] = None,
+        languages: list[str] = None,
     ):
         self.llm_temperature = llm_temperature if llm_temperature is not None else self._default_temperature
         self.llm_client = llm_client or get_default_client()

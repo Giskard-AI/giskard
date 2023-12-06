@@ -515,7 +515,7 @@ class Dataset(ColumnMetadataMixin):
             list[str]: a list of columns from which languages should be extracted.
 
         Returns:
-            set[str]: a set of language codes (according to  ISO 639-1) containing all languages in the dataset.
+            list[str]: a list of language codes (according to  ISO 639-1) containing all languages in the dataset.
         """
         columns = columns if columns is not None else self.columns
 
@@ -525,7 +525,7 @@ class Dataset(ColumnMetadataMixin):
             if (col_type == "text" and col in columns)
         ]
 
-        return set().union(*langs_per_feature)
+        return list(set().union(*langs_per_feature))
 
     @property
     def meta(self):
