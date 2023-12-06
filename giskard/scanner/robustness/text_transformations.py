@@ -26,7 +26,7 @@ class TextTransformation(TransformationFunction):
         self.meta.name = self.name
         self.meta.display_name = self.name
         self.meta.tags = ["pickle", "scan"]
-        self.meta.doc = "Automatically generated transformation function"
+        self.meta.doc = self.meta.default_doc("Automatically generated transformation function")
 
     def __str__(self):
         return self.name
