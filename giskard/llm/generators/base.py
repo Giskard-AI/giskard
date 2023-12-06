@@ -37,10 +37,10 @@ class LLMGenerator(ABC):
     ):
         self.llm_temperature = llm_temperature if llm_temperature is not None else self._default_temperature
         self.llm_client = llm_client or get_default_client()
-        self.languages = languages if languages is not None else {}
+        self.languages = languages if languages is not None else []
         self.prompt = prompt if prompt is not None else self._default_prompt
 
-        if self.languages != {}:
+        if isinstance(self.languages, list) and self.languages != []:
             self.prompt = self.prompt + LANGUAGE_REQUIREMENT_PROMPT.format(languages=self.languages)
 
     @abstractmethod
