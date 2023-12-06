@@ -517,7 +517,9 @@ class Dataset(ColumnMetadataMixin):
         languages_set = []
         for col in self.columns:
             if self.column_types[col] == "text":
-                languages_set = languages_set + self.column_meta[col, self.column_types[col]]['language'].unique().tolist()
+                languages_set = (
+                    languages_set + self.column_meta[col, self.column_types[col]]["language"].unique().tolist()
+                )
         return list(set(languages_set))
 
     @property
