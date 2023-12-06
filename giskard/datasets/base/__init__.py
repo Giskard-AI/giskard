@@ -507,20 +507,25 @@ class Dataset(ColumnMetadataMixin):
             )
         return dataset_id
 
-    def extract_languages(self):
+    def extract_languages(self, columns=None):
         """
         Extracts all languages present in the dataset 'text' column.
 
+        Args:
+            list[str]: a list of columns from which languages should be extracted.
+
         Returns:
-            list[str]: a list of language codescontaining all languages in the dataset.
+            set[str]: a set of language codes (according to  ISO 639-1) containing all languages in the dataset.
         """
-        languages_set = []
-        for col in self.columns:
-            if self.column_types[col] == "text":
-                languages_set = (
-                    languages_set + self.column_meta[col, self.column_types[col]]["language"].unique().tolist()
-                )
-        return list(set(languages_set))
+        columns = columns if columns is not None else self.columns
+
+        langs_per_feature = [
+            self.column_meta[col, "text"]["language"].dropna().unique()
+            for col, col_type in self.column_types.items()
+            if (col_type == "text" and col in columns)
+        ]
+
+        return set().union(*langs_per_feature)
 
     @property
     def meta(self):
