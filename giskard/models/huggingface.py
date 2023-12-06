@@ -92,19 +92,17 @@ from this behavior, you can provide a custom postprocessing function using
 the `model_postprocessing_function` argument. This function should take the
 raw output of your model and return a numpy array of probabilities.
 """
-from typing import Any, Callable, Iterable, Optional, Tuple, Union
-
 import logging
 from pathlib import Path
 
 import pandas as pd
 import yaml
 from scipy import special
+from typing import Any, Callable, Iterable, Optional, Tuple, Union
 
 from giskard.core.core import ModelType
 from giskard.core.validation import configured_validate_arguments
 from giskard.models.base import WrapperModel
-
 from ..client.python_utils import warning
 
 try:
@@ -196,7 +194,7 @@ class HuggingFaceModel(WrapperModel):
             pass
 
     @classmethod
-    def load_model(cls, local_path, model_py_ver: Optional[Tuple[str, str, str]] = None):
+    def load_model(cls, local_path, model_py_ver: Optional[Tuple[str, str, str]] = None, *args, **kwargs):
         huggingface_meta_file = Path(local_path) / "giskard-model-huggingface-meta.yaml"
         if huggingface_meta_file.exists():
             with open(huggingface_meta_file) as f:
@@ -207,7 +205,7 @@ class HuggingFaceModel(WrapperModel):
 
         return huggingface_meta["huggingface_module"].from_pretrained(local_path)
 
-    def save_huggingface_meta(self, local_path):
+    def save_huggingface_meta(self, local_path, *args, **kwargs):
         with open(Path(local_path) / "giskard-model-huggingface-meta.yaml", "w") as f:
             yaml.dump(
                 {
@@ -218,12 +216,12 @@ class HuggingFaceModel(WrapperModel):
                 default_flow_style=False,
             )
 
-    def save(self, local_path: Union[str, Path]) -> None:
-        super().save(local_path)
+    def save(self, local_path: Union[str, Path], *args, **kwargs) -> None:
+        super().save(local_path, *args, **kwargs)
         self.save_model(local_path)
         self.save_huggingface_meta(local_path)
 
-    def save_model(self, local_path):
+    def save_model(self, local_path, *args, **kwargs):
         self.model.save_pretrained(local_path)
 
     def model_predict(self, data):
