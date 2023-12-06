@@ -6,7 +6,7 @@
 
 | Vulnerability | Level | Data slice | Metric | Transformation | Deviation |
 |---------------|-------|------------|--------|----------------|-----------|
-| {{ view.group.name }} | <span style="color:{% if issue.level.value == "major" %} red {% else %} yellow {% endif %} "> {{ issue.level.value }} {% if issue.level.value == "major" %} 🔴 {% else %} 🟡 {% endif %} </span> | {{ issue.slicing_fn if issue.slicing_fn else "—" }} | {% if "metric" in issue.meta %}{{ issue.meta.metric }} = {{ issue.meta.metric_value|format_metric }}{% else %} "—" {% endif %} | {{ issue.transformation_fn if issue.transformation_fn else "—" }} | {{ issue.meta["deviation"] if "deviation" in issue.meta else "—" }} |
+| {{ view.group.name }} | <span style="color:{% if issue.level.value == "major" %} red {% else %} orange {% endif %} "> {{ issue.level.value }} {% if issue.level.value == "major" %} 🔴 {% else %} 🟡 {% endif %} </span> | {{ issue.slicing_fn if issue.slicing_fn else "—" }} | {% if "metric" in issue.meta %}{{ issue.meta.metric }} = {{ issue.meta.metric_value|format_metric }}{% else %} "—" {% endif %} | {{ issue.transformation_fn if issue.transformation_fn else "—" }} | {{ issue.meta["deviation"] if "deviation" in issue.meta else "—" }} |
 
 <details>
 <summary> 🔍✨Examples</summary>
