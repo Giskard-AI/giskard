@@ -62,7 +62,6 @@ class RequirementEvaluator(BaseRequirementEvaluator):
         super().__init__(*args, **kwargs)
         self.requirements = requirements
 
-    @abstractmethod
     def requirements(self, input_vars):
         return "\n".join([f"- {r}" for r in self.requirements])
 
@@ -74,6 +73,5 @@ class PerRowRequirementEvaluator(BaseRequirementEvaluator):
         super().__init__(*args, **kwargs)
         self.requirement_column = requirement_column
 
-    @abstractmethod
     def requirements(self, input_vars):
         return input_vars[self.requirement_column]
