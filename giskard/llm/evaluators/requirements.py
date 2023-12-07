@@ -60,10 +60,10 @@ class RequirementEvaluator(BaseRequirementEvaluator):
 
     def __init__(self, requirements: Sequence[str], *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self.requirements = requirements
+        self.requirements_list = requirements
 
     def requirements(self, input_vars):
-        return "\n".join([f"- {r}" for r in self.requirements])
+        return "\n".join([f"- {r}" for r in self.requirements_list])
 
 
 class PerRowRequirementEvaluator(BaseRequirementEvaluator):
