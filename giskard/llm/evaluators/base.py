@@ -80,7 +80,7 @@ class LLMBasedEvaluator:
         failed_idx = []
         errored = []
         for row_index, input_vars, model_output in zip(
-            dataset.df.loc[:, model.meta.feature_names].index,
+            dataset.df.index,
             dataset.df.loc[:, model.meta.feature_names].to_dict("records"),
             model_outputs,
         ):
