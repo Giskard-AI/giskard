@@ -2,37 +2,23 @@ import json
 
 import pandas as pd
 
+from .. import debug_description_prefix
 from ....datasets.base import Dataset
-from ....llm.evaluators import RequirementEvaluator
+from ....llm.evaluators import RequirementEvaluator, PerRowRequirementEvaluator
 from ....ml_worker.testing.registry.decorators import test
 from ....ml_worker.testing.test_result import TestMessage, TestMessageLevel, TestResult
 from ....models.base import BaseModel
 from ....utils.display import truncate
-from .. import debug_description_prefix
 
 
-def _test_output_against_requirement(model: BaseModel, dataset: Dataset, requirement: str, debug: bool = False):
-    evaluator = RequirementEvaluator([requirement])
+def _test_output_against_requirement(model, dataset, evaluator):
     eval_result = evaluator.evaluate(model, dataset)
-
-    output_ds = None
-
-    if eval_result.failed and debug:
-        df = pd.DataFrame([ex["input_vars"] for ex in eval_result.failure_examples])
-        output_ds = Dataset(
-            df,
-            name=truncate(f'Failing examples for requirement "{requirement}"'),
-            column_types=dataset.column_types,
-            validation=False,
-        )
-
     messages = []
     if eval_result.has_errors:
         messages = [TestMessage(TestMessageLevel.ERROR, err["message"]) for err in eval_result.errors]
-
     return TestResult(
         passed=eval_result.passed,
-        output_df=output_ds,
+        output_ds=[eval_result.output_ds],
         metric=len(eval_result.failure_examples),
         metric_name="Failing examples",
         is_error=eval_result.has_errors,
@@ -45,7 +31,41 @@ def _test_output_against_requirement(model: BaseModel, dataset: Dataset, require
     tags=["llm", "llm-as-a-judge"],
     debug_description=debug_description_prefix + "that are <b>failing the evaluation criteria</b>.",
 )
-def test_llm_output_against_requirement(model: BaseModel, dataset: Dataset, requirement: str, debug: bool = False):
+def test_llm_output_against_requirement_per_row(model: BaseModel, dataset: Dataset, requirement_column: str):
+    """Evaluates the model output against a given requirement with another LLM (LLM-as-a-judge).
+
+    The model outputs over a given dataset will be validated against the
+    specified requirement using GPT-4 (note that this requires you to set the
+    `OPENAI_API_TOKEN` environment variable for the test to run correctly).
+
+    Parameters
+    ----------
+    model : BaseModel
+        The generative model to test.
+    dataset : Dataset
+        A dataset of examples which will be provided as inputs to the model.
+    requirement_column : str
+        The column in the dataset containing the requirement to evaluate the model output against. This should be a
+        clear and explicit requirement that can be interpreted by the LLM, for
+        example: “The model should decline to answer”, “The model should not
+        generate content that incites harm or violence”, or “The model should
+        apologize and explain that it cannot answer questions unrelated to its
+        scope”.
+
+    Returns
+    -------
+    TestResult
+        A TestResult object containing the test result.
+    """
+    return _test_output_against_requirement(model, dataset, PerRowRequirementEvaluator(requirement_column))
+
+
+@test(
+    name="Evaluation of model output using an LLM (LLM-as-a-judge)",
+    tags=["llm", "llm-as-a-judge"],
+    debug_description=debug_description_prefix + "that are <b>failing the evaluation criteria</b>.",
+)
+def test_llm_output_against_requirement(model: BaseModel, dataset: Dataset, requirement: str):
     """Evaluates the model output against a given requirement with another LLM (LLM-as-a-judge).
 
     The model outputs over a given dataset will be validated against the
@@ -65,16 +85,13 @@ def test_llm_output_against_requirement(model: BaseModel, dataset: Dataset, requ
         generate content that incites harm or violence”, or “The model should
         apologize and explain that it cannot answer questions unrelated to its
         scope”.
-    debug : bool
-        If True and the test fails, a dataset containing the rows that have
-        failed the evaluation criteria will be included in the test result.
 
     Returns
     -------
     TestResult
         A TestResult object containing the test result.
     """
-    return _test_output_against_requirement(model, dataset, requirement, debug)
+    return _test_output_against_requirement(model, dataset, RequirementEvaluator([requirement]))
 
 
 @test(
@@ -136,4 +153,12 @@ def test_llm_single_output_against_requirement(
     )
 
     # Run normal output requirement test
-    return _test_output_against_requirement(model, dataset, requirement, debug)
+    test_result = _test_output_against_requirement(model, dataset, RequirementEvaluator([requirement]))
+
+    # Use legacy debug since dataset is not uploaded
+    if debug and not test_result.passed:
+        test_result.output_df = test_result.output_ds[0]
+
+    test_result.output_ds = None
+
+    return test_result
