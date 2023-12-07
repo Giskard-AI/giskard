@@ -161,7 +161,7 @@ class FAISSRAGModel(giskard.Model):
     def model_predict(self, df: pd.DataFrame):
         return df["question"].apply(lambda x: self.model.run({"query": x}))
 
-    def save_model(self, path: str):
+    def save_model(self, path: str, *args, **kwargs):
         """Saves the model to a given folder."""
         out_dest = Path(path)
 
@@ -174,7 +174,7 @@ class FAISSRAGModel(giskard.Model):
         db.save_local(out_dest.joinpath("faiss"))
 
     @classmethod
-    def load_model(cls, path: str) -> Chain:
+    def load_model(cls, path: str, *args, **kwargs) -> Chain:
         """Loads the model to a given folder."""
         src = Path(path)
 
