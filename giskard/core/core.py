@@ -77,6 +77,7 @@ def _get_plugin_method_full_name(func):
 
 def create_test_function_id(func):
     from giskard.ml_worker.testing.registry.registry import plugins_root
+
     is_relative = Path(inspect.getfile(func)).is_relative_to(plugins_root)
     if is_relative:
         full_name = _get_plugin_method_full_name(func)
@@ -272,6 +273,13 @@ class CallableMeta(SavableMeta, ABC):
         except Exception as e:
             logger.info(f"Failed to extract test function code {self.full_name}: %s" % e)
         return code
+
+    @staticmethod
+    def default_doc(description: str) -> str:
+        doc = CallableDocumentation()
+        doc.description = description
+        doc.parameters = {}
+        return json.dumps(doc.to_dict())
 
     @staticmethod
     def extract_doc(func) -> Optional[str]:
