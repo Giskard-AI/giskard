@@ -27,7 +27,7 @@ def _test_output_against_requirement(model, dataset, evaluator):
 
 
 @test(
-    name="Evaluation of model output using an LLM (LLM-as-a-judge)",
+    name="Per row evaluation of model output using an LLM (LLM-as-a-judge)",
     tags=["llm", "llm-as-a-judge"],
     debug_description=debug_description_prefix + "that are <b>failing the evaluation criteria</b>.",
 )
