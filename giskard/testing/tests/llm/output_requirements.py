@@ -57,7 +57,9 @@ def test_llm_output_against_requirement_per_row(model: BaseModel, dataset: Datas
     TestResult
         A TestResult object containing the test result.
     """
-    return _test_output_against_requirement(model, dataset, PerRowRequirementEvaluator(requirement_column))
+    return _test_output_against_requirement(
+        model, dataset, PerRowRequirementEvaluator(dataset.df.loc[:, [requirement_column]])
+    )
 
 
 @test(

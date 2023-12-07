@@ -61,7 +61,7 @@ class LLMBasedEvaluator:
         self.llm_temperature = llm_temperature
         self.llm_client = llm_client if llm_client is not None else get_default_client()
 
-    def _make_evaluate_prompt(self, model: BaseModel, input_vars, model_output):
+    def _make_evaluate_prompt(self, model: BaseModel, input_vars, model_output, row_idx):
         return self.eval_prompt.format(
             model_name=model.meta.name,
             model_description=model.meta.description,
@@ -85,7 +85,7 @@ class LLMBasedEvaluator:
             model_outputs,
         ):
             sample = {"input_vars": input_vars, "model_output": model_output}
-            prompt = self._make_evaluate_prompt(model, input_vars, model_output)
+            prompt = self._make_evaluate_prompt(model, input_vars, model_output, row_index)
             funcs = self._make_evaluate_functions(model, input_vars, model_output)
             try:
                 out = self.llm_client.complete(

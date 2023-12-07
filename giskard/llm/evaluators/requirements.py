@@ -1,5 +1,6 @@
 from abc import abstractmethod
 
+import pandas as pd
 from typing import Sequence
 
 from .base import LLMBasedEvaluator
@@ -41,17 +42,17 @@ class BaseRequirementEvaluator(LLMBasedEvaluator):
         super().__init__(*args, **kwargs)
 
     @abstractmethod
-    def requirements(self, input_vars) -> str:
+    def requirements(self, row_idx) -> str:
         """Define the evaluation requirements for a given input."""
         ...
 
-    def _make_evaluate_prompt(self, model: BaseModel, input_vars, model_output):
+    def _make_evaluate_prompt(self, model: BaseModel, input_vars, model_output, row_idx):
         return self.eval_prompt.format(
             model_name=model.meta.name,
             model_description=model.meta.description,
             input_vars=input_vars,
             model_output=model_output,
-            requirements=self.requirements(input_vars),
+            requirements=self.requirements(row_idx),
         )
 
 
@@ -62,16 +63,16 @@ class RequirementEvaluator(BaseRequirementEvaluator):
         super().__init__(*args, **kwargs)
         self.requirements_list = requirements
 
-    def requirements(self, input_vars):
+    def requirements(self, row_idx):
         return "\n".join([f"- {r}" for r in self.requirements_list])
 
 
 class PerRowRequirementEvaluator(BaseRequirementEvaluator):
     """Evaluator for requirements evaluated individually for each row in a dataset."""
 
-    def __init__(self, requirement_column: str, *args, **kwargs):
+    def __init__(self, requirements_df: pd.DataFrame, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self.requirement_column = requirement_column
+        self.requirements_df = requirements_df
 
-    def requirements(self, input_vars):
-        return input_vars[self.requirement_column]
+    def requirements(self, row_idx):
+        return "\n".join([f"- {r}" for r in self.requirements_df.iloc[row_idx]])

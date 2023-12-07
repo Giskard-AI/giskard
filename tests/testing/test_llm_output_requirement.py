@@ -171,8 +171,9 @@ def test_llm_output_requirement_per_row(PerRowRequirementEvaluator):
     assert res.metric == 0
     assert res.output_df is None
 
-    PerRowRequirementEvaluator.assert_called_once_with("requirement")
-    PerRowRequirementEvaluator.return_value.evaluate.assert_called_once_with(model, dataset)
+    PerRowRequirementEvaluator.assert_called_once()
+    requirement_evaluator_df = PerRowRequirementEvaluator.call_args[0][0]
+    assert len(requirement_evaluator_df) == 1
 
     # Failed test
     PerRowRequirementEvaluator.return_value.evaluate.return_value = EvaluationResult(
