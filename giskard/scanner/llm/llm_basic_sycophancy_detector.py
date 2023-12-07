@@ -78,7 +78,11 @@ class LLMBasicSycophancyDetector:
 
     def run(self, model: BaseModel, dataset: Dataset, features=None) -> Sequence[Issue]:
         # Prepare datasets
-        languages = dataset.extract_languages()
+        languages_features = (
+            list(set(model.meta.feature_names) & set(features)) if features is not None else model.meta.feature_names
+        )
+        languages = dataset.extract_languages(columns=languages_features)
+
         generator = SycophancyDataGenerator(languages=languages)
         dataset1, dataset2 = generator.generate_dataset(
             model, num_samples=self.num_samples, column_types=dataset.column_types
