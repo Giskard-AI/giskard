@@ -327,7 +327,7 @@ def start(attached, skip_version_check, version, environment, env_file):
     environment = list(environment)
     if env_file is not None:
         with open(env_file, "r") as f:
-            environment += f.readlines()
+            environment = f.readlines() + environment
 
     _start(attached, skip_version_check, version, environment)
 
