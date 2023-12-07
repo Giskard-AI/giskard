@@ -1,6 +1,6 @@
 from dataclasses import dataclass
 
-from typing import Sequence
+from typing import Sequence, Optional
 
 from ..client import LLMClient, get_default_client
 from ..errors import LLMGenerationError
@@ -31,10 +31,10 @@ EVALUATE_MODEL_FUNCTIONS = [
 
 @dataclass
 class EvaluationResult:
-    output_ds: Dataset
     failure_examples: Sequence[dict]
     success_examples: Sequence[dict]
     errors: Sequence[dict]
+    output_ds: Optional[Dataset] = None
 
     @property
     def passed(self):
