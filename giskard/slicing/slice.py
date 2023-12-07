@@ -1,4 +1,6 @@
 # @TODO: simplify this module, don’t need this complexity.
+from typing import Callable, Dict, List, Sequence
+
 import itertools
 import operator
 import re
@@ -8,7 +10,6 @@ from collections import defaultdict
 
 import numpy as np
 import pandas as pd
-from typing import Callable, Sequence, List, Dict
 
 from ..core.core import DatasetProcessFunctionMeta, DatasetProcessFunctionType
 from ..ml_worker.testing.registry.slicing_function import SlicingFunction
@@ -304,7 +305,7 @@ class QueryBasedSliceFunction(SlicingFunction):
         self.meta.name = str(self)
         self.meta.display_name = str(self)
         self.meta.tags = ["pickle", "scan"]
-        self.meta.doc = '{"description": "Automatically generated slicing function.", "parameters": {}}'
+        self.meta.doc = self.meta.default_doc("Automatically generated slicing function")
         self.meta.uuid = str(uuid.uuid5(uuid.NAMESPACE_OID, self.meta.name))
 
     def execute(self, data: pd.DataFrame):
