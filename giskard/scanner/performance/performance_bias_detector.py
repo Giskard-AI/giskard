@@ -20,10 +20,6 @@ from ..logger import logger
 from .metrics import PerformanceMetric, get_metric
 
 
-MAX_SIZE_FISHER = 1000
-PERM_TEST_RESAMPLES = 1000
-
-
 @detector(name="performance_bias", tags=["performance_bias", "performance", "classification", "regression"])
 class PerformanceBiasDetector(LossBasedDetector):
     def __init__(
@@ -307,7 +303,7 @@ def _is_unbalanced_target(classes: pd.Series):
     return (classes.value_counts() / classes.count()).std() > 0.2
 
 
-def _calculate_pvalue_from_contingency_table(slice_metric, comp_metric):
+def _calculate_pvalue_from_contingency_table(slice_metric, comp_metric, max_size_fisher=30):
     slice_x_cnt = round(slice_metric.value * slice_metric.affected_samples)
     slice_y_cnt = slice_metric.affected_samples - slice_x_cnt
 
@@ -317,14 +313,16 @@ def _calculate_pvalue_from_contingency_table(slice_metric, comp_metric):
     ctable = [[slice_x_cnt, slice_y_cnt], [comp_x_cnt, comp_y_cnt]]
 
     # if the slice size is too small, use Fisher's exact test, otherwise use a chi-square test
-    if slice_metric.affected_samples <= MAX_SIZE_FISHER:
+    if min(min(row) for row in ctable) <= max_size_fisher:
         logger.info("PerformanceBiasDetector: Fisher's exact test")
-        return scipy.stats.fisher_exact(ctable, alternative="less")[1]
+        return scipy.stats.fisher_exact(ctable, alternative="two-sided")[1]
     logger.info("PerformanceBiasDetector: chi-square test")
-    return scipy.stats.chi2_contingency(ctable, lambda_="log-likelihood")[1]
+    return scipy.stats.chi2_contingency(ctable, correction=False, lambda_="log-likelihood")[1]
 
 
-def _calculate_pvalue_from_permutation_test(slice_dataset, comp_dataset, dataset, model, metric):
+def _calculate_pvalue_from_permutation_test(
+    slice_dataset, comp_dataset, dataset, model, metric, perm_test_resamples=1000
+):
     logger.info("PerformanceBiasDetector: permutation test")
 
     def statistic(slice_ids, comp_ids):
@@ -348,13 +346,15 @@ def _calculate_pvalue_from_permutation_test(slice_dataset, comp_dataset, dataset
         (slice_ids, comp_ids),
         statistic=statistic,
         permutation_type="independent",
-        n_resamples=PERM_TEST_RESAMPLES,
-        alternative="less" if metric.greater_is_better else "greater",
+        n_resamples=perm_test_resamples,
+        alternative="two-sided",
     )
     return perm_test_result.pvalue
 
 
-def _calculate_slice_metrics(model, dataset, metric, slice_fn, with_pvalue=False):
+def _calculate_slice_metrics(
+    model, dataset, metric, slice_fn, with_pvalue=False, max_size_fisher=30, perm_test_resamples=1000
+):
     slice_dataset = dataset.slice(slice_fn)
     slice_metric = metric(model, slice_dataset)
 
@@ -374,12 +374,14 @@ def _calculate_slice_metrics(model, dataset, metric, slice_fn, with_pvalue=False
             _, pvalue = scipy.stats.ttest_ind(
                 slice_metric.raw_values, comp_metric.raw_values, equal_var=False, alternative=alternative
             )
-        elif slice_metric.name.lower() in ["accuracy", "precision", "recall"]:
+        elif metric.name.lower() in ["accuracy", "precision", "recall"]:
             # otherwise, this must be classification scores...
-            pvalue = _calculate_pvalue_from_contingency_table(slice_metric, comp_metric)
+            pvalue = _calculate_pvalue_from_contingency_table(slice_metric, comp_metric, max_size_fisher)
         else:
             # if the the contingency table cannot be calculated, do a permutation test
-            pvalue = _calculate_pvalue_from_permutation_test(slice_dataset, comp_dataset, dataset, model, metric)
+            pvalue = _calculate_pvalue_from_permutation_test(
+                slice_dataset, comp_dataset, dataset, model, metric, perm_test_resamples
+            )
     except ValueError as err:
         pvalue = np.nan
         logger.info(f"PerformanceBiasDetector: p-value could not be calculated: {err}")
