@@ -1,13 +1,11 @@
-import typing
-
 import inspect
-import json
 import logging
 from abc import ABC
 from dataclasses import dataclass
 from enum import Enum
 from pathlib import Path
 
+import typing
 from griffe import Docstring
 from griffe.docstrings.dataclasses import (
     DocstringSection,
@@ -174,7 +172,7 @@ class CallableMeta(SavableMeta, ABC):
     name: str
     display_name: str
     module: str
-    doc: str
+    doc: CallableDocumentation
     module_doc: str
     tags: List[str]
     version: Optional[int]
@@ -275,14 +273,14 @@ class CallableMeta(SavableMeta, ABC):
         return code
 
     @staticmethod
-    def default_doc(description: str) -> str:
+    def default_doc(description: str) -> CallableDocumentation:
         doc = CallableDocumentation()
         doc.description = description
         doc.parameters = {}
-        return json.dumps(doc.to_dict())
+        return doc
 
     @staticmethod
-    def extract_doc(func) -> Optional[str]:
+    def extract_doc(func) -> Optional[CallableDocumentation]:
         if not func.__doc__:
             return None
 
@@ -328,8 +326,7 @@ class CallableMeta(SavableMeta, ABC):
             else:
                 logger.warning(f"Unexpected documentation element for {func.__name__}: {d.kind}")
 
-        func_doc = json.dumps(res.to_dict())
-        return func_doc
+        return res
 
     def to_json(self):
         return {
