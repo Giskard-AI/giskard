@@ -32,7 +32,7 @@ def test_llm_ground_truth(model: BaseModel, dataset: Dataset, threshold: float =
     debug_description=debug_description_prefix + "that are <b>generating result differing from ground truth</b>.",
 )
 def test_llm_ground_truth_similarity(
-    model: BaseModel, dataset: Dataset, output_sensitivity: float = 0.15, threshold: float = 0.5
+    model: BaseModel, dataset: Dataset, output_sensitivity: float = 0.15, threshold: float = 0.5, idf: bool = False
 ):
     if dataset.target is None:
         raise ValueError(f"Provided dataset ({dataset}) does not have any ground truth (target)")
@@ -49,6 +49,7 @@ def test_llm_ground_truth_similarity(
         predictions=pred.prediction,
         references=dataset.df[dataset.target],
         model_type="distilbert-base-multilingual-cased",
+        idf=idf,
     )
     passed = np.array(score["f1"]) > 1 - output_sensitivity
     metric = len([p for p in passed if p]) / len(passed)
