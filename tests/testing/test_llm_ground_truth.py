@@ -1,3 +1,4 @@
+import numpy as np
 import pandas as pd
 import pytest
 from langchain.chains import LLMChain
@@ -6,131 +7,168 @@ from langchain.llms.fake import FakeListLLM
 from giskard import Model, Dataset
 from giskard.testing.tests.llm import test_llm_ground_truth_similarity, test_llm_ground_truth
 
+INPUT_DATA = [
+    "Hello",
+    "Hi, how are you?",
+    "I translate in French",
+    "Hey there!",
+    "What's up?",
+    "Can you help me with something?",
+    "Good morning!",
+    "How's your day going?",
+    "I need assistance with a task.",
+    "Greetings!",
+    "Tell me about yourself.",
+]
 
-def test_ground_truth_exact():
-    llm = FakeListLLM(responses=["GREETING", "GREETING", "NOT_GREETING"])
-    chain = LLMChain.from_string(llm=llm, template="Is it a greeting: {text}")
-    model = Model(
-        chain,
-        "text_generation",
-        feature_names=["text"],
-        name="Greeting classification",
-        description="Classify text between GREETING and NOT_GREETING",
-    )
+CLASSIFICATION_TARGET = [
+    "GREETING",
+    "GREETING",
+    "SENTENCE",
+    "GREETING",
+    "GREETING",
+    "REQUEST",
+    "GREETING",
+    "GREETING",
+    "REQUEST",
+    "GREETING",
+    "REQUEST",
+]
 
-    dataset = Dataset(
-        pd.DataFrame(
-            {
-                "text": ["Bonjour, comment ca va?", "Hi, how are you?", "Je traduis en anglais"],
-                "target": ["GREETING", "GREETING", "NOT_GREETING"],
-            }
-        ),
-        target="target",
-    )
+TRANSLATION_TARGET = [
+    "Bonjour",
+    "Salut, comment ca va",
+    "Je traduis en français",
+    "Salut!",
+    "Quoi de neuf?",
+    "Pouvez-vous m'aider avec quelque chose?",
+    "Bonjour!",
+    "Comment se passe votre journée?",
+    "J'ai besoin d'aide pour une tâche.",
+    "Salutations!",
+    "Parlez-moi de vous.",
+]
 
-    result = test_llm_ground_truth(model, dataset).execute()
+SIMILAR_TRANSLATION_TARGET = [
+    "Salut",
+    "Salut, ça va bien?",
+    "Je traduis dans la langue de Molière",
+    "Hey!",
+    "Du nouveau?",
+    "Peux-tu me donner un coup de main?",
+    "Hello!",
+    "Comment ça va aujourd'hui?",
+    "Peux-tu m'aider avec ça?",
+    "Salut à tous!",
+    "Dis-moi un peu plus sur toi.",
+]
 
-    assert result.passed
+CLASSIFICATION_DATASET = Dataset(
+    pd.DataFrame(
+        {
+            "text": INPUT_DATA,
+            "target": CLASSIFICATION_TARGET,
+        }
+    ),
+    target="target",
+)
 
-    llm = FakeListLLM(responses=["NOT_GREETING" * 3])
-    chain = LLMChain.from_string(llm=llm, template="Is it a greeting: {text}")
-    model = Model(
-        chain,
-        "text_generation",
-        feature_names=["text"],
-        name="Greeting classification",
-        description="Classify text between GREETING and NOT_GREETING",
-    )
-
-    result = test_llm_ground_truth(model, dataset).execute()
-
-    assert not result.passed
-
-
-def test_ground_truth_exact_no_target():
-    llm = FakeListLLM(responses=["GREETING", "GREETING", "NOT_GREETING"])
-    chain = LLMChain.from_string(llm=llm, template="Is it a greeting: {text}")
-    model = Model(
-        chain,
-        "text_generation",
-        feature_names=["text"],
-        name="Greeting classification",
-        description="Classify text between GREETING and NOT_GREETING",
-    )
-
-    dataset = Dataset(
-        pd.DataFrame(
-            {
-                "text": ["Bonjour, comment ca va?", "Hi, how are you?", "Je traduis en anglais"],
-            }
-        )
-    )
-
-    with pytest.raises(ValueError):
-        test_llm_ground_truth(model, dataset).execute()
+TRANSLATION_DATASET = Dataset(
+    pd.DataFrame(
+        {
+            "text": INPUT_DATA,
+            "target": TRANSLATION_TARGET,
+        }
+    ),
+    target="target",
+)
 
 
 @pytest.mark.memory_expensive
-def test_ground_truth_similarity():
-    llm = FakeListLLM(responses=["Hello, how are you?", "Salut, ca va?", "I translate in English"])
-    chain = LLMChain.from_string(llm=llm, template="Translate in {lang}: {text}")
-    model = Model(
-        chain,
-        "text_generation",
-        feature_names=["lang", "text"],
-        name="Translator",
-        description="Translate to any language",
-    )
-
-    dataset = Dataset(
-        pd.DataFrame(
-            {
-                "lang": ["en", "fr", "en"],
-                "text": ["Bonjour, comment ca va?", "Hi, how are you?", "Je traduis en anglais"],
-                "target": ["Hi, how are you?", "Bonjour, comment ca va?", "I translate in English"],
-            }
+@pytest.mark.parametrize(
+    "test,dataset,responses,should_pass, failed_mask",
+    [
+        (
+            test_llm_ground_truth,
+            CLASSIFICATION_DATASET,
+            CLASSIFICATION_TARGET,
+            True,
+            [False] * len(CLASSIFICATION_TARGET),
         ),
-        target="target",
-    )
+        (
+            test_llm_ground_truth,
+            CLASSIFICATION_DATASET,
+            ["GREETING"] * len(CLASSIFICATION_TARGET),
+            True,
+            np.array(CLASSIFICATION_TARGET) != "GREETING",
+        ),
+        (
+            test_llm_ground_truth,
+            CLASSIFICATION_DATASET,
+            ["REQUEST"] * len(CLASSIFICATION_TARGET),
+            False,
+            np.array(CLASSIFICATION_TARGET) != "REQUEST",
+        ),
+        (
+            test_llm_ground_truth_similarity,
+            TRANSLATION_DATASET,
+            TRANSLATION_TARGET,
+            True,
+            [False] * len(CLASSIFICATION_TARGET),
+        ),
+        (
+            test_llm_ground_truth_similarity,
+            TRANSLATION_DATASET,
+            SIMILAR_TRANSLATION_TARGET,
+            True,
+            [False, False, False, False, False, False, False, False, True, False, False],
+        ),
+        (
+            test_llm_ground_truth_similarity,
+            TRANSLATION_DATASET,
+            ["Sorry, I cannot translate to French"] * len(TRANSLATION_TARGET),
+            False,
+            [True, True, False, True, True, True, True, True, True, True, True],
+        ),
+    ],
+)
+def test_of_test_llm_ground_truth(test, dataset, responses, should_pass, failed_mask):
+    model = _make_model(responses)
 
-    result = test_llm_ground_truth_similarity(model, dataset).execute()
+    result = test(model, dataset).execute()
 
-    assert result.passed
+    assert result.passed is should_pass
+    expected_output_df = dataset.df[failed_mask]
+    assert list(expected_output_df.index) == list(result.output_ds[0].df.index)
 
-    llm = FakeListLLM(responses=["Sorry, I don't know the translation" * 3])
-    chain = LLMChain.from_string(llm=llm, template="Translate in {lang}: {text}")
+
+def _make_model(responses):
+    llm = FakeListLLM(responses=responses)
+    chain = LLMChain.from_string(llm=llm, template="This is a sample prompt: {text}")
     model = Model(
         chain,
         "text_generation",
-        feature_names=["lang", "text"],
-        name="Translator",
-        description="Translate to any language",
+        feature_names=["text"],
+        name="This is a sample model",
+        description="This model is doing a sample task",
     )
-
-    result = test_llm_ground_truth_similarity(model, dataset).execute()
-
-    assert not result.passed
+    return model
 
 
-def test_ground_truth_similarity_no_target():
-    llm = FakeListLLM(responses=["Hello, how are you?", "Salut, ca va?", "I translate in English"])
-    chain = LLMChain.from_string(llm=llm, template="Translate in {lang}: {text}")
-    model = Model(
-        chain,
-        "text_generation",
-        feature_names=["lang", "text"],
-        name="Translator",
-        description="Translate to any language",
-    )
+@pytest.mark.parametrize(
+    "test",
+    [test_llm_ground_truth, test_llm_ground_truth_similarity],
+)
+def test_ground_truth_exact_no_target(test):
+    model = _make_model(CLASSIFICATION_TARGET)
 
     dataset = Dataset(
         pd.DataFrame(
             {
-                "lang": ["en", "fr", "en"],
-                "text": ["Bonjour, comment ca va?", "Hi, how are you?", "Je traduis en anglais"],
+                "text": INPUT_DATA,
             }
         )
     )
 
     with pytest.raises(ValueError):
-        test_llm_ground_truth_similarity(model, dataset).execute()
+        test(model, dataset).execute()
