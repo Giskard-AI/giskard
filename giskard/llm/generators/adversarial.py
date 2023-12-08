@@ -46,7 +46,7 @@ class AdversarialDataGenerator(BaseDataGenerator):
         return truncate(f"Adversarial Examples for requirement “{self.requirement}”")
 
     def _make_generate_input_prompt(self, model: BaseModel, num_inputs: int):
-        return self.prompt.format(
+        input_prompt = self.prompt.format(
             issue_description=self.issue_description,
             model_name=model.meta.name,
             model_description=model.meta.description,
@@ -54,3 +54,6 @@ class AdversarialDataGenerator(BaseDataGenerator):
             num_samples=num_inputs,
             requirement=self.requirement,
         )
+        if self.languages:
+            input_prompt = input_prompt + self._default_language_requirement.format(languages=self.languages)
+        return input_prompt
