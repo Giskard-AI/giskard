@@ -49,7 +49,6 @@ def test_llm_ground_truth_similarity(
         predictions=pred.prediction,
         references=dataset.df[dataset.target],
         model_type="distilbert-base-multilingual-cased",
-        idf=True,
     )
     passed = np.array(score["f1"]) > 1 - output_sensitivity
     metric = len([p for p in passed if p]) / len(passed)

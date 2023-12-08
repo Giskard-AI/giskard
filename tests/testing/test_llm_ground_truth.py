@@ -121,14 +121,14 @@ TRANSLATION_DATASET = Dataset(
             TRANSLATION_DATASET,
             SIMILAR_TRANSLATION_TARGET,
             True,
-            [False, False, False, False, False, False, False, False, True, False, False],
+            [False] * len(CLASSIFICATION_TARGET),
         ),
         (
             test_llm_ground_truth_similarity,
             TRANSLATION_DATASET,
-            ["Sorry, I cannot translate to French"] * len(TRANSLATION_TARGET),
+            ["L'imagination est plus importante que le savoir."] * len(TRANSLATION_TARGET),
             False,
-            [True, True, False, True, True, True, True, True, True, True, True],
+            [True] * len(CLASSIFICATION_TARGET),
         ),
     ],
 )
