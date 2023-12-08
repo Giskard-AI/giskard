@@ -27,6 +27,7 @@ class LLMGenerator(ABC):
     _default_temperature = 0.5
     _default_model = "gpt-4"
     _default_prompt = DEFAULT_GENERATE_INPUTS_PROMPT
+    _default_language_requirement = LANGUAGE_REQUIREMENT_PROMPT
 
     def __init__(
         self,
@@ -40,9 +41,6 @@ class LLMGenerator(ABC):
         self.languages = languages
         self.prompt = prompt if prompt is not None else self._default_prompt
 
-        if self.languages and isinstance(self.languages, list):
-            self.prompt = self.prompt + LANGUAGE_REQUIREMENT_PROMPT.format(languages=self.languages)
-
     @abstractmethod
     def generate_dataset(self, model, num_samples=10, column_types=None) -> Dataset:
         ...
@@ -50,12 +48,15 @@ class LLMGenerator(ABC):
 
 class BaseDataGenerator(LLMGenerator):
     def _make_generate_input_prompt(self, model: BaseModel, num_samples: int):
-        return self.prompt.format(
+        input_prompt = self.prompt.format(
             model_name=model.meta.name,
             model_description=model.meta.description,
             feature_names=", ".join(model.meta.feature_names),
             num_samples=num_samples,
         )
+        if self.languages:
+            input_prompt = input_prompt + self._default_language_requirement.format(languages=self.languages)
+        return input_prompt
 
     def _make_generate_input_functions(self, model: BaseModel, num_samples: int):
         return [

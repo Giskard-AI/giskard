@@ -66,12 +66,7 @@ class RequirementBasedDetector(Detector):
         for requirement in requirements:
             logger.info(f"{self.__class__.__name__}: Evaluating requirement: {requirement}")
 
-            languages_features = (
-                list(set(model.meta.feature_names) & set(features))
-                if features is not None
-                else model.meta.feature_names
-            )
-            languages = dataset.extract_languages(columns=languages_features)
+            languages = dataset.extract_languages(columns=model.meta.feature_names)
 
             dg = AdversarialDataGenerator(
                 issue_description=issue_description, requirement=requirement, languages=languages
