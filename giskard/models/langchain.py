@@ -1,7 +1,7 @@
 from pathlib import Path
-from typing import Any, Callable, Iterable, Optional, Tuple, Union, Dict
 
 import pandas as pd
+from typing import Any, Callable, Iterable, Optional, Tuple, Union, Dict
 
 from giskard.core.core import SupportedModelTypes
 from giskard.core.validation import configured_validate_arguments
@@ -44,21 +44,21 @@ class LangchainModel(WrapperModel):
             **kwargs,
         )
 
-    def save(self, local_path: Union[str, Path]) -> None:
-        super().save(local_path)
+    def save(self, local_path: Union[str, Path], *args, **kwargs) -> None:
+        super().save(local_path, *args, **kwargs)
         self.save_model(local_path)
         self.save_artifacts(Path(local_path) / "artifacts")
 
-    def save_model(self, local_path: Union[str, Path]) -> None:
+    def save_model(self, local_path: Union[str, Path], *args, **kwargs) -> None:
         path = Path(local_path)
         self.model.save(path / "chain.json")
 
-    def save_artifacts(self, artifact_dir) -> None:
+    def save_artifacts(self, artifact_dir, *args, **kwargs) -> None:
         ...
 
     @classmethod
-    def load(cls, local_dir, model_py_ver: Optional[Tuple[str, str, str]] = None, **kwargs):
-        constructor_params = cls.load_constructor_params(local_dir, **kwargs)
+    def load(cls, local_dir, model_py_ver: Optional[Tuple[str, str, str]] = None, *args, **kwargs):
+        constructor_params = cls.load_constructor_params(local_dir, *args, **kwargs)
 
         artifacts = cls.load_artifacts(Path(local_dir) / "artifacts") or dict()
         constructor_params.update(artifacts)
@@ -66,7 +66,7 @@ class LangchainModel(WrapperModel):
         return cls(model=cls.load_model(local_dir, model_py_ver=model_py_ver, **artifacts), **constructor_params)
 
     @classmethod
-    def load_model(cls, local_dir, model_py_ver: Optional[Tuple[str, str, str]] = None, **kwargs):
+    def load_model(cls, local_dir, model_py_ver: Optional[Tuple[str, str, str]] = None, *args, **kwargs):
         from langchain.chains import load_chain
 
         path = Path(local_dir)

@@ -137,7 +137,7 @@ giskard = "giskard.integrations.mlflow.giskard_evaluator:GiskardEvaluator"
 name = "giskard"
 readme = "README.md"
 license = { text = "Apache Software License 2.0" }
-version = "2.0.5"
+version = "2.0.7"
 description = "The testing framework dedicated to ML models, from tabular to LLMs"
 authors = [{ name = "Giskard AI", email = "hello@giskard.ai" }]
 keywords = ["Artificial Intelligence", "Machine Learning", "Quality", "MLOps"]
@@ -160,7 +160,6 @@ dependencies = [
     "cloudpickle>=1.1.1",
     "zstandard>=0.10.0",
     "mlflow-skinny>=2",
-    "protobuf<3.21",            # Not compatible with transformers/tensorflow
     "numpy>=1.22.0",
     "scikit-learn>=1.0",
     "scipy>=1.7.3",
@@ -179,6 +178,7 @@ dependencies = [
     "packaging",                # used in settings
     "markdown",                 # needed for display of scan results in notebook
     "colorama",                 # needed for the scan
+    "griffe>=0.36.9",
 ]
 
 [project.optional-dependencies]
