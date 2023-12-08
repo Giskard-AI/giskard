@@ -108,13 +108,19 @@ def test_calculate_slice_metrics():
 
     def metric(model, dataset):
         # About 20% on large datasets
+        value = (dataset.df.y % 5 == 0).sum() / len(dataset)
+        affected_samples = len(dataset)
+        raw_values = None
+        x = round(value * affected_samples)
+        y = affected_samples - x
+        ctable_values = [x, y]
         return mock.MagicMock(
-            value=(dataset.df.y % 5 == 0).sum() / len(dataset), affected_samples=len(dataset), raw_values=None
+            value=value, affected_samples=affected_samples, raw_values=raw_values, ctable_values=ctable_values
         )
 
     # Without p-value
-    metric.name = "accuracy"
     metric.greater_is_better = True
+    metric.has_contingency_table = True
     sliced_dataset, slice_metric, pvalue = _calculate_slice_metrics(model, dataset, metric, lambda df: df["x"] <= 9)
 
     assert sliced_dataset.df.y.count() == 10
@@ -155,7 +161,7 @@ def test_calculate_slice_metrics():
     assert pvalue == pytest.approx(0.28, abs=0.05)  # should be about the same as G-test
 
     # With p-value - Permutation test
-    metric.name = ""
+    metric.has_contingency_table = False
     sliced_dataset, slice_metric, pvalue = _calculate_slice_metrics(
         model,
         dataset,
