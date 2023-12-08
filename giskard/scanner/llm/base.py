@@ -65,7 +65,12 @@ class RequirementBasedDetector(Detector):
         issues = []
         for requirement in requirements:
             logger.info(f"{self.__class__.__name__}: Evaluating requirement: {requirement}")
-            dg = AdversarialDataGenerator(issue_description=issue_description, requirement=requirement)
+
+            languages = dataset.extract_languages(columns=model.meta.feature_names)
+
+            dg = AdversarialDataGenerator(
+                issue_description=issue_description, requirement=requirement, languages=languages
+            )
             eval_dataset = dg.generate_dataset(model, self.num_samples)
 
             evaluator = RequirementEvaluator([requirement])
