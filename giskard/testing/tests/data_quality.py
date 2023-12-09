@@ -1,8 +1,12 @@
 """
 Module for data quality tests.
 """
-from sklearn.cluster import DBSCAN
 from collections import defaultdict
+from typing import Iterable
+import pandas as pd
+from sklearn.cluster import DBSCAN
+from sklearn.ensemble import IsolationForest
+from sklearn.preprocessing import LabelEncoder
 from giskard.ml_worker.testing.test_result import TestResult
 from giskard.ml_worker.testing.registry.decorators import test
 from giskard.datasets.base import Dataset
@@ -138,7 +142,10 @@ def outlier(dataset: Dataset, column: str, eps: float = 0.5, min_samples: int = 
     return TestResult(passed=len(anomalies) == 0, messages=anomalies)
 
 @test(name="Ensure all exists")
-def ensure_all_exists(dataset: Dataset, column: str, target_dataset: Dataset, target_column: str, threshold: float = 0.0):
+def ensure_all_exists(dataset: Dataset, column: str,
+                      target_dataset: Dataset,
+                      target_column: str,
+                      threshold: float = 0.0):
     """
     Ensure that all data in a column of one dataset are present in a column of another dataset.
 
@@ -179,12 +186,58 @@ def label_consistency_test(dataset: Dataset, label_column: str):
     # Check that all data in each group is of the same type
     inconsistencies = []
     for label, group in groups.items():
-        types_in_group = {type(val) for row in group for col, val in row.items() if col != label_column}
+        types_in_group = {type(val) for row in group for col,
+                          val in row.items() if col != label_column}
         if len(types_in_group) > 1:
             inconsistencies.append((label, types_in_group))
 
     if inconsistencies:
         message = f"Inconsistencies found: {inconsistencies}"
+        return TestResult(passed=False, metric_name="consistency", metric=0, messages=message)
+
+    return TestResult(passed=True, metric_name="consistency", metric=1)
+
+@test(name="Mislabeled Data Test")
+def mislabel(dataset: Dataset, labelled_column: str, reference_columns: Iterable[str]):
+    """
+    Test for detecting mislabelled data.
+
+    Args:
+        dataset (giskard.Dataset): The dataset to test.
+        labelled_column (str): The column containing the labels.
+        reference_columns (Iterable[str]): The columns containing the data to check for consistency.
+
+    Returns:
+        TestResult: The result of the test, containing the indices of the mislabelled data.
+    """
+    # Copy the dataset to avoid changing the original data
+    dataset_copy = dataset.df.copy()
+
+    # Encode the categorical data
+    le = LabelEncoder()
+    for column in dataset_copy.columns:
+        if dataset_copy[column].dtype == 'object':
+            dataset_copy[column] = le.fit_transform(dataset_copy[column])
+
+    # Prepare the data
+    x = dataset_copy[list(reference_columns)]
+    y = dataset_copy[labelled_column]
+
+    # Combine the data and labels
+    data = pd.concat([x, y], axis=1)
+
+    # Train the Isolation Forest model
+    model = IsolationForest(contamination=0.1)
+    model.fit(data)
+
+    # Predict the anomalies in the data
+    anomalies = model.predict(data) == -1
+
+    # Check if any of the anomalies have different labels
+    mislabelled_data = dataset.df[anomalies]
+
+    if not mislabelled_data.empty:
+        message = f"Mislabelled data found: \n{mislabelled_data}"
         return TestResult(passed=False, metric_name="consistency", metric=0, messages=message)
 
     return TestResult(passed=True, metric_name="consistency", metric=1)
