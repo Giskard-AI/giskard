@@ -4,6 +4,7 @@ Module for data quality tests.
 from collections import defaultdict
 from typing import Iterable
 import pandas as pd
+from sklearn.ensemble import RandomForestClassifier
 from sklearn.cluster import DBSCAN
 from sklearn.ensemble import IsolationForest
 from sklearn.preprocessing import LabelEncoder
@@ -241,3 +242,33 @@ def mislabel(dataset: Dataset, labelled_column: str, reference_columns: Iterable
         return TestResult(passed=False, metric_name="consistency", metric=0, messages=message)
 
     return TestResult(passed=True, metric_name="consistency", metric=1)
+
+@test(name="Feature Importance Test")
+def feature_importance(dataset: Dataset, target_column: str, feature_columns: Iterable[str]):
+    """
+    Test for evaluating the importance of each feature to the target variable.
+
+    Args:
+        dataset (giskard.Dataset): The dataset to test.
+        target_column (str): The column containing the target variable.
+        feature_columns (Iterable[str]): The columns containing the features.
+
+    Returns:
+        TestResult: The result of the test, containing the feature importances.
+        The more value the more important a feature is with respect to target variable.
+    """
+    # Prepare the data
+    features = list(feature_columns)
+    x = dataset.df[features]
+    y = dataset.df[target_column]
+    # Train the Random Forest model
+    model = RandomForestClassifier()
+    model.fit(x, y)
+    # Get the feature importances
+    importances = model.feature_importances_
+    feature_importances = dict(zip(features, importances))
+    # Create a message containing the feature importances
+    message = f"Feature importances: \n{feature_importances}"
+
+    return TestResult(passed=True, metric_name="feature_importance",
+                      metric=importances, messages=message)
