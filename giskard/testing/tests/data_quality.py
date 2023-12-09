@@ -1,7 +1,7 @@
 """
 Module for data quality tests.
 """
-from collections import defaultdict
+from collections import Counter, defaultdict
 from typing import Iterable
 import pandas as pd
 from sklearn.ensemble import RandomForestClassifier
@@ -272,3 +272,28 @@ def feature_importance(dataset: Dataset, target_column: str, feature_columns: It
 
     return TestResult(passed=True, metric_name="feature_importance",
                       metric=importances, messages=message)
+
+@test(name="Class Imbalance Test")
+def class_imbalance(dataset: Dataset, target_column: str):
+    """
+    Test for assessing the distribution of classes in classification problems.
+
+    Args:
+        dataset (giskard.Dataset): The dataset to test.
+        target_column (str): The column containing the target variable.
+
+    Returns:
+        TestResult: The result of the test, containing the class proportions.
+    """
+    # Convert classes to strings and calculate the class proportions
+    class_counts = Counter(dataset.df[target_column].astype(str))
+    total_count = len(dataset.df)
+    class_proportions = {cls: count / total_count for cls, count in class_counts.items()}
+
+    # Create a message containing the class proportions
+    message = f"Class proportions: \n{class_proportions}"
+
+    return TestResult(passed=True,
+                      metric_name="class_proportion",
+                      metric=class_proportions,
+                      messages=message)
