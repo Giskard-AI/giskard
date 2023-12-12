@@ -144,19 +144,21 @@ We recommend you to upgrade giskard by running `giskard hub stop && giskard hub 
     _pull_image(version)
 
     home_volume = _get_home_volume()
-
     container = get_container(version, quit_if_not_exists=False)
 
-    if not container:
-        container = create_docker_client().containers.create(
-            get_image_name(version),
-            detach=not attached,
-            name=get_container_name(version),
-            ports={7860: port},
-            volumes={home_volume.name: {"bind": "/home/giskard/datadir", "mode": "rw"}},
-            environment=environment,
-        )
-    container.start()
+    if container:
+        logger.info(f"Removing old container {container.name}")
+        container.remove()
+
+    logger.info(f"Running a container {container.name}")
+    create_docker_client().containers.run(
+        get_image_name(version),
+        detach=not attached,
+        name=get_container_name(version),
+        ports={7860: port},
+        volumes={home_volume.name: {"bind": "/home/giskard/datadir", "mode": "rw"}},
+        environment=environment
+    )
 
     up = wait_backend_ready(port)
 
