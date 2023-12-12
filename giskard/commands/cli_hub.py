@@ -1,5 +1,3 @@
-from typing import Optional
-
 import logging
 import os
 import time
@@ -15,6 +13,7 @@ from docker.models.containers import Container
 from packaging import version
 from packaging.version import InvalidVersion, Version
 from tenacity import retry, wait_exponential
+from typing import Optional
 
 import giskard
 from giskard.cli_utils import common_options
@@ -121,7 +120,7 @@ def wait_backend_ready(port: int, host="localhost", is_cli=True, wait_sec=3 * 60
     return up
 
 
-def _start(attached=False, skip_version_check=False, version=None):
+def _start(attached=False, skip_version_check=False, version=None, environment=None):
     logger.info("Starting Giskard Hub")
 
     settings = _get_settings() or {}
@@ -155,6 +154,7 @@ We recommend you to upgrade giskard by running `giskard hub stop && giskard hub 
             name=get_container_name(version),
             ports={7860: port},
             volumes={home_volume.name: {"bind": "/home/giskard/datadir", "mode": "rw"}},
+            environment=environment,
         )
     container.start()
 
@@ -293,9 +293,22 @@ client = giskard.GiskardClient(\"{http_tunnel.public_url}\", token)
     default=False,
     help="Force the server to start with a different version of the giskard python library.",
 )
+@click.option(
+    "--env",
+    "-e",
+    "environment",
+    multiple=True,
+    default=[],
+    help="Set environment variables to the server.",
+)
+@click.option(
+    "--env-file",
+    "env_file",
+    help="Read in a file of environment variables.",
+)
 @click.option("--version", "version", required=False, help="Version of Giskard hub to start")
 @common_options
-def start(attached, skip_version_check, version):
+def start(attached, skip_version_check, version, environment, env_file):
     """\b
     Start Giskard Hub.
 
@@ -310,7 +323,13 @@ def start(attached, skip_version_check, version):
             "version": version,
         },
     )
-    _start(attached, skip_version_check, version)
+
+    environment = list(environment)
+    if env_file is not None:
+        with open(env_file, "r") as f:
+            environment = f.readlines() + environment
+
+    _start(attached, skip_version_check, version, environment)
 
 
 @hub.command("stop")
