@@ -2,6 +2,7 @@ import logging
 import os
 import time
 from pathlib import Path
+from typing import Optional
 
 import click
 import docker
@@ -13,7 +14,6 @@ from docker.models.containers import Container
 from packaging import version
 from packaging.version import InvalidVersion, Version
 from tenacity import retry, wait_exponential
-from typing import Optional
 
 import giskard
 from giskard.cli_utils import common_options
@@ -143,21 +143,26 @@ We recommend you to upgrade giskard by running `giskard hub stop && giskard hub 
 
     _pull_image(version)
 
+    container_name = get_container_name(version)
     home_volume = _get_home_volume()
     container = get_container(version, quit_if_not_exists=False)
 
     if container:
-        logger.info(f"Removing old container {container.name}")
+        if container.status != "exited":
+            logger.info("Stopping Giskard Hub")
+            container.stop()
+        logger.info(f"Removing old container {container_name}")
         container.remove()
 
-    logger.info(f"Running a container {container.name}")
+    logger.info(f"Running a container {container_name}")
     create_docker_client().containers.run(
         get_image_name(version),
         detach=not attached,
-        name=get_container_name(version),
+        name=container_name,
         ports={7860: port},
         volumes={home_volume.name: {"bind": "/home/giskard/datadir", "mode": "rw"}},
-        environment=environment
+        network_mode="bridge",
+        environment=environment,
     )
 
     up = wait_backend_ready(port)
