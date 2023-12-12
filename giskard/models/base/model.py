@@ -23,6 +23,8 @@ from ...client.giskard_client import GiskardClient
 from ...core.core import ModelMeta, ModelType, SupportedModelTypes
 from ...core.validation import configured_validate_arguments
 from ...datasets.base import Dataset
+from ...llm import get_default_client
+from ...llm.talk.config import MODEL_INSTRUCTION
 from ...ml_worker.exceptions.giskard_exception import GiskardException, python_env_exception_helper
 from ...ml_worker.utils.logging import Timer
 from ...models.cache import ModelCache
@@ -96,15 +98,15 @@ class BaseModel(ABC):
 
     @configured_validate_arguments
     def __init__(
-        self,
-        model_type: ModelType,
-        name: Optional[str] = None,
-        description: Optional[str] = None,
-        feature_names: Optional[Iterable] = None,
-        classification_threshold: Optional[float] = 0.5,
-        classification_labels: Optional[Iterable] = None,
-        id: Optional[str] = None,
-        **kwargs,
+            self,
+            model_type: ModelType,
+            name: Optional[str] = None,
+            description: Optional[str] = None,
+            feature_names: Optional[Iterable] = None,
+            classification_threshold: Optional[float] = 0.5,
+            classification_labels: Optional[Iterable] = None,
+            id: Optional[str] = None,
+            **kwargs,
     ) -> None:
         """
         Initialize a new instance of the BaseModel class.
@@ -206,7 +208,7 @@ class BaseModel(ABC):
 
     @classmethod
     def determine_model_class(
-        cls, meta, local_dir, model_py_ver: Optional[Tuple[str, str, str]] = None, *_args, **_kwargs
+            cls, meta, local_dir, model_py_ver: Optional[Tuple[str, str, str]] = None, *_args, **_kwargs
     ):
         class_file = Path(local_dir) / MODEL_CLASS_PKL
         if class_file.exists():
@@ -555,3 +557,10 @@ class BaseModel(ABC):
 
     def to_mlflow(self, *_args, **_kwargs):
         raise NotImplementedError()
+
+    def talk(self, question: str, dataset: Dataset) -> str:
+        messages = [{"role": "system", "content": MODEL_INSTRUCTION},
+                    {"role": "user", "content": question}]
+
+        client = get_default_client()
+
