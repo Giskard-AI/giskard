@@ -13,7 +13,7 @@ from ....llm import LLMImportError
 from ....ml_worker.testing.registry.decorators import test
 from ....ml_worker.testing.test_result import TestResult
 from ....models.base import BaseModel
-from ....llm.evaluators.string_matcher import StringMatcher
+from ....llm.evaluators.string_matcher import StringMatcherEvaluator
 from .. import debug_description_prefix
 from ....utils.display import truncate
 
@@ -267,7 +267,7 @@ def test_llm_char_injection(
 
 
 def _test_llm_output_against_strings(model, dataset, eval_kwargs, threshold, debug):
-    evaluator = StringMatcher()
+    evaluator = StringMatcherEvaluator()
     evaluation_results = evaluator.evaluate(model, dataset, eval_kwargs)
     metric = 1 - evaluation_results.passed_ratio
     passed = metric < threshold

@@ -2,7 +2,7 @@ from typing import Sequence, Optional
 import pandas as pd
 
 from ...datasets.base import Dataset
-from ...llm.evaluators.string_matcher import StringMatcher
+from ...llm.evaluators.string_matcher import StringMatcherEvaluator
 from ...llm.loaders.prompt_injections import PromptInjectionDataLoader
 from ...models.base.model import BaseModel
 from ..decorators import detector
@@ -43,11 +43,11 @@ class LLMPromptInjectionDetector(Detector):
     def run(self, model: BaseModel, dataset: Dataset, features: Sequence[str]) -> Sequence[Issue]:
         data_loader = PromptInjectionDataLoader(num_samples=self.num_samples)
 
-        evaluator = StringMatcher()
+        evaluator = StringMatcherEvaluator()
         issues = []
         for group in set(data_loader.groups):
             group_dataset = data_loader.load_dataset_from_group(features=features, group=group)
-            evaluator_configs = data_loader.evaluator_configs_from_group(group)
+            evaluator_configs = data_loader.configs_from_group(group)
             evaluation_results = evaluator.evaluate(model, group_dataset, evaluator_configs)
             number_of_failed_prompts = len(evaluation_results.failure_examples)
             if number_of_failed_prompts == 0:

@@ -1,7 +1,7 @@
 import re
 import string
 import logging
-from typing import Tuple, Dict, List
+from typing import Tuple, List
 from dataclasses import dataclass
 
 from .base import BaseEvaluator, EvaluationResult
@@ -14,61 +14,45 @@ logger.setLevel(logging.INFO)
 
 
 @dataclass(frozen=True)
-class StringMatchingMethod:
-    substrings: Tuple[str]
-    all_substrings_must_be_found: bool = True
+class StringMatcherConfig:
+    expected_strings: Tuple[str]
+    all_expected_strings_must_be_found: bool = True
     exact_matching: bool = False
     word_matching: bool = False
     case_sensitive: bool = True
     punctuation_sensitive: bool = True
     evaluation_method_name: str = "StringMatchingMethod"
 
-    @classmethod
-    def from_meta(cls, kwargs: Dict):
-        kwargs = {k: v for k, v in kwargs.items() if k in list(cls.__annotations__.keys())}
 
-        return cls(**kwargs)
+class StringMatcher:
+    def __init__(self, config: StringMatcherConfig) -> None:
+        self.config = config
 
+    def normalize_text(self, text):
+        if not self.config.case_sensitive:
+            text = text.lower()
+        if not self.config.punctuation_sensitive:
+            text = text.translate(str.maketrans("", "", string.punctuation))
+        return text
 
-def _normalize_text(text, evaluation_method):
-    if not evaluation_method.case_sensitive:
-        text = text.lower()
-    if not evaluation_method.punctuation_sensitive:
-        text = text.translate(str.maketrans("", "", string.punctuation))
-    return text
+    def evaluate_single_string(self, string: str, text: str):
+        n_string = self.normalize_text(string)
+        n_text = self.normalize_text(text)
+        if self.config.exact_matching:
+            return n_string == n_text
+        if self.config.word_matching:
+            return re.search(r"\b" + re.escape(n_string) + r"\b", text) is not None
+        return n_string in n_text
 
-
-def _evaluate_single_substring(substring, prediction, evaluation_method):
-    if evaluation_method.exact_matching:
-        return substring == prediction
-    if evaluation_method.word_matching:
-        return re.search(r"\b" + re.escape(substring) + r"\b", prediction) is not None
-    return substring in prediction
-
-
-def _evaluate_all_substrings(prediction, evaluation_method):
-    injection_success = 0
-    for s in evaluation_method.substrings:
-        normalized_s = _normalize_text(s, evaluation_method)
-        normalized_prediction = _normalize_text(prediction, evaluation_method)
-        if _evaluate_single_substring(normalized_s, normalized_prediction, evaluation_method):
-            injection_success += 1
-    return injection_success
+    def evaluate(self, text: str):
+        matches = (self.evaluate_single_string(string, text) for string in self.config.expected_strings)
+        if self.config.all_expected_strings_must_be_found:
+            return all(matches)
+        return any(matches)
 
 
-def _evaluate(prediction: str, evaluation_method):
-    injection_success = _evaluate_all_substrings(prediction, evaluation_method)
-
-    if evaluation_method.all_substrings_must_be_found:
-        injection_success = 1 if injection_success == len(evaluation_method.substrings) else 0
-    else:
-        injection_success = 1 if injection_success != 0 else 0
-
-    return injection_success
-
-
-class StringMatcher(BaseEvaluator):
-    def evaluate(self, model: BaseModel, dataset: Dataset, evaluator_configs: List[Dict]):
+class StringMatcherEvaluator(BaseEvaluator):
+    def evaluate(self, model: BaseModel, dataset: Dataset, evaluator_configs: List[StringMatcherConfig]):
         model_outputs = model.predict(dataset).prediction
 
         succeeded = []
@@ -77,14 +61,13 @@ class StringMatcher(BaseEvaluator):
         errored = []
         model_inputs = dataset.df.loc[:, model.meta.feature_names].to_dict("records")
 
-        for i_pos, i_idx in zip(range(len(dataset)), dataset.df.index):
-            evaluator_config = evaluator_configs[i_pos]
-            evaluation_method = StringMatchingMethod.from_meta(evaluator_config)
+        for i_pos, i_idx in enumerate(dataset.df.index):
+            string_matcher = StringMatcher(evaluator_configs[i_pos])
             model_output = model_outputs[i_pos]
             model_input = model_inputs[i_pos]
 
             try:
-                injection_success = _evaluate(model_output, evaluation_method=evaluation_method)
+                injection_success = string_matcher.evaluate(model_output)
             except LLMGenerationError as err:
                 errored.append({"message": str(err), "sample": model_input[i_pos]})
                 continue

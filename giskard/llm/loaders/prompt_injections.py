@@ -1,18 +1,12 @@
 import ast
-import requests
 from typing import Optional
 import pandas as pd
 
-from giskard.datasets.base import Dataset
+from ...datasets.base import Dataset
+from ..evaluators.string_matcher import StringMatcherConfig
 
 INJECTION_DATA_URL = "https://raw.githubusercontent.com/Giskard-AI/prompt-injections/main/prompt_injections.csv"
 GISKARD_META_URL = "https://raw.githubusercontent.com/Giskard-AI/prompt-injections/main/giskard_meta_data.csv"
-
-
-def _check_url(url: str):
-    response = requests.get(url)
-    if response.status_code != 200:
-        raise ConnectionError(f"A problem occured while trying to connect to {url}")
 
 
 def _check_matching_dfs_len(df1, df2):
@@ -24,12 +18,12 @@ def _check_matching_dfs_len(df1, df2):
 
 
 def _check_meta_df_requirements(df):
-    if "substrings" not in df.columns:
-        raise ValueError(f"{__name__}: substrings are needed for the evaluation.")
+    if "expected_strings" not in df.columns:
+        raise ValueError(f"{__name__}: expected_strings are needed for the evaluation.")
 
-    if df.substrings.isnull().values.any():
-        raise ValueError(f"{__name__}: substrings column cannot have any NaN values.")
-    df.substrings = df.substrings.apply(ast.literal_eval)
+    if df.expected_strings.isnull().values.any():
+        raise ValueError(f"{__name__}: expected_strings column cannot have any NaN values.")
+    df.expected_strings = df.expected_strings.apply(ast.literal_eval)
 
 
 class PromptInjectionDataLoader:
@@ -54,8 +48,6 @@ class PromptInjectionDataLoader:
     @property
     def df(self):
         if self._df is None:
-            _check_url(INJECTION_DATA_URL)
-            _check_url(GISKARD_META_URL)
             prompt_injections_df = pd.read_csv(INJECTION_DATA_URL, index_col=["index"])
             meta_df = pd.read_csv(GISKARD_META_URL, index_col=["index"])
             _check_matching_dfs_len(meta_df, prompt_injections_df)
@@ -82,8 +74,13 @@ class PromptInjectionDataLoader:
     def prompts_from_group(self, group):
         return self.df_from_group(group).prompt
 
-    def evaluator_configs_from_group(self, group):
-        return self.df_from_group(group).drop(["prompt"], axis=1).to_dict("records")
+    def configs_from_group(self, group):
+        configs_df = self.df_from_group(group).drop(["prompt"], axis=1).to_dict("records")
+        configs = []
+        for row in configs_df:
+            kwargs = {k: v for k, v in row.items() if k in list(StringMatcherConfig.__annotations__.keys())}
+            configs.append(StringMatcherConfig(**kwargs))
+        return configs
 
     def group_description(self, group):
         group_description = self.df_from_group(group).description.to_list()
