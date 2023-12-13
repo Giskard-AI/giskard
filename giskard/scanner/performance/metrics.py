@@ -15,7 +15,7 @@ class MetricResult:
     value: float
     affected_samples: int
     raw_values: Optional[np.ndarray] = None
-    ctable_values: Optional[list[list[int]]] = None
+    binary_counts: Optional[list[int]] = None
 
     @property
     def name(self):
@@ -28,7 +28,7 @@ class MetricResult:
 class PerformanceMetric(ABC):
     name: str
     greater_is_better = True
-    has_contingency_table = False
+    has_binary_counts = False
 
     @abstractmethod
     def __call__(self, model: BaseModel, dataset: Dataset) -> MetricResult:
@@ -45,9 +45,9 @@ class ClassificationPerformanceMetric(PerformanceMetric, metaclass=ABCMeta):
 
         value = self._calculate_metric(y_true, y_pred, model)
         num_affected = self._calculate_affected_samples(y_true, y_pred, model)
-        ctable_values = self._calculate_ctable_values(value, num_affected) if self.has_contingency_table else None
+        binary_counts = self._calculate_binary_counts(value, num_affected) if self.has_binary_counts else None
 
-        return MetricResult(self, value, num_affected, ctable_values=ctable_values)
+        return MetricResult(self, value, num_affected, binary_counts=binary_counts)
 
     @abstractmethod
     def _calculate_metric(self, y_true: np.ndarray, y_pred: np.ndarray, model: BaseModel) -> MetricResult:
@@ -56,7 +56,7 @@ class ClassificationPerformanceMetric(PerformanceMetric, metaclass=ABCMeta):
     def _calculate_affected_samples(self, y_true: np.ndarray, y_pred: np.ndarray, model: BaseModel) -> int:
         return len(y_true)
 
-    def _calculate_ctable_values(self, value, num_affected) -> list[list[int]]:
+    def _calculate_binary_counts(self, value, num_affected) -> list[int]:
         x = round(value * num_affected)
         y = num_affected - x
         return [x, y]
@@ -65,7 +65,7 @@ class ClassificationPerformanceMetric(PerformanceMetric, metaclass=ABCMeta):
 class Accuracy(ClassificationPerformanceMetric):
     name = "Accuracy"
     greater_is_better = True
-    has_contingency_table = True
+    has_binary_counts = True
 
     def _calculate_metric(self, y_true: np.ndarray, y_pred: np.ndarray, model: BaseModel):
         return sklearn.metrics.accuracy_score(y_true, y_pred)
@@ -74,7 +74,7 @@ class Accuracy(ClassificationPerformanceMetric):
 class BalancedAccuracy(ClassificationPerformanceMetric):
     name = "Balanced Accuracy"
     greater_is_better = True
-    has_contingency_table = False
+    has_binary_counts = False
 
     def _calculate_metric(self, y_true: np.ndarray, y_pred: np.ndarray, model: BaseModel):
         return sklearn.metrics.balanced_accuracy_score(y_true, y_pred)
@@ -100,7 +100,7 @@ class SklearnClassificationScoreMixin:
 class F1Score(SklearnClassificationScoreMixin, ClassificationPerformanceMetric):
     name = "F1 Score"
     greater_is_better = True
-    has_contingency_table = False
+    has_binary_counts = False
     _sklearn_metric = "f1_score"
 
     def _calculate_affected_samples(self, y_true: np.ndarray, y_pred: np.ndarray, model: BaseModel) -> int:
@@ -116,7 +116,7 @@ class F1Score(SklearnClassificationScoreMixin, ClassificationPerformanceMetric):
 class Precision(SklearnClassificationScoreMixin, ClassificationPerformanceMetric):
     name = "Precision"
     greater_is_better = True
-    has_contingency_table = True
+    has_binary_counts = True
     _sklearn_metric = "precision_score"
 
     def _calculate_affected_samples(self, y_true: np.ndarray, y_pred: np.ndarray, model: BaseModel) -> int:
@@ -129,7 +129,7 @@ class Precision(SklearnClassificationScoreMixin, ClassificationPerformanceMetric
 class Recall(SklearnClassificationScoreMixin, ClassificationPerformanceMetric):
     name = "Recall"
     greater_is_better = True
-    has_contingency_table = True
+    has_binary_counts = True
     _sklearn_metric = "recall_score"
 
     def _calculate_affected_samples(self, y_true: np.ndarray, y_pred: np.ndarray, model: BaseModel) -> int:
@@ -142,7 +142,7 @@ class Recall(SklearnClassificationScoreMixin, ClassificationPerformanceMetric):
 class AUC(PerformanceMetric):
     name = "ROC AUC"
     greater_is_better = True
-    has_contingency_table = False
+    has_binary_counts = False
 
     def __call__(self, model: BaseModel, dataset: Dataset) -> MetricResult:
         y_true = dataset.df[dataset.target]

@@ -100,11 +100,11 @@ def test_selects_issues_with_benjamini_hochberg(titanic_model, titanic_dataset):
 
 def test_calculate_slice_metrics():
     SLICE_SIZE = 500
-    np.random.seed(42)
+    rng = np.random.RandomState(42)
 
     # Create a mock model and dataset
     model = mock.MagicMock()
-    dataset = Dataset(pd.DataFrame({"x": np.arange(5001), "y": np.random.randint(1, 6, 5001)}), target="y")
+    dataset = Dataset(pd.DataFrame({"x": np.arange(5001), "y": rng.randint(1, 6, 5001)}), target="y")
 
     def metric(model, dataset):
         # About 20% on large datasets
@@ -113,14 +113,14 @@ def test_calculate_slice_metrics():
         raw_values = None
         x = round(value * affected_samples)
         y = affected_samples - x
-        ctable_values = [x, y]
+        binary_counts = [x, y]
         return mock.MagicMock(
-            value=value, affected_samples=affected_samples, raw_values=raw_values, ctable_values=ctable_values
+            value=value, affected_samples=affected_samples, raw_values=raw_values, binary_counts=binary_counts
         )
 
     # Without p-value
     metric.greater_is_better = True
-    metric.has_contingency_table = True
+    metric.has_binary_counts = True
     sliced_dataset, slice_metric, pvalue = _calculate_slice_metrics(model, dataset, metric, lambda df: df["x"] <= 9)
 
     assert sliced_dataset.df.y.count() == 10
@@ -161,7 +161,7 @@ def test_calculate_slice_metrics():
     assert pvalue == pytest.approx(0.28, abs=0.05)  # should be about the same as G-test
 
     # With p-value - Permutation test
-    metric.has_contingency_table = False
+    metric.has_binary_counts = False
     sliced_dataset, slice_metric, pvalue = _calculate_slice_metrics(
         model,
         dataset,

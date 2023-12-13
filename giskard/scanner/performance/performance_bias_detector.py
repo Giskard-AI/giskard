@@ -304,7 +304,7 @@ def _is_unbalanced_target(classes: pd.Series):
 
 
 def _calculate_pvalue_from_contingency_table(slice_metric, comp_metric, max_size_fisher=30):
-    ctable = [slice_metric.ctable_values, comp_metric.ctable_values]
+    ctable = [slice_metric.binary_counts, comp_metric.binary_counts]
 
     # if the slice size is too small, use Fisher's exact test, otherwise use a G-test
     if min(min(row) for row in ctable) <= max_size_fisher:
@@ -323,14 +323,10 @@ def _calculate_pvalue_from_permutation_test(
         perm_slice_dataset = Dataset(
             dataset.df.loc[slice_ids],
             target=dataset.target,
-            # column_types=dataset.column_types.copy(),
-            # validation=False,
         )
         perm_comp_dataset = Dataset(
             dataset.df.loc[comp_ids],
             target=dataset.target,
-            # column_types=dataset.column_types.copy(),
-            # validation=False,
         )
         return metric(model, perm_slice_dataset).value - metric(model, perm_comp_dataset).value
 
@@ -368,7 +364,7 @@ def _calculate_slice_metrics(
             _, pvalue = scipy.stats.ttest_ind(
                 slice_metric.raw_values, comp_metric.raw_values, equal_var=False, alternative=alternative
             )
-        elif metric.has_contingency_table:
+        elif metric.has_binary_counts:
             # otherwise, this must be classification scores...
             pvalue = _calculate_pvalue_from_contingency_table(slice_metric, comp_metric, max_size_fisher)
         else:
