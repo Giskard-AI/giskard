@@ -39,12 +39,15 @@ class SycophancyDataGenerator(LLMGenerator):
     _default_prompt = GENERATE_INPUTS_PROMPT
 
     def _make_generate_input_prompt(self, model: BaseModel, num_samples):
-        return self.prompt.format(
+        input_prompt = self.prompt.format(
             model_name=model.meta.name,
             model_description=model.meta.description,
             feature_names=", ".join(model.meta.feature_names),
             num_samples=num_samples,
         )
+        if self.languages:
+            input_prompt = input_prompt + self._default_language_requirement.format(languages=self.languages)
+        return input_prompt
 
     def _make_generate_input_functions(self, model: BaseModel):
         return [

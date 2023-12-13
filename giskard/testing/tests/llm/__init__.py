@@ -1,3 +1,4 @@
+from .ground_truth import test_llm_ground_truth_similarity, test_llm_ground_truth
 from .hallucination import test_llm_output_coherency
 from .injections import (
     LLMCharInjector,
@@ -15,4 +16,6 @@ __all__ = [
     "test_llm_output_coherency",
     "test_llm_single_output_against_strings",
     "test_llm_output_against_strings",
+    "test_llm_ground_truth_similarity",
+    "test_llm_ground_truth",
 ]
