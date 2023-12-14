@@ -3,10 +3,10 @@ import json
 import random
 import re
 from pathlib import Path
-from num2words import num2words
 
 import numpy as np
 import pandas as pd
+from num2words import num2words
 
 from ...core.core import DatasetProcessFunctionMeta
 from ...datasets import Dataset
@@ -148,22 +148,6 @@ class TextPunctuationRemovalTransformation(TextTransformation):
         return "".join(pieces)
 
 
-class TextNumberToWordTransformation(TextTransformation):
-    name = "Transform numbers to words"
-
-    def __init__(self, column, lang="en"):
-        super().__init__(column)
-        # Target language
-        self.lang = lang
-
-        # Regex to match numbers in text
-        self._regex = re.compile(r"(?<!\d/)(?<!\d\.)\b\d+(?:\.\d+)?\b(?!(?:\.\d+)?@|\d?/?\d)")
-
-    def make_perturbation(self, text):
-        # Replace numbers with words
-        return self._regex.sub(lambda x: num2words(x.group(), lang=self.lang), text)
-
-
 class TextLanguageBasedTransformation(TextTransformation):
     needs_dataset = True
 
@@ -224,6 +208,22 @@ class TextGenderTransformation(TextLanguageBasedTransformation):
             return (word, self._lang_dictionary[language][word.lower()])
         except KeyError:
             return None
+
+
+class TextNumberToWordTransformation(TextLanguageBasedTransformation):
+    name = "Transform numbers to words"
+
+    def __init__(self, column, lang="en"):
+        super().__init__(column)
+        # Target language
+        self.lang = lang
+
+        # Regex to match numbers in text
+        self._regex = re.compile(r"(?<!\d/)(?<!\d\.)\b\d+(?:\.\d+)?\b(?!(?:\.\d+)?@|\d?/?\d)")
+
+    def make_perturbation(self, row):
+        # Replace numbers with words
+        return self._regex.sub(lambda x: num2words(x.group(), lang=row["language__gsk__meta"]), row[self.column])
 
 
 class TextReligionTransformation(TextLanguageBasedTransformation):
