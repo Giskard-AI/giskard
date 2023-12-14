@@ -2,10 +2,10 @@ import logging
 import os
 import shutil
 import uuid
-from typing import Any, Dict, List, Optional
 
 import pandas as pd
 from mlflow.store.artifact.artifact_repo import verify_artifact_path
+from typing import Any, Dict, List, Optional, Callable
 
 from giskard.client.giskard_client import GiskardClient
 from giskard.core.suite import DatasetInput, ModelInput, SuiteInput
@@ -158,7 +158,24 @@ def map_dataset_process_function_meta_ws(callable_type):
     }
 
 
-def parse_function_arguments(client: Optional[GiskardClient], request_arguments: List[websocket.FuncArgument]):
+def _get_or_load(loaded_artifacts: Dict[str, Dict[str, Any]], type: str, uuid: str, load_fn: Callable[[], Any]) -> Any:
+    if type not in loaded_artifacts:
+        loaded_artifacts[type] = dict()
+
+    if uuid not in loaded_artifacts[type]:
+        loaded_artifacts[type][uuid] = load_fn()
+
+    return loaded_artifacts[type][uuid]
+
+
+def parse_function_arguments(
+    client: Optional[GiskardClient],
+    request_arguments: List[websocket.FuncArgument],
+    loaded_artifacts: Optional[Dict[str, Dict[str, Any]]] = None,
+):
+    if loaded_artifacts is None:
+        loaded_artifacts = dict()
+
     arguments = dict()
 
     # Processing empty list
@@ -169,14 +186,24 @@ def parse_function_arguments(client: Optional[GiskardClient], request_arguments:
         if arg.is_none:
             continue
         if arg.dataset is not None:
-            arguments[arg.name] = Dataset.download(
-                client,
-                arg.dataset.project_key,
+            arguments[arg.name] = _get_or_load(
+                loaded_artifacts,
+                "Dataset",
                 arg.dataset.id,
-                arg.dataset.sample,
+                lambda: Dataset.download(
+                    client,
+                    arg.dataset.project_key,
+                    arg.dataset.id,
+                    arg.dataset.sample,
+                ),
             )
         elif arg.model is not None:
-            arguments[arg.name] = BaseModel.download(client, arg.model.project_key, arg.model.id)
+            arguments[arg.name] = _get_or_load(
+                loaded_artifacts,
+                "BaseModel",
+                arg.model.id,
+                lambda: BaseModel.download(client, arg.model.project_key, arg.model.id),
+            )
         elif arg.slicingFunction is not None:
             arguments[arg.name] = SlicingFunction.download(
                 arg.slicingFunction.id, client, arg.slicingFunction.project_key
