@@ -250,6 +250,7 @@ jobs:
         uses: pdm-project/setup-pdm@v3
         with:
           python-version: '3.10'
+          version: '2.10.4' # Fix to repair the CI, use latest version when fixed on pdm
           cache: false
       - name: Build wheel
         run: pdm build
