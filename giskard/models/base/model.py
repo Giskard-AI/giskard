@@ -559,8 +559,48 @@ class BaseModel(ABC):
         raise NotImplementedError()
 
     def talk(self, question: str, dataset: Dataset) -> str:
+        # To be defined correctly.
+        _AVAILABLE_FUNCTIONS: dict[str, callable] = dict()
+
         messages = [{"role": "system", "content": MODEL_INSTRUCTION},
                     {"role": "user", "content": question}]
 
         client = get_default_client()
 
+        response = client.complete(
+            messages=messages,
+            functions=...,  # To be defined.
+            function_call="auto",
+            temperature=0.1
+        )
+
+        response_message = response.message
+        function_call = response.function_call
+
+        if function_call:
+            function_args = function_call.args
+            function_name = function_call.function
+
+            # Get the reference to the 'function_name' function.
+            function = _AVAILABLE_FUNCTIONS[function_name]
+            function_response = function(
+                **function_args  # To de parsed beforehand.
+            )
+
+            # Append the tool's response to the conversation.
+            messages.append(response_message)
+            messages.append(
+                {
+                    "role": "tool",
+                    "name": function_name,
+                    "content": function_response,
+                }
+            )
+
+            # Get the final model's response, based on the tool's output.
+            response_message = client.complete(
+                messages=messages,
+                temperature=0.1
+            )
+
+        return response_message
