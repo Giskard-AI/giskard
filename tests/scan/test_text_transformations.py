@@ -129,7 +129,7 @@ def test_number_to_words_transformation():
                 "Die Gesamtkosten der Artikel betragen 45,67 Dollar.",  # German
                 "La tasa de éxito de este procedimiento es del 98,6%.",  # Spanish
                 "Hoy corrió 13,2 millas en el maratón.",  # Spanish
-                "Son anniversaire est le 22.08 du mois.",  # French
+                "Son anniversaire est le 22 du mois.",  # French
                 "Le coût total des articles était de 157,23 $.",  # French
             ]
         }
