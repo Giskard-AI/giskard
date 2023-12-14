@@ -146,7 +146,7 @@ class BaseModel(ABC):
         self._cache = ModelCache(
             model_type,
             str(self.id),
-            persist_cache=kwargs.get("prediction_cache_dir", False),
+            persist_cache=kwargs.get("persist_cache", False),
             cache_dir=kwargs.get("prediction_cache_dir"),
         )
 
