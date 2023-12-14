@@ -36,8 +36,9 @@ class ModelCache:
         self.id = id
         self.prediction_cache = dict()
 
-        if persist_cache and cache_dir is None and self.id:
-            cache_dir = self._default_cache_dir_prefix.joinpath(self.id)
+        if persist_cache:
+            if cache_dir is None and self.id:
+                cache_dir = self._default_cache_dir_prefix.joinpath(self.id)
 
             self.cache_file = cache_dir / CACHE_CSV_FILENAME if cache_dir else None
         else:
