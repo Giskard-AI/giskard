@@ -92,67 +92,102 @@ def test_selects_issues_with_benjamini_hochberg(titanic_model, titanic_dataset):
     issues = detector.run(titanic_model, titanic_dataset, features=["Name", "Sex", "Pclass"])
     assert len(issues) == 3
 
-    detector = PerformanceBiasDetector(alpha=1e-10)
+    detector = PerformanceBiasDetector(alpha=1e-15)
 
     issues = detector.run(titanic_model, titanic_dataset, features=["Name", "Sex", "Pclass"])
     assert len(issues) == 2
 
 
 def test_calculate_slice_metrics():
+    SLICE_SIZE = 500
+    rng = np.random.RandomState(42)
+
     # Create a mock model and dataset
     model = mock.MagicMock()
-    dataset = Dataset(pd.DataFrame({"x": [1, 2, 3], "y": [4, 5, 6]}), target="y")
+    dataset = Dataset(pd.DataFrame({"x": np.arange(5001), "y": rng.randint(1, 6, 5001)}), target="y")
 
     def metric(model, dataset):
-        if len(dataset) == 2:  # slice
-            return mock.MagicMock(value=0.4, affected_samples=11, raw_values=None)
-
-        return mock.MagicMock(value=0.46, affected_samples=32, raw_values=None)
-
-    metric.greater_is_better = True
+        # About 20% on large datasets
+        value = (dataset.df.y % 5 == 0).sum() / len(dataset)
+        affected_samples = len(dataset)
+        raw_values = None
+        x = round(value * affected_samples)
+        y = affected_samples - x
+        binary_counts = [x, y]
+        return mock.MagicMock(
+            value=value, affected_samples=affected_samples, raw_values=raw_values, binary_counts=binary_counts
+        )
 
     # Without p-value
-    sliced_dataset, slice_metric, pvalue = _calculate_slice_metrics(model, dataset, metric, lambda df: df["x"] > 1)
+    metric.greater_is_better = True
+    metric.has_binary_counts = True
+    sliced_dataset, slice_metric, pvalue = _calculate_slice_metrics(model, dataset, metric, lambda df: df["x"] <= 9)
 
-    assert sliced_dataset.df.y.tolist() == [5, 6]
-    assert slice_metric.value == 0.4
-    assert slice_metric.affected_samples == 11
+    assert sliced_dataset.df.y.count() == 10
+    assert slice_metric.value == pytest.approx(0.40, abs=0.02)
+    assert slice_metric.affected_samples == 10
     assert pvalue is None
 
-    # With p-value
+    # With p-value - G-test
     sliced_dataset, slice_metric, pvalue = _calculate_slice_metrics(
-        model, dataset, metric, lambda df: df["x"] > 1, with_pvalue=True
+        model,
+        dataset,
+        metric,
+        lambda df: df["x"] <= SLICE_SIZE,
+        with_pvalue=True,
+        max_size_fisher=1,
+        perm_test_resamples=1000,
     )
 
-    assert sliced_dataset.df.y.tolist() == [5, 6]
-    assert slice_metric.value == 0.4
-    assert slice_metric.affected_samples == 11
-    assert pvalue == pytest.approx(0.80, abs=0.01)
+    assert sliced_dataset.df.y.count() == SLICE_SIZE + 1
+    assert slice_metric.value == pytest.approx(0.20, abs=0.02)
+    assert slice_metric.affected_samples == SLICE_SIZE + 1
+    assert pvalue == pytest.approx(0.28, abs=0.05)
 
-    def metric(model, dataset):
-        if len(dataset) == 2:  # slice
-            return mock.MagicMock(value=0.4, affected_samples=0, raw_values=None)
+    # With p-value - Fisher's exact test
+    sliced_dataset, slice_metric, pvalue = _calculate_slice_metrics(
+        model,
+        dataset,
+        metric,
+        lambda df: df["x"] <= SLICE_SIZE,
+        with_pvalue=True,
+        max_size_fisher=1000,
+        perm_test_resamples=1000,
+    )
 
-        return mock.MagicMock(value=0.46, affected_samples=32, raw_values=None)
+    assert sliced_dataset.df.y.count() == SLICE_SIZE + 1
+    assert slice_metric.value == pytest.approx(0.20, abs=0.02)
+    assert slice_metric.affected_samples == SLICE_SIZE + 1
+    assert pvalue == pytest.approx(0.28, abs=0.05)  # should be about the same as G-test
 
-    metric.greater_is_better = True
+    # With p-value - Permutation test
+    metric.has_binary_counts = False
+    sliced_dataset, slice_metric, pvalue = _calculate_slice_metrics(
+        model,
+        dataset,
+        metric,
+        lambda df: df["x"] <= SLICE_SIZE,
+        with_pvalue=True,
+        max_size_fisher=1,
+        perm_test_resamples=1000,
+    )
 
-    # If the contingency table contains zeros, it will give p-value = NaN
-    _, _, pvalue = _calculate_slice_metrics(model, dataset, metric, lambda df: df["x"] > 1, True)
-    assert np.isnan(pvalue)
+    assert slice_metric.value == pytest.approx(0.20, abs=0.02)
+    assert slice_metric.affected_samples == SLICE_SIZE + 1
+    assert pvalue == pytest.approx(0.28, abs=0.05)  # should be about the same as G-test and Fisher test
 
     # For regression
     def metric(model, dataset):
-        if len(dataset) == 2:  # slice
+        if len(dataset) == 10:  # slice
             return mock.MagicMock(value=0.4, affected_samples=5, raw_values=[1, 2, 3, 1, 2])
 
         return mock.MagicMock(value=0.46, affected_samples=7, raw_values=[2, 2, 2, 1, 2, 2, 2])
 
     metric.greater_is_better = True
     sliced_dataset, slice_metric, pvalue = _calculate_slice_metrics(
-        model, dataset, metric, lambda df: df["x"] > 1, with_pvalue=True
+        model, dataset, metric, lambda df: df["x"] <= 9, with_pvalue=True
     )
 
-    assert sliced_dataset.df.y.tolist() == [5, 6]
+    assert sliced_dataset.df.y.count() == 10
     assert slice_metric.value == 0.4
     assert pvalue == pytest.approx(0.44, abs=0.01)
