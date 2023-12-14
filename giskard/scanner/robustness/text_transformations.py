@@ -69,7 +69,7 @@ class TextTitleCase(TextTransformation):
 class TextTypoTransformation(TextTransformation):
     name = "Add typos"
 
-    def __init__(self, column, rate=0.05, min_length=10, rng_seed=None):
+    def __init__(self, column, rate=0.05, min_length=10, rng_seed=1729):
         super().__init__(column)
         from .entity_swap import typos
 
