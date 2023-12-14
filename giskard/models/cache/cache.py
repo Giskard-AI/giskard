@@ -1,9 +1,9 @@
 import csv
 from pathlib import Path
-from typing import Any, Iterable, List, Optional
 
 import numpy as np
 import pandas as pd
+from typing import Any, Iterable, List, Optional
 
 from ...client.python_utils import warning
 from ...core.core import SupportedModelTypes
@@ -26,14 +26,22 @@ def flatten(xs):
 class ModelCache:
     _default_cache_dir_prefix = Path(settings.home_dir / settings.cache_dir / "global" / "prediction_cache")
 
-    def __init__(self, model_type: SupportedModelTypes, id: Optional[str] = None, cache_dir: Optional[Path] = None):
+    def __init__(
+        self,
+        model_type: SupportedModelTypes,
+        id: Optional[str] = None,
+        persist_cache: bool = False,
+        cache_dir: Optional[Path] = None,
+    ):
         self.id = id
         self.prediction_cache = dict()
 
-        if cache_dir is None and self.id:
+        if persist_cache and cache_dir is None and self.id:
             cache_dir = self._default_cache_dir_prefix.joinpath(self.id)
 
-        self.cache_file = cache_dir / CACHE_CSV_FILENAME if cache_dir else None
+            self.cache_file = cache_dir / CACHE_CSV_FILENAME if cache_dir else None
+        else:
+            self.cache_file = None
 
         self.vectorized_get_cache_or_na = np.vectorize(self.get_cache_or_na, otypes=[object])
         self.model_type = model_type
