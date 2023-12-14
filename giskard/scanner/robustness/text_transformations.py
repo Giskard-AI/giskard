@@ -149,7 +149,7 @@ class TextPunctuationRemovalTransformation(TextTransformation):
 class TextLanguageBasedTransformation(TextTransformation):
     needs_dataset = True
 
-    def __init__(self, column, rng_seed=None):
+    def __init__(self, column, rng_seed=1729):
         super().__init__(column)
         self._lang_dictionary = dict()
         self._load_dictionaries()
