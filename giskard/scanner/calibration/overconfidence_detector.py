@@ -2,33 +2,34 @@ from typing import Sequence
 
 import pandas as pd
 
+from ...datasets import Dataset
+from ...ml_worker.testing.registry.slicing_function import SlicingFunction
+from ...models.base import BaseModel
+from ...testing.tests.calibration import _calculate_overconfidence_score, _default_overconfidence_threshold
 from ..common.examples import ExampleExtractor
 from ..common.loss_based_detector import LossBasedDetector
 from ..decorators import detector
 from ..issues import Issue, IssueLevel, Overconfidence
 from ..logger import logger
-from ...datasets import Dataset
-from ...ml_worker.testing.registry.slicing_function import SlicingFunction
-from ...models.base import BaseModel
-from ...testing.tests.calibration import _calculate_overconfidence_score, _default_overconfidence_threshold
 
 
 @detector(name="overconfidence", tags=["overconfidence", "classification"])
 class OverconfidenceDetector(LossBasedDetector):
-    def __init__(self, threshold=0.10, p_threshold=None, method="tree"):
+    def __init__(self, threshold=0.10, p_threshold=None, method="tree", **kwargs):
         self.threshold = threshold
         self.p_threshold = p_threshold
         self.method = method
+        super().__init__(**kwargs)
 
     @property
     def _numerical_slicer_method(self):
         return self.method
 
-    def run(self, model: BaseModel, dataset: Dataset, **kwargs):
+    def run(self, model: BaseModel, dataset: Dataset, features: Sequence[str]):
         if not model.is_classification:
             raise ValueError("Overconfidence bias detector only works for classification models.")
 
-        return super().run(model, dataset)
+        return super().run(model, dataset, features)
 
     def _calculate_loss(self, model: BaseModel, dataset: Dataset) -> pd.DataFrame:
         loss = _calculate_overconfidence_score(model, dataset).to_frame(self.LOSS_COLUMN_NAME)
@@ -75,7 +76,7 @@ class OverconfidenceDetector(LossBasedDetector):
             if relative_delta > self.threshold:
                 level = IssueLevel.MAJOR if relative_delta > 2 * self.threshold else IssueLevel.MEDIUM
                 description = (
-                    "For records in your dataset where {slicing_fn}, we found a significantly higher number of "
+                    "For records in the dataset where {slicing_fn}, we found a significantly higher number of "
                     "overconfident wrong predictions ({num_overconfident_samples} samples, corresponding to "
                     "{metric_value_perc}% of the wrong predictions in the data slice)."
                 )
@@ -100,6 +101,7 @@ class OverconfidenceDetector(LossBasedDetector):
                     },
                     tests=_generate_overconfidence_tests,
                     importance=relative_delta,
+                    taxonomy=["avid-effect:performance:P0204"],
                 )
 
                 # Add examples

@@ -1,10 +1,11 @@
+import typing
+from typing import List, Optional
+
 import inspect
 import numbers
 import re
-import typing
 import uuid
 from collections import Counter
-from typing import List, Optional
 
 import numpy as np
 import pandas as pd
@@ -17,6 +18,7 @@ from giskard.ml_worker.testing.registry.slicing_function import SlicingFunction
 from giskard.ml_worker.testing.test_result import TestMessage, TestMessageLevel, TestResult
 from giskard.ml_worker.testing.utils import check_slice_not_empty, validate_classification_label
 from giskard.models.base import BaseModel
+
 from . import debug_description_prefix
 
 other_modalities_pattern = "^other_modalities_[a-z0-9]{32}$"
@@ -200,40 +202,42 @@ def test_drift_psi(
     max_categories: int = 20,
     psi_contribution_percent: float = 0.2,
 ) -> TestResult:
-    """
-    Test if the PSI score between the actual and reference datasets is below the threshold for
-    a given categorical feature
+    """Test categorical drift by PSI score.
 
-    Example : The test is passed when the  PSI score of gender between reference and actual sets is below 0.2
+    It tests that the PSI score between the actual and reference datasets is
+    below the threshold for a given categorical feature.
 
-    Args:
-        actual_dataset(Dataset):
-            Actual dataset used to compute the test
-        reference_dataset(Dataset):
-            Reference dataset used to compute the test
-        column_name(str):
-            Name of column with categorical feature
-        slicing_function(Optional[SlicingFunction]):
-          Slicing function to be applied on both actual and reference datasets
-        threshold(float):
-            Threshold value for PSI
-        max_categories:
-            the maximum categories to compute the PSI score
-        psi_contribution_percent:
-            the ratio between the PSI score of a given category over the total PSI score
-            of the categorical variable. If there is a drift, the test provides all the
-            categories that have a PSI contribution over than this ratio.
+    For example, the test is passed when the PSI score of gender between
+    reference and actual sets is below threshold 0.2.
 
+    Parameters
+    ----------
+    actual_dataset : Dataset
+        Actual dataset used to compute the test
+    reference_dataset : Dataset
+        Reference dataset used to compute the test
+    column_name : str
+        Name of column with categorical feature
+    slicing_function : Optional[SlicingFunction]
+        Slicing function to be applied on both actual and reference datasets.
+    threshold : float
+        Threshold value for PSI. Default value = 0.2.
+    max_categories : int
+        The maximum categories to compute the PSI score.
+    psi_contribution_percent : float
+        The ratio between the PSI score of a given category over the total PSI
+        score of the categorical variable. If there is a drift, the test
+        provides all the categories that have a PSI contribution over than this
+        ratio.
+    debug : bool
+        If True and the test fails, a dataset will be provided containing the
+        actual_dataset rows with the categories that have drifted the most (more
+        than psi_contribution_percent of the total PSI score). Default is False.
 
-    Returns:
-        actual_slices_size:
-            Length of rows with given categorical feature in actual slice
-        reference_slices_size:
-            Length of rows with given categorical feature in reference slice
-        metric:
-            The total psi score between the actual and reference datasets
-        passed:
-            TRUE if total_psi <= threshold
+    Returns
+    -------
+    TestResult
+        The test result.
     """
     if slicing_function:
         test_name = "test_drift_psi"
@@ -254,20 +258,18 @@ def test_drift_psi(
     )
 
     # --- debug ---
-    failed_indexes = dict()
+    output_ds = list()
     if not passed:
         check_if_debuggable(actual_dataset, reference_dataset)
         main_drifting_modalities_bool = output_data["Psi"] > psi_contribution_percent * total_psi
         modalities_list = output_data[main_drifting_modalities_bool]["Modality"].tolist()
         if modalities_list:
             filtered_modalities = [w for w in modalities_list if not re.match(other_modalities_pattern, str(w))]
-            failed_indexes[str(actual_dataset.original_id)] = list(
-                actual_dataset.df.index.get_indexer_for(
-                    actual_dataset.df.loc[actual_series.isin(filtered_modalities)].index
-                )
+            output_ds.append(
+                actual_dataset.slice(lambda df: df.loc[actual_series.isin(filtered_modalities)], row_level=False)
             )
             test_name = inspect.stack()[0][3]
-            if len(failed_indexes) == 0:
+            if len(output_ds[0].df.index) == 0:
                 raise ValueError(
                     test_name
                     + f": the categories {filtered_modalities} completely drifted as they are not present in the "
@@ -281,7 +283,7 @@ def test_drift_psi(
         passed=passed,
         metric=total_psi,
         messages=messages,
-        failed_indexes=failed_indexes,
+        output_ds=output_ds,
     )
 
 
@@ -299,41 +301,40 @@ def test_drift_chi_square(
     max_categories: int = 20,
     chi_square_contribution_percent: float = 0.2,
 ) -> TestResult:
-    """
-    Test if the p-value of the chi square test between the actual and reference datasets is
-    above the threshold for a given categorical feature
+    """Tests drift by chi-squared.
 
-    Example : The test is passed when the pvalue of the chi square test of the categorical variable between
-     reference and actual sets is higher than 0.05. It means that chi square test cannot be rejected at 5% level
-     and that we cannot assume drift for this variable.
+    The test checks if the p-value of the chi-square test between the actual and
+    reference datasets is above a threshold for a given categorical feature.
 
-    Args:
-        actual_dataset(Dataset):
-            Actual dataset used to compute the test
-        reference_dataset(Dataset):
-            Reference dataset used to compute the test
-        column_name(str):
-            Name of column with categorical feature
-        slicing_function(Optional[SlicingFunction]):
-          Slicing function to be applied on both actual and reference datasets
-        threshold(float):
-            Threshold for p-value of chi-square
-        max_categories:
-            the maximum categories to compute the chi square
-        chi_square_contribution_percent:
-            the ratio between the Chi-Square value of a given category over the total Chi-Square
-            value of the categorical variable. If there is a drift, the test provides all the
-            categories that have a PSI contribution over than this ratio.
+    Parameters
+    ----------
+    actual_dataset : Dataset
+        Actual dataset used to compute the test
+    reference_dataset : Dataset
+        Reference dataset used to compute the test
+    column_name : str
+        Name of column with categorical feature
+    slicing_function : Optional[SlicingFunction]
+        Slicing function to be applied on both actual and reference datasets
+    threshold : float
+        Threshold for p-value of chi-square. Default is 0.05.
+    max_categories : int
+        The maximum categories to compute the chi-square.
+    chi_square_contribution_percent : float
+        the ratio between the Chi-Square value of a given category over the
+        total chi-square value of the categorical variable. If there is a drift,
+        the test provides all the categories that have a PSI contribution over
+        than this ratio.
+    debug : bool
+        If True and the test fails, a dataset will be provided containing the
+        actual_dataset rows with the categories that have drifted the most
+        (more than chi_square_contribution_percent of the total chi squared
+        score).
 
-    Returns:
-        actual_slices_size:
-            Length of rows with given categorical feature in actual slice
-        reference_slices_size:
-            Length of rows with given categorical feature in reference slice
-        metric:
-            The pvalue of chi square test
-        passed:
-            TRUE if metric > threshold
+    Returns
+    -------
+    TestResult
+        The test result.
     """
     if slicing_function:
         test_name = "test_drift_chi_square"
@@ -354,17 +355,15 @@ def test_drift_chi_square(
     )
 
     # --- debug ---
-    failed_indexes = dict()
+    output_ds = list()
     if not passed:
         check_if_debuggable(actual_dataset, reference_dataset)
         main_drifting_modalities_bool = output_data["Chi_square"] > chi_square_contribution_percent * chi_square
         modalities_list = output_data[main_drifting_modalities_bool]["Modality"].tolist()
         if modalities_list:
             filtered_modalities = [w for w in modalities_list if not re.match(other_modalities_pattern, str(w))]
-            failed_indexes[str(actual_dataset.original_id)] = list(
-                actual_dataset.df.index.get_indexer_for(
-                    actual_dataset.df.loc[actual_series.isin(filtered_modalities)].index
-                )
+            output_ds.append(
+                actual_dataset.slice(lambda df: df.loc[actual_series.isin(filtered_modalities)], row_level=False)
             )
     # ---
 
@@ -374,7 +373,7 @@ def test_drift_chi_square(
         passed=passed,
         metric=p_value,
         messages=messages,
-        failed_indexes=failed_indexes,
+        output_ds=output_ds,
     )
 
 
@@ -386,35 +385,34 @@ def test_drift_ks(
     slicing_function: Optional[SlicingFunction] = None,
     threshold: float = 0.05,
 ) -> TestResult:
-    """
-    Test if the pvalue of the KS test between the actual and reference datasets is above
-    the threshold for a given numerical feature
+    """Test drift with a Kolmogorov-Smirnov test.
 
-    Example : The test is passed when the pvalue of the KS test of the numerical variable
-    between the actual and reference datasets is higher than 0.05. It means that the KS test
-    cannot be rejected at 5% level and that we cannot assume drift for this variable.
+    Test if the p-value of the Kolmogorov-Smirnov test between the actual and
+    reference datasets is above a threshold for a given numerical feature.
 
-    Args:
-        actual_dataset(Dataset):
-           Actual dataset used to compute the test
-        reference_dataset(Dataset):
-            Reference dataset used to compute the test
-        column_name(str):
-            Name of column with numerical feature
-        slicing_function(Optional[SlicingFunction]):
-          Slicing function to be applied on both actual and reference datasets
-        threshold(float):
-            Threshold for p-value of KS test
+    For example, if the threshold is set to 0.05, the test is passed when the
+    p-value of the KS test of the numerical variable between the actual and
+    reference datasets is higher than 0.05. It means that the null hypothesis
+    (no drift) cannot be rejected at 5% confidence level and that we cannot
+    assume drift for this variable.
 
-    Returns:
-        actual_slices_size:
-            Length of rows with given numerical feature in actual slice
-        reference_slices_size:
-            Length of rows with given numerical feature in reference slice
-        metric:
-            The pvalue of KS test
-        passed:
-            TRUE if metric >= threshold
+    Parameters
+    ----------
+    actual_dataset : Dataset
+        Actual dataset used to compute the test.
+    reference_dataset : Dataset
+        Reference dataset used to compute the test.
+    column_name : str
+        Name of column with numerical feature.
+    slicing_function : Optional[SlicingFunction]
+        Slicing function to be applied on both actual and reference datasets.
+    threshold : float
+        Threshold for p-value of Kolmogorov-Smirnov test. Default is = 0.05.
+
+    Returns
+    -------
+    TestResult
+        The test result.
     """
     if slicing_function:
         test_name = "test_drift_ks"
@@ -448,35 +446,33 @@ def test_drift_earth_movers_distance(
     slicing_function: Optional[SlicingFunction] = None,
     threshold: float = 0.2,
 ) -> TestResult:
-    """
-    Test if the earth movers distance between the actual and reference datasets is
-    below the threshold for a given numerical feature
+    """Test drift by earth mover’s distance.
 
-    Example : The test is passed when the earth movers distance of the numerical
-     variable between the actual and reference datasets is lower than 0.1.
-     It means that we cannot assume drift for this variable.
+    Test if the earth movers distance between the actual and reference datasets
+    is below a threshold for a given numerical feature.
 
-    Args:
-        actual_dataset(Dataset):
-            Actual dataset used to compute the test
-        reference_dataset(Dataset):
-            Reference dataset used to compute the test
-        column_name(str):
-            Name of column with numerical feature
-        slicing_function(Optional[SlicingFunction]):
-            Slicing function to be applied on both actual and reference datasets
-        threshold(float):
-            Threshold for earth movers distance
+    For example, if the threshold is set to 0.1, the test is passed when the
+    earth movers distance of the numerical variable between the actual and
+    reference datasets is lower than 0.1. It means that we cannot assume drift
+    for this variable.
 
-    Returns:
-        actual_slices_size:
-            Length of rows with given numerical feature in actual slice
-        reference_slices_size:
-            Length of rows with given numerical feature in reference slice
-        metric:
-            The earth movers distance
-        passed:
-            TRUE if metric <= threshold
+    Parameters
+    ----------
+    actual_dataset : Dataset
+        Actual dataset used to compute the test
+    reference_dataset : Dataset
+        Reference dataset used to compute the test
+    column_name : str
+        Name of column with numerical feature
+    slicing_function : Optional[SlicingFunction]
+        Slicing function to be applied on both actual and reference datasets
+    threshold : float
+        Threshold for earth mover's distance. Default is 0.2.
+
+    Returns
+    -------
+    TestResult
+        The test result.
     """
     if slicing_function:
         test_name = "test_drift_earth_movers_distance"
@@ -523,42 +519,39 @@ def test_drift_prediction_psi(
     threshold: float = 0.2,
     psi_contribution_percent: float = 0.2,
 ):
-    """
-    Test if the PSI score between the reference and actual datasets is below the threshold
-    for the classification labels predictions
+    """Tests drift of predictions by PSI score.
 
-    Example : The test is passed when the  PSI score of classification labels prediction
-    for females between reference and actual sets is below 0.2
+    Test if the PSI score between the reference and actual datasets is below the
+    threshold for the classification labels predictions.
 
-    Args:
-        model(BaseModel):
-            Model used to compute the test
-        actual_dataset(Dataset):
-            Actual dataset used to compute the test
-        reference_dataset(Dataset):
-            Reference dataset used to compute the test
-        slicing_function(Optional[SlicingFunction]):
-            Slicing function to be applied on both actual and reference datasets
-        threshold(float):
-            Threshold value for PSI
-        max_categories:
-            The maximum categories to compute the PSI score
-        psi_contribution_percent:
-            The ratio between the PSI score of a given category over the total PSI score
-            of the categorical variable. If there is a drift, the test provides all the
-            categories that have a PSI contribution over than this ratio.
+    Parameters
+    ----------
+    model : BaseModel
+        Model used to compute the test
+    actual_dataset : Dataset
+        Actual dataset used to compute the test
+    reference_dataset : Dataset
+        Reference dataset used to compute the test
+    slicing_function : Optional[SlicingFunction]
+        Slicing function to be applied on both actual and reference datasets
+    max_categories : int
+        The maximum categories to compute the PSI score
+    threshold : float
+        Threshold value for PSI. Default is 0.2.
+    psi_contribution_percent : float
+        The ratio between the PSI score of a given category over the total PSI
+        score of the categorical variable. If there is a drift, the test
+        provides all the categories that have a PSI contribution over than this
+        ratio.
+    debug : bool
+        If True and the test fails, a dataset will be provided containing the
+        actual_dataset rows with the categories that have drifted the most (more
+        than psi_contribution_percent of the total PSI score).
 
-    Returns:
-        actual_slices_size:
-            Length of actual slice tested
-        reference_slices_size:
-            Length of reference slice tested
-        passed:
-            TRUE if metric <= threshold
-        metric:
-            Total PSI value
-        messages:
-            Psi result message
+    Returns
+    -------
+    TestResult
+        The test result.
     """
     if slicing_function:
         test_name = "test_drift_prediction_psi"
@@ -579,20 +572,21 @@ def test_drift_prediction_psi(
     )
 
     # --- debug ---
-    failed_indexes = dict()
+    output_ds = list()
     if not passed:
         check_if_debuggable(actual_dataset, reference_dataset)
         main_drifting_modalities_bool = output_data["Psi"] > psi_contribution_percent * total_psi
         modalities_list = output_data[main_drifting_modalities_bool]["Modality"].tolist()
         if modalities_list:
             filtered_modalities = [w for w in modalities_list if not re.match(other_modalities_pattern, str(w))]
-            failed_indexes[str(actual_dataset.original_id)] = list(
-                actual_dataset.df.index.get_indexer_for(
-                    actual_dataset.df.loc[prediction_actual.isin(filtered_modalities).values].index
+            output_ds.append(
+                actual_dataset.slice(
+                    lambda df: df.loc[prediction_actual.isin(filtered_modalities).values], row_level=False
                 )
             )
+
             test_name = inspect.stack()[0][3]
-            if len(failed_indexes) == 0:
+            if len(output_ds[0].df.index) == 0:
                 raise ValueError(
                     test_name + f": the categories {filtered_modalities} completely drifted as they are not present "
                     f"in the 'actual_dataset'"
@@ -605,7 +599,7 @@ def test_drift_prediction_psi(
         passed=passed,
         metric=total_psi,
         messages=messages,
-        failed_indexes=failed_indexes,
+        output_ds=output_ds,
     )
 
 
@@ -652,42 +646,41 @@ def test_drift_prediction_chi_square(
     threshold: float = 0.05,
     chi_square_contribution_percent: float = 0.2,
 ):
-    """
-    Test if the Chi Square value between the reference and actual datasets is below the threshold
-    for the classification labels predictions for a given slice
+    """Tests drift of predictions by chi-squared test.
 
-    Example : The test is passed when the  Chi Square value of classification labels prediction
-    for females between reference and actual sets is below 0.05
+    Test if the chi-square p-value between the reference and actual datasets is
+    below the threshold for the classification labels predictions for a given
+    slice.
 
-    Args:
-        model(BaseModel):
-            Model used to compute the test
-        actual_dataset(Dataset):
-            Actual dataset used to compute the test
-        reference_dataset(Dataset):
-            Reference dataset used to compute the test
-        slicing_function(Optional[SlicingFunction]):
-            Slicing function to be applied on both actual and reference datasets
-        threshold(float):
-            Threshold value of p-value of Chi-Square
-        max_categories(int):
-            the maximum categories to compute the PSI score
-        chi_square_contribution_percent(float):
-            the ratio between the Chi-Square value of a given category over the total Chi-Square
-            value of the categorical variable. If there is a drift, the test provides all the
-            categories that have a PSI contribution over than this ratio.
+    Parameters
+    ----------
+    model : BaseModel
+        Model used to compute the test
+    actual_dataset : Dataset
+        Actual dataset used to compute the test
+    reference_dataset : Dataset
+        Reference dataset used to compute the test
+    slicing_function : Optional[SlicingFunction]
+        Slicing function to be applied on both actual and reference datasets
+    max_categories : int
+        the maximum categories to compute the PSI score.
+    threshold : float
+        Threshold value of p-value of chi-square. Default is 0.05.
+    chi_square_contribution_percent : float
+        the ratio between the Chi-Square value of a given category over the
+        total chi-square value of the categorical variable. If there is a drift,
+        the test provides all the categories that have a PSI contribution over
+        than this ratio.
+    debug : bool
+        If True and the test fails,
+        a dataset will be provided containing the actual_dataset rows with the
+        categories that have drifted the most (more than
+        chi_square_contribution_percent of the total chi squared score).
 
-    Returns:
-        actual_slices_size:
-            Length of actual slice tested
-        reference_slices_size:
-            Length of reference slice tested
-        passed:
-            TRUE if metric > threshold
-        metric:
-            Calculated p-value of Chi_square
-        messages:
-            Message describing if prediction is drifting or not
+    Returns
+    -------
+    TestResult
+        The test result.
     """
     if slicing_function:
         test_name = "test_drift_prediction_chi_square"
@@ -709,16 +702,16 @@ def test_drift_prediction_chi_square(
     )
 
     # --- debug ---
-    failed_indexes = dict()
+    output_ds = list()
     if not passed:
         check_if_debuggable(actual_dataset, reference_dataset)
         main_drifting_modalities_bool = output_data["Chi_square"] > chi_square_contribution_percent * chi_square
         modalities_list = output_data[main_drifting_modalities_bool]["Modality"].tolist()
         if modalities_list:
             filtered_modalities = [w for w in modalities_list if not re.match(other_modalities_pattern, str(w))]
-            failed_indexes[str(actual_dataset.original_id)] = list(
-                actual_dataset.df.index.get_indexer_for(
-                    actual_dataset.df.loc[prediction_actual.isin(filtered_modalities).values].index
+            output_ds.append(
+                actual_dataset.slice(
+                    lambda df: df.loc[prediction_actual.isin(filtered_modalities).values], row_level=False
                 )
             )
     # ---
@@ -729,7 +722,7 @@ def test_drift_prediction_chi_square(
         passed=passed,
         metric=p_value,
         messages=messages,
-        failed_indexes=failed_indexes,
+        output_ds=output_ds,
     )
 
 
@@ -758,39 +751,35 @@ def test_drift_prediction_ks(
     classification_label: Optional[str] = None,
     threshold: Optional[float] = None,
 ) -> TestResult:
-    """
-    Test if the pvalue of the KS test for prediction between the reference and actual datasets for
-     a given subpopulation is above the threshold
+    """Tests drift of predictions by Kolmogorov-Smirnov test.
 
-    Example : The test is passed when the pvalue of the KS test for the prediction for females
-     between reference and actual dataset is higher than 0.05. It means that the KS test cannot be
-     rejected at 5% level and that we cannot assume drift for this variable.
+    Test if the p-value of the KS test for prediction between the reference and
+    actual datasets for a given subpopulation is above the threshold.
 
-    Args:
-        model(BaseModel):
-            Model used to compute the test
-        actual_dataset(Dataset):
-            Actual dataset used to compute the test
-        reference_dataset(Dataset):
-            Reference dataset used to compute the test
-        slicing_function(Optional[SlicingFunction]):
-            Slicing function to be applied on both actual and reference datasets
-        threshold(Optional[float]):
-            Threshold for p-value of Kolmogorov-Smirnov test
-        classification_label(Optional[str]):
-            One specific label value from the target column for classification model
+    Example: The test is passed when the p-value of the KS test for the
+    prediction for females between reference and actual dataset is higher than
+    0.05. It means that the null hypothesis cannot be rejected at 5% level and
+    we cannot assume drift for this variable.
 
-    Returns:
-        actual_slices_size:
-            Length of actual slice tested
-        reference_slices_size:
-            Length of reference slice tested
-        passed:
-            TRUE if metric >= threshold
-        metric:
-            The calculated p-value Kolmogorov-Smirnov test
-        messages:
-            Kolmogorov-Smirnov result message
+    Parameters
+    ----------
+    model : BaseModel
+        Model used to compute the test
+    actual_dataset : Dataset
+        Actual dataset used to compute the test
+    reference_dataset : Dataset
+        Reference dataset used to compute the test
+    slicing_function : Optional[SlicingFunction]
+        Slicing function to be applied on both actual and reference datasets
+    classification_label : Optional[str]
+        One specific label value from the target column for classification model
+    threshold : Optional[float]
+        Threshold for p-value of Kolmogorov-Smirnov test
+
+    Returns
+    -------
+    TestResult
+        The test result.
     """
     if slicing_function:
         test_name = "test_drift_prediction_ks"
@@ -855,38 +844,39 @@ def test_drift_prediction_earth_movers_distance(
     classification_label: Optional[str] = None,
     threshold: float = 0.2,
 ) -> TestResult:
-    """
-    Test if the Earth Mover’s Distance value between the reference and actual datasets is
-    below the threshold for the classification labels predictions for classification
-    model and prediction for regression models
+    """Tests drift of predictions by earth mover’s distance.
 
-    Example :
-    Classification : The test is passed when the  Earth Mover’s Distance value of classification
-    labels probabilities for females between reference and actual sets is below 0.2
+    Test if the Earth Mover’s Distance value between the reference and actual
+    datasets is below the threshold for the classification labels predictions
+    for classification model and prediction for regression models.
 
-    Regression : The test is passed when the  Earth Mover’s Distance value of prediction
-    for females between reference and actual sets is below 0.2
+    Examples
+    For classification: the test is passed when the  Earth Mover’s Distance
+    value of classification labels probabilities for females between reference
+    and actual sets is below 0.2
 
-    Args:
-        model(BaseModel):
-            uploaded model
-        actual_dataset(Dataset):
-            Actual dataset used to compute the test
-        reference_dataset(Dataset):
-            Reference dataset used to compute the test
-        slicing_function(Optional[SlicingFunction]):
-            Slicing function to be applied on both actual and reference datasets
-        classification_label(Optional[str]):
-            one specific label value from the target column for classification model
-        threshold(float):
-            threshold for earth mover's distance
+    For regression: the test is passed when the  Earth Mover’s Distance value of
+    prediction for females between reference and actual sets is below 0.2
 
-    Returns:
-        passed:
-            TRUE if metric <= threshold
-        metric:
-            Earth Mover's Distance value
+    Parameters
+    ----------
+    model : BaseModel
+        Model to test
+    actual_dataset : Dataset
+        Actual dataset used to compute the test
+    reference_dataset : Dataset
+        Reference dataset used to compute the test
+    slicing_function : Optional[SlicingFunction]
+        Slicing function to be applied on both actual and reference datasets
+    classification_label : Optional[str]
+        One specific label value from the target column for classification model
+    threshold : float
+        Threshold for earth mover's distance. Default is 0.2.
 
+    Returns
+    -------
+    TestResult
+        The test result.
     """
     if slicing_function:
         test_name = "test_drift_prediction_earth_movers_distance"

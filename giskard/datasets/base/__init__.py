@@ -1,3 +1,5 @@
+from typing import Dict, Hashable, List, Optional, Union
+
 import inspect
 import logging
 import posixpath
@@ -5,7 +7,6 @@ import tempfile
 import uuid
 from functools import cached_property
 from pathlib import Path
-from typing import Dict, Hashable, List, Optional, Union
 
 import numpy as np
 import pandas
@@ -19,7 +20,7 @@ from zstandard import ZstdDecompressor
 from giskard.client.giskard_client import GiskardClient
 from giskard.client.io_utils import compress, save_df
 from giskard.client.python_utils import warning
-from giskard.core.core import DatasetMeta, SupportedColumnTypes
+from giskard.core.core import NOT_GIVEN, DatasetMeta, NotGivenOr, SupportedColumnTypes
 from giskard.core.errors import GiskardImportError
 from giskard.core.validation import configured_validate_arguments
 from giskard.ml_worker.testing.registry.slicing_function import SlicingFunction, SlicingFunctionType
@@ -28,8 +29,9 @@ from giskard.ml_worker.testing.registry.transformation_function import (
     TransformationFunctionType,
 )
 from giskard.settings import settings
-from ..metadata.indexing import ColumnMetadataMixin
+
 from ...ml_worker.utils.file_utils import get_file_name
+from ..metadata.indexing import ColumnMetadataMixin
 
 try:
     import wandb  # noqa
@@ -77,8 +79,11 @@ class DataProcessor:
             self.pipeline.append(processor)
         return self
 
-    def apply(self, dataset: "Dataset", apply_only_last=False, get_mask: bool = False):
-        ds = dataset.copy()
+    def apply(self, dataset: "Dataset", apply_only_last=False, get_mask: bool = False, copy: bool = True):
+        if copy:
+            ds = dataset.copy()
+        else:
+            ds = dataset
         is_slicing_only = True
 
         while len(self.pipeline):
@@ -144,7 +149,7 @@ class Dataset(ColumnMetadataMixin):
     """
 
     name: Optional[str]
-    target: Optional[str]
+    _target: NotGivenOr[Optional[str]]
     column_types: Dict[str, str]
     df: pd.DataFrame
     id: uuid.UUID
@@ -156,7 +161,7 @@ class Dataset(ColumnMetadataMixin):
         self,
         df: pd.DataFrame,
         name: Optional[str] = None,
-        target: Optional[Hashable] = None,
+        target: NotGivenOr[Optional[Hashable]] = NOT_GIVEN,
         cat_columns: Optional[List[str]] = None,
         column_types: Optional[Dict[Hashable, str]] = None,
         id: Optional[uuid.UUID] = None,
@@ -169,7 +174,7 @@ class Dataset(ColumnMetadataMixin):
         Args:
             df (pd.DataFrame): The input dataset as a pandas DataFrame.
             name (Optional[str]): The name of the dataset.
-            target (Optional[str]): The column name in df corresponding to the actual target variable (ground truth).
+            target (Optional[str]): The column name in df corresponding to the actual target variable (ground truth). The target needs to be explicitly set to `None` if the dataset doesn't have any target variable.
             cat_columns (Optional[List[str]]): A list of column names that are categorical.
             column_types (Optional[Dict[str, str]]): A dictionary mapping column names to their types.
             id (Optional[uuid.UUID]): A UUID that uniquely identifies this dataset.
@@ -186,13 +191,12 @@ class Dataset(ColumnMetadataMixin):
 
         self.name = name
         self.df = pd.DataFrame(df)
-        self.target = target
+        self._target = target
 
         if validation:
-            from giskard.core.dataset_validation import validate_dtypes, validate_target_exists
+            from giskard.core.dataset_validation import validate_dataset
 
-            validate_dtypes(self)
-            validate_target_exists(self)
+            validate_dataset(self)
 
         self.column_dtypes = self.extract_column_dtypes(self.df)
 
@@ -229,7 +233,13 @@ class Dataset(ColumnMetadataMixin):
 
         logger.info("Your 'pandas.DataFrame' is successfully wrapped by Giskard's 'Dataset' wrapper class.")
 
-        self.data_processor = DataProcessor()
+    @property
+    def is_target_given(self) -> bool:
+        return self._target is not NOT_GIVEN
+
+    @property
+    def target(self) -> Optional[str]:
+        return self._target or None
 
     def add_slicing_function(self, slicing_function: SlicingFunction):
         """
@@ -325,7 +335,9 @@ class Dataset(ColumnMetadataMixin):
                 **{key: value for key, value in slicing_function.params.items() if key != "column_name"},
             )
 
-        return self.data_processor.add_step(slicing_function).apply(self, apply_only_last=True, get_mask=get_mask)
+        return self.data_processor.add_step(slicing_function).apply(
+            self, apply_only_last=True, get_mask=get_mask, copy=False
+        )
 
     @configured_validate_arguments
     def transform(
@@ -501,6 +513,26 @@ class Dataset(ColumnMetadataMixin):
                 compressed_size_bytes=compressed_size_bytes,
             )
         return dataset_id
+
+    def extract_languages(self, columns=None):
+        """
+        Extracts all languages present in the dataset 'text' column.
+
+        Args:
+            list[str]: a list of columns from which languages should be extracted.
+
+        Returns:
+            list[str]: a list of language codes (according to  ISO 639-1) containing all languages in the dataset.
+        """
+        columns = columns if columns is not None else self.columns
+
+        langs_per_feature = [
+            self.column_meta[col, "text"]["language"].dropna().unique()
+            for col, col_type in self.column_types.items()
+            if (col_type == "text" and col in columns)
+        ]
+
+        return list(set().union(*langs_per_feature))
 
     @property
     def meta(self):

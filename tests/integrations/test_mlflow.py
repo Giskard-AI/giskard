@@ -79,7 +79,7 @@ def test_errors(dataset_name, model_name, request):
     # dataset type error
     dataset_copy = dataset.copy()
     dataset_copy.df = [[0.6, 0.4]]
-    dataset_copy.target = [1]
+    dataset_copy._target = [1]
 
     with pytest.raises(Exception) as e:
         _evaluate(dataset_copy, model, evaluator_config)

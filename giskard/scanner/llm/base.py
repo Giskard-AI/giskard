@@ -14,6 +14,8 @@ from ..scanner import logger
 
 
 class RequirementBasedDetector(Detector):
+    _taxonomy = []
+
     def __init__(self, num_requirements=4, num_samples=5):
         self.num_requirements = num_requirements
         self.num_samples = num_samples
@@ -52,7 +54,7 @@ class RequirementBasedDetector(Detector):
             "llm_sampled_tokens": num_sampled_tokens,
         }
 
-    def run(self, model: BaseModel, dataset: Dataset) -> Sequence[Issue]:
+    def run(self, model: BaseModel, dataset: Dataset, features=None) -> Sequence[Issue]:
         issue_description = self.get_issue_description()
 
         logger.info(f"{self.__class__.__name__}: Generating test case requirements")
@@ -63,7 +65,12 @@ class RequirementBasedDetector(Detector):
         issues = []
         for requirement in requirements:
             logger.info(f"{self.__class__.__name__}: Evaluating requirement: {requirement}")
-            dg = AdversarialDataGenerator(issue_description=issue_description, requirement=requirement)
+
+            languages = dataset.extract_languages(columns=model.meta.feature_names)
+
+            dg = AdversarialDataGenerator(
+                issue_description=issue_description, requirement=requirement, languages=languages
+            )
             eval_dataset = dg.generate_dataset(model, self.num_samples)
 
             evaluator = RequirementEvaluator([requirement])
@@ -90,12 +97,15 @@ class RequirementBasedDetector(Detector):
             description="The model does not satisfy the following requirement: " + requirement,
             examples=examples,
             meta={
+                "metric": "Failing samples",
+                "metric_value": len(examples),
                 "domain": requirement,
                 "requirement": requirement,
-                "deviation": f"{len(examples)} failing sample{'s' if len(examples) > 1 else ''} found",
+                "deviation": f"Found {len(examples)} model output{'s' if len(examples) > 1 else ''} not meeting the requirement",
                 "hide_index": True,
             },
             tests=_generate_output_requirement_tests,
+            taxonomy=self._taxonomy,
         )
 
 

@@ -1,5 +1,6 @@
+from typing import Optional, Sequence
+
 from abc import ABC, abstractmethod
-from typing import Optional
 
 import pandas as pd
 from pydantic import BaseModel
@@ -19,22 +20,25 @@ Take the model description into account when generating the inputs. You should n
 Think step by step and then call the `generate_inputs` function with the generated inputs. You must generate {num_samples} inputs.
 """
 
+LANGUAGE_REQUIREMENT_PROMPT = "You must generate input using different languages among the following list: {languages}."
+
 
 class LLMGenerator(ABC):
     _default_temperature = 0.5
     _default_model = "gpt-4"
     _default_prompt = DEFAULT_GENERATE_INPUTS_PROMPT
+    _default_language_requirement = LANGUAGE_REQUIREMENT_PROMPT
 
     def __init__(
         self,
-        llm_model: Optional[str] = None,
         llm_temperature: Optional[float] = None,
         llm_client: LLMClient = None,
         prompt: Optional[str] = None,
+        languages: Optional[Sequence[str]] = None,
     ):
-        self.llm_model = llm_model if llm_model is not None else self._default_model
         self.llm_temperature = llm_temperature if llm_temperature is not None else self._default_temperature
         self.llm_client = llm_client or get_default_client()
+        self.languages = languages
         self.prompt = prompt if prompt is not None else self._default_prompt
 
     @abstractmethod
@@ -44,12 +48,15 @@ class LLMGenerator(ABC):
 
 class BaseDataGenerator(LLMGenerator):
     def _make_generate_input_prompt(self, model: BaseModel, num_samples: int):
-        return self.prompt.format(
+        input_prompt = self.prompt.format(
             model_name=model.meta.name,
             model_description=model.meta.description,
             feature_names=", ".join(model.meta.feature_names),
             num_samples=num_samples,
         )
+        if self.languages:
+            input_prompt = input_prompt + self._default_language_requirement.format(languages=self.languages)
+        return input_prompt
 
     def _make_generate_input_functions(self, model: BaseModel, num_samples: int):
         return [
@@ -82,20 +89,22 @@ class BaseDataGenerator(LLMGenerator):
         ----------
         model : BaseModel
             The model to generate a test dataset for.
-        num_samples : int, optional
+        num_samples : int
             The number of samples to generate, by default 10.
         column_types : float, optional
-            The column types for the generated datasets.
+            The column types for the generated datasets. (Default value = None)
+
+        Returns
+        -------
+        Dataset
+            The generated dataset.
 
         Raises
         ------
         LLMGenerationError
             If the generation fails.
 
-        Returns
-        -------
-        Dataset
-            The generated dataset.
+
         """
         prompt = self._make_generate_input_prompt(model, num_samples)
         functions = self._make_generate_input_functions(model, num_samples)
@@ -105,7 +114,6 @@ class BaseDataGenerator(LLMGenerator):
             functions=functions,
             function_call={"name": "generate_inputs"},
             temperature=self.llm_temperature,
-            model=self.llm_model,
             caller_id=self.__class__.__name__,
         )
 

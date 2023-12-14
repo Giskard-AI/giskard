@@ -1,13 +1,12 @@
-from typing import Any, Callable, Iterable, Optional
-
 import logging
 
 import mlflow
 import pandas as pd
+from typing import Any, Callable, Iterable, Optional, Tuple
 
+from .base import MLFlowSerializableModel
 from ..core.core import ModelType
 from ..core.validation import configured_validate_arguments
-from .base import MLFlowSerializableModel
 
 logger = logging.getLogger(__name__)
 
@@ -41,10 +40,10 @@ class TensorFlowModel(MLFlowSerializableModel):
         )
 
     @classmethod
-    def load_model(cls, local_path):
+    def load_model(cls, local_path, model_py_ver: Optional[Tuple[str, str, str]] = None, *args, **kwargs):
         return mlflow.tensorflow.load_model(local_path)
 
-    def save_model(self, local_path, mlflow_meta: mlflow.models.Model):
+    def save_model(self, local_path, mlflow_meta: mlflow.models.Model, *args, **kwargs):
         mlflow.tensorflow.save_model(self.model, path=local_path, mlflow_model=mlflow_meta)
 
     def model_predict(self, data):

@@ -1,8 +1,7 @@
-# Test Catalog
+# Catalogs
 
 ```{toctree}
 :caption: Table of Contents
-:name: mastertoc
 :maxdepth: 2
 :hidden:
 
@@ -12,23 +11,20 @@ transformation-function-catalog/index
 ```
 
 ::::::{grid} 1 1 2 2
-:gutter: 1
 
-:::::{grid-item}
-:::{card} <h3><center>Tests</center></h3>
+
+::::{grid-item-card} <br/><h3>Tests</h3>
+:text-align: center
 :link: test-catalog/index.html
-:::
-:::::
+::::
 
-:::::{grid-item}
-:::{card} <h3><center>Slicing functions</center></h3>
+::::{grid-item-card} <br/><h3>Slicing functions</h3>
+:text-align: center
 :link: slicing-function-catalog/index.html
-:::
-:::::
+::::
 
-:::::{grid-item}
-:::{card} <h3><center>Transformation functions</center></h3>
+::::{grid-item-card} <br/><h3>Transformation functions</h3>
+:text-align: center
 :link: transformation-function-catalog/index.html
-:::
-:::::   
+::::
 ::::::

@@ -1,8 +1,10 @@
+from typing import Optional
+
 import random
 import string
 import tempfile
+import warnings
 from pathlib import Path
-from typing import Optional
 
 import mlflow
 import pandas as pd
@@ -69,9 +71,9 @@ class ScanReport:
 
         Parameters
         ----------
-        filename : str, optional
+        filename : Optional[str]
             If provided, the HTML will be written to the file.
-        embed : bool, optional
+        embed : Optional[bool]
             Whether to configure the HTML to be embedded in an iframe.
         """
         from ..visualization.widget import ScanReportWidget
@@ -95,9 +97,9 @@ class ScanReport:
 
         Parameters
         ----------
-        filename : str, optional
+        filename : Optional[str]
             If provided, the markdown will be written to the file.
-        template : str, optional
+        template : Optional[str]
             The template to use. Currently, only ``summary`` is supported.
         """
         from ..visualization.widget import ScanReportWidget
@@ -139,11 +141,11 @@ class ScanReport:
         """Automatically generates tests from the scan results.
 
         This method provides a way to generate a list of tests automatically, based on the issues detected by the scan.
-        Usually you will want to generate a test suite directly, see :method:`generate_test_suite` for more details.
+        Usually you will want to generate a test suite directly, see :meth:`generate_test_suite` for more details.
 
         Parameters
         ----------
-        with_names : bool, optional
+        with_names : Optional[bool]
             Whether to return the test names as well. If ``True``, the method will return a list of tuples.
 
         Return
@@ -162,7 +164,7 @@ class ScanReport:
 
         Parameters
         ----------
-        name : str, optional
+        name : Optional[str]
             The name of the test suite. If not provided, a default name will be used. You can also change the name
             later by accessing the ``name`` attribute of the returned test suite.
 
@@ -296,3 +298,27 @@ class ScanReport:
             ) from e
 
         run.log({wandb_artifact_name: wandb.Html(html, inject=False)})
+
+    def to_avid(self, filename=None):
+        """Renders the scan report as an AVID report.
+
+        Saves or returns the AVID representation of the scan report.
+
+        Parameters
+        ----------
+        filename : Optional[str]
+            If provided, the AVID report will be written to the file.
+        """
+        from ..integrations import avid
+
+        reports = [
+            avid.create_report_from_issue(issue=issue, model=self.model, dataset=self.dataset) for issue in self.issues
+        ]
+
+        if filename is not None:
+            with open(filename, "w") as f, warnings.catch_warnings():
+                warnings.filterwarnings("ignore", category=DeprecationWarning)  # we need to support both pydantic 1 & 2
+                f.writelines(r.json() + "\n" for r in reports)
+            return
+
+        return reports

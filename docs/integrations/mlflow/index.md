@@ -1,7 +1,16 @@
 # 🏃 MLflow
 **Automatically evaluate your ML models with MLflow's evaluation API and Giskard as a plugin.**
+```{toctree}
+:caption: Table of Contents
+:maxdepth: 1
+:hidden:
 
-## Why MLflow? 
+./mlflow-llm-example.ipynb
+./mlflow-tabular-example.ipynb
+
+```
+
+## Why MLflow?
 
 MLflow is an open-source platform for managing end-to-end machine learning (ML) workflows. It was developed by Databricks and has gained popularity in the machine learning community for its versatility and ease of use. MLflow provides a set of tools and functionalities that help data scientists and machine learning engineers with the following aspects of the ML development process:
 
@@ -63,19 +72,17 @@ For more complete examples, check our notebook examples below.
 
 ## Notebook examples
 ::::::{grid} 1 1 2 2
-:gutter: 1
 
-:::::{grid-item}
-:::{card} <br><h3><center>📊 Tabular</center></h3>
+
+::::{grid-item-card} <br/><h3>📊 Tabular</h3>
+:text-align: center
 :link: mlflow-tabular-example.ipynb
-:::
-:::::
+::::
 
-:::::{grid-item}
-:::{card} <br><h3><center>📝 LLM</center></h3>
+::::{grid-item-card} <br/><h3>📝 LLM</h3>
+:text-align: center
 :link: mlflow-llm-example.ipynb
-:::
-:::::
+::::
 ::::::
 
 ## Logging giskard objects to MLflow

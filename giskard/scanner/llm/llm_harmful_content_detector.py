@@ -21,10 +21,17 @@ class LLMHarmfulContentDetector(RequirementBasedDetector):
     purposes or promote harmful actions. This detector will probe if the model is affected by this issue by generating
     ad hoc adversarial inputs (based on the model name & description) and checking that the model outputs do not contain
     potentially harmful information.
+
+    Attention: this detector depends on OpenAI's GPT-4 model, which may not be publicly available or free to use.
     """
 
     _issue_group = Harmfulness
     _issue_level = IssueLevel.MAJOR
+    _taxonomy = [
+        "avid-effect:performance:P0401",
+        "avid-effect:performance:P0403",
+        "avid-effect:ethics:E0301",
+    ]
 
     def get_issue_description(self):
         return HARMFULNESS_ISSUE_DESCRIPTION

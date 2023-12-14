@@ -14,6 +14,7 @@ import yaml
 
 from giskard.client.giskard_client import GiskardClient
 from giskard.core.core import SMT, SavableMeta
+from giskard.ml_worker.exceptions.giskard_exception import python_env_exception_helper
 from giskard.ml_worker.testing.registry.registry import tests_registry
 from giskard.settings import settings
 
@@ -84,7 +85,7 @@ class Artifact(Generic[SMT], ABC):
 
         Args:
             client (GiskardClient): The Giskard client instance used for communication with the hub.
-            project_key (str, optional): The project key where the slicing function will be uploaded. If None, the function
+            project_key (Optional[str]): The project key where the slicing function will be uploaded. If None, the function
                 will be uploaded to the global scope. Defaults to None.
 
         Returns:
@@ -119,9 +120,9 @@ class Artifact(Generic[SMT], ABC):
 
         Args:
             uuid (str): The UUID of the artifact to download.
-            client (GiskardClient, optional): The Giskard client instance used for communication with the hub. If None,
+            client (Optional[GiskardClient]): The Giskard client instance used for communication with the hub. If None,
                 the artifact will be retrieved from the local cache if available. Defaults to None.
-            project_key (str, optional): The project key where the artifact is located. If None, the artifact will be
+            project_key (Optional[str]): The project key where the artifact is located. If None, the artifact will be
                 retrieved from the global scope. Defaults to None.
 
         Returns:
@@ -173,7 +174,12 @@ class RegistryArtifact(Artifact[SMT], ABC):
 
         if local_dir.exists():
             with open(local_dir / "data.pkl", "rb") as f:
-                _function = cloudpickle.load(f)
+                try:
+                    # According to https://github.com/cloudpipe/cloudpickle#cloudpickle:
+                    # Cloudpickle can only be used to send objects between the exact same version of Python.
+                    _function = cloudpickle.load(f)
+                except Exception as e:
+                    raise python_env_exception_helper(cls.__name__, e)
         else:
             try:
                 func = getattr(sys.modules[meta.module], meta.name)

@@ -1,6 +1,5 @@
 """API Client to interact with the Giskard app"""
-from typing import List
-
+import json
 import logging
 import os
 import posixpath
@@ -11,12 +10,15 @@ from uuid import UUID
 from mlflow.store.artifact.artifact_repo import verify_artifact_path
 from mlflow.utils.file_utils import relative_path_to_artifact_path
 from mlflow.utils.rest_utils import augmented_raise_for_status
+from requests import Response
 from requests.adapters import HTTPAdapter
 from requests.auth import AuthBase
 from requests_toolbelt import sessions
+from typing import List
 
 import giskard
 from giskard.client.dtos import DatasetMetaInfo, ModelMetaInfo, ServerInfo, SuiteInfo, TestSuiteDTO
+from giskard.client.io_utils import GiskardJSONSerializer
 from giskard.client.project import Project
 from giskard.client.python_utils import warning
 from giskard.core.core import SMT, DatasetMeta, ModelMeta, TestFunctionMeta
@@ -30,37 +32,52 @@ class GiskardError(Exception):
         super().__init__(message)
         self.status = status
         self.code = code
+        self.message = message
 
 
-def explain_error(err_resp):
-    status = err_resp.get("status")
-    code = err_resp.get("message")
-    message = None
+def explain_error(resp):
+    status = _get_status(resp)
+
+    message = "Unknown error"
+    code = f"error.http.{status}"
+
     if status == 401:
-        message = "Access key is invalid or expired. Please generate a new one"
+        message = "Not authorized to access this resource. Please check your API key."
+    elif status == 403:
+        message = "Access denied. Please check your permissions."
+    else:
+        try:
+            if resp.title:
+                message = f"{resp.title}: "
+            elif resp.detail:
+                message += f"{resp.detail}\n"
+            else:
+                message = resp.message
+        except Exception:
+            message = "No details or messages available."
 
-    if message is None:
-        if "title" in err_resp or err_resp.get("detail"):
-            message = f"{err_resp.get('title', 'Unknown error')}: {err_resp.get('detail', 'no details')}"
-        elif "message" in err_resp:
-            message = err_resp["message"]
     return GiskardError(status=status, code=code, message=message)
 
 
+def _get_status(resp):
+    if isinstance(resp, Response):
+        status = resp.status_code
+    else:
+        status = resp.status
+
+    return status
+
+
 class ErrorHandlingAdapter(HTTPAdapter):
+    def __init__(self, *args, **kwargs):
+        super(ErrorHandlingAdapter, self).__init__(*args, **kwargs)
+
     def build_response(self, req, resp):
-        response = super().build_response(req, resp)
+        resp = super(ErrorHandlingAdapter, self).build_response(req, resp)
+        if _get_status(resp) >= 400:
+            raise explain_error(resp)
 
-        if not response.ok:
-            giskard_error = None
-            try:
-                err_resp = response.json()
-
-                giskard_error = explain_error(err_resp)
-            except:  # noqa
-                response.raise_for_status()
-            raise giskard_error
-        return response
+        return resp
 
 
 class BearerAuth(AuthBase):
@@ -74,15 +91,33 @@ class BearerAuth(AuthBase):
         return r
 
 
+def _limit_str_size(json, field, limit=255):
+    if field not in json or not isinstance(json[field], str):
+        return
+
+    original_len = len(json[field])
+    json[field] = json[field][:limit].encode("utf-16-le")[: limit * 2].decode("utf-16-le", "ignore")
+
+    # Java, js, h2 and postgres use UTF-16 surrogate pairs to calculate str length while python count characters
+    if original_len > len(json[field]):
+        logger.warning(f"Field '{field} exceeded the limit of {limit} characters and has been truncated")
+
+
 class GiskardClient:
     def __init__(self, url: str, key: str, hf_token: str = None):
         self.host_url = url
         self.key = key
         self.hf_token = hf_token
         base_url = urljoin(url, "/api/v2/")
+
         self._session = sessions.BaseUrlSession(base_url=base_url)
-        self._session.mount(base_url, ErrorHandlingAdapter())
+
+        adapter = ErrorHandlingAdapter()
+
+        self._session.mount(url, adapter)
+
         self._session.auth = BearerAuth(key)
+
         if hf_token:
             self._session.cookies["spaces-jwt"] = hf_token
 
@@ -93,7 +128,7 @@ class GiskardClient:
                 f"Your giskard client version ({giskard.__version__}) does not match the hub version "
                 f"({server_settings.serverVersion}). "
                 f"Please upgrade your client to the latest version. "
-                f"pip install \"giskard[hub]>=2.0.0b\" -U"
+                f'pip install "giskard[hub]>=2.0.0b" -U'
             )
         analytics.init_server_info(server_settings)
 
@@ -319,14 +354,25 @@ class GiskardClient:
         print(f"Dataset successfully uploaded to project key '{project_key}' with ID = {dataset_id}")
 
     def save_meta(self, endpoint: str, meta: SMT) -> SMT:
-        json = self._session.put(endpoint, json=meta.to_json()).json()
-        return meta if json is None or "uuid" not in json else meta.from_json(json)
+        meta_json = meta.to_json()
+
+        _limit_str_size(meta_json, "name")
+        _limit_str_size(meta_json, "display_name")
+
+        data = json.dumps(meta_json, cls=GiskardJSONSerializer)
+
+        response_json = self._session.put(endpoint, data=data, headers={"Content-Type": "application/json"}).json()
+        return meta if response_json is None or "uuid" not in response_json else meta.from_json(response_json)
 
     def load_meta(self, endpoint: str, meta_class: SMT) -> TestFunctionMeta:
         return meta_class.from_json(self._session.get(endpoint).json())
 
     def get_server_info(self) -> ServerInfo:
-        return ServerInfo.parse_obj(self._session.get("/public-api/ml-worker-connect").json())
+        resp = self._session.get("/public-api/ml-worker-connect")
+        try:
+            return ServerInfo.parse_obj(resp.json())
+        except Exception:
+            raise explain_error(resp)
 
     def save_test_suite(self, dto: TestSuiteDTO):
         return self._session.post(f"testing/project/{dto.project_key}/suites", json=dto.dict()).json()

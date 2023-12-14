@@ -11,6 +11,7 @@ class TestInputDTO(ConfiguredBaseModel):
     type: str
     params: List["TestInputDTO"] = Field(default_factory=list)
     is_alias: bool = False
+    is_default_value: bool = False
 
 
 class SuiteTestDTO(ConfiguredBaseModel):

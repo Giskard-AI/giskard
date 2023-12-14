@@ -3,6 +3,7 @@ from pathlib import Path
 
 import numpy as np
 import pandas as pd
+from typing import Optional, Tuple
 
 import giskard
 from giskard import Model
@@ -68,12 +69,12 @@ def test_model_save_and_load_not_overriden():
     call_count = dict({"save": 0, "load": 0})
 
     class MyCustomModel(Model):
-        def save_model(self, path):
+        def save_model(self, path, *args, **kwargs):
             call_count["save"] = call_count["save"] + 1
             Path(path).joinpath("custom_data").touch()
 
         @classmethod
-        def load_model(cls, path):
+        def load_model(cls, path, model_py_ver: Optional[Tuple[str, str, str]] = None, *args, **kwargs):
             call_count["load"] = call_count["load"] + 1
 
             def model(x):

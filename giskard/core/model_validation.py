@@ -1,27 +1,24 @@
 import tempfile
-from typing import List, Iterable, Union, Callable, Any, Optional
 
 import numpy as np
 import pandas as pd
 import yaml
+from typing import List, Iterable, Union, Callable, Any, Optional
 
 from giskard.client.python_utils import warning
-from giskard.core.core import ModelMeta, ModelType
-from giskard.core.core import SupportedModelTypes
-from giskard.core.validation import validate_is_pandasdataframe, configured_validate_arguments
+from giskard.core.core import ModelMeta, ModelType, SupportedModelTypes
+from giskard.core.validation import configured_validate_arguments, validate_is_pandasdataframe
 from giskard.datasets.base import Dataset
 from giskard.ml_worker.testing.registry.slicing_function import SlicingFunction
 from giskard.models.base import BaseModel, WrapperModel
+
 from ..utils import fullname
 from ..utils.analytics_collector import analytics, get_dataset_properties, get_model_properties
-from .dataset_validation import validate_optional_target
 
 
 @configured_validate_arguments
 def validate_model(model: BaseModel, validate_ds: Optional[Dataset] = None, print_validation_message: bool = True):
     try:
-        if model.meta.model_type != SupportedModelTypes.TEXT_GENERATION and validate_ds is not None:
-            validate_optional_target(validate_ds)
         _do_validate_model(model, validate_ds)
     except (ValueError, TypeError) as err:
         _track_validation_error(err, model, validate_ds)
@@ -134,9 +131,7 @@ def validate_model_execution(model: BaseModel, dataset: Dataset, deterministic: 
 
 @configured_validate_arguments
 def validate_deterministic_model(model: BaseModel, validate_ds: Dataset, prev_prediction):
-    """
-    Asserts if the model is deterministic by asserting previous and current prediction on same data
-    """
+    """Asserts if the model is deterministic by asserting previous and current prediction on same data are same"""
     new_prediction = model.predict(validate_ds)
 
     if not np.allclose(prev_prediction.raw, new_prediction.raw):
@@ -148,9 +143,7 @@ def validate_deterministic_model(model: BaseModel, validate_ds: Dataset, prev_pr
 
 @configured_validate_arguments
 def validate_model_loading_and_saving(model: BaseModel):
-    """
-    Validates if the model can be serialised and deserialised
-    """
+    """Validates if the model can be serialised and deserialised from local disk"""
     try:
         with tempfile.TemporaryDirectory(prefix="giskard-model-") as f:
             model.save(f)

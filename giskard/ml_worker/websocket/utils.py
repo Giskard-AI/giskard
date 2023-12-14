@@ -1,6 +1,7 @@
 import logging
 import os
 import shutil
+import uuid
 from typing import Any, Dict, List, Optional
 
 import pandas as pd
@@ -201,8 +202,18 @@ def parse_function_arguments(client: Optional[GiskardClient], request_arguments:
     return arguments
 
 
-def map_result_to_single_test_result_ws(result) -> websocket.SingleTestResult:
+def map_result_to_single_test_result_ws(
+    result,
+    datasets: Dict[uuid.UUID, Dataset],
+    client: Optional[GiskardClient] = None,
+    project_key: Optional[str] = None,
+) -> websocket.SingleTestResult:
     if isinstance(result, TestResult):
+        result.output_ds = result.output_ds or []
+
+        if result.output_df is not None:
+            _upload_generated_output_df(client, datasets, project_key, result)
+
         return websocket.SingleTestResult(
             passed=bool(result.passed),
             is_error=result.is_error,
@@ -233,13 +244,39 @@ def map_result_to_single_test_result_ws(result) -> websocket.SingleTestResult:
             number_of_perturbed_rows=result.number_of_perturbed_rows,
             actual_slices_size=result.actual_slices_size,
             reference_slices_size=result.reference_slices_size,
-            output_df_id=result.output_df_id,  # For legacy debug
-            failed_indexes=result.failed_indexes,
+            failed_indexes={
+                str(dataset.original_id): list(datasets[dataset.original_id].df.index.get_indexer_for(dataset.df.index))
+                for dataset in result.output_ds
+            },
         )
     elif isinstance(result, bool):
         return websocket.SingleTestResult(passed=result)
     else:
         raise ValueError("Result of test can only be 'TestResult' or 'bool'")
+
+
+def _upload_generated_output_df(client, datasets, project_key, result):
+    if not isinstance(result.output_df, Dataset):
+        raise ValueError("The test result `output_df` provided must be a dataset instance")
+
+    logger.warning(
+        """
+    Your using legacy test debugging though `output_df`. This feature will be removed in the future.
+    Please migrate to `output_ds`.
+    """
+    )
+
+    if result.output_df.original_id not in datasets.keys():
+        if not client:
+            raise RuntimeError("Legacy test debugging using `output_df` is not supported internal ML worker")
+
+        if not project_key:
+            raise ValueError("Unable to upload debug dataset due to missing `project_key`")
+
+        result.output_df.upload(client, project_key)
+
+    datasets[result.output_df.original_id] = result.output_df
+    result.output_ds.append(result.output_df)
 
 
 def do_run_adhoc_test(arguments, test):

@@ -1,5 +1,6 @@
-from abc import abstractmethod
 from typing import Optional, Sequence
+
+from abc import abstractmethod
 
 import numpy as np
 import pandas as pd
@@ -17,6 +18,7 @@ class BaseTextPerturbationDetector(Detector):
     """Base class for metamorphic detectors based on text transformations."""
 
     _issue_group = Robustness
+    _taxonomy = ["avid-effect:performance:P0201"]
 
     def __init__(
         self,
@@ -29,19 +31,19 @@ class BaseTextPerturbationDetector(Detector):
 
         Parameters
         ----------
-        transformations: Sequence[TextTransformation], optional
+        transformations: Optional[Sequence[TextTransformation]]
             The text transformations used in the metamorphic testing. See :ref:`transformation_functions` for details
             about the available transformations. If not provided, a default set of transformations will be used.
-        threshold: float, optional
+        threshold: Optional[float]
             The threshold for the fail rate, which is defined as the proportion of samples for which the model
             prediction has changed. If the fail rate is greater than the threshold, an issue is created.
             If not provided, a default threshold will be used.
-        output_sensitivity: float, optional
+        output_sensitivity: Optional[float]
             For regression models, the output sensitivity is the maximum relative change in the prediction that is
             considered acceptable. If the relative change is greater than the output sensitivity, an issue is created.
             This parameter is ignored for classification models. If not provided, a default output sensitivity will be
             used.
-        num_samples: int, optional
+        num_samples: Optional[int]
             The maximum number of samples to use for the metamorphic testing. If not provided, a default number of
             samples will be used.
         """
@@ -50,17 +52,15 @@ class BaseTextPerturbationDetector(Detector):
         self.num_samples = num_samples
         self.output_sensitivity = output_sensitivity
 
-    def run(self, model: BaseModel, dataset: Dataset, **kwargs) -> Sequence[Issue]:
+    def run(self, model: BaseModel, dataset: Dataset, features: Sequence[str]) -> Sequence[Issue]:
         transformations = self.transformations or self._get_default_transformations(model, dataset)
-        features = [
-            col
-            for col, col_type in dataset.column_types.items()
-            if col_type == "text" and pd.api.types.is_string_dtype(dataset.df[col].dtype)
-        ]
 
-        # Only analyze the model features
-        if model.meta.feature_names:
-            features = [f for f in features if f in model.meta.feature_names]
+        # Only analyze text features
+        text_features = [
+            f
+            for f in features
+            if dataset.column_types[f] == "text" and pd.api.types.is_string_dtype(dataset.df[f].dtype)
+        ]
 
         logger.info(
             f"{self.__class__.__name__}: Running with transformations={[t.name for t in transformations]} "
@@ -69,7 +69,7 @@ class BaseTextPerturbationDetector(Detector):
 
         issues = []
         for transformation in transformations:
-            issues.extend(self._detect_issues(model, dataset, transformation, features))
+            issues.extend(self._detect_issues(model, dataset, transformation, text_features))
 
         return [i for i in issues if i is not None]
 
@@ -157,7 +157,11 @@ class BaseTextPerturbationDetector(Detector):
                 issue_level = IssueLevel.MAJOR if fail_rate >= 2 * threshold else IssueLevel.MEDIUM
 
                 # Description
-                desc = "When we perturb the content of feature “{feature}” with the transformation “{transformation_fn}” (see examples below), your model changes its prediction in about {fail_rate_percent}% of the cases. We expected the predictions not to be affected by this transformation."
+                desc = (
+                    "When feature “{feature}” is perturbed with the transformation “{transformation_fn}”, "
+                    "the model changes its prediction in {fail_rate_percent}% of the cases. "
+                    "We expected the predictions not to be affected by this transformation."
+                )
 
                 failed_size = (~passed).sum()
                 slice_size = len(passed)
@@ -187,6 +191,7 @@ class BaseTextPerturbationDetector(Detector):
                     },
                     importance=fail_rate,
                     tests=_generate_robustness_tests,
+                    taxonomy=self._taxonomy,
                 )
 
                 # Add examples

@@ -3,6 +3,7 @@ import tempfile
 import numpy as np
 import pandas as pd
 from sklearn.linear_model import LogisticRegression
+from typing import Optional, Tuple
 
 from giskard import Dataset, Model
 from giskard.models.base.wrapper import WrapperModel
@@ -17,10 +18,10 @@ def test_wrapper_model_handles_batching():
             return [0] * len(data)
 
         @classmethod
-        def load_model(cls, path):
+        def load_model(cls, path, model_py_ver: Optional[Tuple[str, str, str]] = None, *args, **kwargs):
             pass
 
-        def save_model(self, path):
+        def save_model(self, path, *args, **kwargs):
             pass
 
     dataset = Dataset(pd.DataFrame({"A": np.ones(101)}))
@@ -62,10 +63,10 @@ def test_wrapper_model_saves_and_loads_batch_size():
             return [0] * len(data)
 
         @classmethod
-        def load_model(cls, path):
+        def load_model(cls, path, model_py_ver: Optional[Tuple[str, str, str]] = None, *args, **kwargs):
             pass
 
-        def save_model(self, path):
+        def save_model(self, path, *args, **kwargs):
             pass
 
     model = CustomModel(None, model_type="regression", batch_size=120)

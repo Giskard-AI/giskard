@@ -3,14 +3,15 @@ import pickle
 from abc import ABC, abstractmethod
 from inspect import isfunction, signature
 from pathlib import Path
-from typing import Any, Callable, Iterable, Optional, Union
 
 import cloudpickle
 import mlflow
 import numpy as np
 import pandas as pd
 import yaml
+from typing import Any, Callable, Iterable, Optional, Tuple, Union
 
+from giskard.ml_worker.exceptions.giskard_exception import python_env_exception_helper
 from .model import BaseModel
 from ..utils import warn_once
 from ...core.core import ModelType
@@ -52,20 +53,20 @@ class WrapperModel(BaseModel, ABC):
         model_type : ModelType
             The type of the model. Must be a value from the :class:`ModelType`
             enumeration.
-        data_preprocessing_function : Callable[[pd.DataFrame], Any], optional
+        data_preprocessing_function : Optional[Callable[[pd.DataFrame], Any]]
             A function that will be applied to incoming data. Default is ``None``.
-        model_postprocessing_function : Callable[[Any], Any], optional
+        model_postprocessing_function : Optional[Callable[[Any], Any]]
             A function that will be applied to the model's predictions. Default
             is ``None``.
-        name : str, optional
+        name : Optional[str]
             A name for the wrapper. Default is ``None``.
-        feature_names : Optional[Iterable], optional
+        feature_names : Optional[Iterable]
             A list of feature names. Default is ``None``.
-        classification_threshold : float, optional
+        classification_threshold : Optional[float]
             The probability threshold for classification. Default is 0.5.
-        classification_labels : Optional[Iterable], optional
+        classification_labels : Optional[Iterable]
             A list of classification labels. Default is None.
-        batch_size : Optional[int], optional
+        batch_size : Optional[int]
             The batch size to use for inference. Default is ``None``, which
             means inference will be done on the full dataframe.
         """
@@ -118,7 +119,7 @@ class WrapperModel(BaseModel, ABC):
         return np.asarray(raw_predictions)
 
     @configured_validate_arguments
-    def predict_df(self, df: pd.DataFrame):
+    def predict_df(self, df: pd.DataFrame, *_args, **_kwargs):
         if self.batch_size and self.batch_size > 0:
             dfs = np.array_split(df, np.arange(self.batch_size, len(df), self.batch_size))
         else:
@@ -203,8 +204,8 @@ class WrapperModel(BaseModel, ABC):
         """
         ...
 
-    def save(self, local_path: Union[str, Path]) -> None:
-        super().save(local_path)
+    def save(self, local_path: Union[str, Path], *args, **kwargs) -> None:
+        super().save(local_path, *args, **kwargs)
         self.save_wrapper_meta(local_path)
         if self.data_preprocessing_function:
             self.save_data_preprocessing_function(local_path)
@@ -212,7 +213,7 @@ class WrapperModel(BaseModel, ABC):
             self.save_model_postprocessing_function(local_path)
 
     @abstractmethod
-    def save_model(self, path: Union[str, Path]) -> None:
+    def save_model(self, path: Union[str, Path], *args, **kwargs) -> None:
         """Saves the wrapped ``model`` object.
 
         Parameters
@@ -222,15 +223,15 @@ class WrapperModel(BaseModel, ABC):
         """
         ...
 
-    def save_data_preprocessing_function(self, local_path: Union[str, Path]):
+    def save_data_preprocessing_function(self, local_path: Union[str, Path], *_args, **_kwargs):
         with open(Path(local_path) / "giskard-data-preprocessing-function.pkl", "wb") as f:
             cloudpickle.dump(self.data_preprocessing_function, f, protocol=pickle.DEFAULT_PROTOCOL)
 
-    def save_model_postprocessing_function(self, local_path: Union[str, Path]):
+    def save_model_postprocessing_function(self, local_path: Union[str, Path], *_args, **_kwargs):
         with open(Path(local_path) / "giskard-model-postprocessing-function.pkl", "wb") as f:
             cloudpickle.dump(self.model_postprocessing_function, f, protocol=pickle.DEFAULT_PROTOCOL)
 
-    def save_wrapper_meta(self, local_path):
+    def save_wrapper_meta(self, local_path, *_args, **_kwargs):
         with open(Path(local_path) / "giskard-model-wrapper-meta.yaml", "w") as f:
             yaml.dump(
                 {
@@ -241,21 +242,28 @@ class WrapperModel(BaseModel, ABC):
             )
 
     @classmethod
-    def load(cls, local_dir, **kwargs):
-        constructor_params = cls.load_constructor_params(local_dir, **kwargs)
+    def load(cls, local_dir, model_py_ver: Optional[Tuple[str, str, str]] = None, *args, **kwargs):
+        constructor_params = cls.load_constructor_params(local_dir, *args, **kwargs)
 
-        return cls(model=cls.load_model(local_dir), **constructor_params)
+        if model_py_ver is None:
+            # Try to extract Python version from meta info under local dir
+            meta_response, _ = cls.read_meta_from_local_dir(local_dir)
+            model_py_ver = (
+                tuple(meta_response.languageVersion.split(".")) if "PYTHON" == meta_response.language.upper() else None
+            )
+
+        return cls(model=cls.load_model(local_dir, model_py_ver), **constructor_params)
 
     @classmethod
-    def load_constructor_params(cls, local_dir, **kwargs):
+    def load_constructor_params(cls, local_dir, model_py_ver: Optional[Tuple[str, str, str]] = None, *_args, **kwargs):
         params = cls.load_wrapper_meta(local_dir)
         params["data_preprocessing_function"] = cls.load_data_preprocessing_function(local_dir)
         params["model_postprocessing_function"] = cls.load_model_postprocessing_function(local_dir)
         params.update(kwargs)
 
-        model_id, meta = cls.read_meta_from_local_dir(local_dir)
+        extra_meta, meta = cls.read_meta_from_local_dir(local_dir)
         constructor_params = meta.__dict__
-        constructor_params["id"] = model_id
+        constructor_params["id"] = extra_meta.id
         constructor_params = constructor_params.copy()
         constructor_params.update(params)
 
@@ -263,36 +271,48 @@ class WrapperModel(BaseModel, ABC):
 
     @classmethod
     @abstractmethod
-    def load_model(cls, path: Union[str, Path]):
+    def load_model(cls, path: Union[str, Path], model_py_ver: Optional[Tuple[str, str, str]] = None, *args, **kwargs):
         """Loads the wrapped ``model`` object.
 
         Parameters
         ----------
         path : Union[str, Path]
             Path from which the model should be loaded.
+        model_py_ver : Optional[Tuple[str, str, str]]
+            Python version used to save the model, to validate if model loading failed.
         """
         ...
 
     @classmethod
-    def load_data_preprocessing_function(cls, local_path: Union[str, Path]):
+    def load_data_preprocessing_function(cls, local_path: Union[str, Path], *_args, **_kwargs):
         local_path = Path(local_path)
         file_path = local_path / "giskard-data-preprocessing-function.pkl"
         if file_path.exists():
             with open(file_path, "rb") as f:
-                return cloudpickle.load(f)
+                try:
+                    # According to https://github.com/cloudpipe/cloudpickle#cloudpickle:
+                    # Cloudpickle can only be used to send objects between the exact same version of Python.
+                    return cloudpickle.load(f)
+                except Exception as e:
+                    raise python_env_exception_helper("Data Preprocessing Function", e)
         return None
 
     @classmethod
-    def load_model_postprocessing_function(cls, local_path: Union[str, Path]):
+    def load_model_postprocessing_function(cls, local_path: Union[str, Path], *_args, **_kwargs):
         local_path = Path(local_path)
         file_path = local_path / "giskard-model-postprocessing-function.pkl"
         if file_path.exists():
             with open(file_path, "rb") as f:
-                return cloudpickle.load(f)
+                try:
+                    # According to https://github.com/cloudpipe/cloudpickle#cloudpickle:
+                    # Cloudpickle can only be used to send objects between the exact same version of Python.
+                    return cloudpickle.load(f)
+                except Exception as e:
+                    raise python_env_exception_helper("Data Postprocessing Function", e)
         return None
 
     @classmethod
-    def load_wrapper_meta(cls, local_dir):
+    def load_wrapper_meta(cls, local_dir, *args, **kwargs):
         wrapper_meta_file = Path(local_dir) / "giskard-model-wrapper-meta.yaml"
         if wrapper_meta_file.exists():
             with open(wrapper_meta_file) as f:
@@ -303,7 +323,7 @@ class WrapperModel(BaseModel, ABC):
             # ensuring backward compatibility
             return {"batch_size": None}
 
-    def to_mlflow(self, artifact_path: str = "prediction-function-from-giskard", **kwargs):
+    def to_mlflow(self, artifact_path: str = "prediction-function-from-giskard", *_args, **_kwargs):
         def _giskard_predict(df):
             return self.predict(df)
 

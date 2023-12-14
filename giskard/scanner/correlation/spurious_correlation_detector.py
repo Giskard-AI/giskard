@@ -1,14 +1,16 @@
+from typing import Sequence
+
 import pandas as pd
 
+from ...datasets.base import Dataset
+from ...models.base import BaseModel
+from ...slicing.slice_finder import SliceFinder
+from ...testing.tests.statistic import _cramer_v, _mutual_information, _theil_u
 from ..common.examples import ExampleExtractor
 from ..decorators import detector
 from ..issues import Issue, IssueLevel, SpuriousCorrelation
 from ..logger import logger
 from ..registry import Detector
-from ...datasets.base import Dataset
-from ...models.base import BaseModel
-from ...slicing.slice_finder import SliceFinder
-from ...testing.tests.statistic import _cramer_v, _mutual_information, _theil_u
 
 
 @detector(name="spurious_correlation", tags=["spurious_correlation", "classification"])
@@ -17,14 +19,11 @@ class SpuriousCorrelationDetector(Detector):
         self.threshold = threshold
         self.method = method
 
-    def run(self, model: BaseModel, dataset: Dataset, **kwargs):
+    def run(self, model: BaseModel, dataset: Dataset, features: Sequence[str]):
         logger.info(f"{self.__class__.__name__}: Running")
 
         # Dataset prediction
         ds_predictions = pd.Series(model.predict(dataset).prediction, dataset.df.index)
-
-        # Keep only interesting features
-        features = model.meta.feature_names or dataset.columns.drop(dataset.target, errors="ignore")
 
         # Warm up text metadata
         for f in features:
@@ -93,6 +92,7 @@ class SpuriousCorrelationDetector(Detector):
                         description=description,
                         importance=metric_value,
                         tests=_generate_spurious_corr_tests,
+                        taxonomy=["avid-effect:performance:P0103"],
                     )
 
                     extractor = ExampleExtractor(issue)

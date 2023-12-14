@@ -24,6 +24,7 @@ from giskard.testing.tests.debug_slicing_functions import (
     incorrect_rows_slicing_fn,
     nlargest_abs_err_rows_slicing_fn,
 )
+
 from . import debug_description_prefix
 
 
@@ -63,13 +64,12 @@ def _test_classification_score(
     passed = bool(metric >= threshold)
 
     # --- debug ---
-    failed_indexes = dict()
+    output_ds = list()
     if not passed:
-        failed_dataset = dataset.slice(incorrect_rows_slicing_fn(dataset.target, prediction=prediction))
-        failed_indexes[str(dataset.original_id)] = list(dataset.df.index.get_indexer_for(failed_dataset.df.index))
+        output_ds.append(dataset.slice(incorrect_rows_slicing_fn(dataset.target, prediction=prediction)))
     # ---
 
-    return TestResult(actual_slices_size=[len(dataset)], metric=metric, passed=passed, failed_indexes=failed_indexes)
+    return TestResult(actual_slices_size=[len(dataset)], metric=metric, passed=passed, output_ds=output_ds)
 
 
 def _test_accuracy_score(
@@ -86,13 +86,12 @@ def _test_accuracy_score(
     passed = bool(metric >= threshold)
 
     # --- debug ---
-    failed_indexes = dict()
+    output_ds = list()
     if not passed:
-        failed_dataset = dataset.slice(incorrect_rows_slicing_fn(dataset.target, prediction=prediction))
-        failed_indexes[str(dataset.original_id)] = list(dataset.df.index.get_indexer_for(failed_dataset.df.index))
+        output_ds.append(dataset.slice(incorrect_rows_slicing_fn(dataset.target, prediction=prediction)))
     # ---
 
-    return TestResult(actual_slices_size=[len(dataset)], metric=metric, passed=passed, failed_indexes=failed_indexes)
+    return TestResult(actual_slices_size=[len(dataset)], metric=metric, passed=passed, output_ds=output_ds)
 
 
 def _test_regression_score(
@@ -114,17 +113,18 @@ def _test_regression_score(
     passed = bool(metric >= threshold if r2 else metric <= threshold)
 
     # --- debug ---
-    failed_indexes = dict()
+    output_ds = list()
     if not passed:
-        failed_dataset = dataset.slice(
-            nlargest_abs_err_rows_slicing_fn(
-                target=dataset.target, prediction=raw_prediction, debug_percent_rows=debug_percent_rows
+        output_ds.append(
+            dataset.slice(
+                nlargest_abs_err_rows_slicing_fn(
+                    target=dataset.target, prediction=raw_prediction, debug_percent_rows=debug_percent_rows
+                )
             )
         )
-        failed_indexes[str(dataset.original_id)] = list(dataset.df.index.get_indexer_for(failed_dataset.df.index))
     # ---
 
-    return TestResult(actual_slices_size=[len(dataset)], metric=metric, passed=passed, failed_indexes=failed_indexes)
+    return TestResult(actual_slices_size=[len(dataset)], metric=metric, passed=passed, output_ds=output_ds)
 
 
 def _test_diff_prediction(
@@ -165,10 +165,10 @@ def _test_diff_prediction(
         raise ValueError(f"Invalid direction: {direction}")
 
     # --- debug ---
-    failed_indexes = dict()
+    output_ds = list()
     if not passed:
-        _add_to_failed_indexes(failed_indexes, result_reference)
-        _add_to_failed_indexes(failed_indexes, result_actual)
+        output_ds = output_ds + result_reference.output_ds
+        output_ds = output_ds + result_actual.output_ds
     # ---
 
     return TestResult(
@@ -176,21 +176,8 @@ def _test_diff_prediction(
         reference_slices_size=[len(reference_dataset)],
         metric=rel_change,
         passed=np_type_to_native(passed),
-        failed_indexes=failed_indexes,
+        output_ds=output_ds,
     )
-
-
-def _add_to_failed_indexes(failed_indexes, result_reference):
-    if result_reference.failed_indexes is None:
-        return
-
-    for dataset_id, idx in result_reference.failed_indexes.items():
-        if dataset_id in failed_indexes:
-            failed_indexes[dataset_id] = list(
-                set(failed_indexes[dataset_id] + result_reference.failed_indexes[dataset_id])
-            )
-        else:
-            failed_indexes[dataset_id] = result_reference.failed_indexes[dataset_id]
 
 
 @test(
@@ -201,29 +188,33 @@ def _add_to_failed_indexes(failed_indexes, result_reference):
 def test_auc(
     model: BaseModel, dataset: Dataset, slicing_function: Optional[SlicingFunction] = None, threshold: float = 1.0
 ):
-    """
-    Test if the model AUC performance is higher than a threshold for a given slice
+    """Test if the model AUC performance is higher than a threshold for a given slice
 
-    Example : The test is passed when the AUC for females is higher than 0.7
+    Example: The test is passed when the AUC for females is higher than 0.7
 
+    Parameters
+    ----------
+    model : BaseModel
+        Model used to compute the test
+    dataset : Dataset
+        Actual dataset used to compute the test
+    slicing_function : Optional[SlicingFunction]
+        Slicing function to be applied on dataset (Default value = None)
+    threshold : float
+        Threshold value of AUC metrics (Default value = 1.0)
+    debug : bool
+        If True and the test fails,
+        a dataset will be provided containing all the incorrectly predicted rows. (Default value = False)
 
-    Args:
-        model(BaseModel):
-          Model used to compute the test
-        dataset(Dataset):
-          Actual dataset used to compute the test
-        slicing_function(Optional[SlicingFunction]):
-          Slicing function to be applied on dataset
-        threshold(float):
-          Threshold value of AUC metrics
+    Returns
+    -------
+    actual_slices_size
+        Length of dataset tested
+    metric
+        The AUC performance metric
+    passed
+        TRUE if AUC metrics >= threshold
 
-    Returns:
-      actual_slices_size:
-          Length of dataset tested
-      metric:
-          The AUC performance metric
-      passed:
-          TRUE if AUC metrics >= threshold
     """
     if slicing_function:
         dataset = dataset.slice(slicing_function)
@@ -248,13 +239,12 @@ def test_auc(
     passed = bool(metric >= threshold)
 
     # --- debug ---
-    failed_indexes = dict()
+    output_ds = list()
     if not passed:
-        failed_dataset = dataset.slice(incorrect_rows_slicing_fn(dataset.target, prediction=_predictions.prediction))
-        failed_indexes[str(dataset.original_id)] = list(dataset.df.index.get_indexer_for(failed_dataset.df.index))
+        output_ds.append(dataset.slice(incorrect_rows_slicing_fn(dataset.target, prediction=_predictions.prediction)))
     # ---
 
-    return TestResult(actual_slices_size=[len(dataset)], metric=metric, passed=passed, failed_indexes=failed_indexes)
+    return TestResult(actual_slices_size=[len(dataset)], metric=metric, passed=passed, output_ds=output_ds)
 
 
 @test(
@@ -265,29 +255,33 @@ def test_auc(
 def test_f1(
     model: BaseModel, dataset: Dataset, slicing_function: Optional[SlicingFunction] = None, threshold: float = 1.0
 ):
-    """
-    Test if the model F1 score is higher than a defined threshold for a given slice
+    """Test if the model F1 score is higher than a defined threshold for a given slice
 
     Example: The test is passed when F1 score for females is higher than 0.7
 
+    Parameters
+    ----------
+    model : BaseModel
+        Model used to compute the test
+    dataset : Dataset
+        Actual dataset used to compute the test
+    slicing_function : Optional[SlicingFunction]
+        Slicing function to be applied on dataset (Default value = None)
+    threshold : float
+        Threshold value for F1 Score (Default value = 1.0)
+    debug : bool
+        If True and the test fails,
+        a dataset will be provided containing all the incorrectly predicted rows. (Default value = False)
 
-    Args:
-        model(BaseModel):
-          Model used to compute the test
-        dataset(Dataset):
-          Actual dataset used to compute the test
-        slicing_function(Optional[SlicingFunction]):
-          Slicing function to be applied on dataset
-        threshold(float):
-          Threshold value for F1 Score
+    Returns
+    -------
+    actual_slices_size
+        Length of dataset tested
+    metric
+        The F1 score metric
+    passed
+        TRUE if F1 Score metrics >= threshold
 
-    Returns:
-        actual_slices_size:
-          Length of dataset tested
-        metric:
-          The F1 score metric
-        passed:
-          TRUE if F1 Score metrics >= threshold
     """
     if slicing_function:
         dataset = dataset.slice(slicing_function)
@@ -303,29 +297,28 @@ def test_f1(
 def test_accuracy(
     model: BaseModel, dataset: Dataset, slicing_function: Optional[SlicingFunction] = None, threshold: float = 1.0
 ):
-    """
-    Test if the model Accuracy is higher than a threshold for a given slice
+    """Test if the model Accuracy is higher than a threshold for a given slice
 
     Example: The test is passed when the Accuracy for females is higher than 0.7
 
+    Parameters
+    ----------
+    model : BaseModel
+        Model used to compute the test
+    dataset : Dataset
+        Actual dataset used to compute the test
+    slicing_function : Optional[SlicingFunction]
+        Slicing function to be applied on dataset (Default value = None)
+    threshold : float
+        Threshold value for Accuracy (Default value = 1.0)
+    debug : bool
+        If True and the test fails,
+        a dataset will be provided containing all the incorrectly predicted rows. (Default value = False)
 
-    Args:
-        model(BaseModel):
-          Model used to compute the test
-        dataset(Dataset):
-          Actual dataset used to compute the test
-        slicing_function(Optional[SlicingFunction]):
-          Slicing function to be applied on dataset
-        threshold(float):
-          Threshold value for Accuracy
-
-    Returns:
-      actual_slices_size:
-          Length of dataset tested
-      metric:
-          The Accuracy metric
-      passed:
-          TRUE if Accuracy metrics >= threshold
+    Returns
+    -------
+    TestResult
+        The test result.
     """
     if slicing_function:
         dataset = dataset.slice(slicing_function)
@@ -341,29 +334,28 @@ def test_accuracy(
 def test_precision(
     model: BaseModel, dataset: Dataset, slicing_function: Optional[SlicingFunction] = None, threshold: float = 1.0
 ):
-    """
-    Test if the model Precision is higher than a threshold for a given slice
+    """Test if the model Precision is higher than a threshold for a given slice
 
     Example: The test is passed when the Precision for females is higher than 0.7
 
+    Parameters
+    ----------
+    model : BaseModel
+        Model used to compute the test
+    dataset : Dataset
+        Actual dataset used to compute the test
+    slicing_function : Optional[SlicingFunction]
+        Slicing function to be applied on dataset (Default value = None)
+    threshold : float
+        Threshold value for Precision (Default value = 1.0)
+    debug : bool
+        If True and the test fails,
+        a dataset will be provided containing all the incorrectly predicted rows. (Default value = False)
 
-    Args:
-        model(BaseModel):
-          Model used to compute the test
-        dataset(Dataset):
-          Actual dataset used to compute the test
-        slicing_function(Optional[SlicingFunction]):
-          Slicing function to be applied on dataset
-        threshold(float):
-          Threshold value for Precision
-
-    Returns:
-        actual_slices_size:
-          Length of dataset tested
-        metric:
-          The Precision metric
-        passed:
-          TRUE if Precision metrics >= threshold
+    Returns
+    -------
+    TestResult
+        The test result.
     """
     if slicing_function:
         dataset = dataset.slice(slicing_function)
@@ -379,29 +371,28 @@ def test_precision(
 def test_recall(
     model: BaseModel, dataset: Dataset, slicing_function: Optional[SlicingFunction] = None, threshold: float = 1.0
 ):
-    """
-    Test if the model Recall is higher than a threshold for a given slice
+    """Test if the model Recall is higher than a threshold for a given slice
 
     Example: The test is passed when the Recall for females is higher than 0.7
 
+    Parameters
+    ----------
+    model : BaseModel
+        Model used to compute the test
+    dataset : Dataset
+        Actual dataset used to compute the test
+    slicing_function : Optional[SlicingFunction]
+        Slicing function to be applied on dataset (Default value = None)
+    threshold : float
+        Threshold value for Recall (Default value = 1.0)
+    debug : bool
+        If True and the test fails,
+        a dataset will be provided containing all the incorrectly predicted rows. (Default value = False)
 
-    Args:
-        model(BaseModel):
-          Model used to compute the test
-        dataset(Dataset):
-          Actual dataset used to compute the test
-        slicing_function(Optional[SlicingFunction]):
-          Slicing function to be applied on dataset
-        threshold(float):
-          Threshold value for Recall
-
-    Returns:
-        actual_slices_size:
-          Length of dataset tested
-        metric:
-          The Recall metric
-        passed:
-          TRUE if Recall metric >= threshold
+    Returns
+    -------
+    TestResult
+        The test result.
     """
     if slicing_function:
         dataset = dataset.slice(slicing_function)
@@ -422,31 +413,31 @@ def test_rmse(
     threshold: float = 1.0,
     debug_percent_rows: float = 0.3,
 ):
-    """
-    Test if the model RMSE is lower than a threshold
+    """Test if the model RMSE is lower than a threshold
 
     Example: The test is passed when the RMSE is lower than 10
 
+    Parameters
+    ----------
+    model : BaseModel
+        Model used to compute the test
+    dataset : Dataset
+        Dataset used to compute the test
+    slicing_function : Optional[SlicingFunction]
+        Slicing function to be applied on dataset (Default value = None)
+    threshold : float
+        Threshold value for RMSE (Default value = 1.0)
+    debug_percent_rows : float
+        Percentage of rows (sorted by their highest absolute error) to debug. By default 30%.
+    debug : bool
+        If True and the test fails,
+        a dataset will be provided containing the top debug_percent_rows
+        of the rows with the highest absolute error (difference between prediction and data). (Default value = False)
 
-    Args:
-        model(BaseModel):
-          Model used to compute the test
-        dataset(Dataset):
-          Dataset used to compute the test
-        slicing_function(Optional[SlicingFunction]):
-          Slicing function to be applied on dataset
-        threshold(float):
-          Threshold value for RMSE
-        debug_percent_rows(float):
-          Percentage of rows (sorted by their highest absolute error) to debug. By default 30%.
-
-    Returns:
-        actual_slices_size:
-          Length of dataset tested
-        metric:
-          The RMSE metric
-        passed:
-          TRUE if RMSE metric <= threshold
+    Returns
+    -------
+    TestResult
+        The test result.
     """
     if slicing_function:
         dataset = dataset.slice(slicing_function)
@@ -467,31 +458,32 @@ def test_mse(
     threshold: float = 1.0,
     debug_percent_rows: float = 0.3,
 ):
-    """
-    Test if the model mean squared error (MSE) is lower than a threshold.
+    """Test if the model mean squared error (MSE) is lower than a threshold.
 
     Example: The test is passed when the MSE is lower than 10.
 
+    Parameters
+    ----------
+    model : BaseModel
+        Model used to compute the test
+    dataset : Dataset
+        Dataset used to compute the test
+    slicing_function : Optional[SlicingFunction]
+        Slicing function to be applied on dataset (Default value = None)
+    threshold : float
+        Threshold value for MSE (Default value = 1.0)
+    debug_percent_rows : float
+        Percentage of rows (sorted by their highest absolute error) to debug. By default 30%.
+    debug : bool
+        If True and the test fails,
+        a dataset will be provided containing the top debug_percent_rows
+        of the rows with the highest absolute error (difference between prediction and data). (Default value = False)
 
-    Args:
-        model(BaseModel):
-          Model used to compute the test
-        dataset(Dataset):
-          Dataset used to compute the test
-        slicing_function(Optional[SlicingFunction]):
-          Slicing function to be applied on dataset
-        threshold(float):
-          Threshold value for MSE
-        debug_percent_rows(float):
-          Percentage of rows (sorted by their highest absolute error) to debug. By default 30%.
+    Returns
+    -------
+    TestResult
+        The test result.
 
-    Returns:
-        actual_slices_size:
-          Length of dataset tested
-        metric:
-          The MSE metric
-        passed:
-          True if MSE metric <= threshold
     """
     if slicing_function:
         dataset = dataset.slice(slicing_function)
@@ -512,33 +504,32 @@ def test_mae(
     threshold: float = 1.0,
     debug_percent_rows: float = 0.3,
 ):
-    """
-    Test if the model Mean Absolute Error is lower than a threshold
+    """Test if the model Mean Absolute Error is lower than a threshold
 
     Example: The test is passed when the MAE is lower than 10
 
+    Parameters
+    ----------
+    model : BaseModel
+        Model used to compute the test
+    dataset : Dataset
+        Dataset used to compute the test
+    slicing_function : Optional[SlicingFunction]
+        Slicing function to be applied on dataset (Default value = None)
+    threshold : float
+        Threshold value for MAE (Default value = 1.0)
+    debug_percent_rows : float
+        Percentage of rows (sorted by their highest absolute error) to debug. By default 30%.
+    debug : bool
+        If True and the test fails,
+        a dataset will be provided containing the top debug_percent_rows
+        of the rows with the highest absolute error (difference between prediction and data). (Default value = False)
 
-    Args:
-        model(BaseModel):
-          Model used to compute the test
-        dataset(Dataset):
-          Dataset used to compute the test
-        slicing_function(Optional[SlicingFunction]):
-          Slicing function to be applied on dataset
-        threshold(float):
-          Threshold value for MAE
-        debug_percent_rows(float):
-          Percentage of rows (sorted by their highest absolute error) to debug. By default 30%.
+    Returns
+    -------
+    TestResult
+        The test result.
 
-    Returns:
-        actual_slices_size:
-          Length of dataset tested
-        reference_slices_size:
-          Length of reference_dataset tested
-        metric:
-          The MAE metric
-        passed:
-          TRUE if MAE metric <= threshold
     """
     if slicing_function:
         dataset = dataset.slice(slicing_function)
@@ -559,31 +550,32 @@ def test_r2(
     threshold: float = 1.0,
     debug_percent_rows: float = 0.3,
 ):
-    """
-    Test if the model R-Squared is higher than a threshold
+    """Test if the model R-Squared is higher than a threshold
 
     Example: The test is passed when the R-Squared is higher than 0.7
 
+    Parameters
+    ----------
+    model : BaseModel
+        Model used to compute the test
+    dataset : Dataset
+        Dataset used to compute the test
+    slicing_function : Optional[SlicingFunction]
+        Slicing function to be applied on dataset (Default value = None)
+    threshold : float
+        Threshold value for R-Squared (Default value = 1.0)
+    debug_percent_rows : float
+        Percentage of rows (sorted by their highest absolute error) to debug. By default 30%.
+    debug : bool
+        If True and the test fails,
+        a dataset will be provided containing the top debug_percent_rows
+        of the rows with the highest absolute error (difference between prediction and data). (Default value = False)
 
-    Args:
-        model(BaseModel):
-          Model used to compute the test
-        dataset(Dataset):
-          Dataset used to compute the test
-        slicing_function(Optional[SlicingFunction]):
-          Slicing function to be applied on dataset
-        threshold(float):
-          Threshold value for R-Squared
-        debug_percent_rows(float):
-          Percentage of rows (sorted by their highest absolute error) to debug. By default 30%.
+    Returns
+    -------
+    TestResult
+        The test result.
 
-    Returns:
-        actual_slices_size:
-          Length of dataset tested
-        metric:
-          The R-Squared metric
-        passed:
-          TRUE if R-Squared metric >= threshold
     """
     if slicing_function:
         dataset = dataset.slice(slicing_function)
@@ -605,36 +597,36 @@ def test_diff_accuracy(
     threshold: float = 0.1,
     direction: Direction = Direction.Invariant,
 ):
-    """
-
-    Test if the absolute percentage change of model Accuracy between two samples is lower than a threshold
+    """Test if the absolute percentage change of model Accuracy between two samples is lower than a threshold
 
     Example : The test is passed when the Accuracy for females has a difference lower than 10% from the
     Accuracy for males. For example, if the Accuracy for males is 0.8 (dataset) and the Accuracy  for
     females is 0.6 (reference_dataset) then the absolute percentage Accuracy change is 0.2 / 0.8 = 0.25
     and the test will fail
 
+    Parameters
+    ----------
+    model : BaseModel
+        Model used to compute the test
+    actual_dataset : Dataset
+        Actual dataset used to compute the test
+    reference_dataset : Dataset
+        Reference dataset used to compute the test
+    slicing_function : Optional[SlicingFunction]
+        Slicing function to be applied on both actual and reference datasets (Default value = None)
+    threshold : float
+        Threshold value for Accuracy Score difference (Default value = 0.1)
+    direction : Direction
+         (Default value = Direction.Invariant)
+    debug : bool
+        If True and the test fails,
+        a dataset will be provided containing all the incorrectly predicted rows from both actual_dataset and (Default value = False)
 
-    Args:
-        model(BaseModel):
-          Model used to compute the test
-        actual_dataset(Dataset):
-          Actual dataset used to compute the test
-        reference_dataset(Dataset):
-          Reference dataset used to compute the test
-        slicing_function(Optional[SlicingFunction]):
-          Slicing function to be applied on both actual and reference datasets
-        threshold(float):
-          Threshold value for Accuracy Score difference
-    Returns:
-        actual_slices_size:
-          Length of dataset tested
-        reference_slices_size:
-          Length of reference_dataset tested
-        metric:
-          The Accuracy difference  metric
-        passed:
-          TRUE if Accuracy difference < threshold
+    Returns
+    -------
+    TestResult
+        The test result.
+
     """
     if slicing_function:
         test_name = "test_diff_accuracy"
@@ -668,35 +660,36 @@ def test_diff_f1(
     threshold: float = 0.1,
     direction: Direction = Direction.Invariant,
 ):
-    """
-    Test if the absolute percentage change in model F1 Score between two samples is lower than a threshold
+    """Test if the absolute percentage change in model F1 Score between two samples is lower than a threshold
 
     Example : The test is passed when the F1 Score for females has a difference lower than 10% from the
     F1 Score for males. For example, if the F1 Score for males is 0.8 (dataset) and the F1 Score  for
     females is 0.6 (reference_dataset) then the absolute percentage F1 Score  change is 0.2 / 0.8 = 0.25
     and the test will fail
 
+    Parameters
+    ----------
+    model : BaseModel
+        Model used to compute the test
+    actual_dataset : Dataset
+        Actual dataset used to compute the test
+    reference_dataset : Dataset
+        Reference dataset used to compute the test
+    slicing_function : Optional[SlicingFunction]
+        Slicing function to be applied on both actual and reference datasets (Default value = None)
+    threshold : float
+        Threshold value for F1 Score difference (Default value = 0.1)
+    direction : Direction
+         (Default value = Direction.Invariant)
+    debug : bool
+        If True and the test fails,
+        a dataset will be provided containing all the incorrectly predicted rows from both actual_dataset and (Default value = False)
 
-    Args:
-        model(BaseModel):
-          Model used to compute the test
-        actual_dataset(Dataset):
-          Actual dataset used to compute the test
-        reference_dataset(Dataset):
-          Reference dataset used to compute the test
-        slicing_function(Optional[SlicingFunction]):
-          Slicing function to be applied on both actual and reference datasets
-        threshold(float):
-          Threshold value for F1 Score difference
-    Returns:
-        actual_slices_size:
-          Length of dataset tested
-        reference_slices_size:
-          Length of reference_dataset tested
-        metric:
-          The F1 Score difference  metric
-        passed:
-          TRUE if F1 Score difference < threshold
+    Returns
+    -------
+    TestResult
+        The test result.
+
     """
     if slicing_function:
         test_name = "test_diff_f1"
@@ -730,35 +723,36 @@ def test_diff_precision(
     threshold: float = 0.1,
     direction: Direction = Direction.Invariant,
 ):
-    """
-    Test if the absolute percentage change of model Precision between two samples is lower than a threshold
+    """Test if the absolute percentage change of model Precision between two samples is lower than a threshold
 
     Example : The test is passed when the Precision for females has a difference lower than 10% from the
     Accuracy for males. For example, if the Precision for males is 0.8 (dataset) and the Precision  for
     females is 0.6 (reference_dataset) then the absolute percentage Precision change is 0.2 / 0.8 = 0.25
     and the test will fail
 
+    Parameters
+    ----------
+    model : BaseModel
+        Model used to compute the test
+    actual_dataset : Dataset
+        Actual dataset used to compute the test
+    reference_dataset : Dataset
+        Reference dataset used to compute the test
+    slicing_function : Optional[SlicingFunction]
+        Slicing function to be applied on both actual and reference datasets (Default value = None)
+    threshold : float
+        Threshold value for Precision difference (Default value = 0.1)
+    direction : Direction
+         (Default value = Direction.Invariant)
+    debug : bool
+        If True and the test fails,
+        a dataset will be provided containing all the incorrectly predicted rows from both actual_dataset and (Default value = False)
 
-    Args:
-        model(BaseModel):
-          Model used to compute the test
-        actual_dataset(Dataset):
-          Actual dataset used to compute the test
-        reference_dataset(Dataset):
-          Reference dataset used to compute the test
-        slicing_function(Optional[SlicingFunction]):
-          Slicing function to be applied on both actual and reference datasets
-        threshold(float):
-          Threshold value for Precision difference
-    Returns:
-        actual_slices_size:
-          Length of dataset tested
-        reference_slices_size:
-          Length of reference_dataset tested
-        metric:
-          The Precision difference  metric
-        passed:
-          TRUE if Precision difference < threshold
+    Returns
+    -------
+    TestResult
+        The test result.
+
     """
     if slicing_function:
         test_name = "test_diff_precision"
@@ -792,35 +786,36 @@ def test_diff_recall(
     threshold: float = 0.1,
     direction: Direction = Direction.Invariant,
 ):
-    """
-    Test if the absolute percentage change of model Recall between two samples is lower than a threshold
+    """Test if the absolute percentage change of model Recall between two samples is lower than a threshold
 
     Example : The test is passed when the Recall for females has a difference lower than 10% from the
     Accuracy for males. For example, if the Recall for males is 0.8 (dataset) and the Recall  for
     females is 0.6 (reference_dataset) then the absolute percentage Recall change is 0.2 / 0.8 = 0.25
     and the test will fail
 
+    Parameters
+    ----------
+    model : BaseModel
+        Model used to compute the test
+    actual_dataset : Dataset
+        Actual dataset used to compute the test
+    reference_dataset : Dataset
+        Actual dataset used to compute the test
+    slicing_function : Optional[SlicingFunction]
+        Slicing function to be applied on both actual and reference datasets (Default value = None)
+    threshold : float
+        Threshold value for Recall difference (Default value = 0.1)
+    direction : Direction
+         (Default value = Direction.Invariant)
+    debug : bool
+        If True and the test fails,
+        a dataset will be provided containing all the incorrectly predicted rows from both actual_dataset and (Default value = False)
 
-    Args:
-        model(BaseModel):
-          Model used to compute the test
-        actual_dataset(Dataset):
-          Actual dataset used to compute the test
-        reference_dataset(Dataset):
-          Actual dataset used to compute the test
-        slicing_function(Optional[SlicingFunction]):
-          Slicing function to be applied on both actual and reference datasets
-        threshold(float):
-          Threshold value for Recall difference
-    Returns:
-        actual_slices_size:
-          Length of dataset tested
-        reference_slices_size:
-          Length of reference_dataset tested
-        metric:
-          The Recall difference  metric
-        passed:
-          TRUE if Recall difference < threshold
+    Returns
+    -------
+    TestResult
+        The test result.
+
     """
     if slicing_function:
         test_name = "test_diff_recall"
@@ -856,38 +851,40 @@ def test_diff_rmse(
     direction: Direction = Direction.Invariant,
     debug_percent_rows: float = 0.3,
 ):
-    """
-    Test if the absolute percentage change of model RMSE between two samples is lower than a threshold
+    """Test if the absolute percentage change of model RMSE between two samples is lower than a threshold
 
-    Example : The test is passed when the RMSE for females has a difference lower than 10% from the
+    Example: The test is passed when the RMSE for females has a difference lower than 10% from the
     RMSE for males. For example, if the RMSE for males is 0.8 (dataset) and the RMSE  for
     females is 0.6 (reference_dataset) then the absolute percentage RMSE change is 0.2 / 0.8 = 0.25
     and the test will fail
 
+    Parameters
+    ----------
+    model : BaseModel
+        Model used to compute the test
+    actual_dataset : Dataset
+        Actual dataset used to compute the test
+    reference_dataset : Dataset
+        Reference dataset used to compute the test
+    slicing_function : Optional[SlicingFunction]
+        Slicing function to be applied on both actual and reference datasets (Default value = None)
+    threshold : float
+        Threshold value for RMSE difference (Default value = 0.1)
+    direction : Direction
+         (Default value = Direction.Invariant)
+    debug_percent_rows : float
+        Percentage of rows (sorted by their highest absolute error) to debug. By default 30%.
+    debug : bool
+        If True and the test fails,
+        a dataset will be provided containing the top debug_percent_rows
+        of the rows with the highest absolute error (difference between prediction and data) from both
+        actual_dataset and reference_dataset. (Default value = False)
 
-    Args:
-        model(BaseModel):
-          Model used to compute the test
-        actual_dataset(Dataset):
-          Actual dataset used to compute the test
-        reference_dataset(Dataset):
-          Reference dataset used to compute the test
-        slicing_function(Optional[SlicingFunction]):
-          Slicing function to be applied on both actual and reference datasets
-        threshold(float):
-          Threshold value for RMSE difference
-        debug_percent_rows(float):
-          Percentage of rows (sorted by their highest absolute error) to debug. By default 30%.
+    Returns
+    -------
+    TestResult
+        The test result.
 
-    Returns:
-        actual_slices_size:
-          Length of dataset tested
-        reference_slices_size:
-          Length of reference_dataset tested
-        metric:
-          The RMSE difference  metric
-        passed:
-          TRUE if RMSE difference < threshold
     """
     if slicing_function:
         test_name = "test_diff_rmse"

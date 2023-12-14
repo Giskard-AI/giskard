@@ -1,7 +1,6 @@
 import collections
 import importlib
 from pathlib import Path
-from typing import Literal, Optional, Union, get_args
 
 import mlflow
 import pandas as pd
@@ -9,6 +8,7 @@ import torch
 import yaml
 from torch.utils.data import DataLoader
 from torch.utils.data import Dataset as torch_dataset
+from typing import Literal, Optional, Tuple, Union, get_args
 
 from .base.serialization import MLFlowSerializableModel
 from .utils import map_to_tuples
@@ -86,31 +86,31 @@ class PyTorchModel(MLFlowSerializableModel):
             The PyTorch model to wrap.
         model_type : ModelType
             The type of the model, either ``regression`` or ``classification``.
-        torch_dtype : TorchDType, optional
+        torch_dtype : Optional[TorchDType]
             The data type to use for the input data. Default is "float32".
-        device : str, optional
+        device : Optional[str]
             The device to use for the model. We will ensure that the model is on
             this device before running the inference. Default is "cpu". Make
             sure that your ``data_preprocessing_function`` returns tensors on
             the same device.
-        name : str, optional
+        name : Optional[str]
             A name for the wrapper. Default is ``None``.
-        data_preprocessing_function : Callable[[pd.DataFrame], Any], optional
+        data_preprocessing_function : Optional[Callable[[pd.DataFrame], Any]]
             A function that will be applied to incoming data, before passing
             them to the model. You may want use this to convert the data to
             tensors. Default is ``None``.
-        model_postprocessing_function : Callable[[Any], Any], optional
+        model_postprocessing_function : Optional[Callable[[Any], Any]]
             A function that will be applied to the model's predictions. Default
             is ``None``.
-        feature_names : Optional[Iterable], optional
+        feature_names : Optional[Iterable]
             A list of feature names. Default is ``None``.
-        classification_threshold : float, optional
+        classification_threshold : Optional[float]
             The probability threshold for classification. Default is 0.5.
-        classification_labels : Optional[Iterable], optional
+        classification_labels : Optional[Iterable]
             A list of classification labels. Default is ``None``.
-        iterate_dataset : bool, optional
+        iterate_dataset : Optional[bool]
             Whether to iterate over the dataset. Default is ``True``.
-        batch_size : int, optional
+        batch_size : Optional[int]
             The batch size to use for inference. Default is 1.
         """
         super().__init__(
@@ -138,10 +138,10 @@ class PyTorchModel(MLFlowSerializableModel):
             )
 
     @classmethod
-    def load_model(cls, local_dir):
+    def load_model(cls, local_dir, model_py_ver: Optional[Tuple[str, str, str]] = None, *_args, **_kwargs):
         return mlflow.pytorch.load_model(local_dir)
 
-    def save_model(self, local_path, mlflow_meta: mlflow.models.Model):
+    def save_model(self, local_path, mlflow_meta: mlflow.models.Model, *_args, **_kwargs):
         mlflow.pytorch.save_model(self.model, path=local_path, mlflow_model=mlflow_meta)
 
     def _get_predictions_from_iterable(self, data):
@@ -198,7 +198,7 @@ class PyTorchModel(MLFlowSerializableModel):
 
         return super()._convert_to_numpy(raw_predictions)
 
-    def save_pytorch_meta(self, local_path):
+    def save_pytorch_meta(self, local_path, *_args, **_kwargs):
         with open(Path(local_path) / "giskard-model-pytorch-meta.yaml", "w") as f:
             yaml.dump(
                 {
@@ -210,14 +210,14 @@ class PyTorchModel(MLFlowSerializableModel):
                 default_flow_style=False,
             )
 
-    def save(self, local_path: Union[str, Path]) -> None:
-        super().save(local_path)
+    def save(self, local_path: Union[str, Path], *args, **kwargs) -> None:
+        super().save(local_path, *args, **kwargs)
         self.save_pytorch_meta(local_path)
 
     @classmethod
-    def load(cls, local_dir, **kwargs):
+    def load(cls, local_dir, model_py_ver: Optional[Tuple[str, str, str]] = None, *args, **kwargs):
         kwargs.update(cls.load_pytorch_meta(local_dir))
-        return super().load(local_dir, **kwargs)
+        return super().load(local_dir, model_py_ver=model_py_ver, *args, **kwargs)
 
     @classmethod
     def load_pytorch_meta(cls, local_dir):
