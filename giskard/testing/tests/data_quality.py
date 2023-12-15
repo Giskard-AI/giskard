@@ -4,6 +4,7 @@ Module for data quality tests.
 from collections import Counter, defaultdict
 from typing import Iterable
 import pandas as pd
+from sklearn.datasets import make_classification
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.cluster import DBSCAN
 from sklearn.ensemble import IsolationForest
@@ -92,7 +93,11 @@ def validity_test(dataset: Dataset, column: str, valid_values=None):
     return TestResult(passed=test_passed)
 
 @test(name="Data Correlation Test")
-def correlation_test(dataset: Dataset, column1: str = None, column2: str = None):
+def correlation_test(dataset: Dataset,
+                     column1: str = None,
+                     column2: str = None,
+                     should_correlate: bool = True,
+                     correlation_threshold: float = 0):
     """
     Test for analyzing correlations between two specific features.
 
@@ -100,24 +105,22 @@ def correlation_test(dataset: Dataset, column1: str = None, column2: str = None)
         dataset (Dataset): The dataset to test.
         column1 (str, optional): The first column to check. Defaults to None.
         column2 (str, optional): The second column to check. Defaults to None.
+        should_correlate (bool, optional): Whether
+        the two columns should correlate. Defaults to True.
+        correlation_threshold (float, optional): The minimum absolute
+        correlation that is considered significant. Defaults to 0.
 
     Returns:
-        TestResult: The result of the test,
-        containing the correlation between the two columns
-        (if provided) or the full correlation matrix.
+        TestResult: The result of the test, containing the correlation between the two columns.
     """
-    correlation_matrix = dataset.df.corr()
+    # Calculate the correlation between the two columns
+    correlation = dataset.df[column1].corr(dataset.df[column2])
 
-    if column1 is not None and column2 is not None:
-        correlation = dataset.df[[column1, column2]].corr().iloc[0, 1]
-        return TestResult(passed=True,
-                          metric=correlation,
-                          metric_name="correlation",
-                          messages=correlation_matrix)
-    else:
-        return TestResult(passed=True,
-                          metric=None,
-                          metric_name="correlation",messages=correlation_matrix)
+    # Check if the absolute correlation is above the threshold and the correlation is as expected
+    test_passed = (abs(correlation) >=
+                   correlation_threshold) and ((correlation > 0) == should_correlate)
+
+    return TestResult(passed=test_passed, metric_name="correlation", metric=correlation)
 
 @test(name="Data Outlier Detection Test")
 def outlier(dataset: Dataset, column: str, eps: float = 0.5, min_samples: int = 5):
@@ -307,3 +310,24 @@ def class_imbalance(dataset: Dataset,
                       metric_name="class_proportion",
                       metric=class_proportions,
                       messages=message)
+def main():
+    # Generate a synthetic dataset
+    X, y = make_classification(n_samples=1000, n_classes=3, weights=[0.1, 0.2, 0.7], n_informative=3, random_state=0)
+    df = pd.DataFrame(X, columns=[f'feature{i}' for i in range(X.shape[1])])
+    df['target'] = y.astype(str)  # Convert classes to strings
+
+    # Create a giskard.Dataset from the DataFrame
+    dataset = Dataset(df=df)
+
+    # Define the columns to check
+    column1 = 'feature0'
+    column2 = 'feature1'
+
+    # Run the Correlation Test
+    result = correlation_test(dataset, column1, column2).execute()
+
+    # Print the result
+    print(f"Correlation between {column1} and {column2}: {result.passed}")
+
+if __name__ == "__main__":
+    main()
