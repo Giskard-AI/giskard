@@ -3,6 +3,7 @@ Module for data quality tests.
 """
 from collections import Counter, defaultdict
 from typing import Iterable
+import numpy as np
 import pandas as pd
 from sklearn.datasets import make_classification
 from sklearn.ensemble import RandomForestClassifier
@@ -247,20 +248,23 @@ def mislabel(dataset: Dataset, labelled_column: str, reference_columns: Iterable
     return TestResult(passed=True, metric_name="consistency", metric=1)
 
 @test(name="Feature Importance Test")
-def feature_importance(dataset: Dataset, target_column: str, feature_columns: Iterable[str]):
+def feature_importance_test(dataset: Dataset,
+                            feature_columns: Iterable[str],
+                            target_column: str,
+                            importance_threshold: float = 0):
     """
-    Test for evaluating the importance of each feature to the target variable.
+    Test for analyzing the importance of features in a classification problem.
 
     Args:
-        dataset (giskard.Dataset): The dataset to test.
+        dataset (Dataset): The dataset to test.
+        feature_columns (List[str]): The columns containing the features.
         target_column (str): The column containing the target variable.
-        feature_columns (Iterable[str]): The columns containing the features.
+        importance_threshold (float, optional): The minimum importance
+        that is considered significant. Defaults to 0.
 
     Returns:
         TestResult: The result of the test, containing the feature importances.
-        The more value the more important a feature is with respect to target variable.
     """
-    # Prepare the data
     features = list(feature_columns)
     x = dataset.df[features]
     y = dataset.df[target_column]
@@ -270,11 +274,15 @@ def feature_importance(dataset: Dataset, target_column: str, feature_columns: It
     # Get the feature importances
     importances = model.feature_importances_
     feature_importances = dict(zip(features, importances))
+    # Check if the importance of all features is above the threshold
+    test_passed = all(importance >= importance_threshold for importance in importances)
     # Create a message containing the feature importances
     message = f"Feature importances: \n{feature_importances}"
 
-    return TestResult(passed=True, metric_name="feature_importance",
-                      metric=importances, messages=message)
+    return TestResult(passed=test_passed,
+                      metric_name="feature_importance",
+                      metric=importances,
+                      messages=message)
 
 @test(name="Class Imbalance Test")
 def class_imbalance(dataset: Dataset,
@@ -310,24 +318,3 @@ def class_imbalance(dataset: Dataset,
                       metric_name="class_proportion",
                       metric=class_proportions,
                       messages=message)
-def main():
-    # Generate a synthetic dataset
-    X, y = make_classification(n_samples=1000, n_classes=3, weights=[0.1, 0.2, 0.7], n_informative=3, random_state=0)
-    df = pd.DataFrame(X, columns=[f'feature{i}' for i in range(X.shape[1])])
-    df['target'] = y.astype(str)  # Convert classes to strings
-
-    # Create a giskard.Dataset from the DataFrame
-    dataset = Dataset(df=df)
-
-    # Define the columns to check
-    column1 = 'feature0'
-    column2 = 'feature1'
-
-    # Run the Correlation Test
-    result = correlation_test(dataset, column1, column2).execute()
-
-    # Print the result
-    print(f"Correlation between {column1} and {column2}: {result.passed}")
-
-if __name__ == "__main__":
-    main()
