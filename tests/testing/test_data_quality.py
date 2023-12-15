@@ -73,16 +73,47 @@ def test_range_test():
 
     # Test with column1, expected to pass
     result = data_quality.range_test(dataset, 'column1', 1, 10)
-    assert result.passed == True
+    assert result.passed is True
 
     # Test with column2, expected to fail
     result = data_quality.range_test(dataset, 'column2', 1, 10)
-    assert result.passed == False
+    assert result.passed is False
 
     # Test with column3, expected to fail
     result = data_quality.range_test(dataset, 'column3', 1, 10)
-    assert result.passed == False
+    assert result.passed is False
 
     # Test with column4, expected to pass
     result = data_quality.range_test(dataset, 'column4', 0, 0)
-    assert result.passed == True
+    assert result.passed is True
+
+@test
+def test_validity_test():
+    """
+    Test for the validity_test function in the data_quality module.
+
+    This test checks that the validity_test function correctly determines whether all values in a 
+    given column are in a specified set of valid values.
+
+    Returns:
+        None
+    """
+    # Setup data for testing
+    data = {
+        'column1': ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j'],
+        'column2': ['a', 'a', 'b', 'b', 'c', 'c', 'd', 'd', 'e', 'z']
+    }
+    df = pd.DataFrame(data)
+    dataset = Dataset(df)
+
+    # Call the function with test inputs
+    result = data_quality.validity_test(dataset,
+                                        'column1',
+                                        valid_values=['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j'])
+    # Assert that the result is as expected
+    assert result.passed is True
+
+    result = data_quality.validity_test(dataset,
+                                        'column2',
+                                        valid_values=['a', 'b', 'c', 'd', 'e'])
+    assert result.passed is False
