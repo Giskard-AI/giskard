@@ -59,3 +59,30 @@ def test_completeness_test(setup_data):
 
     result = data_quality.completeness_test(setup_data, 'column2').execute()
     assert result.passed is False
+
+@test
+def test_range_test():
+    data = {
+        'column1': [1, 2, 3, 4, 5, 6, 7, 8, 9, 10],
+        'column2': [1, 2, 3, 4, 5, 100, 7, 8, 9, 10],
+        'column3': [-1, -2, -3, -4, -5, -6, -7, -8, -9, -10],
+        'column4': [0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+    }
+    df = pd.DataFrame(data)
+    dataset = Dataset(df)
+
+    # Test with column1, expected to pass
+    result = data_quality.range_test(dataset, 'column1', 1, 10)
+    assert result.passed == True
+
+    # Test with column2, expected to fail
+    result = data_quality.range_test(dataset, 'column2', 1, 10)
+    assert result.passed == False
+
+    # Test with column3, expected to fail
+    result = data_quality.range_test(dataset, 'column3', 1, 10)
+    assert result.passed == False
+
+    # Test with column4, expected to pass
+    result = data_quality.range_test(dataset, 'column4', 0, 0)
+    assert result.passed == True
