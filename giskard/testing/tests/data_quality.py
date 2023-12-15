@@ -274,13 +274,18 @@ def feature_importance(dataset: Dataset, target_column: str, feature_columns: It
                       metric=importances, messages=message)
 
 @test(name="Class Imbalance Test")
-def class_imbalance(dataset: Dataset, target_column: str):
+def class_imbalance(dataset: Dataset,
+                    target_column: str,
+                    lower_threshold: float,
+                    upper_threshold: float):
     """
     Test for assessing the distribution of classes in classification problems.
 
     Args:
         dataset (giskard.Dataset): The dataset to test.
         target_column (str): The column containing the target variable.
+        lower_threshold (float): The minimum allowed class proportion.
+        upper_threshold (float): The maximum allowed class proportion.
 
     Returns:
         TestResult: The result of the test, containing the class proportions.
@@ -290,10 +295,15 @@ def class_imbalance(dataset: Dataset, target_column: str):
     total_count = len(dataset.df)
     class_proportions = {cls: count / total_count for cls, count in class_counts.items()}
 
+    # Check if any class proportion is below the lower threshold or above the upper threshold
+    passed = all(lower_threshold <=
+                 proportion <= upper_threshold
+                 for proportion in class_proportions.values())
+
     # Create a message containing the class proportions
     message = f"Class proportions: \n{class_proportions}"
 
-    return TestResult(passed=True,
+    return TestResult(passed=passed,
                       metric_name="class_proportion",
                       metric=class_proportions,
                       messages=message)
