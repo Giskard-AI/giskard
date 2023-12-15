@@ -3,9 +3,7 @@ Module for data quality tests.
 """
 from collections import Counter, defaultdict
 from typing import Iterable
-import numpy as np
 import pandas as pd
-from sklearn.datasets import make_classification
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.cluster import DBSCAN
 from sklearn.ensemble import IsolationForest
