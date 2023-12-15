@@ -30,22 +30,22 @@ def uniqueness_test(dataset: Dataset, column: str, threshold: float = 0.8):
                       metric=uniqueness_ratio, metric_name="uniqueness")
 
 @test(name="Data Completeness Test")
-def completeness_test(dataset: Dataset):
+def completeness_test(dataset: Dataset, column_name: str, threshold: float):
     """
     Test for checking the completeness of data in a dataset.
 
     Args:
         dataset (Dataset): The dataset to test.
+        column_name (str): The name of the column to test.
+        threshold (float): The minimum completeness ratio for the test to pass.
 
     Returns:
-        dict: A dictionary with the completeness score for each column.
+        TestResult: A TestResult object indicating whether the test passed and the completeness ratio.
     """
-    completeness_scores = {}
-    for column in dataset.df.columns:
-        column_data = dataset.df[column]
-        completeness_ratio = len(column_data.dropna()) / len(column_data)
-        completeness_scores[column] = completeness_ratio
-    return TestResult(messages=completeness_scores)
+    column_data = dataset.df[column_name]
+    completeness_ratio = len(column_data.dropna()) / len(column_data)
+    passed = completeness_ratio >= threshold
+    return TestResult(passed=passed, messages={column_name: completeness_ratio})
 
 @test(name="Data Range Test")
 def range_test(dataset: Dataset, column: str, min_value=None, max_value=None):
