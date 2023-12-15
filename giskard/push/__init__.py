@@ -355,7 +355,7 @@ class ContributionPush(FeaturePush):
             self.details = [
                 {
                     "action": "Generate a performance test on similar examples",
-                    "explanation": "Performance (RMSE or F1) test will help you check if this slice performs better than the rest of the dataset",
+                    "explanation": "Performance (RMSE or F1) test will help you check if this slice performs worse than the rest of the dataset",
                     "button": "Add Test to a test suite",
                     "cta": CallToActionKind.CREATE_TEST,
                 },
