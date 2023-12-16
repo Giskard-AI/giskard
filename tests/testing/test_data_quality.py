@@ -109,7 +109,9 @@ def test_validity_test():
     # Call the function with test inputs
     result = data_quality.validity_test(dataset,
                                         'column1',
-                                        valid_values=['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j'])
+                                        valid_values=['a', 'b', 'c',
+                                                    'd', 'e', 'f',
+                                                    'g', 'h', 'i', 'j'])
     # Assert that the result is as expected
     assert result.passed is True
 
@@ -117,3 +119,36 @@ def test_validity_test():
                                         'column2',
                                         valid_values=['a', 'b', 'c', 'd', 'e'])
     assert result.passed is False
+
+@test
+def test_correlation_test():
+    """
+    Test for the correlation_test function in the data_quality module.
+
+    This test checks that the correlation_test function correctly determines whether two columns 
+    in a given dataset have a correlation that is above a specified threshold.
+
+    Returns:
+        None
+    """
+    # Setup data for testing
+    data = {
+        'Survived': [0, 1, 1, 1, 0],
+        'Pclass': [3, 1, 3, 1, 3],
+        'Age': [22, 38, 26, 35, 35],
+        'Fare': [7.25, 71.2833, 7.925, 53.1, 8.05]
+    }
+    df = pd.DataFrame(data)
+    dataset = Dataset(df)
+
+    # Call the function with test inputs
+    result = data_quality.correlation_test(dataset, 'Survived', 'Pclass', False, 0.5).execute()
+    # Assert that the result is as expected
+    assert result.passed is True, "Test failed: Survived and Pclass should not have correlation above 0.5"
+
+    result = data_quality.correlation_test(dataset, 'Survived', 'Age', False, 0.5).execute()
+    assert result.passed is True, "Test failed: Survived and Age should not have correlation above 0.5"
+
+    result = data_quality.correlation_test(dataset, 'Survived', 'Fare', True, 0.5).execute()
+    assert result.passed is True, "Test failed: Survived and Fare should have correlation above 0.5"
+   

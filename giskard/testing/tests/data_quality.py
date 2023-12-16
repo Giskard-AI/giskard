@@ -119,7 +119,7 @@ def correlation_test(dataset: Dataset,
     test_passed = (abs(correlation) >=
                    correlation_threshold) and ((correlation > 0) == should_correlate)
 
-    return TestResult(passed=test_passed, metric_name="correlation", metric=correlation)
+    return TestResult(passed=test_passed, metric_name="correlation", metric=correlation, messages=correlation)
 
 @test(name="Data Outlier Detection Test")
 def outlier(dataset: Dataset, column: str, eps: float = 0.5, min_samples: int = 5):
