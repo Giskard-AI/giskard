@@ -148,11 +148,11 @@ def test_correlation_test():
     assert result.passed is True, "Test failed: Survived and Pclass should not have correlation above 0.5"
 
     result = data_quality.correlation_test(dataset, 'Survived', 'Age', False, 0.5).execute()
-    assert result.passed is True, "Test failed: Survived and Age should not have correlation above 0.5"
+    assert result.passed is True,"Test failed: Survivedand Age should not have correlation above 0.5"
 
     result = data_quality.correlation_test(dataset, 'Survived', 'Fare', True, 0.5).execute()
     assert result.passed is True, "Test failed: Survived and Fare should have correlation above 0.5"
-   
+  
 @test
 def test_outlier_test():
     """
@@ -167,7 +167,9 @@ def test_outlier_test():
     np.random.seed(0)
     data = {
         'column1': np.random.normal(0, 1, 1000),  # Normal distribution, should not have outliers
-        'column2': np.concatenate([np.random.normal(0, 1, 990), np.array([10, 10, 10, 10, 10, 10, 10, 10, 10, 10])])  # Normal distribution with some extreme values, should have outliers
+        'column2': np.concatenate([np.random.normal(0, 1, 990),
+                                   np.array([10, 10, 10, 10, 10, 10, 10, 10, 10, 10])])
+                                     # Normal distribution with some extreme values, should have outliers
     }
     df = pd.DataFrame(data)
     dataset = Dataset(df)
@@ -176,3 +178,39 @@ def test_outlier_test():
     result = outlier(dataset, 'column1', eps=3, min_samples=2).execute()
     # Assert that the result is as expected
     assert result.passed is True, "Test failed: column1 should not have outliers"
+
+@test
+def test_ensure_all_exists():
+    """
+    Test for the ensure_all_exists function in the data_quality module.
+
+    This test checks that the ensure_all_exists function
+    correctly determines whether all values in a 
+    given column are present in a column of another dataset.
+
+    Returns:
+        None
+    """
+    # Setup data for testing
+    np.random.seed(0)
+    data1 = {
+        'column1': np.random.choice(['a', 'b', 'c', 'd', 'e'], 1000)
+    }
+    data2 = {
+        'column2': np.random.choice(['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j'], 1000)
+    }
+    df1 = pd.DataFrame(data1)
+    df2 = pd.DataFrame(data2)
+    dataset1 = Dataset(df1)
+    dataset2 = Dataset(df2)
+
+    # Call the function with test inputs
+    result = ensure_all_exists(dataset1, 'column1', dataset2, 'column2', threshold=0.0).execute()
+    # Assert that the result is as expected
+    assert result.passed is False, "Test failed: not all values in column1 are present in column2"
+
+    result = ensure_all_exists(dataset1, 'column1', dataset2, 'column2', threshold=0.5).execute()
+    assert result.passed is True, "Test failed: more than 50% of values in column1 should be present in column2"
+
+    result = ensure_all_exists(dataset1, 'column1', dataset2, 'column2', threshold=1.0).execute()
+    assert result.passed is True, "Test failed: all values in column1 should be present in column2"
