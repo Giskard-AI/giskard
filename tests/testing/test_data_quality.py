@@ -1,3 +1,4 @@
+import numpy as np
 import pandas as pd
 from giskard.testing.tests import data_quality
 from giskard import Dataset, test
@@ -152,3 +153,26 @@ def test_correlation_test():
     result = data_quality.correlation_test(dataset, 'Survived', 'Fare', True, 0.5).execute()
     assert result.passed is True, "Test failed: Survived and Fare should have correlation above 0.5"
    
+@test
+def test_outlier_test():
+    """
+    Test for the outlier_test function in the data_quality module.
+
+    This test checks that the outlier_test function correctly identifies outliers in a given column.
+
+    Returns:
+        None
+    """
+    # Setup data for testing
+    np.random.seed(0)
+    data = {
+        'column1': np.random.normal(0, 1, 1000),  # Normal distribution, should not have outliers
+        'column2': np.concatenate([np.random.normal(0, 1, 990), np.array([10, 10, 10, 10, 10, 10, 10, 10, 10, 10])])  # Normal distribution with some extreme values, should have outliers
+    }
+    df = pd.DataFrame(data)
+    dataset = Dataset(df)
+
+    # Call the function with test inputs
+    result = outlier(dataset, 'column1', eps=3, min_samples=2).execute()
+    # Assert that the result is as expected
+    assert result.passed is True, "Test failed: column1 should not have outliers"
