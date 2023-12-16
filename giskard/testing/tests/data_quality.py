@@ -12,7 +12,6 @@ from giskard.ml_worker.testing.test_result import TestResult
 from giskard.ml_worker.testing.registry.decorators import test
 from giskard.datasets.base import Dataset
 
-@test(name="Data Uniqueness Test")
 def uniqueness_test(dataset: Dataset, column: str, threshold: float = 0.8):
     """
     Test for checking the uniqueness of data in a column.
@@ -29,7 +28,6 @@ def uniqueness_test(dataset: Dataset, column: str, threshold: float = 0.8):
     return TestResult(passed=uniqueness_ratio >= threshold,
                       metric=uniqueness_ratio, metric_name="uniqueness")
 
-@test(name="Data Completeness Test")
 def completeness_test(dataset: Dataset, column_name: str, threshold: float):
     """
     Test for checking the completeness of data in a dataset.
@@ -40,14 +38,14 @@ def completeness_test(dataset: Dataset, column_name: str, threshold: float):
         threshold (float): The minimum completeness ratio for the test to pass.
 
     Returns:
-        TestResult: A TestResult object indicating whether the test passed and the completeness ratio.
+        TestResult: A TestResult object indicating whether the
+        test passed and the completeness ratio.
     """
     column_data = dataset.df[column_name]
     completeness_ratio = len(column_data.dropna()) / len(column_data)
     passed = completeness_ratio >= threshold
     return TestResult(passed=passed, messages={column_name: completeness_ratio})
 
-@test(name="Data Range Test")
 def range_test(dataset: Dataset, column: str, min_value=None, max_value=None):
     """
     Test for checking if data in a column falls within a specified range.
@@ -72,7 +70,6 @@ def range_test(dataset: Dataset, column: str, min_value=None, max_value=None):
         raise ValueError("Neither min_value nor max_value were provided")
     return TestResult(passed=test_passed)
 
-@test(name="Data Validity Test")
 def validity_test(dataset: Dataset, column: str, valid_values=None):
     """
     Test for checking if data in a column is in a set of valid values.
@@ -91,12 +88,11 @@ def validity_test(dataset: Dataset, column: str, valid_values=None):
     test_passed = all(x in valid_values for x in column_data.dropna())
     return TestResult(passed=test_passed)
 
-@test(name="Data Correlation Test")
 def correlation_test(dataset: Dataset,
                      column1: str = None,
                      column2: str = None,
                      should_correlate: bool = True,
-                     correlation_threshold: float = 0):
+                     correlation_threshold: float = 0.0):
     """
     Test for analyzing correlations between two specific features.
 
@@ -116,12 +112,15 @@ def correlation_test(dataset: Dataset,
     correlation = dataset.df[column1].corr(dataset.df[column2])
 
     # Check if the absolute correlation is above the threshold and the correlation is as expected
-    test_passed = (abs(correlation) >=
-                   correlation_threshold) and ((correlation > 0) == should_correlate)
+    if should_correlate:
+        test_passed = correlation >= correlation_threshold
+    else:
+        test_passed = correlation < correlation_threshold
 
-    return TestResult(passed=test_passed, metric_name="correlation", metric=correlation, messages=correlation)
+    return TestResult(passed=bool(test_passed),
+                      metric_name="correlation",
+                      metric=correlation)
 
-@test(name="Data Outlier Detection Test")
 def outlier(dataset: Dataset, column: str, eps: float = 0.5, min_samples: int = 5):
     """
     Test for identifying outliers or anomalies in a column of the dataset using DBSCAN.
@@ -144,7 +143,6 @@ def outlier(dataset: Dataset, column: str, eps: float = 0.5, min_samples: int = 
     anomalies = [i for i, pred in enumerate(preds) if pred == -1]
     return TestResult(passed=len(anomalies) == 0, messages=anomalies)
 
-@test(name="Ensure all exists")
 def ensure_all_exists(dataset: Dataset, column: str,
                       target_dataset: Dataset,
                       target_column: str,
@@ -169,7 +167,6 @@ def ensure_all_exists(dataset: Dataset, column: str,
     missing_ratio = len(not_included) / len(source)
     return TestResult(passed=missing_ratio <= threshold, metric=missing_ratio)
 
-@test(name="Label Consistency Test")
 def label_consistency_test(dataset: Dataset, label_column: str):
     """
     Test for checking the consistency of datatype across each label throughout dataset.
@@ -200,7 +197,6 @@ def label_consistency_test(dataset: Dataset, label_column: str):
 
     return TestResult(passed=True, metric_name="consistency", metric=1)
 
-@test(name="Mislabeled Data Test")
 def mislabel(dataset: Dataset, labelled_column: str, reference_columns: Iterable[str]):
     """
     Test for detecting mislabelled data.
@@ -245,7 +241,6 @@ def mislabel(dataset: Dataset, labelled_column: str, reference_columns: Iterable
 
     return TestResult(passed=True, metric_name="consistency", metric=1)
 
-@test(name="Feature Importance Test")
 def feature_importance_test(dataset: Dataset,
                             feature_columns: Iterable[str],
                             target_column: str,
@@ -282,7 +277,6 @@ def feature_importance_test(dataset: Dataset,
                       metric=importances,
                       messages=message)
 
-@test(name="Class Imbalance Test")
 def class_imbalance(dataset: Dataset,
                     target_column: str,
                     lower_threshold: float,
