@@ -266,3 +266,32 @@ def test_mislabel():
     result = data_quality.mislabel(dataset, 'group', reference_columns=['age'])
     # Assert that the result is as expected
     assert result.passed is False, "Test failed: there should be mislabelled data"
+
+def test_outlier():
+    """
+    Test for the outlier function in the data_quality module.
+
+    This test checks that the outlier function correctly identifies outliers in a column of a dataset.
+
+    Returns:
+        None
+    """
+    # Setup data for testing
+    data = {
+        'age': [20, 25, 23, 40, 67, 55, 44, 17, 47, 1000],  # 1000 is an outlier
+    }
+    df = pd.DataFrame(data)
+    dataset = Dataset(df)
+
+    # Call the function with test inputs
+    result = data_quality.outlier(dataset, 'age', eps = 10, min_samples = 3)
+    # Assert that the result is as expected
+    assert result.passed is False, "Test failed: there should be an outlier"
+
+    # Test case where there are no outliers
+    data['age'] = [20, 25, 23, 40, 67, 55, 44, 17, 47, 60]  # No outliers
+    df = pd.DataFrame(data)
+    dataset = Dataset(df)
+
+    result = data_quality.outlier(dataset, 'age',eps = 10, min_samples = 3)
+    assert result.passed is True, "Test failed: there should be no outliers"
