@@ -162,7 +162,8 @@ def test_outlier():
     """
     Test for the outlier function in the data_quality module.
 
-    This test checks that the outlier function correctly identifies outliers in a column of a dataset.
+    This test checks that the outlier function correctly identifies
+    outliers in a column of a dataset.
 
     Returns:
         None
@@ -277,7 +278,8 @@ def test_feature_importance_test():
     """
     Test for the feature_importance_test function in the data_quality module.
 
-    This test checks that the feature_importance_test function correctly identifies the importance of features in a classification problem.
+    This test checks that the feature_importance_test function correctly
+    identifies the importance of features in a classification problem.
 
     Returns:
         None
@@ -289,8 +291,42 @@ def test_feature_importance_test():
     dataset = Dataset(df)
 
     # Call the function with test inputs
-    result = data_quality.feature_importance_test(dataset, ['feature1', 'feature2', 'feature3', 'feature4'], 'target')
+    result = data_quality.feature_importance_test(dataset, ['feature1', 'feature2',
+                                                            'feature3', 'feature4'], 'target')
 
     # Assert that the result is as expected
     assert result.passed is True, "Test failed: the test should pass"
     assert len(result.metric) == 4, "Test failed: there should be 4 features"
+
+def test_class_imbalance():
+    """
+    Test for the class_imbalance function in the data_quality module.
+
+    This test checks that the class_imbalance function correctly
+    identifies the imbalance in the target classes.
+
+    Returns:
+        None
+    """
+    # Setup data for testing
+    data = {
+        'target': ['class1'] * 50 + ['class2'] * 50,  # Balanced classes
+    }
+    df = pd.DataFrame(data)
+    dataset = Dataset(df)
+
+    # Call the function with test inputs
+    result = data_quality.class_imbalance(dataset, 'target', 0.4, 0.6)
+
+    # Assert that the result is as expected
+    assert result.passed is True, "Test failed: the classes should be balanced"
+    assert result.metric == {'class1': 0.5, 'class2': 0.5}, "Test failed: the class proportions should be 0.5"
+
+    # Test case where the classes are imbalanced
+    data['target'] = ['class1'] * 30 + ['class2'] * 70  # Imbalanced classes
+    df = pd.DataFrame(data)
+    dataset = Dataset(df)
+
+    result = data_quality.class_imbalance(dataset, 'target', 0.4, 0.6)
+    assert result.passed is False, "Test failed: the classes should be 0.4, 0.6"
+    assert result.metric == {'class1': 0.3, 'class2': 0.7}, "Test failed: the class proportions should be 0.3 and 0.7"
