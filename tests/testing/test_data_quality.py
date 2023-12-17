@@ -1,5 +1,6 @@
 import numpy as np
 import pandas as pd
+from sklearn.datasets import make_classification
 from giskard.testing.tests import data_quality
 from giskard import Dataset
 
@@ -157,30 +158,35 @@ def test_correlation_test():
     result = data_quality.correlation_test(dataset, 'Survived', 'Fare', True, 0.5)
     assert result.passed is True, "Test failed: Survived and Fare should have correlation above 0.5"
   
-def test_outlier_test():
+def test_outlier():
     """
-    Test for the outlier_test function in the data_quality module.
+    Test for the outlier function in the data_quality module.
 
-    This test checks that the outlier_test function correctly identifies outliers in a given column.
+    This test checks that the outlier function correctly identifies outliers in a column of a dataset.
 
     Returns:
         None
     """
     # Setup data for testing
-    np.random.seed(0)
     data = {
-        'column1': np.random.normal(0, 1, 1000),  # Normal distribution, should not have outliers
-        'column2': np.concatenate([np.random.normal(0, 1, 990),
-                                   np.array([10, 10, 10, 10, 10, 10, 10, 10, 10, 10])])
-                                     # Normal distribution with some extreme values, should have outliers
+        'age': [20, 25, 23, 40, 67, 55, 44, 17, 47, 1000],  # 1000 is an outlier
     }
     df = pd.DataFrame(data)
     dataset = Dataset(df)
 
     # Call the function with test inputs
-    result = data_quality.outlier(dataset, 'column1', eps=3, min_samples=2)
+    result = data_quality.outlier(dataset, 'age', eps = 20, min_samples = 5)
     # Assert that the result is as expected
-    assert result.passed is True, "Test failed: column1 should not have outliers"
+    assert result.passed is False, "Test failed: there should be an outlier"
+    assert result.messages == [9], "Test failed: the outlier should be 1000"
+
+    # Test case where there are no outliers
+    data['age'] = [20, 25, 23, 40, 67, 55, 44, 17, 47, 60]  # No outliers
+    df = pd.DataFrame(data)
+    dataset = Dataset(df)
+
+    result = data_quality.outlier(dataset, 'age',eps = 10, min_samples = 3)
+    assert result.passed is True, "Test failed: there should be no outliers"
 
 def test_ensure_all_exists():
     """
@@ -267,31 +273,24 @@ def test_mislabel():
     # Assert that the result is as expected
     assert result.passed is False, "Test failed: there should be mislabelled data"
 
-def test_outlier():
+def test_feature_importance_test():
     """
-    Test for the outlier function in the data_quality module.
+    Test for the feature_importance_test function in the data_quality module.
 
-    This test checks that the outlier function correctly identifies outliers in a column of a dataset.
+    This test checks that the feature_importance_test function correctly identifies the importance of features in a classification problem.
 
     Returns:
         None
     """
     # Setup data for testing
-    data = {
-        'age': [20, 25, 23, 40, 67, 55, 44, 17, 47, 1000],  # 1000 is an outlier
-    }
-    df = pd.DataFrame(data)
+    X, y = make_classification(n_samples=100, n_features=4, random_state=42)
+    df = pd.DataFrame(X, columns=['feature1', 'feature2', 'feature3', 'feature4'])
+    df['target'] = y
     dataset = Dataset(df)
 
     # Call the function with test inputs
-    result = data_quality.outlier(dataset, 'age', eps = 10, min_samples = 3)
+    result = data_quality.feature_importance_test(dataset, ['feature1', 'feature2', 'feature3', 'feature4'], 'target')
+
     # Assert that the result is as expected
-    assert result.passed is False, "Test failed: there should be an outlier"
-
-    # Test case where there are no outliers
-    data['age'] = [20, 25, 23, 40, 67, 55, 44, 17, 47, 60]  # No outliers
-    df = pd.DataFrame(data)
-    dataset = Dataset(df)
-
-    result = data_quality.outlier(dataset, 'age',eps = 10, min_samples = 3)
-    assert result.passed is True, "Test failed: there should be no outliers"
+    assert result.passed is True, "Test failed: the test should pass"
+    assert len(result.metric) == 4, "Test failed: there should be 4 features"
