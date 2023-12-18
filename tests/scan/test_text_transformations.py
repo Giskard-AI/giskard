@@ -255,7 +255,3 @@ def test_text_to_speech_typo_transformation():
     p = t.make_perturbation("If you two do it together, you will be able to do it.")
 
     assert p == "If u too do it together, ewe will bee able two do it."
-
-# test_text_to_speech_typo_transformation()
-test_typo_transformation()
-test_country_based_transformation_edge_cases()
