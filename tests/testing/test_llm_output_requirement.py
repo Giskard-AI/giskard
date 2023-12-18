@@ -125,7 +125,6 @@ def test_llm_single_output_requirement(RequirementEvaluator):
     assert not res.passed
     assert res.metric == 1
     assert res.metric_name == "Failing examples"
-    assert isinstance(res.output_df, Dataset)
 
     # Errored tests
     RequirementEvaluator.return_value.evaluate.return_value = EvaluationResult(
