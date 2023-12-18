@@ -1,33 +1,28 @@
-from dataclasses import dataclass
+from abc import ABC, abstractmethod
+
+from giskard.models.base import BaseModel
+from giskard.datasets.base import Dataset
 
 
-@dataclass
-class PredictFromDatasetTool:
-    name: str = "predict_from_dataset"
-    description: str = ("1) Extracts rows from the dataset using the filtering expression;"
-                        "2) Returns model prediction for the extracted rows.")
-    parameters: list = ()
-    parameters_required: list = ()
-
-    def __call__(self, *args, **kwargs) -> str:
-        """Must return a tool in the next format:
-        {
-            "type": "function",
-            "function": {
-                "name": "get_current_weather",
-                "description": "Get the current weather in a given location",
-                "parameters": {
-                    "type": "object",
-                    "properties": {
-                        "location": {
-                            "type": "string",
-                            "description": "The city and state, e.g. San Francisco, CA",
-                        },
-                        "unit": {"type": "string", "enum": ["celsius", "fahrenheit"]},
-                    },
-                    "required": ["location"],
-                },
-            },
-        }
-        """
+class BaseTool(ABC):
+    @property
+    @abstractmethod
+    def specification(self) -> str:
         ...
+
+    @abstractmethod
+    def __call__(self, *args, **kwargs) -> str:
+        ...
+
+
+class PredictFromDatasetTool(BaseTool):
+    def __init__(self, model: BaseModel, dataset: Dataset):
+        self._model = model
+        self._dataset = dataset
+
+    @property
+    def specification(self) -> str:
+        raise NotImplementedError
+
+    def __call__(self, *args, **kwargs):
+        raise NotImplementedError
