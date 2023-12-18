@@ -247,3 +247,15 @@ def test_typo_transformation():
     p = t.make_perturbation("If one doesn't know his mistakes, he won't want to correct them.")
 
     assert p == "If one doesn't know his misakes, he won't want to corrcet them."
+
+def test_text_to_speech_typo_transformation():
+    from giskard.scanner.robustness.text_transformations import TextFromSpeechTypoTransformation
+
+    t = TextFromSpeechTypoTransformation(column="text", rng_seed=1)
+    p = t.make_perturbation("If you two do it together, you will be able to do it.")
+
+    assert p == "If u too do it together, ewe will bee able two do it."
+
+# test_text_to_speech_typo_transformation()
+test_typo_transformation()
+test_country_based_transformation_edge_cases()
