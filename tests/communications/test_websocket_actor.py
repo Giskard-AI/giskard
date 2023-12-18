@@ -7,11 +7,11 @@ import pytest
 from giskard import slicing_function, transformation_function
 from giskard.datasets.base import Dataset
 from giskard.ml_worker import ml_worker, websocket
-from giskard.ml_worker.utils.file_utils import get_file_name
 from giskard.ml_worker.websocket import listener
 from giskard.ml_worker.websocket.action import MLWorkerAction
 from giskard.models.base.model import BaseModel
 from giskard.settings import settings
+from giskard.utils.file_utils import get_file_name
 from tests import utils
 
 NOT_USED_WEBSOCKET_ACTOR = [
@@ -352,7 +352,7 @@ def test_websocket_actor_explain_text_ws_not_text(request):
     dataset: Dataset = request.getfixturevalue("enron_data")
     model: BaseModel = request.getfixturevalue("enron_model")
 
-    project_key = str(uuid.uuid4()) # Use a UUID to separate the resources used by the tests
+    project_key = str(uuid.uuid4())  # Use a UUID to separate the resources used by the tests
 
     with utils.MockedProjectCacheDir(project_key), utils.MockedClient(mock_all=False) as (client, mr):
         # Prepare model and dataset
@@ -375,9 +375,7 @@ def test_websocket_actor_explain_text_ws_not_text(request):
             listener.explain_text_ws(client=None, params=params)
 
 
-@pytest.mark.parametrize("internal", [
-    True, False
-])
+@pytest.mark.parametrize("internal", [True, False])
 def test_websocket_actor_explain_text_ws_classification(internal, request):
     dataset: Dataset = request.getfixturevalue("enron_data")
     model: BaseModel = request.getfixturevalue("enron_model")

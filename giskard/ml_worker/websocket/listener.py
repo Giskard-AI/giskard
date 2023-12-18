@@ -26,11 +26,7 @@ from giskard.exceptions.giskard_exception import GiskardException
 from giskard.ml_worker import websocket
 from giskard.ml_worker.core.log_listener import LogListener
 from giskard.ml_worker.stomp.parsing import Frame
-from giskard.registry.giskard_test import GiskardTest
-from giskard.registry.slicing_function import SlicingFunction
-from giskard.registry.transformation_function import TransformationFunction
 from giskard.ml_worker.utils.cache import CACHE
-from giskard.ml_worker.utils.file_utils import get_file_name
 from giskard.ml_worker.websocket import CallToActionKind, GetInfoParam, PushKind
 from giskard.ml_worker.websocket.action import ActionPayload, MLWorkerAction
 from giskard.ml_worker.websocket.utils import (
@@ -50,9 +46,13 @@ from giskard.push import Push
 from giskard.push.contribution import create_contribution_push
 from giskard.push.perturbation import create_perturbation_push
 from giskard.push.prediction import create_borderline_push, create_overconfidence_push
+from giskard.registry.giskard_test import GiskardTest
+from giskard.registry.slicing_function import SlicingFunction
+from giskard.registry.transformation_function import TransformationFunction
 from giskard.settings import settings
 from giskard.utils import call_in_pool
 from giskard.utils.analytics_collector import analytics
+from giskard.utils.file_utils import get_file_name
 from giskard.utils.worker_pool import GiskardMLWorkerException
 
 logger = logging.getLogger(__name__)
