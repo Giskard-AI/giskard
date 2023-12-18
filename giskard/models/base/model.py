@@ -147,7 +147,12 @@ class BaseModel(ABC):
             if len(classification_labels) != len(set(classification_labels)):
                 raise ValueError("Duplicates are found in 'classification_labels', please only provide unique values.")
 
-        self._cache = ModelCache(model_type, str(self.id), cache_dir=kwargs.get("prediction_cache_dir"))
+        self._cache = ModelCache(
+            model_type,
+            str(self.id),
+            persist_cache=kwargs.get("persist_cache", False),
+            cache_dir=kwargs.get("prediction_cache_dir"),
+        )
 
         # sklearn and catboost will fill classification_labels before this check
         if model_type == SupportedModelTypes.CLASSIFICATION and not classification_labels:
