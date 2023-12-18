@@ -102,7 +102,7 @@ def test_llm_output_against_requirement(model: BaseModel, dataset: Dataset, requ
     debug_description=debug_description_prefix + "that are <b>failing the evaluation criteria</b>.",
 )
 def test_llm_single_output_against_requirement(
-    model: BaseModel, input_var: str, requirement: str, input_as_json: bool = False, debug: bool = False
+    model: BaseModel, input_var: str, requirement: str, input_as_json: bool = False
 ):
     """Evaluates the model output against a given requirement with another LLM (LLM-as-a-judge).
 
@@ -133,9 +133,6 @@ def test_llm_single_output_against_requirement(
     input_as_json : bool
         If True, `input_var` will be parsed as a JSON encoded object. Default is
         False.
-    debug : bool
-        If True and the test fails, a dataset containing the rows that have
-        failed the evaluation criteria will be included in the test result.
 
     Returns
     -------
@@ -157,10 +154,7 @@ def test_llm_single_output_against_requirement(
     # Run normal output requirement test
     test_result = _test_output_against_requirement(model, dataset, RequirementEvaluator([requirement]))
 
-    # Use legacy debug since dataset is not uploaded
-    if debug and not test_result.passed:
-        test_result.output_df = test_result.output_ds[0]
-
+    # Test without dataset as input does not currently support debugging
     test_result.output_ds = None
 
     return test_result
