@@ -24,5 +24,5 @@ class PredictFromDatasetTool(BaseTool):
     def specification(self) -> str:
         raise NotImplementedError
 
-    def __call__(self, *args, **kwargs):
+    def __call__(self, *args, **kwargs) -> str:
         raise NotImplementedError
