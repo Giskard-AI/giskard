@@ -1,14 +1,13 @@
-from typing import Optional
-
 import json
 
 from pydantic import BaseModel
+from typing import Optional
 
 from giskard.core.core import CallableMeta
 from giskard.datasets.base import Dataset
 from giskard.ml_worker.testing.registry.slicing_function import SlicingFunction
-from giskard.ml_worker.testing.utils import Direction
 from giskard.push.push_test_catalog.catalog import test_diff_rmse_push
+from giskard.testing.utils.utils import Direction
 
 
 def func_test_func(model) -> None:
