@@ -1,5 +1,6 @@
 import builtins
 import importlib
+import json
 import logging
 import pickle
 import platform
@@ -25,6 +26,7 @@ from ...core.validation import configured_validate_arguments
 from ...datasets.base import Dataset
 from ...llm import get_default_client
 from ...llm.talk.config import MODEL_INSTRUCTION
+from ...llm.talk.tools import BaseTool, PredictFromDatasetTool
 from ...ml_worker.exceptions.giskard_exception import GiskardException, python_env_exception_helper
 from ...ml_worker.utils.logging import Timer
 from ...models.cache import ModelCache
@@ -558,18 +560,24 @@ class BaseModel(ABC):
     def to_mlflow(self, *_args, **_kwargs):
         raise NotImplementedError()
 
-    def talk(self, question: str, dataset: Dataset) -> str:
-        # To be defined correctly.
-        _AVAILABLE_FUNCTIONS: dict[str, callable] = dict()
+    def _get_available_tools(self, dataset: Dataset) -> dict[str, BaseTool]:
+        """Get the dictionary with available tools"""
+        tools = {
+            "predict_from_dataset": PredictFromDatasetTool(self, dataset)
+        }
 
+        return tools
+
+    def talk(self, question: str, dataset: Dataset) -> str:
         messages = [{"role": "system", "content": MODEL_INSTRUCTION},
                     {"role": "user", "content": question}]
 
-        client = get_default_client()
+        available_tools = self._get_available_tools(dataset)
 
+        client = get_default_client()
         response = client.complete(
             messages=messages,
-            functions=...,  # To be defined.
+            functions=[tool.specification for tool in list(available_tools.values())],
             function_call="auto",
             temperature=0.1
         )
@@ -578,13 +586,13 @@ class BaseModel(ABC):
         function_call = response.function_call
 
         if function_call:
-            function_args = function_call.args
+            function_args = json.loads(function_call.args)
             function_name = function_call.function
 
             # Get the reference to the 'function_name' function.
-            function = _AVAILABLE_FUNCTIONS[function_name]
+            function = available_tools[function_name]
             function_response = function(
-                **function_args  # To de parsed beforehand.
+                **function_args
             )
 
             # Append the tool's response to the conversation.
