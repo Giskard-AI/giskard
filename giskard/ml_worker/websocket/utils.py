@@ -2,16 +2,16 @@ import logging
 import os
 import shutil
 import uuid
-from typing import Any, Dict, List, Optional
 
 import pandas as pd
 from mlflow.store.artifact.artifact_repo import verify_artifact_path
+from typing import Any, Dict, List, Optional
 
 from giskard.client.giskard_client import GiskardClient
 from giskard.core.suite import DatasetInput, ModelInput, SuiteInput
 from giskard.datasets.base import Dataset
+from giskard.exceptions.IllegalArgumentError import IllegalArgumentError
 from giskard.ml_worker import websocket
-from giskard.ml_worker.exceptions.IllegalArgumentError import IllegalArgumentError
 from giskard.ml_worker.testing.registry.registry import tests_registry
 from giskard.ml_worker.testing.registry.slicing_function import SlicingFunction
 from giskard.ml_worker.testing.registry.transformation_function import TransformationFunction

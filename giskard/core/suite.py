@@ -13,7 +13,7 @@ from giskard.core.core import TestFunctionMeta
 from giskard.core.errors import GiskardImportError
 from giskard.core.savable import Artifact
 from giskard.datasets.base import Dataset
-from giskard.ml_worker.exceptions.IllegalArgumentError import IllegalArgumentError
+from giskard.exceptions.IllegalArgumentError import IllegalArgumentError
 from giskard.ml_worker.testing.registry.giskard_test import GiskardTest, GiskardTestMethod, Test
 from giskard.ml_worker.testing.registry.registry import tests_registry
 from giskard.ml_worker.testing.registry.slicing_function import SlicingFunction

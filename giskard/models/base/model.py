@@ -23,7 +23,7 @@ from ...client.giskard_client import GiskardClient
 from ...core.core import ModelMeta, ModelType, SupportedModelTypes
 from ...core.validation import configured_validate_arguments
 from ...datasets.base import Dataset
-from ...ml_worker.exceptions.giskard_exception import GiskardException, python_env_exception_helper
+from ...exceptions.giskard_exception import GiskardException, python_env_exception_helper
 from ...ml_worker.utils.logging import Timer
 from ...models.cache import ModelCache
 from ...path_utils import get_size

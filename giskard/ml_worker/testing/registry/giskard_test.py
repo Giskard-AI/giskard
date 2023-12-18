@@ -11,7 +11,7 @@ from typing import Callable, List, Optional, Set, Union
 from giskard.core.core import SMT, TestFunctionMeta
 from giskard.core.savable import Artifact
 from giskard.core.validation import configured_validate_arguments
-from giskard.ml_worker.exceptions.giskard_exception import python_env_exception_helper
+from giskard.exceptions.giskard_exception import python_env_exception_helper
 from giskard.ml_worker.testing.registry.registry import get_object_uuid, tests_registry
 from giskard.ml_worker.testing.test_result import TestResult
 from giskard.utils.analytics_collector import analytics

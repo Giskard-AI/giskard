@@ -6,7 +6,7 @@ import pandas as pd
 import pytest
 
 from giskard import Dataset, Model
-from giskard.ml_worker.exceptions.giskard_exception import GiskardPythonVerException
+from giskard.exceptions.giskard_exception import GiskardPythonVerException
 from giskard.models.function import PredictionFunctionModel
 
 
