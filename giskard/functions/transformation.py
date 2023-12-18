@@ -7,8 +7,7 @@ import pandas as pd
 from scipy.stats import median_abs_deviation
 
 from giskard.registry.transformation_function import transformation_function
-
-from ....llm import get_default_client
+from ..llm import get_default_client
 
 nearbykeys = {
     "a": ["q", "w", "s", "x", "z"],

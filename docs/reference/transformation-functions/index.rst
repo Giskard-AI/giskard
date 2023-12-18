@@ -14,11 +14,11 @@ Transformation functions
 Textual transformation functions
 --------------------------------
 
-.. autofunction:: giskard.ml_worker.testing.functions.transformation.keyboard_typo_transformation
-.. autofunction:: giskard.ml_worker.testing.functions.transformation.uppercase_transformation
-.. autofunction:: giskard.ml_worker.testing.functions.transformation.lowercase_transformation
-.. autofunction:: giskard.ml_worker.testing.functions.transformation.strip_punctuation
-.. autofunction:: giskard.ml_worker.testing.functions.transformation.change_writing_style
+.. autofunction:: giskard.functions.transformation.keyboard_typo_transformation
+.. autofunction:: giskard.functions.transformation.uppercase_transformation
+.. autofunction:: giskard.functions.transformation.lowercase_transformation
+.. autofunction:: giskard.functions.transformation.strip_punctuation
+.. autofunction:: giskard.functions.transformation.change_writing_style
 
 
 Special transformations used by the scan

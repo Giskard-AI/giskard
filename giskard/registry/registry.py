@@ -1,5 +1,3 @@
-from typing import Dict, Optional
-
 import hashlib
 import importlib.util
 import inspect
@@ -10,6 +8,7 @@ import uuid
 from pathlib import Path
 
 import cloudpickle
+from typing import Dict, Optional
 
 from giskard.core.core import SavableMeta
 from giskard.settings import settings
@@ -37,7 +36,7 @@ def load_plugins():
     else:
         importlib.reload(sys.modules[giskard_tests_module])
 
-    giskard_functions_module = "giskard.ml_worker.testing.functions"
+    giskard_functions_module = "giskard.logging"
     if giskard_functions_module not in sys.modules:
         importlib.import_module(giskard_functions_module)
     else:
