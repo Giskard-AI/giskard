@@ -6,6 +6,7 @@ import sys
 import tempfile
 import time
 import traceback
+from collections import defaultdict
 from concurrent.futures import CancelledError, Future
 from copy import copy
 from dataclasses import dataclass
@@ -521,7 +522,7 @@ def run_test_suite(
 ) -> websocket.TestSuite:
     log_listener = LogListener()
 
-    loaded_artifacts = dict()
+    loaded_artifacts = defaultdict(dict)
 
     try:
         tests = [

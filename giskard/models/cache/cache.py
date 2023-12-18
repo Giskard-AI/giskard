@@ -38,7 +38,7 @@ class ModelCache:
 
         if persist_cache:
             if cache_dir is None and self.id:
-                cache_dir = self._default_cache_dir_prefix.joinpath(self.id)
+                cache_dir = self._default_cache_dir_prefix / self.id
 
             self.cache_file = cache_dir / CACHE_CSV_FILENAME if cache_dir else None
         else:

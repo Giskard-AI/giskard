@@ -2,6 +2,7 @@ import logging
 import os
 import shutil
 import uuid
+from collections import defaultdict
 
 import pandas as pd
 from mlflow.store.artifact.artifact_repo import verify_artifact_path
@@ -159,9 +160,6 @@ def map_dataset_process_function_meta_ws(callable_type):
 
 
 def _get_or_load(loaded_artifacts: Dict[str, Dict[str, Any]], type: str, uuid: str, load_fn: Callable[[], Any]) -> Any:
-    if type not in loaded_artifacts:
-        loaded_artifacts[type] = dict()
-
     if uuid not in loaded_artifacts[type]:
         loaded_artifacts[type][uuid] = load_fn()
 
@@ -174,7 +172,7 @@ def parse_function_arguments(
     loaded_artifacts: Optional[Dict[str, Dict[str, Any]]] = None,
 ):
     if loaded_artifacts is None:
-        loaded_artifacts = dict()
+        loaded_artifacts = defaultdict(dict)
 
     arguments = dict()
 
@@ -207,11 +205,11 @@ def parse_function_arguments(
         elif arg.slicingFunction is not None:
             arguments[arg.name] = SlicingFunction.download(
                 arg.slicingFunction.id, client, arg.slicingFunction.project_key
-            )(**parse_function_arguments(client, arg.args))
+            )(**parse_function_arguments(client, arg.args, loaded_artifacts))
         elif arg.transformationFunction is not None:
             arguments[arg.name] = TransformationFunction.download(
                 arg.transformationFunction.id, client, arg.transformationFunction.project_key
-            )(**parse_function_arguments(client, arg.args))
+            )(**parse_function_arguments(client, arg.args, loaded_artifacts))
         elif arg.float_arg is not None:
             arguments[arg.name] = float(arg.float_arg)
         elif arg.int_arg is not None:
