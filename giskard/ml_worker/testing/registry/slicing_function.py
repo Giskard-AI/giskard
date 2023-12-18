@@ -1,14 +1,13 @@
-from typing import Callable, Dict, List, Optional, Set, Type, Union
-
 import functools
 import inspect
 from pathlib import Path
 
 import pandas as pd
+from typing import Callable, Dict, List, Optional, Set, Type, Union
 
 from giskard.core.core import DatasetProcessFunctionMeta, DatasetProcessFunctionType
+from giskard.core.savable import Artifact, RegistryArtifact
 from giskard.core.validation import configured_validate_arguments
-from giskard.ml_worker.core.savable import Artifact, RegistryArtifact
 from giskard.ml_worker.testing.registry.decorators_utils import (
     drop_arg,
     make_all_optional_or_suite_input,

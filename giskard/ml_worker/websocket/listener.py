@@ -19,11 +19,11 @@ from typing import Any, Callable, Dict, Optional, Union
 
 import giskard
 from giskard.client.giskard_client import GiskardClient
+from giskard.core.savable import RegistryArtifact
 from giskard.core.suite import Suite, generate_test_partial
 from giskard.datasets.base import Dataset
 from giskard.ml_worker import websocket
 from giskard.ml_worker.core.log_listener import LogListener
-from giskard.ml_worker.core.savable import RegistryArtifact
 from giskard.ml_worker.exceptions.giskard_exception import GiskardException
 from giskard.ml_worker.stomp.parsing import Frame
 from giskard.ml_worker.testing.registry.giskard_test import GiskardTest

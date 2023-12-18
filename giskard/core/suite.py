@@ -1,5 +1,3 @@
-from typing import Any, Dict, List, Optional, Tuple, Union
-
 import inspect
 import logging
 import traceback
@@ -7,13 +5,14 @@ from dataclasses import dataclass
 from functools import singledispatchmethod
 
 from mlflow import MlflowClient
+from typing import Any, Dict, List, Optional, Tuple, Union
 
 from giskard.client.dtos import SuiteInfo, SuiteTestDTO, TestInputDTO, TestSuiteDTO
 from giskard.client.giskard_client import GiskardClient
 from giskard.core.core import TestFunctionMeta
 from giskard.core.errors import GiskardImportError
+from giskard.core.savable import Artifact
 from giskard.datasets.base import Dataset
-from giskard.ml_worker.core.savable import Artifact
 from giskard.ml_worker.exceptions.IllegalArgumentError import IllegalArgumentError
 from giskard.ml_worker.testing.registry.giskard_test import GiskardTest, GiskardTestMethod, Test
 from giskard.ml_worker.testing.registry.registry import tests_registry

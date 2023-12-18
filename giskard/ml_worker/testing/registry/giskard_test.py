@@ -9,12 +9,14 @@ import cloudpickle
 from typing import Callable, List, Optional, Set, Union
 
 from giskard.core.core import SMT, TestFunctionMeta
+from giskard.core.savable import Artifact
 from giskard.core.validation import configured_validate_arguments
-from giskard.ml_worker.core.savable import Artifact
 from giskard.ml_worker.exceptions.giskard_exception import python_env_exception_helper
 from giskard.ml_worker.testing.registry.registry import get_object_uuid, tests_registry
 from giskard.ml_worker.testing.test_result import TestResult
 from giskard.utils.analytics_collector import analytics
+
+DATA_PKL = "data.pkl"
 
 Result = Union[TestResult, bool]
 
@@ -59,7 +61,7 @@ class GiskardTest(Artifact[TestFunctionMeta], ABC):
         return get_object_uuid(type(self))
 
     def _save_locally(self, local_dir: Path):
-        with open(Path(local_dir) / "data.pkl", "wb") as f:
+        with open(Path(local_dir) / DATA_PKL, "wb") as f:
             cloudpickle.dump(type(self), f, protocol=pickle.DEFAULT_PROTOCOL)
 
     @classmethod
