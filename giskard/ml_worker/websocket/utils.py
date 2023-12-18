@@ -12,9 +12,9 @@ from giskard.core.suite import DatasetInput, ModelInput, SuiteInput
 from giskard.datasets.base import Dataset
 from giskard.exceptions.IllegalArgumentError import IllegalArgumentError
 from giskard.ml_worker import websocket
-from giskard.ml_worker.testing.registry.registry import tests_registry
-from giskard.ml_worker.testing.registry.slicing_function import SlicingFunction
-from giskard.ml_worker.testing.registry.transformation_function import TransformationFunction
+from giskard.registry.registry import tests_registry
+from giskard.registry.slicing_function import SlicingFunction
+from giskard.registry.transformation_function import TransformationFunction
 from giskard.ml_worker.testing.test_result import TestMessageLevel, TestResult
 from giskard.ml_worker.websocket import (
     CreateSubDatasetParam,

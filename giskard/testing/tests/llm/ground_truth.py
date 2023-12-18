@@ -3,7 +3,7 @@ import numpy as np
 from .. import debug_description_prefix
 from ....datasets.base import Dataset
 from ....llm import LLMImportError
-from ....ml_worker.testing.registry.decorators import test
+from ....registry.decorators import test
 from ....ml_worker.testing.test_result import TestResult
 from ....models.base import BaseModel
 

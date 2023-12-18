@@ -9,8 +9,8 @@ import pandas as pd
 from ...core.core import DatasetProcessFunctionMeta
 from ...datasets import Dataset
 from ...ml_worker.testing.functions.transformation import gruber
-from ...ml_worker.testing.registry.registry import get_object_uuid
-from ...ml_worker.testing.registry.transformation_function import TransformationFunction
+from ...registry.registry import get_object_uuid
+from ...registry.transformation_function import TransformationFunction
 
 
 class TextTransformation(TransformationFunction):

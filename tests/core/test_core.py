@@ -5,7 +5,7 @@ from typing import Optional
 
 from giskard.core.core import CallableMeta
 from giskard.datasets.base import Dataset
-from giskard.ml_worker.testing.registry.slicing_function import SlicingFunction
+from giskard.registry.slicing_function import SlicingFunction
 from giskard.push.push_test_catalog.catalog import test_diff_rmse_push
 from giskard.testing.utils.utils import Direction
 

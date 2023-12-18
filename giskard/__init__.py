@@ -19,10 +19,10 @@ from .client.giskard_client import GiskardClient
 from .client.project import Project
 from .core.suite import Suite, SuiteInput
 from .datasets.base import Dataset
-from .ml_worker.testing.registry.decorators import test
-from .ml_worker.testing.registry.giskard_test import GiskardTest
-from .ml_worker.testing.registry.slicing_function import SlicingFunction, slicing_function
-from .ml_worker.testing.registry.transformation_function import (
+from .registry.decorators import test
+from .registry.giskard_test import GiskardTest
+from .registry.slicing_function import SlicingFunction, slicing_function
+from .registry.transformation_function import (
     TransformationFunction,
     transformation_function,
 )

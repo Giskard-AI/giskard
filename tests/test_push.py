@@ -6,8 +6,8 @@ import pytest
 
 import giskard.push
 from giskard.ml_worker.testing.functions.transformation import mad_transformation
-from giskard.ml_worker.testing.registry.giskard_test import GiskardTest
-from giskard.ml_worker.testing.registry.slicing_function import slicing_function
+from giskard.registry.giskard_test import GiskardTest
+from giskard.registry.slicing_function import slicing_function
 from giskard.push import Push
 from giskard.push.contribution import create_contribution_push
 from giskard.push.perturbation import create_perturbation_push

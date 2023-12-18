@@ -12,7 +12,7 @@ from giskard.core.core import SMT, TestFunctionMeta
 from giskard.core.savable import Artifact
 from giskard.core.validation import configured_validate_arguments
 from giskard.exceptions.giskard_exception import python_env_exception_helper
-from giskard.ml_worker.testing.registry.registry import get_object_uuid, tests_registry
+from giskard.registry.registry import get_object_uuid, tests_registry
 from giskard.ml_worker.testing.test_result import TestResult
 from giskard.utils.analytics_collector import analytics
 
@@ -34,7 +34,7 @@ class GiskardTest(Artifact[TestFunctionMeta], ABC):
         meta = tests_registry.get_test(test_uuid)
         if meta is None:
             # equivalent to adding @test decorator
-            from giskard.ml_worker.testing.registry.decorators import test
+            from giskard.registry.decorators import test
 
             test(type(self))
             meta = tests_registry.get_test(test_uuid)
@@ -118,7 +118,7 @@ class GiskardTestMethod(GiskardTest):
         meta = tests_registry.get_test(test_uuid)
         if meta is None:
             # equivalent to adding @test decorator
-            from giskard.ml_worker.testing.registry.decorators import test
+            from giskard.registry.decorators import test
 
             test()(test_fn)
             meta = tests_registry.get_test(test_uuid)

@@ -5,9 +5,9 @@ from typing import Optional
 from giskard.core.core import SupportedModelTypes
 from giskard.datasets.base import Dataset
 from giskard.llm import LLMImportError
-from giskard.ml_worker.testing.registry.decorators import test
-from giskard.ml_worker.testing.registry.slicing_function import SlicingFunction
-from giskard.ml_worker.testing.registry.transformation_function import TransformationFunction
+from giskard.registry.decorators import test
+from giskard.registry.slicing_function import SlicingFunction
+from giskard.registry.transformation_function import TransformationFunction
 from giskard.ml_worker.testing.test_result import TestMessage, TestMessageLevel, TestResult
 from giskard.ml_worker.utils.logging import timer
 from giskard.models.base import BaseModel

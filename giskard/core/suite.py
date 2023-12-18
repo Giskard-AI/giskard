@@ -14,10 +14,10 @@ from giskard.core.errors import GiskardImportError
 from giskard.core.savable import Artifact
 from giskard.datasets.base import Dataset
 from giskard.exceptions.IllegalArgumentError import IllegalArgumentError
-from giskard.ml_worker.testing.registry.giskard_test import GiskardTest, GiskardTestMethod, Test
-from giskard.ml_worker.testing.registry.registry import tests_registry
-from giskard.ml_worker.testing.registry.slicing_function import SlicingFunction
-from giskard.ml_worker.testing.registry.transformation_function import TransformationFunction
+from giskard.registry.giskard_test import GiskardTest, GiskardTestMethod, Test
+from giskard.registry.registry import tests_registry
+from giskard.registry.slicing_function import SlicingFunction
+from giskard.registry.transformation_function import TransformationFunction
 from giskard.ml_worker.testing.test_result import TestMessage, TestMessageLevel, TestResult
 from giskard.models.base import BaseModel
 

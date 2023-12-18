@@ -3,7 +3,7 @@ import pytest
 from giskard import test, scan
 from giskard.core.suite import Suite, SuiteInput
 from giskard.datasets.base import Dataset
-from giskard.ml_worker.testing.registry.slicing_function import SlicingFunction, slicing_function
+from giskard.registry.slicing_function import SlicingFunction, slicing_function
 from giskard.ml_worker.testing.test_result import TestMessageLevel
 from giskard.models.base import BaseModel
 from giskard.testing.tests.performance import test_auc, test_f1, test_diff_f1

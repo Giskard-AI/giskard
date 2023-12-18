@@ -3,7 +3,7 @@ Slicing functions
 
 .. autofunction:: giskard.slicing_function
 
-.. autoclass:: giskard.ml_worker.testing.registry.slicing_function.SlicingFunction
+.. autoclass:: giskard.registry.slicing_function.SlicingFunction
 
    .. automethod:: execute
    .. automethod:: upload

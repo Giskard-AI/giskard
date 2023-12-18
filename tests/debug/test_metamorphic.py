@@ -1,7 +1,7 @@
 import pandas as pd
 import pytest
 
-from giskard.ml_worker.testing.registry.transformation_function import transformation_function
+from giskard.registry.transformation_function import transformation_function
 from giskard.testing.tests.metamorphic import (
     test_metamorphic_invariance,
     test_metamorphic_increasing,

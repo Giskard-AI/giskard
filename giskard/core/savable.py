@@ -14,7 +14,7 @@ from typing import Generic, Optional, Set
 from giskard.client.giskard_client import GiskardClient
 from giskard.core.core import SMT, SavableMeta
 from giskard.exceptions.giskard_exception import python_env_exception_helper
-from giskard.ml_worker.testing.registry.registry import tests_registry
+from giskard.registry.registry import tests_registry
 from giskard.settings import settings
 
 logger = logging.getLogger(__name__)

@@ -2,7 +2,7 @@ import numpy as np
 import pytest
 
 import giskard.testing.tests.drift as drift
-from giskard.ml_worker.testing.registry.slicing_function import SlicingFunction
+from giskard.registry.slicing_function import SlicingFunction
 
 
 @pytest.mark.parametrize(

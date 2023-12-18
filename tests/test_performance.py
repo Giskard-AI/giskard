@@ -4,7 +4,7 @@ import pandas as pd
 import pytest
 
 import giskard.testing.tests.performance as performance
-from giskard.ml_worker.testing.registry.slicing_function import SlicingFunction, slicing_function
+from giskard.registry.slicing_function import SlicingFunction, slicing_function
 from giskard.testing.utils.utils import Direction
 
 

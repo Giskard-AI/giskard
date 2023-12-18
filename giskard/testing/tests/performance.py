@@ -13,8 +13,8 @@ from sklearn.metrics import (
 from typing import Optional
 
 from giskard.datasets.base import Dataset
-from giskard.ml_worker.testing.registry.decorators import test
-from giskard.ml_worker.testing.registry.slicing_function import SlicingFunction
+from giskard.registry.decorators import test
+from giskard.registry.slicing_function import SlicingFunction
 from giskard.ml_worker.testing.test_result import TestResult
 from giskard.models.base import BaseModel
 from giskard.models.utils import np_type_to_native

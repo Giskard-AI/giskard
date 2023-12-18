@@ -4,7 +4,7 @@ import pytest
 
 import giskard.testing.tests.metamorphic as metamorphic
 from giskard import Dataset, Model
-from giskard.ml_worker.testing.registry.transformation_function import transformation_function
+from giskard.registry.transformation_function import transformation_function
 from giskard.testing.utils.stat_utils import (
     equivalence_t_test,
     equivalence_wilcoxon,
