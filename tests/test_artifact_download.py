@@ -10,7 +10,7 @@ import requests_mock
 from giskard import slicing_function, transformation_function
 from giskard import test
 from giskard.core.savable import Artifact
-from giskard.ml_worker.testing.test_result import TestResult as GiskardTestResult
+from giskard.core.test_result import TestResult as GiskardTestResult
 from tests.utils import (
     CALLABLE_FUNCTION_META_CACHE,
     CALLABLE_FUNCTION_PKL_CACHE,

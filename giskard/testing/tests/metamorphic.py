@@ -8,7 +8,7 @@ from giskard.llm import LLMImportError
 from giskard.registry.decorators import test
 from giskard.registry.slicing_function import SlicingFunction
 from giskard.registry.transformation_function import TransformationFunction
-from giskard.ml_worker.testing.test_result import TestMessage, TestMessageLevel, TestResult
+from giskard.core.test_result import TestMessage, TestMessageLevel, TestResult
 from giskard.ml_worker.utils.logging import timer
 from giskard.models.base import BaseModel
 from giskard.models.utils import fix_seed

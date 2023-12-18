@@ -18,7 +18,7 @@ from giskard.registry.giskard_test import GiskardTest, GiskardTestMethod, Test
 from giskard.registry.registry import tests_registry
 from giskard.registry.slicing_function import SlicingFunction
 from giskard.registry.transformation_function import TransformationFunction
-from giskard.ml_worker.testing.test_result import TestMessage, TestMessageLevel, TestResult
+from giskard.core.test_result import TestMessage, TestMessageLevel, TestResult
 from giskard.models.base import BaseModel
 
 logger = logging.getLogger(__name__)

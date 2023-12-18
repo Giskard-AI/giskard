@@ -4,7 +4,7 @@ from ....datasets.base import Dataset
 from ....llm.evaluators.coherency import CoherencyEvaluator
 from ....llm.evaluators.plausibility import PlausibilityEvaluator
 from ....registry.decorators import test
-from ....ml_worker.testing.test_result import TestResult
+from ....core.test_result import TestResult
 from ....models.base.model import BaseModel
 
 

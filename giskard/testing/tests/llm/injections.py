@@ -12,7 +12,7 @@ from ....llm import LLMImportError
 from ....llm.prompt_injection.data import Prompt, StringMatchingMethod
 from ....llm.prompt_injection.evaluator import evaluate as evaluate_pi
 from ....registry.decorators import test
-from ....ml_worker.testing.test_result import TestResult
+from ....core.test_result import TestResult
 from ....models.base import BaseModel
 from .. import debug_description_prefix
 

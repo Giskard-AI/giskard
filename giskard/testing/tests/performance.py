@@ -15,7 +15,7 @@ from typing import Optional
 from giskard.datasets.base import Dataset
 from giskard.registry.decorators import test
 from giskard.registry.slicing_function import SlicingFunction
-from giskard.ml_worker.testing.test_result import TestResult
+from giskard.core.test_result import TestResult
 from giskard.models.base import BaseModel
 from giskard.models.utils import np_type_to_native
 from giskard.testing.tests.debug_slicing_functions import (

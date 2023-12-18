@@ -19,7 +19,7 @@ from giskard.datasets.base import Dataset
 from giskard.ml_worker.testing.functions.transformation import mad_transformation
 from giskard.registry.decorators import test
 from giskard.registry.slicing_function import SlicingFunction
-from giskard.ml_worker.testing.test_result import TestResult
+from giskard.core.test_result import TestResult
 from giskard.models.base import BaseModel
 from giskard.testing.tests.calibration import test_overconfidence_rate, test_underconfidence_rate
 from giskard.testing.tests.metamorphic import test_metamorphic_invariance

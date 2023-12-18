@@ -5,7 +5,7 @@ import pandas as pd
 from ....datasets.base import Dataset
 from ....llm.evaluators import RequirementEvaluator
 from ....registry.decorators import test
-from ....ml_worker.testing.test_result import TestMessage, TestMessageLevel, TestResult
+from ....core.test_result import TestMessage, TestMessageLevel, TestResult
 from ....models.base import BaseModel
 from ....utils.display import truncate
 from .. import debug_description_prefix

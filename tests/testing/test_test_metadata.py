@@ -7,7 +7,7 @@ import pytest
 from giskard import test, slicing_function, transformation_function
 from giskard.registry.slicing_function import SlicingFunction
 from giskard.registry.transformation_function import TransformationFunction
-from giskard.ml_worker.testing.test_result import TestResult as GiskardTestResult
+from giskard.core.test_result import TestResult as GiskardTestResult
 from giskard.models.base import BaseModel
 
 

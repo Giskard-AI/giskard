@@ -5,7 +5,7 @@ import pytest
 
 from giskard import Dataset, slicing_function, test, transformation_function
 from giskard.core.savable import Artifact
-from giskard.ml_worker.testing.test_result import TestResult as GiskardTestResult
+from giskard.core.test_result import TestResult as GiskardTestResult
 from giskard.models.sklearn import SKLearnModel
 from tests.utils import (
     CALLABLE_FUNCTION_META_CACHE,
