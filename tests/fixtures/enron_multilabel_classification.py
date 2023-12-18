@@ -1,5 +1,3 @@
-from typing import List, Tuple
-
 import email
 import logging
 from collections import defaultdict
@@ -14,11 +12,12 @@ from sklearn.impute import SimpleImputer
 from sklearn.linear_model import LogisticRegression
 from sklearn.pipeline import Pipeline
 from sklearn.preprocessing import OneHotEncoder, StandardScaler
+from typing import List, Tuple
 
 from giskard.core.core import SupportedModelTypes
 from giskard.datasets.base import Dataset
-from giskard.ml_worker.utils.logging import Timer
 from giskard.models.sklearn import SKLearnModel
+from giskard.utils.logging import Timer
 from tests import path
 from tests.utils import get_email_files
 

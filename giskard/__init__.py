@@ -27,7 +27,7 @@ from .registry.transformation_function import (
     transformation_function,
 )
 from .core.test_result import TestResult
-from .ml_worker.utils.logging import configure_logging
+from .utils.logging import configure_logging
 from .ml_worker.utils.network import check_latest_giskard_version
 from .models.automodel import Model
 from .models.model_explanation import explain_with_shap

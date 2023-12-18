@@ -3,15 +3,14 @@ import pandas as pd
 from typing import Optional
 
 from giskard.core.core import SupportedModelTypes
+from giskard.core.test_result import TestMessage, TestMessageLevel, TestResult
 from giskard.datasets.base import Dataset
 from giskard.llm import LLMImportError
+from giskard.models.base import BaseModel
+from giskard.models.utils import fix_seed
 from giskard.registry.decorators import test
 from giskard.registry.slicing_function import SlicingFunction
 from giskard.registry.transformation_function import TransformationFunction
-from giskard.core.test_result import TestMessage, TestMessageLevel, TestResult
-from giskard.ml_worker.utils.logging import timer
-from giskard.models.base import BaseModel
-from giskard.models.utils import fix_seed
 from giskard.testing.utils.stat_utils import (
     equivalence_t_test,
     equivalence_wilcoxon,
@@ -23,6 +22,7 @@ from giskard.testing.utils.utils import (
     check_slice_not_empty,
     validate_classification_label,
 )
+from giskard.utils.logging import timer
 from . import debug_description_prefix
 
 
