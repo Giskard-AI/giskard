@@ -213,7 +213,7 @@ ignore = ["E501"]
 
 [tool.black]
 # https://github.com/psf/black
-target-version = ['py38', 'py39', 'py310']
+target-version = ['py39', 'py310', 'py311']
 line-length = 120
 color = true
 
