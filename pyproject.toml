@@ -20,12 +20,6 @@ giskard = [
 ]
 
 
-[[tool.pdm.source]]
-type = "find_links"
-url = "https://download.pytorch.org/whl/cpu/torch_stable.html"
-name = "torch"
-
-
 [tool.pdm.scripts]
 _.env = { GSK_DISABLE_ANALYTICS = "True", GISKARD_DEV_MODE = "True" }
 # add "-n auto" to the pytest command to parallelize the execution
@@ -213,7 +207,7 @@ ignore = ["E501"]
 
 [tool.black]
 # https://github.com/psf/black
-target-version = ['py38', 'py39', 'py310']
+target-version = ['py39', 'py310', 'py311']
 line-length = 120
 color = true
 
