@@ -568,14 +568,16 @@ class BaseModel(ABC):
     def _get_available_tools(self, dataset: Dataset) -> dict[str, BaseTool]:
         """Get the dictionary with available tools"""
         tools = {
-            "predict_from_dataset": PredictFromDatasetTool(self, dataset)
+            PredictFromDatasetTool.name: PredictFromDatasetTool(self, dataset)
         }
 
         return tools
 
     def talk(self, question: str, dataset: Dataset) -> str:
-        messages = [{"role": "system", "content": MODEL_INSTRUCTION},
-                    {"role": "user", "content": question}]
+        messages = [
+            # {"role": "system", "content": MODEL_INSTRUCTION},
+            {"role": "user", "content": question}
+        ]
 
         available_tools = self._get_available_tools(dataset)
 
@@ -591,7 +593,7 @@ class BaseModel(ABC):
         function_call = response.function_call
 
         if function_call:
-            function_args = json.loads(function_call.args)
+            function_args = function_call.args
             function_name = function_call.function
 
             # Get the reference to the 'function_name' function.
