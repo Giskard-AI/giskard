@@ -336,8 +336,6 @@ def start(attached, skip_version_check, version, environment, env_file):
         with open(env_file, "r") as f:
             environment = f.read().splitlines() + environment
 
-    print(environment)
-
     _start(attached, skip_version_check, version, environment)
 
 
