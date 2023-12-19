@@ -3,7 +3,7 @@ from unittest.mock import Mock, patch
 
 import pytest
 from openai.types import CompletionUsage
-from openai.types.chat import ChatCompletion, ChatCompletionMessage, ChoiceLogprobs
+from openai.types.chat import ChatCompletion, ChatCompletionMessage
 from openai.types.chat.chat_completion import Choice
 from openai.types.chat.chat_completion_message import FunctionCall
 
