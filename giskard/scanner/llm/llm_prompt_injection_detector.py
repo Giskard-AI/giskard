@@ -30,24 +30,29 @@ class LLMPromptInjectionDetector(Detector):
     def __init__(self, num_samples: Optional[int] = None, threshold: float = 0.5):
         self.num_samples = num_samples
         self.threshold = threshold  # default
+        self._data_loader = None
+
+    @property
+    def data_loader(self):
+        if self._data_loader is None:
+            self._data_loader = PromptInjectionDataLoader(num_samples=self.num_samples)
+            return self._data_loader
+        return self._data_loader
 
     def get_cost_estimate(self, model: BaseModel, dataset: Dataset) -> float:
         num_samples = self.num_samples
         if num_samples is None:
-            data_loader = PromptInjectionDataLoader(num_samples=self.num_samples)
-            num_samples = len(data_loader.df)
+            num_samples = len(self.data_loader.df)
         return {
             "model_predict_calls": num_samples,
         }
 
     def run(self, model: BaseModel, dataset: Dataset, features: Sequence[str]) -> Sequence[Issue]:
-        data_loader = PromptInjectionDataLoader(num_samples=self.num_samples)
-
         evaluator = StringMatcherEvaluator()
         issues = []
-        for group in set(data_loader.groups):
-            group_dataset = data_loader.load_dataset_from_group(features=features, group=group)
-            evaluator_configs = data_loader.configs_from_group(group)
+        for group in set(self.data_loader.groups):
+            group_dataset = self.data_loader.load_dataset_from_group(features=features, group=group)
+            evaluator_configs = self.data_loader.configs_from_group(group)
             evaluation_results = evaluator.evaluate(model, group_dataset, evaluator_configs)
             number_of_failed_prompts = len(evaluation_results.failure_examples)
             if number_of_failed_prompts == 0:
@@ -60,8 +65,8 @@ class LLMPromptInjectionDetector(Detector):
             elif metric >= self.threshold:
                 level = IssueLevel.MAJOR
 
-            group_description = data_loader.group_description(group)
-            group_deviation_description = data_loader.group_deviation_description(group)
+            group_description = self.data_loader.group_description(group)
+            group_deviation_description = self.data_loader.group_deviation_description(group)
 
             issues.append(
                 Issue(
