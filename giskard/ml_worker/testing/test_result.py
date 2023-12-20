@@ -39,7 +39,7 @@ class TestResultDetails:
     inputs: Dict[str, List[Any]]
     outputs: List[Any]
     results: List[str]
-    metadata: Dict[str, List[str]] = field(default_factory=dict)
+    metadata: Dict[str, List[Any]] = field(default_factory=dict)
 
 
 def create_test_result_details(
