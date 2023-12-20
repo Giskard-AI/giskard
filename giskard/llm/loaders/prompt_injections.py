@@ -5,25 +5,8 @@ import pandas as pd
 from ...datasets.base import Dataset
 from ..evaluators.string_matcher import StringMatcherConfig
 
-INJECTION_DATA_URL = "https://raw.githubusercontent.com/Giskard-AI/prompt-injections/main/prompt_injections.csv"
-GISKARD_META_URL = "https://raw.githubusercontent.com/Giskard-AI/prompt-injections/main/giskard_meta_data.csv"
-
-
-def _check_matching_dfs_len(df1, df2):
-    if len(df1) != len(df2):
-        raise ValueError(
-            f"{__name__}: {INJECTION_DATA_URL} and {GISKARD_META_URL} should "
-            "have the same length and should be a one-to-one mapping of each other."
-        )
-
-
-def _check_meta_df_requirements(df):
-    if "expected_strings" not in df.columns:
-        raise ValueError(f"{__name__}: expected_strings are needed for the evaluation.")
-
-    if df.expected_strings.isnull().values.any():
-        raise ValueError(f"{__name__}: expected_strings column cannot have any NaN values.")
-    df.expected_strings = df.expected_strings.apply(ast.literal_eval)
+INJECTION_DATA_URL = "https://raw.githubusercontent.com/Giskard-AI/prompt-injections/v0.0.1/prompt_injections.csv"
+GISKARD_META_URL = "https://raw.githubusercontent.com/Giskard-AI/prompt-injections/v0.0.1/giskard_meta_data.csv"
 
 
 class PromptInjectionDataLoader:
@@ -50,8 +33,7 @@ class PromptInjectionDataLoader:
         if self._df is None:
             prompt_injections_df = pd.read_csv(INJECTION_DATA_URL, index_col=["index"])
             meta_df = pd.read_csv(GISKARD_META_URL, index_col=["index"])
-            _check_matching_dfs_len(meta_df, prompt_injections_df)
-            _check_meta_df_requirements(meta_df)
+            meta_df.expected_strings = meta_df.expected_strings.apply(ast.literal_eval)
             self._df = prompt_injections_df.join(meta_df)
 
             if self.num_samples is not None:
