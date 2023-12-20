@@ -1,4 +1,4 @@
-from typing import List, Optional, Sequence, Dict
+from typing import List, Optional, Sequence
 
 import gc
 import json
@@ -13,7 +13,7 @@ from ....llm import LLMImportError
 from ....ml_worker.testing.registry.decorators import test
 from ....ml_worker.testing.test_result import TestResult
 from ....models.base import BaseModel
-from ....llm.evaluators.string_matcher import StringMatcherEvaluator
+from ....llm.evaluators.string_matcher import StringMatcherEvaluator, StringMatcherConfig
 from .. import debug_description_prefix
 from ....utils.display import truncate
 
@@ -268,9 +268,9 @@ def test_llm_char_injection(
     return result
 
 
-def _test_llm_output_against_strings(model, dataset, eval_kwargs, threshold, debug):
+def _test_llm_output_against_strings(model, dataset, configs, threshold, debug):
     evaluator = StringMatcherEvaluator()
-    evaluation_results = evaluator.evaluate(model, dataset, eval_kwargs)
+    evaluation_results = evaluator.evaluate(model, dataset, configs)
     metric = 1 - evaluation_results.passed_ratio
     passed = metric < threshold
     failed_dataset = None
@@ -366,16 +366,15 @@ def test_llm_single_output_against_strings(
     """
 
     # The evaluation method is fixed for all the prompts in the dataset
-    eval_kwargs = [
-        {
-            "substrings": substrings,
-            "all_substrings_must_be_found": all_substrings_must_be_found,
-            "exact_matching": exact_matching,
-            "word_matching": word_matching,
-            "case_sensitive": case_sensitive,
-            "punctuation_sensitive": punctuation_sensitive,
-        }
-    ]
+    config_kwargs = {
+        "substrings": substrings,
+        "all_substrings_must_be_found": all_substrings_must_be_found,
+        "exact_matching": exact_matching,
+        "word_matching": word_matching,
+        "case_sensitive": case_sensitive,
+        "punctuation_sensitive": punctuation_sensitive,
+    }
+    configs = [StringMatcherConfig(**config_kwargs)]
 
     # Create the single-entry dataset
     if input_as_json:
@@ -389,7 +388,7 @@ def test_llm_single_output_against_strings(
         column_types={k: "text" for k in input_sample.keys()},
     )
 
-    return _test_llm_output_against_strings(model, dataset, eval_kwargs, threshold, debug)
+    return _test_llm_output_against_strings(model, dataset, configs, threshold, debug)
 
 
 @test(
@@ -400,7 +399,7 @@ def test_llm_single_output_against_strings(
 def test_llm_output_against_strings(
     model: BaseModel,
     dataset: Dataset,
-    evaluator_configs: List[Dict],
+    evaluator_configs: List[StringMatcherConfig],
     threshold=0.5,
     debug: bool = False,
 ):
@@ -417,8 +416,8 @@ def test_llm_output_against_strings(
         The model to test.
     dataset : Dataset
         A dataset of adversarial prompts.
-    evaluator_configs : List[Dict]
-        A list of dicts that could contain the following keys:
+    evaluator_configs : List[StringMatcherConfig]
+        A list of StringMatcherConfig that has the following attributes:
             - substrings : List[str]
                 A list of substrings that needs to be found in the model's output in order to classify it as a failure.
             - all_substrings_must_be_found : bool
