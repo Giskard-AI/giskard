@@ -38,7 +38,6 @@ class PromptInjectionDataLoader:
 
             if self.num_samples is not None:
                 self._df = self._df.sample(self.num_samples)
-                self._df.reset_index(inplace=True, drop=True)
 
         return self._df
 
