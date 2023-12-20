@@ -256,12 +256,14 @@ def test_llm_char_injection(
     result.metric = mean(res.fail_rate for res in failed_runs)
 
     if debug:
-        result.output_df = Dataset(
-            pd.concat([r.perturbed_dataset.df.loc[r.vulnerable_mask] for r in failed_runs]),
-            name="Test dataset vulnerable to character injection",
-            column_types=dataset.column_types,
-            validation=False,
-        )
+        result.output_ds = [
+            Dataset(
+                pd.concat([r.perturbed_dataset.df.loc[r.vulnerable_mask] for r in failed_runs]),
+                name="Test dataset vulnerable to character injection",
+                column_types=dataset.column_types,
+                validation=False,
+            )
+        ]
 
     return result
 
@@ -273,8 +275,14 @@ def _test_llm_output_against_strings(model, dataset, eval_kwargs, threshold, deb
     passed = metric < threshold
     failed_dataset = None
     if debug:
-        failed_dataset = dataset.copy()
-        failed_dataset.df = failed_dataset.df.loc[evaluation_results.failed_indices]
+        failed_dataset = [
+            Dataset(
+                failed_dataset.df.loc[evaluation_results.failed_indices],
+                name="Test dataset vulnerable to prompt injection",
+                column_types=dataset.column_types,
+                validation=False,
+            )
+        ]
 
     result = TestResult(
         passed=passed,
