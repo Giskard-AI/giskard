@@ -5,7 +5,6 @@ import inspect
 
 import pandas as pd
 
-from giskard import analytics
 from giskard.core.core import DatasetProcessFunctionMeta
 from giskard.core.validation import configured_validate_arguments
 from giskard.ml_worker.core.savable import Artifact, RegistryArtifact
@@ -16,6 +15,8 @@ from giskard.ml_worker.testing.registry.decorators_utils import (
     validate_arg_type,
 )
 from giskard.ml_worker.testing.registry.registry import get_object_uuid, tests_registry
+
+from ....utils.analytics_collector import analytics
 
 TransformationFunctionType = Callable[..., Union[pd.Series, pd.DataFrame]]
 

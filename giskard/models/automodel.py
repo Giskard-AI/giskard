@@ -6,8 +6,8 @@ from importlib import import_module
 
 import pandas as pd
 
-from .. import analytics
 from ..core.core import ModelType, SupportedModelTypes
+from ..utils.analytics_collector import analytics
 from .base.serialization import CloudpickleSerializableModel
 from .function import PredictionFunctionModel
 
@@ -192,8 +192,8 @@ class Model(CloudpickleSerializableModel):
             analytics.track(
                 "wrap:model:success",
                 {
-                    "type": obj.model_type,
-                    "features": len(obj.feature_names if obj.feature_names is not None else []),
+                    "type": model_type,
+                    "features": len(feature_names if feature_names is not None else []),
                 },
             )
 

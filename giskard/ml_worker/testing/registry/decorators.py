@@ -1,12 +1,17 @@
+from typing import Callable, List, Optional, Type, TypeVar, Union
+
 import functools
 import inspect
 import sys
-from typing import Callable, Optional, List, Union, Type, TypeVar
 
-from giskard import analytics
 from giskard.core.core import TestFunctionMeta
-from giskard.ml_worker.testing.registry.decorators_utils import make_all_optional_or_suite_input, set_return_type
-from giskard.ml_worker.testing.registry.giskard_test import GiskardTestMethod, GiskardTest
+from giskard.ml_worker.testing.registry.decorators_utils import (
+    make_all_optional_or_suite_input,
+    set_return_type,
+)
+from giskard.ml_worker.testing.registry.giskard_test import GiskardTest, GiskardTestMethod
+
+from ....utils.analytics_collector import analytics
 
 
 # TODO: I think this should be moved into giskard_test.py ?

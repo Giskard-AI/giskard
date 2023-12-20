@@ -30,8 +30,8 @@ from giskard.ml_worker.testing.registry.transformation_function import (
 )
 from giskard.settings import settings
 
-from ... import analytics
 from ...ml_worker.utils.file_utils import get_file_name
+from ...utils.analytics_collector import analytics
 from ..metadata.indexing import ColumnMetadataMixin
 
 try:
@@ -743,7 +743,6 @@ class Dataset(ColumnMetadataMixin):
         except ImportError as e:
             raise GiskardImportError("wandb") from e
         from ...integrations.wandb.wandb_utils import get_wandb_run
-        from ...utils.analytics_collector import analytics
 
         run = get_wandb_run(run)
 

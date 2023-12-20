@@ -8,7 +8,6 @@ from functools import singledispatchmethod
 
 from mlflow import MlflowClient
 
-from giskard import analytics
 from giskard.client.dtos import SuiteInfo, SuiteTestDTO, TestInputDTO, TestSuiteDTO
 from giskard.client.giskard_client import GiskardClient
 from giskard.core.core import TestFunctionMeta
@@ -22,6 +21,8 @@ from giskard.ml_worker.testing.registry.slicing_function import SlicingFunction
 from giskard.ml_worker.testing.registry.transformation_function import TransformationFunction
 from giskard.ml_worker.testing.test_result import TestMessage, TestMessageLevel, TestResult
 from giskard.models.base import BaseModel
+
+from ..utils.analytics_collector import analytics
 
 logger = logging.getLogger(__name__)
 
@@ -123,7 +124,6 @@ class TestSuiteResult:
         except ImportError as e:
             raise GiskardImportError("wandb") from e
         from ..integrations.wandb.wandb_utils import _parse_test_name, get_wandb_run
-        from ..utils.analytics_collector import analytics
 
         run = get_wandb_run(run)
         # Log just a test description and a metric.
