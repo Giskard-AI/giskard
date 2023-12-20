@@ -53,30 +53,27 @@ class StringMatcher:
 
 class StringMatcherEvaluator(BaseEvaluator):
     def evaluate(self, model: BaseModel, dataset: Dataset, evaluator_configs: List[StringMatcherConfig]):
-        model_outputs = model.predict(dataset).prediction
-
         succeeded = []
         failed = []
         failed_indices = []
         errored = []
         model_inputs = dataset.df.loc[:, model.meta.feature_names].to_dict("records")
+        model_outputs = model.predict(dataset).prediction
 
-        for i_pos, i_idx in enumerate(dataset.df.index):
-            string_matcher = StringMatcher(evaluator_configs[i_pos])
-            model_output = model_outputs[i_pos]
-            model_input = model_inputs[i_pos]
+        for idx, inputs, outputs, config in zip(dataset.df.index, model_inputs, model_outputs, evaluator_configs):
+            string_matcher = StringMatcher(config)
 
             try:
-                injection_success = string_matcher.evaluate(model_output)
+                injection_success = string_matcher.evaluate(outputs)
             except LLMGenerationError as err:
-                errored.append({"message": str(err), "sample": model_input[i_pos]})
+                errored.append({"message": str(err), "sample": inputs})
                 continue
 
             if not injection_success:
-                succeeded.append({"input_vars": model_input, "model_output": model_output})
+                succeeded.append({"input_vars": inputs, "model_output": outputs})
             else:
-                failed.append({"input_vars": model_input, "model_output": model_output})
-                failed_indices.append(i_idx)
+                failed.append({"input_vars": inputs, "model_output": outputs})
+                failed_indices.append(idx)
 
         return EvaluationResult(
             failure_examples=failed,
