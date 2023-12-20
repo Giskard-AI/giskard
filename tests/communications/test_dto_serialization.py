@@ -42,6 +42,7 @@ MANDATORY_FIELDS = {
     "ExplainTextParam": ["model", "feature_name", "columns", "column_types"],
     "Explanation": ["per_feature"],
     "FuncArgument": ["name", "none"],
+    "Documentation": ["description", "parameters"],
     "FunctionMeta": ["uuid", "name", "code"],
     "GenerateTestSuite": [],
     "GenerateTestSuiteParam": ["project_key"],
@@ -129,6 +130,7 @@ OPTIONAL_FIELDS = {
         "kwargs",
         "args",
     ],
+    "Documentation": [],
     "FunctionMeta": [
         "displayName",
         "version",
