@@ -47,7 +47,7 @@ class PromptInjectionDataLoader:
 
     @property
     def groups(self):
-        return list(set(self.df.group_mapping.tolist()))
+        return self.df.group_mapping.unique().tolist()
 
     def df_from_group(self, group):
         return self.df.loc[self.df["group_mapping"] == group]
