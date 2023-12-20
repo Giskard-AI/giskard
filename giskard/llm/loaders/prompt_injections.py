@@ -9,6 +9,13 @@ INJECTION_DATA_URL = "https://raw.githubusercontent.com/Giskard-AI/prompt-inject
 GISKARD_META_URL = "https://raw.githubusercontent.com/Giskard-AI/prompt-injections/v0.0.1/giskard_meta_data.csv"
 
 
+def from_records_to_configs(records):
+    configs = []
+    for row in records:
+        kwargs = {k: v for k, v in row.items() if k in list(StringMatcherConfig.__annotations__.keys())}
+        configs.append(StringMatcherConfig(**kwargs))
+
+
 class PromptInjectionDataLoader:
     def __init__(
         self,
@@ -56,12 +63,8 @@ class PromptInjectionDataLoader:
         return self.df_from_group(group).prompt
 
     def configs_from_group(self, group):
-        configs_df = self.df_from_group(group).drop(["prompt"], axis=1).to_dict("records")
-        configs = []
-        for row in configs_df:
-            kwargs = {k: v for k, v in row.items() if k in list(StringMatcherConfig.__annotations__.keys())}
-            configs.append(StringMatcherConfig(**kwargs))
-        return configs
+        configs_records = self.df_from_group(group).drop(["prompt"], axis=1).to_dict("records")
+        return from_records_to_configs(configs_records)
 
     def group_description(self, group):
         group_description = self.df_from_group(group).description.to_list()
