@@ -1,6 +1,7 @@
 from __future__ import annotations
 from abc import ABC, abstractmethod
 from typing import TYPE_CHECKING
+
 if TYPE_CHECKING:
     from giskard.models.base import BaseModel
 
@@ -19,11 +20,24 @@ class BaseTool(ABC):
 
 
 class PredictFromDatasetTool(BaseTool):
-    name = "predict_from_dataset"
+    default_name = "predict_from_dataset"
+    default_description = ("From the user input, it extracts a necessary information to filter rows from the dataset, "
+                           "then it runs the model prediction on that rows and finally returns the prediction result.")
 
-    def __init__(self, model: BaseModel, dataset: Dataset):
+    def __init__(self, model: BaseModel, dataset: Dataset, name: str = None, description: str = None):
         self._model = model
         self._dataset = dataset
+
+        self._name = name if name is not None else self.default_name
+        self._description = description if description is not None else self.default_description
+
+    @property
+    def name(self) -> str:
+        return self._name
+
+    @property
+    def description(self) -> str:
+        return self._description
 
     def _get_feature_json_type(self):
         number_columns = {column: "number" for column in self._dataset.df.select_dtypes(include=(int, float)).columns}
@@ -35,8 +49,8 @@ class PredictFromDatasetTool(BaseTool):
         feature_json_type = self._get_feature_json_type()
 
         return {
-            "name": PredictFromDatasetTool.name,
-            "description": "Using given filter, extract rows from the dataset and run model prediction on them",
+            "name": self.name,
+            "description": self.description,
             "parameters": {
                 "type": "object",
                 "properties": {
@@ -52,7 +66,10 @@ class PredictFromDatasetTool(BaseTool):
     def _get_filtered_dataset(self, row_filter: dict) -> Dataset:
         filtered_df = self._dataset.df.copy()
         for col_name, col_value in row_filter.items():
-            filtered_df = filtered_df[filtered_df[col_name] == col_value]
+            if filtered_df[col_name].dtype == "object":
+                filtered_df = filtered_df[filtered_df[col_name].str.lower() == str(col_value).lower()]
+            else:
+                filtered_df = filtered_df[filtered_df[col_name] == col_value]
 
         return Dataset(filtered_df)
 

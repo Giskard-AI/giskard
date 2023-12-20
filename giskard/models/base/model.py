@@ -1,6 +1,5 @@
 import builtins
 import importlib
-import json
 import logging
 import pickle
 import platform
@@ -568,18 +567,25 @@ class BaseModel(ABC):
     def _get_available_tools(self, dataset: Dataset) -> dict[str, BaseTool]:
         """Get the dictionary with available tools"""
         tools = {
-            PredictFromDatasetTool.name: PredictFromDatasetTool(self, dataset)
+            PredictFromDatasetTool.default_name: PredictFromDatasetTool(self, dataset)
         }
 
         return tools
 
     def talk(self, question: str, dataset: Dataset) -> str:
+        available_tools = self._get_available_tools(dataset)
+
+        system_prompt = MODEL_INSTRUCTION.format(
+            tools_descriptions="\n".join([tool.description for tool in list(available_tools.values())]),
+            model_name=self.meta.name,
+            model_description=self.meta.description,
+            feature_names=self.meta.feature_names
+        )
+
         messages = [
-            # {"role": "system", "content": MODEL_INSTRUCTION},
+            {"role": "system", "content": system_prompt},
             {"role": "user", "content": question}
         ]
-
-        available_tools = self._get_available_tools(dataset)
 
         client = get_default_client()
         response = client.complete(
@@ -589,24 +595,24 @@ class BaseModel(ABC):
             temperature=0.1
         )
 
-        response_message = response.message
-        function_call = response.function_call
+        if response_message := response.message:
+            messages.append(response_message)
 
-        if function_call:
+        # If a tool was chosen.
+        if function_call := response.function_call:
             function_args = function_call.args
             function_name = function_call.function
 
-            # Get the reference to the 'function_name' function.
+            # Get the reference to the chosen function.
             function = available_tools[function_name]
             function_response = function(
                 **function_args
             )
 
             # Append the tool's response to the conversation.
-            messages.append(response_message)
             messages.append(
                 {
-                    "role": "tool",
+                    "role": "assistant",
                     "name": function_name,
                     "content": function_response,
                 }
