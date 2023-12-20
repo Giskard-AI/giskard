@@ -273,6 +273,14 @@ def map_result_to_single_test_result_ws(
                 str(dataset.original_id): list(datasets[dataset.original_id].df.index.get_indexer_for(dataset.df.index))
                 for dataset in result.output_ds
             },
+            details=None
+            if not result.details
+            else websocket.SingleTestResultDetails(
+                inputs=result.details.inputs,
+                outputs=result.details.outputs,
+                results=result.details.results,
+                metadata=result.details.metadata,
+            ),
         )
     elif isinstance(result, bool):
         return websocket.SingleTestResult(passed=result)

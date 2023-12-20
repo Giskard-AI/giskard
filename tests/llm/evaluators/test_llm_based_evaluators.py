@@ -1,11 +1,12 @@
 from unittest.mock import Mock
 
+import pandas as pd
 import pytest
 
 from giskard.llm.client import LLMFunctionCall, LLMOutput
 from giskard.llm.evaluators.base import LLMBasedEvaluator
 from giskard.llm.evaluators.plausibility import PlausibilityEvaluator
-from giskard.llm.evaluators.requirements import RequirementEvaluator
+from giskard.llm.evaluators.requirements import RequirementEvaluator, PerRowRequirementEvaluator
 from tests.llm.evaluators.utils import make_eval_dataset, make_mock_model
 
 
@@ -18,6 +19,11 @@ from tests.llm.evaluators.utils import make_eval_dataset, make_mock_model
             {"eval_prompt": "Test this: {model_name} {model_description} {input_vars} {model_output}"},
         ),
         (RequirementEvaluator, [["Requirement to fulfill"]], {}),
+        (
+            PerRowRequirementEvaluator,
+            [pd.DataFrame({"req": ["This is the first test requirement", "This is the second test requirement"]})],
+            {},
+        ),
         (PlausibilityEvaluator, [], {}),
     ],
 )
@@ -59,6 +65,11 @@ def test_evaluator_correctly_flags_examples(Evaluator, args, kwargs):
     assert "This is a model for testing purposes" in args[0][0][0]["content"]
     assert args[1]["functions"][0]["name"] == "evaluate_model"
 
+    assert result.details.inputs == eval_dataset.df.loc[:, model.meta.feature_names].to_dict("list")
+    assert result.details.outputs == model.predict(eval_dataset).prediction
+    assert result.details.results == ["pass", "fail"]
+    assert result.details.metadata == {"reason": [None, "For some reason"]}
+
 
 @pytest.mark.parametrize(
     "Evaluator,args,kwargs",
@@ -96,3 +107,8 @@ def test_evaluator_handles_generation_errors(Evaluator, args, kwargs):
     assert len(result.failure_examples) == 0
     assert len(result.errors) == 1
     assert result.errors[0]["message"] == "Invalid function call arguments received"
+
+    assert result.details.inputs == eval_dataset.df.loc[:, model.meta.feature_names].to_dict("list")
+    assert result.details.outputs == model.predict(eval_dataset).prediction
+    assert result.details.results == ["pass", "error"]
+    assert result.details.metadata == {"reason": [None, "Invalid function call arguments received"]}

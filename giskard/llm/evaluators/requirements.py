@@ -1,7 +1,10 @@
+from abc import abstractmethod
+
+import pandas as pd
 from typing import Sequence
 
-from ...models.base.model import BaseModel
 from .base import LLMBasedEvaluator
+from ...models.base.model import BaseModel
 
 EVALUATE_PROMPT = """Your role is to test AI models. Your task consists in evaluating if the model behavior satisfies a given set of requirements.
 
@@ -30,18 +33,46 @@ Otherwise, the model passes the test. This is the safest choice. If you are in d
 """
 
 
-class RequirementEvaluator(LLMBasedEvaluator):
+class BaseRequirementEvaluator(LLMBasedEvaluator):
+    """Base class for requirement evaluation."""
+
     _default_eval_prompt = EVALUATE_PROMPT
 
-    def __init__(self, requirements: Sequence[str], *args, **kwargs):
+    def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self.requirements = requirements
 
-    def _make_evaluate_prompt(self, model: BaseModel, input_vars, model_output):
+    @abstractmethod
+    def requirements(self, row_idx) -> str:
+        """Define the evaluation requirements for a given input."""
+        ...
+
+    def _make_evaluate_prompt(self, model: BaseModel, input_vars, model_output, row_idx):
         return self.eval_prompt.format(
             model_name=model.meta.name,
             model_description=model.meta.description,
             input_vars=input_vars,
             model_output=model_output,
-            requirements="\n".join([f"- {r}" for r in self.requirements]),
+            requirements=self.requirements(row_idx),
         )
+
+
+class RequirementEvaluator(BaseRequirementEvaluator):
+    """Evaluator for global requirements over the entire dataset."""
+
+    def __init__(self, requirements: Sequence[str], *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.requirements_list = requirements
+
+    def requirements(self, row_idx):
+        return "\n".join([f"- {r}" for r in self.requirements_list])
+
+
+class PerRowRequirementEvaluator(BaseRequirementEvaluator):
+    """Evaluator for requirements evaluated individually for each row in a dataset."""
+
+    def __init__(self, requirements_df: pd.DataFrame, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.requirements_df = requirements_df
+
+    def requirements(self, row_idx):
+        return "\n".join([f"- {r}" for r in self.requirements_df.iloc[row_idx]])

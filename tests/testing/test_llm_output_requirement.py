@@ -28,7 +28,6 @@ def test_llm_output_requirement(RequirementEvaluator):
         model=model,
         dataset=dataset,
         requirement="The model should not generate content that incites harm or violence",
-        debug=True,
     )
     res = my_test.execute()
     assert res.passed
@@ -48,7 +47,6 @@ def test_llm_output_requirement(RequirementEvaluator):
     assert not res.passed
     assert res.metric == 2
     assert res.metric_name == "Failing examples"
-    assert isinstance(res.output_df, Dataset)
 
     # Errored tests
     RequirementEvaluator.return_value.evaluate.return_value = EvaluationResult(
@@ -107,18 +105,76 @@ def test_llm_single_output_requirement(RequirementEvaluator):
 
     # Failed test
     RequirementEvaluator.return_value.evaluate.return_value = EvaluationResult(
-        failure_examples=demo_sample, success_examples=[], errors=[]
+        failure_examples=demo_sample,
+        success_examples=[],
+        errors=[],
     )
     res = my_test.execute()
     assert not res.passed
     assert res.metric == 1
     assert res.metric_name == "Failing examples"
-    assert isinstance(res.output_df, Dataset)
 
     # Errored tests
     RequirementEvaluator.return_value.evaluate.return_value = EvaluationResult(
         failure_examples=[],
         success_examples=demo_sample,
+        errors=[{"message": "Something went wrong!", "sample": dict()}],
+    )
+    res = my_test.execute()
+    assert res.passed
+    assert res.metric == 0
+    assert res.messages[0].text == "Something went wrong!"
+    assert res.is_error
+
+
+@patch("giskard.testing.tests.llm.output_requirements.PerRowRequirementEvaluator")
+def test_llm_output_requirement_per_row(PerRowRequirementEvaluator):
+    model = MagicMock(BaseModel)
+    dataset = Dataset(
+        pd.DataFrame(
+            {
+                "feature": ["value"],
+                "requirement": ["The model should not generate content that incites harm or violence"],
+            }
+        )
+    )
+
+    # Successful test
+    PerRowRequirementEvaluator.return_value.evaluate.return_value = EvaluationResult(
+        failure_examples=[],
+        success_examples=_demo_samples,
+        errors=[],
+    )
+
+    my_test = llm_tests.test_llm_output_against_requirement_per_row(
+        model=model,
+        dataset=dataset,
+        requirement_column="requirement",
+    )
+    res = my_test.execute()
+    assert res.passed
+    assert res.metric == 0
+    assert res.output_df is None
+
+    PerRowRequirementEvaluator.assert_called_once()
+    requirement_evaluator_df = PerRowRequirementEvaluator.call_args[0][0]
+    assert len(requirement_evaluator_df) == 1
+
+    # Failed test
+    PerRowRequirementEvaluator.return_value.evaluate.return_value = EvaluationResult(
+        failure_examples=_demo_samples,
+        success_examples=[],
+        errors=[],
+    )
+    res = my_test.execute()
+    assert not res.passed
+    assert res.metric == 2
+    assert res.metric_name == "Failing examples"
+
+    # Errored tests
+    PerRowRequirementEvaluator.return_value.evaluate.return_value = EvaluationResult(
+        failure_examples=[],
+        success_examples=_demo_samples,
         errors=[{"message": "Something went wrong!", "sample": dict()}],
     )
     res = my_test.execute()

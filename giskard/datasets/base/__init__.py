@@ -1,5 +1,3 @@
-from typing import Dict, Hashable, List, Optional, Union
-
 import inspect
 import logging
 import posixpath
@@ -14,6 +12,7 @@ import pandas as pd
 import yaml
 from mlflow import MlflowClient
 from pandas.api.types import is_list_like, is_numeric_dtype
+from typing import Dict, Hashable, List, Optional, Union
 from xxhash import xxh3_128_hexdigest
 from zstandard import ZstdDecompressor
 
@@ -29,9 +28,8 @@ from giskard.ml_worker.testing.registry.transformation_function import (
     TransformationFunctionType,
 )
 from giskard.settings import settings
-
-from ...ml_worker.utils.file_utils import get_file_name
 from ..metadata.indexing import ColumnMetadataMixin
+from ...ml_worker.utils.file_utils import get_file_name
 
 try:
     import wandb  # noqa
@@ -560,9 +558,7 @@ class Dataset(ColumnMetadataMixin):
     def load(cls, local_path: str):
         with open(local_path, "rb") as ds_stream:
             return pd.read_csv(
-                ZstdDecompressor().stream_reader(ds_stream),
-                keep_default_na=False,
-                na_values=["_GSK_NA_"],
+                ZstdDecompressor().stream_reader(ds_stream), keep_default_na=False, na_values=["_GSK_NA_"]
             )
 
     @classmethod

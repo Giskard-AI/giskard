@@ -1,8 +1,10 @@
 from dataclasses import dataclass, field
 from enum import Enum
-from typing import List, Dict, Optional
+
+from typing import List, Dict, Optional, Any
 
 from ...datasets.base import Dataset
+from ...models.base import BaseModel
 
 
 class TestMessageLevel(Enum):
@@ -33,6 +35,29 @@ class PartialUnexpectedCounts:
 
 
 @dataclass
+class TestResultDetails:
+    inputs: Dict[str, List[Any]]
+    outputs: List[Any]
+    results: List[str]
+    metadata: Dict[str, List[Any]] = field(default_factory=dict)
+
+
+def create_test_result_details(
+    dataset: Dataset,
+    model: BaseModel,
+    predictions: List[Any],
+    results: List[str],
+    metadata: Optional[Dict[str, List[str]]] = None,
+) -> TestResultDetails:
+    return TestResultDetails(
+        inputs=dataset.df.loc[:, model.meta.feature_names].to_dict("list"),
+        outputs=list(predictions),
+        results=results,
+        metadata=metadata or dict(),
+    )
+
+
+@dataclass
 class TestResult:
     """
     Dataclass representing the result of a test
@@ -59,7 +84,8 @@ class TestResult:
     actual_slices_size: List[int] = field(default_factory=list, repr=False)
     reference_slices_size: List[int] = field(default_factory=list, repr=False)
     output_df: Optional[bytes] = None  # Legacy output, use output_ds instead as this will be removed in the future
-    output_ds: Optional[List[Dataset]] = None
+    output_ds: List[Dataset] = field(default_factory=list, repr=False)
+    details: Optional[TestResultDetails] = None
     is_error: bool = False
 
     def _repr_html_(self):

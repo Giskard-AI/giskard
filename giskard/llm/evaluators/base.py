@@ -1,10 +1,11 @@
 from dataclasses import dataclass
 
-from typing import Sequence
+from typing import Sequence, Optional
 
 from ..client import LLMClient, get_default_client
 from ..errors import LLMGenerationError
 from ...datasets.base import Dataset
+from ...ml_worker.testing.test_result import TestResultDetails, create_test_result_details
 from ...models.base.model import BaseModel
 
 EVALUATE_MODEL_FUNCTIONS = [
@@ -34,6 +35,7 @@ class EvaluationResult:
     failure_examples: Sequence[dict]
     success_examples: Sequence[dict]
     errors: Sequence[dict]
+    details: Optional[TestResultDetails] = None
 
     @property
     def passed(self):
@@ -60,7 +62,7 @@ class LLMBasedEvaluator:
         self.llm_temperature = llm_temperature
         self.llm_client = llm_client if llm_client is not None else get_default_client()
 
-    def _make_evaluate_prompt(self, model: BaseModel, input_vars, model_output):
+    def _make_evaluate_prompt(self, model: BaseModel, input_vars, model_output, row_idx):
         return self.eval_prompt.format(
             model_name=model.meta.name,
             model_description=model.meta.description,
@@ -77,11 +79,15 @@ class LLMBasedEvaluator:
         succeeded = []
         failed = []
         errored = []
-        for input_vars, model_output in zip(
-            dataset.df.loc[:, model.meta.feature_names].to_dict("records"), model_outputs
+        status = []
+        reasons = []
+        for row_index, input_vars, model_output in zip(
+            dataset.df.index,
+            dataset.df.loc[:, model.meta.feature_names].to_dict("records"),
+            model_outputs,
         ):
             sample = {"input_vars": input_vars, "model_output": model_output}
-            prompt = self._make_evaluate_prompt(model, input_vars, model_output)
+            prompt = self._make_evaluate_prompt(model, input_vars, model_output, row_index)
             funcs = self._make_evaluate_functions(model, input_vars, model_output)
             try:
                 out = self.llm_client.complete(
@@ -94,17 +100,23 @@ class LLMBasedEvaluator:
                 if out.function_call is None or "passed_test" not in out.function_call.args:
                     raise LLMGenerationError("Invalid function call arguments received")
             except LLMGenerationError as err:
+                status.append("error")
+                reasons.append(str(err))
                 errored.append({"message": str(err), "sample": sample})
                 continue
 
             args = out.function_call.args
+            reasons.append(args.get("reason"))
             if args["passed_test"]:
+                status.append("pass")
                 succeeded.append({"input_vars": input_vars, "model_output": model_output, "reason": args.get("reason")})
             else:
+                status.append("fail")
                 failed.append({"input_vars": input_vars, "model_output": model_output, "reason": args.get("reason")})
 
         return EvaluationResult(
             failure_examples=failed,
             success_examples=succeeded,
             errors=errored,
+            details=create_test_result_details(dataset, model, model_outputs, status, {"reason": reasons}),
         )

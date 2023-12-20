@@ -3,7 +3,7 @@ from enum import Enum
 import pydantic
 from packaging import version
 from pydantic import Field
-from typing import Dict, List, Optional
+from typing import Dict, List, Optional, Any
 
 from giskard.core.validation import ConfiguredBaseModel
 
@@ -243,6 +243,13 @@ class PartialUnexpectedCounts(ConfiguredBaseModel):
     count: int
 
 
+class SingleTestResultDetails(ConfiguredBaseModel):
+    inputs: Dict[str, List[Any]]
+    outputs: List[Any]
+    results: List[str]
+    metadata: Dict[str, List[Any]]
+
+
 class SingleTestResult(ConfiguredBaseModel):
     passed: bool
     is_error: Optional[bool] = None
@@ -263,6 +270,7 @@ class SingleTestResult(ConfiguredBaseModel):
     reference_slices_size: Optional[List[int]] = None
     output_df_id: Optional[str] = None
     failed_indexes: Optional[Dict[str, List[int]]] = None
+    details: Optional[SingleTestResultDetails] = None
 
 
 class IdentifierSingleTestResult(ConfiguredBaseModel):
