@@ -1,3 +1,5 @@
+from typing import Dict, List, Optional, Type
+
 import json
 from pathlib import Path
 
@@ -6,7 +8,6 @@ import pytest
 from packaging import version
 from polyfactory.factories.pydantic_factory import ModelFactory
 from pydantic import BaseModel
-from typing import Dict, List, Optional, Type
 
 import giskard
 import giskard.ml_worker.websocket
@@ -84,7 +85,6 @@ MANDATORY_FIELDS = {
     "WeightsPerFeature": [],
     "WorkerReply": [],
 }
-
 OPTIONAL_FIELDS = {
     "ArtifactRef": ["project_key", "sample"],
     "Catalog": [],
@@ -166,6 +166,7 @@ OPTIONAL_FIELDS = {
         "messages",
         "props",
         "metric",
+        "metric_name",
         "missing_count",
         "missing_percent",
         "unexpected_count",
@@ -379,7 +380,17 @@ def generate_serialisation_data():
 
 
 if __name__ == "__main__":
+    print("MANDATORY_FIELDS")
+    print()
     print_all_mandatory_values()
+    print()
+    print("OPTIONAL_FIELDS")
+    print()
     print_all_optional_values()
+    print()
+    print("ALIASED_FIELDS")
+    print()
     print_all_mapping()
+    print()
+    print("Generating some fake data...")
     generate_serialisation_data()
