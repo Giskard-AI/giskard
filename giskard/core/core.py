@@ -334,7 +334,7 @@ class CallableMeta(SavableMeta, ABC):
             "name": self.name,
             "display_name": self.display_name,
             "module": self.module,
-            "doc": self.doc.__dict__ if self.doc else None,
+            "doc": self.doc.to_dict() if self.doc else None,
             "module_doc": self.module_doc,
             "code": self.code,
             "tags": self.tags,
