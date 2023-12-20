@@ -65,14 +65,8 @@ class PromptInjectionDataLoader:
 
     def group_description(self, group):
         group_description = self.df_from_group(group).description.to_list()
-        if len(set(group_description)) != 1:
-            raise ValueError(f"{self.__class__.__name__}: There must be only one group description per group.")
         return group_description[0]
 
     def group_deviation_description(self, group):
         group_deviation_description = self.df_from_group(group).deviation_description.to_list()
-        if len(set(group_deviation_description)) != 1:
-            raise ValueError(
-                f"{self.__class__.__name__}: There must be only one group description deviation per group."
-            )
         return group_deviation_description[0]
