@@ -29,6 +29,7 @@ from giskard.ml_worker.websocket import (
     RunModelForDataFrameParam,
     RunModelParam,
     TestSuiteParam,
+    Documentation,
 )
 from giskard.ml_worker.websocket.action import MLWorkerAction
 from giskard.models.base import BaseModel
@@ -91,7 +92,9 @@ def map_function_meta_ws(callable_type):
             name=test.name,
             displayName=test.display_name,
             module=test.module,
-            doc=test.doc,
+            doc=None
+            if test.doc is None
+            else Documentation(description=test.doc.description, parameters=test.doc.parameters),
             code=test.code,
             moduleDoc=test.module_doc,
             tags=test.tags,
@@ -135,7 +138,9 @@ def map_dataset_process_function_meta_ws(callable_type):
             name=test.name,
             displayName=test.display_name,
             module=test.module,
-            doc=test.doc,
+            doc=None
+            if test.doc is None
+            else Documentation(description=test.doc.description, parameters=test.doc.parameters),
             code=test.code,
             moduleDoc=test.module_doc,
             tags=test.tags,

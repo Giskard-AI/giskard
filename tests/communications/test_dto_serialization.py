@@ -34,6 +34,7 @@ MANDATORY_FIELDS = {
     "DatasetProcessingFunction": [],
     "DatasetProcessingParam": ["dataset"],
     "DatasetRowModificationResult": ["rowId", "modifications"],
+    "Documentation": ["description", "parameters"],
     "EchoMsg": ["msg"],
     "Empty": [],
     "ErrorReply": ["error_str", "error_type"],
@@ -85,6 +86,7 @@ MANDATORY_FIELDS = {
     "WeightsPerFeature": [],
     "WorkerReply": [],
 }
+
 OPTIONAL_FIELDS = {
     "ArtifactRef": ["project_key", "sample"],
     "Catalog": [],
@@ -109,6 +111,7 @@ OPTIONAL_FIELDS = {
     "DatasetProcessingFunction": ["slicingFunction", "transformationFunction", "arguments"],
     "DatasetProcessingParam": ["functions"],
     "DatasetRowModificationResult": [],
+    "Documentation": [],
     "EchoMsg": [],
     "Empty": [],
     "ErrorReply": ["detail"],
@@ -191,6 +194,7 @@ OPTIONAL_FIELDS = {
     "WeightsPerFeature": ["weights"],
     "WorkerReply": [],
 }
+
 ALIASED_FIELDS = {
     "FuncArgument": {"float_arg": "float", "int_arg": "int", "str_arg": "str", "bool_arg": "bool", "is_none": "none"}
 }
