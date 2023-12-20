@@ -1,17 +1,15 @@
-import numpy as np
-import pandas as pd
-from pydantic import ValidationError
-import pytest
 import uuid
 
+import numpy as np
+import pandas as pd
+import pytest
 import requests_mock
+from pydantic import ValidationError
 
-from giskard.models.base.model import BaseModel
 from giskard.client.dtos import ModelMetaInfo
-
+from giskard.models.base.model import BaseModel
 from tests import utils
 from tests.communications.test_dto_serialization import is_required, get_fields, get_name
-
 
 MANDATORY_FIELDS = [
     "id",
@@ -33,7 +31,7 @@ OPTIONAL_FIELDS = [
 
 
 class _CustomModel(BaseModel):
-    def predict_df(self, df: pd.DataFrame):
+    def predict_df(self, df: pd.DataFrame, *args, **kwargs):
         return np.ones(len(df))
 
 
@@ -107,8 +105,9 @@ def test_model_meta_info():
     mandatory_field_names = []
     optional_field_names = []
     for name, field in get_fields(klass).items():
-        mandatory_field_names.append(get_name(name, field)) if is_required(field) else \
-            optional_field_names.append(get_name(name, field))
+        mandatory_field_names.append(get_name(name, field)) if is_required(field) else optional_field_names.append(
+            get_name(name, field)
+        )
     assert set(mandatory_field_names) == set(MANDATORY_FIELDS)
     assert set(optional_field_names) == set(OPTIONAL_FIELDS)
 

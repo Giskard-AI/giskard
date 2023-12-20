@@ -1,13 +1,11 @@
-import typing
-
 import inspect
-import json
 import logging
 from abc import ABC
 from dataclasses import dataclass
 from enum import Enum
 from pathlib import Path
 
+import typing
 from griffe import Docstring
 from griffe.docstrings.dataclasses import (
     DocstringSection,
@@ -77,6 +75,7 @@ def _get_plugin_method_full_name(func):
 
 def create_test_function_id(func):
     from giskard.ml_worker.testing.registry.registry import plugins_root
+
     is_relative = Path(inspect.getfile(func)).is_relative_to(plugins_root)
     if is_relative:
         full_name = _get_plugin_method_full_name(func)
@@ -173,7 +172,7 @@ class CallableMeta(SavableMeta, ABC):
     name: str
     display_name: str
     module: str
-    doc: str
+    doc: CallableDocumentation
     module_doc: str
     tags: List[str]
     version: Optional[int]
@@ -274,7 +273,14 @@ class CallableMeta(SavableMeta, ABC):
         return code
 
     @staticmethod
-    def extract_doc(func) -> Optional[str]:
+    def default_doc(description: str) -> CallableDocumentation:
+        doc = CallableDocumentation()
+        doc.description = description
+        doc.parameters = {}
+        return doc
+
+    @staticmethod
+    def extract_doc(func) -> Optional[CallableDocumentation]:
         if not func.__doc__:
             return None
 
@@ -320,8 +326,7 @@ class CallableMeta(SavableMeta, ABC):
             else:
                 logger.warning(f"Unexpected documentation element for {func.__name__}: {d.kind}")
 
-        func_doc = json.dumps(res.to_dict())
-        return func_doc
+        return res
 
     def to_json(self):
         return {
@@ -329,7 +334,7 @@ class CallableMeta(SavableMeta, ABC):
             "name": self.name,
             "display_name": self.display_name,
             "module": self.module,
-            "doc": self.doc,
+            "doc": self.doc.to_dict() if self.doc else None,
             "module_doc": self.module_doc,
             "code": self.code,
             "tags": self.tags,

@@ -1,3 +1,5 @@
+from typing import Dict, Hashable, List, Optional, Union
+
 import inspect
 import logging
 import posixpath
@@ -12,14 +14,13 @@ import pandas as pd
 import yaml
 from mlflow import MlflowClient
 from pandas.api.types import is_list_like, is_numeric_dtype
-from typing import Dict, Hashable, List, Optional, Union
 from xxhash import xxh3_128_hexdigest
 from zstandard import ZstdDecompressor
 
 from giskard.client.giskard_client import GiskardClient
 from giskard.client.io_utils import compress, save_df
 from giskard.client.python_utils import warning
-from giskard.core.core import DatasetMeta, SupportedColumnTypes, NOT_GIVEN, NotGivenOr
+from giskard.core.core import NOT_GIVEN, DatasetMeta, NotGivenOr, SupportedColumnTypes
 from giskard.core.errors import GiskardImportError
 from giskard.core.validation import configured_validate_arguments
 from giskard.ml_worker.testing.registry.slicing_function import SlicingFunction, SlicingFunctionType
@@ -28,9 +29,10 @@ from giskard.ml_worker.testing.registry.transformation_function import (
     TransformationFunctionType,
 )
 from giskard.settings import settings
-from ..metadata.indexing import ColumnMetadataMixin
+
 from ... import analytics
 from ...ml_worker.utils.file_utils import get_file_name
+from ..metadata.indexing import ColumnMetadataMixin
 
 try:
     import wandb  # noqa
@@ -77,8 +79,11 @@ class DataProcessor:
             self.pipeline.append(processor)
         return self
 
-    def apply(self, dataset: "Dataset", apply_only_last=False, get_mask: bool = False):
-        ds = dataset.copy()
+    def apply(self, dataset: "Dataset", apply_only_last=False, get_mask: bool = False, copy: bool = True):
+        if copy:
+            ds = dataset.copy()
+        else:
+            ds = dataset
         is_slicing_only = True
 
         while len(self.pipeline):
@@ -153,15 +158,15 @@ class Dataset(ColumnMetadataMixin):
 
     @configured_validate_arguments
     def __init__(
-            self,
-            df: pd.DataFrame,
-            name: Optional[str] = None,
-            target: NotGivenOr[Optional[Hashable]] = NOT_GIVEN,
-            cat_columns: Optional[List[str]] = None,
-            column_types: Optional[Dict[Hashable, str]] = None,
-            id: Optional[uuid.UUID] = None,
-            validation=True,
-            original_id: Optional[uuid.UUID] = None,
+        self,
+        df: pd.DataFrame,
+        name: Optional[str] = None,
+        target: NotGivenOr[Optional[Hashable]] = NOT_GIVEN,
+        cat_columns: Optional[List[str]] = None,
+        column_types: Optional[Dict[Hashable, str]] = None,
+        id: Optional[uuid.UUID] = None,
+        validation=True,
+        original_id: Optional[uuid.UUID] = None,
     ) -> None:
         """
         Initializes a Dataset object.
@@ -291,12 +296,12 @@ class Dataset(ColumnMetadataMixin):
 
     @configured_validate_arguments
     def slice(
-            self,
-            slicing_function: Union[SlicingFunction, SlicingFunctionType],
-            row_level: bool = True,
-            get_mask: bool = False,
-            cell_level=False,
-            column_name: Optional[str] = None,
+        self,
+        slicing_function: Union[SlicingFunction, SlicingFunctionType],
+        row_level: bool = True,
+        get_mask: bool = False,
+        cell_level=False,
+        column_name: Optional[str] = None,
     ):
         """
         Slice the dataset using the specified `slicing_function`.
@@ -330,15 +335,17 @@ class Dataset(ColumnMetadataMixin):
                 **{key: value for key, value in slicing_function.params.items() if key != "column_name"},
             )
 
-        return self.data_processor.add_step(slicing_function).apply(self, apply_only_last=True, get_mask=get_mask)
+        return self.data_processor.add_step(slicing_function).apply(
+            self, apply_only_last=True, get_mask=get_mask, copy=False
+        )
 
     @configured_validate_arguments
     def transform(
-            self,
-            transformation_function: Union[TransformationFunction, TransformationFunctionType],
-            row_level: bool = True,
-            cell_level=False,
-            column_name: Optional[str] = None,
+        self,
+        transformation_function: Union[TransformationFunction, TransformationFunctionType],
+        row_level: bool = True,
+        cell_level=False,
+        column_name: Optional[str] = None,
     ):
         """
         Transform the data in the current Dataset by applying a transformation function.
@@ -373,7 +380,7 @@ class Dataset(ColumnMetadataMixin):
             )
 
         assert (
-                not transformation_function.cell_level or "column_name" in transformation_function.params
+            not transformation_function.cell_level or "column_name" in transformation_function.params
         ), "column_name should be provided for TransformationFunction at cell level"
         return self.data_processor.add_step(transformation_function).apply(self, apply_only_last=True)
 
@@ -387,10 +394,10 @@ class Dataset(ColumnMetadataMixin):
         return self.data_processor.apply(self)
 
     def _infer_column_types(
-            self,
-            column_types: Optional[Dict[str, str]],
-            cat_columns: Optional[List[str]],
-            validation: bool = True,
+        self,
+        column_types: Optional[Dict[str, str]],
+        cat_columns: Optional[List[str]],
+        validation: bool = True,
     ):
         """
         This function infers the column types of a given DataFrame based on the number of unique values and column data types. It takes into account the provided column types and categorical columns. The inferred types can be 'text', 'numeric', or 'category'. The function also applies a logarithmic rule to determine the category threshold.
@@ -506,6 +513,26 @@ class Dataset(ColumnMetadataMixin):
                 compressed_size_bytes=compressed_size_bytes,
             )
         return dataset_id
+
+    def extract_languages(self, columns=None):
+        """
+        Extracts all languages present in the dataset 'text' column.
+
+        Args:
+            list[str]: a list of columns from which languages should be extracted.
+
+        Returns:
+            list[str]: a list of language codes (according to  ISO 639-1) containing all languages in the dataset.
+        """
+        columns = columns if columns is not None else self.columns
+
+        langs_per_feature = [
+            self.column_meta[col, "text"]["language"].dropna().unique()
+            for col, col_type in self.column_types.items()
+            if (col_type == "text" and col in columns)
+        ]
+
+        return list(set().union(*langs_per_feature))
 
     @property
     def meta(self):

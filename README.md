@@ -150,7 +150,7 @@ If you are interested in learning more about Giskard's premium offering, please 
 
 To start the **Giskard hub**, run the following command:
 ```sh
-pip install giskard[hub] -U
+pip install "giskard[hub]" -U
 giskard hub start
 ```
 

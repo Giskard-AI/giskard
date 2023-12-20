@@ -1,6 +1,5 @@
 import itertools
 import json
-import random
 import re
 from pathlib import Path
 
@@ -26,7 +25,7 @@ class TextTransformation(TransformationFunction):
         self.meta.name = self.name
         self.meta.display_name = self.name
         self.meta.tags = ["pickle", "scan"]
-        self.meta.doc = "Automatically generated transformation function"
+        self.meta.doc = self.meta.default_doc("Automatically generated transformation function")
 
     def __str__(self):
         return self.name
@@ -70,7 +69,7 @@ class TextTitleCase(TextTransformation):
 class TextTypoTransformation(TextTransformation):
     name = "Add typos"
 
-    def __init__(self, column, rate=0.05, min_length=10, rng_seed=None):
+    def __init__(self, column, rate=0.05, min_length=10, rng_seed=1729):
         super().__init__(column)
         from .entity_swap import typos
 
@@ -150,10 +149,11 @@ class TextPunctuationRemovalTransformation(TextTransformation):
 class TextLanguageBasedTransformation(TextTransformation):
     needs_dataset = True
 
-    def __init__(self, column):
+    def __init__(self, column, rng_seed=1729):
         super().__init__(column)
         self._lang_dictionary = dict()
         self._load_dictionaries()
+        self.rng = np.random.default_rng(seed=rng_seed)
 
     def _load_dictionaries(self):
         raise NotImplementedError()
@@ -236,7 +236,7 @@ class TextReligionTransformation(TextLanguageBasedTransformation):
                 mask_value = f"__GSK__ENT__RELIGION__{n_list}__{n_term}__"
                 text, num_rep = re.subn(rf"\b{re.escape(term)}(s?)\b", rf"{mask_value}\1", text, flags=re.IGNORECASE)
                 if num_rep > 0:
-                    i = (n_term + 1 + random.randrange(len(term_list) - 1)) % len(term_list)
+                    i = (n_term + 1 + self.rng.choice(len(term_list) - 1)) % len(term_list)
                     replacement = term_list[i]
                     replacements.append((mask_value, replacement))
 
@@ -278,7 +278,7 @@ class TextNationalityTransformation(TextLanguageBasedTransformation):
                 )
                 if num_rep > 0:
                     r_income_type = "low-income" if income_type == "high-income" else "high-income"
-                    replacement = random.choice(nationalities_word_dict[entity_type][r_income_type])
+                    replacement = self.rng.choice(nationalities_word_dict[entity_type][r_income_type])
                     replacements.append((mask_value, replacement))
 
         # Replace masks
