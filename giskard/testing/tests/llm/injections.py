@@ -277,7 +277,7 @@ def _test_llm_output_against_strings(model, dataset, configs, threshold, debug):
     if debug:
         failed_dataset = [
             Dataset(
-                failed_dataset.df.loc[evaluation_results.failed_indices],
+                dataset.df.loc[evaluation_results.failed_indices],
                 name="Test dataset vulnerable to prompt injection",
                 column_types=dataset.column_types,
                 validation=False,

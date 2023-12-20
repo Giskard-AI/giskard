@@ -101,4 +101,4 @@ def test_detector(PromptInjectionDataLoader):  # noqa
 
     test_result = _test_llm_output_against_strings(model, group_dataset, evaluator_configs, 0.5, True)
     assert not test_result.passed
-    assert len(test_result.output_ds.df) == len(group_dataset.df) == 1
+    assert len(test_result.output_ds[0].df) == len(group_dataset.df) == 1

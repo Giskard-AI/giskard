@@ -14,6 +14,7 @@ def from_records_to_configs(records):
     for row in records:
         kwargs = {k: v for k, v in row.items() if k in list(StringMatcherConfig.__annotations__.keys())}
         configs.append(StringMatcherConfig(**kwargs))
+    return configs
 
 
 class PromptInjectionDataLoader:
