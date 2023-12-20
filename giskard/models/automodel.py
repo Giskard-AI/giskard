@@ -7,6 +7,7 @@ from importlib import import_module
 import pandas as pd
 
 from ..core.core import ModelType, SupportedModelTypes
+from ..utils.analytics_collector import analytics
 from .base.serialization import CloudpickleSerializableModel
 from .function import PredictionFunctionModel
 
@@ -115,6 +116,12 @@ class Model(CloudpickleSerializableModel):
         """
 
         if not model:
+            analytics.track(
+                "wrap:model:fail",
+                {
+                    "reason": "no_model",
+                },
+            )
             raise ValueError(
                 "The 'Model' class cannot be initiated without a `model` argument. "
                 "\n`model` can be either a model object (classifier, regressor, etc.) or a prediction function."
@@ -144,6 +151,12 @@ class Model(CloudpickleSerializableModel):
                 )
                 possibly_overriden_cls = giskard_cls
             else:  # possibly_overriden_cls = CloudpickleSerializableModel
+                analytics.track(
+                    "wrap:model:fail",
+                    {
+                        "reason": "model_library_not_supported",
+                    },
+                )
                 raise NotImplementedError(
                     "We could not infer your model library. You have two options:"
                     "\n- Pass a prediction_function to the Model class "
@@ -175,5 +188,13 @@ class Model(CloudpickleSerializableModel):
             # Important in order for the load method to be executed consistently
             obj.meta.loader_class = possibly_overriden_cls.__name__
             obj.meta.loader_module = possibly_overriden_cls.__module__
+
+            analytics.track(
+                "wrap:model:success",
+                {
+                    "type": model_type,
+                    "features": len(feature_names if feature_names is not None else []),
+                },
+            )
 
             return obj

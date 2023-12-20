@@ -22,6 +22,8 @@ from giskard.ml_worker.testing.registry.transformation_function import Transform
 from giskard.ml_worker.testing.test_result import TestMessage, TestMessageLevel, TestResult
 from giskard.models.base import BaseModel
 
+from ..utils.analytics_collector import analytics
+
 logger = logging.getLogger(__name__)
 
 suite_input_types: List[type] = [
@@ -122,7 +124,6 @@ class TestSuiteResult:
         except ImportError as e:
             raise GiskardImportError("wandb") from e
         from ..integrations.wandb.wandb_utils import _parse_test_name, get_wandb_run
-        from ..utils.analytics_collector import analytics
 
         run = get_wandb_run(run)
         # Log just a test description and a metric.
@@ -438,6 +439,7 @@ class Suite:
         self.id = client.save_test_suite(self.to_dto(client, project_key, uploaded_uuids))
         project_id = client.get_project(project_key).project_id
         print(f"Test suite has been saved: {client.host_url}/main/projects/{project_id}/test-suite/{self.id}/overview")
+        analytics.track("hub:test_suite:uploaded")
         return self
 
     def to_dto(self, client: GiskardClient, project_key: str, uploaded_uuids: Optional[List[str]] = None):
