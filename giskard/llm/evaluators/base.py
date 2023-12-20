@@ -5,6 +5,7 @@ from typing import Sequence, Optional
 from ..client import LLMClient, get_default_client
 from ..errors import LLMGenerationError
 from ...datasets.base import Dataset
+from ...ml_worker.testing.test_result import TestResultDetails, create_test_result_details
 from ...models.base.model import BaseModel
 
 EVALUATE_MODEL_FUNCTIONS = [
@@ -34,7 +35,7 @@ class EvaluationResult:
     failure_examples: Sequence[dict]
     success_examples: Sequence[dict]
     errors: Sequence[dict]
-    output_ds: Optional[Dataset] = None
+    details: Optional[TestResultDetails] = None
 
     @property
     def passed(self):
@@ -77,8 +78,9 @@ class LLMBasedEvaluator:
 
         succeeded = []
         failed = []
-        failed_idx = []
         errored = []
+        status = []
+        reasons = []
         for row_index, input_vars, model_output in zip(
             dataset.df.index,
             dataset.df.loc[:, model.meta.feature_names].to_dict("records"),
@@ -98,19 +100,23 @@ class LLMBasedEvaluator:
                 if out.function_call is None or "passed_test" not in out.function_call.args:
                     raise LLMGenerationError("Invalid function call arguments received")
             except LLMGenerationError as err:
+                status.append("error")
+                reasons.append(str(err))
                 errored.append({"message": str(err), "sample": sample})
                 continue
 
             args = out.function_call.args
+            reasons.append(args.get("reason"))
             if args["passed_test"]:
+                status.append("pass")
                 succeeded.append({"input_vars": input_vars, "model_output": model_output, "reason": args.get("reason")})
             else:
-                failed_idx.append(row_index)
+                status.append("fail")
                 failed.append({"input_vars": input_vars, "model_output": model_output, "reason": args.get("reason")})
 
         return EvaluationResult(
-            output_ds=dataset.slice(lambda df: df.loc[failed_idx], row_level=False),
             failure_examples=failed,
             success_examples=succeeded,
             errors=errored,
+            details=create_test_result_details(dataset, model, model_outputs, status, {"reason": reasons}),
         )

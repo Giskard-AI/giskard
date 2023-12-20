@@ -1468,7 +1468,8 @@
           "rCGFxbljESPPQnRJeaaN": [
             4088
           ]
-        }
+        },
+        "details": null
       },
       "arguments": []
     },
@@ -1512,7 +1513,8 @@
           "UhCfcdTORrFOtDlenUDW": [
             7500
           ]
-        }
+        },
+        "details": null
       },
       "arguments": []
     },
@@ -1558,7 +1560,8 @@
           "hTpKRFgkCLOQGICXZkpB": [
             795
           ]
-        }
+        },
+        "details": null
       },
       "arguments": [
         {
@@ -1777,7 +1780,8 @@
           "nPjpinXIHpKzfqrPnnLY": [
             9922
           ]
-        }
+        },
+        "details": null
       }
     },
     {
@@ -1827,7 +1831,8 @@
           "qkqbOWLquudqFxnOOUTy": [
             5829
           ]
-        }
+        },
+        "details": null
       }
     },
     {
@@ -1872,7 +1877,8 @@
           "HYlVNHtAPkppCiKyegFA": [
             6180
           ]
-        }
+        },
+        "details": null
       }
     }
   ],
@@ -2185,7 +2191,8 @@
               "zsrCGFxbljESPPQnRJea": [
                 238
               ]
-            }
+            },
+            "details": null
           }
         }
       ]
@@ -2444,6 +2451,64 @@
       "project_key": "udqFxnOOUTysjkksQeNe"
     }
   ],
+  "SingleTestResultDetails": [
+    {
+      "inputs": {
+        "query": [
+          "Hello",
+          "Bonjour",
+          "Hola"
+        ],
+        "excepted_lang": [
+          "EN",
+          "FR",
+          "ES"
+        ]
+      },
+      "outputs": [
+        "EN",
+        "FR",
+        "IT"
+      ],
+      "results": [
+        "pass",
+        "pass",
+        "fail"
+      ],
+      "metadata": {}
+    },
+    {
+      "inputs": {
+        "query": [
+          "Hello",
+          "Bonjour",
+          "Hola"
+        ],
+        "excepted_lang": [
+          "EN",
+          "FR",
+          "ES"
+        ]
+      },
+      "outputs": [
+        "EN",
+        "FR",
+        "IT"
+      ],
+      "results": [
+        "pass",
+        "pass",
+        "fail"
+      ],
+      "metadata": {
+        "reason": [
+          null,
+          null,
+          "Expected ES but got IT"
+        ]
+      }
+    }
+  ],
   "SingleTestResult": [
     {
       "passed": true,
@@ -2478,7 +2543,8 @@
         "IFLtSXWAgOkXzsCWvQva": [
           8849
         ]
-      }
+      },
+      "details": null
     },
     {
       "passed": false,
@@ -2520,7 +2586,8 @@
         "EzWuAaFuoiSQDhwnftCV": [
           8754
         ]
-      }
+      },
+      "details": null
     },
     {
       "passed": false,
@@ -2555,6 +2622,27 @@
         "pmeoZxHHWuprqSUprCEE": [
           4015
         ]
+      },
+      "details": {
+        "inputs": {
+          "query": [
+            "dzadzaBIEBIHAASé"
+          ],
+          "excepted_lang": [
+            "dzadzaBIEBIHAASé"
+          ]
+        },
+        "outputs": [
+          "EN"
+        ],
+        "results": [
+          "pass"
+        ],
+        "metadata": {
+          "reason": [
+            null
+          ]
+        }
       }
     }
   ],
@@ -2856,7 +2944,8 @@
               "FQbahLiKJClYPAlHuDqG": [
                 963
               ]
-            }
+            },
+            "details": null
           },
           "arguments": []
         }
