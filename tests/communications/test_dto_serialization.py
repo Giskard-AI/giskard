@@ -85,6 +85,8 @@ MANDATORY_FIELDS = {
     "TestSuiteParam": ["projectKey"],
     "WeightsPerFeature": [],
     "WorkerReply": [],
+    "AbortParams": ["job_id"],
+    "EchoResponse": ["job_ids", "msg"],
 }
 
 OPTIONAL_FIELDS = {
