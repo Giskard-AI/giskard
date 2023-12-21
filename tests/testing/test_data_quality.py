@@ -182,7 +182,7 @@ def test_outlier():
     result = data_quality.test_outlier_value(dataset, "age", eps=20, min_samples=5).execute()
     # Assert that the result is as expected
     assert result.passed is False, "Test failed: there should be an outlier"
-    assert result.messages == [9], "Test failed: the outlier should be 1000"
+    assert result.metric == 1, "Test failed: the outlier should be 1000"
 
     # Test case where there are no outliers
     data["age"] = [20, 25, 23, 40, 67, 55, 44, 17, 47, 60]  # No outliers
