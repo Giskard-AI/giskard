@@ -161,7 +161,7 @@ def test_number_to_words_transformation():
     )
 
     # German tests
-    t = TextNumberToWordTransformation(column="text", lang="de")
+    t = TextNumberToWordTransformation(column="text")
 
     transformed = dataset.transform(t)
     transformed_text = transformed.df.text.values[6:8]
@@ -169,7 +169,7 @@ def test_number_to_words_transformation():
     assert transformed_text[1] == "Die Gesamtkosten der Artikel betragen fünfundvierzig,siebenundsechzig Dollar."
 
     # Spanish tests
-    t = TextNumberToWordTransformation(column="text", lang="es")
+    t = TextNumberToWordTransformation(column="text")
 
     transformed = dataset.transform(t)
     transformed_text = transformed.df.text.values[8:10]
@@ -177,11 +177,11 @@ def test_number_to_words_transformation():
     assert transformed_text[1] == "Hoy corrió trece,dos millas en el maratón."
 
     # French tests
-    t = TextNumberToWordTransformation(column="text", lang="fr")
+    t = TextNumberToWordTransformation(column="text")
 
     transformed = dataset.transform(t)
     transformed_text = transformed.df.text.values[10:12]
-    assert transformed_text[0] == "Son anniversaire est le vingt-deux virgule zéro huit du mois."
+    assert transformed_text[0] == "Son anniversaire est le vingt-deux du mois."
     assert transformed_text[1] == "Le coût total des articles était de cent cinquante-sept,vingt-trois $."
 
 

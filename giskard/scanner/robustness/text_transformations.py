@@ -213,11 +213,10 @@ class TextGenderTransformation(TextLanguageBasedTransformation):
 class TextNumberToWordTransformation(TextLanguageBasedTransformation):
     name = "Transform numbers to words"
 
-    def __init__(self, column, lang="en"):
+    def __init__(self, column):
         super().__init__(column)
-        # Target language
-        self.lang = lang
 
+    def _load_dictionaries(self):
         # Regex to match numbers in text
         self._regex = re.compile(r"(?<!\d/)(?<!\d\.)\b\d+(?:\.\d+)?\b(?!(?:\.\d+)?@|\d?/?\d)")
 
