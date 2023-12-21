@@ -23,7 +23,7 @@ from ...core.core import ModelMeta, ModelType, SupportedModelTypes
 from ...core.validation import configured_validate_arguments
 from ...datasets.base import Dataset
 from ...llm import get_default_client
-from ...llm.talk.config import MODEL_INSTRUCTION
+from ...llm.talk.config import MODEL_INSTRUCTION, ERROR_RESPONSE
 from ...llm.talk.tools import BaseTool, PredictFromDatasetTool, SHAPExplanationTool
 from ...ml_worker.exceptions.giskard_exception import GiskardException, python_env_exception_helper
 from ...ml_worker.utils.logging import Timer
@@ -607,9 +607,17 @@ class BaseModel(ABC):
 
             # Get the reference to the chosen function.
             function = available_tools[function_name]
-            function_response = function(
-                **function_args
-            )
+
+            try:
+                function_response = function(
+                    **function_args
+                )
+            except Exception as error_msg:
+                function_response = ERROR_RESPONSE.format(
+                    tool_name=function_name,
+                    tool_args=function_args,
+                    error_msg=error_msg.args[0]
+                )
 
             # Append the tool's response to the conversation.
             messages.append(
