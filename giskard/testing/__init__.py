@@ -38,9 +38,33 @@ __all__ = [
     "test_metamorphic_invariance_wilcoxon",
     "test_underconfidence_rate",
     "test_overconfidence_rate",
+    "test_data_uniqueness",
+    "test_data_completeness",
+    "test_valid_range",
+    "test_valid_values",
+    "test_data_correlation",
+    "test_outlier_value",
+    "test_foreign_constraint",
+    "test_label_consistency",
+    "test_mislabeling",
+    "test_feature_importance",
+    "test_class_imbalance",
 ]
 
 from giskard.testing.tests.calibration import test_overconfidence_rate, test_underconfidence_rate
+from giskard.testing.tests.data_quality import (
+    test_data_uniqueness,
+    test_data_completeness,
+    test_valid_range,
+    test_valid_values,
+    test_data_correlation,
+    test_outlier_value,
+    test_foreign_constraint,
+    test_label_consistency,
+    test_mislabeling,
+    test_feature_importance,
+    test_class_imbalance,
+)
 from giskard.testing.tests.drift import (
     test_drift_chi_square,
     test_drift_earth_movers_distance,

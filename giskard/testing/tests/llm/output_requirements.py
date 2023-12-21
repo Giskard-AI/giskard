@@ -152,6 +152,4 @@ def test_llm_single_output_against_requirement(
     )
 
     # Run normal output requirement test
-    test_result = _test_output_against_requirement(model, dataset, RequirementEvaluator([requirement]))
-
-    return test_result
+    return _test_output_against_requirement(model, dataset, RequirementEvaluator([requirement]))
