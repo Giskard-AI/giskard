@@ -125,11 +125,10 @@ class TextTypoTransformation(TextTransformation):
 class TextFromSpeechTypoTransformation(TextTransformation):
     name = "Add text from speech typos"
     
-    def __init__(self, column, rate=0.05, min_length=10, rng_seed=1729):
+    def __init__(self, column, min_length=10, rng_seed=1729):
         super().__init__(column)
         from .entity_swap import speech_typos
 
-        self.rate = rate
         self.min_length = min_length
         self._word_typos = speech_typos
         self.rng = np.random.default_rng(seed=rng_seed)
