@@ -23,6 +23,7 @@ def uniqueness_test(dataset: Dataset, column: str, threshold: float = 0.8):
     Args:
         dataset (Dataset): The dataset to test.
         column (str): The column to check for uniqueness.
+        threshold (float): The minimum uniqueness ratio for the test to pass.
 
     Returns:
         TestResult: The result of the test.
