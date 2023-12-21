@@ -122,7 +122,40 @@ class TextTypoTransformation(TextTransformation):
             return typo if char.islower() else typo.upper()
         return char
 
+class TextFromOCRTypoTransformation(TextTransformation):
+    name = "Add typos from OCR"
 
+    def __init__(self, column, rate=0.05, min_length=10, rng_seed=1729):
+        super().__init__(column)
+        from .entity_swap import ocr_typos
+
+        self.rate = rate
+        self.min_length = min_length
+        self._ocr_typos = ocr_typos
+        self.rng = np.random.default_rng(seed=rng_seed)
+
+    def make_perturbation(self, x):
+        # Skip if the text is too short
+        if len(x) < self.min_length:
+            return x
+
+        # Only consider replacement typos for OCR
+
+        # How many typos we may generate
+        num_typos = self.rng.poisson(self.rate * len(re.sub(r"\s+", "", x)))
+
+        # Which positions will be affected
+        positions = self.rng.choice(len(x), size=num_typos, replace=False)
+
+        # Create the typo for each selected position
+        for i in positions:
+            if x[i].lower() in self._ocr_typos:
+                # Get a typo from the dictionary
+                replacement = self.rng.choice(self._ocr_typos[x[i].lower()])
+                x = x[:i] + (replacement.upper() if x[i].isupper() else replacement) + x[i + 1:]
+
+        return x
+    
 class TextPunctuationRemovalTransformation(TextTransformation):
     name = "Punctuation Removal"
 
