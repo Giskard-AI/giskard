@@ -30,7 +30,8 @@ def test_data_uniqueness(dataset: Dataset, column: str, threshold: float = 0.8):
     """
     column_data = dataset.df[column]
     uniqueness_ratio = len(column_data.unique()) / len(column_data)
-    return TestResult(passed=uniqueness_ratio >= threshold, metric=uniqueness_ratio, metric_name="uniqueness")
+
+    return TestResult(passed=uniqueness_ratio >= threshold, metric=uniqueness_ratio, metric_name=f"{column} uniqueness")
 
 
 @test(name="Data completeness test", tags=["data"])
@@ -47,10 +48,13 @@ def test_data_completeness(dataset: Dataset, column_name: str, threshold: float)
         TestResult: A TestResult object indicating whether the
         test passed and the completeness ratio.
     """
-    column_data = dataset.df[column_name]
-    completeness_ratio = len(column_data.dropna()) / len(column_data)
+    output_ds = dataset.slice(lambda df: df[df[column_name].isnull()], row_level=False)
+    completeness_ratio = 1 - len(output_ds.df) / len(dataset.df)
     passed = completeness_ratio >= threshold
-    return TestResult(passed=passed, messages={column_name: completeness_ratio})
+
+    return TestResult(
+        passed=passed, metric=completeness_ratio, metric_name=f"{column_name} completeness", output_ds=[output_ds]
+    )
 
 
 @test(name="Data validation (valid range)", tags=["data"])
@@ -67,16 +71,20 @@ def test_valid_range(dataset: Dataset, column: str, min_value=None, max_value=No
     Returns:
         TestResult: The result of the test.
     """
-    column_data = dataset.df[column]
     if min_value is not None and max_value is not None:
-        test_passed = all(min_value <= x <= max_value for x in column_data.dropna())
+        output_ds = dataset.slice(lambda df: df[(min_value > df[column]) | (df[column] > max_value)], row_level=False)
     elif min_value is not None:
-        test_passed = all(min_value <= x for x in column_data.dropna())
+        output_ds = dataset.slice(lambda df: df[min_value > df[column]], row_level=False)
     elif max_value is not None:
-        test_passed = all(x <= max_value for x in column_data.dropna())
+        output_ds = dataset.slice(lambda df: df[df[column] > max_value], row_level=False)
     else:
         raise ValueError("Neither min_value nor max_value were provided")
-    return TestResult(passed=test_passed)
+
+    test_passed = len(output_ds.df.index) == 0
+
+    return TestResult(
+        passed=test_passed, metric_name="Out of range", metric=len(output_ds.df.index), output_ds=[output_ds]
+    )
 
 
 @test(name="Data validation (valid values)", tags=["data"])
@@ -94,9 +102,13 @@ def test_valid_values(dataset: Dataset, column: str, valid_values=None):
     """
     if valid_values is None:
         raise ValueError("valid_values must be provided")
-    column_data = dataset.df[column]
-    test_passed = all(x in valid_values for x in column_data.dropna())
-    return TestResult(passed=test_passed)
+
+    output_ds = dataset.slice(lambda df: df[~df[column].isnull() & ~df[column].isin(valid_values)], row_level=False)
+    test_passed = len(output_ds.df.index) == 0
+
+    return TestResult(
+        passed=test_passed, metric=len(output_ds.df.index), metric_name="Invalid values", output_ds=[output_ds]
+    )
 
 
 @test(name="Data correlation test", tags=["data"])
@@ -155,7 +167,8 @@ def test_outlier_value(dataset: Dataset, column: str, eps: float = 0.5, min_samp
     model.fit(column_data)
     preds = model.labels_
     anomalies = [i for i, pred in enumerate(preds) if pred == -1]
-    return TestResult(passed=len(anomalies) == 0, messages=anomalies)
+
+    return TestResult(passed=len(anomalies) == 0, metric=len(anomalies), metric_name="anomalies")
 
 
 @test(name="Foreign constraint test", tags=["data"])
@@ -180,6 +193,7 @@ def test_foreign_constraint(
     referenced = target_dataset.df[target_column]
     not_included = source[~source.isin(referenced)]
     missing_ratio = len(not_included) / len(source)
+
     return TestResult(passed=missing_ratio <= threshold, metric=missing_ratio)
 
 
