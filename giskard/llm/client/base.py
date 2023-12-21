@@ -35,5 +35,6 @@ class LLMClient(ABC):
         function_call: Optional[Dict] = None,
         caller_id: Optional[str] = None,
         tools=None,
+        tool_choice=None,
     ) -> LLMOutput:
         ...

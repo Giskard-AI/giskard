@@ -38,6 +38,7 @@ class BaseOpenAIClient(LLMClient, ABC):
         max_tokens=None,
         caller_id: Optional[str] = None,
         tools=None,
+        tool_choice=None,
     ) -> dict:
         ...
 
@@ -50,6 +51,7 @@ class BaseOpenAIClient(LLMClient, ABC):
         function_call: Optional[Dict] = None,
         caller_id: Optional[str] = None,
         tools=None,
+        tool_choice=None,
     ):
         cc = self._completion(
             messages=messages,
@@ -59,6 +61,7 @@ class BaseOpenAIClient(LLMClient, ABC):
             max_tokens=max_tokens,
             caller_id=caller_id,
             tools=tools,
+            tool_choice=tool_choice,
         )
 
         function_call = None
@@ -101,6 +104,7 @@ class LegacyOpenAIClient(BaseOpenAIClient):
         max_tokens=None,
         caller_id: Optional[str] = None,
         tools=None,
+        tool_choice=None,
     ):
         extra_params = dict()
         if function_call is not None:
@@ -109,6 +113,8 @@ class LegacyOpenAIClient(BaseOpenAIClient):
             extra_params["functions"] = functions
         if tools is not None:
             extra_params["tools"] = tools
+        if tool_choice is not None:
+            extra_params["tool_choice"] = tool_choice
 
         try:
             completion = openai.ChatCompletion.create(
@@ -149,6 +155,7 @@ class OpenAIClient(BaseOpenAIClient):
         max_tokens=None,
         caller_id: Optional[str] = None,
         tools=None,
+        tool_choice=None,
     ):
         extra_params = dict()
         if function_call is not None:
@@ -157,6 +164,8 @@ class OpenAIClient(BaseOpenAIClient):
             extra_params["functions"] = functions
         if tools is not None:
             extra_params["tools"] = tools
+        if tool_choice is not None:
+            extra_params["tool_choice"] = tool_choice
 
         try:
             completion = self._client.chat.completions.create(
