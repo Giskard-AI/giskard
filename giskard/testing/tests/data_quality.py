@@ -12,7 +12,7 @@ from typing import Iterable
 
 from giskard.datasets.base import Dataset
 from giskard.ml_worker.testing.registry.decorators import test
-from giskard.ml_worker.testing.test_result import TestResult
+from giskard.ml_worker.testing.test_result import TestResult, TestMessage, TestMessageLevel
 
 
 @test(name="Data uniqueness test", tags=["data"])
@@ -189,12 +189,16 @@ def test_foreign_constraint(
         TestResult: The result of the test, indicating whether
         the test passed and the ratio of missing values.
     """
-    source = dataset.df[column]
-    referenced = target_dataset.df[target_column]
-    not_included = source[~source.isin(referenced)]
-    missing_ratio = len(not_included) / len(source)
 
-    return TestResult(passed=missing_ratio <= threshold, metric=missing_ratio)
+    output_ds = dataset.slice(
+        lambda df: df[~dataset.df[column].isin(target_dataset.df[target_column].unique())], row_level=False
+    )
+
+    missing_ratio = len(output_ds.df.index) / len(dataset.df.index)
+
+    return TestResult(
+        passed=missing_ratio <= threshold, metric=missing_ratio, metric_name="missing ratio", output_ds=[output_ds]
+    )
 
 
 @test(name="Label consistency test", tags=["data"])
@@ -265,13 +269,14 @@ def test_mislabeling(dataset: Dataset, labelled_column: str, reference_columns: 
     anomalies = model.predict(data) == -1
 
     # Check if any of the anomalies have different labels
-    mislabelled_data = dataset.df[anomalies]
+    mislabelled_data = dataset.slice(lambda df: df[anomalies], row_level=False)
 
-    if not mislabelled_data.empty:
-        message = f"Mislabelled data found: \n{mislabelled_data}"
-        return TestResult(passed=False, metric_name="consistency", metric=0, messages=message)
-
-    return TestResult(passed=True, metric_name="consistency", metric=1)
+    return TestResult(
+        passed=len(mislabelled_data.df.index) == 0,
+        metric_name="mislabelled",
+        metric=len(mislabelled_data.df.index),
+        output_ds=[mislabelled_data],
+    )
 
 
 @test(name="Feature importance test", tags=["data"])
@@ -303,9 +308,9 @@ def test_feature_importance(
     # Check if the importance of all features is above the threshold
     test_passed = all(importance >= importance_threshold for importance in importances)
     # Create a message containing the feature importances
-    message = f"Feature importances: \n{feature_importances}"
+    message = TestMessage(text=f"Feature importances: \n{feature_importances}", type=TestMessageLevel.INFO)
 
-    return TestResult(passed=test_passed, metric_name="feature_importance", metric=importances, messages=message)
+    return TestResult(passed=test_passed, metric_name="feature_importance", metric=importances, messages=[message])
 
 
 @test(name="Class imbalance test", tags=["data"])
@@ -331,6 +336,6 @@ def test_class_imbalance(dataset: Dataset, target_column: str, lower_threshold: 
     passed = all(lower_threshold <= proportion <= upper_threshold for proportion in class_proportions.values())
 
     # Create a message containing the class proportions
-    message = f"Class proportions: \n{class_proportions}"
+    message = TestMessage(text=f"Class proportions: \n{class_proportions}", type=TestMessageLevel.INFO)
 
-    return TestResult(passed=passed, metric_name="class_proportion", metric=class_proportions, messages=message)
+    return TestResult(passed=passed, metric_name="class_proportion", metric=class_proportions, messages=[message])
