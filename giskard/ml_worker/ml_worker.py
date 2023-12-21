@@ -3,6 +3,7 @@ from typing import List, Optional, Union
 import logging
 import math
 import secrets
+from uuid import UUID
 
 from pydantic import AnyHttpUrl
 from websockets.client import WebSocketClientProtocol
@@ -28,7 +29,7 @@ MAX_STOMP_ML_WORKER_REPLY_SIZE = 1500
 
 
 class FragmentedPayload(ConfiguredBaseModel):
-    id: str
+    id: UUID
     action: str
     payload: str
     f_index: int
@@ -88,6 +89,7 @@ class MLWorker(StompWSClient):
 
     async def action_handler(self, frame: Frame) -> List[Frame]:
         data = ActionPayload.parse_raw(frame.body)
+        logging.info(f"Running job {data.id}: {data.action.name}")
 
         # Dispatch the action
         client_params = (
@@ -130,7 +132,7 @@ class MLWorker(StompWSClient):
         return [
             StompFrame.SEND.build_frame(
                 headers={
-                    HeaderType.DESTINATION: f"/app/ml-worker/{self._worker_type}/rep",
+                    HeaderType.DESTINATION: f"/app/ml-worker/{self._worker_type}/reply",
                 },
                 body=FragmentedPayload(
                     id=data.id,

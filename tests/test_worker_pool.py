@@ -168,11 +168,9 @@ def test_after_cancel_should_shutdown_nicely():
 @pytest.mark.skipif(condition=sys.platform == "win32", reason="Not working on windows")
 @pytest.mark.concurrency
 def test_many_tasks_should_shutdown_nicely(many_worker_pool: WorkerPoolExecutor):
-    sleep(3)
     futures = []
     for _ in range(100):
         futures.append(many_worker_pool.schedule(sleep_add_one, [2, 2], timeout=20))
-    sleep(30)
     exit_codes = many_worker_pool.shutdown(wait=True, timeout=60)
     assert len([code is not None for code in exit_codes]) == 4
     assert all([code is not None for code in exit_codes])

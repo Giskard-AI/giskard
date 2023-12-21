@@ -160,7 +160,7 @@ def _start_command(is_server, url: AnyHttpUrl, api_key, is_daemon, hf_token=None
 
             run_daemon(is_server, url, api_key, hf_token)
         else:
-            if sys.platform == "win32":
+            if sys.platform == "win32" or sys.version_info < (3, 10):
                 from asyncio import run
             else:
                 from uvloop import run

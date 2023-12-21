@@ -34,12 +34,15 @@ from giskard.ml_worker.websocket import (
 from giskard.ml_worker.websocket.action import MLWorkerAction
 from giskard.models.base import BaseModel
 from giskard.path_utils import projects_dir
+from giskard.ml_worker.websocket import AbortParams
 
 logger = logging.getLogger(__name__)
 
 
 def parse_action_param(action: MLWorkerAction, params):
     # TODO: Sort by usage frequency from future MixPanel metrics #NOSONAR
+    if action == MLWorkerAction.abort:
+        return AbortParams.model_validate(params)
     if action == MLWorkerAction.getInfo:
         return GetInfoParam.parse_obj(params)
     elif action == MLWorkerAction.runAdHocTest:

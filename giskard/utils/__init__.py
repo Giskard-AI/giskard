@@ -4,9 +4,11 @@ from concurrent.futures import Future
 from functools import wraps
 from threading import Lock, Thread
 from time import sleep
+from uuid import UUID
 
 from giskard.settings import settings
 from giskard.utils.worker_pool import WorkerPoolExecutor
+from giskard.utils.worker_pool import KillReason
 
 LOGGER = logging.getLogger(__name__)
 
@@ -35,6 +37,9 @@ class SingletonWorkerPool:
             return
         self.max_workers = max(max_workers, settings.min_workers) if max_workers is not None else os.cpu_count()
         self.pool = WorkerPoolExecutor(nb_workers=self.max_workers)
+
+    def cancel(self, job_id: UUID):
+        self.pool.kill_task(job_id, KillReason.CANCELLED)
 
     def shutdown(self, wait=True):
         if self.pool is None:

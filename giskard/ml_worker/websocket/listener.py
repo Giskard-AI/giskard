@@ -11,12 +11,13 @@ from concurrent.futures import CancelledError, Future
 from copy import copy
 from dataclasses import dataclass
 from pathlib import Path
+from typing import Any, Callable, Dict, Optional, Union
+from uuid import UUID
 
 import numpy as np
 import pandas as pd
 import pkg_resources
 import psutil
-from typing import Any, Callable, Dict, Optional, Union
 
 import giskard
 from giskard.client.giskard_client import GiskardClient
@@ -52,9 +53,10 @@ from giskard.push.contribution import create_contribution_push
 from giskard.push.perturbation import create_perturbation_push
 from giskard.push.prediction import create_borderline_push, create_overconfidence_push
 from giskard.settings import settings
-from giskard.utils import call_in_pool
+from giskard.utils import call_in_pool, POOL
 from giskard.utils.analytics_collector import analytics
 from giskard.utils.worker_pool import GiskardMLWorkerException
+from giskard.ml_worker.websocket import AbortParams
 
 logger = logging.getLogger(__name__)
 MAX_STOMP_ML_WORKER_REPLY_SIZE = 1500
@@ -74,7 +76,7 @@ WEBSOCKET_ACTORS = dict((action.name, websocket_log_actor) for action in MLWorke
 
 
 def wrapped_handle_result(
-    action: MLWorkerAction, start: float, rep_id: Optional[str], worker_info: MLWorkerInfo, ignore_timeout: bool
+    action: MLWorkerAction, start: float, job_id: Optional[UUID], worker_info: MLWorkerInfo, ignore_timeout: bool
 ):
     async def handle_result(future: Union[Future, Callable[..., websocket.WorkerReply]]):
         info = None  # Needs to be defined in case of cancellation
@@ -100,6 +102,8 @@ def wrapped_handle_result(
                 error_str=e.info.message, error_type=e.info.type, detail=e.info.stack_trace
             )
             logger.warning(e)
+        except TimeoutError as e:
+            info: websocket.WorkerReply = websocket.ErrorReply(error_str=str(e), error_type=type(e).__name__)
         except Exception as e:
             info: websocket.WorkerReply = websocket.ErrorReply(
                 error_str=str(e), error_type=type(e).__name__, detail=traceback.format_exc()
@@ -119,7 +123,7 @@ def wrapped_handle_result(
                 },
             )
 
-        if rep_id:
+        if job_id:
             if isinstance(info, Frame):
                 return info
             return info.json(by_alias=True) if info else "{}"
@@ -134,6 +138,7 @@ def parse_and_execute(
     params,
     ml_worker: MLWorkerInfo,
     client_params: Optional[Dict[str, str]],
+    job_id: Optional[UUID],
 ) -> websocket.WorkerReply:
     action_params = parse_action_param(action, params)
     return callback(
@@ -155,7 +160,7 @@ async def dispatch_action(
     ignore_timeout=False,
 ):
     # Parse the response ID
-    rep_id = req.id
+    job_id = req.id
     # Parse the param
     params = req.param
 
@@ -170,18 +175,18 @@ async def dispatch_action(
     )
     start = time.process_time()
 
-    result_handler = wrapped_handle_result(action, start, rep_id, worker_info, ignore_timeout=ignore_timeout)
+    result_handler = wrapped_handle_result(action, start, job_id, worker_info, ignore_timeout=ignore_timeout)
     # If execution should be done in a pool
+    kwargs = {
+        "job_id": job_id,
+        "callback": callback,
+        "action": action,
+        "params": params,
+        "ml_worker": worker_info,
+        "client_params": client_params,
+    }
     if execute_in_pool and settings.use_pool:
         logger.debug("Submitting for action %s '%s' into the pool", action.name, callback.__name__)
-        kwargs = {
-            "callback": callback,
-            "action": action,
-            "params": params,
-            "ml_worker": worker_info,
-            "client_params": client_params,
-        }
-
         future = call_in_pool(
             parse_and_execute,
             kwargs=kwargs,
@@ -190,9 +195,7 @@ async def dispatch_action(
     else:
 
         def future():
-            return parse_and_execute(
-                callback=callback, action=action, params=params, ml_worker=worker_info, client_params=client_params
-            )
+            return parse_and_execute(**kwargs)
 
     return await result_handler(future)
 
@@ -221,10 +224,15 @@ def websocket_actor(
     return websocket_actor_callback
 
 
+@websocket_actor(MLWorkerAction.abort, execute_in_pool=False)
+def on_abort(ml_worker: MLWorkerInfo, params: AbortParams, *args, **kwargs):
+    POOL.cancel(params.job_id)
+    return websocket.AbortParams(job_id=params.job_id)
+
+
 @websocket_actor(MLWorkerAction.getInfo, execute_in_pool=False)
 def on_ml_worker_get_info(ml_worker: MLWorkerInfo, params: GetInfoParam, *args, **kwargs) -> websocket.GetInfo:
     logger.info("Collecting ML Worker info from WebSocket")
-
     # TODO(Bazire): seems to be deprecated https://setuptools.pypa.io/en/latest/pkg_resources.html#workingset-objects
     installed_packages = {p.project_name: p.version for p in pkg_resources.working_set} if params.list_packages else {}
     current_process = psutil.Process(os.getpid())
@@ -369,7 +377,7 @@ def run_model(client: Optional[GiskardClient], params: websocket.RunModelParam, 
                 tmp_dir / calculated_csv,
                 f"{params.project_key}/models/inspections/{params.inspectionId}",
             )
-    return websocket.Empty()
+        return websocket.Empty()
 
 
 @websocket_actor(MLWorkerAction.runModelForDataFrame)
@@ -585,7 +593,8 @@ def run_test_suite(
 
 @websocket_actor(MLWorkerAction.echo, execute_in_pool=False)
 def echo(params: websocket.EchoMsg, *args, **kwargs) -> websocket.EchoMsg:
-    return params
+    received_jobs = list(POOL.pool.futures_mapping.keys())
+    return websocket.EchoResponse(msg=params.msg, job_ids=received_jobs)
 
 
 def handle_cta(

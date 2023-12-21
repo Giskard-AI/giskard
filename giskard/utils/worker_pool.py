@@ -1,12 +1,10 @@
-from typing import Any, Callable, Dict, List, Optional, Tuple
-
 import logging
 import os
 import time
 import traceback
 from concurrent.futures import CancelledError, Executor, Future
 from contextlib import redirect_stderr, redirect_stdout
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 from enum import Enum
 from io import StringIO
 from multiprocessing import Process, Queue, cpu_count, get_context
@@ -15,15 +13,12 @@ from multiprocessing.managers import SyncManager
 from queue import Empty, Full
 from threading import Thread, current_thread
 from time import sleep
-from uuid import uuid4
+from typing import Any, Callable, Dict, List, Optional, Tuple
+from uuid import uuid4, UUID
 
 from giskard.ml_worker.utils.cache import CACHE
 
 LOGGER = logging.getLogger(__name__)
-
-
-def _generate_task_id():
-    return str(uuid4())
 
 
 def _safe_is_alive(p: Process) -> bool:
@@ -74,16 +69,21 @@ class GiskardFuture(Future):
 
 @dataclass(frozen=True)
 class TimeoutData:
-    id: str
+    id: UUID
     end_time: float
 
 
-@dataclass(frozen=True)
 class GiskardTask:
     callable: Callable
     args: Any
     kwargs: Any
-    id: str = field(default_factory=_generate_task_id)
+    job_id: UUID
+
+    def __init__(self, callable: Callable, args: Any, kwargs: Any):
+        self.callable = callable
+        self.args = args
+        self.kwargs = kwargs
+        self.job_id = kwargs.get("job_id") or uuid4()
 
 
 @dataclass(frozen=True)
@@ -95,13 +95,13 @@ class GiskardMLWorkerExceptionInfo:
 
 @dataclass(frozen=True)
 class GiskardResult:
-    id: str
+    id: UUID
     logs: str
     result: Any = None
     exception: Optional[GiskardMLWorkerExceptionInfo] = None
 
 
-def _process_worker(tasks_queue: Queue, tasks_results: Queue, running_process: Dict[str, str], cache_content):
+def _process_worker(tasks_queue: Queue, tasks_results: Queue, running_process: Dict[UUID, str], cache_content):
     pid = os.getpid()
     LOGGER.info("Process %s started", pid)
     CACHE.start(*cache_content)
@@ -124,10 +124,10 @@ def _process_worker(tasks_queue: Queue, tasks_results: Queue, running_process: D
                 logging.getLogger().addHandler(handler)
                 to_return = None
                 try:
-                    LOGGER.debug("Doing task %s", task.id)
-                    running_process[task.id] = pid
+                    LOGGER.debug("Doing task %s", task.job_id)
+                    running_process[task.job_id] = pid
                     result = task.callable(*task.args, **task.kwargs)
-                    to_return = GiskardResult(id=task.id, result=result, logs=f.getvalue())
+                    to_return = GiskardResult(id=task.job_id, result=result, logs=f.getvalue())
                 except BaseException as e:
                     exception = GiskardMLWorkerExceptionInfo(
                         type=type(e).__name__,
@@ -135,10 +135,10 @@ def _process_worker(tasks_queue: Queue, tasks_results: Queue, running_process: D
                         stack_trace=traceback.format_exc(),
                     )
                     to_return = GiskardResult(
-                        id=task.id, exception=exception, logs=f.getvalue() + "\n" + str(exception.stack_trace)
+                        id=task.job_id, exception=exception, logs=f.getvalue() + "\n" + str(exception.stack_trace)
                     )
                 finally:
-                    running_process.pop(task.id)
+                    running_process.pop(task.job_id)
                     tasks_results.put(to_return)
                     logging.getLogger().removeHandler(handler)
 
@@ -149,6 +149,12 @@ class PoolState(Enum):
     BROKEN = 2
     STOPPING = 3
     STOPPED = 4
+
+
+class KillReason(Enum):
+    TIMEOUT = 0
+    CANCELLED = 1
+    SHUTDOWN = 2
 
 
 FINAL_STATES = [PoolState.STOPPING, PoolState.STOPPED, PoolState.BROKEN]
@@ -173,7 +179,7 @@ class WorkerPoolExecutor(Executor):
         cache_keys = self._manager.list()
         CACHE.start(cache_content, cache_keys)
         # Mapping of the running tasks and worker pids
-        self.running_process: Dict[str, str] = self._manager.dict()
+        self.running_process: Dict[UUID, str] = self._manager.dict()
         # Mapping of the running tasks and worker pids
         self.with_timeout_tasks: List[TimeoutData] = []
         # Queue with tasks to run
@@ -184,7 +190,7 @@ class WorkerPoolExecutor(Executor):
         # Queue with results to notify
         self.tasks_results: Queue = self._mp_context.Queue()
         # Mapping task_id with future
-        self.futures_mapping: Dict[str, Future] = dict()
+        self.futures_mapping: Dict[UUID, Future] = dict()
         LOGGER.debug("Starting threads for the WorkerPoolExecutor")
 
         self._threads = [
@@ -259,22 +265,22 @@ class WorkerPoolExecutor(Executor):
         self.processes[p.pid] = p
         LOGGER.info("Starting a new worker %s", p.pid)
 
-    def kill_task(self, task_id: str) -> Optional[BaseException]:
+    def kill_task(self, job_id: UUID, reason: KillReason) -> Optional[BaseException]:
         # Task has timed out, we should kill it
         try:
-            future = self.futures_mapping.pop(task_id, None)
+            future = self.futures_mapping.pop(job_id, None)
             if future is not None and not future.cancel():
-                LOGGER.warning("Killing a timed out process")
-                future.set_exception(TimeoutError("Task took too long"))
-                pid = self.running_process.pop(task_id, None)
+                LOGGER.warning(f"Killing a job {job_id} with reason: {reason.name}")
+                future.set_exception(TimeoutError(f"Task killed with reason: {reason.name}"))
+                pid = self.running_process.pop(job_id, None)
                 if pid is not None:
                     p = self.processes.pop(pid)
                     _stop_processes([p])
                     if not self.terminated():
                         self.spawn_worker()
-        except BaseException as e:
+        except BaseException as e:  # NOSONAR
             # This is probably an OSError, but we want to be extra safe
-            LOGGER.warning("Unexpected error when killing a timed out process, pool is broken")
+            LOGGER.warning(f"Unexpected error when killing a process (caused by {reason.name}): pool is broken")
             LOGGER.exception(e)
             self._state = PoolState.BROKEN
             return e
@@ -295,12 +301,16 @@ class WorkerPoolExecutor(Executor):
             kwargs = {}
         if self.terminated():
             raise RuntimeError(f"Cannot submit when pool is {self._state.name}")
-        task = GiskardTask(callable=fn, args=args, kwargs=kwargs)
+        task = GiskardTask(
+            callable=fn,
+            args=args,
+            kwargs=kwargs,
+        )
         res = GiskardFuture()
-        self.futures_mapping[task.id] = res
+        self.futures_mapping[task.job_id] = res
         self.pending_tasks_queue.put(task)
         if timeout is not None:
-            self.with_timeout_tasks.append(TimeoutData(task.id, time.monotonic() + timeout))
+            self.with_timeout_tasks.append(TimeoutData(task.job_id, time.monotonic() + timeout))
         return res
 
     def shutdown(self, wait=True, *, cancel_futures=True, timeout: float = 30, force=False):
@@ -318,7 +328,7 @@ class WorkerPoolExecutor(Executor):
         try:
             while not self.running_tasks_queue.empty():
                 task: GiskardTask = self.running_tasks_queue.get(timeout=0.5)
-                self.kill_task(task.id)
+                self.kill_task(task.job_id, KillReason.SHUTDOWN)
         except (ValueError, Empty, OSError) as e:
             LOGGER.warning("Error while emptying running queue")
             LOGGER.exception(e)
@@ -391,7 +401,7 @@ def _feeder_thread(
         if task is None:
             continue
 
-        future = executor.futures_mapping.get(task.id)
+        future = executor.futures_mapping.get(task.job_id)
         if future is None:
             continue
         if executor.terminated():
@@ -401,7 +411,7 @@ def _feeder_thread(
             executor.running_tasks_queue.put(task)
         else:
             # Future has been cancelled already, nothing to do
-            executor.futures_mapping.pop(task.id, False)
+            executor.futures_mapping.pop(task.job_id, False)
 
 
 def _killer_thread(
@@ -422,7 +432,7 @@ def _killer_thread(
                 # Task is already completed, do not wait for it
                 clean_up.append(timeout_data)
             elif time.monotonic() > timeout_data.end_time:
-                exception = executor.kill_task(timeout_data.id)
+                exception = executor.kill_task(timeout_data.id, KillReason.TIMEOUT)
                 clean_up.append(timeout_data)
         for elt in clean_up:
             executor.with_timeout_tasks.remove(elt)
