@@ -17,6 +17,8 @@ from giskard.ml_worker.testing.registry.decorators_utils import (
 )
 from giskard.ml_worker.testing.registry.registry import get_object_uuid, tests_registry
 
+from ....utils.analytics_collector import analytics
+
 SlicingFunctionType = Callable[..., bool]
 
 default_tags = ["filter"]
@@ -157,6 +159,7 @@ def slicing_function(_fn=None, row_level=True, name=None, tags: Optional[List[st
                 cell_level=cell_level,
             )
         )
+        analytics.track("custom:slicing_function:created", {"name": func.__name__})
         if inspect.isclass(func) and issubclass(func, SlicingFunction):
             return func
 
@@ -178,5 +181,4 @@ def _wrap_slicing_function(original: Callable, row_level: bool, cell_level: bool
 
     make_all_optional_or_suite_input(slicing_fn)
     set_return_type(slicing_fn, SlicingFunction)
-
     return slicing_fn()

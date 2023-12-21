@@ -1,6 +1,6 @@
 from dataclasses import dataclass
 
-from typing import Sequence
+from typing import Sequence, Optional
 
 from ..client import LLMClient, get_default_client
 from ..errors import LLMGenerationError
@@ -34,6 +34,7 @@ class EvaluationResult:
     failure_examples: Sequence[dict]
     success_examples: Sequence[dict]
     errors: Sequence[dict]
+    output_ds: Optional[Dataset] = None
 
     @property
     def passed(self):
@@ -60,7 +61,7 @@ class LLMBasedEvaluator:
         self.llm_temperature = llm_temperature
         self.llm_client = llm_client if llm_client is not None else get_default_client()
 
-    def _make_evaluate_prompt(self, model: BaseModel, input_vars, model_output):
+    def _make_evaluate_prompt(self, model: BaseModel, input_vars, model_output, row_idx):
         return self.eval_prompt.format(
             model_name=model.meta.name,
             model_description=model.meta.description,
@@ -76,12 +77,15 @@ class LLMBasedEvaluator:
 
         succeeded = []
         failed = []
+        failed_idx = []
         errored = []
-        for input_vars, model_output in zip(
-            dataset.df.loc[:, model.meta.feature_names].to_dict("records"), model_outputs
+        for row_index, input_vars, model_output in zip(
+            dataset.df.index,
+            dataset.df.loc[:, model.meta.feature_names].to_dict("records"),
+            model_outputs,
         ):
             sample = {"input_vars": input_vars, "model_output": model_output}
-            prompt = self._make_evaluate_prompt(model, input_vars, model_output)
+            prompt = self._make_evaluate_prompt(model, input_vars, model_output, row_index)
             funcs = self._make_evaluate_functions(model, input_vars, model_output)
             try:
                 out = self.llm_client.complete(
@@ -101,9 +105,11 @@ class LLMBasedEvaluator:
             if args["passed_test"]:
                 succeeded.append({"input_vars": input_vars, "model_output": model_output, "reason": args.get("reason")})
             else:
+                failed_idx.append(row_index)
                 failed.append({"input_vars": input_vars, "model_output": model_output, "reason": args.get("reason")})
 
         return EvaluationResult(
+            output_ds=dataset.slice(lambda df: df.loc[failed_idx], row_level=False),
             failure_examples=failed,
             success_examples=succeeded,
             errors=errored,

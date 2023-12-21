@@ -16,6 +16,8 @@ from giskard.ml_worker.testing.registry.decorators_utils import (
 )
 from giskard.ml_worker.testing.registry.registry import get_object_uuid, tests_registry
 
+from ....utils.analytics_collector import analytics
+
 TransformationFunctionType = Callable[..., Union[pd.Series, pd.DataFrame]]
 
 default_tags = ["transformation"]
@@ -128,6 +130,7 @@ def transformation_function(
             )
         )
 
+        analytics.track("custom:transformation_function:created", {"name": func.__name__})
         if inspect.isclass(func) and issubclass(func, TransformationFunction):
             return func
         return _wrap_transformation_function(func, row_level, cell_level)()
