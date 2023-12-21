@@ -1,15 +1,17 @@
 import numpy as np
 import pandas as pd
 from sklearn.datasets import make_classification
-from giskard.testing.tests import data_quality
+
 from giskard import Dataset
+from giskard.testing.tests import data_quality
+
 
 def test_uniqueness_test():
     """
     Test for the uniqueness_test function in the data_quality module.
 
-    This test checks that the uniqueness_test function correctly calculates the 
-    uniqueness ratio for a given column and correctly determines whether the 
+    This test checks that the uniqueness_test function correctly calculates the
+    uniqueness ratio for a given column and correctly determines whether the
     uniqueness ratio is above a specified threshold.
 
     Args:
@@ -19,18 +21,19 @@ def test_uniqueness_test():
         None
     """
     data = {
-        'column1': ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j'],
-        'column2': ['a', 'a', 'b', 'b', 'c', 'c', 'd', 'd', 'e', None]
+        "column1": ["a", "b", "c", "d", "e", "f", "g", "h", "i", "j"],
+        "column2": ["a", "a", "b", "b", "c", "c", "d", "d", "e", None],
     }
     df = pd.DataFrame(data)
     dataset = Dataset(df)
     # Call the function with test inputs
-    result = data_quality.uniqueness_test(dataset, 'column1', 0.8).execute()
+    result = data_quality.test_data_uniqueness(dataset, "column1", 0.8).execute()
     # Assert that the result is as expected
     assert result.passed is True
 
-    result = data_quality.uniqueness_test(dataset, 'column2', 0.8).execute()
+    result = data_quality.test_data_uniqueness(dataset, "column2", 0.8).execute()
     assert result.passed is False
+
 
 def test_completeness_test():
     """
@@ -43,27 +46,28 @@ def test_completeness_test():
     """
     # Setup data for testing
     data = {
-        'age': [20, 25, 23, 40, 67, 55, 44, None, 47, 60],  # One missing value
+        "age": [20, 25, 23, 40, 67, 55, 44, None, 47, 60],  # One missing value
     }
     df = pd.DataFrame(data)
     dataset = Dataset(df)
 
     # Call the function with test inputs
-    result = data_quality.completeness_test(dataset, 'age', 0.9).execute()
+    result = data_quality.test_data_completeness(dataset, "age", 0.9).execute()
     # Assert that the result is as expected
     assert result.passed is True, "Test failed: there should be enough complete data"
 
     # Test case where there is not enough complete data
-    data['age'] = [20, 25, 23, None, None, None, None, None, None, None]  # Many missing values
+    data["age"] = [20, 25, 23, None, None, None, None, None, None, None]  # Many missing values
     df = pd.DataFrame(data)
     dataset = Dataset(df)
 
-    result = data_quality.completeness_test(dataset, 'age', 0.9).execute()
+    result = data_quality.test_data_completeness(dataset, "age", 0.9).execute()
     assert result.passed is False, "Test failed: there should not be enough complete data"
+
 
 def test_range_test():
     """
-    Test for the range_test function in the data_quality module. 
+    Test for the range_test function in the data_quality module.
 
     This test checks that the range_test function correctly determines
     whether all values are within a range.
@@ -72,35 +76,36 @@ def test_range_test():
         None
     """
     data = {
-        'column1': [1, 2, 3, 4, 5, 6, 7, 8, 9, 10],
-        'column2': [1, 2, 3, 4, 5, 100, 7, 8, 9, 10],
-        'column3': [-1, -2, -3, -4, -5, -6, -7, -8, -9, -10],
-        'column4': [0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+        "column1": [1, 2, 3, 4, 5, 6, 7, 8, 9, 10],
+        "column2": [1, 2, 3, 4, 5, 100, 7, 8, 9, 10],
+        "column3": [-1, -2, -3, -4, -5, -6, -7, -8, -9, -10],
+        "column4": [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
     }
     df = pd.DataFrame(data)
     dataset = Dataset(df)
 
     # Test with column1, expected to pass
-    result = data_quality.range_test(dataset, 'column1', 1, 10).execute()
+    result = data_quality.test_valid_range(dataset, "column1", 1, 10).execute()
     assert result.passed is True
 
     # Test with column2, expected to fail
-    result = data_quality.range_test(dataset, 'column2', 1, 10).execute()
+    result = data_quality.test_valid_range(dataset, "column2", 1, 10).execute()
     assert result.passed is False
 
     # Test with column3, expected to fail
-    result = data_quality.range_test(dataset, 'column3', 1, 10).execute()
+    result = data_quality.test_valid_range(dataset, "column3", 1, 10).execute()
     assert result.passed is False
 
     # Test with column4, expected to pass
-    result = data_quality.range_test(dataset, 'column4', 0, 0).execute()
+    result = data_quality.test_valid_range(dataset, "column4", 0, 0).execute()
     assert result.passed is True
+
 
 def test_validity_test():
     """
     Test for the validity_test function in the data_quality module.
 
-    This test checks that the validity_test function correctly determines whether all values in a 
+    This test checks that the validity_test function correctly determines whether all values in a
     given column are in a specified set of valid values.
 
     Returns:
@@ -108,31 +113,28 @@ def test_validity_test():
     """
     # Setup data for testing
     data = {
-        'column1': ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j'],
-        'column2': ['a', 'a', 'b', 'b', 'c', 'c', 'd', 'd', 'e', 'z']
+        "column1": ["a", "b", "c", "d", "e", "f", "g", "h", "i", "j"],
+        "column2": ["a", "a", "b", "b", "c", "c", "d", "d", "e", "z"],
     }
     df = pd.DataFrame(data)
     dataset = Dataset(df)
 
     # Call the function with test inputs
-    result = data_quality.validity_test(dataset,
-                                        'column1',
-                                        valid_values=['a', 'b', 'c',
-                                                    'd', 'e', 'f',
-                                                    'g', 'h', 'i', 'j']).execute()
+    result = data_quality.test_valid_values(
+        dataset, "column1", valid_values=["a", "b", "c", "d", "e", "f", "g", "h", "i", "j"]
+    ).execute()
     # Assert that the result is as expected
     assert result.passed is True
 
-    result = data_quality.validity_test(dataset,
-                                        'column2',
-                                        valid_values=['a', 'b', 'c', 'd', 'e']).execute()
+    result = data_quality.test_valid_values(dataset, "column2", valid_values=["a", "b", "c", "d", "e"]).execute()
     assert result.passed is False
+
 
 def test_correlation_test():
     """
     Test for the correlation_test function in the data_quality module.
 
-    This test checks that the correlation_test function correctly determines whether two columns 
+    This test checks that the correlation_test function correctly determines whether two columns
     in a given dataset have a correlation that is above a specified threshold.
 
     Returns:
@@ -140,23 +142,24 @@ def test_correlation_test():
     """
     # Setup data for testing
     data = {
-        'Survived': [0, 1, 1, 1, 0],
-        'Pclass': [3, 1, 3, 1, 3],
-        'Age': [22, 38, 26, 35, 35],
-        'Fare': [7.25, 71.2833, 7.925, 53.1, 8.05]
+        "Survived": [0, 1, 1, 1, 0],
+        "Pclass": [3, 1, 3, 1, 3],
+        "Age": [22, 38, 26, 35, 35],
+        "Fare": [7.25, 71.2833, 7.925, 53.1, 8.05],
     }
     df = pd.DataFrame(data)
     dataset = Dataset(df)
 
     # Call the function with test inputs
-    result = data_quality.correlation_test(dataset, 'Survived', 'Pclass', False, 0.5).execute()
+    result = data_quality.test_data_correlation(dataset, "Survived", "Pclass", False, 0.5).execute()
     assert result.passed is True, "Test failed: Survived and Pclass should not have correlation above 0.5"
 
-    result = data_quality.correlation_test(dataset, 'Survived', 'Age', False, 0.5).execute()
-    assert result.passed is True,"Test failed: Survivedand Age should not have correlation above 0.5"
+    result = data_quality.test_data_correlation(dataset, "Survived", "Age", False, 0.5).execute()
+    assert result.passed is True, "Test failed: Survivedand Age should not have correlation above 0.5"
 
-    result = data_quality.correlation_test(dataset, 'Survived', 'Fare', True, 0.5).execute()
+    result = data_quality.test_data_correlation(dataset, "Survived", "Fare", True, 0.5).execute()
     assert result.passed is True, "Test failed: Survived and Fare should have correlation above 0.5"
+
 
 def test_outlier():
     """
@@ -170,31 +173,32 @@ def test_outlier():
     """
     # Setup data for testing
     data = {
-        'age': [20, 25, 23, 40, 67, 55, 44, 17, 47, 1000],  # 1000 is an outlier
+        "age": [20, 25, 23, 40, 67, 55, 44, 17, 47, 1000],  # 1000 is an outlier
     }
     df = pd.DataFrame(data)
     dataset = Dataset(df)
 
     # Call the function with test inputs
-    result = data_quality.outlier(dataset, 'age', eps = 20, min_samples = 5).execute()
+    result = data_quality.test_outlier_value(dataset, "age", eps=20, min_samples=5).execute()
     # Assert that the result is as expected
     assert result.passed is False, "Test failed: there should be an outlier"
     assert result.messages == [9], "Test failed: the outlier should be 1000"
 
     # Test case where there are no outliers
-    data['age'] = [20, 25, 23, 40, 67, 55, 44, 17, 47, 60]  # No outliers
+    data["age"] = [20, 25, 23, 40, 67, 55, 44, 17, 47, 60]  # No outliers
     df = pd.DataFrame(data)
     dataset = Dataset(df)
 
-    result = data_quality.outlier(dataset, 'age',eps = 10, min_samples = 3).execute()
+    result = data_quality.test_outlier_value(dataset, "age", eps=10, min_samples=3).execute()
     assert result.passed is True, "Test failed: there should be no outliers"
+
 
 def test_ensure_all_exists():
     """
     Test for the ensure_all_exists function in the data_quality module.
 
     This test checks that the ensure_all_exists function
-    correctly determines whether all values in a 
+    correctly determines whether all values in a
     given column are present in a column of another dataset.
 
     Returns:
@@ -202,27 +206,24 @@ def test_ensure_all_exists():
     """
     # Setup data for testing
     np.random.seed(0)
-    data1 = {
-        'column1': np.random.choice(['a', 'b', 'c', 'd', 'e'], 1000)
-    }
-    data2 = {
-        'column2': np.random.choice(['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j'], 1000)
-    }
+    data1 = {"column1": np.random.choice(["a", "b", "c", "d", "e"], 1000)}
+    data2 = {"column2": np.random.choice(["a", "b", "c", "d", "e", "f", "g", "h", "i", "j"], 1000)}
     df1 = pd.DataFrame(data1)
     df2 = pd.DataFrame(data2)
     dataset1 = Dataset(df1)
     dataset2 = Dataset(df2)
 
     # Call the function with test inputs
-    result = data_quality.ensure_all_exists(dataset2, 'column2', dataset1, 'column1', threshold=0.0).execute()
+    result = data_quality.test_foreign_constraint(dataset2, "column2", dataset1, "column1", threshold=0.0).execute()
     # Assert that the result is as expected
     assert result.passed is False, "Test failed: All values in column2 are present in column1"
 
-    result = data_quality.ensure_all_exists(dataset1, 'column1', dataset2, 'column2', threshold=0.5).execute()
+    result = data_quality.test_foreign_constraint(dataset1, "column1", dataset2, "column2", threshold=0.5).execute()
     assert result.passed is True, "Test failed: more than 50% of values in column1 should be present in column2"
 
-    result = data_quality.ensure_all_exists(dataset1, 'column1', dataset2, 'column2', threshold=1.0).execute()
+    result = data_quality.test_foreign_constraint(dataset1, "column1", dataset2, "column2", threshold=1.0).execute()
     assert result.passed is True, "Test failed: all values in column1 should be present in column2"
+
 
 def test_label_consistency_test():
     """
@@ -238,19 +239,20 @@ def test_label_consistency_test():
         None
     """
     data = {
-        'column1': ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j'],
-        'column2': ['a', 'a', 'b', 'b', 'c', 'c', 'd', 'd', 'e', 'f'],
-        'column3': [1, 2, 3, 4, 5, 6, 7, 8, 9, 10],
+        "column1": ["a", "b", "c", "d", "e", "f", "g", "h", "i", "j"],
+        "column2": ["a", "a", "b", "b", "c", "c", "d", "d", "e", "f"],
+        "column3": [1, 2, 3, 4, 5, 6, 7, 8, 9, 10],
     }
     df = pd.DataFrame(data)
     dataset = Dataset(df)
     # Call the function with test inputs
-    result = data_quality.label_consistency_test(dataset, 'column3').execute()
+    result = data_quality.test_label_consistency(dataset, "column3").execute()
     # Assert that the result is as expected
     assert result.passed is True
 
-    result = data_quality.label_consistency_test(dataset, 'column1').execute()
+    result = data_quality.test_label_consistency(dataset, "column1").execute()
     assert result.passed is False
+
 
 def test_mislabel():
     """
@@ -263,16 +265,17 @@ def test_mislabel():
     """
     # Setup data for testing
     data = {
-        'age': [20, 25, 23, 40, 67, 55, 44, 17, 47, 60],
-        'group': ["<30", "<30", "<30", ">=30", ">=30", ">=30", ">=30", ">=30", ">=30", ">=30"],
+        "age": [20, 25, 23, 40, 67, 55, 44, 17, 47, 60],
+        "group": ["<30", "<30", "<30", ">=30", ">=30", ">=30", ">=30", ">=30", ">=30", ">=30"],
     }
     df = pd.DataFrame(data)
     dataset = Dataset(df)
 
     # Call the function with test inputs
-    result = data_quality.mislabel(dataset, 'group', reference_columns=['age']).execute()
+    result = data_quality.test_mislabeling(dataset, "group", reference_columns=["age"]).execute()
     # Assert that the result is as expected
     assert result.passed is False, "Test failed: there should be mislabelled data"
+
 
 def test_feature_importance_test():
     """
@@ -286,17 +289,19 @@ def test_feature_importance_test():
     """
     # Setup data for testing
     X, y = make_classification(n_samples=100, n_features=4, random_state=42)
-    df = pd.DataFrame(X, columns=['feature1', 'feature2', 'feature3', 'feature4'])
-    df['target'] = y
+    df = pd.DataFrame(X, columns=["feature1", "feature2", "feature3", "feature4"])
+    df["target"] = y
     dataset = Dataset(df)
 
     # Call the function with test inputs
-    result = data_quality.feature_importance_test(dataset, ['feature1', 'feature2',
-                                                            'feature3', 'feature4'], 'target').execute()
+    result = data_quality.test_feature_importance(
+        dataset, ["feature1", "feature2", "feature3", "feature4"], "target"
+    ).execute()
 
     # Assert that the result is as expected
     assert result.passed is True, "Test failed: the test should pass"
     assert len(result.metric) == 4, "Test failed: there should be 4 features"
+
 
 def test_class_imbalance():
     """
@@ -310,23 +315,23 @@ def test_class_imbalance():
     """
     # Setup data for testing
     data = {
-        'target': ['class1'] * 50 + ['class2'] * 50,  # Balanced classes
+        "target": ["class1"] * 50 + ["class2"] * 50,  # Balanced classes
     }
     df = pd.DataFrame(data)
     dataset = Dataset(df)
 
     # Call the function with test inputs
-    result = data_quality.class_imbalance(dataset, 'target', 0.4, 0.6).execute()
+    result = data_quality.test_class_imbalance(dataset, "target", 0.4, 0.6).execute()
 
     # Assert that the result is as expected
     assert result.passed is True, "Test failed: the classes should be balanced"
-    assert result.metric == {'class1': 0.5, 'class2': 0.5}, "Test failed: the class proportions should be 0.5"
+    assert result.metric == {"class1": 0.5, "class2": 0.5}, "Test failed: the class proportions should be 0.5"
 
     # Test case where the classes are imbalanced
-    data['target'] = ['class1'] * 30 + ['class2'] * 70  # Imbalanced classes
+    data["target"] = ["class1"] * 30 + ["class2"] * 70  # Imbalanced classes
     df = pd.DataFrame(data)
     dataset = Dataset(df)
 
-    result = data_quality.class_imbalance(dataset, 'target', 0.4, 0.6).execute()
+    result = data_quality.test_class_imbalance(dataset, "target", 0.4, 0.6).execute()
     assert result.passed is False, "Test failed: the classes should be 0.4, 0.6"
-    assert result.metric == {'class1': 0.3, 'class2': 0.7}, "Test failed: the class proportions should be 0.3 and 0.7"
+    assert result.metric == {"class1": 0.3, "class2": 0.7}, "Test failed: the class proportions should be 0.3 and 0.7"
