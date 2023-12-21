@@ -138,7 +138,9 @@ class TextFromSpeechTypoTransformation(TextTransformation):
         # Skip if the text is too short
         if len(x) < self.min_length:
             return x
-
+        # Skip if language isn't supported
+        if row["language__gsk__meta"] not 'en':
+            return x 
         # We are considering homophones
         # Split the input text by spaces to get the words
         words = x.split()
