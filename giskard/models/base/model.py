@@ -25,7 +25,7 @@ from ...core.validation import configured_validate_arguments
 from ...datasets.base import Dataset
 from ...llm import get_default_client
 from ...llm.talk.config import MODEL_INSTRUCTION
-from ...llm.talk.tools import BaseTool, PredictFromDatasetTool
+from ...llm.talk.tools import BaseTool, PredictFromDatasetTool, SHAPExplanationTool
 from ...ml_worker.exceptions.giskard_exception import GiskardException, python_env_exception_helper
 from ...ml_worker.utils.logging import Timer
 from ...models.cache import ModelCache
@@ -567,7 +567,8 @@ class BaseModel(ABC):
     def _get_available_tools(self, dataset: Dataset) -> dict[str, BaseTool]:
         """Get the dictionary with available tools"""
         tools = {
-            PredictFromDatasetTool.default_name: PredictFromDatasetTool(self, dataset)
+            PredictFromDatasetTool.default_name: PredictFromDatasetTool(self, dataset),
+            SHAPExplanationTool.default_name: SHAPExplanationTool(self, dataset)
         }
 
         return tools
