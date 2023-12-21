@@ -247,3 +247,11 @@ def test_typo_transformation():
     p = t.make_perturbation("If one doesn't know his mistakes, he won't want to correct them.")
 
     assert p == "If one doesn't know his misakes, he won't want to corrcet them."
+
+def test_ocr_typo_transformation():
+    from giskard.scanner.robustness.text_transformations import TextFromOCRTypoTransformation
+
+    t = TextFromOCRTypoTransformation(column="text", rng_seed=1)
+    p = t.make_perturbation("If one doesn't know his mistakes, he won't want to correct them.")
+
+    assert p == "1f 0ne d0ezn't kn0uu his nnistakes, he w0n't want to correct tbenn."
