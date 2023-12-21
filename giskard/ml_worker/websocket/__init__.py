@@ -254,6 +254,7 @@ class SingleTestResult(ConfiguredBaseModel):
     messages: Optional[List[TestMessage]] = None
     props: Optional[Dict[str, str]] = None
     metric: Optional[float] = None
+    metric_name: Optional[str] = None
     missing_count: Optional[int] = None
     missing_percent: Optional[float] = None
     unexpected_count: Optional[int] = None

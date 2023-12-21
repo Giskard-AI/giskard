@@ -268,7 +268,6 @@ class ScanReport:
         except ImportError as e:
             raise GiskardImportError("wandb") from e
         from ..integrations.wandb.wandb_utils import get_wandb_run
-        from ..utils.analytics_collector import analytics
 
         run = get_wandb_run(run)
         try:
