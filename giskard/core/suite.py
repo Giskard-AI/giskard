@@ -688,7 +688,6 @@ def _try_upload_artifact(artifact, client, project_key: str, uploaded_uuid_statu
             artifact.upload(client, project_key)
             uploaded_uuid_status[artifact_id] = True
         except:  # noqa
-            print(uploaded_uuid_status)
             logger.warning(
                 f"Failed to upload {str(artifact)} used in the test suite. The test suite will be partially uploaded."
             )
