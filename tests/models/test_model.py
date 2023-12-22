@@ -24,7 +24,7 @@ def test_catboost_changed_column_order(german_credit_test_data, german_credit_ca
     german_credit_test_data.df = df.reindex(df.columns[::-1], axis=1)
 
     # reset feature names to test the behaviour when they're not provided
-    german_credit_catboost.feature_names = None
+    german_credit_catboost.meta.feature_names = None
 
     res = german_credit_catboost.predict(german_credit_test_data)
     assert len(res.prediction) == len(german_credit_test_data.df)
