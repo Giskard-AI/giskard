@@ -22,7 +22,13 @@ Think step by step and then call the `generate_inputs` function with the generat
 LANGUAGE_REQUIREMENT_PROMPT = "You must generate input using different languages among the following list: {languages}."
 
 
-class LLMGenerator(ABC):
+class BaseGenerator(ABC):
+    @abstractmethod
+    def generate_dataset(self, model, num_samples=10, column_types=None) -> Dataset:
+        ...
+
+
+class LLMGenerator(BaseGenerator, ABC):
     _default_temperature = 0.5
     _default_model = "gpt-4"
     _default_prompt = DEFAULT_GENERATE_INPUTS_PROMPT
@@ -39,10 +45,6 @@ class LLMGenerator(ABC):
         self.llm_client = llm_client or get_default_client()
         self.languages = languages
         self.prompt = prompt if prompt is not None else self._default_prompt
-
-    @abstractmethod
-    def generate_dataset(self, model, num_samples=10, column_types=None) -> Dataset:
-        ...
 
 
 class BaseDataGenerator(LLMGenerator):
