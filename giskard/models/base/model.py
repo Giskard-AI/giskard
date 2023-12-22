@@ -569,7 +569,7 @@ class BaseModel(ABC):
         """Get the dictionary with available tools"""
         tools = {
             PredictFromDatasetTool.default_name: PredictFromDatasetTool(self, dataset),
-            SHAPExplanationTool.default_name: SHAPExplanationTool(self, dataset)
+            # SHAPExplanationTool.default_name: SHAPExplanationTool(self, dataset)
         }
 
         return tools
@@ -592,8 +592,8 @@ class BaseModel(ABC):
         client = get_default_client()
         response = client.complete(
             messages=messages,
-            functions=[tool.specification for tool in list(available_tools.values())],
-            function_call="auto",
+            tools=[tool.specification for tool in list(available_tools.values())],
+            tool_choice="auto",
             temperature=0.1
         )
 
@@ -601,32 +601,34 @@ class BaseModel(ABC):
             messages.append(response_message)
 
         # If a tool was chosen.
-        if function_call := response.function_call:
-            function_args = function_call.args
-            function_name = function_call.function
+        if tool_calls := response.tool_calls:
+            for tool_call in tool_calls:
+                tool_args = tool_call.args
+                tool_name = tool_call.function
 
-            # Get the reference to the chosen function.
-            function = available_tools[function_name]
+                # Get the reference to the chosen callable tool.
+                tool = available_tools[tool_name]
 
-            try:
-                function_response = function(
-                    **function_args
+                try:
+                    tool_response = tool(
+                        **tool_args
+                    )
+                except Exception as error_msg:
+                    tool_response = ERROR_RESPONSE.format(
+                        tool_name=tool_name,
+                        tool_args=tool_args,
+                        error_msg=error_msg.args[0]
+                    )
+
+                # Append the tool's response to the conversation.
+                messages.append(
+                    {
+                        "tool_call_id": "",
+                        "role": "tool",
+                        "name": tool_name,
+                        "content": tool_response,
+                    }
                 )
-            except Exception as error_msg:
-                function_response = ERROR_RESPONSE.format(
-                    tool_name=function_name,
-                    tool_args=function_args,
-                    error_msg=error_msg.args[0]
-                )
-
-            # Append the tool's response to the conversation.
-            messages.append(
-                {
-                    "role": "assistant",
-                    "name": function_name,
-                    "content": function_response,
-                }
-            )
 
             # Get the final model's response, based on the tool's output.
             response_message = client.complete(
