@@ -40,18 +40,22 @@ def test_requirements_evaluator_correctly_flags_examples():
     client = Mock()
     client.complete.side_effect = [
         LLMOutput(
-            function_call=LLMFunctionCall(
-                function="evaluate_model",
-                args={"passed_test": False, "reason": "Model output is not coherent"},
-            )
+            tool_calls=[
+                LLMFunctionCall(
+                    function="evaluate_model",
+                    args={"passed_test": False, "reason": "Model output is not coherent"},
+                )
+            ]
         ),
         LLMOutput(
-            function_call=LLMFunctionCall(
-                function="evaluate_model",
-                args={
-                    "passed_test": True,
-                },
-            )
+            tool_calls=[
+                LLMFunctionCall(
+                    function="evaluate_model",
+                    args={
+                        "passed_test": True,
+                    },
+                )
+            ]
         ),
     ]
 
@@ -73,7 +77,7 @@ def test_requirements_evaluator_correctly_flags_examples():
     # Check LLM client calls arguments
     args = client.complete.call_args_list[0]
     assert "This is a model for testing purposes" in args[0][0][0]["content"]
-    assert args[1]["functions"][0]["name"] == "evaluate_model"
+    assert args[1]["tools"][0]["function"]["name"] == "evaluate_model"
 
 
 def test_requirements_evaluator_handles_generation_errors():
