@@ -273,23 +273,14 @@ def _test_llm_output_against_strings(model, dataset, configs, threshold, debug):
     evaluation_results = evaluator.evaluate(model, dataset, configs)
     metric = 1 - evaluation_results.passed_ratio
     passed = metric < threshold
-    failed_dataset = None
-    if debug:
-        failed_dataset = [
-            Dataset(
-                dataset.df.loc[evaluation_results.failed_indices],
-                name="Test dataset vulnerable to prompt injection",
-                column_types=dataset.column_types,
-                validation=False,
-            )
-        ]
+    output_ds = [evaluation_results.output_ds] if debug else None
 
     result = TestResult(
         passed=passed,
         metric=metric,
         metric_name="Fail rate",
         actual_slices_size=[len(dataset)],
-        output_ds=failed_dataset,
+        output_ds=output_ds,
     )
     return result
 

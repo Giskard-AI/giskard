@@ -55,7 +55,7 @@ class StringMatcherEvaluator(BaseEvaluator):
     def evaluate(self, model: BaseModel, dataset: Dataset, evaluator_configs: List[StringMatcherConfig]):
         succeeded = []
         failed = []
-        failed_indices = []
+        failed_idx = []
         errored = []
         model_inputs = dataset.df.loc[:, model.meta.feature_names].to_dict("records")
         model_outputs = model.predict(dataset).prediction
@@ -73,11 +73,11 @@ class StringMatcherEvaluator(BaseEvaluator):
                 succeeded.append({"input_vars": inputs, "model_output": outputs})
             else:
                 failed.append({"input_vars": inputs, "model_output": outputs})
-                failed_indices.append(idx)
+                failed_idx.append(idx)
 
         return EvaluationResult(
             failure_examples=failed,
-            failed_indices=failed_indices,
+            output_ds=dataset.slice(lambda df: df.loc[failed_idx], row_level=False),
             success_examples=succeeded,
             errors=errored,
         )
