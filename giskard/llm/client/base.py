@@ -13,10 +13,17 @@ class LLMFunctionCall:
 
 
 @dataclass
+class LLMToolCall:
+    id: str
+    function: str
+    args: Any
+
+
+@dataclass
 class LLMOutput:
     message: Optional[str] = None
     function_call: Optional[LLMFunctionCall] = None
-    tool_calls: Sequence[LLMFunctionCall] = field(default_factory=list)
+    tool_calls: Sequence[LLMToolCall] = field(default_factory=list)
 
 
 class LLMClient(ABC):
