@@ -248,10 +248,25 @@ def test_typo_transformation():
 
     assert p == "If one doesn't know his misakes, he won't want to corrcet them."
 
+
 def test_text_to_speech_typo_transformation():
     from giskard.scanner.robustness.text_transformations import TextFromSpeechTypoTransformation
 
-    t = TextFromSpeechTypoTransformation(column="text", rng_seed=1)
-    p = t.make_perturbation("If you two do it together, you will be able to do it.")
+    df = pd.DataFrame(
+        {
+            "text": [
+                "If you two do it together, you will be able to do it.",
+                "To be",
+            ],
+            "language__gsk__meta": "en",
+        }
+    )
 
-    assert p == "If u too do it together, ewe will bee able two do it."
+    t = TextFromSpeechTypoTransformation(column="text", rng_seed=1)
+
+    p = t.make_perturbation(df.iloc[0])
+    assert p == "If u too due it together, yew will b able too due it."
+
+    # Small text aren't perturbed
+    p = t.make_perturbation(df.iloc[1])
+    assert p == "To be"

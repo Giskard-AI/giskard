@@ -122,58 +122,6 @@ class TextTypoTransformation(TextTransformation):
             return typo if char.islower() else typo.upper()
         return char
 
-class TextFromSpeechTypoTransformation(TextTransformation):
-    name = "Add text from speech typos"
-    
-    def __init__(self, column, min_length=10, rng_seed=1729):
-        super().__init__(column)
-        from .entity_swap import speech_typos
-
-        self.min_length = min_length
-        self._word_typos = speech_typos
-        self.rng = np.random.default_rng(seed=rng_seed)
-
-    def make_perturbation(self, x):
-        # Skip if the text is too short
-        if len(x) < self.min_length:
-            return x
-        # Skip if language isn't supported
-        if row["language__gsk__meta"] not 'en':
-            return x 
-        # We are considering homophones
-        # Split the input text by spaces to get the words
-        words = x.split()
-        transformed_words = []
-
-        # Iterate over each word in the input text
-        for word in words:
-            # Normalize the word to handle cases 
-            normalized_word = word.lower()
-
-            # Check if the current word is present in _word_typos dictionary
-            if normalized_word in self._word_typos:
-                # Choose a random typo for the current word
-                typo_options = self._word_typos[normalized_word]
-                chosen_typo = self.rng.choice(typo_options)
-
-                # Retain original word case
-                if word.istitle():
-                    chosen_typo = chosen_typo.capitalize()
-                elif word.isupper():
-                    chosen_typo = chosen_typo.upper()
-                else:
-                    # Keep typo as it is in the typo dictionary
-                    pass
-                
-                # Append the typo to the transformed words list
-                transformed_words.append(chosen_typo)
-            else:
-                # The word is not in the dictionary, keep it as is
-                transformed_words.append(word)
-
-        # Reconstruct the transformed text from the words
-        transformed_text = ' '.join(transformed_words)
-        return transformed_text
 
 class TextPunctuationRemovalTransformation(TextTransformation):
     name = "Punctuation Removal"
@@ -338,3 +286,63 @@ class TextNationalityTransformation(TextLanguageBasedTransformation):
             text = text.replace(mask, replacement)
 
         return text
+
+
+class TextFromSpeechTypoTransformation(TextLanguageBasedTransformation):
+    name = "Add text from speech typos"
+
+    def __init__(self, column, rng_seed=1729, min_length=10):
+        super().__init__(column, rng_seed=rng_seed)
+
+        self.min_length = min_length
+
+    def _load_dictionaries(self):
+        from .entity_swap import speech_typos
+
+        self._word_typos = speech_typos
+
+    def make_perturbation(self, row):
+        text = row[self.column]
+        language = row["language__gsk__meta"]
+
+        # Skip if the text is too short
+        if len(text) < self.min_length:
+            return text
+        # Skip if language isn't supported
+        if language != "en":
+            return text
+
+        # We are considering homophones
+        # Split the input text by spaces to get the words
+        words = text.split()
+        transformed_words = []
+
+        # Iterate over each word in the input text
+        for word in words:
+            # Normalize the word to handle cases
+            normalized_word = word.lower()
+
+            # Check if the current word is present in _word_typos dictionary
+            if normalized_word in self._word_typos:
+                # Choose a random typo for the current word
+                typo_options = self._word_typos[normalized_word]
+                chosen_typo = self.rng.choice(typo_options)
+
+                # Retain original word case
+                if word.istitle():
+                    chosen_typo = chosen_typo.capitalize()
+                elif word.isupper():
+                    chosen_typo = chosen_typo.upper()
+                else:
+                    # Keep typo as it is in the typo dictionary
+                    pass
+
+                # Append the typo to the transformed words list
+                transformed_words.append(chosen_typo)
+            else:
+                # The word is not in the dictionary, keep it as is
+                transformed_words.append(word)
+
+        # Reconstruct the transformed text from the words
+        transformed_text = " ".join(transformed_words)
+        return transformed_text
