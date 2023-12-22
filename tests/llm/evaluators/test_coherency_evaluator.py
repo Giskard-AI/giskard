@@ -87,16 +87,20 @@ def test_requirements_evaluator_handles_generation_errors():
     client = Mock()
     client.complete.side_effect = [
         LLMOutput(
-            function_call=LLMFunctionCall(
-                function="evaluate_model",
-                args={"passed_test": True},
-            )
+            tool_calls=[
+                LLMFunctionCall(
+                    function="evaluate_model",
+                    args={"passed_test": True},
+                )
+            ]
         ),
         LLMOutput(
-            function_call=LLMFunctionCall(
-                function="evaluate_model",
-                args={"model_did_pass_the_test": False},
-            )
+            tool_calls=[
+                LLMFunctionCall(
+                    function="evaluate_model",
+                    args={"model_did_pass_the_test": False},
+                )
+            ]
         ),
     ]
 
