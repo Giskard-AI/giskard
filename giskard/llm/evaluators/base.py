@@ -9,22 +9,25 @@ from ...models.base.model import BaseModel
 
 EVALUATE_MODEL_FUNCTIONS = [
     {
-        "name": "evaluate_model",
-        "description": "Evaluates if the model passes the test",
-        "parameters": {
-            "type": "object",
-            "properties": {
-                "passed_test": {
-                    "type": "boolean",
-                    "description": "true if the model successfully passes the test",
+        "type": "function",
+        "function": {
+            "name": "evaluate_model",
+            "description": "Evaluates if the model passes the test",
+            "parameters": {
+                "type": "object",
+                "properties": {
+                    "passed_test": {
+                        "type": "boolean",
+                        "description": "true if the model successfully passes the test",
+                    },
+                    "reason": {
+                        "type": "string",
+                        "description": "optional short description of why the model does not pass the test, in 1 or 2 short sentences",
+                    },
                 },
-                "reason": {
-                    "type": "string",
-                    "description": "optional short description of why the model does not pass the test, in 1 or 2 short sentences",
-                },
+                "required": ["passed_test"],
             },
         },
-        "required": ["passed_test"],
     },
 ]
 
@@ -90,18 +93,18 @@ class LLMBasedEvaluator:
             try:
                 out = self.llm_client.complete(
                     [{"role": "system", "content": prompt}],
-                    functions=funcs,
-                    function_call={"name": "evaluate_model"},
+                    tools=funcs,
+                    tool_choice={"type": "function", "function": {"name": "evaluate_model"}},
                     temperature=self.llm_temperature,
                     caller_id=self.__class__.__name__,
                 )
-                if out.function_call is None or "passed_test" not in out.function_call.args:
+                if len(out.tool_calls) != 1 or "passed_test" not in out.tool_calls[0].args:
                     raise LLMGenerationError("Invalid function call arguments received")
             except LLMGenerationError as err:
                 errored.append({"message": str(err), "sample": sample})
                 continue
 
-            args = out.function_call.args
+            args = out.tool_calls[0].args
             if args["passed_test"]:
                 succeeded.append({"input_vars": input_vars, "model_output": model_output, "reason": args.get("reason")})
             else:

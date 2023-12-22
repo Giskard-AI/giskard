@@ -1,13 +1,12 @@
-from typing import Optional, Sequence
-
 from abc import ABC, abstractmethod
 
 import pandas as pd
 from pydantic import BaseModel
+from typing import Optional, Sequence
 
-from ...datasets.base import Dataset
 from ..client import LLMClient, get_default_client
 from ..errors import LLMGenerationError
+from ...datasets.base import Dataset
 
 DEFAULT_GENERATE_INPUTS_PROMPT = """You are auditing an AI model. Your task is to generate typical but varied inputs for this model.
 
@@ -61,20 +60,23 @@ class BaseDataGenerator(LLMGenerator):
     def _make_generate_input_functions(self, model: BaseModel, num_samples: int):
         return [
             {
-                "name": "generate_inputs",
-                "description": "generates inputs for model audit",
-                "parameters": {
-                    "type": "object",
-                    "properties": {
-                        "inputs": {
-                            "type": "array",
-                            "items": {
-                                "type": "object",
-                                "properties": {name: {"type": "string"} for name in model.meta.feature_names},
-                            },
-                        }
+                "type": "function",
+                "function": {
+                    "name": "generate_inputs",
+                    "description": "generates inputs for model audit",
+                    "parameters": {
+                        "type": "object",
+                        "properties": {
+                            "inputs": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {name: {"type": "string"} for name in model.meta.feature_names},
+                                },
+                            }
+                        },
+                        "required": ["inputs"],
                     },
-                    "required": ["inputs"],
                 },
             }
         ]
@@ -107,19 +109,19 @@ class BaseDataGenerator(LLMGenerator):
 
         """
         prompt = self._make_generate_input_prompt(model, num_samples)
-        functions = self._make_generate_input_functions(model, num_samples)
+        tools = self._make_generate_input_functions(model, num_samples)
 
         out = self.llm_client.complete(
             messages=[{"role": "system", "content": prompt}],
-            functions=functions,
-            function_call={"name": "generate_inputs"},
+            tools=tools,
+            tool_choice={"type": "function", "function": {"name": "generate_inputs"}},
             temperature=self.llm_temperature,
             caller_id=self.__class__.__name__,
         )
 
         try:
-            generated = out.function_call.args["inputs"]
-        except (AttributeError, KeyError) as err:
+            generated = out.tool_calls[0].args["inputs"]
+        except (AttributeError, KeyError, IndexError) as err:
             raise LLMGenerationError("Could not parse generated inputs") from err
 
         dataset = Dataset(
