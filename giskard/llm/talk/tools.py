@@ -13,20 +13,8 @@ from giskard.datasets.base import Dataset
 
 
 class BaseTool(ABC):
-    @property
-    @abstractmethod
-    def specification(self) -> str:
-        ...
-
-    @abstractmethod
-    def __call__(self, *args, **kwargs) -> str:
-        ...
-
-
-class PredictFromDatasetTool(BaseTool):
-    default_name = "predict_from_dataset"
-    default_description = ("You expect a dictionary with features and their values to filter rows from the dataset, "
-                           "then you run the model prediction on that rows and finally return the prediction result.")
+    default_name: str = ...
+    default_description: str = ...
 
     def __init__(self, model: BaseModel, dataset: Dataset, name: str = None, description: str = None):
         self._model = model
@@ -42,6 +30,22 @@ class PredictFromDatasetTool(BaseTool):
     @property
     def description(self) -> str:
         return self._description
+
+    @property
+    @abstractmethod
+    def specification(self) -> str:
+        ...
+
+    @abstractmethod
+    def __call__(self, *args, **kwargs) -> str:
+        ...
+
+
+class PredictFromDatasetTool(BaseTool):
+    default_name: str = "predict_from_dataset"
+    default_description: str = ("You expect a dictionary with features and their values to filter rows from "
+                                "the dataset, then you run the model prediction on that rows and finally return "
+                                "the prediction result.")
 
     def _get_feature_json_type(self):
         number_columns = {column: "number" for column in self._dataset.df.select_dtypes(include=(int, float)).columns}
@@ -102,10 +106,12 @@ class SHAPExplanationTool(PredictFromDatasetTool):
 
     def _get_shap_explanations(self, filtered_dataset: Dataset) -> Explanation:
         from shap import KernelExplainer
-        from giskard.models.model_explanation import _prepare_for_explanation, _get_background_example, _get_highest_proba_shap
+        from giskard.models.model_explanation import _prepare_for_explanation, _get_background_example, \
+            _get_highest_proba_shap
 
         # Prepare background sample to be used in the KernelSHAP.
-        background_df = self._model.prepare_dataframe(self._dataset.df, self._dataset.column_dtypes, self._dataset.target)
+        background_df = self._model.prepare_dataframe(self._dataset.df, self._dataset.column_dtypes,
+                                                      self._dataset.target)
         background_sample = _get_background_example(background_df, self._dataset.column_types)
 
         # Prepare input data for an explanation.
@@ -123,8 +129,10 @@ class SHAPExplanationTool(PredictFromDatasetTool):
             shap_values = _get_highest_proba_shap(shap_values, self._model, filtered_dataset)
 
         # Put SHAP values to the Explanation object for a convenience.
-        feature_names = self._model.meta.feature_names or list(self._dataset.df.columns.drop(self._dataset.target, errors="ignore"))
-        shap_explanations = Explanation(shap_values, data=filtered_dataset.df[feature_names], feature_names=feature_names)
+        feature_names = self._model.meta.feature_names or list(
+            self._dataset.df.columns.drop(self._dataset.target, errors="ignore"))
+        shap_explanations = Explanation(shap_values, data=filtered_dataset.df[feature_names],
+                                        feature_names=feature_names)
         return shap_explanations
 
     def __call__(self, row_filter: dict) -> str:
