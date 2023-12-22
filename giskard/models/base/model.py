@@ -15,6 +15,8 @@ import cloudpickle
 import numpy as np
 import pandas as pd
 import yaml
+from openai.types.chat.chat_completion_message import ChatCompletionMessage
+from openai.types.chat.chat_completion_message_tool_call import ChatCompletionMessageToolCall, Function
 
 from giskard.client.dtos import ModelMetaInfo
 
@@ -22,8 +24,8 @@ from ...client.giskard_client import GiskardClient
 from ...core.core import ModelMeta, ModelType, SupportedModelTypes
 from ...core.validation import configured_validate_arguments
 from ...datasets.base import Dataset
-from ...llm import get_default_client
-from ...llm.talk.config import MODEL_INSTRUCTION, ERROR_RESPONSE
+from ...llm import get_default_client, set_llm_model
+from ...llm.talk.config import MODEL_INSTRUCTION, ERROR_RESPONSE, LLM_MODEL
 from ...llm.talk.tools import BaseTool, PredictFromDatasetTool, SHAPExplanationTool
 from ...ml_worker.exceptions.giskard_exception import GiskardException, python_env_exception_helper
 from ...ml_worker.utils.logging import Timer
@@ -574,7 +576,25 @@ class BaseModel(ABC):
 
         return tools
 
+    @staticmethod
+    def _form_tool_calls_message(tool_calls):
+        return ChatCompletionMessage(
+            content=None,
+            role="assistant",
+            tool_calls=[
+                ChatCompletionMessageToolCall(
+                    id=tool_call.id,
+                    function=Function(arguments=str(tool_call.args), name=tool_call.function),
+                    type="function"
+                )
+                for tool_call in tool_calls
+            ]
+        )
+
     def talk(self, question: str, dataset: Dataset) -> str:
+        set_llm_model(LLM_MODEL)
+        client = get_default_client()
+
         available_tools = self._get_available_tools(dataset)
 
         system_prompt = MODEL_INSTRUCTION.format(
@@ -589,7 +609,6 @@ class BaseModel(ABC):
             {"role": "user", "content": question}
         ]
 
-        client = get_default_client()
         response = client.complete(
             messages=messages,
             tools=[tool.specification for tool in list(available_tools.values())],
@@ -602,6 +621,8 @@ class BaseModel(ABC):
 
         # If a tool was chosen.
         if tool_calls := response.tool_calls:
+            messages.append(self._form_tool_calls_message(tool_calls))
+
             for tool_call in tool_calls:
                 tool_args = tool_call.args
                 tool_name = tool_call.function
@@ -623,7 +644,7 @@ class BaseModel(ABC):
                 # Append the tool's response to the conversation.
                 messages.append(
                     {
-                        "tool_call_id": "",
+                        "tool_call_id": tool_call.id,
                         "role": "tool",
                         "name": tool_name,
                         "content": tool_response,

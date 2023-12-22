@@ -1,3 +1,5 @@
+LLM_MODEL = "gpt-4-1106-preview"
+
 MODEL_INSTRUCTION = """You are an agent designed to help a user obtain information about the model and/or it's predictions.
 
 You interact with the model through different tools. Tools are functions, whose response is used to enrich you with the necessary context to answer a user's question. 
