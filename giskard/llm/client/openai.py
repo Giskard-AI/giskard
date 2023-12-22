@@ -5,6 +5,7 @@ from tenacity import retry, retry_if_exception_type, stop_after_attempt, wait_ex
 from typing import Dict, Optional, Sequence
 
 from . import LLMClient, LLMFunctionCall, LLMLogger, LLMOutput
+from .base import LLMToolCall
 from ..config import LLMConfigurationError
 from ..errors import LLMGenerationError, LLMImportError
 
@@ -78,8 +79,10 @@ class BaseOpenAIClient(LLMClient, ABC):
         tool_calls = []
         for tool_call in cc.get("tool_calls") or []:
             tool_calls.append(
-                LLMFunctionCall(
-                    function=tool_call["function"]["name"], args=json.loads(tool_call["function"]["arguments"])
+                LLMToolCall(
+                    id=tool_call["id"],
+                    function=tool_call["function"]["name"],
+                    args=json.loads(tool_call["function"]["arguments"]),
                 )
             )
 
