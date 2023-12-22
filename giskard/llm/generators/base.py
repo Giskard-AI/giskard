@@ -121,7 +121,7 @@ class BaseDataGenerator(LLMGenerator):
 
         try:
             generated = out.tool_calls[0].args["inputs"]
-        except (AttributeError, KeyError) as err:
+        except (AttributeError, KeyError, IndexError) as err:
             raise LLMGenerationError("Could not parse generated inputs") from err
 
         dataset = Dataset(

@@ -9,15 +9,21 @@ def test_generator_formats_prompt_with_issue_desc_and_requirement():
     llm_client.complete.side_effect = [
         LLMOutput(
             None,
-            LLMFunctionCall(
-                "generate_inputs",
-                {
-                    "inputs": [
-                        {"question": "What is the meaning of life?", "other_feature": "test"},
-                        {"question": "What is the airspeed velocity of an unladen swallow?", "other_feature": "pass"},
-                    ]
-                },
-            ),
+            None,
+            [
+                LLMFunctionCall(
+                    "generate_inputs",
+                    {
+                        "inputs": [
+                            {"question": "What is the meaning of life?", "other_feature": "test"},
+                            {
+                                "question": "What is the airspeed velocity of an unladen swallow?",
+                                "other_feature": "pass",
+                            },
+                        ]
+                    },
+                )
+            ],
         )
     ]
 
