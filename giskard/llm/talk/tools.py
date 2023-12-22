@@ -57,17 +57,20 @@ class PredictFromDatasetTool(BaseTool):
         feature_json_type = self._get_feature_json_type()
 
         return {
-            "name": self.name,
-            "description": self.description,
-            "parameters": {
-                "type": "object",
-                "properties": {
-                    "row_filter": {
-                        "type": "object",
-                        "properties": {feature: {"type": dtype} for feature, dtype in feature_json_type.items()}
-                    }
-                },
-                "required": ["row_filter"]
+            "type": "function",
+            "function": {
+                "name": self.name,
+                "description": self.description,
+                "parameters": {
+                    "type": "object",
+                    "properties": {
+                        "row_filter": {
+                            "type": "object",
+                            "properties": {feature: {"type": dtype} for feature, dtype in feature_json_type.items()}
+                        }
+                    },
+                    "required": ["row_filter"]
+                }
             }
         }
 
