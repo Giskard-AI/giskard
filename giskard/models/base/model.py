@@ -571,7 +571,7 @@ class BaseModel(ABC):
         """Get the dictionary with available tools"""
         tools = {
             PredictFromDatasetTool.default_name: PredictFromDatasetTool(self, dataset),
-            # SHAPExplanationTool.default_name: SHAPExplanationTool(self, dataset)
+            SHAPExplanationTool.default_name: SHAPExplanationTool(self, dataset)
         }
 
         return tools
