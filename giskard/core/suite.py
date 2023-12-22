@@ -390,6 +390,24 @@ class Suite:
             logger.info(f"{test_name} ({params}): {format_test_result(r)}")
 
         return TestSuiteResult(passed, results)
+    
+    def to_unittest(self, **suite_gen_args):
+        run_args = self.default_params.copy()
+        run_args.update(suite_gen_args)
+
+        unittests: List[TestPartial] = list()
+        required_params = self.find_required_params()
+        undefined_params = {k: v for k, v in required_params.items() if k not in run_args}
+        if len(undefined_params):
+            raise ValueError(f"Missing {len(undefined_params)} required parameters: {undefined_params}")
+
+        for test_partial in self.tests:
+            test_params = self.create_test_params(test_partial, run_args)
+            unittest = test_partial.giskard_test.get_builder()(**test_params)
+            setattr(unittest, 'test_id', test_partial.test_id)
+            unittests.append(unittest)
+
+        return unittests
 
     @staticmethod
     def create_test_params(test_partial, kwargs):

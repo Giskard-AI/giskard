@@ -100,6 +100,18 @@ class GiskardTest(Artifact[TestFunctionMeta], ABC):
 
     def get_builder(self):
         return type(self)
+    
+    def assert_(self):
+        result = self.execute()
+        if type(result) == bool:
+            assert result
+        else:
+            if result.messages:
+                message = ' '.join([repr(message) for message in result.messages])
+            else:
+                message = ' '.join(str(result).replace('\n', ' ').split())
+
+            assert result.passed, message
 
 
 Function = Callable[..., Result]
