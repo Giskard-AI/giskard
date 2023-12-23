@@ -11,7 +11,6 @@ from giskard.ml_worker.testing.registry.decorators_utils import (
 )
 from giskard.ml_worker.testing.registry.giskard_test import GiskardTest, GiskardTestMethod
 
-from ....utils.analytics_collector import analytics
 
 
 # TODO: I think this should be moved into giskard_test.py ?

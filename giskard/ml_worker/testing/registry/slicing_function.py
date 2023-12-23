@@ -17,7 +17,6 @@ from giskard.ml_worker.testing.registry.decorators_utils import (
 )
 from giskard.ml_worker.testing.registry.registry import get_object_uuid, tests_registry
 
-from ....utils.analytics_collector import analytics
 
 SlicingFunctionType = Callable[..., bool]
 
