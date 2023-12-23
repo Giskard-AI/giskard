@@ -42,7 +42,6 @@ def test(
             TestFunctionMeta(original, name=name, tags=tags, debug_description=debug_description, type="TEST")
         )
 
-        analytics.track("custom:test:created", {"name": original.__name__})
         if inspect.isclass(original) and issubclass(original, GiskardTest):
             return original
 
