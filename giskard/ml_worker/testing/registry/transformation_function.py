@@ -130,7 +130,6 @@ def transformation_function(
             )
         )
 
-        analytics.track("custom:transformation_function:created", {"name": func.__name__})
         if inspect.isclass(func) and issubclass(func, TransformationFunction):
             return func
         return _wrap_transformation_function(func, row_level, cell_level)()
