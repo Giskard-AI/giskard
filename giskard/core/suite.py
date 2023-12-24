@@ -6,8 +6,9 @@ import traceback
 from dataclasses import dataclass
 from functools import singledispatchmethod
 
+from xml.etree.ElementTree import Element, SubElement, tostring
+from xml.dom import minidom
 from mlflow import MlflowClient
-
 from giskard.client.dtos import SuiteInfo, SuiteTestDTO, TestInputDTO, TestSuiteDTO
 from giskard.client.giskard_client import GiskardClient
 from giskard.core.core import TestFunctionMeta
@@ -151,6 +152,18 @@ class TestSuiteResult:
                 "repository for further assistance: https://github.com/Giskard-AI/giskard."
             ) from e
         run.log({"Test suite results/Test-Suite Results": wandb.Table(columns=columns, data=data)})
+      
+    def to_junit(self):
+        """Convert the test suite result to JUnit XML format."""
+        testsuite = Element('testsuite')
+
+        for test in self.results:
+            testcase = SubElement(testsuite, 'testcase', {'name': test.metric_name})
+            if not test.passed:
+                failure = SubElement(testcase, 'failure')
+                failure.text = test.messages
+
+        return minidom.parseString(tostring(testsuite)).toprettyxml(indent="   ")
 
 
 class SuiteInput:
