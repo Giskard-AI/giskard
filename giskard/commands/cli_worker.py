@@ -160,9 +160,11 @@ def _start_command(is_server, url: AnyHttpUrl, api_key, is_daemon, hf_token=None
 
             run_daemon(is_server, url, api_key, hf_token)
         else:
-            if sys.platform == "win32" or sys.version_info < (3, 10):
+            if settings.force_asyncio_event_loop or sys.platform == "win32":
+                logger.info("Using asyncio to run jobs")
                 from asyncio import run
             else:
+                logger.info("Using uvloop to run jobs")
                 from uvloop import run
             run(_start_worker(is_server, url, api_key, hf_token, nb_workers))
     except KeyboardInterrupt:
