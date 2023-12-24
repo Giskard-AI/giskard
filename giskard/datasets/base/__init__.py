@@ -230,7 +230,6 @@ class Dataset(ColumnMetadataMixin):
         }
 
         self.data_processor = DataProcessor()
-        analytics.track("wrap:dataset:success", {"nb_rows": self.number_of_rows})
         logger.info("Your 'pandas.DataFrame' is successfully wrapped by Giskard's 'Dataset' wrapper class.")
 
     @property
