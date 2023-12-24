@@ -26,6 +26,7 @@ DEMO_OPENAI_RESPONSE = ChatCompletion(
             finish_reason="stop",
             index=0,
             message=ChatCompletionMessage(content="This is a test!", role="assistant", function_call=None),
+            logprobs=None,
         )
     ],
     created=1677858242,
@@ -47,6 +48,7 @@ DEMO_OPENAI_RESPONSE_FC = ChatCompletion(
                     name="my_test_function", arguments='{\n  "my_parameter": "Parameter Value"\n}'
                 ),
             ),
+            logprobs=None,
         )
     ],
     created=1677858242,
