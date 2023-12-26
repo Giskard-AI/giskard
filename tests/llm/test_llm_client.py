@@ -9,6 +9,7 @@ from openai.types.chat.chat_completion_message import FunctionCall
 
 from giskard.llm.client import LLMFunctionCall, LLMOutput, get_default_client, set_llm_model, set_llm_api
 from giskard.llm.client.openai import LegacyOpenAIClient, OpenAIClient
+from tests.utils import TEST_UUID
 
 OLD_OPEN_AI = False
 try:
@@ -58,7 +59,7 @@ DEMO_OPENAI_RESPONSE_FC = ChatCompletion(
 )
 
 DEMO_LEGACY_OPENAI_RESPONSE = {
-    "id": "chatcmpl-abc123",
+    "id": TEST_UUID,
     "object": "chat.completion",
     "created": 1677858242,
     "model": "gpt-3.5-turbo-0613",
@@ -67,7 +68,7 @@ DEMO_LEGACY_OPENAI_RESPONSE = {
 }
 
 DEMO_LEGACY_OPENAI_RESPONSE_FC = {
-    "id": "chatcmpl-abc123",
+    "id": TEST_UUID,
     "object": "chat.completion",
     "created": 1677858242,
     "model": "gpt-3.5-turbo-0613",
