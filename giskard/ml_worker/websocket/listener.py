@@ -592,8 +592,11 @@ def run_test_suite(
 
 
 @websocket_actor(MLWorkerAction.echo, execute_in_pool=False)
-def echo(params: websocket.EchoMsg, *args, **kwargs) -> websocket.EchoMsg:
-    received_jobs = list(POOL.pool.futures_mapping.keys())
+def echo(params: websocket.EchoMsg, *args, **kwargs) -> websocket.EchoResponse:
+    if POOL.pool:
+        received_jobs = list(POOL.pool.futures_mapping.keys())
+    else:
+        received_jobs = []
     return websocket.EchoResponse(msg=params.msg, job_ids=received_jobs)
 
 
