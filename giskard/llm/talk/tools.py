@@ -10,6 +10,7 @@ if TYPE_CHECKING:
     from giskard.models.base import BaseModel
 
 from giskard.datasets.base import Dataset
+from giskard.llm.talk.config import ToolDescription
 
 
 class BaseTool(ABC):
@@ -43,11 +44,9 @@ class BaseTool(ABC):
 
 class PredictFromDatasetTool(BaseTool):
     default_name: str = "predict_from_dataset"
-    default_description: str = ("You expect a dictionary with features and their values to filter rows from "
-                                "the dataset, then you run the model prediction on that rows and finally return "
-                                "the prediction result.")
+    default_description: str = ToolDescription.PREDICT_FROM_DATASET.value
 
-    def _get_feature_json_type(self):
+    def _get_feature_json_type(self) -> dict[any, str]:
         number_columns = {column: "number" for column in self._dataset.df.select_dtypes(include=(int, float)).columns}
         string_columns = {column: "string" for column in self._dataset.df.select_dtypes(exclude=(int, float)).columns}
         return number_columns | string_columns
@@ -66,7 +65,8 @@ class PredictFromDatasetTool(BaseTool):
                     "properties": {
                         "row_filter": {
                             "type": "object",
-                            "properties": {feature: {"type": dtype} for feature, dtype in feature_json_type.items()}
+                            "properties": {feature: {"type": dtype} for feature, dtype in
+                                           list(feature_json_type.items())}
                         }
                     },
                     "required": ["row_filter"]
@@ -74,9 +74,9 @@ class PredictFromDatasetTool(BaseTool):
             }
         }
 
-    def _get_filtered_dataset(self, row_filter: dict) -> Dataset:
+    def _filter_dataset(self, row_filter: dict) -> Dataset:
         filtered_df = self._dataset.df.copy()
-        for col_name, col_value in row_filter.items():
+        for col_name, col_value in list(row_filter.items()):
             if filtered_df[col_name].dtype == "object":
                 filtered_df = filtered_df[filtered_df[col_name].str.lower() == str(col_value).lower()]
             else:
@@ -85,27 +85,17 @@ class PredictFromDatasetTool(BaseTool):
         return Dataset(filtered_df)
 
     def __call__(self, row_filter: dict) -> str:
-        # 1) Filter dataset using predicted filter.
-        filtered_dataset = self._get_filtered_dataset(row_filter)
-
-        # 2) Get model prediction.
+        filtered_dataset = self._filter_dataset(row_filter)
         prediction = self._model.predict(filtered_dataset).prediction
 
-        # 3) Finalise the result.
-        result = ", ".join(prediction)
-
-        return result
+        # Finalise the result.
+        return ", ".join(prediction)
 
 
 class SHAPExplanationTool(PredictFromDatasetTool):
-    default_name = "shap_prediction_explanation"
-    default_description = ("You expect a dictionary with feature names as keys and their values as dict values, "
-                           "which you use to filter rows in the dataset, "
-                           "then you run the SHAP explanation on that filtered rows, "
-                           "and finally you return the SHAP explanation result as well as the model prediction result."
-                           "Please note, that the bigger SHAP value - the more important feature is for prediction.")
-
-    _result_template = "'{feature_name}' | {attributions_values}"
+    default_name: str = "shap_prediction_explanation"
+    default_description: str = ToolDescription.SHAP_EXPLANATION.value
+    _result_template: str = "'{feature_name}' | {attributions_values}"
 
     def _get_shap_explanations(self, filtered_dataset: Dataset) -> Explanation:
         from shap import KernelExplainer
@@ -139,27 +129,21 @@ class SHAPExplanationTool(PredictFromDatasetTool):
         return shap_explanations
 
     def __call__(self, row_filter: dict) -> str:
-        # 0) Get prediction result from the parent tool.
-        prediction_result = super().__call__(row_filter)
-
-        # 1) Filter the dataset using the LLM-created filter expression.
-        filtered_dataset = self._get_filtered_dataset(row_filter)
-
-        # 2) Get a SHAP explanation.
+        filtered_dataset = self._filter_dataset(row_filter)
         explanations = self._get_shap_explanations(filtered_dataset)
 
-        # 3) Finalise the result.
+        # Finalise the result.
         shap_result = [self._result_template.format(feature_name=f_name,
                                                     attributions_values=list(zip(np.abs(explanations[:, f_name].values),
                                                                                  explanations[:, f_name].data)))
                        for f_name in explanations.feature_names]
         shap_result = "\n".join(shap_result)
 
-        result = (f"Prediction result:\n"
-                  f"{prediction_result}\n\n"
-                  f"SHAP result: \n"
-                  f"'Feature name' | [('SHAP value', 'Feature value'), ...]\n"
-                  f"--------------------------------------------------------\n"
-                  f"{shap_result}\n\n")
-
-        return result
+        # Get prediction result from the parent tool, to add more context to the result.
+        prediction_result = super().__call__(row_filter)
+        return (f"Prediction result:\n"
+                f"{prediction_result}\n\n"
+                f"SHAP result: \n"
+                f"'Feature name' | [('SHAP value', 'Feature value'), ...]\n"
+                f"--------------------------------------------------------\n"
+                f"{shap_result}\n\n")

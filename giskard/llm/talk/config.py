@@ -1,3 +1,5 @@
+from enum import Enum
+
 LLM_MODEL = "gpt-4-1106-preview"
 
 MODEL_INSTRUCTION = """You are an agent designed to help a user obtain information about the model and/or it's predictions.
@@ -27,3 +29,20 @@ Error message: "{error_msg}"\n
 Tool name: "{tool_name}"\n
 Tool arguments: "{tool_args}"\n
 """
+
+# Tools descriptions (instructions).
+_PREDICT_FROM_DATASET_TOOL_DESCRIPTION = ("You expect a dictionary with features and their values to filter rows from "
+                                          "the dataset, then you run the model prediction on that rows and finally "
+                                          "return the prediction result.")
+
+_SHAP_EXPLANATION_TOOL_DESCRIPTION = ("You expect a dictionary with feature names as keys and their values as dict "
+                                      "values, which you use to filter rows in the dataset, then you run the SHAP "
+                                      "explanation on that filtered rows, and finally you return the SHAP explanation "
+                                      "result as well as the model prediction result."
+                                      "Please note, that the bigger SHAP value - the more important feature is for the"
+                                      "prediction.")
+
+
+class ToolDescription(str, Enum):
+    PREDICT_FROM_DATASET = _PREDICT_FROM_DATASET_TOOL_DESCRIPTION
+    SHAP_EXPLANATION = _SHAP_EXPLANATION_TOOL_DESCRIPTION
