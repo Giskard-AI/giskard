@@ -1,7 +1,6 @@
-from typing import Dict, List, Optional, Type
-
 import json
 from pathlib import Path
+from typing import Dict, List, Optional, Type
 
 import pydantic
 import pytest
@@ -90,6 +89,8 @@ MANDATORY_FIELDS = {
 }
 
 OPTIONAL_FIELDS = {
+    "AbortParams": [],
+    "EchoResponse": [],
     "ArtifactRef": ["project_key", "sample"],
     "Catalog": [],
     "CreateSubDataset": [],
