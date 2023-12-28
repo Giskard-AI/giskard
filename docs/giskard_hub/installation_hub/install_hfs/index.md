@@ -41,7 +41,7 @@ from the Giskard template.
 
 You can then deploy Giskard on Spaces with just a few clicks. You need to define the **Owner** (your personal account or an organization), a **Space name**, and the **Visibility**.
 
-![Space Duplication popup](../../../assets/integrations/hfs/create_from_template.png)
+![Space from template](../../../assets/integrations/hfs/create_from_template.png)
 
 :::{hint}
 **Owner and visibility**:
