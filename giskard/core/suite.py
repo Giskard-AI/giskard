@@ -20,6 +20,7 @@ from giskard.ml_worker.testing.registry.slicing_function import SlicingFunction
 from giskard.ml_worker.testing.registry.transformation_function import TransformationFunction
 from giskard.ml_worker.testing.test_result import TestMessage, TestMessageLevel, TestResult
 from giskard.models.base import BaseModel
+from ..client.python_utils import warning
 from ..utils.analytics_collector import analytics
 from ..utils.artifacts import serialize_parameter
 
@@ -434,8 +435,7 @@ class Suite:
 
         self.id = client.save_test_suite(self.to_dto(client, project_key, uploaded_uuid_status))
 
-        project_id = client.get_project(project_key).project_id
-        print(f"Test suite has been saved: {client.host_url}/main/projects/{project_id}/test-suite/{self.id}/overview")
+        print(f"Test suite has been saved: {client.host_url}/main/projects/{project_key}/test-suite/{self.id}/overview")
         analytics.track("hub:test_suite:uploaded")
         return self
 
@@ -688,7 +688,7 @@ def _try_upload_artifact(artifact, client, project_key: str, uploaded_uuid_statu
             artifact.upload(client, project_key)
             uploaded_uuid_status[artifact_id] = True
         except:  # noqa NOSONAR
-            logger.warning(
+            warning(
                 f"Failed to upload {str(artifact)} used in the test suite. The test suite will be partially uploaded."
             )
             uploaded_uuid_status[artifact_id] = False
