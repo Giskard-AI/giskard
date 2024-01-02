@@ -1,4 +1,5 @@
 """API Client to interact with the Giskard app"""
+import json
 import logging
 import os
 import posixpath
@@ -17,6 +18,7 @@ from typing import List
 
 import giskard
 from giskard.client.dtos import DatasetMetaInfo, ModelMetaInfo, ServerInfo, SuiteInfo, TestSuiteDTO
+from giskard.client.io_utils import GiskardJSONSerializer
 from giskard.client.project import Project
 from giskard.client.python_utils import warning
 from giskard.core.core import SMT, DatasetMeta, ModelMeta, TestFunctionMeta
@@ -206,6 +208,17 @@ class GiskardClient:
     def load_dataset_meta(self, project_key: str, uuid: str) -> DatasetMeta:
         res = self._session.get(f"project/{project_key}/datasets/{uuid}").json()
         info = DatasetMetaInfo.parse_obj(res)  # Used for validation, and avoid extraand typos
+        analytics.track(
+            "hub:dataset:download",
+            {
+                "project": anonymize(project_key),
+                "name": anonymize(info.name),
+                "target": anonymize(info.target),
+                "columnTypes": anonymize(info.columnTypes),
+                "columnDtypes": anonymize(info.columnDtypes),
+                "nb_rows": info.numberOfRows,
+            },
+        )
         return DatasetMeta(
             name=info.name,
             target=info.target,
@@ -357,8 +370,10 @@ class GiskardClient:
         _limit_str_size(meta_json, "name")
         _limit_str_size(meta_json, "display_name")
 
-        json = self._session.put(endpoint, json=meta_json).json()
-        return meta if json is None or "uuid" not in json else meta.from_json(json)
+        data = json.dumps(meta_json, cls=GiskardJSONSerializer)
+
+        response_json = self._session.put(endpoint, data=data, headers={"Content-Type": "application/json"}).json()
+        return meta if response_json is None or "uuid" not in response_json else meta.from_json(response_json)
 
     def load_meta(self, endpoint: str, meta_class: SMT) -> TestFunctionMeta:
         return meta_class.from_json(self._session.get(endpoint).json())

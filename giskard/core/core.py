@@ -1,12 +1,18 @@
-import typing
-
 import inspect
 import logging
-import re
 from abc import ABC
 from dataclasses import dataclass
 from enum import Enum
 from pathlib import Path
+
+import typing
+from griffe import Docstring
+from griffe.docstrings.dataclasses import (
+    DocstringSection,
+    DocstringSectionParameters,
+    DocstringSectionReturns,
+)
+from griffe.enumerations import DocstringSectionKind
 
 from ..utils.artifacts import serialize_parameter
 
@@ -18,6 +24,7 @@ except ImportError:
 from typing import Any, Callable, Dict, List, Literal, Optional, Type, TypeVar, Union
 
 logger = logging.getLogger(__name__)
+DEMILITER = f"\n{'='*20}\n"
 
 
 class Kwargs:
@@ -68,6 +75,7 @@ def _get_plugin_method_full_name(func):
 
 def create_test_function_id(func):
     from giskard.ml_worker.testing.registry.registry import plugins_root
+
     is_relative = Path(inspect.getfile(func)).is_relative_to(plugins_root)
     if is_relative:
         full_name = _get_plugin_method_full_name(func)
@@ -144,12 +152,27 @@ class FunctionArgument:
     argOrder: int
 
 
+class CallableDocumentation:
+    description: Optional[str]
+    parameters: Optional[Dict[str, str]]
+
+    def __init__(self):
+        self.description = None
+        self.parameters = None
+
+    def to_dict(self):
+        return {
+            "description": self.description,
+            "parameters": self.parameters,
+        }
+
+
 class CallableMeta(SavableMeta, ABC):
     code: str
     name: str
     display_name: str
     module: str
-    doc: str
+    doc: CallableDocumentation
     module_doc: str
     tags: List[str]
     version: Optional[int]
@@ -250,13 +273,60 @@ class CallableMeta(SavableMeta, ABC):
         return code
 
     @staticmethod
-    def extract_doc(func):
-        if func.__doc__:
-            func_doc, _, args_doc = func.__doc__.partition("\n\n\n")
-            func_doc = re.sub(r"\n[ \t\n]+", r"\n", func_doc.strip())
-        else:
-            func_doc = None
-        return func_doc
+    def default_doc(description: str) -> CallableDocumentation:
+        doc = CallableDocumentation()
+        doc.description = description
+        doc.parameters = {}
+        return doc
+
+    @staticmethod
+    def extract_doc(func) -> Optional[CallableDocumentation]:
+        if not func.__doc__:
+            return None
+
+        res: CallableDocumentation = CallableDocumentation()
+
+        parsed_docs: List[List[DocstringSection]] = list(
+            sorted(
+                [Docstring(func.__doc__).parse(parser) for parser in ["numpy", "google", "sphinx"]],
+                key=len,
+                reverse=True,
+            )
+        )
+
+        best_doc: List[DocstringSection] = parsed_docs[0]  # We keep the one with most sections
+        res.parameters = {}
+        for d in best_doc:
+            if d.kind == DocstringSectionKind.text:
+                description_value: str = d.value.strip()
+                if res.description and description_value.startswith("References"):
+                    res.description += "\n\n"
+                    res.description += description_value.replace("\n----------\n", "\n")
+                elif res.description:
+                    logger.warning(
+                        f"{func.__name__} with already initialized description: {DEMILITER}{res.description}{DEMILITER} is being overwritten by {DEMILITER}{description_value}{DEMILITER}"
+                    )
+                res.description = description_value
+            elif d.kind == DocstringSectionKind.parameters:
+                params: DocstringSectionParameters = d
+                missing_annotation = [p.name for p in params.value if p.annotation is None]
+                if len(missing_annotation) > 0:
+                    logger.warning(
+                        f"{func.__name__} is missing type hinting for params {', '.join(missing_annotation)}"
+                    )
+
+                res.parameters = {p.name: p.description.strip() for p in params.value}
+            elif d.kind == DocstringSectionKind.returns:
+                returns: DocstringSectionReturns = d
+                missing_annotation = [p.name for p in returns.value if p.annotation is None]
+                if len(missing_annotation) > 0:
+                    logger.warning(
+                        f"{func.__name__} is missing type hinting for return elt {', '.join(missing_annotation)}"
+                    )
+            else:
+                logger.warning(f"Unexpected documentation element for {func.__name__}: {d.kind}")
+
+        return res
 
     def to_json(self):
         return {
@@ -264,7 +334,7 @@ class CallableMeta(SavableMeta, ABC):
             "name": self.name,
             "display_name": self.display_name,
             "module": self.module,
-            "doc": self.doc,
+            "doc": self.doc.to_dict() if self.doc else None,
             "module_doc": self.module_doc,
             "code": self.code,
             "tags": self.tags,

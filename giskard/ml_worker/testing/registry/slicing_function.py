@@ -17,6 +17,7 @@ from giskard.ml_worker.testing.registry.decorators_utils import (
 )
 from giskard.ml_worker.testing.registry.registry import get_object_uuid, tests_registry
 
+
 SlicingFunctionType = Callable[..., bool]
 
 default_tags = ["filter"]
@@ -178,5 +179,4 @@ def _wrap_slicing_function(original: Callable, row_level: bool, cell_level: bool
 
     make_all_optional_or_suite_input(slicing_fn)
     set_return_type(slicing_fn, SlicingFunction)
-
     return slicing_fn()

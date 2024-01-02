@@ -1,3 +1,5 @@
+from typing import Dict, Hashable, List, Optional, Union
+
 import inspect
 import logging
 import posixpath
@@ -12,14 +14,13 @@ import pandas as pd
 import yaml
 from mlflow import MlflowClient
 from pandas.api.types import is_list_like, is_numeric_dtype
-from typing import Dict, Hashable, List, Optional, Union
 from xxhash import xxh3_128_hexdigest
 from zstandard import ZstdDecompressor
 
 from giskard.client.giskard_client import GiskardClient
 from giskard.client.io_utils import compress, save_df
 from giskard.client.python_utils import warning
-from giskard.core.core import DatasetMeta, SupportedColumnTypes, NOT_GIVEN, NotGivenOr
+from giskard.core.core import NOT_GIVEN, DatasetMeta, NotGivenOr, SupportedColumnTypes
 from giskard.core.errors import GiskardImportError
 from giskard.core.validation import configured_validate_arguments
 from giskard.ml_worker.testing.registry.slicing_function import SlicingFunction, SlicingFunctionType
@@ -28,14 +29,15 @@ from giskard.ml_worker.testing.registry.transformation_function import (
     TransformationFunctionType,
 )
 from giskard.settings import settings
-from ..metadata.indexing import ColumnMetadataMixin
+
 from ...ml_worker.utils.file_utils import get_file_name
+from ...utils.analytics_collector import analytics
+from ..metadata.indexing import ColumnMetadataMixin
 
 try:
     import wandb  # noqa
 except ImportError:
     pass
-
 
 SAMPLE_SIZE = 1000
 
@@ -77,8 +79,11 @@ class DataProcessor:
             self.pipeline.append(processor)
         return self
 
-    def apply(self, dataset: "Dataset", apply_only_last=False, get_mask: bool = False):
-        ds = dataset.copy()
+    def apply(self, dataset: "Dataset", apply_only_last=False, get_mask: bool = False, copy: bool = True):
+        if copy:
+            ds = dataset.copy()
+        else:
+            ds = dataset
         is_slicing_only = True
 
         while len(self.pipeline):
@@ -225,7 +230,6 @@ class Dataset(ColumnMetadataMixin):
         }
 
         self.data_processor = DataProcessor()
-
         logger.info("Your 'pandas.DataFrame' is successfully wrapped by Giskard's 'Dataset' wrapper class.")
 
     @property
@@ -330,7 +334,9 @@ class Dataset(ColumnMetadataMixin):
                 **{key: value for key, value in slicing_function.params.items() if key != "column_name"},
             )
 
-        return self.data_processor.add_step(slicing_function).apply(self, apply_only_last=True, get_mask=get_mask)
+        return self.data_processor.add_step(slicing_function).apply(
+            self, apply_only_last=True, get_mask=get_mask, copy=False
+        )
 
     @configured_validate_arguments
     def transform(
@@ -506,6 +512,26 @@ class Dataset(ColumnMetadataMixin):
                 compressed_size_bytes=compressed_size_bytes,
             )
         return dataset_id
+
+    def extract_languages(self, columns=None):
+        """
+        Extracts all languages present in the dataset 'text' column.
+
+        Args:
+            list[str]: a list of columns from which languages should be extracted.
+
+        Returns:
+            list[str]: a list of language codes (according to  ISO 639-1) containing all languages in the dataset.
+        """
+        columns = columns if columns is not None else self.columns
+
+        langs_per_feature = [
+            self.column_meta[col, "text"]["language"].dropna().unique()
+            for col, col_type in self.column_types.items()
+            if (col_type == "text" and col in columns)
+        ]
+
+        return list(set().union(*langs_per_feature))
 
     @property
     def meta(self):
@@ -716,7 +742,6 @@ class Dataset(ColumnMetadataMixin):
         except ImportError as e:
             raise GiskardImportError("wandb") from e
         from ...integrations.wandb.wandb_utils import get_wandb_run
-        from ...utils.analytics_collector import analytics
 
         run = get_wandb_run(run)
 
