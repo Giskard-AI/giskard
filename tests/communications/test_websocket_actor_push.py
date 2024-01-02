@@ -22,14 +22,17 @@ EXPECTED_COUNTS_GERMAN_CREDIT_PUSH_KIND_SAMPLE_INDEX = {
 
 @pytest.fixture(autouse=True)
 def clean_push_cache():
-    CACHE.start({}, []) # Reset cache
+    CACHE.start({}, [])  # Reset cache
     yield
 
 
-@pytest.mark.parametrize("model,data", [
-    ("hotel_text_model", "hotel_text_data"),
-    ("enron_model", "enron_data"),
-])
+@pytest.mark.parametrize(
+    "model,data",
+    [
+        ("hotel_text_model", "hotel_text_data"),
+        ("enron_model", "enron_data"),
+    ],
+)
 def test_websocket_actor_get_push_do_nothing(model, data, request):
     model: BaseModel = request.getfixturevalue(model)
     dataset: Dataset = request.getfixturevalue(data)
@@ -46,9 +49,7 @@ def test_websocket_actor_get_push_do_nothing(model, data, request):
         first_row = dataset.df.iloc[0]
         dataframe = websocket.DataFrame(
             rows=[
-                websocket.DataRow(columns={
-                    str(k): str(v) for k, v in first_row.items()
-                }),
+                websocket.DataRow(columns={str(k): str(v) for k, v in first_row.items()}),
             ],
         )
 
@@ -68,9 +69,7 @@ def test_websocket_actor_get_push_do_nothing(model, data, request):
         assert not reply.action
 
 
-@pytest.mark.parametrize("cta_kind",[
-    kind for kind in websocket.CallToActionKind
-])
+@pytest.mark.parametrize("cta_kind", [kind for kind in websocket.CallToActionKind])
 def test_websocket_actor_get_push_no_push_kind(cta_kind, request):
     model: BaseModel = request.getfixturevalue("enron_model")
     dataset: Dataset = request.getfixturevalue("enron_data")
@@ -87,9 +86,7 @@ def test_websocket_actor_get_push_no_push_kind(cta_kind, request):
         first_row = dataset.df.iloc[0]
         dataframe = websocket.DataFrame(
             rows=[
-                websocket.DataRow(columns={
-                    str(k): str(v) for k, v in first_row.items()
-                }),
+                websocket.DataRow(columns={str(k): str(v) for k, v in first_row.items()}),
             ],
         )
 
@@ -109,9 +106,7 @@ def test_websocket_actor_get_push_no_push_kind(cta_kind, request):
         assert not reply.action
 
 
-@pytest.mark.parametrize("push_kind",[
-    kind for kind in websocket.PushKind
-])
+@pytest.mark.parametrize("push_kind", [kind for kind in websocket.PushKind])
 def test_websocket_actor_get_push_no_cta_kind(push_kind, request):
     model: BaseModel = request.getfixturevalue("enron_model")
     dataset: Dataset = request.getfixturevalue("enron_data")
@@ -128,9 +123,7 @@ def test_websocket_actor_get_push_no_cta_kind(push_kind, request):
         first_row = dataset.df.iloc[0]
         dataframe = websocket.DataFrame(
             rows=[
-                websocket.DataRow(columns={
-                    str(k): str(v) for k, v in first_row.items()
-                }),
+                websocket.DataRow(columns={str(k): str(v) for k, v in first_row.items()}),
             ],
         )
 
@@ -170,9 +163,7 @@ def test_websocket_actor_get_push_no_action(kind, row, german_credit_model, germ
         given_row = dataset.df.iloc[row]
         dataframe = websocket.DataFrame(
             rows=[
-                websocket.DataRow(columns={
-                    str(k): str(v) for k, v in given_row.items()
-                }),
+                websocket.DataRow(columns={str(k): str(v) for k, v in given_row.items()}),
             ],
         )
 
@@ -189,15 +180,16 @@ def test_websocket_actor_get_push_no_action(kind, row, german_credit_model, germ
         )
         reply = listener.get_push(client=client, params=params)
         assert isinstance(reply, websocket.GetPushResponse)
-        assert reply.__dict__[kind] # The given push should not be `None`
+        assert reply.__dict__[kind]  # The given push should not be `None`
         assert not reply.action
 
 
-@pytest.mark.parametrize("kind,row", [EXPECTED_COUNTS_GERMAN_CREDIT_PUSH_KIND_SAMPLE_INDEX[websocket.PushKind.CONTRIBUTION]])
-@pytest.mark.parametrize("cta_kind", [
-    websocket.CallToActionKind.CREATE_SLICE,
-    websocket.CallToActionKind.CREATE_SLICE_OPEN_DEBUGGER
-])
+@pytest.mark.parametrize(
+    "kind,row", [EXPECTED_COUNTS_GERMAN_CREDIT_PUSH_KIND_SAMPLE_INDEX[websocket.PushKind.CONTRIBUTION]]
+)
+@pytest.mark.parametrize(
+    "cta_kind", [websocket.CallToActionKind.CREATE_SLICE, websocket.CallToActionKind.CREATE_SLICE_OPEN_DEBUGGER]
+)
 def test_websocket_actor_get_push_contribution(kind, row, cta_kind, german_credit_model, german_credit_data):
     assert EXPECTED_COUNTS["german_credit_model"][kind][row] != 0
     push_kind = websocket.PushKind[kind.upper()]
@@ -220,9 +212,7 @@ def test_websocket_actor_get_push_contribution(kind, row, cta_kind, german_credi
         given_row = dataset.df.iloc[row]
         dataframe = websocket.DataFrame(
             rows=[
-                websocket.DataRow(columns={
-                    str(k): str(v) for k, v in given_row.items()
-                }),
+                websocket.DataRow(columns={str(k): str(v) for k, v in given_row.items()}),
             ],
         )
 
@@ -239,17 +229,21 @@ def test_websocket_actor_get_push_contribution(kind, row, cta_kind, german_credi
         )
         reply = listener.get_push(client=client, params=params)
         assert isinstance(reply, websocket.GetPushResponse)
-        assert reply.__dict__[kind] # The given push should not be `None`
-        assert reply.action # Action should not be `None`
+        assert reply.__dict__[kind]  # The given push should not be `None`
+        assert reply.action  # Action should not be `None`
 
 
-@pytest.mark.parametrize("kind,row", [
-    EXPECTED_COUNTS_GERMAN_CREDIT_PUSH_KIND_SAMPLE_INDEX[k] for k in EXPECTED_COUNTS_GERMAN_CREDIT_PUSH_KIND_SAMPLE_INDEX if k != websocket.PushKind.CONTRIBUTION
-])
-@pytest.mark.parametrize("cta_kind", [
-    websocket.CallToActionKind.CREATE_SLICE,
-    websocket.CallToActionKind.CREATE_SLICE_OPEN_DEBUGGER
-])
+@pytest.mark.parametrize(
+    "kind,row",
+    [
+        EXPECTED_COUNTS_GERMAN_CREDIT_PUSH_KIND_SAMPLE_INDEX[k]
+        for k in EXPECTED_COUNTS_GERMAN_CREDIT_PUSH_KIND_SAMPLE_INDEX
+        if k != websocket.PushKind.CONTRIBUTION
+    ],
+)
+@pytest.mark.parametrize(
+    "cta_kind", [websocket.CallToActionKind.CREATE_SLICE, websocket.CallToActionKind.CREATE_SLICE_OPEN_DEBUGGER]
+)
 def test_websocket_actor_get_push_contribution_wrong_cta(kind, row, cta_kind, german_credit_model, german_credit_data):
     assert EXPECTED_COUNTS["german_credit_model"][kind][row] != 0
     push_kind = websocket.PushKind[kind.upper()]
@@ -269,9 +263,7 @@ def test_websocket_actor_get_push_contribution_wrong_cta(kind, row, cta_kind, ge
         given_row = dataset.df.iloc[row]
         dataframe = websocket.DataFrame(
             rows=[
-                websocket.DataRow(columns={
-                    str(k): str(v) for k, v in given_row.items()
-                }),
+                websocket.DataRow(columns={str(k): str(v) for k, v in given_row.items()}),
             ],
         )
 
@@ -291,10 +283,15 @@ def test_websocket_actor_get_push_contribution_wrong_cta(kind, row, cta_kind, ge
             listener.get_push(client=client, params=params)
 
 
-@pytest.mark.parametrize("kind,row", [EXPECTED_COUNTS_GERMAN_CREDIT_PUSH_KIND_SAMPLE_INDEX[websocket.PushKind.PERTURBATION]])
-@pytest.mark.parametrize("cta_kind", [
-    websocket.CallToActionKind.SAVE_PERTURBATION,
-])
+@pytest.mark.parametrize(
+    "kind,row", [EXPECTED_COUNTS_GERMAN_CREDIT_PUSH_KIND_SAMPLE_INDEX[websocket.PushKind.PERTURBATION]]
+)
+@pytest.mark.parametrize(
+    "cta_kind",
+    [
+        websocket.CallToActionKind.SAVE_PERTURBATION,
+    ],
+)
 def test_websocket_actor_get_push_perturbation(kind, row, cta_kind, german_credit_model, german_credit_data):
     assert EXPECTED_COUNTS["german_credit_model"][kind][row] != 0
     push_kind = websocket.PushKind[kind.upper()]
@@ -317,9 +314,7 @@ def test_websocket_actor_get_push_perturbation(kind, row, cta_kind, german_credi
         given_row = dataset.df.iloc[row]
         dataframe = websocket.DataFrame(
             rows=[
-                websocket.DataRow(columns={
-                    str(k): str(v) for k, v in given_row.items()
-                }),
+                websocket.DataRow(columns={str(k): str(v) for k, v in given_row.items()}),
             ],
         )
 
@@ -336,16 +331,24 @@ def test_websocket_actor_get_push_perturbation(kind, row, cta_kind, german_credi
         )
         reply = listener.get_push(client=client, params=params)
         assert isinstance(reply, websocket.GetPushResponse)
-        assert reply.__dict__[kind] # The given push should not be `None`
-        assert reply.action # Action should not be `None`
+        assert reply.__dict__[kind]  # The given push should not be `None`
+        assert reply.action  # Action should not be `None`
 
 
-@pytest.mark.parametrize("kind,row", [
-    EXPECTED_COUNTS_GERMAN_CREDIT_PUSH_KIND_SAMPLE_INDEX[k] for k in EXPECTED_COUNTS_GERMAN_CREDIT_PUSH_KIND_SAMPLE_INDEX if k != websocket.PushKind.PERTURBATION
-])
-@pytest.mark.parametrize("cta_kind", [
-    websocket.CallToActionKind.SAVE_PERTURBATION,
-])
+@pytest.mark.parametrize(
+    "kind,row",
+    [
+        EXPECTED_COUNTS_GERMAN_CREDIT_PUSH_KIND_SAMPLE_INDEX[k]
+        for k in EXPECTED_COUNTS_GERMAN_CREDIT_PUSH_KIND_SAMPLE_INDEX
+        if k != websocket.PushKind.PERTURBATION
+    ],
+)
+@pytest.mark.parametrize(
+    "cta_kind",
+    [
+        websocket.CallToActionKind.SAVE_PERTURBATION,
+    ],
+)
 def test_websocket_actor_get_push_perturbation_wrong_cta(kind, row, cta_kind, german_credit_model, german_credit_data):
     assert EXPECTED_COUNTS["german_credit_model"][kind][row] != 0
     push_kind = websocket.PushKind[kind.upper()]
@@ -365,9 +368,7 @@ def test_websocket_actor_get_push_perturbation_wrong_cta(kind, row, cta_kind, ge
         given_row = dataset.df.iloc[row]
         dataframe = websocket.DataFrame(
             rows=[
-                websocket.DataRow(columns={
-                    str(k): str(v) for k, v in given_row.items()
-                }),
+                websocket.DataRow(columns={str(k): str(v) for k, v in given_row.items()}),
             ],
         )
 
@@ -387,14 +388,22 @@ def test_websocket_actor_get_push_perturbation_wrong_cta(kind, row, cta_kind, ge
             listener.get_push(client=client, params=params)
 
 
-@pytest.mark.parametrize("kind,row", [
-    EXPECTED_COUNTS_GERMAN_CREDIT_PUSH_KIND_SAMPLE_INDEX[websocket.PushKind.OVERCONFIDENCE],
-    EXPECTED_COUNTS_GERMAN_CREDIT_PUSH_KIND_SAMPLE_INDEX[websocket.PushKind.BORDERLINE],
-])
-@pytest.mark.parametrize("cta_kind", [
-    websocket.CallToActionKind.SAVE_EXAMPLE,
-])
-def test_websocket_actor_get_push_overconfidence_borderline_cta_save_example(kind, row, cta_kind, german_credit_model, german_credit_data):
+@pytest.mark.parametrize(
+    "kind,row",
+    [
+        EXPECTED_COUNTS_GERMAN_CREDIT_PUSH_KIND_SAMPLE_INDEX[websocket.PushKind.OVERCONFIDENCE],
+        EXPECTED_COUNTS_GERMAN_CREDIT_PUSH_KIND_SAMPLE_INDEX[websocket.PushKind.BORDERLINE],
+    ],
+)
+@pytest.mark.parametrize(
+    "cta_kind",
+    [
+        websocket.CallToActionKind.SAVE_EXAMPLE,
+    ],
+)
+def test_websocket_actor_get_push_overconfidence_borderline_cta_save_example(
+    kind, row, cta_kind, german_credit_model, german_credit_data
+):
     assert EXPECTED_COUNTS["german_credit_model"][kind][row] != 0
     push_kind = websocket.PushKind[kind.upper()]
 
@@ -416,9 +425,7 @@ def test_websocket_actor_get_push_overconfidence_borderline_cta_save_example(kin
         given_row = dataset.df.iloc[row]
         dataframe = websocket.DataFrame(
             rows=[
-                websocket.DataRow(columns={
-                    str(k): str(v) for k, v in given_row.items()
-                }),
+                websocket.DataRow(columns={str(k): str(v) for k, v in given_row.items()}),
             ],
         )
 
@@ -435,18 +442,27 @@ def test_websocket_actor_get_push_overconfidence_borderline_cta_save_example(kin
         )
         reply = listener.get_push(client=client, params=params)
         assert isinstance(reply, websocket.GetPushResponse)
-        assert reply.__dict__[kind] # The given push should not be `None`
-        assert reply.action # Action should not be `None`
+        assert reply.__dict__[kind]  # The given push should not be `None`
+        assert reply.action  # Action should not be `None`
 
 
-@pytest.mark.parametrize("kind,row", [
-    EXPECTED_COUNTS_GERMAN_CREDIT_PUSH_KIND_SAMPLE_INDEX[k] for k in EXPECTED_COUNTS_GERMAN_CREDIT_PUSH_KIND_SAMPLE_INDEX \
+@pytest.mark.parametrize(
+    "kind,row",
+    [
+        EXPECTED_COUNTS_GERMAN_CREDIT_PUSH_KIND_SAMPLE_INDEX[k]
+        for k in EXPECTED_COUNTS_GERMAN_CREDIT_PUSH_KIND_SAMPLE_INDEX
         if k != websocket.PushKind.OVERCONFIDENCE and k != websocket.PushKind.BORDERLINE
-])
-@pytest.mark.parametrize("cta_kind", [
-    websocket.CallToActionKind.SAVE_EXAMPLE,
-])
-def test_websocket_actor_get_push_overconfidence_wrong_cta(kind, row, cta_kind, german_credit_model, german_credit_data):
+    ],
+)
+@pytest.mark.parametrize(
+    "cta_kind",
+    [
+        websocket.CallToActionKind.SAVE_EXAMPLE,
+    ],
+)
+def test_websocket_actor_get_push_overconfidence_wrong_cta(
+    kind, row, cta_kind, german_credit_model, german_credit_data
+):
     assert EXPECTED_COUNTS["german_credit_model"][kind][row] != 0
     push_kind = websocket.PushKind[kind.upper()]
 
@@ -465,9 +481,7 @@ def test_websocket_actor_get_push_overconfidence_wrong_cta(kind, row, cta_kind, 
         given_row = dataset.df.iloc[row]
         dataframe = websocket.DataFrame(
             rows=[
-                websocket.DataRow(columns={
-                    str(k): str(v) for k, v in given_row.items()
-                }),
+                websocket.DataRow(columns={str(k): str(v) for k, v in given_row.items()}),
             ],
         )
 
@@ -487,11 +501,16 @@ def test_websocket_actor_get_push_overconfidence_wrong_cta(kind, row, cta_kind, 
             listener.get_push(client=client, params=params)
 
 
-@pytest.mark.parametrize("kind,row", [EXPECTED_COUNTS_GERMAN_CREDIT_PUSH_KIND_SAMPLE_INDEX[websocket.PushKind.BORDERLINE]])
-@pytest.mark.parametrize("cta_kind", [
-    websocket.CallToActionKind.CREATE_TEST,
-    websocket.CallToActionKind.ADD_TEST_TO_CATALOG,
-])
+@pytest.mark.parametrize(
+    "kind,row", [EXPECTED_COUNTS_GERMAN_CREDIT_PUSH_KIND_SAMPLE_INDEX[websocket.PushKind.BORDERLINE]]
+)
+@pytest.mark.parametrize(
+    "cta_kind",
+    [
+        websocket.CallToActionKind.CREATE_TEST,
+        websocket.CallToActionKind.ADD_TEST_TO_CATALOG,
+    ],
+)
 def test_websocket_actor_get_push_borderline(kind, row, cta_kind, german_credit_model, german_credit_data):
     assert EXPECTED_COUNTS["german_credit_model"][kind][row] != 0
     push_kind = websocket.PushKind[kind.upper()]
@@ -515,9 +534,7 @@ def test_websocket_actor_get_push_borderline(kind, row, cta_kind, german_credit_
         given_row = dataset.df.iloc[row]
         dataframe = websocket.DataFrame(
             rows=[
-                websocket.DataRow(columns={
-                    str(k): str(v) for k, v in given_row.items()
-                }),
+                websocket.DataRow(columns={str(k): str(v) for k, v in given_row.items()}),
             ],
         )
 
@@ -534,19 +551,27 @@ def test_websocket_actor_get_push_borderline(kind, row, cta_kind, german_credit_
         )
         reply = listener.get_push(client=client, params=params)
         assert isinstance(reply, websocket.GetPushResponse)
-        assert reply.__dict__[kind] # The given push should not be `None`
-        assert reply.action # Action should not be `None`
+        assert reply.__dict__[kind]  # The given push should not be `None`
+        assert reply.action  # Action should not be `None`
 
 
 # FIXME: All of the Push classes contain tests, so any of them can be uploaded
 # Check with Hugo whether it is the case
-@pytest.mark.parametrize("kind,row", [
-    EXPECTED_COUNTS_GERMAN_CREDIT_PUSH_KIND_SAMPLE_INDEX[k] for k in EXPECTED_COUNTS_GERMAN_CREDIT_PUSH_KIND_SAMPLE_INDEX if k != websocket.PushKind.BORDERLINE
-])
-@pytest.mark.parametrize("cta_kind", [
-    websocket.CallToActionKind.CREATE_TEST,
-    websocket.CallToActionKind.ADD_TEST_TO_CATALOG,
-])
+@pytest.mark.parametrize(
+    "kind,row",
+    [
+        EXPECTED_COUNTS_GERMAN_CREDIT_PUSH_KIND_SAMPLE_INDEX[k]
+        for k in EXPECTED_COUNTS_GERMAN_CREDIT_PUSH_KIND_SAMPLE_INDEX
+        if k != websocket.PushKind.BORDERLINE
+    ],
+)
+@pytest.mark.parametrize(
+    "cta_kind",
+    [
+        websocket.CallToActionKind.CREATE_TEST,
+        websocket.CallToActionKind.ADD_TEST_TO_CATALOG,
+    ],
+)
 def test_websocket_actor_get_push_non_borderline_test_cta(kind, row, cta_kind, german_credit_model, german_credit_data):
     assert EXPECTED_COUNTS["german_credit_model"][kind][row] != 0
     push_kind = websocket.PushKind[kind.upper()]
@@ -571,9 +596,7 @@ def test_websocket_actor_get_push_non_borderline_test_cta(kind, row, cta_kind, g
         given_row = dataset.df.iloc[row]
         dataframe = websocket.DataFrame(
             rows=[
-                websocket.DataRow(columns={
-                    str(k): str(v) for k, v in given_row.items()
-                }),
+                websocket.DataRow(columns={str(k): str(v) for k, v in given_row.items()}),
             ],
         )
 
@@ -590,5 +613,5 @@ def test_websocket_actor_get_push_non_borderline_test_cta(kind, row, cta_kind, g
         )
         reply = listener.get_push(client=client, params=params)
         assert isinstance(reply, websocket.GetPushResponse)
-        assert reply.__dict__[kind] # The given push should not be `None`
-        assert reply.action # Action should not be `None`
+        assert reply.__dict__[kind]  # The given push should not be `None`
+        assert reply.action  # Action should not be `None`
