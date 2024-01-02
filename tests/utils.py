@@ -36,6 +36,7 @@ CLIENT_BASE_URL = "http://giskard-host:12345/api/v2"
 
 TEST_UUID = "00000000-0000-0000-0000-000000000000"
 
+
 def match_model_id(my_model_id):
     assert re.match("^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$", str(my_model_id))
 
