@@ -1,3 +1,5 @@
+from typing import Iterable, List, Optional, Tuple, Type, Union
+
 import builtins
 import importlib
 import logging
@@ -13,12 +15,9 @@ import cloudpickle
 import numpy as np
 import pandas as pd
 import yaml
-from typing import Iterable, List, Optional, Tuple, Type, Union
 
 from giskard.client.dtos import ModelMetaInfo
-from .model_prediction import ModelPredictionResults
-from ..cache import get_cache_enabled
-from ..utils import np_types_to_native
+
 from ...client.giskard_client import GiskardClient
 from ...core.core import ModelMeta, ModelType, SupportedModelTypes
 from ...core.validation import configured_validate_arguments
@@ -28,6 +27,9 @@ from ...ml_worker.utils.logging import Timer
 from ...models.cache import ModelCache
 from ...path_utils import get_size
 from ...settings import settings
+from ..cache import get_cache_enabled
+from ..utils import np_types_to_native
+from .model_prediction import ModelPredictionResults
 
 META_FILENAME = "giskard-model-meta.yaml"
 
@@ -143,7 +145,12 @@ class BaseModel(ABC):
             if len(classification_labels) != len(set(classification_labels)):
                 raise ValueError("Duplicates are found in 'classification_labels', please only provide unique values.")
 
-        self._cache = ModelCache(model_type, str(self.id), cache_dir=kwargs.get("prediction_cache_dir"))
+        self._cache = ModelCache(
+            model_type,
+            str(self.id),
+            persist_cache=kwargs.get("persist_cache", False),
+            cache_dir=kwargs.get("prediction_cache_dir"),
+        )
 
         # sklearn and catboost will fill classification_labels before this check
         if model_type == SupportedModelTypes.CLASSIFICATION and not classification_labels:
@@ -422,7 +429,6 @@ class BaseModel(ABC):
             if client is not None:
                 client.log_artifacts(f, posixpath.join(project_key, "models", str(self.id)))
                 client.save_model_meta(project_key, self.id, self.meta, platform.python_version(), get_size(f))
-
         return str(self.id)
 
     @classmethod

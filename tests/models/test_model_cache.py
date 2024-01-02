@@ -7,13 +7,14 @@ import numpy as np
 import pandas as pd
 import pytest
 import xxhash
-from langchain import LLMChain, PromptTemplate
 from langchain.llms.fake import FakeListLLM
 
 import giskard
 from giskard import Dataset, Model
 from giskard.core.core import SupportedModelTypes
 from giskard.models.cache import ModelCache
+from langchain import LLMChain, PromptTemplate
+
 
 # https://symbl.cc/fr/unicode/blocks/
 
@@ -31,6 +32,7 @@ def test_unicode_prediction(keys, values):
     with TemporaryDirectory() as temp_cache_dir:
         cache = ModelCache(
             model_type=SupportedModelTypes.TEXT_GENERATION,
+            persist_cache=True,
             cache_dir=Path(temp_cache_dir),
         )
         key_series = pd.Series(keys)
@@ -43,6 +45,7 @@ def test_unicode_prediction(keys, values):
         warmed_up_cache = ModelCache(
             id="warmed_up",
             model_type=SupportedModelTypes.TEXT_GENERATION,
+            persist_cache=True,
             cache_dir=Path(temp_cache_dir),
         )
         # Ensure warm up works fine
