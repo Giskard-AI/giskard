@@ -12,7 +12,6 @@ from giskard.ml_worker.testing.registry.decorators_utils import (
 from giskard.ml_worker.testing.registry.giskard_test import GiskardTest, GiskardTestMethod
 
 
-
 # TODO: I think this should be moved into giskard_test.py ?
 # For slicing_function and transformation_function the decorator is in the same file as the class
 def test(

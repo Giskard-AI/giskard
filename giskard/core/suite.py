@@ -1,5 +1,3 @@
-from typing import Any, Dict, List, Optional, Tuple, Union
-
 import inspect
 import logging
 import traceback
@@ -7,6 +5,7 @@ from dataclasses import dataclass
 from functools import singledispatchmethod
 
 from mlflow import MlflowClient
+from typing import Any, Dict, List, Optional, Tuple, Union
 
 from giskard.client.dtos import SuiteInfo, SuiteTestDTO, TestInputDTO, TestSuiteDTO
 from giskard.client.giskard_client import GiskardClient
@@ -21,8 +20,9 @@ from giskard.ml_worker.testing.registry.slicing_function import SlicingFunction
 from giskard.ml_worker.testing.registry.transformation_function import TransformationFunction
 from giskard.ml_worker.testing.test_result import TestMessage, TestMessageLevel, TestResult
 from giskard.models.base import BaseModel
-
+from ..client.python_utils import warning
 from ..utils.analytics_collector import analytics
+from ..utils.artifacts import serialize_parameter
 
 logger = logging.getLogger(__name__)
 
@@ -231,17 +231,15 @@ def single_binary_result(test_results: List):
     return all(res.passed for res in test_results)
 
 
-def build_test_input_dto(client, p, pname, ptype, project_key, uploaded_uuids):
+def build_test_input_dto(client, p, pname, ptype, project_key, uploaded_uuid_status: Dict[str, bool]):
     if issubclass(type(p), Dataset) or issubclass(type(p), BaseModel):
-        if str(p.id) not in uploaded_uuids:
-            p.upload(client, project_key)
-        uploaded_uuids.append(str(p.id))
-        return TestInputDTO(name=pname, value=str(p.id), type=ptype)
+        if _try_upload_artifact(p, client, project_key, uploaded_uuid_status):
+            return TestInputDTO(name=pname, value=str(p.id), type=ptype)
+        else:
+            return TestInputDTO(name=pname, value=pname, is_alias=True, type=ptype)
     elif issubclass(type(p), Artifact):
-        if str(p.meta.uuid) not in uploaded_uuids:
-            p.upload(client, None if "giskard" in p.meta.tags else project_key)
-
-        uploaded_uuids.append(str(p.meta.uuid))
+        if not _try_upload_artifact(p, client, None if "giskard" in p.meta.tags else project_key, uploaded_uuid_status):
+            return TestInputDTO(name=pname, value=pname, is_alias=True, type=ptype)
 
         kwargs_params = [
             f"kwargs[{pname}] = {repr(value)}" for pname, value in p.params.items() if pname not in p.meta.args
@@ -263,7 +261,7 @@ def build_test_input_dto(client, p, pname, ptype, project_key, uploaded_uuids):
                     pname,
                     p.meta.args[pname].type,
                     project_key,
-                    uploaded_uuids,
+                    uploaded_uuid_status,
                 )
                 for pname, value in p.params.items()
                 if pname in p.meta.args
@@ -428,26 +426,25 @@ class Suite:
         if self.name is None:
             self.name = "Unnamed test suite"
 
-        uploaded_uuids: List[str] = []
+        uploaded_uuid_status: Dict[str, bool] = dict()
 
         # Upload the default parameters if they are model or dataset
         for arg in self.default_params.values():
             if isinstance(arg, BaseModel) or isinstance(arg, Dataset):
-                arg.upload(client, project_key)
-                uploaded_uuids.append(str(arg.id))
+                _try_upload_artifact(arg, client, project_key, uploaded_uuid_status)
 
-        self.id = client.save_test_suite(self.to_dto(client, project_key, uploaded_uuids))
-        project_id = client.get_project(project_key).project_id
-        print(f"Test suite has been saved: {client.host_url}/main/projects/{project_id}/test-suite/{self.id}/overview")
+        self.id = client.save_test_suite(self.to_dto(client, project_key, uploaded_uuid_status))
+
+        print(f"Test suite has been saved: {client.host_url}/main/projects/{project_key}/test-suite/{self.id}/overview")
         analytics.track("hub:test_suite:uploaded")
         return self
 
-    def to_dto(self, client: GiskardClient, project_key: str, uploaded_uuids: Optional[List[str]] = None):
+    def to_dto(self, client: GiskardClient, project_key: str, uploaded_uuid_status: Optional[Dict[str, bool]] = None):
         suite_tests: List[SuiteTestDTO] = list()
 
         # Avoid to upload the same artifacts several times
-        if uploaded_uuids is None:
-            uploaded_uuids = []
+        if uploaded_uuid_status is None:
+            uploaded_uuid_status = dict()
 
         for t in self.tests:
             params = dict(
@@ -458,7 +455,7 @@ class Suite:
                         pname,
                         t.giskard_test.meta.args[pname].type,
                         project_key,
-                        uploaded_uuids,
+                        uploaded_uuid_status,
                     )
                     for pname, p in t.provided_inputs.items()
                     if pname in t.giskard_test.meta.args
@@ -681,3 +678,19 @@ def format_test_result(result: Union[bool, TestResult]) -> str:
         return f"{{{'passed' if result.passed else 'failed'}, metric={result.metric}}}"
     else:
         return "passed" if result else "failed"
+
+
+def _try_upload_artifact(artifact, client, project_key: str, uploaded_uuid_status: Dict[str, bool]) -> bool:
+    artifact_id = serialize_parameter(artifact)
+
+    if artifact_id not in uploaded_uuid_status:
+        try:
+            artifact.upload(client, project_key)
+            uploaded_uuid_status[artifact_id] = True
+        except:  # noqa NOSONAR
+            warning(
+                f"Failed to upload {str(artifact)} used in the test suite. The test suite will be partially uploaded."
+            )
+            uploaded_uuid_status[artifact_id] = False
+
+    return uploaded_uuid_status[artifact_id]
