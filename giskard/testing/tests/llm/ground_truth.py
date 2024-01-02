@@ -4,7 +4,7 @@ from .. import debug_description_prefix
 from ....datasets.base import Dataset
 from ....llm import LLMImportError
 from ....ml_worker.testing.registry.decorators import test
-from ....ml_worker.testing.test_result import TestResult
+from ....ml_worker.testing.test_result import TestResult, TestResultDetails
 from ....models.base import BaseModel
 
 
@@ -21,9 +21,17 @@ def test_llm_ground_truth(model: BaseModel, dataset: Dataset, threshold: float =
 
     passed = np.array(pred.prediction) == dataset.df[dataset.target]
     metric = len([p for p in passed if p]) / len(passed)
-    output_ds = dataset.slice(lambda df: df[~passed], row_level=False)
 
-    return TestResult(passed=metric >= threshold, metric=metric, output_ds=[output_ds])
+    return TestResult(
+        passed=metric >= threshold,
+        metric=metric,
+        details=TestResultDetails(
+            inputs=dataset.df.loc[:, model.meta.feature_names].to_dict("list"),
+            outputs=list(pred.prediction),
+            results=["passed" if result else "failed" for result in passed],
+            metadata={"target": list(dataset.df[dataset.target])},
+        ),
+    )
 
 
 @test(
@@ -53,6 +61,14 @@ def test_llm_ground_truth_similarity(
     )
     passed = np.array(score["f1"]) > 1 - output_sensitivity
     metric = len([p for p in passed if p]) / len(passed)
-    output_ds = dataset.slice(lambda df: df[~passed], row_level=False)
 
-    return TestResult(passed=metric >= threshold, metric=metric, output_ds=[output_ds])
+    return TestResult(
+        passed=metric >= threshold,
+        metric=metric,
+        details=TestResultDetails(
+            inputs=dataset.df.loc[:, model.meta.feature_names].to_dict("list"),
+            outputs=list(pred.prediction),
+            results=["passed" if result else "failed" for result in passed],
+            metadata={"target": list(dataset.df[dataset.target]), "F1 similarity": score["f1"]},
+        ),
+    )
