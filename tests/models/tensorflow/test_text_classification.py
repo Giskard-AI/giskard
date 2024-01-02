@@ -7,9 +7,9 @@ from giskard.models.tensorflow import TensorFlowModel
 
 tf = pytest.importorskip("tensorflow")
 
+
 @pytest.mark.slow
 def test_text_classification_1d_output(imdb_data):
-
     raw_train_ds, raw_test_ds = imdb_data
 
     test_dataset = {"Review": [], "Label": []}
