@@ -352,7 +352,7 @@ def test_websocket_actor_explain_text_ws_not_text(request):
     dataset: Dataset = request.getfixturevalue("enron_data")
     model: BaseModel = request.getfixturevalue("enron_model")
 
-    project_key = str(uuid.uuid4()) # Use a UUID to separate the resources used by the tests
+    project_key = str(uuid.uuid4())  # Use a UUID to separate the resources used by the tests
 
     with utils.MockedProjectCacheDir(project_key), utils.MockedClient(mock_all=False) as (client, mr):
         # Prepare model and dataset
@@ -375,9 +375,7 @@ def test_websocket_actor_explain_text_ws_not_text(request):
             listener.explain_text_ws(client=None, params=params)
 
 
-@pytest.mark.parametrize("internal", [
-    True, False
-])
+@pytest.mark.parametrize("internal", [True, False])
 def test_websocket_actor_explain_text_ws_classification(internal, request):
     dataset: Dataset = request.getfixturevalue("enron_data")
     model: BaseModel = request.getfixturevalue("enron_model")
