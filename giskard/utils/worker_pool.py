@@ -13,8 +13,9 @@ from multiprocessing.managers import SyncManager
 from queue import Empty, Full
 from threading import Thread, current_thread
 from time import sleep
+from uuid import UUID, uuid4
+
 from typing import Any, Callable, Dict, List, Optional, Tuple
-from uuid import uuid4, UUID
 
 from giskard.ml_worker.utils.cache import CACHE
 
@@ -74,16 +75,16 @@ class TimeoutData:
 
 
 class GiskardTask:
-    callable: Callable
+    fn: Callable
     args: Any
     kwargs: Any
     job_id: UUID
 
-    def __init__(self, callable: Callable, args: Any, kwargs: Any):
-        self.callable = callable
+    def __init__(self, job_id: UUID, fn: Callable, args: Any, kwargs: Any):
+        self.job_id = job_id
+        self.fn = fn
         self.args = args
         self.kwargs = kwargs
-        self.job_id = kwargs.get("job_id") or uuid4()
 
 
 @dataclass(frozen=True)
@@ -126,7 +127,7 @@ def _process_worker(tasks_queue: Queue, tasks_results: Queue, running_process: D
                 try:
                     LOGGER.debug("Doing task %s", task.job_id)
                     running_process[task.job_id] = pid
-                    result = task.callable(*task.args, **task.kwargs)
+                    result = task.fn(*task.args, **task.kwargs)
                     to_return = GiskardResult(id=task.job_id, result=result, logs=f.getvalue())
                 except BaseException as e:
                     exception = GiskardMLWorkerExceptionInfo(
@@ -286,10 +287,11 @@ class WorkerPoolExecutor(Executor):
             return e
 
     def submit(self, fn, /, *args, **kwargs):
-        return self.schedule(fn, args=args, kwargs=kwargs, timeout=None)
+        return self.schedule(job_id=uuid4(), fn=fn, args=args, kwargs=kwargs, timeout=None)
 
     def schedule(
         self,
+        job_id: UUID,
         fn,
         args=None,
         kwargs=None,
@@ -302,7 +304,8 @@ class WorkerPoolExecutor(Executor):
         if self.terminated():
             raise RuntimeError(f"Cannot submit when pool is {self._state.name}")
         task = GiskardTask(
-            callable=fn,
+            job_id=job_id,
+            fn=fn,
             args=args,
             kwargs=kwargs,
         )

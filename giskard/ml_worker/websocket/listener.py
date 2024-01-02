@@ -11,13 +11,13 @@ from concurrent.futures import CancelledError, Future
 from copy import copy
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Any, Callable, Dict, Optional, Union
 from uuid import UUID
 
 import numpy as np
 import pandas as pd
 import pkg_resources
 import psutil
+from typing import Any, Callable, Dict, Optional, Union
 
 import giskard
 from giskard.client.giskard_client import GiskardClient
@@ -33,6 +33,7 @@ from giskard.ml_worker.testing.registry.slicing_function import SlicingFunction
 from giskard.ml_worker.testing.registry.transformation_function import TransformationFunction
 from giskard.ml_worker.utils.cache import CACHE
 from giskard.ml_worker.utils.file_utils import get_file_name
+from giskard.ml_worker.websocket import AbortParams
 from giskard.ml_worker.websocket import CallToActionKind, GetInfoParam, PushKind
 from giskard.ml_worker.websocket.action import ActionPayload, MLWorkerAction
 from giskard.ml_worker.websocket.utils import (
@@ -56,7 +57,6 @@ from giskard.settings import settings
 from giskard.utils import call_in_pool, POOL
 from giskard.utils.analytics_collector import analytics
 from giskard.utils.worker_pool import GiskardMLWorkerException
-from giskard.ml_worker.websocket import AbortParams
 
 logger = logging.getLogger(__name__)
 MAX_STOMP_ML_WORKER_REPLY_SIZE = 1500
@@ -138,7 +138,6 @@ def parse_and_execute(
     params,
     ml_worker: MLWorkerInfo,
     client_params: Optional[Dict[str, str]],
-    job_id: Optional[UUID],
 ) -> websocket.WorkerReply:
     action_params = parse_action_param(action, params)
     return callback(
@@ -178,7 +177,6 @@ async def dispatch_action(
     result_handler = wrapped_handle_result(action, start, job_id, worker_info, ignore_timeout=ignore_timeout)
     # If execution should be done in a pool
     kwargs = {
-        "job_id": job_id,
         "callback": callback,
         "action": action,
         "params": params,
@@ -188,7 +186,8 @@ async def dispatch_action(
     if execute_in_pool and settings.use_pool:
         logger.debug("Submitting for action %s '%s' into the pool", action.name, callback.__name__)
         future = call_in_pool(
-            parse_and_execute,
+            job_id=job_id,
+            fn=parse_and_execute,
             kwargs=kwargs,
             timeout=timeout,
         )

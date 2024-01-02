@@ -1,5 +1,6 @@
 import logging
 import os
+import uuid
 from concurrent.futures import Future
 from functools import wraps
 from threading import Lock, Thread
@@ -7,8 +8,8 @@ from time import sleep
 from uuid import UUID
 
 from giskard.settings import settings
-from giskard.utils.worker_pool import WorkerPoolExecutor
 from giskard.utils.worker_pool import KillReason
+from giskard.utils.worker_pool import WorkerPoolExecutor
 
 LOGGER = logging.getLogger(__name__)
 
@@ -46,10 +47,10 @@ class SingletonWorkerPool:
             return
         self.pool.shutdown(wait=wait)
 
-    def schedule(self, fn, args=None, kwargs=None, timeout=None) -> Future:
+    def schedule(self, job_id: UUID, fn, args=None, kwargs=None, timeout=None) -> Future:
         if self.pool is None:
             raise RuntimeError(NOT_STARTED)
-        return self.pool.schedule(fn, args=args, kwargs=kwargs, timeout=timeout)
+        return self.pool.schedule(job_id, fn, args=args, kwargs=kwargs, timeout=timeout)
 
     def submit(self, *args, **kwargs) -> Future:
         if self.pool is None:
@@ -77,7 +78,7 @@ def start_pool(max_workers: int = None):
     POOL.start(max_workers=max_workers)
     # Warmup the pool
     for _ in range(100):
-        call_in_pool(sleep, [0])
+        call_in_pool(job_id=uuid.uuid4(), fn=sleep, args=[0])
 
 
 def shutdown_pool():
@@ -98,7 +99,7 @@ def pooled(fn):
 
     @wraps(fn)
     def wrapper(*args, **kwargs):
-        return call_in_pool(fn, args=args, kwargs=kwargs)
+        return call_in_pool(job_id=uuid.uuid4(), fn=fn, args=args, kwargs=kwargs)
 
     return wrapper
 
@@ -107,12 +108,13 @@ NB_CANCELLABLE_WORKER_LOCK = Lock()
 
 
 def call_in_pool(
+    job_id: UUID,
     fn,
     args=None,
     kwargs=None,
     timeout=None,
 ):
-    return POOL.schedule(fn, args=args, kwargs=kwargs, timeout=timeout)
+    return POOL.schedule(job_id, fn, args=args, kwargs=kwargs, timeout=timeout)
 
 
 def fullname(o):
