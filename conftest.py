@@ -77,7 +77,7 @@ def pytest_addoption(parser: Parser):
 
 def separate_process(item: Function) -> List[TestReport]:
     with NamedTemporaryFile(delete=False) as fp:
-        proc = subprocess.run(
+        subprocess.run(
             shell=True,
             check=False,
             stdout=sys.stdout,
