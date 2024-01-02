@@ -7,6 +7,7 @@ from giskard.models.tensorflow import TensorFlowModel
 
 tf = pytest.importorskip("tensorflow")
 
+
 def test_tabular_titanic_binary_classification():
     df = titanic_classification.get_test_df()
     preprocess, _ = titanic_classification.get_pipeline()
