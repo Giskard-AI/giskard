@@ -74,17 +74,12 @@ class TimeoutData:
     end_time: float
 
 
+@dataclass(frozen=True)
 class GiskardTask:
+    job_id: UUID
     fn: Callable
     args: Any
     kwargs: Any
-    job_id: UUID
-
-    def __init__(self, job_id: UUID, fn: Callable, args: Any, kwargs: Any):
-        self.job_id = job_id
-        self.fn = fn
-        self.args = args
-        self.kwargs = kwargs
 
 
 @dataclass(frozen=True)
@@ -271,7 +266,7 @@ class WorkerPoolExecutor(Executor):
         try:
             future = self.futures_mapping.pop(job_id, None)
             if future is not None and not future.cancel():
-                LOGGER.warning(f"Killing a job {job_id} with reason: {reason.name}")
+                LOGGER.warning("Killing a job %s with reason: %s" % (job_id, reason.name))
                 future.set_exception(TimeoutError(f"Task killed with reason: {reason.name}"))
                 pid = self.running_process.pop(job_id, None)
                 if pid is not None:
@@ -281,7 +276,7 @@ class WorkerPoolExecutor(Executor):
                         self.spawn_worker()
         except BaseException as e:  # NOSONAR
             # This is probably an OSError, but we want to be extra safe
-            LOGGER.warning(f"Unexpected error when killing a process (caused by {reason.name}): pool is broken")
+            LOGGER.warning("Unexpected error when killing a process (caused by %s): pool is broken" % reason.name)
             LOGGER.exception(e)
             self._state = PoolState.BROKEN
             return e

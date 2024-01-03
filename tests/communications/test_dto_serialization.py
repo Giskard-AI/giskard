@@ -21,6 +21,7 @@ else:
 FILTERED_CLASSES = [BaseModel, ConfiguredBaseModel]
 
 MANDATORY_FIELDS = {
+    "AbortParams": ["job_id"],
     "ArtifactRef": ["id"],
     "Catalog": ["tests", "slices", "transformations"],
     "CreateSubDataset": ["datasetUuid"],
@@ -35,6 +36,7 @@ MANDATORY_FIELDS = {
     "DatasetRowModificationResult": ["rowId", "modifications"],
     "Documentation": ["description", "parameters"],
     "EchoMsg": ["msg"],
+    "EchoResponse": ["msg", "job_ids"],
     "Empty": [],
     "ErrorReply": ["error_str", "error_type"],
     "Explain": ["explanations"],
@@ -84,13 +86,10 @@ MANDATORY_FIELDS = {
     "TestSuiteParam": ["projectKey"],
     "WeightsPerFeature": [],
     "WorkerReply": [],
-    "AbortParams": ["job_id"],
-    "EchoResponse": ["job_ids", "msg"],
 }
 
 OPTIONAL_FIELDS = {
     "AbortParams": [],
-    "EchoResponse": [],
     "ArtifactRef": ["project_key", "sample"],
     "Catalog": [],
     "CreateSubDataset": [],
@@ -116,6 +115,7 @@ OPTIONAL_FIELDS = {
     "DatasetRowModificationResult": [],
     "Documentation": [],
     "EchoMsg": [],
+    "EchoResponse": [],
     "Empty": [],
     "ErrorReply": ["detail"],
     "Explain": [],

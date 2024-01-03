@@ -21,6 +21,12 @@ giskard = [
 ]
 
 
+[[tool.pdm.source]]
+type = "find_links"
+url = "https://download.pytorch.org/whl/cpu/torch_stable.html"
+name = "torch"
+
+
 [tool.pdm.scripts]
 _.env = { GSK_DISABLE_ANALYTICS = "True", GISKARD_DEV_MODE = "True" }
 # add "-n auto" to the pytest command to parallelize the execution

@@ -2,7 +2,6 @@ import logging
 import os
 import uuid
 from concurrent.futures import Future
-from functools import wraps
 from threading import Lock, Thread
 from time import sleep
 from uuid import UUID
@@ -88,20 +87,6 @@ def shutdown_pool():
         return
 
     POOL.shutdown(wait=True)
-
-
-def pooled(fn):
-    """Decorator to make a function be called inside the pool.
-
-    Args:
-        fn (function): the function to wrap
-    """
-
-    @wraps(fn)
-    def wrapper(*args, **kwargs):
-        return call_in_pool(job_id=uuid.uuid4(), fn=fn, args=args, kwargs=kwargs)
-
-    return wrapper
 
 
 NB_CANCELLABLE_WORKER_LOCK = Lock()

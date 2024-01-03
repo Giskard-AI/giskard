@@ -102,8 +102,6 @@ def wrapped_handle_result(
                 error_str=e.info.message, error_type=e.info.type, detail=e.info.stack_trace
             )
             logger.warning(e)
-        except TimeoutError as e:
-            info: websocket.WorkerReply = websocket.ErrorReply(error_str=str(e), error_type=type(e).__name__)
         except Exception as e:
             info: websocket.WorkerReply = websocket.ErrorReply(
                 error_str=str(e), error_type=type(e).__name__, detail=traceback.format_exc()
