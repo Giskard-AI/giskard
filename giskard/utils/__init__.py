@@ -102,6 +102,11 @@ def call_in_pool(
     return POOL.schedule(job_id, fn, args=args, kwargs=kwargs, timeout=timeout)
 
 
+def cancel_in_pool(job_id: UUID):
+    with NB_CANCELLABLE_WORKER_LOCK:
+        POOL.cancel(job_id)
+
+
 def fullname(o):
     klass = o.__class__
     module = klass.__module__

@@ -11,13 +11,13 @@ from concurrent.futures import CancelledError, Future
 from copy import copy
 from dataclasses import dataclass
 from pathlib import Path
+from typing import Any, Callable, Dict, Optional, Union
 from uuid import UUID
 
 import numpy as np
 import pandas as pd
 import pkg_resources
 import psutil
-from typing import Any, Callable, Dict, Optional, Union
 
 import giskard
 from giskard.client.giskard_client import GiskardClient
@@ -57,6 +57,7 @@ from giskard.settings import settings
 from giskard.utils import call_in_pool, POOL
 from giskard.utils.analytics_collector import analytics
 from giskard.utils.worker_pool import GiskardMLWorkerException
+from utils import cancel_in_pool
 
 logger = logging.getLogger(__name__)
 MAX_STOMP_ML_WORKER_REPLY_SIZE = 1500
@@ -222,8 +223,8 @@ def websocket_actor(
 
 
 @websocket_actor(MLWorkerAction.abort, execute_in_pool=False)
-def on_abort(ml_worker: MLWorkerInfo, params: AbortParams, *args, **kwargs):
-    POOL.cancel(params.job_id)
+def on_abort(params: AbortParams, *args, **kwargs):
+    cancel_in_pool(params.job_id)
     return websocket.AbortParams(job_id=params.job_id)
 
 

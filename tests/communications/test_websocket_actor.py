@@ -1,4 +1,5 @@
 import shutil
+import time
 import uuid
 
 import pandas as pd
@@ -13,6 +14,7 @@ from giskard.ml_worker.websocket.action import MLWorkerAction
 from giskard.models.base.model import BaseModel
 from giskard.settings import settings
 from tests import utils
+from utils import start_pool, POOL
 
 NOT_USED_WEBSOCKET_ACTOR = [
     MLWorkerAction.generateQueryBasedSlicingFunction,
@@ -571,3 +573,23 @@ def test_websocket_actor_create_sub_dataset(request):
 
         assert isinstance(reply, websocket.CreateSubDataset)
         assert reply.datasetUuid != str(dataset.id)
+
+
+def test_websocket_actor_cancel_job():
+    max_wait_sec = 10
+    wait_sec = 0.1
+
+    with utils.MockedClient(mock_all=False) as (client, mr):
+        start_pool(5)
+        job_id = uuid.uuid4()
+        future = POOL.schedule(job_id=job_id, fn=time.sleep, args=(max_wait_sec,))
+        while not future.running() and max_wait_sec > 0:
+            max_wait_sec -= wait_sec
+            time.sleep(wait_sec)
+        assert future.running()
+        reply = listener.on_abort(client=client, params=websocket.AbortParams(job_id=job_id))
+        assert isinstance(reply, websocket.AbortParams)
+        assert reply.job_id == job_id
+        assert future.done()
+        assert isinstance(future.exception(), TimeoutError)
+        assert str(future.exception()) == "Task killed with reason: CANCELLED"
