@@ -390,7 +390,7 @@ class Suite:
             logger.info(f"{test_name} ({params}): {format_test_result(r)}")
 
         return TestSuiteResult(passed, results)
-    
+
     def to_unittest(self, **suite_gen_args):
         run_args = self.default_params.copy()
         run_args.update(suite_gen_args)
@@ -404,7 +404,7 @@ class Suite:
         for test_partial in self.tests:
             test_params = self.create_test_params(test_partial, run_args)
             unittest = test_partial.giskard_test.get_builder()(**test_params)
-            setattr(unittest, 'test_id', test_partial.test_id)
+            setattr(unittest, "test_id", test_partial.test_id)
             unittests.append(unittest)
 
         return unittests
