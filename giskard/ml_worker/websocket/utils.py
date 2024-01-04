@@ -2,10 +2,11 @@ import logging
 import os
 import shutil
 import uuid
+from collections import defaultdict
 
 import pandas as pd
 from mlflow.store.artifact.artifact_repo import verify_artifact_path
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, List, Optional, Callable
 
 from giskard.client.giskard_client import GiskardClient
 from giskard.core.suite import DatasetInput, ModelInput, SuiteInput
@@ -28,6 +29,7 @@ from giskard.ml_worker.websocket import (
     RunModelForDataFrameParam,
     RunModelParam,
     TestSuiteParam,
+    Documentation,
 )
 from giskard.ml_worker.websocket.action import MLWorkerAction
 from giskard.models.base import BaseModel
@@ -90,7 +92,9 @@ def map_function_meta_ws(callable_type):
             name=test.name,
             displayName=test.display_name,
             module=test.module,
-            doc=test.doc,
+            doc=None
+            if test.doc is None
+            else Documentation(description=test.doc.description, parameters=test.doc.parameters),
             code=test.code,
             moduleDoc=test.module_doc,
             tags=test.tags,
@@ -134,7 +138,9 @@ def map_dataset_process_function_meta_ws(callable_type):
             name=test.name,
             displayName=test.display_name,
             module=test.module,
-            doc=test.doc,
+            doc=None
+            if test.doc is None
+            else Documentation(description=test.doc.description, parameters=test.doc.parameters),
             code=test.code,
             moduleDoc=test.module_doc,
             tags=test.tags,
@@ -158,7 +164,21 @@ def map_dataset_process_function_meta_ws(callable_type):
     }
 
 
-def parse_function_arguments(client: Optional[GiskardClient], request_arguments: List[websocket.FuncArgument]):
+def _get_or_load(loaded_artifacts: Dict[str, Dict[str, Any]], type: str, uuid: str, load_fn: Callable[[], Any]) -> Any:
+    if uuid not in loaded_artifacts[type]:
+        loaded_artifacts[type][uuid] = load_fn()
+
+    return loaded_artifacts[type][uuid]
+
+
+def parse_function_arguments(
+    client: Optional[GiskardClient],
+    request_arguments: List[websocket.FuncArgument],
+    loaded_artifacts: Optional[Dict[str, Dict[str, Any]]] = None,
+):
+    if loaded_artifacts is None:
+        loaded_artifacts = defaultdict(dict)
+
     arguments = dict()
 
     # Processing empty list
@@ -169,22 +189,32 @@ def parse_function_arguments(client: Optional[GiskardClient], request_arguments:
         if arg.is_none:
             continue
         if arg.dataset is not None:
-            arguments[arg.name] = Dataset.download(
-                client,
-                arg.dataset.project_key,
+            arguments[arg.name] = _get_or_load(
+                loaded_artifacts,
+                "Dataset",
                 arg.dataset.id,
-                arg.dataset.sample,
+                lambda: Dataset.download(
+                    client,
+                    arg.dataset.project_key,
+                    arg.dataset.id,
+                    arg.dataset.sample,
+                ),
             )
         elif arg.model is not None:
-            arguments[arg.name] = BaseModel.download(client, arg.model.project_key, arg.model.id)
+            arguments[arg.name] = _get_or_load(
+                loaded_artifacts,
+                "BaseModel",
+                arg.model.id,
+                lambda: BaseModel.download(client, arg.model.project_key, arg.model.id),
+            )
         elif arg.slicingFunction is not None:
             arguments[arg.name] = SlicingFunction.download(
                 arg.slicingFunction.id, client, arg.slicingFunction.project_key
-            )(**parse_function_arguments(client, arg.args))
+            )(**parse_function_arguments(client, arg.args, loaded_artifacts))
         elif arg.transformationFunction is not None:
             arguments[arg.name] = TransformationFunction.download(
                 arg.transformationFunction.id, client, arg.transformationFunction.project_key
-            )(**parse_function_arguments(client, arg.args))
+            )(**parse_function_arguments(client, arg.args, loaded_artifacts))
         elif arg.float_arg is not None:
             arguments[arg.name] = float(arg.float_arg)
         elif arg.int_arg is not None:
@@ -230,6 +260,7 @@ def map_result_to_single_test_result_ws(
             else [],
             props=result.props,
             metric=result.metric,
+            metric_name=result.metric_name,
             missing_count=result.missing_count,
             missing_percent=result.missing_percent,
             unexpected_count=result.unexpected_count,

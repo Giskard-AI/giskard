@@ -1,13 +1,16 @@
+from typing import Callable, List, Optional, Type, TypeVar, Union
+
 import functools
 import inspect
 import sys
-from typing import Callable, Optional, List, Union, Type, TypeVar
 
 from giskard.core.core import TestFunctionMeta
 from giskard.registry.decorators_utils import make_all_optional_or_suite_input, set_return_type
 from giskard.registry.giskard_test import GiskardTestMethod, GiskardTest
 
 
+# TODO: I think this should be moved into giskard_test.py ?
+# For slicing_function and transformation_function the decorator is in the same file as the class
 def test(
     _fn=None,
     name=None,

@@ -6,6 +6,7 @@ import sys
 import tempfile
 import time
 import traceback
+from collections import defaultdict
 from concurrent.futures import CancelledError, Future
 from copy import copy
 from dataclasses import dataclass
@@ -520,17 +521,20 @@ def run_test_suite(
     client: Optional[GiskardClient], params: websocket.TestSuiteParam, *args, **kwargs
 ) -> websocket.TestSuite:
     log_listener = LogListener()
+
+    loaded_artifacts = defaultdict(dict)
+
     try:
         tests = [
             {
                 "test": GiskardTest.download(t.testUuid, client, None),
-                "arguments": parse_function_arguments(client, t.arguments),
+                "arguments": parse_function_arguments(client, t.arguments, loaded_artifacts),
                 "id": t.id,
             }
             for t in params.tests
         ]
 
-        global_arguments = parse_function_arguments(client, params.globalArguments)
+        global_arguments = parse_function_arguments(client, params.globalArguments, loaded_artifacts)
 
         datasets = {arg.original_id: arg for arg in global_arguments.values() if isinstance(arg, Dataset)}
         for test in tests:

@@ -15,6 +15,7 @@ from giskard.registry.decorators_utils import (
 )
 from giskard.registry.registry import get_object_uuid, tests_registry
 
+
 TransformationFunctionType = Callable[..., Union[pd.Series, pd.DataFrame]]
 
 default_tags = ["transformation"]

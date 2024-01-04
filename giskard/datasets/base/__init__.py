@@ -28,6 +28,8 @@ from giskard.registry.transformation_function import (
     TransformationFunctionType,
 )
 from giskard.settings import settings
+
+from ...utils.analytics_collector import analytics
 from ..metadata.indexing import ColumnMetadataMixin
 from ...utils.file_utils import get_file_name
 
@@ -35,7 +37,6 @@ try:
     import wandb  # noqa
 except ImportError:
     pass
-
 
 SAMPLE_SIZE = 1000
 
@@ -228,7 +229,6 @@ class Dataset(ColumnMetadataMixin):
         }
 
         self.data_processor = DataProcessor()
-
         logger.info("Your 'pandas.DataFrame' is successfully wrapped by Giskard's 'Dataset' wrapper class.")
 
     @property
@@ -741,7 +741,6 @@ class Dataset(ColumnMetadataMixin):
         except ImportError as e:
             raise GiskardImportError("wandb") from e
         from ...integrations.wandb.wandb_utils import get_wandb_run
-        from ...utils.analytics_collector import analytics
 
         run = get_wandb_run(run)
 

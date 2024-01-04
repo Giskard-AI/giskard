@@ -1,13 +1,16 @@
+import random
 import uuid
 
 import pandas as pd
 import pytest
 
+import giskard
 from giskard import test
 from giskard.datasets.base import Dataset
 from giskard.ml_worker import websocket
 from giskard.core.test_result import TestResult as GiskardTestResult, TestMessage, TestMessageLevel
 from giskard.ml_worker.websocket import listener
+from giskard.models.base import BaseModel
 from giskard.testing.tests import debug_prefix
 from tests import utils
 
@@ -60,6 +63,13 @@ def my_simple_test_legacy_debug(dataset: Dataset, debug: bool = False):
         output_ds = dataset.copy()
         output_ds.name = debug_prefix + "my_simple_test_debug"
     return GiskardTestResult(passed=False, output_df=output_ds)
+
+
+@giskard.test()
+def same_prediction(left: BaseModel, right: BaseModel, ds: giskard.Dataset):
+    left_pred = left.predict(ds)
+    right_pred = right.predict(ds)
+    return giskard.TestResult(passed=list(left_pred.raw_prediction) == list(right_pred.raw_prediction))
 
 
 def test_websocket_actor_run_ad_hoc_test_legacy_debug(enron_data: Dataset):
@@ -341,6 +351,97 @@ def test_websocket_actor_run_test_suite():
         assert 2 == reply.results[2].id
         assert reply.results[2].result.is_error
         assert not reply.results[2].result.passed
+
+
+def test_websocket_actor_run_test_suite_share_models_and_dataset_instance():
+    def random_prediction(df):
+        return [random.randint(0, 9) for _ in df.index]
+
+    # Use random model to ensure model prediction cache is shared (same instance loaded)
+    random_model = giskard.Model(random_prediction, "regression", feature_names=["feature"])
+    mock_dataset = giskard.Dataset(pd.DataFrame({"feature": range(100)}))
+
+    with utils.MockedClient(mock_all=False) as (client, mr):
+        params = websocket.TestSuiteParam(
+            projectKey=str(uuid.uuid4()),
+            tests=[
+                websocket.SuiteTestArgument(
+                    id=0,
+                    testUuid=same_prediction.meta.uuid,
+                    arguments=[
+                        websocket.FuncArgument(
+                            name="left",
+                            model=websocket.ArtifactRef(project_key="project_key", id=str(random_model.id)),
+                            none=False,
+                        ),
+                        websocket.FuncArgument(
+                            name="right",
+                            model=websocket.ArtifactRef(project_key="project_key", id=str(random_model.id)),
+                            none=False,
+                        ),
+                        websocket.FuncArgument(
+                            name="ds",
+                            dataset=websocket.ArtifactRef(project_key="project_key", id=str(mock_dataset.id)),
+                            none=False,
+                        ),
+                    ],
+                ),
+                websocket.SuiteTestArgument(
+                    id=1,
+                    testUuid=same_prediction.meta.uuid,
+                    arguments=[
+                        websocket.FuncArgument(
+                            name="left",
+                            model=websocket.ArtifactRef(project_key="project_key", id=str(random_model.id)),
+                            none=False,
+                        )
+                    ],
+                ),
+                websocket.SuiteTestArgument(
+                    id=2,
+                    testUuid=same_prediction.meta.uuid,
+                    arguments=[
+                        websocket.FuncArgument(
+                            name="right",
+                            model=websocket.ArtifactRef(project_key="project_key", id=str(random_model.id)),
+                            none=False,
+                        )
+                    ],
+                ),
+                websocket.SuiteTestArgument(id=2, testUuid=same_prediction.meta.uuid, arguments=[]),
+            ],
+            globalArguments=[
+                websocket.FuncArgument(
+                    name="left",
+                    model=websocket.ArtifactRef(project_key="project_key", id=str(random_model.id)),
+                    none=False,
+                ),
+                websocket.FuncArgument(
+                    name="right",
+                    model=websocket.ArtifactRef(project_key="project_key", id=str(random_model.id)),
+                    none=False,
+                ),
+                websocket.FuncArgument(
+                    name="ds",
+                    dataset=websocket.ArtifactRef(project_key="project_key", id=str(mock_dataset.id)),
+                    none=False,
+                ),
+            ],
+        )
+        utils.register_uri_for_artifact_meta_info(mr, same_prediction, None)
+
+        utils.register_uri_for_model_meta_info(mr, random_model, "project_key")
+        utils.register_uri_for_model_artifact_info(mr, random_model, "project_key", register_file_contents=True)
+
+        utils.register_uri_for_dataset_meta_info(mr, mock_dataset, "project_key")
+        utils.register_uri_for_dataset_artifact_info(mr, mock_dataset, "project_key", register_file_contents=True)
+
+        reply = listener.run_test_suite(client, params)
+
+        assert isinstance(reply, websocket.TestSuite)
+        assert not reply.is_error
+        assert reply.is_pass
+        assert 4 == len(reply.results)
 
 
 def test_websocket_actor_run_test_suite_raise_error():

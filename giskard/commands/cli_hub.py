@@ -2,7 +2,6 @@ import logging
 import os
 import time
 from pathlib import Path
-from typing import Optional
 
 import click
 import docker
@@ -14,6 +13,7 @@ from docker.models.containers import Container
 from packaging import version
 from packaging.version import InvalidVersion, Version
 from tenacity import retry, wait_exponential
+from typing import Optional
 
 import giskard
 from giskard.cli_utils import common_options
@@ -192,7 +192,9 @@ def _pull_image(version):
     if not _check_downloaded(version):
         logger.info(f"Downloading image for version {version}")
         try:
+            analytics.track("giskard-server:install:start", {"version": version})
             create_docker_client().images.pull(IMAGE_NAME, tag=version)
+            analytics.track("giskard-server:install:success", {"version": version})
         except NotFound:
             logger.error(
                 f"Image {get_image_name(version)} not found. Use a valid `--version` argument or check the content of $GSK_HOME/server-settings.yml"
@@ -334,7 +336,7 @@ def start(attached, skip_version_check, version, environment, env_file):
     environment = list(environment)
     if env_file is not None:
         with open(env_file, "r") as f:
-            environment = f.readlines() + environment
+            environment = f.read().splitlines() + environment
 
     _start(attached, skip_version_check, version, environment)
 

@@ -1,6 +1,5 @@
-import json
-
 from pydantic import BaseModel
+
 from typing import Optional
 
 from giskard.core.core import CallableMeta
@@ -48,9 +47,8 @@ def func_test_func_doc_google(
 
 def test_extract_doc(caplog):
     doc = CallableMeta.extract_doc(test_diff_rmse_push)
-    params = json.loads(doc)
-    assert "Test for difference in RMSE between a slice and full dataset" in params["description"]
-    assert {"model", "dataset", "slicing_function", "threshold", "direction"} == set(params["parameters"].keys())
+    assert "Test for difference in RMSE between a slice and full dataset" in doc.description
+    assert {"model", "dataset", "slicing_function", "threshold", "direction"} == set(doc.parameters.keys())
 
     assert caplog.text == ""
 
@@ -62,7 +60,6 @@ def test_extract_doc_warnings(caplog):
 
 def test_extract_doc_google(caplog):
     doc = CallableMeta.extract_doc(func_test_func_doc_google)
-    params = json.loads(doc)
-    assert "Test for difference in RMSE between a slice and full dataset" in params["description"]
-    assert {"model", "dataset", "slicing_function", "threshold", "direction"} == set(params["parameters"].keys())
+    assert "Test for difference in RMSE between a slice and full dataset" in doc.description
+    assert {"model", "dataset", "slicing_function", "threshold", "direction"} == set(doc.parameters.keys())
     assert caplog.text == ""
