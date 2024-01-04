@@ -1,10 +1,10 @@
 import numpy as np
 
+from .bruteforce_slicer import BruteForceSlicer
+from .multiscale_slicer import MultiscaleSlicer
+from .opt_slicer import OptSlicer
 from .slice import GreaterThan, LowerThan
 from .tree_slicer import DecisionTreeSlicer
-from .opt_slicer import OptSlicer
-from .multiscale_slicer import MultiscaleSlicer
-from .bruteforce_slicer import BruteForceSlicer
 
 
 def get_slice_feature_interval(data_slice, feature, min_value=None, max_value=None):

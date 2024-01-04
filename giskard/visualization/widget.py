@@ -1,13 +1,14 @@
+from typing import Any, Dict
+
 from abc import ABC, abstractmethod
 from collections import defaultdict
 from html import escape
 from pathlib import Path
-from typing import Any, Dict
 
 from jinja2 import Environment, PackageLoader, select_autoescape
 
+from ..core.savable import Artifact
 from ..datasets.base import Dataset
-from ..ml_worker.core.savable import Artifact
 from ..models.base import BaseModel
 from ..scanner.issues import IssueLevel
 from ..visualization.custom_jinja import format_metric, markdown_to_html, pluralize

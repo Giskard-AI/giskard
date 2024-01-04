@@ -1,4 +1,6 @@
 """API Client to interact with the Giskard app"""
+from typing import List
+
 import json
 import logging
 import os
@@ -14,7 +16,6 @@ from requests import Response
 from requests.adapters import HTTPAdapter
 from requests.auth import AuthBase
 from requests_toolbelt import sessions
-from typing import List
 
 import giskard
 from giskard.client.dtos import DatasetMetaInfo, ModelMetaInfo, ServerInfo, SuiteInfo, TestSuiteDTO
@@ -208,14 +209,17 @@ class GiskardClient:
     def load_dataset_meta(self, project_key: str, uuid: str) -> DatasetMeta:
         res = self._session.get(f"project/{project_key}/datasets/{uuid}").json()
         info = DatasetMetaInfo.parse_obj(res)  # Used for validation, and avoid extraand typos
-        analytics.track("hub:dataset:download", {
-            "project": anonymize(project_key),
-            "name": anonymize(info.name),
-            "target": anonymize(info.target),
-            "columnTypes": anonymize(info.columnTypes),
-            "columnDtypes": anonymize(info.columnDtypes),
-            "nb_rows": info.numberOfRows,
-        })
+        analytics.track(
+            "hub:dataset:download",
+            {
+                "project": anonymize(project_key),
+                "name": anonymize(info.name),
+                "target": anonymize(info.target),
+                "columnTypes": anonymize(info.columnTypes),
+                "columnDtypes": anonymize(info.columnDtypes),
+                "nb_rows": info.numberOfRows,
+            },
+        )
         return DatasetMeta(
             name=info.name,
             target=info.target,

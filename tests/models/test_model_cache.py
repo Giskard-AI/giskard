@@ -7,14 +7,13 @@ import numpy as np
 import pandas as pd
 import pytest
 import xxhash
+from langchain import LLMChain, PromptTemplate
 from langchain.llms.fake import FakeListLLM
 
 import giskard
 from giskard import Dataset, Model
 from giskard.core.core import SupportedModelTypes
 from giskard.models.cache import ModelCache
-from langchain import LLMChain, PromptTemplate
-
 
 # https://symbl.cc/fr/unicode/blocks/
 

@@ -1,8 +1,9 @@
+from typing import List
+
 import itertools
 import random
 from collections.abc import Iterator
 from functools import lru_cache
-from typing import List
 
 import numpy as np
 

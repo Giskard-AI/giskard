@@ -1,9 +1,10 @@
+from typing import Dict, List, Optional
+
 from enum import Enum
 
 import pydantic
 from packaging import version
 from pydantic import Field
-from typing import Dict, List, Optional
 
 from giskard.core.validation import ConfiguredBaseModel
 

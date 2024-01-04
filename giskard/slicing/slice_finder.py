@@ -1,12 +1,9 @@
 from typing import Optional, Sequence
 
-
-from .text_slicer import TextSlicer
-
-from .category_slicer import CategorySlicer
-
-from .utils import get_slicer
 from ..datasets.base import Dataset
+from .category_slicer import CategorySlicer
+from .text_slicer import TextSlicer
+from .utils import get_slicer
 
 
 class SliceFinder:

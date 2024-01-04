@@ -2,13 +2,13 @@ import json
 
 import pandas as pd
 
-from .. import debug_description_prefix
+from ....core.test_result import TestMessage, TestMessageLevel, TestResult
 from ....datasets.base import Dataset
-from ....llm.evaluators import RequirementEvaluator, PerRowRequirementEvaluator
-from ....ml_worker.testing.registry.decorators import test
-from ....ml_worker.testing.test_result import TestMessage, TestMessageLevel, TestResult
+from ....llm.evaluators import PerRowRequirementEvaluator, RequirementEvaluator
 from ....models.base import BaseModel
+from ....registry.decorators import test
 from ....utils.display import truncate
+from .. import debug_description_prefix
 
 
 def _test_output_against_requirement(model, dataset, evaluator):

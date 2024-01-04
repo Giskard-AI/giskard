@@ -9,8 +9,8 @@ import pandas as pd
 from ..client.python_utils import warning
 from ..core.core import DatasetProcessFunctionMeta
 from ..datasets.base import Dataset
-from ..ml_worker.testing.registry.registry import get_object_uuid
-from ..ml_worker.testing.registry.slicing_function import SlicingFunction
+from ..registry.registry import get_object_uuid
+from ..registry.slicing_function import SlicingFunction
 from ..slicing.category_slicer import CategorySlicer
 from .base import BaseSlicer
 from .slice import ContainsWord, Query, QueryBasedSliceFunction

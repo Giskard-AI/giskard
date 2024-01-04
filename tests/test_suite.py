@@ -3,7 +3,7 @@ import pytest
 
 from giskard import Model, Suite
 from giskard.core.suite import single_binary_result
-from giskard.ml_worker.testing.test_result import TestResult
+from giskard.core.test_result import TestResult
 from giskard.testing import test_accuracy
 
 
