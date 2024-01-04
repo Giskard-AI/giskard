@@ -57,7 +57,7 @@ from giskard.settings import settings
 from giskard.utils import call_in_pool, list_pool_job_ids
 from giskard.utils.analytics_collector import analytics
 from giskard.utils.worker_pool import GiskardMLWorkerException
-from utils import cancel_in_pool
+from giskard.utils import cancel_in_pool
 
 logger = logging.getLogger(__name__)
 MAX_STOMP_ML_WORKER_REPLY_SIZE = 1500
