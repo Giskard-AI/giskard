@@ -2,7 +2,7 @@ import logging
 import os
 import uuid
 from concurrent.futures import Future
-from threading import Lock, Thread
+from threading import Thread
 from time import sleep
 from uuid import UUID
 
@@ -87,9 +87,6 @@ def shutdown_pool():
         return
 
     POOL.shutdown(wait=True)
-
-
-NB_CANCELLABLE_WORKER_LOCK = Lock()
 
 
 def call_in_pool(
