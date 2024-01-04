@@ -16,7 +16,6 @@ from giskard.registry.decorators_utils import (
 )
 from giskard.registry.registry import get_object_uuid, tests_registry
 
-
 SlicingFunctionType = Callable[..., bool]
 
 default_tags = ["filter"]
@@ -124,7 +123,7 @@ class SlicingFunction(RegistryArtifact[DatasetProcessFunctionMeta]):
 
     @classmethod
     def _load_no_code(cls, meta: DatasetProcessFunctionMeta):
-        from ....slicing.slice import Query, QueryBasedSliceFunction
+        from ..slicing.slice import Query, QueryBasedSliceFunction
 
         return QueryBasedSliceFunction(Query.from_clauses(meta.clauses))
 
