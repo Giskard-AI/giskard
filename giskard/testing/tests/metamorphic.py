@@ -1,6 +1,7 @@
+from typing import Optional
+
 import numpy as np
 import pandas as pd
-from typing import Optional
 
 from giskard.core.core import SupportedModelTypes
 from giskard.core.test_result import TestMessage, TestMessageLevel, TestResult
@@ -23,6 +24,7 @@ from giskard.testing.utils.utils import (
     validate_classification_label,
 )
 from giskard.utils.logging import timer
+
 from . import debug_description_prefix
 
 

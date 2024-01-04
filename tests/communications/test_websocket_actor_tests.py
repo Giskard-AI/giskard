@@ -6,9 +6,10 @@ import pytest
 
 import giskard
 from giskard import test
+from giskard.core.test_result import TestMessage, TestMessageLevel
+from giskard.core.test_result import TestResult as GiskardTestResult
 from giskard.datasets.base import Dataset
 from giskard.ml_worker import websocket
-from giskard.core.test_result import TestResult as GiskardTestResult, TestMessage, TestMessageLevel
 from giskard.ml_worker.websocket import listener
 from giskard.models.base import BaseModel
 from giskard.testing.tests import debug_prefix

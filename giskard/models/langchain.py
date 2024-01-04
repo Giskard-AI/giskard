@@ -1,7 +1,8 @@
+from typing import Any, Callable, Dict, Iterable, Optional, Tuple, Union
+
 from pathlib import Path
 
 import pandas as pd
-from typing import Any, Callable, Iterable, Optional, Tuple, Union, Dict
 
 from giskard.core.core import SupportedModelTypes
 from giskard.core.validation import configured_validate_arguments

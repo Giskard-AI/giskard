@@ -1,10 +1,10 @@
 ### Test giskard_client.py
 # Path: tests/core/test_giskard_client.py
 import pytest
-from giskard.client.giskard_client import GiskardClient, GiskardError
-from giskard.client.giskard_client import explain_error
-from requests import Response
 import requests_mock
+from requests import Response
+
+from giskard.client.giskard_client import GiskardClient, GiskardError, explain_error
 
 UNKNOWN_ERROR = "Unknown error"
 

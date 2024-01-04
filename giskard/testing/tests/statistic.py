@@ -1,15 +1,17 @@
 """Statistical tests"""
+from typing import Optional
+
 import numbers
 
 import numpy as np
-from typing import Optional
 
+from giskard.core.test_result import TestMessage, TestMessageLevel, TestResult
 from giskard.datasets.base import Dataset
+from giskard.models.base import BaseModel
 from giskard.registry.decorators import test
 from giskard.registry.slicing_function import SlicingFunction
-from giskard.core.test_result import TestMessage, TestMessageLevel, TestResult
-from giskard.models.base import BaseModel
 from giskard.testing.utils.utils import check_slice_not_empty, validate_classification_label
+
 from . import debug_description_prefix
 
 

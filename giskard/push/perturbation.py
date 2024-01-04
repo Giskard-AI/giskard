@@ -8,11 +8,12 @@ Functions:
 - _check_after_perturbation: Check if perturbation changed the model's prediction.
 
 """
+from typing import Optional
+
 import hashlib
 
 import numpy as np
 import pandas as pd
-from typing import Optional
 
 from giskard.core.core import SupportedModelTypes
 from giskard.datasets.base import Dataset
@@ -31,6 +32,7 @@ from giskard.scanner.robustness.text_transformations import (
     TextTypoTransformation,
     TextUppercase,
 )
+
 from ..push import PerturbationPush
 
 text_transformation_list = [

@@ -1,3 +1,5 @@
+from typing import Callable, List, Optional, Set, Union
+
 import copy
 import inspect
 import pickle
@@ -6,14 +8,13 @@ from abc import ABC, abstractmethod
 from pathlib import Path
 
 import cloudpickle
-from typing import Callable, List, Optional, Set, Union
 
 from giskard.core.core import SMT, TestFunctionMeta
 from giskard.core.savable import Artifact
+from giskard.core.test_result import TestResult
 from giskard.core.validation import configured_validate_arguments
 from giskard.exceptions.giskard_exception import python_env_exception_helper
 from giskard.registry.registry import get_object_uuid, tests_registry
-from giskard.core.test_result import TestResult
 from giskard.utils.analytics_collector import analytics
 
 DATA_PKL = "data.pkl"

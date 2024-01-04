@@ -11,10 +11,7 @@ import pandas as pd
 
 from giskard.datasets.base import Dataset
 from giskard.models.base.model import BaseModel
-from giskard.testing.tests.calibration import (
-    test_overconfidence_rate,
-    test_underconfidence_rate,
-)
+from giskard.testing.tests.calibration import test_overconfidence_rate, test_underconfidence_rate
 
 from ..push import BorderlinePush, OverconfidencePush
 
