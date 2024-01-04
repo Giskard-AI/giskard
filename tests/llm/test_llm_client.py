@@ -15,6 +15,7 @@ from giskard.llm.client import (
     set_llm_model,
 )
 from giskard.llm.client.openai import LegacyOpenAIClient, OpenAIClient
+from tests.utils import TEST_UUID
 
 OLD_OPEN_AI = False
 try:
@@ -32,6 +33,7 @@ DEMO_OPENAI_RESPONSE = ChatCompletion(
             finish_reason="stop",
             index=0,
             message=ChatCompletionMessage(content="This is a test!", role="assistant", function_call=None),
+            logprobs=None,
         )
     ],
     created=1677858242,
@@ -53,6 +55,7 @@ DEMO_OPENAI_RESPONSE_FC = ChatCompletion(
                     name="my_test_function", arguments='{\n  "my_parameter": "Parameter Value"\n}'
                 ),
             ),
+            logprobs=None,
         )
     ],
     created=1677858242,
@@ -62,7 +65,7 @@ DEMO_OPENAI_RESPONSE_FC = ChatCompletion(
 )
 
 DEMO_LEGACY_OPENAI_RESPONSE = {
-    "id": "chatcmpl-abc123",
+    "id": TEST_UUID,
     "object": "chat.completion",
     "created": 1677858242,
     "model": "gpt-3.5-turbo-0613",
@@ -71,7 +74,7 @@ DEMO_LEGACY_OPENAI_RESPONSE = {
 }
 
 DEMO_LEGACY_OPENAI_RESPONSE_FC = {
-    "id": "chatcmpl-abc123",
+    "id": TEST_UUID,
     "object": "chat.completion",
     "created": 1677858242,
     "model": "gpt-3.5-turbo-0613",
