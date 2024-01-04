@@ -52,11 +52,10 @@ from giskard.registry.giskard_test import GiskardTest
 from giskard.registry.slicing_function import SlicingFunction
 from giskard.registry.transformation_function import TransformationFunction
 from giskard.settings import settings
-from giskard.utils import call_in_pool, list_pool_job_ids
+from giskard.utils import call_in_pool, list_pool_job_ids, cancel_in_pool
 from giskard.utils.analytics_collector import analytics
 from giskard.utils.file_utils import get_file_name
 from giskard.utils.worker_pool import GiskardMLWorkerException
-from giskard.utils import cancel_in_pool
 
 logger = logging.getLogger(__name__)
 MAX_STOMP_ML_WORKER_REPLY_SIZE = 1500
@@ -374,7 +373,7 @@ def run_model(client: Optional[GiskardClient], params: websocket.RunModelParam, 
                 tmp_dir / calculated_csv,
                 f"{params.project_key}/models/inspections/{params.inspectionId}",
             )
-        return websocket.Empty()
+    return websocket.Empty()
 
 
 @websocket_actor(MLWorkerAction.runModelForDataFrame)
