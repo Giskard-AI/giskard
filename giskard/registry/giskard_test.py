@@ -102,6 +102,7 @@ class GiskardTest(Artifact[TestFunctionMeta], ABC):
         return type(self)
 
     def assert_(self):
+        """Wrap execution of the test into a "assert" for unit test executions."""
         result = self.execute()
         if isinstance(result, bool):
             assert result
@@ -109,6 +110,7 @@ class GiskardTest(Artifact[TestFunctionMeta], ABC):
             if result.messages:
                 message = " ".join([repr(message) for message in result.messages])
             else:
+                # Pass more context in case the message is empty
                 message = " ".join(str(result).replace("\n", " ").split())
 
             assert result.passed, message

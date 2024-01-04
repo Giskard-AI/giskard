@@ -391,7 +391,21 @@ class Suite:
 
         return TestSuiteResult(passed, results)
 
-    def to_unittest(self, **suite_gen_args):
+    def to_unittest(self, **suite_gen_args) -> List[TestPartial]:
+        """Create a list of tests that can be easily passed for unittest execution using the `assert_` method
+
+        Parameters
+        ----------
+        **suite_run_args : Optional[dict]
+            Any arguments passed here will be applied to all the tests in the suite whenever they match with the
+            arguments defined for each test. If a test contains an argument that has already been defined, it will not
+            get overridden. If any inputs on the test suite are missing, an error will be raised.
+
+        Returns
+        -------
+        List[TestPartial]
+            containing the tests to execute in a unit test script
+        """
         run_args = self.default_params.copy()
         run_args.update(suite_gen_args)
 
@@ -404,6 +418,7 @@ class Suite:
         for test_partial in self.tests:
             test_params = self.create_test_params(test_partial, run_args)
             unittest = test_partial.giskard_test.get_builder()(**test_params)
+            # pass the test_id attribute to be used as unit test name
             setattr(unittest, "test_id", test_partial.test_id)
             unittests.append(unittest)
 
