@@ -1,3 +1,5 @@
+from typing import Optional
+
 import logging
 import os
 import time
@@ -13,7 +15,6 @@ from docker.models.containers import Container
 from packaging import version
 from packaging.version import InvalidVersion, Version
 from tenacity import retry, wait_exponential
-from typing import Optional
 
 import giskard
 from giskard.cli_utils import common_options

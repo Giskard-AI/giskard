@@ -1,10 +1,11 @@
-import pytest
-import numpy as np
+from functools import partial
 from unittest.mock import Mock
 
-from giskard.models.base import WrapperModel
+import numpy as np
+import pytest
+
 from giskard.core.core import ModelMeta
-from functools import partial
+from giskard.models.base import WrapperModel
 
 
 def _make_model_mock(labels=["First", "Second", "Third"]):

@@ -1,10 +1,11 @@
-import mlflow
-import pandas as pd
 from typing import Any, Callable, Iterable, Optional, Tuple
 
-from .base.serialization import MLFlowSerializableModel
+import mlflow
+import pandas as pd
+
 from ..core.core import ModelType, SupportedModelTypes
 from ..core.validation import configured_validate_arguments
+from .base.serialization import MLFlowSerializableModel
 
 
 class SKLearnModel(MLFlowSerializableModel):

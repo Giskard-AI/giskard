@@ -1,15 +1,16 @@
+from typing import Optional, Sequence
+
 import logging
+
 import numpy as np
 import pandas as pd
 from scipy import stats
-from typing import Optional, Sequence
+from sklearn.model_selection import GridSearchCV
 from sklearn.tree import DecisionTreeClassifier, DecisionTreeRegressor
 from sklearn.tree._tree import Tree as SklearnTree
-from sklearn.model_selection import GridSearchCV
 
 from .base import BaseSlicer
-from .slice import Query, LowerThan, GreaterThan, QueryBasedSliceFunction
-
+from .slice import GreaterThan, LowerThan, Query, QueryBasedSliceFunction
 
 logger = logging.getLogger(__name__)
 
