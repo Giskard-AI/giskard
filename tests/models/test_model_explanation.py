@@ -38,7 +38,7 @@ def test_explain(ds_name: str, model_name: str, include_feature_names: bool, req
     assert explanations and explanations.get("explanations")
 
     if model.is_classification:
-        for label in model.meta.classification_labels:
+        for label in model.classification_labels:
             label_explanation = explanations.get("explanations").get(label)
             assert label_explanation
             for i, e in label_explanation.items():

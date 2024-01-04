@@ -48,7 +48,7 @@ def test_prediction_cache_loaded_model(linear_regression_diabetes, linear_regres
         model = Model(
             prediction_fn,
             model_type=SupportedModelTypes.REGRESSION,
-            feature_names=linear_regression_diabetes.meta.feature_names,
+            feature_names=linear_regression_diabetes.feature_names,
             prediction_cache_dir=Path(cache_dir),
         )
 

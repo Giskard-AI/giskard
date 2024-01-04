@@ -1,6 +1,6 @@
+from .base import BaseDataGenerator
 from ...models.base.model import BaseModel
 from ...utils.display import truncate
-from .base import BaseDataGenerator
 
 GENERATE_INPUTS_PROMPT = """You are auditing AI models. Your task is to generate a set of inputs used to evaluate the behavior of a given AI model. These inputs should highlight the model's performance in scenarios where it may fail or exhibit suboptimal behavior related to the following issue category:
 
@@ -48,9 +48,9 @@ class AdversarialDataGenerator(BaseDataGenerator):
     def _make_generate_input_prompt(self, model: BaseModel, num_inputs: int):
         input_prompt = self.prompt.format(
             issue_description=self.issue_description,
-            model_name=model.meta.name,
-            model_description=model.meta.description,
-            feature_names=", ".join(model.meta.feature_names),
+            model_name=model.name,
+            model_description=model.description,
+            feature_names=", ".join(model.feature_names),
             num_samples=num_inputs,
             requirement=self.requirement,
         )

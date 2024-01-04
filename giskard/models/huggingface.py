@@ -251,7 +251,7 @@ class HuggingFaceModel(WrapperModel):
             if isinstance(data, pd.DataFrame):
                 data = data.to_dict(orient="records")
             _predictions = [{p["label"]: p["score"] for p in pl} for pl in self.model(data, top_k=None)]
-            return [[p[label] for label in self.meta.classification_labels] for p in _predictions]
+            return [[p[label] for label in self.classification_labels] for p in _predictions]
 
         if isinstance(self.model, torch.nn.Module):
             with torch.no_grad():

@@ -1,6 +1,3 @@
-from types import TracebackType
-from typing import Dict, Optional, Type
-
 import getpass
 import hashlib
 import os
@@ -11,9 +8,11 @@ import uuid
 from functools import wraps
 from threading import ExceptHookArgs, Lock
 from traceback import TracebackException
+from types import TracebackType
 
 import requests
 from mixpanel import Mixpanel
+from typing import Dict, Optional, Type
 
 from giskard.client.dtos import ServerInfo
 from giskard.settings import settings
@@ -55,11 +54,11 @@ def get_model_properties(model):
         return {}
 
     inner_model_class = fullname(model.model) if isinstance(model, WrapperModel) else None
-    feature_names = [anonymize(n) for n in model.meta.feature_names] if model.meta.feature_names else None
+    feature_names = [anonymize(n) for n in model.feature_names] if model.feature_names else None
 
     return {
         "model_id": str(model.id),
-        "model_type": model.meta.model_type.value,
+        "model_type": model.model_type.value,
         "model_class": fullname(model),
         "model_inner_class": inner_model_class,
         "model_feature_names": feature_names,

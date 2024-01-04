@@ -1,13 +1,13 @@
-from typing import Sequence, Optional
 import pandas as pd
+from typing import Sequence, Optional
 
+from ..decorators import detector
+from ..issues import Issue, IssueGroup, IssueLevel
+from ..registry import Detector
 from ...datasets.base import Dataset
 from ...llm.evaluators.string_matcher import StringMatcherEvaluator
 from ...llm.loaders.prompt_injections import PromptInjectionDataLoader
 from ...models.base.model import BaseModel
-from ..decorators import detector
-from ..issues import Issue, IssueGroup, IssueLevel
-from ..registry import Detector
 
 
 @detector("llm_prompt_injection", tags=["jailbreak", "prompt_injection", "llm", "generative", "text_generation"])
@@ -89,7 +89,7 @@ class LLMPromptInjectionDetector(Detector):
                         "test_case": group,
                         "deviation": f"{number_of_failed_prompts}/{len(group_dataset)} " + group_deviation_description,
                         "hide_index": True,
-                        "input_prompts": group_dataset.df.loc[:, model.meta.feature_names],
+                        "input_prompts": group_dataset.df.loc[:, model.feature_names],
                         "evaluator_configs": evaluator_configs,
                     },
                     examples=pd.DataFrame(evaluation_results.failure_examples),

@@ -406,7 +406,7 @@ def test_websocket_actor_explain_text_ws_classification(internal, request):
         reply = listener.explain_text_ws(client=None if internal else client, params=params)
         assert isinstance(reply, websocket.ExplainText)
         # Classification labels
-        for label in model.meta.classification_labels:
+        for label in model.classification_labels:
             assert label in reply.weights.keys()
 
 

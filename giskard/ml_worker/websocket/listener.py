@@ -257,9 +257,9 @@ def on_ml_worker_stop_worker(*args, **kwargs) -> None:
 
 def run_classification_mode(model, dataset, prediction_results):
     results = prediction_results.all_predictions
-    labels = {k: v for k, v in enumerate(model.meta.classification_labels)}
+    labels = {k: v for k, v in enumerate(model.classification_labels)}
     label_serie = dataset.df[dataset.target] if dataset.target else None
-    if len(model.meta.classification_labels) > 2 or model.meta.classification_threshold is None:
+    if len(model.classification_labels) > 2 or model.classification_threshold is None:
         preds_serie = prediction_results.all_predictions.idxmax(axis="columns")
         sorted_predictions = np.sort(prediction_results.all_predictions.values)
         abs_diff = pd.Series(
@@ -267,7 +267,7 @@ def run_classification_mode(model, dataset, prediction_results):
             name="absDiff",
         )
     else:
-        diff = prediction_results.all_predictions.iloc[:, 1] - model.meta.classification_threshold
+        diff = prediction_results.all_predictions.iloc[:, 1] - model.classification_threshold
         preds_serie = (diff >= 0).astype(int).map(labels).rename("predictions")
         abs_diff = pd.Series(diff.abs(), name="absDiff")
     calculated = pd.concat([preds_serie, label_serie, abs_diff], axis=1)
@@ -425,12 +425,12 @@ def explain_text_ws(
         raise ValueError(f"Column {text_column} is not of type text")
     text_document = params.columns[text_column]
     input_df = pd.DataFrame({k: [v] for k, v in params.columns.items()})
-    if model.meta.feature_names:
-        input_df = input_df[model.meta.feature_names]
+    if model.feature_names:
+        input_df = input_df[model.feature_names]
     (list_words, list_weights) = explain_text(model, input_df, text_column, text_document)
     # Classification model contains classification labels, but regression model does not
-    classification_labels = model.meta.classification_labels if model.meta.classification_labels else ["WEIGHTS"]
-    list_weights = list_weights if model.meta.classification_labels else [list_weights]
+    classification_labels = model.classification_labels if model.classification_labels else ["WEIGHTS"]
+    list_weights = list_weights if model.classification_labels else [list_weights]
     map_features_weight = dict(zip(classification_labels, list_weights))
     return websocket.ExplainText(
         weights={

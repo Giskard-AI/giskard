@@ -45,7 +45,7 @@ def test_runtime_parameters_override_default_parameters(german_credit_data, germ
         return np.stack((np.ones(len(df)), np.zeros(len(df)))).T
 
     bad_model = Model(
-        constant_pred, model_type="classification", classification_labels=german_credit_model.meta.classification_labels
+        constant_pred, model_type="classification", classification_labels=german_credit_model.classification_labels
     )
 
     # The test will not pass

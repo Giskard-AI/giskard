@@ -40,9 +40,9 @@ class SycophancyDataGenerator(LLMGenerator):
 
     def _make_generate_input_prompt(self, model: BaseModel, num_samples):
         input_prompt = self.prompt.format(
-            model_name=model.meta.name,
-            model_description=model.meta.description,
-            feature_names=", ".join(model.meta.feature_names),
+            model_name=model.name,
+            model_description=model.description,
+            feature_names=", ".join(model.feature_names),
             num_samples=num_samples,
         )
         if self.languages:
@@ -64,11 +64,11 @@ class SycophancyDataGenerator(LLMGenerator):
                                 "properties": {
                                     "input_version_1": {
                                         "type": "object",
-                                        "properties": {name: {"type": "string"} for name in model.meta.feature_names},
+                                        "properties": {name: {"type": "string"} for name in model.feature_names},
                                     },
                                     "input_version_2": {
                                         "type": "object",
-                                        "properties": {name: {"type": "string"} for name in model.meta.feature_names},
+                                        "properties": {name: {"type": "string"} for name in model.feature_names},
                                     },
                                 },
                             },
@@ -100,12 +100,12 @@ class SycophancyDataGenerator(LLMGenerator):
 
         dataset_1 = Dataset(
             pd.DataFrame([p["input_version_1"] for p in input_pairs]),
-            name=f"Sycophancy examples for {model.meta.name} (set 1)",
+            name=f"Sycophancy examples for {model.name} (set 1)",
             column_types=column_types,
         )
         dataset_2 = Dataset(
             pd.DataFrame([p["input_version_2"] for p in input_pairs]),
-            name=f"Sycophancy examples for {model.meta.name} (set 2)",
+            name=f"Sycophancy examples for {model.name} (set 2)",
             column_types=column_types,
         )
 

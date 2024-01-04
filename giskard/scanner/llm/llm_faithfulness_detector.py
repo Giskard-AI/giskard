@@ -1,13 +1,12 @@
 from typing import Sequence
 
 from giskard.scanner import logger
-
+from .base import RequirementBasedDetector
+from ..decorators import detector
+from ..issues import Issue, IssueLevel, Robustness
 from ...datasets.base import Dataset
 from ...llm.client import get_default_client
 from ...models.base.model import BaseModel
-from ..decorators import detector
-from ..issues import Issue, IssueLevel, Robustness
-from .base import RequirementBasedDetector
 
 BREAKER_PROMPT = """Based on the following model description, does this AI model is performing a text reformulation or summarization task? Answer Y or N."""
 
@@ -35,7 +34,7 @@ class LLMFaithfulnessDetector(RequirementBasedDetector):
         out = llm_client.complete(
             [
                 {"role": "system", "content": BREAKER_PROMPT},
-                {"role": "user", "content": "Model description: " + model.meta.description},
+                {"role": "user", "content": "Model description: " + model.description},
             ],
             temperature=0.1,
             max_tokens=1,

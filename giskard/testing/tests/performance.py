@@ -1,6 +1,4 @@
 """Performance tests"""
-from typing import Optional
-
 import numpy as np
 from sklearn.metrics import (
     accuracy_score,
@@ -12,6 +10,7 @@ from sklearn.metrics import (
     recall_score,
     roc_auc_score,
 )
+from typing import Optional
 
 from giskard.datasets.base import Dataset
 from giskard.ml_worker.testing.registry.decorators import test
@@ -24,7 +23,6 @@ from giskard.testing.tests.debug_slicing_functions import (
     incorrect_rows_slicing_fn,
     nlargest_abs_err_rows_slicing_fn,
 )
-
 from . import debug_description_prefix
 
 
@@ -53,11 +51,11 @@ def _test_classification_score(
     debug: bool = False,  # noqa: NOSONAR - old version tests will call this under legacy debug mode
 ):
     _verify_target_availability(dataset)
-    is_binary_classification = len(model.meta.classification_labels) == 2
+    is_binary_classification = len(model.classification_labels) == 2
     targets = dataset.df[dataset.target]
     prediction = model.predict(dataset).prediction
     if is_binary_classification:
-        metric = score_fn(targets, prediction, pos_label=model.meta.classification_labels[1])
+        metric = score_fn(targets, prediction, pos_label=model.classification_labels[1])
     else:
         metric = score_fn(targets, prediction, average="micro")
 
@@ -224,7 +222,7 @@ def test_auc(
     targets = dataset.df[dataset.target]
 
     _verify_target_availability(dataset)
-    if len(model.meta.classification_labels) == 2:
+    if len(model.classification_labels) == 2:
         metric = roc_auc_score(targets, model.predict(dataset).raw[:, 1])
     else:
         predictions = _predictions.all_predictions

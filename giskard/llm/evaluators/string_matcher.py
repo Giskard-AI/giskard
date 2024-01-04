@@ -1,13 +1,14 @@
+import logging
 import re
 import string
-import logging
-from typing import Tuple, List
 from dataclasses import dataclass
 
+from typing import Tuple, List
+
 from .base import BaseEvaluator, EvaluationResult
+from ..errors import LLMGenerationError
 from ...datasets.base import Dataset
 from ...models.base.model import BaseModel
-from ..errors import LLMGenerationError
 
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.INFO)
@@ -57,7 +58,7 @@ class StringMatcherEvaluator(BaseEvaluator):
         failed = []
         failed_idx = []
         errored = []
-        model_inputs = dataset.df.loc[:, model.meta.feature_names].to_dict("records")
+        model_inputs = dataset.df.loc[:, model.feature_names].to_dict("records")
         model_outputs = model.predict(dataset).prediction
 
         for idx, inputs, outputs, config in zip(dataset.df.index, model_inputs, model_outputs, evaluator_configs):
