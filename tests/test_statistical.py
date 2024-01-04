@@ -1,7 +1,7 @@
 import pytest
 
 import giskard.testing.tests.statistic as statistical
-from giskard.ml_worker.testing.registry.slicing_function import SlicingFunction
+from giskard.registry.slicing_function import SlicingFunction
 
 
 @pytest.mark.parametrize(

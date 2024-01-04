@@ -1,18 +1,18 @@
 """
 Module for data quality tests.
 """
+from typing import Iterable
+
 from collections import Counter, defaultdict
 
 import pandas as pd
 from sklearn.cluster import DBSCAN
-from sklearn.ensemble import IsolationForest
-from sklearn.ensemble import RandomForestClassifier
+from sklearn.ensemble import IsolationForest, RandomForestClassifier
 from sklearn.preprocessing import LabelEncoder
-from typing import Iterable
 
+from giskard.core.test_result import TestMessage, TestMessageLevel, TestResult
 from giskard.datasets.base import Dataset
-from giskard.ml_worker.testing.registry.decorators import test
-from giskard.ml_worker.testing.test_result import TestResult, TestMessage, TestMessageLevel
+from giskard.registry.decorators import test
 
 
 @test(name="Data uniqueness test", tags=["data"])

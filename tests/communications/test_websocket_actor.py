@@ -7,11 +7,11 @@ import pytest
 from giskard import slicing_function, transformation_function
 from giskard.datasets.base import Dataset
 from giskard.ml_worker import ml_worker, websocket
-from giskard.ml_worker.utils.file_utils import get_file_name
 from giskard.ml_worker.websocket import listener
 from giskard.ml_worker.websocket.action import MLWorkerAction
 from giskard.models.base.model import BaseModel
 from giskard.settings import settings
+from giskard.utils.file_utils import get_file_name
 from tests import utils
 
 NOT_USED_WEBSOCKET_ACTOR = [
