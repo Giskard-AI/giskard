@@ -4,11 +4,11 @@ import numpy as np
 import pandas as pd
 import pytest
 
-from giskard import test, slicing_function, transformation_function
-from giskard.registry.slicing_function import SlicingFunction
-from giskard.registry.transformation_function import TransformationFunction
+from giskard import slicing_function, test, transformation_function
 from giskard.core.test_result import TestResult as GiskardTestResult
 from giskard.models.base import BaseModel
+from giskard.registry.slicing_function import SlicingFunction
+from giskard.registry.transformation_function import TransformationFunction
 
 
 def test_can_define_the_simplest_custom_test(german_credit_model):

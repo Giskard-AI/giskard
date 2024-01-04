@@ -1,4 +1,5 @@
 import uuid
+
 import pytest
 
 from giskard.datasets.base import Dataset
@@ -6,10 +7,8 @@ from giskard.ml_worker import websocket
 from giskard.ml_worker.utils.cache import CACHE
 from giskard.ml_worker.websocket import listener
 from giskard.models.base.model import BaseModel
-
 from tests import utils
 from tests.test_push import EXPECTED_COUNTS
-
 
 # For each kind
 EXPECTED_COUNTS_GERMAN_CREDIT_PUSH_KIND_SAMPLE_INDEX = {

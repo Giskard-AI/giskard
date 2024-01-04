@@ -1,8 +1,8 @@
+from typing import Any, Dict, Optional, Union
+
 import inspect
 import uuid
 from enum import Enum
-
-from typing import Any, Optional, Union, Dict
 
 try:
     from types import NoneType

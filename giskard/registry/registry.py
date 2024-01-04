@@ -1,3 +1,5 @@
+from typing import Dict, Optional
+
 import hashlib
 import importlib.util
 import inspect
@@ -8,7 +10,6 @@ import uuid
 from pathlib import Path
 
 import cloudpickle
-from typing import Dict, Optional
 
 from giskard.core.core import SavableMeta
 from giskard.settings import settings

@@ -2,7 +2,11 @@ import pandas as pd
 import pytest
 
 from giskard.registry.slicing_function import slicing_function
-from giskard.testing.tests.statistic import test_right_label, test_output_in_range, test_disparate_impact
+from giskard.testing.tests.statistic import (
+    test_disparate_impact,
+    test_output_in_range,
+    test_right_label,
+)
 
 
 @pytest.mark.parametrize(

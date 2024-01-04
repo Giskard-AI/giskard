@@ -1,7 +1,7 @@
+from typing import Optional
+
 import logging
 import os
-
-from typing import Optional
 
 from .base import LLMClient, LLMFunctionCall, LLMOutput
 from .logger import LLMLogger
@@ -58,7 +58,7 @@ def get_default_client() -> LLMClient:
 
     try:
         # For openai>=1.0.0
-        from openai import OpenAI, AzureOpenAI
+        from openai import AzureOpenAI, OpenAI
 
         client = AzureOpenAI() if default_llm_api == "azure" else OpenAI()
 

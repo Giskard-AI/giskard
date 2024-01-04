@@ -1,11 +1,11 @@
-from pydantic import BaseModel
-
 from typing import Optional
+
+from pydantic import BaseModel
 
 from giskard.core.core import CallableMeta
 from giskard.datasets.base import Dataset
-from giskard.registry.slicing_function import SlicingFunction
 from giskard.push.push_test_catalog.catalog import test_diff_rmse_push
+from giskard.registry.slicing_function import SlicingFunction
 from giskard.testing.utils.utils import Direction
 
 

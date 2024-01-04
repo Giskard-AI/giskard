@@ -1,11 +1,13 @@
-from enum import Enum
-from dataclasses import dataclass
 from typing import Optional
 
-from giskard.core.core import ModelType, SupportedModelTypes
-from ..utils.analytics_collector import analytics
+from dataclasses import dataclass
+from enum import Enum
+
 from giskard.client.python_utils import warning
+from giskard.core.core import ModelType, SupportedModelTypes
 from giskard.core.errors import GiskardImportError
+
+from ..utils.analytics_collector import analytics
 
 
 class PanelNames(str, Enum):
@@ -78,8 +80,12 @@ class ShapResult:
             import wandb  # noqa
         except ImportError as e:
             raise GiskardImportError("wandb") from e
-        from ..integrations.wandb.wandb_utils import get_wandb_run
-        from ..integrations.wandb.wandb_utils import _wandb_bar_plot, _wandb_general_bar_plot, _wandb_scatter_plot
+        from ..integrations.wandb.wandb_utils import (
+            _wandb_bar_plot,
+            _wandb_general_bar_plot,
+            _wandb_scatter_plot,
+            get_wandb_run,
+        )
 
         run = get_wandb_run(run)
         self._validate_wandb_config()

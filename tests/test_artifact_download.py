@@ -7,8 +7,7 @@ import pandas as pd
 import pytest
 import requests_mock
 
-from giskard import slicing_function, transformation_function
-from giskard import test
+from giskard import slicing_function, test, transformation_function
 from giskard.core.savable import Artifact
 from giskard.core.test_result import TestResult as GiskardTestResult
 from tests.utils import (
@@ -18,12 +17,12 @@ from tests.utils import (
     MockedProjectCacheDir,
     fixup_mocked_artifact_meta_version,
     get_local_cache_callable_artifact,
-    register_uri_for_artifact_meta_info,
-    register_uri_for_artifact_info,
     get_url_for_artifact_meta_info,
     get_url_for_artifacts_base,
-    local_save_artifact_under_giskard_home_cache,
     is_url_requested,
+    local_save_artifact_under_giskard_home_cache,
+    register_uri_for_artifact_info,
+    register_uri_for_artifact_meta_info,
 )
 
 BASE_CLIENT_URL = "http://giskard-host:12345/api/v2"

@@ -1,3 +1,5 @@
+from typing import Any, Callable, Dict, Optional, Union
+
 import asyncio
 import logging
 import os
@@ -16,7 +18,6 @@ import numpy as np
 import pandas as pd
 import pkg_resources
 import psutil
-from typing import Any, Callable, Dict, Optional, Union
 
 import giskard
 from giskard.client.giskard_client import GiskardClient

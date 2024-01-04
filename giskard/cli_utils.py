@@ -76,9 +76,10 @@ def validate_url(_ctx, _param, value) -> AnyHttpUrl:
 
 
 def run_daemon(is_server, url, api_key, hf_token):
-    from giskard.ml_worker.ml_worker import MLWorker
     from daemon import DaemonContext
     from daemon.daemon import change_working_directory
+
+    from giskard.ml_worker.ml_worker import MLWorker
 
     log_path = get_log_path()
     logger.info(f"Writing logs to {log_path}")

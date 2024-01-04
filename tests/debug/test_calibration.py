@@ -1,6 +1,6 @@
 import pytest
 
-from giskard.testing import test_underconfidence_rate, test_overconfidence_rate
+from giskard.testing import test_overconfidence_rate, test_underconfidence_rate
 
 
 @pytest.mark.parametrize(

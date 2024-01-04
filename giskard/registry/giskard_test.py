@@ -1,3 +1,5 @@
+from typing import Callable, List, Optional, Set, Union
+
 import copy
 import inspect
 import pickle
@@ -6,7 +8,6 @@ from abc import ABC, abstractmethod
 from pathlib import Path
 
 import cloudpickle
-from typing import Callable, List, Optional, Set, Union
 
 from giskard.core.core import SMT, TestFunctionMeta
 from giskard.core.savable import Artifact

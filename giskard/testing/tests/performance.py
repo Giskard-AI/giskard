@@ -1,4 +1,6 @@
 """Performance tests"""
+from typing import Optional
+
 import numpy as np
 from sklearn.metrics import (
     accuracy_score,
@@ -10,19 +12,19 @@ from sklearn.metrics import (
     recall_score,
     roc_auc_score,
 )
-from typing import Optional
 
-from giskard.datasets.base import Dataset
-from giskard.registry.decorators import test
-from giskard.registry.slicing_function import SlicingFunction
 from giskard.core.test_result import TestResult
+from giskard.datasets.base import Dataset
 from giskard.models.base import BaseModel
 from giskard.models.utils import np_type_to_native
+from giskard.registry.decorators import test
+from giskard.registry.slicing_function import SlicingFunction
 from giskard.testing.tests.debug_slicing_functions import (
     incorrect_rows_slicing_fn,
     nlargest_abs_err_rows_slicing_fn,
 )
 from giskard.testing.utils.utils import Direction, check_slice_not_empty
+
 from . import debug_description_prefix
 
 

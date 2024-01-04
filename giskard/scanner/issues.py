@@ -1,13 +1,14 @@
+from typing import List, Optional
+
 from dataclasses import dataclass
 from enum import Enum
-from typing import List, Optional
 
 import pandas as pd
 
 from ..datasets import Dataset
+from ..models.base import BaseModel
 from ..registry.slicing_function import SlicingFunction
 from ..registry.transformation_function import TransformationFunction
-from ..models.base import BaseModel
 from ..slicing.slice import QueryBasedSliceFunction
 from ..slicing.text_slicer import MetadataSliceFunction
 
