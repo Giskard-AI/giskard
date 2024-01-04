@@ -3,7 +3,7 @@ from unittest.mock import Mock
 import pandas as pd
 
 from giskard.llm.client import LLMFunctionCall, LLMOutput
-from giskard.llm.evaluators import RequirementEvaluator, PerRowRequirementEvaluator
+from giskard.llm.evaluators import PerRowRequirementEvaluator, RequirementEvaluator
 from tests.llm.evaluators.utils import make_eval_dataset, make_mock_model
 
 

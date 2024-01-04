@@ -1,9 +1,10 @@
 """Various input/output utility functions"""
 
+from typing import Any, Optional
+
+import json
 import re
 from io import BytesIO
-import json
-from typing import Any, Optional
 
 import cloudpickle
 import numpy as np

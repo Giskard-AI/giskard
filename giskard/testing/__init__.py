@@ -53,17 +53,17 @@ __all__ = [
 
 from giskard.testing.tests.calibration import test_overconfidence_rate, test_underconfidence_rate
 from giskard.testing.tests.data_quality import (
-    test_data_uniqueness,
+    test_class_imbalance,
     test_data_completeness,
-    test_valid_range,
-    test_valid_values,
     test_data_correlation,
-    test_outlier_value,
+    test_data_uniqueness,
+    test_feature_importance,
     test_foreign_constraint,
     test_label_consistency,
     test_mislabeling,
-    test_feature_importance,
-    test_class_imbalance,
+    test_outlier_value,
+    test_valid_range,
+    test_valid_values,
 )
 from giskard.testing.tests.drift import (
     test_drift_chi_square,
