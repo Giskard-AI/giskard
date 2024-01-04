@@ -103,8 +103,7 @@ def call_in_pool(
 
 
 def cancel_in_pool(job_id: UUID):
-    with NB_CANCELLABLE_WORKER_LOCK:
-        POOL.cancel(job_id)
+    POOL.cancel(job_id)
 
 
 def list_pool_job_ids():
