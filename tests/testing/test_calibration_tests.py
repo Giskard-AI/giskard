@@ -2,8 +2,8 @@ import numpy as np
 import pandas as pd
 from pytest import approx
 
-from giskard.datasets.base import Dataset
 from giskard import slicing_function
+from giskard.datasets.base import Dataset
 from giskard.models.automodel import Model
 from giskard.testing.tests.calibration import (
     _calculate_overconfidence_score,

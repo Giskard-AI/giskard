@@ -1,11 +1,11 @@
 from typing import Optional
 
+from ....core.test_result import TestResult
 from ....datasets.base import Dataset
 from ....llm.evaluators.coherency import CoherencyEvaluator
 from ....llm.evaluators.plausibility import PlausibilityEvaluator
-from ....registry.decorators import test
-from ....core.test_result import TestResult
 from ....models.base.model import BaseModel
+from ....registry.decorators import test
 
 
 @test(name="LLM Coherency", tags=["llm", "hallucination"])

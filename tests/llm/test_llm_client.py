@@ -7,12 +7,18 @@ from openai.types.chat import ChatCompletion, ChatCompletionMessage
 from openai.types.chat.chat_completion import Choice
 from openai.types.chat.chat_completion_message import FunctionCall
 
-from giskard.llm.client import LLMFunctionCall, LLMOutput, get_default_client, set_llm_model, set_llm_api
+from giskard.llm.client import (
+    LLMFunctionCall,
+    LLMOutput,
+    get_default_client,
+    set_llm_api,
+    set_llm_model,
+)
 from giskard.llm.client.openai import LegacyOpenAIClient, OpenAIClient
 
 OLD_OPEN_AI = False
 try:
-    from openai import OpenAI, AzureOpenAI
+    from openai import AzureOpenAI, OpenAI
 except ImportError:
     OLD_OPEN_AI = True
     OpenAI = None

@@ -1,9 +1,9 @@
-import pandas as pd
+import langdetect
 import numpy as np
+import pandas as pd
+from langdetect import DetectorFactory
 
 from .registry import MetadataProvider
-import langdetect
-from langdetect import DetectorFactory
 
 DetectorFactory.seed = 0
 

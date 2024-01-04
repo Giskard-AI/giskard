@@ -6,7 +6,7 @@ import sys
 
 from giskard.core.core import TestFunctionMeta
 from giskard.registry.decorators_utils import make_all_optional_or_suite_input, set_return_type
-from giskard.registry.giskard_test import GiskardTestMethod, GiskardTest
+from giskard.registry.giskard_test import GiskardTest, GiskardTestMethod
 
 
 # TODO: I think this should be moved into giskard_test.py ?

@@ -1,4 +1,5 @@
-from typing import Sequence, Optional
+from typing import Optional, Sequence
+
 import pandas as pd
 
 from ...datasets.base import Dataset

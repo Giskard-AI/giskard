@@ -1,3 +1,5 @@
+import typing
+
 import inspect
 import logging
 from abc import ABC
@@ -5,7 +7,6 @@ from dataclasses import dataclass
 from enum import Enum
 from pathlib import Path
 
-import typing
 from griffe import Docstring
 from griffe.docstrings.dataclasses import (
     DocstringSection,
@@ -477,9 +478,9 @@ SMT = TypeVar("SMT", bound=SavableMeta)
 
 def unknown_annotations_to_kwargs(parameters: List[FunctionArgument]) -> List[FunctionArgument]:
     from giskard.datasets.base import Dataset
+    from giskard.models.base import BaseModel
     from giskard.registry.slicing_function import SlicingFunction
     from giskard.registry.transformation_function import TransformationFunction
-    from giskard.models.base import BaseModel
 
     allowed_types = [str, bool, int, float, BaseModel, Dataset, SlicingFunction, TransformationFunction]
     allowed_types = list(map(lambda x: x.__qualname__, allowed_types))

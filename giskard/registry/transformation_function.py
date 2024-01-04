@@ -1,8 +1,9 @@
+from typing import Callable, List, Optional, Set, Type, Union
+
 import functools
 import inspect
 
 import pandas as pd
-from typing import Callable, List, Optional, Set, Type, Union
 
 from giskard.core.core import DatasetProcessFunctionMeta
 from giskard.core.savable import Artifact, RegistryArtifact
@@ -14,7 +15,6 @@ from giskard.registry.decorators_utils import (
     validate_arg_type,
 )
 from giskard.registry.registry import get_object_uuid, tests_registry
-
 
 TransformationFunctionType = Callable[..., Union[pd.Series, pd.DataFrame]]
 

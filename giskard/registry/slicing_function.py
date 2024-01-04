@@ -1,9 +1,10 @@
+from typing import Callable, Dict, List, Optional, Set, Type, Union
+
 import functools
 import inspect
 from pathlib import Path
 
 import pandas as pd
-from typing import Callable, Dict, List, Optional, Set, Type, Union
 
 from giskard.core.core import DatasetProcessFunctionMeta, DatasetProcessFunctionType
 from giskard.core.savable import Artifact, RegistryArtifact
