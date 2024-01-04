@@ -1,5 +1,3 @@
-from typing import Dict, List, Optional, Type
-
 import json
 from pathlib import Path
 
@@ -8,6 +6,7 @@ import pytest
 from packaging import version
 from polyfactory.factories.pydantic_factory import ModelFactory
 from pydantic import BaseModel
+from typing import Dict, List, Optional, Type
 
 import giskard
 import giskard.ml_worker.websocket
@@ -150,7 +149,7 @@ OPTIONAL_FIELDS = {
     "GetInfo": [],
     "GetInfoParam": [],
     "GetPushParam": ["dataframe", "target", "push_kind", "cta_kind"],
-    "GetPushResponse": ["contribution", "perturbation", "overconfidence", "borderline", "action"],
+    "GetPushResponse": ["contribution", "perturbation", "overconfidence", "underconfidence", "action"],
     "IdentifierSingleTestResult": ["arguments"],
     "ModelMeta": ["model_type"],
     "NamedSingleTestResult": [],
