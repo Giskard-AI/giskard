@@ -107,6 +107,13 @@ def cancel_in_pool(job_id: UUID):
         POOL.cancel(job_id)
 
 
+def list_pool_job_ids():
+    if POOL.pool:
+        return list(POOL.pool.futures_mapping.keys())
+    else:
+        return []
+
+
 def fullname(o):
     klass = o.__class__
     module = klass.__module__

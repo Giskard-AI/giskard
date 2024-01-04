@@ -14,7 +14,7 @@ from giskard.ml_worker.websocket.action import MLWorkerAction
 from giskard.models.base.model import BaseModel
 from giskard.settings import settings
 from tests import utils
-from utils import start_pool, POOL
+from utils import start_pool, call_in_pool
 
 NOT_USED_WEBSOCKET_ACTOR = [
     MLWorkerAction.generateQueryBasedSlicingFunction,
@@ -582,7 +582,7 @@ def test_websocket_actor_cancel_job():
     with utils.MockedClient(mock_all=False) as (client, mr):
         start_pool(5)
         job_id = uuid.uuid4()
-        future = POOL.schedule(job_id=job_id, fn=time.sleep, args=(max_wait_sec,))
+        future = call_in_pool(job_id=job_id, fn=time.sleep, args=(max_wait_sec,))
         while not future.running() and max_wait_sec > 0:
             max_wait_sec -= wait_sec
             time.sleep(wait_sec)

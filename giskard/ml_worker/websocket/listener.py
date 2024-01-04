@@ -54,7 +54,7 @@ from giskard.push.contribution import create_contribution_push
 from giskard.push.perturbation import create_perturbation_push
 from giskard.push.prediction import create_borderline_push, create_overconfidence_push
 from giskard.settings import settings
-from giskard.utils import call_in_pool, POOL
+from giskard.utils import call_in_pool, list_pool_job_ids
 from giskard.utils.analytics_collector import analytics
 from giskard.utils.worker_pool import GiskardMLWorkerException
 from utils import cancel_in_pool
@@ -591,11 +591,7 @@ def run_test_suite(
 
 @websocket_actor(MLWorkerAction.echo, execute_in_pool=False)
 def echo(params: websocket.EchoMsg, *args, **kwargs) -> websocket.EchoResponse:
-    if POOL.pool:
-        received_jobs = list(POOL.pool.futures_mapping.keys())
-    else:
-        received_jobs = []
-    return websocket.EchoResponse(msg=params.msg, job_ids=received_jobs)
+    return websocket.EchoResponse(msg=params.msg, job_ids=list_pool_job_ids())
 
 
 def handle_cta(
