@@ -448,6 +448,11 @@ def explain_text_ws(
 
 @websocket_actor(MLWorkerAction.getCatalog)
 def get_catalog(*args, **kwargs) -> websocket.Catalog:
+    # import modules with artefact definition to populate the registry
+    from giskard import testing  # noqa
+    from giskard.functions import slicing, transformation  # noqa
+    from giskard.push.push_test_catalog import catalog  # noqa
+
     return websocket.Catalog(
         tests=map_function_meta_ws("TEST"),
         slices=map_dataset_process_function_meta_ws("SLICE"),
