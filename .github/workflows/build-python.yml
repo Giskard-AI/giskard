@@ -175,7 +175,7 @@ jobs:
 
       - name: "Python client: archive built artifacts"
         if: ${{ github.event_name == 'push' && matrix.os == 'ubuntu-latest' && matrix.python-version == '3.10' }}
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           path: dist/*whl
 
@@ -187,7 +187,7 @@ jobs:
 
       - name: "Memory csv"
         if: ${{ always() && matrix.os == 'ubuntu-latest' && matrix.python-version == '3.10' && !matrix.langchain_minimal && !matrix.pandas_v1 && !matrix.pydantic_v1 }}
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           path: memory*.csv
           name: memory-usage
