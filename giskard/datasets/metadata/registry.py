@@ -1,6 +1,8 @@
-from abc import ABC, abstractmethod
-import pandas as pd
 from typing import Sequence
+
+from abc import ABC, abstractmethod
+
+import pandas as pd
 
 from ...core.core import ColumnType
 

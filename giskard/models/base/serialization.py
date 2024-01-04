@@ -1,13 +1,14 @@
+from typing import Optional, Tuple, Union
+
 import pickle
 from pathlib import Path
 
 import cloudpickle
 import mlflow
-from typing import Optional, Tuple, Union
 
-from giskard.ml_worker.exceptions.giskard_exception import python_env_exception_helper
+from giskard.exceptions.giskard_exception import python_env_exception_helper
+
 from .wrapper import WrapperModel
-
 
 # @TODO: decouple the serialization logic from models. These abstract classes
 # could be implemented as mixins and then used in the models that need them.

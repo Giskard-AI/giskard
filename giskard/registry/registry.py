@@ -37,7 +37,7 @@ def load_plugins():
     else:
         importlib.reload(sys.modules[giskard_tests_module])
 
-    giskard_functions_module = "giskard.ml_worker.testing.functions"
+    giskard_functions_module = "giskard.functions"
     if giskard_functions_module not in sys.modules:
         importlib.import_module(giskard_functions_module)
     else:

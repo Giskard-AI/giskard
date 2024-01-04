@@ -17,4 +17,4 @@ Test suite
 
 .. autoclass:: giskard.core.suite.TestSuiteResult
 
-.. autoclass:: giskard.ml_worker.testing.test_result.TestResult
+.. autoclass:: giskard.core.test_result.TestResult

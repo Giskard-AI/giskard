@@ -6,7 +6,7 @@ import pytest
 from giskard.llm.client import LLMFunctionCall, LLMOutput
 from giskard.llm.evaluators.base import LLMBasedEvaluator
 from giskard.llm.evaluators.plausibility import PlausibilityEvaluator
-from giskard.llm.evaluators.requirements import RequirementEvaluator, PerRowRequirementEvaluator
+from giskard.llm.evaluators.requirements import PerRowRequirementEvaluator, RequirementEvaluator
 from tests.llm.evaluators.utils import make_eval_dataset, make_mock_model
 
 

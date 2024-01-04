@@ -3,7 +3,7 @@ import pandas as pd
 import torch
 import torch.nn as nn
 import torch.optim as optim
-from torch.utils.data import TensorDataset, DataLoader
+from torch.utils.data import DataLoader, TensorDataset
 from torch.utils.data.dataset import random_split
 
 import tests.utils

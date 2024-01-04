@@ -1,5 +1,6 @@
-import pandas as pd
 from typing import Hashable
+
+import pandas as pd
 
 from giskard.client.python_utils import warning
 from giskard.core.core import SupportedColumnTypes

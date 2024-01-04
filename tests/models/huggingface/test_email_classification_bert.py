@@ -1,6 +1,6 @@
 import pytest
 from scipy import special
-from transformers import BertTokenizer, BertForSequenceClassification
+from transformers import BertForSequenceClassification, BertTokenizer
 
 import tests.utils
 from giskard import Dataset
