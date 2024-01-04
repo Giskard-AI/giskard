@@ -1,3 +1,5 @@
+from typing import Dict, Hashable, List, Optional, Union
+
 import inspect
 import logging
 import posixpath
@@ -12,7 +14,6 @@ import pandas as pd
 import yaml
 from mlflow import MlflowClient
 from pandas.api.types import is_list_like, is_numeric_dtype
-from typing import Dict, Hashable, List, Optional, Union
 from xxhash import xxh3_128_hexdigest
 from zstandard import ZstdDecompressor
 
@@ -30,8 +31,8 @@ from giskard.registry.transformation_function import (
 from giskard.settings import settings
 
 from ...utils.analytics_collector import analytics
-from ..metadata.indexing import ColumnMetadataMixin
 from ...utils.file_utils import get_file_name
+from ..metadata.indexing import ColumnMetadataMixin
 
 try:
     import wandb  # noqa

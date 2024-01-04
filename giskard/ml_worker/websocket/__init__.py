@@ -1,3 +1,5 @@
+from typing import Dict, List, Optional
+
 from enum import Enum
 
 import pydantic

@@ -1,3 +1,5 @@
+from typing import Generic, Optional, Set
+
 import inspect
 import logging
 import os
@@ -9,7 +11,6 @@ from pathlib import Path
 
 import cloudpickle
 import yaml
-from typing import Generic, Optional, Set
 
 from giskard.client.giskard_client import GiskardClient
 from giskard.core.core import SMT, SavableMeta

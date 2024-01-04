@@ -18,21 +18,18 @@ from . import demo, push
 from .client.giskard_client import GiskardClient
 from .client.project import Project
 from .core.suite import Suite, SuiteInput
-from .datasets.base import Dataset
-from .registry.decorators import test
-from .registry.giskard_test import GiskardTest
-from .registry.slicing_function import SlicingFunction, slicing_function
-from .registry.transformation_function import (
-    TransformationFunction,
-    transformation_function,
-)
 from .core.test_result import TestResult
-from .utils.logging import configure_logging
+from .datasets.base import Dataset
 from .ml_worker.utils.network import check_latest_giskard_version
 from .models.automodel import Model
 from .models.model_explanation import explain_with_shap
+from .registry.decorators import test
+from .registry.giskard_test import GiskardTest
+from .registry.slicing_function import SlicingFunction, slicing_function
+from .registry.transformation_function import TransformationFunction, transformation_function
 from .scanner import scan
 from .utils.analytics_collector import analytics
+from .utils.logging import configure_logging
 
 configure_logging()
 

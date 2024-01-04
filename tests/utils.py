@@ -1,3 +1,5 @@
+from typing import Optional
+
 import glob
 import logging
 import os
@@ -11,7 +13,6 @@ from pathlib import Path
 
 import requests
 import requests_mock
-from typing import Optional
 
 import tests.utils
 from giskard.client import dtos

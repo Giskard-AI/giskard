@@ -13,10 +13,10 @@ from giskard.core.validation import ConfiguredBaseModel
 from giskard.ml_worker.stomp.client import StompWSClient
 from giskard.ml_worker.stomp.constants import HeaderType
 from giskard.ml_worker.stomp.parsing import Frame, StompFrame
-from giskard.registry.registry import load_plugins
 from giskard.ml_worker.websocket.action import ActionPayload, ConfigPayload, MLWorkerAction
 from giskard.ml_worker.websocket.listener import WEBSOCKET_ACTORS, MLWorkerInfo
 from giskard.ml_worker.websocket.utils import fragment_message
+from giskard.registry.registry import load_plugins
 from giskard.settings import settings
 from giskard.utils import shutdown_pool, start_pool
 from giskard.utils.analytics_collector import analytics

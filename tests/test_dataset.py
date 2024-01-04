@@ -10,7 +10,7 @@ from giskard.client.dtos import DatasetMetaInfo
 from giskard.core.dataset_validation import validate_optional_target
 from giskard.datasets.base import Dataset
 from tests import utils
-from tests.communications.test_dto_serialization import is_required, get_fields, get_name
+from tests.communications.test_dto_serialization import get_fields, get_name, is_required
 
 # FIXME: conflict on `name` between Giskard Hub (@NotBlank) and Python client (optional in DatasetMeta and DatasetMetaInfo)
 MANDATORY_FIELDS = [
