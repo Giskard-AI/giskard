@@ -1,18 +1,16 @@
 import posixpath
-import uuid
-import pandas as pd
-
 import tempfile
+import uuid
 from pathlib import Path
 
+import pandas as pd
 import pytest
 import requests_mock
 
 from giskard import slicing_function, transformation_function
-from giskard.ml_worker.core.savable import Artifact
-from giskard.ml_worker.testing.test_result import TestResult as GiskardTestResult
 from giskard import test
-
+from giskard.core.savable import Artifact
+from giskard.core.test_result import TestResult as GiskardTestResult
 from tests.utils import (
     CALLABLE_FUNCTION_META_CACHE,
     CALLABLE_FUNCTION_PKL_CACHE,
@@ -27,7 +25,6 @@ from tests.utils import (
     local_save_artifact_under_giskard_home_cache,
     is_url_requested,
 )
-
 
 BASE_CLIENT_URL = "http://giskard-host:12345/api/v2"
 

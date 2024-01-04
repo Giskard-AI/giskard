@@ -1,7 +1,7 @@
 import pytest
 
+from giskard.exceptions.IllegalArgumentError import IllegalArgumentError
 from giskard.ml_worker import websocket
-from giskard.ml_worker.exceptions.IllegalArgumentError import IllegalArgumentError
 from giskard.ml_worker.websocket.listener import (
     function_argument_to_ws,
     parse_function_arguments,

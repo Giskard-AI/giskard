@@ -9,7 +9,7 @@ from sklearn import metrics
 
 from ...client.python_utils import warning
 from ...datasets.base import Dataset
-from ...ml_worker.testing.registry.slicing_function import SlicingFunction
+from ...registry.slicing_function import SlicingFunction
 from ...models._precooked import PrecookedModel
 from ...models.base import BaseModel
 from ..common.examples import ExampleExtractor

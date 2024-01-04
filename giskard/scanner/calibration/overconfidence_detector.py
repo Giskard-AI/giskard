@@ -3,7 +3,7 @@ from typing import Sequence
 import pandas as pd
 
 from ...datasets import Dataset
-from ...ml_worker.testing.registry.slicing_function import SlicingFunction
+from ...registry.slicing_function import SlicingFunction
 from ...models.base import BaseModel
 from ...testing.tests.calibration import _calculate_overconfidence_score, _default_overconfidence_threshold
 from ..common.examples import ExampleExtractor

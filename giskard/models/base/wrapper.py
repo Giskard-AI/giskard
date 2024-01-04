@@ -11,7 +11,7 @@ import pandas as pd
 import yaml
 from typing import Any, Callable, Iterable, Optional, Tuple, Union
 
-from giskard.ml_worker.exceptions.giskard_exception import python_env_exception_helper
+from giskard.exceptions.giskard_exception import python_env_exception_helper
 from .model import BaseModel
 from ..utils import warn_once
 from ...core.core import ModelType

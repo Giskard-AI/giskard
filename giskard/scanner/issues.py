@@ -5,8 +5,8 @@ from typing import List, Optional
 import pandas as pd
 
 from ..datasets import Dataset
-from ..ml_worker.testing.registry.slicing_function import SlicingFunction
-from ..ml_worker.testing.registry.transformation_function import TransformationFunction
+from ..registry.slicing_function import SlicingFunction
+from ..registry.transformation_function import TransformationFunction
 from ..models.base import BaseModel
 from ..slicing.slice import QueryBasedSliceFunction
 from ..slicing.text_slicer import MetadataSliceFunction
