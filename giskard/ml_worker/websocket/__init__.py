@@ -1,6 +1,7 @@
 from typing import Dict, List, Optional
 
 from enum import Enum
+from uuid import UUID
 
 import pydantic
 from packaging import version
@@ -139,6 +140,11 @@ class EchoMsg(WorkerReply):
     msg: str
 
 
+class EchoResponse(WorkerReply):
+    msg: str
+    job_ids: List[UUID]
+
+
 class Explanation(ConfiguredBaseModel):
     per_feature: Dict[str, float]
 
@@ -232,6 +238,10 @@ class GetInfo(WorkerReply):
 
 class GetInfoParam(ConfiguredBaseModel):
     list_packages: bool
+
+
+class AbortParams(ConfiguredBaseModel):
+    job_id: UUID
 
 
 class TestMessageType(Enum):

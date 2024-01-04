@@ -16,6 +16,7 @@ from giskard.datasets.base import Dataset
 from giskard.exceptions.IllegalArgumentError import IllegalArgumentError
 from giskard.ml_worker import websocket
 from giskard.ml_worker.websocket import (
+    AbortParams,
     CreateSubDatasetParam,
     DatasetProcessingParam,
     Documentation,
@@ -41,6 +42,8 @@ logger = logging.getLogger(__name__)
 
 def parse_action_param(action: MLWorkerAction, params):
     # TODO: Sort by usage frequency from future MixPanel metrics #NOSONAR
+    if action == MLWorkerAction.abort:
+        return AbortParams.parse_obj(params)
     if action == MLWorkerAction.getInfo:
         return GetInfoParam.parse_obj(params)
     elif action == MLWorkerAction.runAdHocTest:
