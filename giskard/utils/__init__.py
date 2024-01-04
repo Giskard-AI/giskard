@@ -7,8 +7,7 @@ from time import sleep
 from uuid import UUID
 
 from giskard.settings import settings
-from giskard.utils.worker_pool import KillReason
-from giskard.utils.worker_pool import WorkerPoolExecutor
+from giskard.utils.worker_pool import KillReason, WorkerPoolExecutor
 
 LOGGER = logging.getLogger(__name__)
 

@@ -1,12 +1,11 @@
 from typing import Dict, List, Optional
 
 from enum import Enum
+from uuid import UUID
 
 import pydantic
 from packaging import version
 from pydantic import Field
-from typing import Dict, List, Optional
-from uuid import UUID
 
 from giskard.core.validation import ConfiguredBaseModel
 

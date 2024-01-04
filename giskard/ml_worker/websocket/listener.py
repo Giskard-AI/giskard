@@ -13,7 +13,6 @@ from concurrent.futures import CancelledError, Future
 from copy import copy
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Any, Callable, Dict, Optional, Union
 from uuid import UUID
 
 import numpy as np
@@ -54,7 +53,7 @@ from giskard.registry.giskard_test import GiskardTest
 from giskard.registry.slicing_function import SlicingFunction
 from giskard.registry.transformation_function import TransformationFunction
 from giskard.settings import settings
-from giskard.utils import call_in_pool, list_pool_job_ids, cancel_in_pool
+from giskard.utils import call_in_pool, cancel_in_pool, list_pool_job_ids
 from giskard.utils.analytics_collector import analytics
 from giskard.utils.file_utils import get_file_name
 from giskard.utils.worker_pool import GiskardMLWorkerException

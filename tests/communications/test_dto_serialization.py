@@ -1,6 +1,7 @@
+from typing import Dict, List, Optional, Type
+
 import json
 from pathlib import Path
-from typing import Dict, List, Optional, Type
 
 import pydantic
 import pytest

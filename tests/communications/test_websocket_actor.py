@@ -12,8 +12,8 @@ from giskard.ml_worker.websocket import listener
 from giskard.ml_worker.websocket.action import MLWorkerAction
 from giskard.models.base.model import BaseModel
 from giskard.settings import settings
+from giskard.utils import call_in_pool, start_pool
 from giskard.utils.file_utils import get_file_name
-from giskard.utils import start_pool, call_in_pool
 from tests import utils
 
 NOT_USED_WEBSOCKET_ACTOR = [

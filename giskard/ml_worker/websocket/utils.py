@@ -16,6 +16,7 @@ from giskard.datasets.base import Dataset
 from giskard.exceptions.IllegalArgumentError import IllegalArgumentError
 from giskard.ml_worker import websocket
 from giskard.ml_worker.websocket import (
+    AbortParams,
     CreateSubDatasetParam,
     DatasetProcessingParam,
     Documentation,
@@ -32,7 +33,6 @@ from giskard.ml_worker.websocket import (
 from giskard.ml_worker.websocket.action import MLWorkerAction
 from giskard.models.base import BaseModel
 from giskard.path_utils import projects_dir
-from giskard.ml_worker.websocket import AbortParams
 from giskard.registry.registry import tests_registry
 from giskard.registry.slicing_function import SlicingFunction
 from giskard.registry.transformation_function import TransformationFunction

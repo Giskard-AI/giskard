@@ -1,3 +1,5 @@
+from typing import Any, Callable, Dict, List, Optional, Tuple
+
 import logging
 import os
 import time
@@ -14,8 +16,6 @@ from queue import Empty, Full
 from threading import Thread, current_thread
 from time import sleep
 from uuid import UUID, uuid4
-
-from typing import Any, Callable, Dict, List, Optional, Tuple
 
 from giskard.ml_worker.utils.cache import CACHE
 
