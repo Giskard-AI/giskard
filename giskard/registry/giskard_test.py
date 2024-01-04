@@ -10,10 +10,10 @@ from typing import Callable, List, Optional, Set, Union
 
 from giskard.core.core import SMT, TestFunctionMeta
 from giskard.core.savable import Artifact
+from giskard.core.test_result import TestResult
 from giskard.core.validation import configured_validate_arguments
 from giskard.exceptions.giskard_exception import python_env_exception_helper
 from giskard.registry.registry import get_object_uuid, tests_registry
-from giskard.core.test_result import TestResult
 from giskard.utils.analytics_collector import analytics
 
 DATA_PKL = "data.pkl"
@@ -81,7 +81,7 @@ class GiskardTest(Artifact[TestFunctionMeta], ABC):
                     func = pickle.load(f)
                 except Exception as e:
                     raise python_env_exception_helper(cls.__name__, e)
-        elif hasattr(sys.modules[meta.module], meta.name):
+        elif hasattr(sys.modules, meta.module) and hasattr(sys.modules[meta.module], meta.name):
             func = getattr(sys.modules[meta.module], meta.name)
         else:
             return None
