@@ -1,28 +1,28 @@
 import glob
 import logging
 import os
+import platform
+import posixpath
 import re
 import shutil
 import tarfile
-from pathlib import Path
-from typing import Optional
-import posixpath
 import tempfile
-import platform
+from pathlib import Path
 
 import requests
 import requests_mock
-from giskard.ml_worker.core.savable import Artifact
-from giskard.ml_worker.utils.file_utils import get_file_name
-from giskard.path_utils import get_size
+from typing import Optional
 
 import tests.utils
-from giskard.client.giskard_client import GiskardClient
 from giskard.client import dtos
+from giskard.client.giskard_client import GiskardClient
+from giskard.core.savable import Artifact
 from giskard.datasets.base import Dataset
 from giskard.ml_worker import ml_worker
 from giskard.models.base.model import BaseModel
+from giskard.path_utils import get_size
 from giskard.settings import settings
+from giskard.utils.file_utils import get_file_name
 
 logger = logging.getLogger(__name__)
 resource_dir: Path = Path.home() / ".giskard"

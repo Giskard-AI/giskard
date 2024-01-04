@@ -63,7 +63,7 @@ NOT_GIVEN = NotGiven()
 
 
 def _get_plugin_method_full_name(func):
-    from giskard.ml_worker.testing.registry.registry import plugins_root
+    from giskard.registry.registry import plugins_root
 
     path_parts = list(Path(inspect.getfile(func)).relative_to(plugins_root).with_suffix("").parts)
     path_parts.insert(0, "giskard_plugins")
@@ -74,7 +74,7 @@ def _get_plugin_method_full_name(func):
 
 
 def create_test_function_id(func):
-    from giskard.ml_worker.testing.registry.registry import plugins_root
+    from giskard.registry.registry import plugins_root
 
     is_relative = Path(inspect.getfile(func)).is_relative_to(plugins_root)
     if is_relative:
@@ -201,7 +201,7 @@ class CallableMeta(SavableMeta, ABC):
         self.args = None
 
         if callable_obj:
-            from giskard.ml_worker.testing.registry.registry import get_object_uuid
+            from giskard.registry.registry import get_object_uuid
 
             self.full_name = create_test_function_id(callable_obj)
             func_uuid = get_object_uuid(callable_obj)
@@ -477,8 +477,8 @@ SMT = TypeVar("SMT", bound=SavableMeta)
 
 def unknown_annotations_to_kwargs(parameters: List[FunctionArgument]) -> List[FunctionArgument]:
     from giskard.datasets.base import Dataset
-    from giskard.ml_worker.testing.registry.slicing_function import SlicingFunction
-    from giskard.ml_worker.testing.registry.transformation_function import TransformationFunction
+    from giskard.registry.slicing_function import SlicingFunction
+    from giskard.registry.transformation_function import TransformationFunction
     from giskard.models.base import BaseModel
 
     allowed_types = [str, bool, int, float, BaseModel, Dataset, SlicingFunction, TransformationFunction]

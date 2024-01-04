@@ -5,7 +5,7 @@ import cloudpickle
 import mlflow
 from typing import Optional, Tuple, Union
 
-from giskard.ml_worker.exceptions.giskard_exception import python_env_exception_helper
+from giskard.exceptions.giskard_exception import python_env_exception_helper
 from .wrapper import WrapperModel
 
 

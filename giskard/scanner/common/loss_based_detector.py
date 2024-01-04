@@ -8,7 +8,7 @@ import pandas as pd
 from giskard.scanner.common.utils import get_dataset_subsample
 
 from ...datasets.base import Dataset
-from ...ml_worker.testing.registry.slicing_function import SlicingFunction
+from ...registry.slicing_function import SlicingFunction
 from ...models.base import BaseModel
 from ...slicing.slice_finder import SliceFinder
 from ..issues import Issue

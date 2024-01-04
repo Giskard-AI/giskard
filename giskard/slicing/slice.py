@@ -12,7 +12,7 @@ import numpy as np
 import pandas as pd
 
 from ..core.core import DatasetProcessFunctionMeta, DatasetProcessFunctionType
-from ..ml_worker.testing.registry.slicing_function import SlicingFunction
+from ..registry.slicing_function import SlicingFunction
 from ..utils.display import format_number
 
 

@@ -11,14 +11,14 @@ from giskard.client.dtos import SuiteInfo, SuiteTestDTO, TestInputDTO, TestSuite
 from giskard.client.giskard_client import GiskardClient
 from giskard.core.core import TestFunctionMeta
 from giskard.core.errors import GiskardImportError
+from giskard.core.savable import Artifact
 from giskard.datasets.base import Dataset
-from giskard.ml_worker.core.savable import Artifact
-from giskard.ml_worker.exceptions.IllegalArgumentError import IllegalArgumentError
-from giskard.ml_worker.testing.registry.giskard_test import GiskardTest, GiskardTestMethod, Test
-from giskard.ml_worker.testing.registry.registry import tests_registry
-from giskard.ml_worker.testing.registry.slicing_function import SlicingFunction
-from giskard.ml_worker.testing.registry.transformation_function import TransformationFunction
-from giskard.ml_worker.testing.test_result import TestMessage, TestMessageLevel, TestResult
+from giskard.exceptions.IllegalArgumentError import IllegalArgumentError
+from giskard.registry.giskard_test import GiskardTest, GiskardTestMethod, Test
+from giskard.registry.registry import tests_registry
+from giskard.registry.slicing_function import SlicingFunction
+from giskard.registry.transformation_function import TransformationFunction
+from giskard.core.test_result import TestMessage, TestMessageLevel, TestResult
 from giskard.models.base import BaseModel
 from ..client.python_utils import warning
 from ..utils.analytics_collector import analytics

@@ -1,5 +1,3 @@
-from typing import Dict, Hashable, List, Optional, Union
-
 import inspect
 import logging
 import posixpath
@@ -14,6 +12,7 @@ import pandas as pd
 import yaml
 from mlflow import MlflowClient
 from pandas.api.types import is_list_like, is_numeric_dtype
+from typing import Dict, Hashable, List, Optional, Union
 from xxhash import xxh3_128_hexdigest
 from zstandard import ZstdDecompressor
 
@@ -23,16 +22,16 @@ from giskard.client.python_utils import warning
 from giskard.core.core import NOT_GIVEN, DatasetMeta, NotGivenOr, SupportedColumnTypes
 from giskard.core.errors import GiskardImportError
 from giskard.core.validation import configured_validate_arguments
-from giskard.ml_worker.testing.registry.slicing_function import SlicingFunction, SlicingFunctionType
-from giskard.ml_worker.testing.registry.transformation_function import (
+from giskard.registry.slicing_function import SlicingFunction, SlicingFunctionType
+from giskard.registry.transformation_function import (
     TransformationFunction,
     TransformationFunctionType,
 )
 from giskard.settings import settings
 
-from ...ml_worker.utils.file_utils import get_file_name
 from ...utils.analytics_collector import analytics
 from ..metadata.indexing import ColumnMetadataMixin
+from ...utils.file_utils import get_file_name
 
 try:
     import wandb  # noqa
