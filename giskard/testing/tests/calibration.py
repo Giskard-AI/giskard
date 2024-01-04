@@ -3,11 +3,11 @@ from typing import Optional
 import numpy as np
 import pandas as pd
 
+from ...core.test_result import TestResult
 from ...datasets.base import Dataset
-from ...ml_worker.testing.registry.decorators import test
-from ...ml_worker.testing.registry.slicing_function import SlicingFunction
-from ...ml_worker.testing.test_result import TestResult
 from ...models.base import BaseModel
+from ...registry.decorators import test
+from ...registry.slicing_function import SlicingFunction
 from . import debug_description_prefix
 
 

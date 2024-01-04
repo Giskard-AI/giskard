@@ -7,16 +7,15 @@ from pathlib import Path
 import pandas as pd
 
 from giskard.core.core import DatasetProcessFunctionMeta, DatasetProcessFunctionType
+from giskard.core.savable import Artifact, RegistryArtifact
 from giskard.core.validation import configured_validate_arguments
-from giskard.ml_worker.core.savable import Artifact, RegistryArtifact
-from giskard.ml_worker.testing.registry.decorators_utils import (
+from giskard.registry.decorators_utils import (
     drop_arg,
     make_all_optional_or_suite_input,
     set_return_type,
     validate_arg_type,
 )
-from giskard.ml_worker.testing.registry.registry import get_object_uuid, tests_registry
-
+from giskard.registry.registry import get_object_uuid, tests_registry
 
 SlicingFunctionType = Callable[..., bool]
 
@@ -125,7 +124,7 @@ class SlicingFunction(RegistryArtifact[DatasetProcessFunctionMeta]):
 
     @classmethod
     def _load_no_code(cls, meta: DatasetProcessFunctionMeta):
-        from ....slicing.slice import Query, QueryBasedSliceFunction
+        from ..slicing.slice import Query, QueryBasedSliceFunction
 
         return QueryBasedSliceFunction(Query.from_clauses(meta.clauses))
 
@@ -147,7 +146,7 @@ def slicing_function(_fn=None, row_level=True, name=None, tags: Optional[List[st
     """
 
     def inner(func: Union[SlicingFunctionType, Type[SlicingFunction]]) -> SlicingFunction:
-        from giskard.ml_worker.testing.registry.registry import tests_registry
+        from giskard.registry.registry import tests_registry
 
         tests_registry.register(
             DatasetProcessFunctionMeta(

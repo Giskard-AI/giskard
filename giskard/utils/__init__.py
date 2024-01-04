@@ -1,12 +1,13 @@
 import logging
 import os
+import uuid
 from concurrent.futures import Future
-from functools import wraps
-from threading import Lock, Thread
+from threading import Thread
 from time import sleep
+from uuid import UUID
 
 from giskard.settings import settings
-from giskard.utils.worker_pool import WorkerPoolExecutor
+from giskard.utils.worker_pool import KillReason, WorkerPoolExecutor
 
 LOGGER = logging.getLogger(__name__)
 
@@ -36,15 +37,18 @@ class SingletonWorkerPool:
         self.max_workers = max(max_workers, settings.min_workers) if max_workers is not None else os.cpu_count()
         self.pool = WorkerPoolExecutor(nb_workers=self.max_workers)
 
+    def cancel(self, job_id: UUID):
+        self.pool.kill_task(job_id, KillReason.CANCELLED)
+
     def shutdown(self, wait=True):
         if self.pool is None:
             return
         self.pool.shutdown(wait=wait)
 
-    def schedule(self, fn, args=None, kwargs=None, timeout=None) -> Future:
+    def schedule(self, job_id: UUID, fn, args=None, kwargs=None, timeout=None) -> Future:
         if self.pool is None:
             raise RuntimeError(NOT_STARTED)
-        return self.pool.schedule(fn, args=args, kwargs=kwargs, timeout=timeout)
+        return self.pool.schedule(job_id, fn, args=args, kwargs=kwargs, timeout=timeout)
 
     def submit(self, *args, **kwargs) -> Future:
         if self.pool is None:
@@ -72,7 +76,7 @@ def start_pool(max_workers: int = None):
     POOL.start(max_workers=max_workers)
     # Warmup the pool
     for _ in range(100):
-        call_in_pool(sleep, [0])
+        call_in_pool(job_id=uuid.uuid4(), fn=sleep, args=[0])
 
 
 def shutdown_pool():
@@ -84,30 +88,25 @@ def shutdown_pool():
     POOL.shutdown(wait=True)
 
 
-def pooled(fn):
-    """Decorator to make a function be called inside the pool.
-
-    Args:
-        fn (function): the function to wrap
-    """
-
-    @wraps(fn)
-    def wrapper(*args, **kwargs):
-        return call_in_pool(fn, args=args, kwargs=kwargs)
-
-    return wrapper
-
-
-NB_CANCELLABLE_WORKER_LOCK = Lock()
-
-
 def call_in_pool(
+    job_id: UUID,
     fn,
     args=None,
     kwargs=None,
     timeout=None,
 ):
-    return POOL.schedule(fn, args=args, kwargs=kwargs, timeout=timeout)
+    return POOL.schedule(job_id, fn, args=args, kwargs=kwargs, timeout=timeout)
+
+
+def cancel_in_pool(job_id: UUID):
+    POOL.cancel(job_id)
+
+
+def list_pool_job_ids():
+    if POOL.pool:
+        return list(POOL.pool.futures_mapping.keys())
+    else:
+        return []
 
 
 def fullname(o):

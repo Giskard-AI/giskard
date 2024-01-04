@@ -1,5 +1,5 @@
-import re
 import inspect
+import re
 
 from .registry import DetectorRegistry
 

@@ -8,8 +8,8 @@ import pandas as pd
 
 from giskard.core.errors import GiskardImportError
 from giskard.datasets.base import Dataset
-from giskard.ml_worker.utils.logging import timer
 from giskard.models.base import BaseModel
+from giskard.utils.logging import timer
 
 warnings.filterwarnings("ignore", message=".*The 'nopython' keyword.*")
 logger = logging.getLogger(__name__)

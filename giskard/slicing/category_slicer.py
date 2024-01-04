@@ -1,5 +1,5 @@
 from .base import BaseSlicer
-from .slice import Query, EqualTo, QueryBasedSliceFunction
+from .slice import EqualTo, Query, QueryBasedSliceFunction
 
 
 class CategorySlicer(BaseSlicer):

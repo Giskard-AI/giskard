@@ -27,11 +27,11 @@ from ...datasets.base import Dataset
 from ...llm import get_default_client, set_llm_model
 from ...llm.talk.config import MODEL_INSTRUCTION, ERROR_RESPONSE, LLM_MODEL
 from ...llm.talk.tools import BaseTool, PredictFromDatasetTool, SHAPExplanationTool
-from ...ml_worker.exceptions.giskard_exception import GiskardException, python_env_exception_helper
-from ...ml_worker.utils.logging import Timer
+from ...exceptions.giskard_exception import GiskardException, python_env_exception_helper
 from ...models.cache import ModelCache
 from ...path_utils import get_size
 from ...settings import settings
+from ...utils.logging import Timer
 from ..cache import get_cache_enabled
 from ..utils import np_types_to_native
 from .model_prediction import ModelPredictionResults

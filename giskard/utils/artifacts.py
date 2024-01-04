@@ -1,7 +1,8 @@
+from typing import Any, Dict, Optional, Union
+
 import inspect
 import uuid
 from enum import Enum
-from typing import Any, Optional, Union, Dict
 
 try:
     from types import NoneType
@@ -36,7 +37,7 @@ def serialize_parameter(default_value: Any) -> PRIMITIVES:
     if isinstance(default_value, Dict):
         return "\n".join(f"kwargs[{repr(key)}] = {repr_parameter(value)}" for key, value in default_value.items())
 
-    from ..ml_worker.core.savable import Artifact
+    from ..core.savable import Artifact
 
     if isinstance(default_value, Artifact):
         return _serialize_artifact(default_value, getattr(default_value.meta, "uuid"))

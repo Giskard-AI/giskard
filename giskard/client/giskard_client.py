@@ -1,4 +1,6 @@
 """API Client to interact with the Giskard app"""
+from typing import List
+
 import json
 import logging
 import os
@@ -14,7 +16,6 @@ from requests import Response
 from requests.adapters import HTTPAdapter
 from requests.auth import AuthBase
 from requests_toolbelt import sessions
-from typing import List
 
 import giskard
 from giskard.client.dtos import DatasetMetaInfo, ModelMetaInfo, ServerInfo, SuiteInfo, TestSuiteDTO
