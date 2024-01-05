@@ -48,8 +48,11 @@ _ISSUES_SCANNER_TOOL_DESCRIPTION = ("Your task is to give the user a summary of 
                                     "correlation, overconfidence, etc. You return a table, where the important "
                                     "columns are 'Description', 'Vulnerability', 'Level', 'Metric' and 'Deviation'")
 
+_PREDICT_USER_INPUT_TOOL_DESCRIPTION = ""
+
 
 class ToolDescription(str, Enum):
     PREDICT_FROM_DATASET = _PREDICT_FROM_DATASET_TOOL_DESCRIPTION
     SHAP_EXPLANATION = _SHAP_EXPLANATION_TOOL_DESCRIPTION
     ISSUES_SCANNER = _ISSUES_SCANNER_TOOL_DESCRIPTION
+    PREDICT_USER_INPUT = _PREDICT_USER_INPUT_TOOL_DESCRIPTION

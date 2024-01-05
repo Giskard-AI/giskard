@@ -5,7 +5,6 @@ from typing import TYPE_CHECKING
 
 from shap import Explanation
 
-
 if TYPE_CHECKING:
     from giskard.models.base import BaseModel
     from giskard.scanner.report import ScanReport
@@ -47,6 +46,45 @@ class BaseTool(ABC):
     @abstractmethod
     def __call__(self, *args, **kwargs) -> str:
         ...
+
+
+class PredictBaseTool(BaseTool):
+    def _get_feature_json_type(self) -> dict[any, str]:
+        number_columns = {column: "number" for column in self._dataset.df.select_dtypes(include=(int, float)).columns}
+        string_columns = {column: "string" for column in self._dataset.df.select_dtypes(exclude=(int, float)).columns}
+        return number_columns | string_columns
+
+    @property
+    def specification(self) -> str:
+        feature_json_type = self._get_feature_json_type()
+
+        return {
+            "type": "function",
+            "function": {
+                "name": self.name,
+                "description": self.description,
+                "parameters": {
+                    "type": "object",
+                    "properties": {
+                        "row_filter": {
+                            "type": "object",
+                            "properties": {feature: {"type": dtype} for feature, dtype in
+                                           list(feature_json_type.items())}
+                        }
+                    },
+                    "required": ["row_filter"]
+                }
+            }
+        }
+
+    @abstractmethod
+    def _prepare_input(self, *args, **kwargs) -> Dataset:
+        ...
+
+    def __call__(self, features_dict: dict) -> str:
+        model_input = self._prepare_input(features_dict)
+        prediction = self._model.predict(model_input).prediction
+        return ", ".join(prediction)
 
 
 class PredictFromDatasetTool(BaseTool):
@@ -172,3 +210,46 @@ class IssuesScannerTool(BaseTool):
 
     def __call__(self) -> str:
         return f"ML model performance issues scanner result:\n {self._scan_result.to_markdown()}"
+
+
+class PredictUserInputTool(BaseTool):
+    default_name: str = "predict_user_input"
+    default_description: str = ToolDescription.PREDICT_USER_INPUT.value
+
+    def _get_feature_json_type(self) -> dict[any, str]:
+        number_columns = {column: "number" for column in self._dataset.df.select_dtypes(include=(int, float)).columns}
+        string_columns = {column: "string" for column in self._dataset.df.select_dtypes(exclude=(int, float)).columns}
+        return number_columns | string_columns
+
+    @property
+    def specification(self) -> str:
+        feature_json_type = self._get_feature_json_type()
+
+        return {
+            "type": "function",
+            "function": {
+                "name": self.name,
+                "description": self.description,
+                "parameters": {
+                    "type": "object",
+                    "properties": {
+                        "row_filter": {
+                            "type": "object",
+                            "properties": {feature: {"type": dtype} for feature, dtype in
+                                           list(feature_json_type.items())}
+                        }
+                    },
+                    "required": ["row_filter"]
+                }
+            }
+        }
+
+    def _form_model_input(self, feature_values: dict) -> Dataset:
+        ...
+
+    def __call__(self, feature_values: dict) -> str:
+        model_input = self._form_model_input(feature_values)
+        prediction = self._model.predict(model_input).prediction
+
+        # Finalise the result.
+        return ", ".join(prediction)
