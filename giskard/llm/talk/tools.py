@@ -6,8 +6,10 @@ from typing import TYPE_CHECKING
 
 from shap import Explanation
 
+
 if TYPE_CHECKING:
     from giskard.models.base import BaseModel
+    from giskard.scanner.report import ScanReport
 
 from giskard.datasets.base import Dataset
 from giskard.llm.talk.config import ToolDescription
@@ -17,9 +19,15 @@ class BaseTool(ABC):
     default_name: str = ...
     default_description: str = ...
 
-    def __init__(self, model: BaseModel, dataset: Dataset, name: str = None, description: str = None):
+    def __init__(self,
+                 model: BaseModel,
+                 dataset: Dataset,
+                 scan_result: ScanReport,
+                 name: str = None,
+                 description: str = None):
         self._model = model
         self._dataset = dataset
+        self._scan_result = scan_result
 
         self._name = name if name is not None else self.default_name
         self._description = description if description is not None else self.default_description
@@ -147,3 +155,21 @@ class SHAPExplanationTool(PredictFromDatasetTool):
                 f"'Feature name' | [('SHAP value', 'Feature value'), ...]\n"
                 f"--------------------------------------------------------\n"
                 f"{shap_result}\n\n")
+
+
+class IssuesScannerTool(BaseTool):
+    default_name: str = "issues_scanner"
+    default_description: str = ToolDescription.ISSUES_SCANNER.value
+
+    @property
+    def specification(self) -> str:
+        return {
+            "type": "function",
+            "function": {
+                "name": self.name,
+                "description": self.description,
+            }
+        }
+
+    def __call__(self) -> str:
+        return f"ML model performance issues scanner result:\n {self._scan_result.to_markdown()}"

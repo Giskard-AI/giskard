@@ -42,7 +42,14 @@ _SHAP_EXPLANATION_TOOL_DESCRIPTION = ("You expect a dictionary with feature name
                                       "Please note, that the bigger SHAP value - the more important feature is for the"
                                       "prediction.")
 
+_ISSUES_SCANNER_TOOL_DESCRIPTION = ("Your task is to give the user a summary of the 'giskard' scan result. For your "
+                                    "info, this feature is used to detect ML model's vulnerabilities such as "
+                                    "performance bias, hallucination, prompt injection, data leakage, spurious "
+                                    "correlation, overconfidence, etc. You return a table, where the important "
+                                    "columns are 'Description', 'Vulnerability', 'Level', 'Metric' and 'Deviation'")
+
 
 class ToolDescription(str, Enum):
     PREDICT_FROM_DATASET = _PREDICT_FROM_DATASET_TOOL_DESCRIPTION
     SHAP_EXPLANATION = _SHAP_EXPLANATION_TOOL_DESCRIPTION
+    ISSUES_SCANNER = _ISSUES_SCANNER_TOOL_DESCRIPTION

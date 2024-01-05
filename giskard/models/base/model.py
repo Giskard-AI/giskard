@@ -1,4 +1,4 @@
-from typing import Iterable, List, Optional, Tuple, Type, Union
+from typing import Iterable, List, Optional, Tuple, Type, Union, TYPE_CHECKING
 
 import builtins
 import importlib
@@ -26,7 +26,7 @@ from ...core.validation import configured_validate_arguments
 from ...datasets.base import Dataset
 from ...llm import get_default_client, set_llm_model
 from ...llm.talk.config import MODEL_INSTRUCTION, ERROR_RESPONSE, LLM_MODEL
-from ...llm.talk.tools import BaseTool, PredictFromDatasetTool, SHAPExplanationTool
+from ...llm.talk.tools import BaseTool, PredictFromDatasetTool, SHAPExplanationTool, IssuesScannerTool
 from ...exceptions.giskard_exception import GiskardException, python_env_exception_helper
 from ...models.cache import ModelCache
 from ...path_utils import get_size
@@ -35,6 +35,9 @@ from ...utils.logging import Timer
 from ..cache import get_cache_enabled
 from ..utils import np_types_to_native
 from .model_prediction import ModelPredictionResults
+
+if TYPE_CHECKING:
+    from ...scanner.report import ScanReport
 
 META_FILENAME = "giskard-model-meta.yaml"
 
@@ -567,11 +570,12 @@ class BaseModel(ABC):
     def to_mlflow(self, *_args, **_kwargs):
         raise NotImplementedError()
 
-    def _get_available_tools(self, dataset: Dataset) -> dict[str, BaseTool]:
+    def _get_available_tools(self, dataset: Dataset, scan_result: "ScanReport") -> dict[str, BaseTool]:
         """Get the dictionary with available tools"""
         tools = {
-            PredictFromDatasetTool.default_name: PredictFromDatasetTool(self, dataset),
-            SHAPExplanationTool.default_name: SHAPExplanationTool(self, dataset)
+            PredictFromDatasetTool.default_name: PredictFromDatasetTool(self, dataset, scan_result),
+            SHAPExplanationTool.default_name: SHAPExplanationTool(self, dataset, scan_result),
+            IssuesScannerTool.default_name: IssuesScannerTool(self, dataset, scan_result)
         }
 
         return tools
@@ -591,11 +595,11 @@ class BaseModel(ABC):
             ]
         )
 
-    def talk(self, question: str, dataset: Dataset) -> str:
+    def talk(self, question: str, dataset: Dataset, scan_result: "ScanReport") -> str:
         set_llm_model(LLM_MODEL)
         client = get_default_client()
 
-        available_tools = self._get_available_tools(dataset)
+        available_tools = self._get_available_tools(dataset, scan_result)
 
         system_prompt = MODEL_INSTRUCTION.format(
             tools_descriptions="\n".join([tool.description for tool in list(available_tools.values())]),
