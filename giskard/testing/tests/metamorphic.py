@@ -23,7 +23,7 @@ from giskard.testing.utils.utils import (
     check_slice_not_empty,
     validate_classification_label,
 )
-from giskard.utils.logging import timer
+from giskard.utils.logging_utils import timer
 
 from . import debug_description_prefix
 
