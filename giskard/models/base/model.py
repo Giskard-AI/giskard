@@ -1,4 +1,4 @@
-from typing import Iterable, List, Optional, Tuple, Type, Union
+from typing import Iterable, List, Optional, Tuple, Type, Union, TYPE_CHECKING
 
 import builtins
 import importlib
@@ -30,12 +30,14 @@ from ...llm.talk.tools import BaseTool, PredictFromDatasetTool, SHAPExplanationT
 from ...exceptions.giskard_exception import GiskardException, python_env_exception_helper
 from ...models.cache import ModelCache
 from ...path_utils import get_size
-# from ...scanner.report import ScanReport
 from ...settings import settings
 from ...utils.logging import Timer
 from ..cache import get_cache_enabled
 from ..utils import np_types_to_native
 from .model_prediction import ModelPredictionResults
+
+if TYPE_CHECKING:
+    from ...scanner.report import ScanReport
 
 META_FILENAME = "giskard-model-meta.yaml"
 
@@ -568,7 +570,7 @@ class BaseModel(ABC):
     def to_mlflow(self, *_args, **_kwargs):
         raise NotImplementedError()
 
-    def _get_available_tools(self, dataset: Dataset, scan_result) -> dict[str, BaseTool]:
+    def _get_available_tools(self, dataset: Dataset, scan_result: "ScanReport") -> dict[str, BaseTool]:
         """Get the dictionary with available tools"""
         tools = {
             PredictFromDatasetTool.default_name: PredictFromDatasetTool(self, dataset, scan_result),
@@ -593,7 +595,7 @@ class BaseModel(ABC):
             ]
         )
 
-    def talk(self, question: str, dataset: Dataset, scan_result) -> str:
+    def talk(self, question: str, dataset: Dataset, scan_result: "ScanReport") -> str:
         set_llm_model(LLM_MODEL)
         client = get_default_client()
 

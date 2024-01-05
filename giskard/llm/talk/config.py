@@ -47,6 +47,8 @@ _ISSUES_SCANNER_TOOL_DESCRIPTION = ("Your task is to give the user a summary of 
                                     "performance bias, hallucination, prompt injection, data leakage, spurious "
                                     "correlation, overconfidence, etc. You return a table, where the important "
                                     "columns are 'Description', 'Vulnerability', 'Level', 'Metric' and 'Deviation'")
+
+
 class ToolDescription(str, Enum):
     PREDICT_FROM_DATASET = _PREDICT_FROM_DATASET_TOOL_DESCRIPTION
     SHAP_EXPLANATION = _SHAP_EXPLANATION_TOOL_DESCRIPTION
