@@ -1,7 +1,7 @@
+from typing import Any, Dict, Optional, Sequence
+
 from abc import ABC, abstractmethod
 from dataclasses import dataclass, field
-
-from typing import Any, Dict, Optional, Sequence
 
 from .logger import LLMLogger
 

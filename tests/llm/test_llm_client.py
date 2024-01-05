@@ -6,7 +6,10 @@ from openai.types import CompletionUsage
 from openai.types.chat import ChatCompletion, ChatCompletionMessage
 from openai.types.chat.chat_completion import Choice
 from openai.types.chat.chat_completion_message import FunctionCall
-from openai.types.chat.chat_completion_message_tool_call import ChatCompletionMessageToolCall, Function
+from openai.types.chat.chat_completion_message_tool_call import (
+    ChatCompletionMessageToolCall,
+    Function,
+)
 
 from giskard.llm.client import (
     LLMFunctionCall,
@@ -91,6 +94,7 @@ DEMO_OPENAI_RESPONSE_TOOL_CALLS = ChatCompletion(
                     ),
                 ],
             ),
+            logprobs=None,
         )
     ],
     created=1677858242,
