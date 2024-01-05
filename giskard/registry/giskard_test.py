@@ -7,14 +7,13 @@ import sys
 from abc import ABC, abstractmethod
 from pathlib import Path
 
-import cloudpickle
-
 from giskard.core.core import SMT, TestFunctionMeta
 from giskard.core.savable import Artifact
 from giskard.core.test_result import TestResult
 from giskard.core.validation import configured_validate_arguments
 from giskard.exceptions.giskard_exception import python_env_exception_helper
 from giskard.registry.registry import get_object_uuid, tests_registry
+from giskard.registry.utils import dump_by_value
 from giskard.utils.analytics_collector import analytics
 
 DATA_PKL = "data.pkl"
@@ -63,7 +62,7 @@ class GiskardTest(Artifact[TestFunctionMeta], ABC):
 
     def _save_locally(self, local_dir: Path):
         with open(Path(local_dir) / DATA_PKL, "wb") as f:
-            cloudpickle.dump(type(self), f, protocol=pickle.DEFAULT_PROTOCOL)
+            dump_by_value(type(self), f)
 
     @classmethod
     def _load_meta_locally(cls, local_dir, uuid: str) -> Optional[TestFunctionMeta]:
@@ -177,4 +176,4 @@ class GiskardTestMethod(GiskardTest):
 
     def _save_locally(self, local_dir: Path):
         with open(Path(local_dir) / "data.pkl", "wb") as f:
-            cloudpickle.dump(self.test_fn, f, protocol=pickle.DEFAULT_PROTOCOL)
+            dump_by_value(self.test_fn, f)
