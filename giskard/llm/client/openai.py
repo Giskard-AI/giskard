@@ -1,3 +1,5 @@
+from typing import Dict, Optional, Sequence
+
 import json
 from abc import ABC, abstractmethod
 
