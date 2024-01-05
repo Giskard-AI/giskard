@@ -251,7 +251,12 @@ def test_typo_transformation():
 def test_ocr_typo_transformation():
     from giskard.scanner.robustness.text_transformations import TextFromOCRTypoTransformation
 
-    t = TextFromOCRTypoTransformation(column="text", rng_seed=1)
+    t = TextFromOCRTypoTransformation(column="text", rng_seed=1, min_length=10)
     p = t.make_perturbation("If one doesn't know his mistakes, he won't want to correct them.")
+    short_string = "Short"
+    p2 = t.make_perturbation(short_string)
+    
+    assert p == "If one doesn't know his mi5takes, he won't want to corrct them."
+    assert p2 == short_string
 
-    assert p == "1f 0ne d0ezn't kn0uu his nnistakes, he w0n't want to correct tbenn."
+    
