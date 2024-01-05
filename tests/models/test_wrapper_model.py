@@ -1,9 +1,10 @@
+from typing import Optional, Tuple
+
 import tempfile
 
 import numpy as np
 import pandas as pd
 from sklearn.linear_model import LogisticRegression
-from typing import Optional, Tuple
 
 from giskard import Dataset, Model
 from giskard.models.base.wrapper import WrapperModel

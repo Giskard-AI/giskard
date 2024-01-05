@@ -2,8 +2,8 @@ import numpy as np
 import pandas as pd
 import pytest
 
-from giskard import slicing_function, Dataset, SlicingFunction
-from giskard.ml_worker.testing.registry.transformation_function import transformation_function
+from giskard import Dataset, SlicingFunction, slicing_function
+from giskard.registry.transformation_function import transformation_function
 
 
 @slicing_function(name="slice with parenthesis")

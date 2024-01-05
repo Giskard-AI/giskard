@@ -3,6 +3,7 @@ from typing import List, Optional, Union
 import logging
 import math
 import secrets
+from uuid import UUID
 
 from pydantic import AnyHttpUrl
 from websockets.client import WebSocketClientProtocol
@@ -12,10 +13,10 @@ from giskard.core.validation import ConfiguredBaseModel
 from giskard.ml_worker.stomp.client import StompWSClient
 from giskard.ml_worker.stomp.constants import HeaderType
 from giskard.ml_worker.stomp.parsing import Frame, StompFrame
-from giskard.ml_worker.testing.registry.registry import load_plugins
 from giskard.ml_worker.websocket.action import ActionPayload, ConfigPayload, MLWorkerAction
 from giskard.ml_worker.websocket.listener import WEBSOCKET_ACTORS, MLWorkerInfo
 from giskard.ml_worker.websocket.utils import fragment_message
+from giskard.registry.registry import load_plugins
 from giskard.settings import settings
 from giskard.utils import shutdown_pool, start_pool
 from giskard.utils.analytics_collector import analytics
@@ -28,7 +29,7 @@ MAX_STOMP_ML_WORKER_REPLY_SIZE = 1500
 
 
 class FragmentedPayload(ConfiguredBaseModel):
-    id: str
+    id: UUID
     action: str
     payload: str
     f_index: int
@@ -88,6 +89,7 @@ class MLWorker(StompWSClient):
 
     async def action_handler(self, frame: Frame) -> List[Frame]:
         data = ActionPayload.parse_raw(frame.body)
+        logging.info(f"Running job {data.id}: {data.action.name}")
 
         # Dispatch the action
         client_params = (
@@ -130,7 +132,7 @@ class MLWorker(StompWSClient):
         return [
             StompFrame.SEND.build_frame(
                 headers={
-                    HeaderType.DESTINATION: f"/app/ml-worker/{self._worker_type}/rep",
+                    HeaderType.DESTINATION: f"/app/ml-worker/{self._worker_type}/reply",
                 },
                 body=FragmentedPayload(
                     id=data.id,

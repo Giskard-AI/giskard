@@ -1,9 +1,11 @@
+from typing import Dict, List, Optional
+
 from enum import Enum
+from uuid import UUID
 
 import pydantic
 from packaging import version
 from pydantic import Field
-from typing import Dict, List, Optional
 
 from giskard.core.validation import ConfiguredBaseModel
 
@@ -38,6 +40,11 @@ class TestFunctionArgument(ConfiguredBaseModel):
     argOrder: int
 
 
+class Documentation(ConfiguredBaseModel):
+    description: str
+    parameters: Dict[str, str]
+
+
 # CallableMeta shows that all fields can be none,
 # but we have a pre-check here for Database constraints except auto-created "version":
 # referring to `ai.giskard.domain.Callable` and `ai.giskard.domain.TestFunction`.
@@ -47,7 +54,7 @@ class FunctionMeta(ConfiguredBaseModel):
     displayName: Optional[str] = None
     version: Optional[int] = None
     module: Optional[str] = None
-    doc: Optional[str] = None
+    doc: Optional[Documentation] = None
     moduleDoc: Optional[str] = None
     args: Optional[List[TestFunctionArgument]] = None
     tags: Optional[List[str]] = None
@@ -66,7 +73,7 @@ class DatasetProcessFunctionMeta(ConfiguredBaseModel):
     displayName: Optional[str] = None
     version: Optional[int] = None
     module: Optional[str] = None
-    doc: Optional[str] = None
+    doc: Optional[Documentation] = None
     moduleDoc: Optional[str] = None
     args: Optional[List[TestFunctionArgument]] = None
     tags: Optional[List[str]] = None
@@ -131,6 +138,11 @@ class DatasetProcessingParam(ConfiguredBaseModel):
 
 class EchoMsg(WorkerReply):
     msg: str
+
+
+class EchoResponse(WorkerReply):
+    msg: str
+    job_ids: List[UUID]
 
 
 class Explanation(ConfiguredBaseModel):
@@ -226,6 +238,10 @@ class GetInfo(WorkerReply):
 
 class GetInfoParam(ConfiguredBaseModel):
     list_packages: bool
+
+
+class AbortParams(ConfiguredBaseModel):
+    job_id: UUID
 
 
 class TestMessageType(Enum):

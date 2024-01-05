@@ -23,21 +23,21 @@ from giskard.client.python_utils import warning
 from giskard.core.core import NOT_GIVEN, DatasetMeta, NotGivenOr, SupportedColumnTypes
 from giskard.core.errors import GiskardImportError
 from giskard.core.validation import configured_validate_arguments
-from giskard.ml_worker.testing.registry.slicing_function import SlicingFunction, SlicingFunctionType
-from giskard.ml_worker.testing.registry.transformation_function import (
+from giskard.registry.slicing_function import SlicingFunction, SlicingFunctionType
+from giskard.registry.transformation_function import (
     TransformationFunction,
     TransformationFunctionType,
 )
 from giskard.settings import settings
 
-from ...ml_worker.utils.file_utils import get_file_name
+from ...utils.analytics_collector import analytics
+from ...utils.file_utils import get_file_name
 from ..metadata.indexing import ColumnMetadataMixin
 
 try:
     import wandb  # noqa
 except ImportError:
     pass
-
 
 SAMPLE_SIZE = 1000
 
@@ -230,7 +230,6 @@ class Dataset(ColumnMetadataMixin):
         }
 
         self.data_processor = DataProcessor()
-
         logger.info("Your 'pandas.DataFrame' is successfully wrapped by Giskard's 'Dataset' wrapper class.")
 
     @property
@@ -743,7 +742,6 @@ class Dataset(ColumnMetadataMixin):
         except ImportError as e:
             raise GiskardImportError("wandb") from e
         from ...integrations.wandb.wandb_utils import get_wandb_run
-        from ...utils.analytics_collector import analytics
 
         run = get_wandb_run(run)
 

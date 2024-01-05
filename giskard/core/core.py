@@ -1,7 +1,6 @@
 import typing
 
 import inspect
-import json
 import logging
 from abc import ABC
 from dataclasses import dataclass
@@ -65,7 +64,7 @@ NOT_GIVEN = NotGiven()
 
 
 def _get_plugin_method_full_name(func):
-    from giskard.ml_worker.testing.registry.registry import plugins_root
+    from giskard.registry.registry import plugins_root
 
     path_parts = list(Path(inspect.getfile(func)).relative_to(plugins_root).with_suffix("").parts)
     path_parts.insert(0, "giskard_plugins")
@@ -76,7 +75,7 @@ def _get_plugin_method_full_name(func):
 
 
 def create_test_function_id(func):
-    from giskard.ml_worker.testing.registry.registry import plugins_root
+    from giskard.registry.registry import plugins_root
 
     is_relative = Path(inspect.getfile(func)).is_relative_to(plugins_root)
     if is_relative:
@@ -174,7 +173,7 @@ class CallableMeta(SavableMeta, ABC):
     name: str
     display_name: str
     module: str
-    doc: str
+    doc: CallableDocumentation
     module_doc: str
     tags: List[str]
     version: Optional[int]
@@ -203,7 +202,7 @@ class CallableMeta(SavableMeta, ABC):
         self.args = None
 
         if callable_obj:
-            from giskard.ml_worker.testing.registry.registry import get_object_uuid
+            from giskard.registry.registry import get_object_uuid
 
             self.full_name = create_test_function_id(callable_obj)
             func_uuid = get_object_uuid(callable_obj)
@@ -275,14 +274,14 @@ class CallableMeta(SavableMeta, ABC):
         return code
 
     @staticmethod
-    def default_doc(description: str) -> str:
+    def default_doc(description: str) -> CallableDocumentation:
         doc = CallableDocumentation()
         doc.description = description
         doc.parameters = {}
-        return json.dumps(doc.to_dict())
+        return doc
 
     @staticmethod
-    def extract_doc(func) -> Optional[str]:
+    def extract_doc(func) -> Optional[CallableDocumentation]:
         if not func.__doc__:
             return None
 
@@ -328,8 +327,7 @@ class CallableMeta(SavableMeta, ABC):
             else:
                 logger.warning(f"Unexpected documentation element for {func.__name__}: {d.kind}")
 
-        func_doc = json.dumps(res.to_dict())
-        return func_doc
+        return res
 
     def to_json(self):
         return {
@@ -337,7 +335,7 @@ class CallableMeta(SavableMeta, ABC):
             "name": self.name,
             "display_name": self.display_name,
             "module": self.module,
-            "doc": self.doc,
+            "doc": self.doc.to_dict() if self.doc else None,
             "module_doc": self.module_doc,
             "code": self.code,
             "tags": self.tags,
@@ -480,9 +478,9 @@ SMT = TypeVar("SMT", bound=SavableMeta)
 
 def unknown_annotations_to_kwargs(parameters: List[FunctionArgument]) -> List[FunctionArgument]:
     from giskard.datasets.base import Dataset
-    from giskard.ml_worker.testing.registry.slicing_function import SlicingFunction
-    from giskard.ml_worker.testing.registry.transformation_function import TransformationFunction
     from giskard.models.base import BaseModel
+    from giskard.registry.slicing_function import SlicingFunction
+    from giskard.registry.transformation_function import TransformationFunction
 
     allowed_types = [str, bool, int, float, BaseModel, Dataset, SlicingFunction, TransformationFunction]
     allowed_types = list(map(lambda x: x.__qualname__, allowed_types))

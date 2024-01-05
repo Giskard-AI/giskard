@@ -1,11 +1,12 @@
 from unittest.mock import Mock
 
+import pandas as pd
 import pytest
 
 from giskard.llm.client import LLMFunctionCall, LLMOutput
 from giskard.llm.evaluators.base import LLMBasedEvaluator
 from giskard.llm.evaluators.plausibility import PlausibilityEvaluator
-from giskard.llm.evaluators.requirements import RequirementEvaluator
+from giskard.llm.evaluators.requirements import PerRowRequirementEvaluator, RequirementEvaluator
 from tests.llm.evaluators.utils import make_eval_dataset, make_mock_model
 
 
@@ -18,6 +19,11 @@ from tests.llm.evaluators.utils import make_eval_dataset, make_mock_model
             {"eval_prompt": "Test this: {model_name} {model_description} {input_vars} {model_output}"},
         ),
         (RequirementEvaluator, [["Requirement to fulfill"]], {}),
+        (
+            PerRowRequirementEvaluator,
+            [pd.DataFrame({"req": ["This is the first test requirement", "This is the second test requirement"]})],
+            {},
+        ),
         (PlausibilityEvaluator, [], {}),
     ],
 )

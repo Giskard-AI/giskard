@@ -1,19 +1,17 @@
 import pandas as pd
 import pytest
 
-from giskard.ml_worker.testing.registry.transformation_function import transformation_function
+from giskard.registry.transformation_function import transformation_function
 from giskard.testing.tests.metamorphic import (
-    test_metamorphic_invariance,
-    test_metamorphic_increasing,
     test_metamorphic_decreasing,
-)
-from giskard.testing.tests.metamorphic import (
-    test_metamorphic_invariance_t_test,
-    test_metamorphic_increasing_t_test,
     test_metamorphic_decreasing_t_test,
-    test_metamorphic_invariance_wilcoxon,
-    test_metamorphic_increasing_wilcoxon,
     test_metamorphic_decreasing_wilcoxon,
+    test_metamorphic_increasing,
+    test_metamorphic_increasing_t_test,
+    test_metamorphic_increasing_wilcoxon,
+    test_metamorphic_invariance,
+    test_metamorphic_invariance_t_test,
+    test_metamorphic_invariance_wilcoxon,
 )
 
 

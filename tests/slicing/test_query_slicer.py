@@ -1,7 +1,14 @@
 import pandas as pd
 import pytest
 
-from giskard.slicing.slice import ContainsWord, Query, QueryBasedSliceFunction, GreaterThan, LowerThan, EqualTo
+from giskard.slicing.slice import (
+    ContainsWord,
+    EqualTo,
+    GreaterThan,
+    LowerThan,
+    Query,
+    QueryBasedSliceFunction,
+)
 
 
 def test_simple_comparison_query():

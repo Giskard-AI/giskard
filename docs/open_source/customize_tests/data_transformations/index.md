@@ -13,7 +13,7 @@ The [Giskard catalog](../../../knowledge/catalogs/transformation-function-catalo
 
 ```python
 # Import keyboard typo transformations
-from giskard.ml_worker.testing.functions.transformation import keyboard_typo_transformation
+from giskard.functions.transformation import keyboard_typo_transformation
 ```
 
 ## Create your own transformation function

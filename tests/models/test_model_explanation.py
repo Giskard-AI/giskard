@@ -4,10 +4,10 @@ import pytest
 from giskard.datasets.base import Dataset
 from giskard.models.base import BaseModel
 from giskard.models.model_explanation import (
+    _calculate_dataset_shap_values,
+    _calculate_sample_shap_values,
     explain,
     explain_text,
-    _calculate_sample_shap_values,
-    _calculate_dataset_shap_values,
 )
 
 

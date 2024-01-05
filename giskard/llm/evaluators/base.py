@@ -1,11 +1,12 @@
+from typing import Optional, Sequence
+
+from abc import ABC, abstractmethod
 from dataclasses import dataclass
 
-from typing import Sequence
-
-from ..client import LLMClient, get_default_client
-from ..errors import LLMGenerationError
 from ...datasets.base import Dataset
 from ...models.base.model import BaseModel
+from ..client import LLMClient, get_default_client
+from ..errors import LLMGenerationError
 
 EVALUATE_MODEL_FUNCTIONS = [
     {
@@ -34,6 +35,7 @@ class EvaluationResult:
     failure_examples: Sequence[dict]
     success_examples: Sequence[dict]
     errors: Sequence[dict]
+    output_ds: Optional[Dataset] = None
 
     @property
     def passed(self):
@@ -52,7 +54,15 @@ class EvaluationResult:
         return len(self.success_examples) / (len(self.success_examples) + len(self.failure_examples))
 
 
-class LLMBasedEvaluator:
+class BaseEvaluator(ABC):
+    """Base class for evaluators that define a way of detecting a LLM failure"""
+
+    @abstractmethod
+    def evaluate(self, model: BaseModel, dataset: Dataset):
+        ...
+
+
+class LLMBasedEvaluator(BaseEvaluator):
     _default_eval_prompt: str
 
     def __init__(self, eval_prompt=None, llm_temperature=0.1, llm_client: LLMClient = None):
@@ -60,7 +70,7 @@ class LLMBasedEvaluator:
         self.llm_temperature = llm_temperature
         self.llm_client = llm_client if llm_client is not None else get_default_client()
 
-    def _make_evaluate_prompt(self, model: BaseModel, input_vars, model_output):
+    def _make_evaluate_prompt(self, model: BaseModel, input_vars, model_output, row_idx):
         return self.eval_prompt.format(
             model_name=model.meta.name,
             model_description=model.meta.description,
@@ -76,12 +86,15 @@ class LLMBasedEvaluator:
 
         succeeded = []
         failed = []
+        failed_idx = []
         errored = []
-        for input_vars, model_output in zip(
-            dataset.df.loc[:, model.meta.feature_names].to_dict("records"), model_outputs
+        for row_index, input_vars, model_output in zip(
+            dataset.df.index,
+            dataset.df.loc[:, model.meta.feature_names].to_dict("records"),
+            model_outputs,
         ):
             sample = {"input_vars": input_vars, "model_output": model_output}
-            prompt = self._make_evaluate_prompt(model, input_vars, model_output)
+            prompt = self._make_evaluate_prompt(model, input_vars, model_output, row_index)
             funcs = self._make_evaluate_functions(model, input_vars, model_output)
             try:
                 out = self.llm_client.complete(
@@ -101,9 +114,11 @@ class LLMBasedEvaluator:
             if args["passed_test"]:
                 succeeded.append({"input_vars": input_vars, "model_output": model_output, "reason": args.get("reason")})
             else:
+                failed_idx.append(row_index)
                 failed.append({"input_vars": input_vars, "model_output": model_output, "reason": args.get("reason")})
 
         return EvaluationResult(
+            output_ds=dataset.slice(lambda df: df.loc[failed_idx], row_level=False),
             failure_examples=failed,
             success_examples=succeeded,
             errors=errored,
