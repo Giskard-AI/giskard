@@ -14,7 +14,7 @@ The [Giskard catalog](../../../knowledge/catalogs/slicing-function-catalog/index
 
 ```python
 #Load sentiment analysis model from the Giskard catalog
-from giskard.ml_worker.testing.functions.slicing import positive_sentiment_analysis
+from giskard.functions.slicing import positive_sentiment_analysis
 ```
 
 ## Create your own slicing function

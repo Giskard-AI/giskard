@@ -5,13 +5,8 @@ import inspect
 import sys
 
 from giskard.core.core import TestFunctionMeta
-from giskard.ml_worker.testing.registry.decorators_utils import (
-    make_all_optional_or_suite_input,
-    set_return_type,
-)
-from giskard.ml_worker.testing.registry.giskard_test import GiskardTest, GiskardTestMethod
-
-from ....utils.analytics_collector import analytics
+from giskard.registry.decorators_utils import make_all_optional_or_suite_input, set_return_type
+from giskard.registry.giskard_test import GiskardTest, GiskardTestMethod
 
 
 # TODO: I think this should be moved into giskard_test.py ?
@@ -36,13 +31,12 @@ def test(
         Declare output as both Callable and GiskardTest so that there's autocompletion
         for GiskardTest's methods as well as the original wrapped function arguments (for __call__)
         """
-        from giskard.ml_worker.testing.registry.registry import tests_registry
+        from giskard.registry.registry import tests_registry
 
         tests_registry.register(
             TestFunctionMeta(original, name=name, tags=tags, debug_description=debug_description, type="TEST")
         )
 
-        analytics.track("custom:test:created", {"name": original.__name__})
         if inspect.isclass(original) and issubclass(original, GiskardTest):
             return original
 

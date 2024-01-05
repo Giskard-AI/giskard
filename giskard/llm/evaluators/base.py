@@ -1,11 +1,12 @@
+from typing import Optional, Sequence
+
+from abc import ABC, abstractmethod
 from dataclasses import dataclass
 
-from typing import Sequence, Optional
-
-from ..client import LLMClient, get_default_client
-from ..errors import LLMGenerationError
 from ...datasets.base import Dataset
 from ...models.base.model import BaseModel
+from ..client import LLMClient, get_default_client
+from ..errors import LLMGenerationError
 
 EVALUATE_MODEL_FUNCTIONS = [
     {
@@ -53,7 +54,15 @@ class EvaluationResult:
         return len(self.success_examples) / (len(self.success_examples) + len(self.failure_examples))
 
 
-class LLMBasedEvaluator:
+class BaseEvaluator(ABC):
+    """Base class for evaluators that define a way of detecting a LLM failure"""
+
+    @abstractmethod
+    def evaluate(self, model: BaseModel, dataset: Dataset):
+        ...
+
+
+class LLMBasedEvaluator(BaseEvaluator):
     _default_eval_prompt: str
 
     def __init__(self, eval_prompt=None, llm_temperature=0.1, llm_client: LLMClient = None):

@@ -1,7 +1,7 @@
+from typing import Optional, Tuple, Union
+
 import re
 from pathlib import Path
-
-from typing import Union, Optional, Tuple
 
 from giskard.core.core import SupportedModelTypes
 from giskard.models.base import BaseModel, WrapperModel

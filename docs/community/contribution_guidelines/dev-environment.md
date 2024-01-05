@@ -14,6 +14,12 @@ brew install pre-commit
 pre-commit install
 ```
 
+## Run pre-commit hook manually to fix easy issues
+In case the build is failing because of the pre-commit checks that don't pass it's possible to fix easy issues by running
+```sh
+pre-commit run --all-files
+```
+and then committing the fixed files
 
 ## Troubleshooting
 

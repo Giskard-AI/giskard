@@ -1,8 +1,9 @@
+from typing import Dict, List, Optional
+
 from dataclasses import dataclass, field
 from enum import Enum
-from typing import List, Dict, Optional
 
-from ...datasets.base import Dataset
+from ..datasets.base import Dataset
 
 
 class TestMessageLevel(Enum):

@@ -4,8 +4,8 @@ import pytest
 from langchain.chains import LLMChain
 from langchain.llms.fake import FakeListLLM
 
-from giskard import Model, Dataset
-from giskard.testing.tests.llm import test_llm_ground_truth_similarity, test_llm_ground_truth
+from giskard import Dataset, Model
+from giskard.testing.tests.llm import test_llm_ground_truth, test_llm_ground_truth_similarity
 
 INPUT_DATA = [
     "Hello",
