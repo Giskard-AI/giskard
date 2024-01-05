@@ -22,7 +22,7 @@ def make_mock_model():
     model.predict.return_value = ModelPredictionResults(
         prediction=["Blue", "What do you mean? An African or European swallow?"]
     )
-    model.meta.feature_names = ["question", "other"]
-    model.meta.name = "Mock model for test"
-    model.meta.description = "This is a model for testing purposes"
+    model.feature_names = ["question", "other"]
+    model.name = "Mock model for test"
+    model.description = "This is a model for testing purposes"
     return model

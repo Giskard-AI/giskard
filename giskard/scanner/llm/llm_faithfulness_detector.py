@@ -35,7 +35,7 @@ class LLMFaithfulnessDetector(RequirementBasedDetector):
         out = llm_client.complete(
             [
                 {"role": "system", "content": BREAKER_PROMPT},
-                {"role": "user", "content": "Model description: " + model.meta.description},
+                {"role": "user", "content": "Model description: " + model.description},
             ],
             temperature=0.1,
             max_tokens=1,
