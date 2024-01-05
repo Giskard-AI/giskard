@@ -135,6 +135,9 @@ class TextFromOCRTypoTransformation(TextTransformation):
         self.rng = np.random.default_rng(seed=rng_seed)
 
     def make_perturbation(self, x):
+        # Check if the input is None
+        if x is None:
+            return None
         # Skip if the text is too short
         if len(x) < self.min_length:
             return x
