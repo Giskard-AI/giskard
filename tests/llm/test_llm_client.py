@@ -94,6 +94,7 @@ DEMO_OPENAI_RESPONSE_TOOL_CALLS = ChatCompletion(
                     ),
                 ],
             ),
+            logprobs=None,
         )
     ],
     created=1677858242,
