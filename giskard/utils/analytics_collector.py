@@ -1,3 +1,6 @@
+from types import TracebackType
+from typing import Dict, Optional, Type
+
 import getpass
 import hashlib
 import os
@@ -8,11 +11,9 @@ import uuid
 from functools import wraps
 from threading import ExceptHookArgs, Lock
 from traceback import TracebackException
-from types import TracebackType
 
 import requests
 from mixpanel import Mixpanel
-from typing import Dict, Optional, Type
 
 from giskard.client.dtos import ServerInfo
 from giskard.settings import settings
