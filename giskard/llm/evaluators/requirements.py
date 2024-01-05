@@ -49,8 +49,8 @@ class BaseRequirementEvaluator(LLMBasedEvaluator):
 
     def _make_evaluate_prompt(self, model: BaseModel, input_vars, model_output, row_idx):
         return self.eval_prompt.format(
-            model_name=model.meta.name,
-            model_description=model.meta.description,
+            model_name=model.name,
+            model_description=model.description,
             input_vars=input_vars,
             model_output=model_output,
             requirements=self.requirements(row_idx),
