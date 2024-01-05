@@ -256,7 +256,7 @@ def test_ocr_typo_transformation():
     p = t.make_perturbation("If one doesn't know his mistakes, he won't want to correct them.")
     short_string = "Short"
     p2 = t.make_perturbation(short_string)
-    
+
     assert p == "If one doesn't know his mi5takes, he won't want to corrct them."
     assert p2 == short_string
 

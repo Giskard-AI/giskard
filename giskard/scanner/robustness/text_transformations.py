@@ -122,6 +122,7 @@ class TextTypoTransformation(TextTransformation):
             return typo if char.islower() else typo.upper()
         return char
 
+
 class TextFromOCRTypoTransformation(TextTransformation):
     name = "Add typos from OCR"
 
@@ -141,25 +142,25 @@ class TextFromOCRTypoTransformation(TextTransformation):
         # Skip if the text is too short
         if len(x) < self.min_length:
             return x
-        
+
         # OCR typos consist only of replacements and deletions
         category_prob = [0.8, 0.2]  # Probability [replacement, deletion]
-        
+
         # How many typos to introduce
         num_typos = self.rng.poisson(self.rate * len(re.sub(r"\s+", "", x)))
-        
+
         # Are they replacement or deletion?
         pos_cat = self.rng.choice(2, size=num_typos, p=category_prob, replace=True)
-        
+
         for cat in pos_cat:
             # Get a random position avoiding spaces for deletion
             i = self.rng.integers(0, len(x))
             if cat == 0:  # Replacement
                 if x[i].lower() in self._ocr_typos:
-                    x = x[:i] + self._random_ocr_typo(x[i]) + x[i + 1:]
+                    x = x[:i] + self._random_ocr_typo(x[i]) + x[i + 1 :]
             elif cat == 1:  # Deletion
                 if not x[i].isspace():  # Don’t delete spaces
-                    x = x[:i] + x[i + 1:]
+                    x = x[:i] + x[i + 1 :]
         return x
 
     def _random_ocr_typo(self, char):
@@ -167,7 +168,8 @@ class TextFromOCRTypoTransformation(TextTransformation):
             typo = self.rng.choice(self._ocr_typos[char.lower()])
             return typo if char.islower() else typo.upper()
         return char
-    
+
+
 class TextPunctuationRemovalTransformation(TextTransformation):
     name = "Punctuation Removal"
 
