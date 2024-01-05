@@ -1,3 +1,5 @@
+from typing import Any, Callable, Dict, Optional, Union
+
 import asyncio
 import logging
 import os
@@ -11,27 +13,23 @@ from concurrent.futures import CancelledError, Future
 from copy import copy
 from dataclasses import dataclass
 from pathlib import Path
+from uuid import UUID
 
 import numpy as np
 import pandas as pd
 import pkg_resources
 import psutil
-from typing import Any, Callable, Dict, Optional, Union
 
 import giskard
 from giskard.client.giskard_client import GiskardClient
+from giskard.core.savable import RegistryArtifact
 from giskard.core.suite import Suite, generate_test_partial
 from giskard.datasets.base import Dataset
+from giskard.exceptions.giskard_exception import GiskardException
 from giskard.ml_worker import websocket
 from giskard.ml_worker.core.log_listener import LogListener
-from giskard.ml_worker.core.savable import RegistryArtifact
-from giskard.ml_worker.exceptions.giskard_exception import GiskardException
 from giskard.ml_worker.stomp.parsing import Frame
-from giskard.ml_worker.testing.registry.giskard_test import GiskardTest
-from giskard.ml_worker.testing.registry.slicing_function import SlicingFunction
-from giskard.ml_worker.testing.registry.transformation_function import TransformationFunction
 from giskard.ml_worker.utils.cache import CACHE
-from giskard.ml_worker.utils.file_utils import get_file_name
 from giskard.ml_worker.websocket import CallToActionKind, GetInfoParam, PushKind
 from giskard.ml_worker.websocket.action import ActionPayload, MLWorkerAction
 from giskard.ml_worker.websocket.utils import (
@@ -51,9 +49,13 @@ from giskard.push import Push
 from giskard.push.contribution import create_contribution_push
 from giskard.push.perturbation import create_perturbation_push
 from giskard.push.prediction import create_borderline_push, create_overconfidence_push
+from giskard.registry.giskard_test import GiskardTest
+from giskard.registry.slicing_function import SlicingFunction
+from giskard.registry.transformation_function import TransformationFunction
 from giskard.settings import settings
-from giskard.utils import call_in_pool
+from giskard.utils import call_in_pool, cancel_in_pool, list_pool_job_ids
 from giskard.utils.analytics_collector import analytics
+from giskard.utils.file_utils import get_file_name
 from giskard.utils.worker_pool import GiskardMLWorkerException
 
 logger = logging.getLogger(__name__)
@@ -74,7 +76,7 @@ WEBSOCKET_ACTORS = dict((action.name, websocket_log_actor) for action in MLWorke
 
 
 def wrapped_handle_result(
-    action: MLWorkerAction, start: float, rep_id: Optional[str], worker_info: MLWorkerInfo, ignore_timeout: bool
+    action: MLWorkerAction, start: float, job_id: Optional[UUID], worker_info: MLWorkerInfo, ignore_timeout: bool
 ):
     async def handle_result(future: Union[Future, Callable[..., websocket.WorkerReply]]):
         info = None  # Needs to be defined in case of cancellation
@@ -119,7 +121,7 @@ def wrapped_handle_result(
                 },
             )
 
-        if rep_id:
+        if job_id:
             if isinstance(info, Frame):
                 return info
             return info.json(by_alias=True) if info else "{}"
@@ -155,7 +157,7 @@ async def dispatch_action(
     ignore_timeout=False,
 ):
     # Parse the response ID
-    rep_id = req.id
+    job_id = req.id
     # Parse the param
     params = req.param
 
@@ -170,29 +172,27 @@ async def dispatch_action(
     )
     start = time.process_time()
 
-    result_handler = wrapped_handle_result(action, start, rep_id, worker_info, ignore_timeout=ignore_timeout)
+    result_handler = wrapped_handle_result(action, start, job_id, worker_info, ignore_timeout=ignore_timeout)
     # If execution should be done in a pool
+    kwargs = {
+        "callback": callback,
+        "action": action,
+        "params": params,
+        "ml_worker": worker_info,
+        "client_params": client_params,
+    }
     if execute_in_pool and settings.use_pool:
         logger.debug("Submitting for action %s '%s' into the pool", action.name, callback.__name__)
-        kwargs = {
-            "callback": callback,
-            "action": action,
-            "params": params,
-            "ml_worker": worker_info,
-            "client_params": client_params,
-        }
-
         future = call_in_pool(
-            parse_and_execute,
+            job_id=job_id,
+            fn=parse_and_execute,
             kwargs=kwargs,
             timeout=timeout,
         )
     else:
 
         def future():
-            return parse_and_execute(
-                callback=callback, action=action, params=params, ml_worker=worker_info, client_params=client_params
-            )
+            return parse_and_execute(**kwargs)
 
     return await result_handler(future)
 
@@ -221,10 +221,15 @@ def websocket_actor(
     return websocket_actor_callback
 
 
+@websocket_actor(MLWorkerAction.abort, execute_in_pool=False)
+def on_abort(params: websocket.AbortParams, *args, **kwargs):
+    cancel_in_pool(params.job_id)
+    return websocket.AbortParams(job_id=params.job_id)
+
+
 @websocket_actor(MLWorkerAction.getInfo, execute_in_pool=False)
 def on_ml_worker_get_info(ml_worker: MLWorkerInfo, params: GetInfoParam, *args, **kwargs) -> websocket.GetInfo:
     logger.info("Collecting ML Worker info from WebSocket")
-
     # TODO(Bazire): seems to be deprecated https://setuptools.pypa.io/en/latest/pkg_resources.html#workingset-objects
     installed_packages = {p.project_name: p.version for p in pkg_resources.working_set} if params.list_packages else {}
     current_process = psutil.Process(os.getpid())
@@ -443,6 +448,11 @@ def explain_text_ws(
 
 @websocket_actor(MLWorkerAction.getCatalog)
 def get_catalog(*args, **kwargs) -> websocket.Catalog:
+    # import modules with artefact definition to populate the registry
+    from giskard import testing  # noqa
+    from giskard.functions import slicing, transformation  # noqa
+    from giskard.push.push_test_catalog import catalog  # noqa
+
     return websocket.Catalog(
         tests=map_function_meta_ws("TEST"),
         slices=map_dataset_process_function_meta_ws("SLICE"),
@@ -584,8 +594,8 @@ def run_test_suite(
 
 
 @websocket_actor(MLWorkerAction.echo, execute_in_pool=False)
-def echo(params: websocket.EchoMsg, *args, **kwargs) -> websocket.EchoMsg:
-    return params
+def echo(params: websocket.EchoMsg, *args, **kwargs) -> websocket.EchoResponse:
+    return websocket.EchoResponse(msg=params.msg, job_ids=list_pool_job_ids())
 
 
 def handle_cta(

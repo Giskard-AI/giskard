@@ -1,9 +1,10 @@
+from typing import Any, Iterable, List, Optional
+
 import csv
 from pathlib import Path
 
 import numpy as np
 import pandas as pd
-from typing import Any, Iterable, List, Optional
 
 from ...client.python_utils import warning
 from ...core.core import SupportedModelTypes

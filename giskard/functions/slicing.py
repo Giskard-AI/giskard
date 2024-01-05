@@ -3,7 +3,7 @@ from typing import List
 import numpy as np
 import pandas as pd
 
-from giskard.ml_worker.testing.registry.slicing_function import slicing_function
+from giskard.registry.slicing_function import slicing_function
 
 
 @slicing_function(name="Short comment", tags=["text"], cell_level=True)

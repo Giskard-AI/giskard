@@ -1,4 +1,13 @@
 repos:
+  - repo: https://github.com/pycqa/isort
+    rev: 5.13.2
+    hooks:
+      - id: isort
+        files: '^.*\.py$'
+        args:
+          - "--settings-path"
+          - "pyproject.toml"
+
   - repo: https://github.com/ambv/black
     rev: 23.11.0
     hooks:
