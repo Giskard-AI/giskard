@@ -7,6 +7,7 @@ import uuid
 from collections import defaultdict
 
 import pandas as pd
+from ml_worker.websocket import GetLogsParams
 from mlflow.store.artifact.artifact_repo import verify_artifact_path
 
 from giskard.client.giskard_client import GiskardClient
@@ -66,6 +67,8 @@ def parse_action_param(action: MLWorkerAction, params):
         return GetPushParam.parse_obj(params)
     elif action == MLWorkerAction.createSubDataset:
         return CreateSubDatasetParam.parse_obj(params)
+    elif action == MLWorkerAction.getLogs:
+        return GetLogsParams.parse_obj(params)
     return params
 
 

@@ -26,7 +26,7 @@ from ...exceptions.giskard_exception import GiskardException, python_env_excepti
 from ...models.cache import ModelCache
 from ...path_utils import get_size
 from ...settings import settings
-from ...utils.logging import Timer
+from ...utils.logging_utils import Timer
 from ..cache import get_cache_enabled
 from ..utils import np_types_to_native
 from .model_prediction import ModelPredictionResults

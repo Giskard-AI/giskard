@@ -6,7 +6,7 @@ from sklearn.metrics import mean_squared_error
 from giskard.core.core import SupportedModelTypes
 from giskard.datasets.base import Dataset
 from giskard.models.sklearn import SKLearnModel
-from giskard.utils.logging import Timer
+from giskard.utils.logging_utils import Timer
 
 
 @pytest.fixture(scope="session")

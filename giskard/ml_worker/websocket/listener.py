@@ -55,7 +55,7 @@ from giskard.registry.transformation_function import TransformationFunction
 from giskard.settings import settings
 from giskard.utils import call_in_pool, cancel_in_pool, list_pool_job_ids
 from giskard.utils.analytics_collector import analytics
-from giskard.utils.file_utils import get_file_name
+from giskard.utils.file_utils import get_file_name, job_logs_path
 from giskard.utils.worker_pool import GiskardMLWorkerException
 
 logger = logging.getLogger(__name__)
@@ -752,3 +752,26 @@ def create_sub_dataset(
     sub_dataset = do_create_sub_dataset(datasets, params.name, params.copiedRows)
 
     return websocket.CreateSubDataset(datasetUuid=sub_dataset.upload(client=client, project_key=params.projectKey))
+
+
+def tail_file(file_path: Path, n_lines: int):
+    if n_lines is None:
+        n_lines = -1
+    with open(file_path, "rb") as f:
+        for curr_line in range(n_lines):
+            try:
+                f.seek(-2, os.SEEK_END if curr_line == 0 else os.SEEK_CUR)
+                while f.read(1) != b"\n":
+                    f.seek(-2, os.SEEK_CUR)
+            except OSError:
+                f.seek(0)
+                break
+        return f.read().decode()
+
+
+@websocket_actor(MLWorkerAction.getLogs, execute_in_pool=False)
+def get_logs(params: websocket.GetLogsParams, *arg, **kwargs):
+    job_id = params.job_id
+    assert job_id, "Job ID is required"
+
+    return websocket.GetLogs(logs=tail_file(job_logs_path(job_id), params.nb_last_lines))
