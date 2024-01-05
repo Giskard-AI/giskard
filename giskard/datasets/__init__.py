@@ -1,7 +1,8 @@
-from typing import Dict, Optional, List
+from typing import Dict, List, Optional
+
+import logging
 
 import pandas as pd
-import logging
 
 from giskard.core.validation import configured_validate_arguments
 from giskard.datasets.base import Dataset

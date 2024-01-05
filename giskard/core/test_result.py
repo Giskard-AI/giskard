@@ -1,10 +1,10 @@
+from typing import Any, Dict, List, Optional
+
 from dataclasses import dataclass, field
 from enum import Enum
 
-from typing import List, Dict, Optional, Any
-
-from ...datasets.base import Dataset
-from ...models.base import BaseModel
+from ..datasets.base import Dataset
+from ..models.base import BaseModel
 
 
 class TestMessageLevel(Enum):

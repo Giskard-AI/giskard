@@ -1,12 +1,12 @@
 import pytest
 
-from giskard import test, scan
+from giskard import scan, test
 from giskard.core.suite import Suite, SuiteInput
+from giskard.core.test_result import TestMessageLevel
 from giskard.datasets.base import Dataset
-from giskard.ml_worker.testing.registry.slicing_function import SlicingFunction, slicing_function
-from giskard.ml_worker.testing.test_result import TestMessageLevel
 from giskard.models.base import BaseModel
-from giskard.testing.tests.performance import test_auc, test_f1, test_diff_f1
+from giskard.registry.slicing_function import SlicingFunction, slicing_function
+from giskard.testing.tests.performance import test_auc, test_diff_f1, test_f1
 
 
 def _assert_html_generation_does_no_fail(test_suite_result):
@@ -256,9 +256,10 @@ def test_update_params():
 
 @pytest.mark.skip(reason="For active testing")
 def test_save_suite_real_debug(german_credit_data: Dataset, german_credit_model: BaseModel):
-    from giskard.testing import test_metamorphic_invariance, test_auc, test_diff_accuracy
-    from giskard import transformation_function, slicing_function
     import pandas as pd
+
+    from giskard import slicing_function, transformation_function
+    from giskard.testing import test_auc, test_diff_accuracy, test_metamorphic_invariance
 
     @transformation_function
     def transform(df: pd.Series) -> pd.Series:

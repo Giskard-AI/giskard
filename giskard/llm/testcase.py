@@ -1,6 +1,6 @@
+from ..models.base.model import BaseModel
 from .client import LLMClient, get_default_client
 from .errors import LLMGenerationError
-from ..models.base.model import BaseModel
 
 GENERATE_REQUIREMENTS_PROMPT = """
 You are auditing AI models. Your task is to generate a set of requirements on which the AI model will be tested.

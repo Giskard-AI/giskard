@@ -1,12 +1,12 @@
+import ast
 from unittest.mock import Mock, patch
 
-import ast
 import pandas as pd
 
 from giskard.datasets.base import Dataset
+from giskard.llm.evaluators.string_matcher import StringMatcherConfig
 from giskard.scanner.llm.llm_prompt_injection_detector import LLMPromptInjectionDetector
 from giskard.testing.tests.llm.injections import _test_llm_output_against_strings
-from giskard.llm.evaluators.string_matcher import StringMatcherConfig
 
 
 def test_prompt_injection_data_loader_properties():

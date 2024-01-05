@@ -1,6 +1,8 @@
-import pandas as pd
 from typing import Sequence
+
 from collections import defaultdict
+
+import pandas as pd
 
 from .registry import MetadataProviderRegistry
 

@@ -1,9 +1,11 @@
+from typing import Callable, Optional, Union
+
 import inspect
-from typing import Optional, Union, Callable
 
 
 def make_all_optional_or_suite_input(fn: Callable):
-    from inspect import signature, Parameter
+    from inspect import Parameter, signature
+
     from giskard.core.suite import SuiteInput
 
     sig = signature(fn)

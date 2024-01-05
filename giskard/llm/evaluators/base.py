@@ -1,13 +1,13 @@
-from dataclasses import dataclass
-from typing import Sequence, Optional
+from typing import Optional, Sequence
+
 from abc import ABC, abstractmethod
+from dataclasses import dataclass
 
-
+from ...core.test_result import TestResultDetails, create_test_result_details
+from ...datasets.base import Dataset
+from ...models.base.model import BaseModel
 from ..client import LLMClient, get_default_client
 from ..errors import LLMGenerationError
-from ...datasets.base import Dataset
-from ...ml_worker.testing.test_result import TestResultDetails, create_test_result_details
-from ...models.base.model import BaseModel
 
 EVALUATE_MODEL_FUNCTIONS = [
     {

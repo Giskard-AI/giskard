@@ -1,11 +1,11 @@
 import numpy as np
 
-from .. import debug_description_prefix
+from ....core.test_result import TestResult, TestResultDetails
 from ....datasets.base import Dataset
 from ....llm import LLMImportError
-from ....ml_worker.testing.registry.decorators import test
-from ....ml_worker.testing.test_result import TestResult, TestResultDetails
 from ....models.base import BaseModel
+from ....registry.decorators import test
+from .. import debug_description_prefix
 
 
 @test(

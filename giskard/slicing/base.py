@@ -1,8 +1,9 @@
-from abc import ABC, abstractmethod
-from typing import Sequence, List, Optional
+from typing import List, Optional, Sequence
 
-from .slice import QueryBasedSliceFunction
+from abc import ABC, abstractmethod
+
 from ..datasets.base import Dataset
+from .slice import QueryBasedSliceFunction
 
 
 class BaseSlicer(ABC):

@@ -1,15 +1,15 @@
+from typing import List, Tuple
+
 import logging
 import re
 import string
 from dataclasses import dataclass
 
-from typing import Tuple, List
-
-from .base import BaseEvaluator, EvaluationResult
-from ..errors import LLMGenerationError
+from ...core.test_result import create_test_result_details
 from ...datasets.base import Dataset
-from ...ml_worker.testing.test_result import create_test_result_details
 from ...models.base.model import BaseModel
+from ..errors import LLMGenerationError
+from .base import BaseEvaluator, EvaluationResult
 
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.INFO)
