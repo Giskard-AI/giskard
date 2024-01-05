@@ -1,4 +1,3 @@
-from __future__ import annotations
 from abc import ABC, abstractmethod
 
 import numpy as np
@@ -20,9 +19,9 @@ class BaseTool(ABC):
     default_description: str = ...
 
     def __init__(self,
-                 model: BaseModel,
+                 model: "BaseModel",
                  dataset: Dataset,
-                 scan_result: ScanReport,
+                 scan_result: "ScanReport",
                  name: str = None,
                  description: str = None):
         self._model = model
