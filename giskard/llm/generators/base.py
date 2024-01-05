@@ -1,12 +1,13 @@
+from typing import Optional, Sequence
+
 from abc import ABC, abstractmethod
 
 import pandas as pd
 from pydantic import BaseModel
-from typing import Optional, Sequence
 
+from ...datasets.base import Dataset
 from ..client import LLMClient, get_default_client
 from ..errors import LLMGenerationError
-from ...datasets.base import Dataset
 
 DEFAULT_GENERATE_INPUTS_PROMPT = """You are auditing an AI model. Your task is to generate typical but varied inputs for this model.
 
