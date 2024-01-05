@@ -174,7 +174,8 @@ jobs:
         run: pdm build
 
       - name: "Python client: archive built artifacts"
-        if: ${{ github.event_name == 'push' && matrix.os == 'ubuntu-latest' && matrix.python-version == '3.10' }}
+        # Upload needs to be done only once by workflo run, so we need to select one only in the matrix
+        if: ${{ github.event_name == 'push' && matrix.os == 'ubuntu-latest' && matrix.python-version == '3.10' && !matrix.langchain_minimal && !matrix.pandas_v1 && !matrix.pydantic_v1 }}
         uses: actions/upload-artifact@v4
         with:
           path: dist/*whl
