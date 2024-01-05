@@ -1,8 +1,8 @@
 import numpy as np
 import pandas as pd
 import pytest
-import tests.utils
 
+import tests.utils
 from giskard import Dataset
 from giskard.models.automodel import Model
 from giskard.models.function import PredictionFunctionModel

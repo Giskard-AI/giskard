@@ -1,3 +1,5 @@
+from typing import List, Optional, Sequence
+
 import gc
 import json
 from dataclasses import dataclass, field
@@ -5,16 +7,15 @@ from statistics import mean
 
 import numpy as np
 import pandas as pd
-from typing import List, Optional, Sequence
 
-from .. import debug_description_prefix
+from ....core.test_result import TestResult
 from ....datasets.base import Dataset
 from ....llm import LLMImportError
-from ....llm.evaluators.string_matcher import StringMatcherEvaluator, StringMatcherConfig
-from ....ml_worker.testing.registry.decorators import test
-from ....ml_worker.testing.test_result import TestResult
+from ....llm.evaluators.string_matcher import StringMatcherConfig, StringMatcherEvaluator
 from ....models.base import BaseModel
+from ....registry.decorators import test
 from ....utils.display import truncate
+from .. import debug_description_prefix
 
 
 def _add_suffix_to_df(df: pd.DataFrame, col: str, char: str, num_repetitions: int):

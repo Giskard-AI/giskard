@@ -1,5 +1,6 @@
-import mlflow
 from typing import Optional, Tuple
+
+import mlflow
 
 from .sklearn import SKLearnModel
 

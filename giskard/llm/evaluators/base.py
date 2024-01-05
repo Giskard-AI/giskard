@@ -1,12 +1,12 @@
+from typing import Optional, Sequence
+
 from abc import ABC, abstractmethod
 from dataclasses import dataclass
 
-from typing import Sequence, Optional
-
-from ..client import LLMClient, get_default_client
-from ..errors import LLMGenerationError
 from ...datasets.base import Dataset
 from ...models.base.model import BaseModel
+from ..client import LLMClient, get_default_client
+from ..errors import LLMGenerationError
 
 EVALUATE_MODEL_FUNCTIONS = [
     {

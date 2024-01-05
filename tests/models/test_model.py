@@ -1,9 +1,10 @@
+from typing import Optional, Tuple
+
 import tempfile
 from pathlib import Path
 
 import numpy as np
 import pandas as pd
-from typing import Optional, Tuple
 
 import giskard
 from giskard import Model

@@ -1,14 +1,14 @@
+from typing import List, Tuple
+
 import logging
 import re
 import string
 from dataclasses import dataclass
 
-from typing import Tuple, List
-
-from .base import BaseEvaluator, EvaluationResult
-from ..errors import LLMGenerationError
 from ...datasets.base import Dataset
 from ...models.base.model import BaseModel
+from ..errors import LLMGenerationError
+from .base import BaseEvaluator, EvaluationResult
 
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.INFO)

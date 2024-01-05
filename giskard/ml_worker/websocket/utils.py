@@ -1,3 +1,5 @@
+from typing import Any, Callable, Dict, List, Optional
+
 import logging
 import os
 import shutil
@@ -6,20 +8,18 @@ from collections import defaultdict
 
 import pandas as pd
 from mlflow.store.artifact.artifact_repo import verify_artifact_path
-from typing import Any, Dict, List, Optional, Callable
 
 from giskard.client.giskard_client import GiskardClient
 from giskard.core.suite import DatasetInput, ModelInput, SuiteInput
+from giskard.core.test_result import TestMessageLevel, TestResult
 from giskard.datasets.base import Dataset
+from giskard.exceptions.IllegalArgumentError import IllegalArgumentError
 from giskard.ml_worker import websocket
-from giskard.ml_worker.exceptions.IllegalArgumentError import IllegalArgumentError
-from giskard.ml_worker.testing.registry.registry import tests_registry
-from giskard.ml_worker.testing.registry.slicing_function import SlicingFunction
-from giskard.ml_worker.testing.registry.transformation_function import TransformationFunction
-from giskard.ml_worker.testing.test_result import TestMessageLevel, TestResult
 from giskard.ml_worker.websocket import (
+    AbortParams,
     CreateSubDatasetParam,
     DatasetProcessingParam,
+    Documentation,
     EchoMsg,
     ExplainParam,
     ExplainTextParam,
@@ -29,17 +29,21 @@ from giskard.ml_worker.websocket import (
     RunModelForDataFrameParam,
     RunModelParam,
     TestSuiteParam,
-    Documentation,
 )
 from giskard.ml_worker.websocket.action import MLWorkerAction
 from giskard.models.base import BaseModel
 from giskard.path_utils import projects_dir
+from giskard.registry.registry import tests_registry
+from giskard.registry.slicing_function import SlicingFunction
+from giskard.registry.transformation_function import TransformationFunction
 
 logger = logging.getLogger(__name__)
 
 
 def parse_action_param(action: MLWorkerAction, params):
     # TODO: Sort by usage frequency from future MixPanel metrics #NOSONAR
+    if action == MLWorkerAction.abort:
+        return AbortParams.parse_obj(params)
     if action == MLWorkerAction.getInfo:
         return GetInfoParam.parse_obj(params)
     elif action == MLWorkerAction.runAdHocTest:

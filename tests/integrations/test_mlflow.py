@@ -14,8 +14,8 @@ mlflow_model_types = {
 
 
 def _evaluate(dataset, model, evaluator_config):
-    import platform
     import os
+    import platform
 
     with TemporaryDirectory() as f:
         if platform.system() == "Windows":

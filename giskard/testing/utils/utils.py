@@ -1,8 +1,8 @@
+from typing import Optional
+
 import numbers
 from enum import Enum
 from functools import wraps
-
-from typing import Optional
 
 from giskard.core.core import SupportedModelTypes
 from giskard.datasets.base import Dataset

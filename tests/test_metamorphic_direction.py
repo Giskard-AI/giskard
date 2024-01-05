@@ -4,7 +4,7 @@ import pytest
 import giskard
 import giskard.testing.tests.metamorphic as metamorphic
 from giskard.datasets.base import Dataset
-from giskard.ml_worker.testing.registry.transformation_function import transformation_function
+from giskard.registry.transformation_function import transformation_function
 
 
 def _test_metamorphic_increasing_regression(ds: Dataset, model, threshold):

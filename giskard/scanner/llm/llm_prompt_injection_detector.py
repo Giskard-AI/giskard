@@ -1,13 +1,14 @@
-import pandas as pd
-from typing import Sequence, Optional
+from typing import Optional, Sequence
 
-from ..decorators import detector
-from ..issues import Issue, IssueGroup, IssueLevel
-from ..registry import Detector
+import pandas as pd
+
 from ...datasets.base import Dataset
 from ...llm.evaluators.string_matcher import StringMatcherEvaluator
 from ...llm.loaders.prompt_injections import PromptInjectionDataLoader
 from ...models.base.model import BaseModel
+from ..decorators import detector
+from ..issues import Issue, IssueGroup, IssueLevel
+from ..registry import Detector
 
 
 @detector("llm_prompt_injection", tags=["jailbreak", "prompt_injection", "llm", "generative", "text_generation"])
