@@ -15,7 +15,7 @@ def test_performance_bias_detector_skips_small_datasets(german_credit_model, ger
     small_dataset = german_credit_data.slice(lambda df: df.sample(50), row_level=False)
     detector = PerformanceBiasDetector()
     with caplog.at_level(logging.WARNING):
-        issues = detector.run(german_credit_model, small_dataset, features=german_credit_model.meta.feature_names)
+        issues = detector.run(german_credit_model, small_dataset, features=german_credit_model.feature_names)
     record = caplog.records[-1]
 
     assert len(issues) == 0
@@ -30,7 +30,7 @@ def test_performance_bias_detector_trims_large_dataset(german_credit_model, germ
 
     detector = PerformanceBiasDetector()
     try:
-        detector.run(german_credit_model, large_dataset, features=german_credit_model.meta.feature_names)
+        detector.run(german_credit_model, large_dataset, features=german_credit_model.feature_names)
     except (ValueError, TypeError):
         pass
     assert large_dataset.slice.called
@@ -41,7 +41,7 @@ def test_performance_bias_detector_trims_large_dataset(german_credit_model, germ
 
     detector = PerformanceBiasDetector()
     try:
-        detector.run(german_credit_model, normal_dataset, features=german_credit_model.meta.feature_names)
+        detector.run(german_credit_model, normal_dataset, features=german_credit_model.feature_names)
     except (ValueError, TypeError):
         pass
 
@@ -51,7 +51,7 @@ def test_performance_bias_detector_trims_large_dataset(german_credit_model, germ
 def test_performance_bias_detector_with_tabular(german_credit_model, german_credit_data):
     detector = PerformanceBiasDetector()
 
-    issues = detector.run(german_credit_model, german_credit_data, features=german_credit_model.meta.feature_names)
+    issues = detector.run(german_credit_model, german_credit_data, features=german_credit_model.feature_names)
     assert len(issues) > 0
     assert all([isinstance(issue, Issue) for issue in issues])
 
@@ -73,7 +73,7 @@ def test_performance_bias_detector_with_text_features(enron_model, enron_data):
     dataset = Dataset(df, target=enron_data.target, column_types=enron_data.column_types)
     detector = PerformanceBiasDetector()
 
-    issues = detector.run(enron_model, dataset, enron_model.meta.feature_names)
+    issues = detector.run(enron_model, dataset, enron_model.feature_names)
     assert len(issues) > 0
     assert all([isinstance(issue, Issue) for issue in issues])
 

@@ -56,8 +56,8 @@ class TestcaseRequirementsGenerator:
     def _make_generate_requirements_prompt(self, model: BaseModel, num_requirements: int):
         return GENERATE_REQUIREMENTS_PROMPT.format(
             issue_description=self.issue_description,
-            model_name=model.meta.name,
-            model_description=model.meta.description,
+            model_name=model.name,
+            model_description=model.description,
             count=num_requirements,
         )
 
