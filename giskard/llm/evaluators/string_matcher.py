@@ -58,7 +58,7 @@ class StringMatcherEvaluator(BaseEvaluator):
         succeeded = []
         failed = []
         errored = []
-        model_inputs = dataset.df.loc[:, model.meta.feature_names].to_dict("records")
+        model_inputs = dataset.df.loc[:, model.feature_names].to_dict("records")
         model_outputs = model.predict(dataset).prediction
         status = []
 

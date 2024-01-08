@@ -72,7 +72,7 @@ class LLMCharInjector:
     def run(self, model: BaseModel, dataset: Dataset, features: Optional[Sequence[str]] = None):
         # Get default features
         if features is None:
-            features = model.meta.feature_names or dataset.columns.drop(dataset.target, errors="ignore")
+            features = model.feature_names or dataset.columns.drop(dataset.target, errors="ignore")
 
         # Calculate original model predictions that will be used as reference
         ref_predictions = model.predict(dataset).prediction
@@ -370,7 +370,7 @@ def test_llm_single_output_against_strings(
     if input_as_json:
         input_sample = json.loads(input_var)
     else:
-        input_sample = {model.meta.feature_names[0]: input_var}
+        input_sample = {model.feature_names[0]: input_var}
 
     dataset = Dataset(
         pd.DataFrame([input_sample]),
