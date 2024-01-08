@@ -26,7 +26,8 @@ from ...core.validation import configured_validate_arguments
 from ...datasets.base import Dataset
 from ...llm import get_default_client, set_llm_model
 from ...llm.talk.config import MODEL_INSTRUCTION, ERROR_RESPONSE, LLM_MODEL
-from ...llm.talk.tools import BaseTool, PredictFromDatasetTool, SHAPExplanationTool, IssuesScannerTool
+from ...llm.talk.tools import BaseTool, PredictDatasetInputTool, SHAPExplanationTool, IssuesScannerTool, \
+    PredictUserInputTool
 from ...exceptions.giskard_exception import GiskardException, python_env_exception_helper
 from ...models.cache import ModelCache
 from ...path_utils import get_size
@@ -571,11 +572,13 @@ class BaseModel(ABC):
         raise NotImplementedError()
 
     def _get_available_tools(self, dataset: Dataset, scan_result: "ScanReport") -> dict[str, BaseTool]:
+
         """Get the dictionary with available tools"""
         tools = {
-            PredictFromDatasetTool.default_name: PredictFromDatasetTool(self, dataset, scan_result),
-            SHAPExplanationTool.default_name: SHAPExplanationTool(self, dataset, scan_result),
-            IssuesScannerTool.default_name: IssuesScannerTool(self, dataset, scan_result)
+            PredictDatasetInputTool.default_name: PredictDatasetInputTool(model=self, dataset=dataset),
+            PredictUserInputTool.default_name: PredictUserInputTool(model=self, dataset=dataset),
+            SHAPExplanationTool.default_name: SHAPExplanationTool(model=self, dataset=dataset),
+            IssuesScannerTool.default_name: IssuesScannerTool(scan_result=scan_result)
         }
 
         return tools
@@ -595,7 +598,7 @@ class BaseModel(ABC):
             ]
         )
 
-    def talk(self, question: str, dataset: Dataset, scan_result: "ScanReport") -> str:
+    def talk(self, question: str, dataset: Dataset = None, scan_result: "ScanReport" = None) -> str:
         set_llm_model(LLM_MODEL)
         client = get_default_client()
 
