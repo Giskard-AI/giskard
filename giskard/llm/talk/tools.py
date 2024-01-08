@@ -97,7 +97,7 @@ class PredictDatasetInputTool(BasePredictTool):
             else:
                 filtered_df = filtered_df[filtered_df[col_name] == col_value]
 
-        return Dataset(filtered_df)
+        return Dataset(filtered_df, target=None)
 
 
 class PredictUserInputTool(BasePredictTool):
@@ -115,7 +115,7 @@ class PredictUserInputTool(BasePredictTool):
         for col_name, col_value in list(feature_values.items()):
             background_sample.loc[0, col_name] = col_value
 
-        return Dataset(background_sample)
+        return Dataset(background_sample, target=None)
 
 
 class SHAPExplanationTool(PredictDatasetInputTool):
@@ -130,7 +130,7 @@ class SHAPExplanationTool(PredictDatasetInputTool):
                 f"{prediction_result}\n\n"
                 f"SHAP result: \n"
                 f"'Feature name' | [('SHAP value', 'Feature value'), ...]\n"
-                f"--------------------------------------------------------\n"
+                f"-------------------------------------------------------\n"
                 f"{shap_result}\n\n")
 
     def __call__(self, features_dict: dict) -> str:
