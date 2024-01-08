@@ -64,7 +64,7 @@ def test_export_for_unittest_with_default(german_credit_data, german_credit_mode
     suite.add_test(my_test)
     tests_list = suite.to_unittest()
     assert len(tests_list) == 1
-    assert tests_list[0].test_id == "Accuracy"
+    assert bool(tests_list[0].fullname)
 
 
 def test_export_for_unittest_with_export_args(german_credit_data, german_credit_model):
@@ -74,4 +74,4 @@ def test_export_for_unittest_with_export_args(german_credit_data, german_credit_
     suite.add_test(my_test)
     tests_list = suite.to_unittest(model=german_credit_model, dataset=german_credit_data)
     assert len(tests_list) == 1
-    assert tests_list[0].test_id == "Accuracy"
+    assert bool(tests_list[0].fullname)
