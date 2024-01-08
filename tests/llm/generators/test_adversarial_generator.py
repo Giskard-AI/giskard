@@ -10,6 +10,7 @@ def test_generator_formats_prompt_with_issue_desc_and_requirement():
         LLMOutput(
             None,
             None,
+            None,
             [
                 LLMFunctionCall(
                     "generate_inputs",
