@@ -48,12 +48,11 @@ def explain_error(resp):
         message = "Access denied. Please check your permissions."
     else:
         try:
-            if resp.title:
-                message = f"{resp.title}: "
-            elif resp.detail:
-                message += f"{resp.detail}\n"
-            else:
-                message = resp.message
+            resp = resp.json()
+            if "title" in resp:
+                message = f"{resp['title']}:"
+            if "detail" in resp:
+                message += f" {resp['detail']}\n"
         except Exception:
             message = "No details or messages available."
 
