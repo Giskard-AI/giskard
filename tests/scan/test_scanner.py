@@ -50,7 +50,7 @@ def _test_scanner_returns_non_empty_scan_result(dataset_name, model_name, reques
     dataset = request.getfixturevalue(dataset_name)
     model = request.getfixturevalue(model_name)
 
-    result = scanner.analyze(model, dataset, features=model.meta.feature_names, raise_exceptions=True)
+    result = scanner.analyze(model, dataset, features=model.feature_names, raise_exceptions=True)
 
     assert isinstance(result, ScanReport)
     assert result.to_html()
@@ -67,7 +67,7 @@ def test_scanner_should_work_with_empty_model_feature_names(german_credit_data, 
     scanner = Scanner()
     german_credit_model.meta.feature_names = None
     result = scanner.analyze(
-        german_credit_model, german_credit_data, features=german_credit_model.meta.feature_names, raise_exceptions=True
+        german_credit_model, german_credit_data, features=german_credit_model.feature_names, raise_exceptions=True
     )
 
     assert isinstance(result, ScanReport)
@@ -86,7 +86,7 @@ def test_scanner_works_if_dataset_has_no_target(titanic_model, titanic_dataset):
     scanner = Scanner()
     no_target_dataset = Dataset(titanic_dataset.df, target=None)
     result = scanner.analyze(
-        titanic_model, no_target_dataset, features=titanic_model.meta.feature_names, raise_exceptions=True
+        titanic_model, no_target_dataset, features=titanic_model.feature_names, raise_exceptions=True
     )
 
     assert isinstance(result, ScanReport)

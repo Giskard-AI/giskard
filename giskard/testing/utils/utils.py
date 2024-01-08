@@ -27,7 +27,7 @@ def validate_classification_label(func):
         if (
             classification_label is not None
             and model is not None
-            and isinstance(model.meta.classification_labels[0], numbers.Number)
+            and isinstance(model.classification_labels[0], numbers.Number)
         ):
             try:
                 classification_label = int(classification_label)
@@ -39,14 +39,14 @@ def validate_classification_label(func):
         if target and classification_label and model:
             assert classification_label != target, (
                 'By "classification_label", we refer to one of the values: '
-                f'{model.meta.classification_labels} and not the target: "{target}". '
+                f'{model.classification_labels} and not the target: "{target}". '
                 "Please re-assign this argument."
             )
 
         assert (
-            model.meta.model_type != SupportedModelTypes.CLASSIFICATION
-            or classification_label in model.meta.classification_labels
-        ), f'"{classification_label}" is not part of model labels: {model.meta.classification_labels}'
+            model.model_type != SupportedModelTypes.CLASSIFICATION
+            or classification_label in model.classification_labels
+        ), f'"{classification_label}" is not part of model labels: {model.classification_labels}'
         return func(*args, **kwargs)
 
     wrapper.test_fn = func

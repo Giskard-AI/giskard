@@ -11,7 +11,7 @@ from giskard.scanner.robustness.text_perturbation_detector import TextPerturbati
 
 def test_perturbation_classification(titanic_model, titanic_dataset):
     analyzer = TextPerturbationDetector(threshold=0.01)
-    res = analyzer.run(titanic_model, titanic_dataset, features=titanic_model.meta.feature_names)
+    res = analyzer.run(titanic_model, titanic_dataset, features=titanic_model.feature_names)
     assert res
 
 

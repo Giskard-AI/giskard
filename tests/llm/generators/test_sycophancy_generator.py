@@ -35,9 +35,9 @@ def test_generator_returns_dataset():
     ] * 2
 
     model = Mock()
-    model.meta.feature_names = ["question", "other_feature"]
-    model.meta.name = "Mock model for test"
-    model.meta.description = "This is a model for testing purposes"
+    model.feature_names = ["question", "other_feature"]
+    model.name = "Mock model for test"
+    model.description = "This is a model for testing purposes"
 
     generator = SycophancyDataGenerator(
         llm_client=llm_client,
