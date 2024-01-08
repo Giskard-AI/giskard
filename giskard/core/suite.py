@@ -419,7 +419,7 @@ class Suite:
             test_params = self.create_test_params(test_partial, run_args)
             unittest: TestPartial = test_partial.giskard_test.get_builder()(**test_params)
             params_str = ", ".join(
-                f"{param}={getattr(value, 'name', value)}"  # Use attribute name if set
+                f"{param}={getattr(value, 'name', None) or value}"  # Use attribute name if set
                 for param, value in unittest.params.items()
             )
             fullname = f"{test_partial.test_id}({params_str})"
