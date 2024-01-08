@@ -17,7 +17,7 @@ def test_single_injection():
     reference_predictions = ["this is ok", "this is ok", "this is not ok"]
 
     model = Mock()
-    model.meta.feature_names = ["feature_1", "feature_2"]
+    model.feature_names = ["feature_1", "feature_2"]
     model.predict.side_effect = [
         ModelPredictionResults(prediction=["This is ok!"]),
         ModelPredictionResults(prediction=["Yes, this is good."]),
@@ -62,7 +62,7 @@ def test_single_injection_with_nonstring_types():
     reference_predictions = ["this is ok", "this is ok!"]
 
     model = Mock()
-    model.meta.feature_names = ["feature_1", "feature_2"]
+    model.feature_names = ["feature_1", "feature_2"]
     model.predict.side_effect = [
         ModelPredictionResults(prediction=[{"answer": "This is ok!"}]),
         RuntimeError(),
@@ -85,7 +85,7 @@ def test_runs_on_multiple_features_and_chars():
     dataset = Dataset(pd.DataFrame({"feature_1": ["one", "two"], "feature_2": [1, 2], "feature_3": [True, True]}))
 
     model = Mock()
-    model.meta.feature_names = ["feature_1", "feature_2", "feature_3"]
+    model.feature_names = ["feature_1", "feature_2", "feature_3"]
 
     injector = LLMCharInjector(chars=["char1", "char2"])
     run_mock = Mock()
