@@ -1,15 +1,23 @@
 import inspect
 import pickle
+import sys
 
 import cloudpickle
 
 
-def dump_by_value(obj, f):
-    module = inspect.getmodule(obj)
+def _register_root_module_by_value(module):
+    if not module:
+        return
 
-    if module:
-        # Shall we register the root module?
-        # Will currently fail if test from module.test import from module.utils
-        cloudpickle.register_pickle_by_value(module)
+    root_module_name = module.__name__.split(".")[0]
+
+    if root_module_name == "giskard" or root_module_name not in sys.modules:
+        return
+
+    cloudpickle.register_pickle_by_value(sys.modules[root_module_name])
+
+
+def dump_by_value(obj, f):
+    _register_root_module_by_value(inspect.getmodule(obj))
 
     cloudpickle.dump(obj, f, protocol=pickle.DEFAULT_PROTOCOL)
