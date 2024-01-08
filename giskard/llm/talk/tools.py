@@ -1,8 +1,7 @@
+from typing import TYPE_CHECKING
 from abc import ABC, abstractmethod
 
 import numpy as np
-from shap import Explanation
-from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
     from giskard.models.base import BaseModel
@@ -10,6 +9,7 @@ if TYPE_CHECKING:
 
 from giskard.datasets.base import Dataset
 from giskard.llm.talk.config import ToolDescription
+from giskard.llm.talk.utils.shap import explain_with_shap
 
 
 class BaseTool(ABC):
@@ -106,7 +106,6 @@ class PredictUserInputTool(BasePredictTool):
 
     def _prepare_input(self, feature_values: dict) -> Dataset:
         from giskard.models.model_explanation import _get_background_example
-
         # Prepare background sample.
         background_df = self._model.prepare_dataframe(self._dataset.df, self._dataset.column_dtypes,
                                                       self._dataset.target)
@@ -124,37 +123,6 @@ class SHAPExplanationTool(PredictDatasetInputTool):
     default_description: str = ToolDescription.SHAP_EXPLANATION.value
     _result_template: str = "'{feature_name}' | {attributions_values}"
 
-    def _get_shap_explanations(self, filtered_dataset: Dataset) -> Explanation:
-        from shap import KernelExplainer
-        from giskard.models.model_explanation import _prepare_for_explanation, _get_background_example, \
-            _get_highest_proba_shap
-
-        # Prepare background sample to be used in the KernelSHAP.
-        background_df = self._model.prepare_dataframe(self._dataset.df, self._dataset.column_dtypes,
-                                                      self._dataset.target)
-        background_sample = _get_background_example(background_df, self._dataset.column_types)
-
-        # Prepare input data for an explanation.
-        data_to_explain = _prepare_for_explanation(filtered_dataset.df, model=self._model, dataset=self._dataset)
-
-        def prediction_function(_df):
-            """Rolls-back SHAP casting of all columns to the 'object' type."""
-            return self._model.predict_df(_df.astype(data_to_explain.dtypes))
-
-        # Obtain SHAP explanations.
-        explainer = KernelExplainer(prediction_function, background_sample, data_to_explain.columns, keep_index=True)
-        shap_values = explainer.shap_values(data_to_explain, silent=True)
-
-        if self._model.is_classification:
-            shap_values = _get_highest_proba_shap(shap_values, self._model, filtered_dataset)
-
-        # Put SHAP values to the Explanation object for a convenience.
-        feature_names = self._model.meta.feature_names or list(
-            self._dataset.df.columns.drop(self._dataset.target, errors="ignore"))
-        shap_explanations = Explanation(shap_values, data=filtered_dataset.df[feature_names],
-                                        feature_names=feature_names)
-        return shap_explanations
-
     @staticmethod
     def _finalise_output(prediction_result: str, shap_result: np.ndarray) -> str:
         shap_result = "\n".join(shap_result)
@@ -170,7 +138,7 @@ class SHAPExplanationTool(PredictDatasetInputTool):
         prediction_result = super().__call__(features_dict)
 
         model_input = self._prepare_input(features_dict)
-        explanations = self._get_shap_explanations(model_input)
+        explanations = explain_with_shap(model_input, self._model, self._dataset)
 
         # Finalise the result.
         shap_result = [self._result_template.format(feature_name=f_name,
