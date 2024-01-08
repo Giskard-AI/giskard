@@ -81,7 +81,7 @@ class GiskardTest(Artifact[TestFunctionMeta], ABC):
                     func = pickle.load(f)
                 except Exception as e:
                     raise python_env_exception_helper(cls.__name__, e)
-        elif hasattr(sys.modules, meta.module) and hasattr(sys.modules[meta.module], meta.name):
+        elif meta.module in sys.modules and hasattr(sys.modules[meta.module], meta.name):
             func = getattr(sys.modules[meta.module], meta.name)
         else:
             return None
