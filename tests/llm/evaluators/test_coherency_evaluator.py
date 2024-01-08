@@ -27,9 +27,9 @@ def _make_eval_datasets():
 def _make_mock_model():
     model = Mock()
     model.predict.return_value = ModelPredictionResults(prediction=["Paris", "Eo Romam"])
-    model.meta.feature_names = ["question", "other"]
-    model.meta.name = "Mock model for test"
-    model.meta.description = "This is a model for testing purposes"
+    model.feature_names = ["question", "other"]
+    model.name = "Mock model for test"
+    model.description = "This is a model for testing purposes"
     return model
 
 

@@ -29,9 +29,9 @@ def test_generator_formats_prompt_with_issue_desc_and_requirement():
     ]
 
     model = Mock()
-    model.meta.feature_names = ["question", "other_feature"]
-    model.meta.name = "Mock model for test"
-    model.meta.description = "This is a model for testing purposes"
+    model.feature_names = ["question", "other_feature"]
+    model.name = "Mock model for test"
+    model.description = "This is a model for testing purposes"
 
     generator = AdversarialDataGenerator(
         "This is an issue description",

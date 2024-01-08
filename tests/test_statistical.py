@@ -19,7 +19,7 @@ def test_statistical(data, model, threshold, label, expected_metric, actual_slic
     results = statistical.test_right_label(
         model=model,
         dataset=data.slice(SlicingFunction(lambda df: df.head(len(df) // 2), row_level=False)),
-        classification_label=model.meta.classification_labels[label],
+        classification_label=model.classification_labels[label],
         threshold=threshold,
     ).execute()
 
@@ -43,7 +43,7 @@ def test_statistical_filtered(data, model, threshold, label, expected_metric, ac
     results = statistical.test_right_label(
         model=model,
         dataset=data.slice(SlicingFunction(lambda df: df.head(10), row_level=False)),
-        classification_label=model.meta.classification_labels[label],
+        classification_label=model.classification_labels[label],
         threshold=threshold,
     ).execute()
 
@@ -66,7 +66,7 @@ def test_output_in_range_model(data, model, threshold, label, expected_metric, a
     results = statistical.test_output_in_range(
         model=model,
         dataset=data.slice(lambda df: df.head(len(df) // 2), row_level=False),
-        classification_label=model.meta.classification_labels[label],
+        classification_label=model.classification_labels[label],
         min_range=0.3,
         max_range=0.7,
         threshold=threshold,
