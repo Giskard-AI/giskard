@@ -26,8 +26,7 @@ from ...core.validation import configured_validate_arguments
 from ...datasets.base import Dataset
 from ...llm import get_default_client, set_llm_model
 from ...llm.talk.config import MODEL_INSTRUCTION, ERROR_RESPONSE, LLM_MODEL
-from ...llm.talk.tools import BaseTool, PredictDatasetInputTool, SHAPExplanationTool, IssuesScannerTool, \
-    PredictUserInputTool
+from ...llm.talk.tools import *
 from ...exceptions.giskard_exception import GiskardException, python_env_exception_helper
 from ...models.cache import ModelCache
 from ...path_utils import get_size
@@ -599,17 +598,14 @@ class BaseModel(ABC):
     def to_mlflow(self, *_args, **_kwargs):
         raise NotImplementedError()
 
-    def _get_available_tools(self, dataset: Dataset, scan_result: "ScanReport") -> dict[str, BaseTool]:
-
+    def _get_available_tools(self, dataset: Dataset, scan_report: "ScanReport") -> dict[str, BaseTool]:
         """Get the dictionary with available tools"""
-        tools = {
+        return {
             PredictDatasetInputTool.default_name: PredictDatasetInputTool(model=self, dataset=dataset),
             PredictUserInputTool.default_name: PredictUserInputTool(model=self, dataset=dataset),
             SHAPExplanationTool.default_name: SHAPExplanationTool(model=self, dataset=dataset),
-            IssuesScannerTool.default_name: IssuesScannerTool(scan_result=scan_result)
+            IssuesScannerTool.default_name: IssuesScannerTool(scan_result=scan_report)
         }
-
-        return tools
 
     @staticmethod
     def _form_tool_calls_message(tool_calls):
@@ -626,11 +622,11 @@ class BaseModel(ABC):
             ]
         )
 
-    def talk(self, question: str, dataset: Dataset = None, scan_result: "ScanReport" = None) -> str:
+    def talk(self, question: str, dataset: Dataset = None, scan_report: "ScanReport" = None) -> str:
         set_llm_model(LLM_MODEL)
         client = get_default_client()
 
-        available_tools = self._get_available_tools(dataset, scan_result)
+        available_tools = self._get_available_tools(dataset, scan_report)
 
         system_prompt = MODEL_INSTRUCTION.format(
             tools_descriptions="\n".join([tool.description for tool in list(available_tools.values())]),
