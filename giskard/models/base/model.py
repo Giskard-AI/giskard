@@ -184,13 +184,41 @@ class BaseModel(ABC):
         return self.meta.name if self.meta.name is not None else self.__class__.__name__
 
     @property
+    def description(self):
+        return self.meta.description
+
+    @property
+    def model_type(self):
+        return self.meta.model_type
+
+    @property
+    def feature_names(self):
+        return self.meta.feature_names
+
+    @property
+    def classification_labels(self):
+        return self.meta.classification_labels
+
+    @property
+    def loader_class(self):
+        return self.meta.loader_class
+
+    @property
+    def loader_module(self):
+        return self.meta.loader_module
+
+    @property
+    def classification_threshold(self):
+        return self.meta.classification_threshold
+
+    @property
     def is_classification(self) -> bool:
         """Compute if the model is of type classification.
 
         Returns:
             bool: True if the model is of type classification, False otherwise
         """
-        return self.meta.model_type == SupportedModelTypes.CLASSIFICATION
+        return self.model_type == SupportedModelTypes.CLASSIFICATION
 
     @property
     def is_binary_classification(self) -> bool:
@@ -200,7 +228,7 @@ class BaseModel(ABC):
             bool: True if the model is of type binary classification, False otherwise.
         """
 
-        return self.is_classification and len(self.meta.classification_labels) == 2
+        return self.is_classification and len(self.classification_labels) == 2
 
     @property
     def is_regression(self) -> bool:
@@ -209,7 +237,7 @@ class BaseModel(ABC):
         Returns:
             bool: True if the model is of type regression, False otherwise.
         """
-        return self.meta.model_type == SupportedModelTypes.REGRESSION
+        return self.model_type == SupportedModelTypes.REGRESSION
 
     @property
     def is_text_generation(self) -> bool:
@@ -218,7 +246,7 @@ class BaseModel(ABC):
         Returns:
             bool: True if the model is of type text generation, False otherwise.
         """
-        return self.meta.model_type == SupportedModelTypes.TEXT_GENERATION
+        return self.model_type == SupportedModelTypes.TEXT_GENERATION
 
     @classmethod
     def determine_model_class(
@@ -245,15 +273,15 @@ class BaseModel(ABC):
                 {
                     "language_version": platform.python_version(),
                     "language": "PYTHON",
-                    "model_type": self.meta.model_type.name.upper(),
-                    "threshold": self.meta.classification_threshold,
-                    "feature_names": self.meta.feature_names,
-                    "classification_labels": self.meta.classification_labels,
-                    "loader_module": self.meta.loader_module,
-                    "loader_class": self.meta.loader_class,
+                    "model_type": self.model_type.name.upper(),
+                    "threshold": self.classification_threshold,
+                    "feature_names": self.feature_names,
+                    "classification_labels": self.classification_labels,
+                    "loader_module": self.loader_module,
+                    "loader_class": self.loader_class,
                     "id": str(self.id),
-                    "name": self.meta.name,
-                    "description": self.meta.description,
+                    "name": self.name,
+                    "description": self.description,
                     "size": get_size(local_path),
                 },
                 f,
@@ -297,18 +325,18 @@ class BaseModel(ABC):
                 df.drop(target, axis=1, inplace=True)
             if column_dtypes and target in column_dtypes:
                 del column_dtypes[target]
-            if target and self.meta.feature_names and target in self.meta.feature_names:
-                self.meta.feature_names.remove(target)
+            if target and self.feature_names and target in self.feature_names:
+                self.feature_names.remove(target)
 
-        if self.meta.feature_names:
-            if set(self.meta.feature_names) > set(df.columns):
-                column_names = set(self.meta.feature_names) - set(df.columns)
+        if self.feature_names:
+            if set(self.feature_names) > set(df.columns):
+                column_names = set(self.feature_names) - set(df.columns)
                 raise ValueError(
                     f"The following columns are not found in the dataset: {', '.join(sorted(column_names))}"
                 )
-            df = df[self.meta.feature_names]
+            df = df[self.feature_names]
             if column_dtypes:
-                column_dtypes = {k: v for k, v in column_dtypes.items() if k in self.meta.feature_names}
+                column_dtypes = {k: v for k, v in column_dtypes.items() if k in self.feature_names}
 
         for cname, ctype in column_dtypes.items():
             if cname not in df:
@@ -357,8 +385,8 @@ class BaseModel(ABC):
                 prediction=raw_prediction, raw_prediction=raw_prediction, raw=raw_prediction
             )
         elif self.is_classification:
-            labels = np.array(self.meta.classification_labels)
-            threshold = self.meta.classification_threshold
+            labels = np.array(self.classification_labels)
+            threshold = self.classification_threshold
 
             if threshold is not None and len(labels) == 2:
                 predicted_lbl_idx = (raw_prediction[:, 1] > threshold).astype(int)
@@ -378,7 +406,7 @@ class BaseModel(ABC):
                 all_predictions=all_predictions,
             )
         else:
-            raise ValueError(f"Prediction task is not supported: {self.meta.model_type}")
+            raise ValueError(f"Prediction task is not supported: {self.model_type}")
         timer.stop(f"Predicted dataset with shape {dataset.df.shape}")
         return result
 

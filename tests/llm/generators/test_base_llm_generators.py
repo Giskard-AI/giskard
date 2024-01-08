@@ -25,6 +25,7 @@ def test_generator_returns_dataset(Generator, args, kwargs):
         LLMOutput(
             None,
             None,
+            None,
             [
                 LLMFunctionCall(
                     "generate_inputs",
@@ -43,9 +44,9 @@ def test_generator_returns_dataset(Generator, args, kwargs):
     ]
 
     model = Mock()
-    model.meta.feature_names = ["question", "other_feature"]
-    model.meta.name = "Mock model for test"
-    model.meta.description = "This is a model for testing purposes"
+    model.feature_names = ["question", "other_feature"]
+    model.name = "Mock model for test"
+    model.description = "This is a model for testing purposes"
 
     generator = Generator(
         *args,
@@ -89,12 +90,12 @@ def test_generator_returns_dataset(Generator, args, kwargs):
 def test_generator_raises_generation_error_if_tool_call_fails(Generator, args, kwargs):
     # Missing tool call
     llm_client = Mock()
-    llm_client.complete.side_effect = [LLMOutput("Sorry, I can't.", None)]
+    llm_client.complete.side_effect = [LLMOutput(None, "Sorry, I can't.", None)]
 
     model = Mock()
-    model.meta.feature_names = ["question", "other_feature"]
-    model.meta.name = "Mock model for test"
-    model.meta.description = "This is a model for testing purposes"
+    model.feature_names = ["question", "other_feature"]
+    model.name = "Mock model for test"
+    model.description = "This is a model for testing purposes"
 
     generator = Generator(*args, **kwargs, llm_client=llm_client)
 
@@ -104,13 +105,13 @@ def test_generator_raises_generation_error_if_tool_call_fails(Generator, args, k
     # Wrong tool call
     llm_client = Mock()
     llm_client.complete.side_effect = [
-        LLMOutput(None, tool_calls=[LLMFunctionCall("wrong_function", {"have_no_inputs": True})])
+        LLMOutput(None, None, tool_calls=[LLMFunctionCall("wrong_function", {"have_no_inputs": True})])
     ]
 
     model = Mock()
-    model.meta.feature_names = ["question", "other_feature"]
-    model.meta.name = "Mock model for test"
-    model.meta.description = "This is a model for testing purposes"
+    model.feature_names = ["question", "other_feature"]
+    model.name = "Mock model for test"
+    model.description = "This is a model for testing purposes"
 
     generator = Generator(*args, **kwargs, llm_client=llm_client)
 
@@ -131,6 +132,7 @@ def test_generator_casts_based_on_column_types(Generator, args, kwargs):
         LLMOutput(
             None,
             None,
+            None,
             [
                 LLMFunctionCall(
                     "generate_inputs",
@@ -146,9 +148,9 @@ def test_generator_casts_based_on_column_types(Generator, args, kwargs):
     ] * 2
 
     model = Mock()
-    model.meta.feature_names = ["question", "other_feature"]
-    model.meta.name = "Mock model for test"
-    model.meta.description = "This is a model for testing purposes"
+    model.feature_names = ["question", "other_feature"]
+    model.name = "Mock model for test"
+    model.description = "This is a model for testing purposes"
 
     generator = BaseDataGenerator(llm_client=llm_client)
 
@@ -179,6 +181,7 @@ def test_generator_adds_languages_requirements_in_prompts(Generator, args, kwarg
         LLMOutput(
             None,
             None,
+            None,
             [
                 LLMFunctionCall(
                     "generate_inputs",
@@ -197,9 +200,9 @@ def test_generator_adds_languages_requirements_in_prompts(Generator, args, kwarg
     ]
 
     model = Mock()
-    model.meta.feature_names = ["question", "other_feature"]
-    model.meta.name = "Mock model for test"
-    model.meta.description = "This is a model for testing purposes"
+    model.feature_names = ["question", "other_feature"]
+    model.name = "Mock model for test"
+    model.description = "This is a model for testing purposes"
 
     generator = Generator(
         *args,
@@ -235,6 +238,7 @@ def test_generator_empty_languages_requirements(Generator, args, kwargs):
         LLMOutput(
             None,
             None,
+            None,
             [
                 LLMFunctionCall(
                     "generate_inputs",
@@ -253,9 +257,9 @@ def test_generator_empty_languages_requirements(Generator, args, kwargs):
     ]
 
     model = Mock()
-    model.meta.feature_names = ["question", "other_feature"]
-    model.meta.name = "Mock model for test"
-    model.meta.description = "This is a model for testing purposes"
+    model.feature_names = ["question", "other_feature"]
+    model.name = "Mock model for test"
+    model.description = "This is a model for testing purposes"
 
     generator = Generator(
         *args,

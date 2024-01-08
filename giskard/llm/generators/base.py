@@ -51,9 +51,9 @@ class LLMGenerator(BaseGenerator, ABC):
 class BaseDataGenerator(LLMGenerator):
     def _make_generate_input_prompt(self, model: BaseModel, num_samples: int):
         input_prompt = self.prompt.format(
-            model_name=model.meta.name,
-            model_description=model.meta.description,
-            feature_names=", ".join(model.meta.feature_names),
+            model_name=model.name,
+            model_description=model.description,
+            feature_names=", ".join(model.feature_names),
             num_samples=num_samples,
         )
         if self.languages:
@@ -74,7 +74,7 @@ class BaseDataGenerator(LLMGenerator):
                                 "type": "array",
                                 "items": {
                                     "type": "object",
-                                    "properties": {name: {"type": "string"} for name in model.meta.feature_names},
+                                    "properties": {name: {"type": "string"} for name in model.feature_names},
                                 },
                             }
                         },
@@ -85,7 +85,7 @@ class BaseDataGenerator(LLMGenerator):
         ]
 
     def _make_dataset_name(self, model: BaseModel, num_samples):
-        return f"Synthetic Test Dataset for {model.meta.name}"
+        return f"Synthetic Test Dataset for {model.name}"
 
     def generate_dataset(self, model: BaseModel, num_samples: int = 10, column_types=None) -> Dataset:
         """Generates a test dataset for the model.

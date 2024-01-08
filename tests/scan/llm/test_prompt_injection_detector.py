@@ -34,9 +34,9 @@ def test_detector(PromptInjectionDataLoader):  # noqa
     features = ["feat"]
 
     model = Mock()
-    model.meta.name = "Test Model"
-    model.meta.description = "Test Description"
-    model.meta.feature_names = features
+    model.name = "Test Model"
+    model.description = "Test Description"
+    model.feature_names = features
 
     dataset = Mock()
     loader = Mock()
@@ -95,7 +95,7 @@ def test_detector(PromptInjectionDataLoader):  # noqa
     detector = LLMPromptInjectionDetector()
 
     # First run
-    issues = detector.run(model, dataset, model.meta.feature_names)
+    issues = detector.run(model, dataset, model.feature_names)
     assert len(issues) == 1
     assert issues[0].is_major
 
