@@ -37,7 +37,7 @@ def prediction_function(df):
 MULTIPLE_FILES_MODULE = PythonModule(
     module_name="my_mocked_module",
     init_content="""
-from .tests.test import prediction_function
+from .models.model import prediction_function
 
 __all__ = [
     "prediction_function"
@@ -45,7 +45,7 @@ __all__ = [
     """,
     files=[
         PythonFile(
-            relative_path=Path("tests") / "test.py",
+            relative_path=Path("models") / "model.py",
             content="""
 from ..utils.test_utils import _do_predict
 
