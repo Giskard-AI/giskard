@@ -108,7 +108,7 @@ class GiskardTest(Artifact[TestFunctionMeta], ABC):
             assert result
         else:
             if result.messages:
-                message = " ".join([repr(message) for message in result.messages])
+                message = " ".join([getattr(message, "text", None) or repr(message) for message in result.messages])
             else:
                 # Pass more context in case the message is empty
                 message = " ".join(str(result).replace("\n", " ").split())
