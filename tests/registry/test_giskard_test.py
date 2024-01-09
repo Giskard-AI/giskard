@@ -4,7 +4,7 @@ from pathlib import Path
 import pytest
 
 import giskard
-from tests.registry.utils import PythonFile, PythonModule, TmpModule
+from tests.registry.module_utils import PythonFile, PythonModule, TmpModule
 
 SINGLE_FILE_MODULE = PythonModule(
     module_name="my_mocked_module",

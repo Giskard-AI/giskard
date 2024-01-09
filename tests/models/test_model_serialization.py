@@ -8,7 +8,7 @@ import pytest
 from giskard.datasets import Dataset
 from giskard.models.automodel import Model
 from giskard.models.base.serialization import CloudpickleSerializableModel
-from tests.registry.utils import PythonFile, PythonModule, TmpModule
+from tests.registry.module_utils import PythonFile, PythonModule, TmpModule
 
 
 @mock.patch("giskard.models.base.serialization.cloudpickle.dump")
