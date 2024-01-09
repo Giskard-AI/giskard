@@ -24,7 +24,7 @@ def my_test():
 MULTIPLE_FILES_MODULE = PythonModule(
     module_name="my_mocked_module",
     init_content="""
-from .tests.test import my_test
+from .test import my_test
 
 __all__ = [
     "my_test"
@@ -32,20 +32,20 @@ __all__ = [
     """,
     files=[
         PythonFile(
-            relative_path=Path("tests") / "test.py",
+            relative_path="test.py",
             content="""
 import giskard
-from ..utils.test_utils import _do_test
+from .test_utils import do_test
 
 @giskard.test()
 def my_test():
-  return _do_test()
+  return do_test()
             """,
         ),
         PythonFile(
-            relative_path=Path("utils") / "test_utils.py",
+            relative_path="test_utils.py",
             content="""
-def _do_test():
+def do_test():
   return True
             """,
         ),
