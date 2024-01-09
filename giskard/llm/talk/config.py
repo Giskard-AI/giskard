@@ -17,7 +17,7 @@ chosen tool you need to create an input, regarding provided tool specification. 
 calling, you will get this information. You need to make a summary about this error and inform the user.
 
 Please provide polite, and concise answers to the user and avoid explaining the result, until the user explicitly 
-asks you to do it. Please, take into account, that user not necessarily have computer science background, 
+asks you to do it. Please, take into account, that the user do not necessarily has the computer science background, 
 thus your answers must be clear to people from different domains. Please note that you cannot share any confidential 
 information with the user, and if the question is not related to the model, you must return an explanation why you 
 cannot answer.
@@ -26,6 +26,26 @@ Your will interact with the following model:
 Model name: {model_name}
 Model description: {model_description}
 Model features: {feature_names}
+
+As the context (if provided), you can use the summary of the previous messages between you and the user. This enables
+a dialogue with the user and gives you more information to answer user's questions. The context is given below:
+Context: {context}
+"""
+
+SUMMARY_PROMPT = """Please, create a summary of the whole conversation. You need to preserve the content of 
+all roles: system, tool, assistant and user. The summary must contain all necessary information, regarding user's question, 
+the choice of the tool, the tool's output and the model's response. Also, it is very important to include into the 
+new summary the summary of the previous conversation, so at any moment you can refer to any point of the whole conversation.   
+
+The summary must be concise, strict and formal, in a form of a technical language.
+
+Provide a summary in a form of bullet-points.
+
+Please note, that the summary must preserve data-sensitive information, like feature names, values, or predictions 
+without any modifications.
+
+The conversation, which to make a summary for, is provided below:
+Conversation context: {context}
 """
 
 ERROR_RESPONSE = """There is an error, when calling the tool. Detailed info:

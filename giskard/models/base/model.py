@@ -1,3 +1,5 @@
+import json
+
 from typing import Iterable, List, Optional, Tuple, Type, Union, TYPE_CHECKING
 
 import builtins
@@ -18,13 +20,14 @@ from openai.types.chat.chat_completion_message import ChatCompletionMessage
 from openai.types.chat.chat_completion_message_tool_call import ChatCompletionMessageToolCall, Function
 
 from giskard.client.dtos import ModelMetaInfo
+from ..talk_result import TalkResult
 
 from ...client.giskard_client import GiskardClient
 from ...core.core import ModelMeta, ModelType, SupportedModelTypes
 from ...core.validation import configured_validate_arguments
 from ...datasets.base import Dataset
 from ...llm import get_default_client, set_llm_model
-from ...llm.talk.config import MODEL_INSTRUCTION, ERROR_RESPONSE, LLM_MODEL
+from ...llm.talk.config import MODEL_INSTRUCTION, ERROR_RESPONSE, LLM_MODEL, SUMMARY_PROMPT
 from ...llm.talk.tools import *
 from ...exceptions.giskard_exception import GiskardException, python_env_exception_helper
 from ...models.cache import ModelCache
@@ -622,7 +625,18 @@ class BaseModel(ABC):
             ]
         )
 
-    def talk(self, question: str, dataset: Dataset = None, scan_report: "ScanReport" = None) -> str:
+    @staticmethod
+    def _gather_context(message_list: list) -> str:
+        context = list()
+
+        for msg in message_list:
+            if isinstance(msg, dict) and "content" in msg:
+                context.append(json.dumps(msg))
+
+        return "\n".join(context)
+
+
+    def talk(self, question: str, context: str = "", dataset: Dataset = None, scan_report: "ScanReport" = None) -> TalkResult:
         set_llm_model(LLM_MODEL)
         client = get_default_client()
 
@@ -632,7 +646,8 @@ class BaseModel(ABC):
             tools_descriptions="\n".join([tool.description for tool in list(available_tools.values())]),
             model_name=self.meta.name,
             model_description=self.meta.description,
-            feature_names=self.meta.feature_names
+            feature_names=self.meta.feature_names,
+            context=context
         )
 
         messages = [
@@ -683,9 +698,16 @@ class BaseModel(ABC):
                 )
 
             # Get the final model's response, based on the tool's output.
-            response_message = client.complete(
+            response = client.complete(
                 messages=messages,
                 temperature=0.1
             )
+            messages.append(response.raw_output)
 
-        return response_message
+        # Summarise the conversation.
+        context = self._gather_context(messages)
+        summary = client.complete(
+            messages=[{"role": "user", "content": SUMMARY_PROMPT.format(context=context)}],
+            temperature=0.1
+        )
+        return TalkResult(response, summary)
