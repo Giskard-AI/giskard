@@ -17,7 +17,8 @@ def _register_root_module_by_value(module):
     cloudpickle.register_pickle_by_value(sys.modules[root_module_name])
 
 
-def dump_by_value(obj, f):
-    _register_root_module_by_value(inspect.getmodule(obj))
+def dump_by_value(obj, f, should_register_by_reference=False):
+    if not should_register_by_reference:
+        _register_root_module_by_value(inspect.getmodule(obj))
 
     cloudpickle.dump(obj, f, protocol=pickle.DEFAULT_PROTOCOL)

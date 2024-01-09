@@ -43,7 +43,7 @@ class CloudpickleSerializableModel(WrapperModel):
         try:
             model_file = Path(local_path) / "model.pkl"
             with open(model_file, "wb") as f:
-                dump_by_value(self.model, f)
+                dump_by_value(self.model, f, kwargs.get("should_register_by_reference", False))
         except ValueError:
             raise ValueError(
                 "We couldn't save your model with cloudpickle. Please provide us with your own "
