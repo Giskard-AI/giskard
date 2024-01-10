@@ -1,5 +1,14 @@
 # 🧪 Pytest
 
+```{toctree}
+:caption: Table of Contents
+:maxdepth: 1
+:hidden:
+
+./full_example.ipynb
+```
+
+
 It is possible to execute Giskard test via pytest with very minimal code. Using pytest to execute tests can facilitate the integration with CI/CD scripts and leverage builtin functionalities like test report or advanced markings (xfail, skip).
 
 Once define in a script, the execution of the tests can be triggred using the pytest command:
@@ -132,7 +141,7 @@ def test_giskard(test_partial):
 
 ::::::{grid} 1 1 2 2
 
-::::{grid-item-card} <br/><h3>📊 Tabular</h3>
+::::{grid-item-card} <br/><h3>🐍 Example</h3>
 :text-align: center
 :link: full_example.ipynb
 ::::
