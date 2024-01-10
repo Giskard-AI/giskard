@@ -10,7 +10,7 @@ the necessary context to answer a user's question.
 
 The descriptions of these tools is provided below:
 Tools descriptions: 
-{tools_descriptions}
+{tools_description}
 
 Your main goal is to choose and execute an appropriate tool, which help you to answer a user's question. For the 
 chosen tool you need to create an input, regarding provided tool specification. If there is an error during the tool 

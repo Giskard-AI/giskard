@@ -635,15 +635,15 @@ class BaseModel(ABC):
 
         return "\n".join(context)
 
-
-    def talk(self, question: str, context: str = "", dataset: Dataset = None, scan_report: "ScanReport" = None) -> TalkResult:
+    def talk(self,
+             question: str, context: str = "", dataset: Dataset = None, scan_report: "ScanReport" = None) -> TalkResult:
         set_llm_model(LLM_MODEL)
         client = get_default_client()
 
         available_tools = self._get_available_tools(dataset, scan_report)
 
         system_prompt = MODEL_INSTRUCTION.format(
-            tools_descriptions="\n".join([tool.description for tool in list(available_tools.values())]),
+            tools_description="\n".join([tool.description for tool in list(available_tools.values())]),
             model_name=self.meta.name,
             model_description=self.meta.description,
             feature_names=self.meta.feature_names,
@@ -662,10 +662,9 @@ class BaseModel(ABC):
             temperature=0.1
         )
 
-        if response_message := response.message:
-            messages.append(response_message)
+        if response.message:
+            messages.append(response.raw_output)
 
-        # If a tool was chosen.
         if tool_calls := response.tool_calls:
             messages.append(self._form_tool_calls_message(tool_calls))
 
@@ -690,9 +689,9 @@ class BaseModel(ABC):
                 # Append the tool's response to the conversation.
                 messages.append(
                     {
-                        "tool_call_id": tool_call.id,
                         "role": "tool",
                         "name": tool_name,
+                        "tool_call_id": tool_call.id,
                         "content": tool_response,
                     }
                 )
