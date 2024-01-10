@@ -129,6 +129,7 @@ def test_giskard(test_partial):
 ```
 
 ## Example
+
 ::::::{grid} 1 1 2 2
 
 ::::{grid-item-card} <br/><h3>📊 Tabular</h3>
