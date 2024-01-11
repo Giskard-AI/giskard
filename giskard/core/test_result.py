@@ -50,7 +50,7 @@ def create_test_result_details(
     metadata: Optional[Dict[str, List[str]]] = None,
 ) -> TestResultDetails:
     return TestResultDetails(
-        inputs=dataset.df.loc[:, model.meta.feature_names].to_dict("list"),
+        inputs=dataset.df.loc[:, model.feature_names].to_dict("list"),
         outputs=list(predictions),
         results=results,
         metadata=metadata or dict(),

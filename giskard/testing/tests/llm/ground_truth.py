@@ -28,7 +28,7 @@ def test_llm_ground_truth(model: BaseModel, dataset: Dataset, threshold: float =
         details=TestResultDetails(
             inputs=dataset.df.loc[:, model.meta.feature_names].to_dict("list"),
             outputs=list(pred.prediction),
-            results=["passed" if result else "failed" for result in passed],
+            results=["pass" if result else "fail" for result in passed],
             metadata={"target": list(dataset.df[dataset.target])},
         ),
     )
@@ -68,7 +68,7 @@ def test_llm_ground_truth_similarity(
         details=TestResultDetails(
             inputs=dataset.df.loc[:, model.meta.feature_names].to_dict("list"),
             outputs=list(pred.prediction),
-            results=["passed" if result else "failed" for result in passed],
+            results=["pass" if result else "fail" for result in passed],
             metadata={"target": list(dataset.df[dataset.target]), "F1 similarity": score["f1"]},
         ),
     )
