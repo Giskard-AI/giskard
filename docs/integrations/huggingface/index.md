@@ -87,6 +87,24 @@ client = GiskardClient(url, api_key, hf_token)
 client.upload(...)
 ```
 
+## Upgrade your Giskard hub in Hugging Face Spaces
+
+The newly created Giskard hub from the template and the duplication comes with the latest tested Giskard hub version. Giskard hub will keep the same version without an implicit upgrade.
+If you want to keep align with the newest excited features from Giskard, the upgrade is recommended.
+
+To do so, you can simply open the `Dockerfile` in your repo to edit. The first line should be similar to this:
+
+```
+FROM docker.io/giskardai/giskard:<version>
+```
+
+Change `<version>` to the newest version and save the file. After the build and rebooting of the Space, you should be able to enjoy the features in the latest Giskard hub.
+
+:::{warn}
+You might loose the data in your current Giskard instance on Hugging Face Spaces, if you are not using a persistent storage.
+Make sure that your projects have backups in any case.
+:::
+
 ## Feedback and support
 
 If you have suggestions or need specialized support, please join us on the [Giskard Discord community](https://discord.gg/ABvfpbu69R) or reach out on [Giskard's GitHub repository](https://github.com/Giskard-AI/giskard).
