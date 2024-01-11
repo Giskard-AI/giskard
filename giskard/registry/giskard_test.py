@@ -1,3 +1,5 @@
+from typing import Callable, List, Optional, Set, Union
+
 import copy
 import inspect
 import pickle
@@ -5,16 +7,16 @@ import sys
 from abc import ABC, abstractmethod
 from pathlib import Path
 
-import cloudpickle
-from typing import Callable, List, Optional, Set, Union
-
 from giskard.core.core import SMT, TestFunctionMeta
+from giskard.core.savable import Artifact
+from giskard.core.test_result import TestResult
 from giskard.core.validation import configured_validate_arguments
-from giskard.ml_worker.core.savable import Artifact
-from giskard.ml_worker.exceptions.giskard_exception import python_env_exception_helper
-from giskard.ml_worker.testing.registry.registry import get_object_uuid, tests_registry
-from giskard.ml_worker.testing.test_result import TestResult
+from giskard.exceptions.giskard_exception import python_env_exception_helper
+from giskard.registry.registry import get_object_uuid, tests_registry
+from giskard.registry.utils import dump_by_value
 from giskard.utils.analytics_collector import analytics
+
+DATA_PKL = "data.pkl"
 
 Result = Union[TestResult, bool]
 
@@ -32,7 +34,7 @@ class GiskardTest(Artifact[TestFunctionMeta], ABC):
         meta = tests_registry.get_test(test_uuid)
         if meta is None:
             # equivalent to adding @test decorator
-            from giskard.ml_worker.testing.registry.decorators import test
+            from giskard.registry.decorators import test
 
             test(type(self))
             meta = tests_registry.get_test(test_uuid)
@@ -59,8 +61,8 @@ class GiskardTest(Artifact[TestFunctionMeta], ABC):
         return get_object_uuid(type(self))
 
     def _save_locally(self, local_dir: Path):
-        with open(Path(local_dir) / "data.pkl", "wb") as f:
-            cloudpickle.dump(type(self), f, protocol=pickle.DEFAULT_PROTOCOL)
+        with open(Path(local_dir) / DATA_PKL, "wb") as f:
+            dump_by_value(type(self), f)
 
     @classmethod
     def _load_meta_locally(cls, local_dir, uuid: str) -> Optional[TestFunctionMeta]:
@@ -79,7 +81,7 @@ class GiskardTest(Artifact[TestFunctionMeta], ABC):
                     func = pickle.load(f)
                 except Exception as e:
                     raise python_env_exception_helper(cls.__name__, e)
-        elif hasattr(sys.modules[meta.module], meta.name):
+        elif meta.module in sys.modules and hasattr(sys.modules[meta.module], meta.name):
             func = getattr(sys.modules[meta.module], meta.name)
         else:
             return None
@@ -116,7 +118,7 @@ class GiskardTestMethod(GiskardTest):
         meta = tests_registry.get_test(test_uuid)
         if meta is None:
             # equivalent to adding @test decorator
-            from giskard.ml_worker.testing.registry.decorators import test
+            from giskard.registry.decorators import test
 
             test()(test_fn)
             meta = tests_registry.get_test(test_uuid)
@@ -174,4 +176,4 @@ class GiskardTestMethod(GiskardTest):
 
     def _save_locally(self, local_dir: Path):
         with open(Path(local_dir) / "data.pkl", "wb") as f:
-            cloudpickle.dump(self.test_fn, f, protocol=pickle.DEFAULT_PROTOCOL)
+            dump_by_value(self.test_fn, f)

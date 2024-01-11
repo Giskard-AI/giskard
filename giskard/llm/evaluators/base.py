@@ -1,12 +1,12 @@
-from dataclasses import dataclass
-from typing import Sequence, Optional
+from typing import Optional, Sequence
+
 from abc import ABC, abstractmethod
+from dataclasses import dataclass
 
-
-from ..client import LLMClient, get_default_client
-from ..errors import LLMGenerationError
 from ...datasets.base import Dataset
 from ...models.base.model import BaseModel
+from ..client import LLMClient, get_default_client
+from ..errors import LLMGenerationError
 
 EVALUATE_MODEL_FUNCTIONS = [
     {
@@ -72,8 +72,8 @@ class LLMBasedEvaluator(BaseEvaluator):
 
     def _make_evaluate_prompt(self, model: BaseModel, input_vars, model_output, row_idx):
         return self.eval_prompt.format(
-            model_name=model.meta.name,
-            model_description=model.meta.description,
+            model_name=model.name,
+            model_description=model.description,
             input_vars=input_vars,
             model_output=model_output,
         )
@@ -90,7 +90,7 @@ class LLMBasedEvaluator(BaseEvaluator):
         errored = []
         for row_index, input_vars, model_output in zip(
             dataset.df.index,
-            dataset.df.loc[:, model.meta.feature_names].to_dict("records"),
+            dataset.df.loc[:, model.feature_names].to_dict("records"),
             model_outputs,
         ):
             sample = {"input_vars": input_vars, "model_output": model_output}

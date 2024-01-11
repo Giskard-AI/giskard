@@ -29,6 +29,7 @@ from giskard.ml_worker.websocket import (
 from giskard.ml_worker.websocket.action import MLWorkerAction
 from giskard.models.base.model import META_FILENAME
 from giskard.settings import Settings
+from tests.utils import TEST_UUID
 
 
 @pytest.fixture(scope="function")
@@ -112,7 +113,7 @@ def wrapped_handler(received_messages: List[Frame], to_send: Callable[[str], Lis
                 },
                 body=json.dumps(
                     {
-                        "id": "stopping",
+                        "id": TEST_UUID,
                         "action": MLWorkerAction.stopWorker.name,
                         "param": {},
                     }
@@ -144,7 +145,7 @@ def info_frame(action_id: str):
             },
             body=json.dumps(
                 {
-                    "id": "info_frame",
+                    "id": TEST_UUID,
                     "action": MLWorkerAction.getInfo.name,
                     "param": {"list_packages": True},
                 }
@@ -311,7 +312,7 @@ def run_model_frame(action_id: str, dataset_id: str, model_id: str):
             },
             body=json.dumps(
                 {
-                    "id": "run_model_frame",
+                    "id": TEST_UUID,
                     "action": MLWorkerAction.runModel.name,
                     "param": RunModelParam(
                         model=ArtifactRef(project_key="test-ml-worker-key", id=model_id),
@@ -379,7 +380,7 @@ def run_model_frame_dataframe(action_id: str, df: DataFrame, model_id: str):
             },
             body=json.dumps(
                 {
-                    "id": "run_model_dataframe_frame",
+                    "id": TEST_UUID,
                     "action": MLWorkerAction.runModelForDataFrame.name,
                     "param": RunModelForDataFrameParam(
                         model=ArtifactRef(project_key="test-ml-worker-key", id=model_id),
@@ -430,7 +431,7 @@ def run_model_explain(action_id: str, dataset_id: str, model_id: str, df: DataFr
             },
             body=json.dumps(
                 {
-                    "id": "explain_frame",
+                    "id": TEST_UUID,
                     "action": MLWorkerAction.explain.name,
                     "param": ExplainParam(
                         model=ArtifactRef(project_key="test-ml-worker-key", id=model_id),

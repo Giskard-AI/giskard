@@ -8,14 +8,14 @@ from statistics import mean
 import numpy as np
 import pandas as pd
 
+from ....core.test_result import TestResult
 from ....datasets.base import Dataset
 from ....llm import LLMImportError
-from ....ml_worker.testing.registry.decorators import test
-from ....ml_worker.testing.test_result import TestResult
+from ....llm.evaluators.string_matcher import StringMatcherConfig, StringMatcherEvaluator
 from ....models.base import BaseModel
-from ....llm.evaluators.string_matcher import StringMatcherEvaluator, StringMatcherConfig
-from .. import debug_description_prefix
+from ....registry.decorators import test
 from ....utils.display import truncate
+from .. import debug_description_prefix
 
 
 def _add_suffix_to_df(df: pd.DataFrame, col: str, char: str, num_repetitions: int):
@@ -72,7 +72,7 @@ class LLMCharInjector:
     def run(self, model: BaseModel, dataset: Dataset, features: Optional[Sequence[str]] = None):
         # Get default features
         if features is None:
-            features = model.meta.feature_names or dataset.columns.drop(dataset.target, errors="ignore")
+            features = model.feature_names or dataset.columns.drop(dataset.target, errors="ignore")
 
         # Calculate original model predictions that will be used as reference
         ref_predictions = model.predict(dataset).prediction
@@ -371,7 +371,7 @@ def test_llm_single_output_against_strings(
     if input_as_json:
         input_sample = json.loads(input_var)
     else:
-        input_sample = {model.meta.feature_names[0]: input_var}
+        input_sample = {model.feature_names[0]: input_var}
 
     dataset = Dataset(
         pd.DataFrame([input_sample]),

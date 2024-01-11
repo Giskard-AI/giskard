@@ -9,7 +9,7 @@ from pydantic import ValidationError
 from giskard.client.dtos import ModelMetaInfo
 from giskard.models.base.model import BaseModel
 from tests import utils
-from tests.communications.test_dto_serialization import is_required, get_fields, get_name
+from tests.communications.test_dto_serialization import get_fields, get_name, is_required
 
 MANDATORY_FIELDS = [
     "id",

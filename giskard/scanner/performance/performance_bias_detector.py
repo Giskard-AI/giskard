@@ -9,9 +9,9 @@ from sklearn import metrics
 
 from ...client.python_utils import warning
 from ...datasets.base import Dataset
-from ...ml_worker.testing.registry.slicing_function import SlicingFunction
 from ...models._precooked import PrecookedModel
 from ...models.base import BaseModel
+from ...registry.slicing_function import SlicingFunction
 from ..common.examples import ExampleExtractor
 from ..common.loss_based_detector import LossBasedDetector
 from ..decorators import detector

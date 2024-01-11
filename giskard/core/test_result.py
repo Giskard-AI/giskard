@@ -1,8 +1,9 @@
+from typing import Dict, List, Optional
+
 from dataclasses import dataclass, field
 from enum import Enum
-from typing import List, Dict, Optional
 
-from ...datasets.base import Dataset
+from ..datasets.base import Dataset
 
 
 class TestMessageLevel(Enum):
@@ -85,3 +86,6 @@ class TestResult:
             "No metric" if self.metric is None else str(round(self.metric, 2)),
             "\n".join([] if self.messages is None else [m.__repr__() for m in self.messages]),
         )
+
+    def __bool__(self):
+        return self.passed

@@ -15,16 +15,16 @@ These test functions allow validating pushes and can be added to test suites.
 """
 from typing import Any, Optional
 
+from giskard.core.test_result import TestResult
 from giskard.datasets.base import Dataset
-from giskard.ml_worker.testing.functions.transformation import mad_transformation
-from giskard.ml_worker.testing.registry.decorators import test
-from giskard.ml_worker.testing.registry.slicing_function import SlicingFunction
-from giskard.ml_worker.testing.test_result import TestResult
-from giskard.ml_worker.testing.utils import Direction, check_slice_not_empty
+from giskard.functions.transformation import mad_transformation
 from giskard.models.base import BaseModel
+from giskard.registry.decorators import test
+from giskard.registry.slicing_function import SlicingFunction
 from giskard.testing.tests.calibration import test_overconfidence_rate, test_underconfidence_rate
 from giskard.testing.tests.metamorphic import test_metamorphic_invariance
 from giskard.testing.tests.performance import _test_diff_prediction, test_f1, test_rmse
+from giskard.testing.utils.utils import Direction, check_slice_not_empty
 
 
 @test(name="Slicing RMSE difference", tags=["performance", "regression", "ground_truth", "push"])

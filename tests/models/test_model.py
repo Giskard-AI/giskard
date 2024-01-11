@@ -1,9 +1,10 @@
+from typing import Optional, Tuple
+
 import tempfile
 from pathlib import Path
 
 import numpy as np
 import pandas as pd
-from typing import Optional, Tuple
 
 import giskard
 from giskard import Model
@@ -24,7 +25,7 @@ def test_catboost_changed_column_order(german_credit_test_data, german_credit_ca
     german_credit_test_data.df = df.reindex(df.columns[::-1], axis=1)
 
     # reset feature names to test the behaviour when they're not provided
-    german_credit_catboost.feature_names = None
+    german_credit_catboost.meta.feature_names = None
 
     res = german_credit_catboost.predict(german_credit_test_data)
     assert len(res.prediction) == len(german_credit_test_data.df)
@@ -48,7 +49,7 @@ def test_prediction_cache_loaded_model(linear_regression_diabetes, linear_regres
         model = Model(
             prediction_fn,
             model_type=SupportedModelTypes.REGRESSION,
-            feature_names=linear_regression_diabetes.meta.feature_names,
+            feature_names=linear_regression_diabetes.feature_names,
             prediction_cache_dir=Path(cache_dir),
         )
 

@@ -3,7 +3,6 @@ from typing import Generic, Optional, Set
 import inspect
 import logging
 import os
-import pickle
 import posixpath
 import sys
 from abc import ABC, abstractmethod
@@ -14,8 +13,9 @@ import yaml
 
 from giskard.client.giskard_client import GiskardClient
 from giskard.core.core import SMT, SavableMeta
-from giskard.ml_worker.exceptions.giskard_exception import python_env_exception_helper
-from giskard.ml_worker.testing.registry.registry import tests_registry
+from giskard.exceptions.giskard_exception import python_env_exception_helper
+from giskard.registry.registry import tests_registry
+from giskard.registry.utils import dump_by_value
 from giskard.settings import settings
 
 logger = logging.getLogger(__name__)
@@ -157,7 +157,7 @@ class Artifact(Generic[SMT], ABC):
 class RegistryArtifact(Artifact[SMT], ABC):
     def _save_locally(self, local_dir: Path):
         with open(Path(local_dir) / "data.pkl", "wb") as f:
-            cloudpickle.dump(self, f, protocol=pickle.DEFAULT_PROTOCOL)
+            dump_by_value(self, f)
 
     @classmethod
     def _load_meta_locally(cls, local_dir, uuid: str) -> Optional[SMT]:

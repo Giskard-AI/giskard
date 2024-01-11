@@ -1,6 +1,6 @@
 from requests_toolbelt.sessions import BaseUrlSession
 
-from giskard.utils.analytics_collector import anonymize, analytics
+from giskard.utils.analytics_collector import analytics, anonymize
 
 
 class Project:

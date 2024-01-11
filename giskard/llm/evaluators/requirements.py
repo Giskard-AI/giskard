@@ -1,10 +1,11 @@
+from typing import Sequence
+
 from abc import abstractmethod
 
 import pandas as pd
-from typing import Sequence
 
-from .base import LLMBasedEvaluator
 from ...models.base.model import BaseModel
+from .base import LLMBasedEvaluator
 
 EVALUATE_PROMPT = """Your role is to test AI models. Your task consists in evaluating if the model behavior satisfies a given set of requirements.
 
@@ -48,8 +49,8 @@ class BaseRequirementEvaluator(LLMBasedEvaluator):
 
     def _make_evaluate_prompt(self, model: BaseModel, input_vars, model_output, row_idx):
         return self.eval_prompt.format(
-            model_name=model.meta.name,
-            model_description=model.meta.description,
+            model_name=model.name,
+            model_description=model.description,
             input_vars=input_vars,
             model_output=model_output,
             requirements=self.requirements(row_idx),

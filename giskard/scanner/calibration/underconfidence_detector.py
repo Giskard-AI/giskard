@@ -3,8 +3,8 @@ from typing import Sequence
 import pandas as pd
 
 from ...datasets import Dataset
-from ...ml_worker.testing.registry.slicing_function import SlicingFunction
 from ...models.base import BaseModel
+from ...registry.slicing_function import SlicingFunction
 from ...testing.tests.calibration import _calculate_underconfidence_score
 from ..common.examples import ExampleExtractor
 from ..common.loss_based_detector import LossBasedDetector
