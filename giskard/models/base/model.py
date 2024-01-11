@@ -589,3 +589,8 @@ class BaseModel(ABC):
 
     def to_mlflow(self, *_args, **_kwargs):
         raise NotImplementedError()
+
+    def __repr__(self) -> str:
+        if self.name:  # handle both None and empty string
+            return f"{self.name}-{self.id}"
+        return super().__repr__()  # default to `<giskard.models.base.Model object at ...>`
