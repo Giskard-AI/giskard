@@ -65,7 +65,7 @@ def test_evaluator_correctly_flags_examples(Evaluator, args, kwargs):
     assert "This is a model for testing purposes" in args[0][0][0]["content"]
     assert args[1]["functions"][0]["name"] == "evaluate_model"
 
-    assert result.details.inputs == eval_dataset.df.loc[:, model.meta.feature_names].to_dict("list")
+    assert result.details.inputs == eval_dataset.df.loc[:, model.feature_names].to_dict("list")
     assert result.details.outputs == model.predict(eval_dataset).prediction
     assert result.details.results == ["pass", "fail"]
     assert result.details.metadata == {"reason": [None, "For some reason"]}
@@ -108,7 +108,7 @@ def test_evaluator_handles_generation_errors(Evaluator, args, kwargs):
     assert len(result.errors) == 1
     assert result.errors[0]["message"] == "Invalid function call arguments received"
 
-    assert result.details.inputs == eval_dataset.df.loc[:, model.meta.feature_names].to_dict("list")
+    assert result.details.inputs == eval_dataset.df.loc[:, model.feature_names].to_dict("list")
     assert result.details.outputs == model.predict(eval_dataset).prediction
     assert result.details.results == ["pass", "error"]
     assert result.details.metadata == {"reason": [None, "Invalid function call arguments received"]}
