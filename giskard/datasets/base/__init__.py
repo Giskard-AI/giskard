@@ -758,10 +758,10 @@ class Dataset(ColumnMetadataMixin):
             },
         )
 
-    def __repr__(self) -> str:
+    def __str__(self) -> str:
         if self.name:  # handle both None and empty string
             return f"{self.name}-{self.id}"
-        return super().__repr__()  # default to `<giskard.datasets.base.Dataset object at ...>`
+        return super().__str__()  # default to `<giskard.datasets.base.Dataset object at ...>`
 
 
 def _cast_to_list_like(object):
