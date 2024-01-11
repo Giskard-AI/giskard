@@ -99,6 +99,6 @@ def test_detector(PromptInjectionDataLoader):  # noqa
     assert len(issues) == 1
     assert issues[0].is_major
 
-    test_result = _test_llm_output_against_strings(model, group_dataset, evaluator_configs, 0.5, True)
+    test_result = _test_llm_output_against_strings(model, group_dataset, evaluator_configs, 0.5)
     assert not test_result.passed
     assert len(test_result.output_ds[0].df) == len(group_dataset.df) == 1
