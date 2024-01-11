@@ -138,7 +138,7 @@ def test_of_test_llm_ground_truth(test, dataset, responses, should_pass, failed_
     result = test(model, dataset).execute()
 
     assert result.passed is should_pass
-    assert ["failed" if has_failed else "passed" for has_failed in failed_mask] == result.details.results
+    assert ["fail" if has_failed else "pass" for has_failed in failed_mask] == result.details.results
 
 
 def _make_model(responses):
