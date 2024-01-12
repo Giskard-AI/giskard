@@ -279,10 +279,10 @@ def run_classification_mode(model, dataset, prediction_results):
     return results, calculated
 
 
-def run_other_model(dataset, prediction_results):
+def run_other_model(dataset, prediction_results, is_text_generation):
     results = pd.Series(prediction_results.prediction)
     preds_serie = results
-    if dataset.target and dataset.target in dataset.df.columns:
+    if dataset.target and dataset.target in dataset.df.columns and not is_text_generation:
         target_serie = dataset.df[dataset.target]
         diff = preds_serie - target_serie
         diff_percent = pd.Series(
@@ -345,7 +345,7 @@ def run_model(client: Optional[GiskardClient], params: websocket.RunModelParam, 
     if model.is_classification:
         results, calculated = run_classification_mode(model, dataset, prediction_results)
     else:
-        results, calculated = run_other_model(dataset, prediction_results)
+        results, calculated = run_other_model(dataset, prediction_results, model.is_text_generation)
 
     with tempfile.TemporaryDirectory(prefix="giskard-") as f:
         tmp_dir = Path(f)
