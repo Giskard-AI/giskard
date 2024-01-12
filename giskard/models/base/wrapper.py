@@ -176,10 +176,10 @@ class WrapperModel(BaseModel, ABC):
             raw_predictions = np.append(1 - raw_predictions, raw_predictions, axis=1)
 
         # For classification models, the last dimension must be equal to the number of classes
-        if raw_predictions.shape[-1] != len(self.meta.classification_labels):
+        if raw_predictions.shape[-1] != len(self.classification_labels):
             raise ValueError(
                 f"The output of your model has shape {raw_predictions.shape}, but we expect it to be (n_entries, n_classes), \n"
-                f"where `n_classes` is the number of classes in your model output ({len(self.meta.classification_labels)} in this case)."
+                f"where `n_classes` is the number of classes in your model output ({len(self.classification_labels)} in this case)."
             )
 
         return raw_predictions

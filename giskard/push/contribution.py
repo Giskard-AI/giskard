@@ -9,6 +9,8 @@ Functions:
 - existing_shap_values: Check if SHAP values exist.
 
 """
+from typing import Optional
+
 import numpy as np
 import pandas as pd
 from scipy.stats import zscore
@@ -126,7 +128,7 @@ def _create_text_contribution_push(shap_feature, sliced_ds, model, raw_predictio
         )
 
 
-def create_contribution_push(model: BaseModel, ds: Dataset, df: pd.DataFrame) -> ContributionPush:
+def create_contribution_push(model: BaseModel, ds: Dataset, df: pd.DataFrame) -> Optional[ContributionPush]:
     """
     Create contribution notification from SHAP values.
 
@@ -143,6 +145,9 @@ def create_contribution_push(model: BaseModel, ds: Dataset, df: pd.DataFrame) ->
     Returns:
         ContributionPush if outlier contribution found, else None
     """
+    if model.is_text_generation:
+        return None
+
     # Check if there is only one feature type in the dataset, and if it's "text"
     _text_is_the_only_feature = len(ds.column_types.values()) == 1 and list(ds.column_types.values())[0] == "text"
 

@@ -4,15 +4,12 @@ from unittest.mock import Mock
 import numpy as np
 import pytest
 
-from giskard.core.core import ModelMeta
 from giskard.models.base import WrapperModel
 
 
 def _make_model_mock(labels=["First", "Second", "Third"]):
     model = Mock(WrapperModel)
-    meta = Mock(ModelMeta)
-    meta.classification_labels = labels
-    model.meta = meta
+    model.classification_labels = labels
     model.model_postprocessing_function = None
 
     model._convert_to_numpy = partial(WrapperModel._convert_to_numpy, model)
