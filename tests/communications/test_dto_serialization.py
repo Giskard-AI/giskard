@@ -1,3 +1,5 @@
+from typing import Dict, List, Optional, Type
+
 import json
 from pathlib import Path
 
@@ -6,7 +8,6 @@ import pytest
 from packaging import version
 from polyfactory.factories.pydantic_factory import ModelFactory
 from pydantic import BaseModel
-from typing import Dict, List, Optional, Type
 
 import giskard
 import giskard.ml_worker.websocket

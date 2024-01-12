@@ -16,9 +16,9 @@ statistical tests and slicing functions.
 
 The push classes allow converting to gRPC protobuf format via the to_grpc() method.
 """
-from abc import abstractmethod
-
 from typing import Optional
+
+from abc import abstractmethod
 
 from giskard.core.core import SupportedModelTypes
 from giskard.ml_worker import websocket

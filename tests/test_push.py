@@ -9,7 +9,7 @@ from giskard.functions.transformation import mad_transformation
 from giskard.push import Push
 from giskard.push.contribution import create_contribution_push
 from giskard.push.perturbation import create_perturbation_push
-from giskard.push.prediction import create_underconfidence_push, create_overconfidence_push
+from giskard.push.prediction import create_overconfidence_push, create_underconfidence_push
 from giskard.push.utils import (
     SupportedPerturbationType,
     TransformationInfo,
