@@ -1,6 +1,6 @@
 import numpy as np
 
-from ....core.test_result import TestResult, TestResultDetails
+from ....core.test_result import TestResult, TestResultDetails, TestResultStatus
 from ....datasets.base import Dataset
 from ....llm import LLMImportError
 from ....models.base import BaseModel
@@ -28,7 +28,7 @@ def test_llm_ground_truth(model: BaseModel, dataset: Dataset, threshold: float =
         details=TestResultDetails(
             inputs=dataset.df.loc[:, model.meta.feature_names].to_dict("list"),
             outputs=list(pred.prediction),
-            results=["pass" if result else "fail" for result in passed],
+            results=[TestResultStatus.PASSED if result else TestResultStatus.FAILED for result in passed],
             metadata={"target": list(dataset.df[dataset.target])},
         ),
     )
@@ -68,7 +68,7 @@ def test_llm_ground_truth_similarity(
         details=TestResultDetails(
             inputs=dataset.df.loc[:, model.meta.feature_names].to_dict("list"),
             outputs=list(pred.prediction),
-            results=["pass" if result else "fail" for result in passed],
+            results=[TestResultStatus.PASSED if result else TestResultStatus.FAILED for result in passed],
             metadata={"target": list(dataset.df[dataset.target]), "F1 similarity": score["f1"]},
         ),
     )
