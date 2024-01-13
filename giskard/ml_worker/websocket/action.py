@@ -1,6 +1,7 @@
 from typing import Any, Literal
 
 from enum import Enum
+from uuid import UUID
 
 import pydantic
 from packaging import version
@@ -27,6 +28,7 @@ class MLWorkerAction(Enum):
     generateQueryBasedSlicingFunction = 12
     getPush = 13
     createSubDataset = 14
+    abort = 15
 
     @classmethod
     def __get_validators__(cls):
@@ -48,7 +50,7 @@ class MLWorkerAction(Enum):
 
 
 class ActionPayload(ConfiguredBaseModel):
-    id: str
+    id: UUID
     action: MLWorkerAction
     param: Any
 

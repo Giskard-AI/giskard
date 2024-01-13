@@ -22,6 +22,7 @@ else:
 FILTERED_CLASSES = [BaseModel, ConfiguredBaseModel]
 
 MANDATORY_FIELDS = {
+    "AbortParams": ["job_id"],
     "ArtifactRef": ["id"],
     "Catalog": ["tests", "slices", "transformations"],
     "CreateSubDataset": ["datasetUuid"],
@@ -36,6 +37,7 @@ MANDATORY_FIELDS = {
     "DatasetRowModificationResult": ["rowId", "modifications"],
     "Documentation": ["description", "parameters"],
     "EchoMsg": ["msg"],
+    "EchoResponse": ["msg", "job_ids"],
     "Empty": [],
     "ErrorReply": ["error_str", "error_type"],
     "Explain": ["explanations"],
@@ -88,6 +90,7 @@ MANDATORY_FIELDS = {
 }
 
 OPTIONAL_FIELDS = {
+    "AbortParams": [],
     "ArtifactRef": ["project_key", "sample"],
     "Catalog": [],
     "CreateSubDataset": [],
@@ -113,6 +116,7 @@ OPTIONAL_FIELDS = {
     "DatasetRowModificationResult": [],
     "Documentation": [],
     "EchoMsg": [],
+    "EchoResponse": [],
     "Empty": [],
     "ErrorReply": ["detail"],
     "Explain": [],
@@ -150,7 +154,7 @@ OPTIONAL_FIELDS = {
     "GetInfo": [],
     "GetInfoParam": [],
     "GetPushParam": ["dataframe", "target", "push_kind", "cta_kind"],
-    "GetPushResponse": ["contribution", "perturbation", "overconfidence", "borderline", "action"],
+    "GetPushResponse": ["contribution", "perturbation", "overconfidence", "underconfidence", "action"],
     "IdentifierSingleTestResult": ["arguments"],
     "ModelMeta": ["model_type"],
     "NamedSingleTestResult": [],
