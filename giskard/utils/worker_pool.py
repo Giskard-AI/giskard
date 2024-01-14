@@ -157,7 +157,7 @@ def _process_worker(tasks_queue: Queue, tasks_results: Queue, running_process: D
 
 
 def configure_job_logging(f):
-    from utils import logging_utils
+    from giskard.utils import logging_utils
 
     logging.getLogger().handlers.clear()
     handler = logging.StreamHandler(f)
