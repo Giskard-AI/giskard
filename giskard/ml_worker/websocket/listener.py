@@ -585,7 +585,6 @@ def run_test_suite(
             is_error=False,
             is_pass=suite_result.passed,
             results=identifier_single_test_results,
-            logs=log_listener.close(),
         )
 
     except Exception as exc:

@@ -353,7 +353,6 @@ class TestSuite(WorkerReply):
     is_error: bool
     is_pass: bool
     results: Optional[List[IdentifierSingleTestResult]] = None
-    logs: str
 
 
 class TestSuiteParam(ConfiguredBaseModel):
