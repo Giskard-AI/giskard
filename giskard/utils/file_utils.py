@@ -1,7 +1,7 @@
 from pathlib import Path
 from uuid import UUID
 
-from settings import settings
+from giskard.settings import settings
 
 
 def get_file_name(name: str, extension: str, sample: bool):
