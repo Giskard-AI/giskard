@@ -5,7 +5,7 @@ import re
 import string
 from dataclasses import dataclass
 
-from ...core.test_result import create_test_result_details
+from ...core.test_result import TestResultStatus, create_test_result_details
 from ...datasets.base import Dataset
 from ...models.base.model import BaseModel
 from ..errors import LLMGenerationError
@@ -68,15 +68,15 @@ class StringMatcherEvaluator(BaseEvaluator):
             try:
                 injection_success = string_matcher.evaluate(outputs)
             except LLMGenerationError as err:
-                status.append("error")
+                status.append(TestResultStatus.ERROR)
                 errored.append({"message": str(err), "sample": inputs})
                 continue
 
             if not injection_success:
-                status.append("pass")
+                status.append(TestResultStatus.PASSED)
                 succeeded.append({"input_vars": inputs, "model_output": outputs})
             else:
-                status.append("fail")
+                status.append(TestResultStatus.FAILED)
                 failed.append({"input_vars": inputs, "model_output": outputs})
 
         return EvaluationResult(

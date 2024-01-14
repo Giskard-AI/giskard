@@ -7,6 +7,12 @@ from ..datasets.base import Dataset
 from ..models.base import BaseModel
 
 
+class TestResultStatus(Enum):
+    ERROR = "ERROR"
+    PASSED = "PASSED"
+    FAILED = "FAILED"
+
+
 class TestMessageLevel(Enum):
     ERROR = (1,)
     INFO = 2
@@ -38,7 +44,7 @@ class PartialUnexpectedCounts:
 class TestResultDetails:
     inputs: Dict[str, List[Any]]
     outputs: List[Any]
-    results: List[str]
+    results: List[TestResultStatus]
     metadata: Dict[str, List[Any]] = field(default_factory=dict)
 
 
@@ -46,7 +52,7 @@ def create_test_result_details(
     dataset: Dataset,
     model: BaseModel,
     predictions: List[Any],
-    results: List[str],
+    results: List[TestResultStatus],
     metadata: Optional[Dict[str, List[str]]] = None,
 ) -> TestResultDetails:
     return TestResultDetails(
@@ -111,3 +117,6 @@ class TestResult:
             "No metric" if self.metric is None else str(round(self.metric, 2)),
             "\n".join([] if self.messages is None else [m.__repr__() for m in self.messages]),
         )
+
+    def __bool__(self):
+        return self.passed

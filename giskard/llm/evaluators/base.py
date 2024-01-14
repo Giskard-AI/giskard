@@ -3,7 +3,7 @@ from typing import Optional, Sequence
 from abc import ABC, abstractmethod
 from dataclasses import dataclass
 
-from ...core.test_result import TestResultDetails, create_test_result_details
+from ...core.test_result import TestResultDetails, TestResultStatus, create_test_result_details
 from ...datasets.base import Dataset
 from ...models.base.model import BaseModel
 from ..client import LLMClient, get_default_client
@@ -109,7 +109,7 @@ class LLMBasedEvaluator(BaseEvaluator):
                 if out.function_call is None or "passed_test" not in out.function_call.args:
                     raise LLMGenerationError("Invalid function call arguments received")
             except LLMGenerationError as err:
-                status.append("error")
+                status.append(TestResultStatus.ERROR)
                 reasons.append(str(err))
                 errored.append({"message": str(err), "sample": sample})
                 continue
@@ -117,10 +117,10 @@ class LLMBasedEvaluator(BaseEvaluator):
             args = out.function_call.args
             reasons.append(args.get("reason"))
             if args["passed_test"]:
-                status.append("pass")
+                status.append(TestResultStatus.PASSED)
                 succeeded.append({"input_vars": input_vars, "model_output": model_output, "reason": args.get("reason")})
             else:
-                status.append("fail")
+                status.append(TestResultStatus.FAILED)
                 failed.append({"input_vars": input_vars, "model_output": model_output, "reason": args.get("reason")})
 
         return EvaluationResult(

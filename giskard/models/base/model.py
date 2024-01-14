@@ -3,7 +3,6 @@ from typing import Iterable, List, Optional, Tuple, Type, Union
 import builtins
 import importlib
 import logging
-import pickle
 import platform
 import posixpath
 import tempfile
@@ -25,6 +24,7 @@ from ...datasets.base import Dataset
 from ...exceptions.giskard_exception import GiskardException, python_env_exception_helper
 from ...models.cache import ModelCache
 from ...path_utils import get_size
+from ...registry.utils import dump_by_value
 from ...settings import settings
 from ...utils.logging_utils import Timer
 from ..cache import get_cache_enabled
@@ -287,7 +287,7 @@ class BaseModel(ABC):
     def save_model_class(self, local_path, *_args, **_kwargs):
         class_file = Path(local_path) / MODEL_CLASS_PKL
         with open(class_file, "wb") as f:
-            cloudpickle.dump(self.__class__, f, protocol=pickle.DEFAULT_PROTOCOL)
+            dump_by_value(self.__class__, f)
 
     def prepare_dataframe(self, df, column_dtypes=None, target=None, *_args, **_kwargs):
         """
