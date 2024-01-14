@@ -27,7 +27,6 @@ from giskard.core.suite import Suite, generate_test_partial
 from giskard.datasets.base import Dataset
 from giskard.exceptions.giskard_exception import GiskardException
 from giskard.ml_worker import websocket
-from giskard.ml_worker.core.log_listener import LogListener
 from giskard.ml_worker.stomp.parsing import Frame
 from giskard.ml_worker.utils.cache import CACHE
 from giskard.ml_worker.websocket import CallToActionKind, GetInfoParam, PushKind
@@ -530,8 +529,6 @@ def run_ad_hoc_test(
 def run_test_suite(
     client: Optional[GiskardClient], params: websocket.TestSuiteParam, *args, **kwargs
 ) -> websocket.TestSuite:
-    log_listener = LogListener()
-
     loaded_artifacts = defaultdict(dict)
 
     try:
@@ -589,7 +586,7 @@ def run_test_suite(
 
     except Exception as exc:
         logger.exception("An error occurred during the test suite execution: %s", exc)
-        return websocket.TestSuite(is_error=True, is_pass=False, results=[], logs=log_listener.close())
+        return websocket.TestSuite(is_error=True, is_pass=False, results=[])
 
 
 @websocket_actor(MLWorkerAction.echo, execute_in_pool=False)
