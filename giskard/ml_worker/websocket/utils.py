@@ -7,7 +7,6 @@ import uuid
 from collections import defaultdict
 
 import pandas as pd
-from ml_worker.websocket import GetLogsParams
 from mlflow.store.artifact.artifact_repo import verify_artifact_path
 
 from giskard.client.giskard_client import GiskardClient
@@ -25,6 +24,7 @@ from giskard.ml_worker.websocket import (
     ExplainParam,
     ExplainTextParam,
     GetInfoParam,
+    GetLogsParams,
     GetPushParam,
     RunAdHocTestParam,
     RunModelForDataFrameParam,
