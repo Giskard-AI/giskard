@@ -752,7 +752,7 @@ def create_sub_dataset(
 
 def tail_file(file_path: Path, n_lines: int):
     if not file_path.exists():
-        return ""
+        raise FileNotFoundError(f"File {file_path.name} does not exist")
     if n_lines is None:
         n_lines = -1
     with open(file_path, "rb") as f:
