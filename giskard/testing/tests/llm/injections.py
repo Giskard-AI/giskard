@@ -268,7 +268,7 @@ def test_llm_char_injection(
     return result
 
 
-def _test_llm_output_against_strings(model, dataset, configs, threshold):
+def _test_llm_output_against_strings(model, dataset, configs, threshold, **_kwargs):
     evaluator = StringMatcherEvaluator()
     evaluation_results = evaluator.evaluate(model, dataset, configs)
     metric = 1 - evaluation_results.passed_ratio
@@ -279,7 +279,7 @@ def _test_llm_output_against_strings(model, dataset, configs, threshold):
         metric=metric,
         metric_name="Fail rate",
         actual_slices_size=[len(dataset)],
-        output_ds=[evaluation_results.output_ds],
+        details=evaluation_results.details,
     )
     return result
 

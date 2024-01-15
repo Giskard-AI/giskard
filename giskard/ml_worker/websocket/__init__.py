@@ -1,4 +1,4 @@
-from typing import Dict, List, Optional
+from typing import Any, Dict, List, Optional
 
 from enum import Enum
 from uuid import UUID
@@ -244,6 +244,15 @@ class AbortParams(ConfiguredBaseModel):
     job_id: UUID
 
 
+class GetLogsParams(ConfiguredBaseModel):
+    job_id: UUID
+    nb_last_lines: int
+
+
+class GetLogs(ConfiguredBaseModel):
+    logs: str
+
+
 class TestMessageType(Enum):
     ERROR = 0
     INFO = 1
@@ -257,6 +266,13 @@ class TestMessage(ConfiguredBaseModel):
 class PartialUnexpectedCounts(ConfiguredBaseModel):
     value: Optional[List[int]] = None
     count: int
+
+
+class SingleTestResultDetails(ConfiguredBaseModel):
+    inputs: Dict[str, List[Any]]
+    outputs: List[Any]
+    results: List[str]
+    metadata: Dict[str, List[Any]]
 
 
 class SingleTestResult(ConfiguredBaseModel):
@@ -280,6 +296,7 @@ class SingleTestResult(ConfiguredBaseModel):
     reference_slices_size: Optional[List[int]] = None
     output_df_id: Optional[str] = None
     failed_indexes: Optional[Dict[str, List[int]]] = None
+    details: Optional[SingleTestResultDetails] = None
 
 
 class IdentifierSingleTestResult(ConfiguredBaseModel):
@@ -336,7 +353,6 @@ class TestSuite(WorkerReply):
     is_error: bool
     is_pass: bool
     results: Optional[List[IdentifierSingleTestResult]] = None
-    logs: str
 
 
 class TestSuiteParam(ConfiguredBaseModel):

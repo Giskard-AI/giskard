@@ -24,6 +24,7 @@ from giskard.ml_worker.websocket import (
     ExplainParam,
     ExplainTextParam,
     GetInfoParam,
+    GetLogsParams,
     GetPushParam,
     RunAdHocTestParam,
     RunModelForDataFrameParam,
@@ -66,6 +67,8 @@ def parse_action_param(action: MLWorkerAction, params):
         return GetPushParam.parse_obj(params)
     elif action == MLWorkerAction.createSubDataset:
         return CreateSubDatasetParam.parse_obj(params)
+    elif action == MLWorkerAction.getLogs:
+        return GetLogsParams.parse_obj(params)
     return params
 
 
@@ -283,6 +286,14 @@ def map_result_to_single_test_result_ws(
                 str(dataset.original_id): list(datasets[dataset.original_id].df.index.get_indexer_for(dataset.df.index))
                 for dataset in result.output_ds
             },
+            details=None
+            if not result.details
+            else websocket.SingleTestResultDetails(
+                inputs=result.details.inputs,
+                outputs=result.details.outputs,
+                results=result.details.results,
+                metadata=result.details.metadata,
+            ),
         )
     elif isinstance(result, bool):
         return websocket.SingleTestResult(passed=result)
