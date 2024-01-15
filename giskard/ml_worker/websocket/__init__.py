@@ -349,7 +349,7 @@ class PushKind(Enum):
     PERTURBATION = 1
     CONTRIBUTION = 2
     OVERCONFIDENCE = 3
-    BORDERLINE = 4
+    UNDERCONFIDENCE = 4
 
 
 class CallToActionKind(Enum):
@@ -360,7 +360,7 @@ class CallToActionKind(Enum):
     SAVE_PERTURBATION = 4
     CREATE_ROBUSTNESS_TEST = 5
     CREATE_SLICE_OPEN_DEBUGGER = 6
-    OPEN_DEBUGGER_BORDERLINE = 7
+    OPEN_DEBUGGER_UNDERCONFIDENCE = 7
     ADD_TEST_TO_CATALOG = 8
     SAVE_EXAMPLE = 9
     OPEN_DEBUGGER_OVERCONFIDENCE = 10
@@ -403,7 +403,7 @@ class GetPushResponse(ConfiguredBaseModel):
     contribution: Optional[Push] = None
     perturbation: Optional[Push] = None
     overconfidence: Optional[Push] = None
-    borderline: Optional[Push] = None
+    underconfidence: Optional[Push] = None
     action: Optional[PushAction] = None
 
 
