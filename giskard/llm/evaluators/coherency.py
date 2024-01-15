@@ -88,8 +88,8 @@ class CoherencyEvaluator(LLMBasedEvaluator):
 
     def _eval_pair(self, model: BaseModel, input_1, input_2, output_1, output_2):
         prompt = self.eval_prompt.format(
-            model_name=model.meta.name,
-            model_description=model.meta.description,
+            model_name=model.name,
+            model_description=model.description,
             input_1=input_1,
             input_2=input_2,
             output_1=output_1,
