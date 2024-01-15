@@ -244,6 +244,15 @@ class AbortParams(ConfiguredBaseModel):
     job_id: UUID
 
 
+class GetLogsParams(ConfiguredBaseModel):
+    job_id: UUID
+    nb_last_lines: int
+
+
+class GetLogs(ConfiguredBaseModel):
+    logs: str
+
+
 class TestMessageType(Enum):
     ERROR = 0
     INFO = 1
@@ -344,7 +353,6 @@ class TestSuite(WorkerReply):
     is_error: bool
     is_pass: bool
     results: Optional[List[IdentifierSingleTestResult]] = None
-    logs: str
 
 
 class TestSuiteParam(ConfiguredBaseModel):

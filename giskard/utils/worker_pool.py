@@ -1,4 +1,4 @@
-from typing import Any, Callable, Dict, List, Optional, Tuple
+from typing import Any, Callable, Dict, List, Optional, TextIO, Tuple
 
 import logging
 import os
@@ -8,7 +8,6 @@ from concurrent.futures import CancelledError, Executor, Future
 from contextlib import redirect_stderr, redirect_stdout
 from dataclasses import dataclass
 from enum import Enum
-from io import StringIO
 from multiprocessing import Process, Queue, cpu_count, get_context
 from multiprocessing.context import SpawnContext, SpawnProcess
 from multiprocessing.managers import SyncManager
@@ -18,6 +17,7 @@ from time import sleep
 from uuid import UUID, uuid4
 
 from giskard.ml_worker.utils.cache import CACHE
+from giskard.utils.file_utils import job_logs_path
 
 LOGGER = logging.getLogger(__name__)
 
@@ -97,11 +97,20 @@ class GiskardResult:
     exception: Optional[GiskardMLWorkerExceptionInfo] = None
 
 
+def create_job_log_write_stream(job_id: UUID) -> tuple[TextIO, Any]:
+    log_path = job_logs_path(job_id)
+    if not os.path.exists(log_path):
+        os.makedirs(log_path.parent, exist_ok=True)
+    return open(log_path, "w+"), log_path
+
+
 def _process_worker(tasks_queue: Queue, tasks_results: Queue, running_process: Dict[UUID, str], cache_content):
+    from giskard.ml_worker.websocket.listener import tail_file
+
     pid = os.getpid()
     LOGGER.info("Process %s started", pid)
     CACHE.start(*cache_content)
-    LOGGER.info("Shared cache initializd")
+    LOGGER.info("Shared cache initialized")
 
     while True:
         # Blocking accessor, will wait for a task
@@ -114,29 +123,46 @@ def _process_worker(tasks_queue: Queue, tasks_results: Queue, running_process: D
             LOGGER.info("Process %s stopping", pid)
             return
         # Capture any log (stdout, stderr + root logger)
-        with redirect_stdout(StringIO()) as f:
+        logs_out_stream, logs_path = create_job_log_write_stream(task.job_id)
+        with redirect_stdout(logs_out_stream) as f:
             with redirect_stderr(f):
-                handler = logging.StreamHandler(f)
-                logging.getLogger().addHandler(handler)
+                configure_job_logging(f)
+
+                LOGGER.info("Configured logger")
                 to_return = None
                 try:
-                    LOGGER.debug("Doing task %s", task.job_id)
+                    LOGGER.info("Start job execution %s", task.job_id)
                     running_process[task.job_id] = pid
                     result = task.fn(*task.args, **task.kwargs)
-                    to_return = GiskardResult(id=task.job_id, result=result, logs=f.getvalue())
+                    to_return = GiskardResult(id=task.job_id, result=result, logs=open(logs_path, "r").read())
+                    LOGGER.info("Finished job execution %s", task.job_id)
                 except BaseException as e:
                     exception = GiskardMLWorkerExceptionInfo(
                         type=type(e).__name__,
                         message=str(e),
                         stack_trace=traceback.format_exc(),
                     )
+                    # flush in order to read the previous logs
+                    f.flush()
+                    previous_logs = tail_file(job_logs_path(task.job_id), -1)
+                    curr_stack = str(exception.stack_trace)
                     to_return = GiskardResult(
-                        id=task.job_id, exception=exception, logs=f.getvalue() + "\n" + str(exception.stack_trace)
+                        id=task.job_id,
+                        exception=exception,
+                        logs=curr_stack if not previous_logs else previous_logs + "\n" + curr_stack,
                     )
                 finally:
                     running_process.pop(task.job_id)
                     tasks_results.put(to_return)
-                    logging.getLogger().removeHandler(handler)
+
+
+def configure_job_logging(f):
+    from giskard.utils import logging_utils
+
+    logging.getLogger().handlers.clear()
+    handler = logging.StreamHandler(f)
+    logging_utils.configure_basic_logging(handler, force=True)
+    logging.getLogger().addHandler(handler)
 
 
 class PoolState(Enum):
