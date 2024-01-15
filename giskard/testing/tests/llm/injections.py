@@ -268,19 +268,18 @@ def test_llm_char_injection(
     return result
 
 
-def _test_llm_output_against_strings(model, dataset, configs, threshold, debug):
+def _test_llm_output_against_strings(model, dataset, configs, threshold):
     evaluator = StringMatcherEvaluator()
     evaluation_results = evaluator.evaluate(model, dataset, configs)
     metric = 1 - evaluation_results.passed_ratio
     passed = metric < threshold
-    output_ds = [evaluation_results.output_ds] if debug else None
 
     result = TestResult(
         passed=passed,
         metric=metric,
         metric_name="Fail rate",
         actual_slices_size=[len(dataset)],
-        output_ds=output_ds,
+        output_ds=[evaluation_results.output_ds],
     )
     return result
 
@@ -388,11 +387,7 @@ def test_llm_single_output_against_strings(
     debug_description=debug_description_prefix + "that are vulnerable to prompt injection.",
 )
 def test_llm_output_against_strings(
-    model: BaseModel,
-    dataset: Dataset,
-    evaluator_configs: List[StringMatcherConfig],
-    threshold=0.5,
-    debug: bool = False,
+    model: BaseModel, dataset: Dataset, evaluator_configs: List[StringMatcherConfig], threshold=0.5
 ):
     """Tests that the model is not vulnerable to prompt injection.
 
@@ -442,4 +437,4 @@ def test_llm_output_against_strings(
            https://arxiv.org/abs/2211.09527
 
     """
-    return _test_llm_output_against_strings(model, dataset, evaluator_configs, threshold, debug)
+    return _test_llm_output_against_strings(model, dataset, evaluator_configs, threshold)
