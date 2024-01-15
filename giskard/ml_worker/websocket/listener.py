@@ -48,7 +48,7 @@ from giskard.models.model_explanation import explain, explain_text
 from giskard.push import Push
 from giskard.push.contribution import create_contribution_push
 from giskard.push.perturbation import create_perturbation_push
-from giskard.push.prediction import create_borderline_push, create_overconfidence_push
+from giskard.push.prediction import create_overconfidence_push, create_underconfidence_push
 from giskard.registry.giskard_test import GiskardTest
 from giskard.registry.slicing_function import SlicingFunction
 from giskard.registry.transformation_function import TransformationFunction
@@ -655,7 +655,7 @@ def get_push(
         else [
             PushKind.CONTRIBUTION,
             PushKind.OVERCONFIDENCE,
-            PushKind.BORDERLINE,
+            PushKind.UNDERCONFIDENCE,
             PushKind.PERTURBATION,
         ]
     )
@@ -686,7 +686,7 @@ def get_push(
         contribution=all_ws_res.get(PushKind.CONTRIBUTION),
         perturbation=all_ws_res.get(PushKind.PERTURBATION),
         overconfidence=all_ws_res.get(PushKind.OVERCONFIDENCE),
-        borderline=all_ws_res.get(PushKind.BORDERLINE),
+        underconfidence=all_ws_res.get(PushKind.UNDERCONFIDENCE),
         action=action,
     )
 
@@ -732,7 +732,7 @@ def get_push_objects(client: Optional[GiskardClient], params: websocket.GetPushP
         PushKind.CONTRIBUTION: create_contribution_push,
         PushKind.PERTURBATION: create_perturbation_push,
         PushKind.OVERCONFIDENCE: create_overconfidence_push,
-        PushKind.BORDERLINE: create_borderline_push,
+        PushKind.UNDERCONFIDENCE: create_underconfidence_push,
     }
 
     return push_functions[params.push_kind](model, dataset, df)

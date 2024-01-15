@@ -155,7 +155,7 @@ OPTIONAL_FIELDS = {
     "GetInfo": [],
     "GetInfoParam": [],
     "GetPushParam": ["dataframe", "target", "push_kind", "cta_kind"],
-    "GetPushResponse": ["contribution", "perturbation", "overconfidence", "borderline", "action"],
+    "GetPushResponse": ["contribution", "perturbation", "overconfidence", "underconfidence", "action"],
     "IdentifierSingleTestResult": ["arguments"],
     "ModelMeta": ["model_type"],
     "NamedSingleTestResult": [],
