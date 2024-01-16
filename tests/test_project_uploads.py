@@ -7,7 +7,10 @@ from sklearn.dummy import DummyClassifier
 
 from giskard.core.core import SupportedColumnTypes, SupportedModelTypes
 from giskard.core.dataset_validation import validate_column_categorization, validate_column_types
-from giskard.core.model_validation import validate_classification_prediction, validate_deterministic_model
+from giskard.core.model_validation import (
+    validate_classification_prediction,
+    validate_deterministic_model,
+)
 from giskard.core.validation import validate_is_pandasdataframe
 from giskard.datasets.base import Dataset
 from giskard.models.base import ModelPredictionResults

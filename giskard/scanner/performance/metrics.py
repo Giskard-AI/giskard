@@ -1,6 +1,7 @@
+from typing import Optional
+
 from abc import ABC, ABCMeta, abstractmethod
 from dataclasses import dataclass
-from typing import Optional
 
 import numpy as np
 import sklearn.metrics

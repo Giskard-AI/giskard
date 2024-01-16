@@ -1,7 +1,8 @@
-import pandas as pd
 import numpy as np
-from giskard.scanner.common.utils import get_dataset_subsample
+import pandas as pd
+
 from giskard import Dataset, Model
+from giskard.scanner.common.utils import get_dataset_subsample
 
 
 def test_get_dataset_subsample():

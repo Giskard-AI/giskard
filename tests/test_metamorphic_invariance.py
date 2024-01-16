@@ -4,14 +4,14 @@ import pytest
 
 import giskard.testing.tests.metamorphic as metamorphic
 from giskard import Dataset, Model
-from giskard.ml_worker.testing.registry.transformation_function import transformation_function
-from giskard.ml_worker.testing.stat_utils import (
+from giskard.registry.transformation_function import transformation_function
+from giskard.testing.utils.stat_utils import (
     equivalence_t_test,
     equivalence_wilcoxon,
     paired_t_test,
     paired_wilcoxon,
 )
-from giskard.ml_worker.testing.utils import Direction
+from giskard.testing.utils.utils import Direction
 
 
 def test_metamorphic_invariance_no_change(german_credit_test_data, german_credit_model):

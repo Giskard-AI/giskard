@@ -2,7 +2,7 @@ import pandas as pd
 
 from ..datasets import Dataset
 from .base import BaseSlicer
-from .slice import Query, LowerThan, GreaterThan, QueryBasedSliceFunction
+from .slice import GreaterThan, LowerThan, Query, QueryBasedSliceFunction
 
 
 class BruteForceSlicer(BaseSlicer):

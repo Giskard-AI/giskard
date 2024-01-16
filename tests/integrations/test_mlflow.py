@@ -1,8 +1,9 @@
+from pathlib import Path
+from tempfile import TemporaryDirectory
+
 import mlflow
 import pytest
-from pathlib import Path
 
-from tempfile import TemporaryDirectory
 from giskard.core.core import SupportedModelTypes
 
 mlflow_model_types = {
@@ -13,8 +14,8 @@ mlflow_model_types = {
 
 
 def _evaluate(dataset, model, evaluator_config):
-    import platform
     import os
+    import platform
 
     with TemporaryDirectory() as f:
         if platform.system() == "Windows":
@@ -26,7 +27,7 @@ def _evaluate(dataset, model, evaluator_config):
             model_info = model.to_mlflow()
             mlflow.evaluate(
                 model=model_info.model_uri,
-                model_type=mlflow_model_types[model.meta.model_type],
+                model_type=mlflow_model_types[model.model_type],
                 data=dataset.df,
                 targets=dataset.target,
                 evaluators="giskard",
@@ -66,7 +67,7 @@ def test_slow(dataset_name, model_name, request):
 def _run_test(dataset_name, model_name, request):
     dataset = request.getfixturevalue(dataset_name)
     model = request.getfixturevalue(model_name)
-    evaluator_config = {"model_config": {"classification_labels": model.meta.classification_labels}}
+    evaluator_config = {"model_config": {"classification_labels": model.classification_labels}}
     _evaluate(dataset, model, evaluator_config)
 
 
@@ -74,7 +75,7 @@ def _run_test(dataset_name, model_name, request):
 def test_errors(dataset_name, model_name, request):
     dataset = request.getfixturevalue(dataset_name)
     model = request.getfixturevalue(model_name)
-    evaluator_config = {"model_config": {"classification_labels": model.meta.classification_labels}}
+    evaluator_config = {"model_config": {"classification_labels": model.classification_labels}}
 
     # dataset type error
     dataset_copy = dataset.copy()
@@ -103,7 +104,7 @@ def test_errors(dataset_name, model_name, request):
 
     # scan error
     dataset_copy = dataset.copy()
-    cl = model.meta.classification_labels
+    cl = model.classification_labels
     cl.append("unknown_label")
     evaluator_config = {"model_config": {"classification_labels": cl}}
 

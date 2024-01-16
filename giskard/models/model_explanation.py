@@ -8,8 +8,8 @@ import pandas as pd
 
 from giskard.core.errors import GiskardImportError
 from giskard.datasets.base import Dataset
-from giskard.ml_worker.utils.logging import timer
 from giskard.models.base import BaseModel
+from giskard.utils.logging import timer
 
 warnings.filterwarnings("ignore", message=".*The 'nopython' keyword.*")
 logger = logging.getLogger(__name__)
@@ -69,7 +69,7 @@ def _get_columns_original_order(prepared_dataset: Dataset, model: BaseModel, dat
     list
         A list of column names in the order that the model was trained with.
     """
-    features_names = model.meta.feature_names
+    features_names = model.feature_names
     return features_names if features_names else [c for c in dataset.df.columns if c in prepared_dataset.df.columns]
 
 
@@ -199,11 +199,11 @@ def explain_with_shap(model: BaseModel, dataset: Dataset, only_highest_proba: bo
         shap_values = _get_highest_proba_shap(shap_values, model, dataset)
 
     # Put SHAP values to the Explanation object for a convenience.
-    feature_names = model.meta.feature_names or list(dataset.df.columns.drop(dataset.target, errors="ignore"))
+    feature_names = model.feature_names or list(dataset.df.columns.drop(dataset.target, errors="ignore"))
     shap_explanations = Explanation(shap_values, data=dataset.df[feature_names], feature_names=feature_names)
 
     feature_types = {key: dataset.column_types[key] for key in feature_names}
-    return ShapResult(shap_explanations, feature_types, model.meta.model_type, only_highest_proba)
+    return ShapResult(shap_explanations, feature_types, model.model_type, only_highest_proba)
 
 
 def _calculate_sample_shap_values(model: BaseModel, dataset: Dataset, input_data: Dict) -> np.ndarray:
@@ -228,7 +228,7 @@ def _calculate_sample_shap_values(model: BaseModel, dataset: Dataset, input_data
 @timer()
 def explain(model: BaseModel, dataset: Dataset, input_data: Dict):
     shap_values = _calculate_sample_shap_values(model, dataset, input_data)
-    feature_names = model.meta.feature_names or list(dataset.df.columns.drop(dataset.target, errors="ignore"))
+    feature_names = model.feature_names or list(dataset.df.columns.drop(dataset.target, errors="ignore"))
 
     if model.is_regression:
         explanation_chart_data = summary_shap_regression(shap_values=shap_values, feature_names=feature_names)
@@ -236,10 +236,10 @@ def explain(model: BaseModel, dataset: Dataset, input_data: Dict):
         explanation_chart_data = summary_shap_classification(
             shap_values=shap_values,
             feature_names=feature_names,
-            class_names=model.meta.classification_labels,
+            class_names=model.classification_labels,
         )
     else:
-        raise ValueError(f"Prediction task is not supported: {model.meta.model_type}")
+        raise ValueError(f"Prediction task is not supported: {model.model_type}")
     return explanation_chart_data
 
 

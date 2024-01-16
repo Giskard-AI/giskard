@@ -4,19 +4,16 @@ Trigger functions for model debugging prediction notifications.
 Functions:
 
 - create_overconfidence_push: Create overconfidence notification from model prediction.
-- create_borderline_push: Create borderline/underconfidence notification from prediction.
+- create_underconfidence_push: Create underconfidence notification from prediction.
 
 """
 import pandas as pd
 
 from giskard.datasets.base import Dataset
 from giskard.models.base.model import BaseModel
-from giskard.testing.tests.calibration import (
-    test_overconfidence_rate,
-    test_underconfidence_rate,
-)
+from giskard.testing.tests.calibration import test_overconfidence_rate, test_underconfidence_rate
 
-from ..push import BorderlinePush, OverconfidencePush
+from ..push import OverconfidencePush, UnderconfidencePush
 
 
 def create_overconfidence_push(model: BaseModel, ds: Dataset, df: pd.DataFrame) -> OverconfidencePush:
@@ -54,14 +51,14 @@ def create_overconfidence_push(model: BaseModel, ds: Dataset, df: pd.DataFrame) 
             )
 
 
-def create_borderline_push(model: BaseModel, ds: Dataset, df: pd.DataFrame) -> BorderlinePush:
+def create_underconfidence_push(model: BaseModel, ds: Dataset, df: pd.DataFrame) -> UnderconfidencePush:
     """
-    Create borderline/underconfidence notification from prediction.
+    Create underconfidence notification from prediction.
 
     Checks if model is underconfident on a given row based on
     underconfidence rate test.
 
-    If underconfidence detected, creates and returns BorderlinePush.
+    If underconfidence detected, creates and returns UnderconfidencePush.
 
     Args:
         model (BaseModel): ML model
@@ -69,7 +66,7 @@ def create_borderline_push(model: BaseModel, ds: Dataset, df: pd.DataFrame) -> B
         df (pd.DataFrame): DataFrame with row to analyze
 
     Returns:
-        BorderlinePush if underconfident, None otherwise.
+        UnderconfidencePush if underconfident, None otherwise.
     """
     if model.is_classification:
         row_slice = Dataset(
@@ -85,4 +82,4 @@ def create_borderline_push(model: BaseModel, ds: Dataset, df: pd.DataFrame) -> B
         target_value_proba = prediction_results.all_predictions[target_value].values.item()
         test_result = test_underconfidence_rate(model, row_slice).execute()
         if not test_result.passed:
-            return BorderlinePush(target_value, target_value_proba, row_slice, rate=test_result.metric)
+            return UnderconfidencePush(target_value, target_value_proba, row_slice, rate=test_result.metric)

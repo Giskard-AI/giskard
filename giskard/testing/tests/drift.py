@@ -12,12 +12,12 @@ import pandas as pd
 from scipy.stats import chi2, ks_2samp
 from scipy.stats.stats import Ks_2sampResult, wasserstein_distance
 
+from giskard.core.test_result import TestMessage, TestMessageLevel, TestResult
 from giskard.datasets.base import Dataset
-from giskard.ml_worker.testing.registry.decorators import test
-from giskard.ml_worker.testing.registry.slicing_function import SlicingFunction
-from giskard.ml_worker.testing.test_result import TestMessage, TestMessageLevel, TestResult
-from giskard.ml_worker.testing.utils import check_slice_not_empty, validate_classification_label
 from giskard.models.base import BaseModel
+from giskard.registry.decorators import test
+from giskard.registry.slicing_function import SlicingFunction
+from giskard.testing.utils.utils import check_slice_not_empty, validate_classification_label
 
 from . import debug_description_prefix
 

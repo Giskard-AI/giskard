@@ -1,13 +1,14 @@
-import pickle
+from typing import Optional, Tuple, Union
+
 from pathlib import Path
 
 import cloudpickle
 import mlflow
-from typing import Optional, Tuple, Union
 
-from giskard.ml_worker.exceptions.giskard_exception import python_env_exception_helper
+from giskard.exceptions.giskard_exception import python_env_exception_helper
+
+from ...registry.utils import dump_by_value
 from .wrapper import WrapperModel
-
 
 # @TODO: decouple the serialization logic from models. These abstract classes
 # could be implemented as mixins and then used in the models that need them.
@@ -42,7 +43,7 @@ class CloudpickleSerializableModel(WrapperModel):
         try:
             model_file = Path(local_path) / "model.pkl"
             with open(model_file, "wb") as f:
-                cloudpickle.dump(self.model, f, protocol=pickle.DEFAULT_PROTOCOL)
+                dump_by_value(self.model, f, kwargs.get("should_register_by_reference", False))
         except ValueError:
             raise ValueError(
                 "We couldn't save your model with cloudpickle. Please provide us with your own "

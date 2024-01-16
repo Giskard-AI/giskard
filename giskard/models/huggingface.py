@@ -92,17 +92,19 @@ from this behavior, you can provide a custom postprocessing function using
 the `model_postprocessing_function` argument. This function should take the
 raw output of your model and return a numpy array of probabilities.
 """
+from typing import Any, Callable, Iterable, Optional, Tuple, Union
+
 import logging
 from pathlib import Path
 
 import pandas as pd
 import yaml
 from scipy import special
-from typing import Any, Callable, Iterable, Optional, Tuple, Union
 
 from giskard.core.core import ModelType
 from giskard.core.validation import configured_validate_arguments
 from giskard.models.base import WrapperModel
+
 from ..client.python_utils import warning
 
 try:
@@ -251,7 +253,7 @@ class HuggingFaceModel(WrapperModel):
             if isinstance(data, pd.DataFrame):
                 data = data.to_dict(orient="records")
             _predictions = [{p["label"]: p["score"] for p in pl} for pl in self.model(data, top_k=None)]
-            return [[p[label] for label in self.meta.classification_labels] for p in _predictions]
+            return [[p[label] for label in self.classification_labels] for p in _predictions]
 
         if isinstance(self.model, torch.nn.Module):
             with torch.no_grad():

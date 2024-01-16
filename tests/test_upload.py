@@ -4,8 +4,8 @@ import pandas as pd
 import pytest
 
 from giskard import Dataset, slicing_function, test, transformation_function
-from giskard.ml_worker.core.savable import Artifact
-from giskard.ml_worker.testing.test_result import TestResult as GiskardTestResult
+from giskard.core.savable import Artifact
+from giskard.core.test_result import TestResult as GiskardTestResult
 from giskard.models.sklearn import SKLearnModel
 from tests.utils import (
     CALLABLE_FUNCTION_META_CACHE,
@@ -74,10 +74,10 @@ def _test_upload_model_exceptions(model: SKLearnModel, ds: Dataset):
         with pytest.raises(Exception) as e:
             SKLearnModel(
                 model=model.model,
-                model_type=model.meta.model_type,
+                model_type=model.model_type,
                 feature_names=["some"],
                 name=model_name,
-                classification_labels=model.meta.classification_labels,
+                classification_labels=model.classification_labels,
             ).upload(client, "test-project", ds)
         assert e.match("Value mentioned in feature_names is not available in validate_df")
 
@@ -86,8 +86,8 @@ def _test_upload_model_exceptions(model: SKLearnModel, ds: Dataset):
             with pytest.raises(Exception) as e:
                 SKLearnModel(
                     model=model.model,
-                    model_type=model.meta.model_type,
-                    feature_names=model.meta.feature_names,
+                    model_type=model.model_type,
+                    feature_names=model.feature_names,
                     name=model_name,
                     classification_labels=[0, 1],
                 ).upload(client, "test-project", ds)

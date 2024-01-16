@@ -17,7 +17,7 @@ import pandas as pd
 
 from giskard.core.core import SupportedModelTypes
 from giskard.datasets.base import Dataset
-from giskard.ml_worker.testing.functions.transformation import add_value
+from giskard.functions.transformation import add_value
 from giskard.models.base.model import BaseModel
 from giskard.push.utils import (
     SupportedPerturbationType,
