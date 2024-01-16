@@ -1,10 +1,12 @@
 from typing import Sequence
 
-from enum import Enum
-
 from giskard.datasets import Dataset
 from giskard.llm.errors import LLMGenerationError
-from giskard.llm.evaluators.base import EvaluationResult, LLMBasedEvaluator
+from giskard.llm.evaluators.base import (
+    EVALUATE_MODEL_FUNCTIONS,
+    EvaluationResult,
+    LLMBasedEvaluator,
+)
 from giskard.models.base.model import BaseModel
 
 CORRECTNESS_EVALUATION_PROMPT = """Your role is to test AI models. Your task consists in assessing whether a model output correctly answers a question. 
@@ -37,18 +39,12 @@ Call the `evaluate_model` function with the result of your evaluation.
 """
 
 
-class EvaluationFeatures(Enum):
-    QUESTION = 0
-    REFERENCE_ANSWER = 1
-    REFERENCE_CONTEXT = 2
-
-
 class CorrectnessEvaluator(LLMBasedEvaluator):
     _default_eval_prompt = CORRECTNESS_EVALUATION_PROMPT
     _required_features = ["question", "reference_answer"]
 
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
+    def _make_evaluate_functions(self):
+        return EVALUATE_MODEL_FUNCTIONS
 
     def _make_evaluate_prompt(self, model_name, model_description, question, model_output, ground_truth):
         return self.eval_prompt.format(
