@@ -98,9 +98,6 @@ class GiskardTest(Artifact[TestFunctionMeta], ABC):
 
         return giskard_test
 
-    def get_builder(self):
-        return type(self)
-
 
 Function = Callable[..., Result]
 
@@ -170,9 +167,6 @@ class GiskardTestMethod(GiskardTest):
             output.append(f"Named inputs: {self.params}")
 
         return "\n".join(output)
-
-    def get_builder(self):
-        return GiskardTestMethod(self.test_fn)
 
     def _save_locally(self, local_dir: Path):
         with open(Path(local_dir) / "data.pkl", "wb") as f:

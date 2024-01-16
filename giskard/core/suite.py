@@ -363,7 +363,7 @@ class Suite:
             test_params = self.create_test_params(test_partial, run_args)
 
             try:
-                result = test_partial.giskard_test.get_builder()(**test_params).execute()
+                result = test_partial.giskard_test(**test_params).execute()
 
                 if isinstance(result, bool):
                     result = TestResult(passed=result)
@@ -658,7 +658,7 @@ class Suite:
         ):
             return
 
-        self.add_test(GiskardTest.download(test_func.uuid, None, None).get_builder()(**suite_args))
+        self.add_test(GiskardTest.download(test_func.uuid, None, None)(**suite_args))
 
     def _contains_test(self, test: TestFunctionMeta):
         return any(t.giskard_test == test for t in self.tests)
@@ -683,7 +683,7 @@ class Suite:
         for test_json in suite_dto.tests:
             test = GiskardTest.download(test_json.testUuid, client, None)
             test_arguments = parse_function_arguments(client, project_key, test_json.functionInputs.values())
-            suite.add_test(test.get_builder()(**test_arguments), suite_test_id=test_json.id)
+            suite.add_test(test(**test_arguments), suite_test_id=test_json.id)
 
         return suite
 
