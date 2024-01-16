@@ -91,7 +91,7 @@ class UnderconfidenceDetector(LossBasedDetector):
                     description=description,
                     slicing_fn=slice_fn,
                     meta={
-                        "metric": "Overconfidence rate",
+                        "metric": "Underconfidence rate",
                         "metric_value": slice_rate,
                         "metric_value_perc": slice_rate * 100,
                         "metric_reference_value": reference_rate,
