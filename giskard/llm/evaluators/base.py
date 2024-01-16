@@ -79,7 +79,7 @@ class LLMBasedEvaluator(BaseEvaluator):
             model_output=model_output,
         )
 
-    def _make_evaluate_functions(self):
+    def _make_evaluate_functions(self, model: BaseModel, input_vars, model_output):
         return EVALUATE_MODEL_FUNCTIONS
 
     def evaluate(self, model: BaseModel, dataset: Dataset):
