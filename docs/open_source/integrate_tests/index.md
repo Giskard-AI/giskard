@@ -10,6 +10,7 @@ Once you've created a test suite for a model, integrating it into existing workf
 ../../integrations/cicd/pipeline.ipynb
 ../../integrations/mlflow/index
 ../../integrations/wandb/index
+../../integrations/pytest/index
 
 ```
 
@@ -29,6 +30,11 @@ Once you've created a test suite for a model, integrating it into existing workf
 ::::{grid-item-card} <br/><h3>🐝  Evaluate & log with Weights & Biases</h3>
 :text-align: center
 :link: ../../integrations/wandb/index.md
+::::
+
+::::{grid-item-card} <br/><h3>🧪 Execute your test with pytest</h3>
+:text-align: center
+:link: ../../integrations/pytest/index.md
 ::::
 
 :::::

@@ -1,4 +1,4 @@
-from typing import Dict, List, Optional
+from typing import Any, Dict, List, Optional
 
 from enum import Enum
 from uuid import UUID
@@ -244,6 +244,15 @@ class AbortParams(ConfiguredBaseModel):
     job_id: UUID
 
 
+class GetLogsParams(ConfiguredBaseModel):
+    job_id: UUID
+    nb_last_lines: int
+
+
+class GetLogs(ConfiguredBaseModel):
+    logs: str
+
+
 class TestMessageType(Enum):
     ERROR = 0
     INFO = 1
@@ -257,6 +266,13 @@ class TestMessage(ConfiguredBaseModel):
 class PartialUnexpectedCounts(ConfiguredBaseModel):
     value: Optional[List[int]] = None
     count: int
+
+
+class SingleTestResultDetails(ConfiguredBaseModel):
+    inputs: Dict[str, List[Any]]
+    outputs: List[Any]
+    results: List[str]
+    metadata: Dict[str, List[Any]]
 
 
 class SingleTestResult(ConfiguredBaseModel):
@@ -280,6 +296,7 @@ class SingleTestResult(ConfiguredBaseModel):
     reference_slices_size: Optional[List[int]] = None
     output_df_id: Optional[str] = None
     failed_indexes: Optional[Dict[str, List[int]]] = None
+    details: Optional[SingleTestResultDetails] = None
 
 
 class IdentifierSingleTestResult(ConfiguredBaseModel):
@@ -336,7 +353,6 @@ class TestSuite(WorkerReply):
     is_error: bool
     is_pass: bool
     results: Optional[List[IdentifierSingleTestResult]] = None
-    logs: str
 
 
 class TestSuiteParam(ConfiguredBaseModel):
@@ -349,7 +365,7 @@ class PushKind(Enum):
     PERTURBATION = 1
     CONTRIBUTION = 2
     OVERCONFIDENCE = 3
-    BORDERLINE = 4
+    UNDERCONFIDENCE = 4
 
 
 class CallToActionKind(Enum):
@@ -360,7 +376,7 @@ class CallToActionKind(Enum):
     SAVE_PERTURBATION = 4
     CREATE_ROBUSTNESS_TEST = 5
     CREATE_SLICE_OPEN_DEBUGGER = 6
-    OPEN_DEBUGGER_BORDERLINE = 7
+    OPEN_DEBUGGER_UNDERCONFIDENCE = 7
     ADD_TEST_TO_CATALOG = 8
     SAVE_EXAMPLE = 9
     OPEN_DEBUGGER_OVERCONFIDENCE = 10
@@ -403,7 +419,7 @@ class GetPushResponse(ConfiguredBaseModel):
     contribution: Optional[Push] = None
     perturbation: Optional[Push] = None
     overconfidence: Optional[Push] = None
-    borderline: Optional[Push] = None
+    underconfidence: Optional[Push] = None
     action: Optional[PushAction] = None
 
 
