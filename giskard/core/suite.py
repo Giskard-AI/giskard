@@ -152,19 +152,41 @@ class TestSuiteResult:
                 "repository for further assistance: https://github.com/Giskard-AI/giskard."
             ) from e
         run.log({"Test suite results/Test-Suite Results": wandb.Table(columns=columns, data=data)})
-      
+
+
     def to_junit(self):
         """Convert the test suite result to JUnit XML format."""
-        testsuite = Element('testsuite')
+        testsuites = Element('testsuites', {'tests': str(len(self.results))})
 
-        for test in self.results:
-            testcase = SubElement(testsuite, 'testcase', {'name': test.metric_name})
+        for test_tuple in self.results:
+            test_name, test, _ = test_tuple
+            testsuite = SubElement(testsuites, 'testsuite', {
+                'name': f"Test {test_name} (metric={test.metric})",
+            })
+            testcase = SubElement(testsuite, 'testcase', {'name': test.metric_name, 'time': str(test.metric)})  # replace with actual time
+
             if not test.passed:
-                failure = SubElement(testcase, 'failure')
-                failure.text = test.messages
+                failure = SubElement(testcase, 'failure', {
+                    'message': f"Test failed with metric of {test.metric}",
+                    'type': "TestFailed" if not test.is_error else "Error"
+                })
+                # Add full test result information here
+                for k, v in test.__dict__.items():
+                    if k != 'messages' and k != 'is_error':
+                        SubElement(failure, 'detail', {'name': k, 'value': str(v)})
+                for message in test.messages:
+                    SubElement(failure, 'detail', {'name': 'message', 'value': message})
+            else:
+                # Add test result information here
+                for k, v in test.__dict__.items():
+                    if k != 'messages' and k != 'is_error':
+                        SubElement(testcase, 'detail', {'name': k, 'value': str(v)})
+                for message in test.messages:
+                    SubElement(testcase, 'detail', {'name': 'message', 'value': message})
 
-        return minidom.parseString(tostring(testsuite)).toprettyxml(indent="   ")
-
+        # Convert to string
+        xml_str = minidom.parseString(tostring(testsuites)).toprettyxml(indent="   ")
+        return xml_str
 
 class SuiteInput:
     """Represents an input parameter for a test suite.
