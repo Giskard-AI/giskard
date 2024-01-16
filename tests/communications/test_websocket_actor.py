@@ -46,7 +46,7 @@ def test_websocket_actor_get_info():
 
     # Internal worker, without packages
     server_ml_worker_info = listener.on_ml_worker_get_info(
-        ml_worker=listener.MLWorkerInfo(internal_ml_worker.ml_worker_id, internal_ml_worker.is_remote_worker()),
+        ml_worker=listener.MLWorkerInfo(internal_ml_worker.ml_worker_id),
         params=without_package_params,
     )
     assert isinstance(server_ml_worker_info, websocket.GetInfo)
@@ -56,7 +56,7 @@ def test_websocket_actor_get_info():
 
     # Internal worker, with packages
     server_ml_worker_info = listener.on_ml_worker_get_info(
-        ml_worker=listener.MLWorkerInfo(internal_ml_worker.ml_worker_id, internal_ml_worker.is_remote_worker()),
+        ml_worker=listener.MLWorkerInfo(internal_ml_worker.ml_worker_id),
         params=with_package_params,
     )
     assert isinstance(server_ml_worker_info, websocket.GetInfo)
@@ -66,7 +66,7 @@ def test_websocket_actor_get_info():
 
     # External worker, without packages
     remote_ml_worker_info = listener.on_ml_worker_get_info(
-        ml_worker=listener.MLWorkerInfo(external_ml_worker.ml_worker_id, external_ml_worker.is_remote_worker()),
+        ml_worker=listener.MLWorkerInfo(external_ml_worker.ml_worker_id),
         params=without_package_params,
     )
     assert isinstance(remote_ml_worker_info, websocket.GetInfo)
@@ -76,7 +76,7 @@ def test_websocket_actor_get_info():
 
     # External worker, with packages
     remote_ml_worker_info = listener.on_ml_worker_get_info(
-        ml_worker=listener.MLWorkerInfo(external_ml_worker.ml_worker_id, external_ml_worker.is_remote_worker()),
+        ml_worker=listener.MLWorkerInfo(external_ml_worker.ml_worker_id),
         params=with_package_params,
     )
     assert isinstance(remote_ml_worker_info, websocket.GetInfo)

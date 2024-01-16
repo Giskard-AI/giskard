@@ -2,7 +2,6 @@ from typing import List, Optional, Union
 
 import logging
 import math
-import secrets
 from uuid import UUID
 
 from pydantic import AnyHttpUrl
@@ -39,7 +38,7 @@ class FragmentedPayload(ConfiguredBaseModel):
 class MLWorker(StompWSClient):
     def __init__(
         self,
-        is_server=False,
+        worker_name,
         backend_url: AnyHttpUrl = None,
         api_key: Optional[str] = None,
         hf_token: Optional[str] = None,
@@ -47,18 +46,9 @@ class MLWorker(StompWSClient):
         headers = {}
         connect_headers = {"COOKIE": f"spaces-jwt={hf_token};"} if hf_token is not None else None
 
-        if is_server:
-            # Retrieve from settings for internal ML Worker
-            self._worker_type = INTERNAL_WORKER_ID
-            backend_url = validate_url(None, None, f"http://{settings.host}:{settings.ws_port}{settings.ws_path}")
-            internal_ml_worker_token = secrets.token_hex(16)
-            headers["token"] = internal_ml_worker_token
-            with open(f"{settings.home_dir / 'run' / 'internal-ml-worker'}", "w") as f:
-                f.write(internal_ml_worker_token)
-        else:
-            # External ML worker: URL should be provided
-            self._worker_type = EXTERNAL_WORKER_ID
-            headers["api-key"] = api_key
+        # External ML worker: URL should be provided
+        self._worker_name = worker_name
+        headers["api-key"] = api_key
 
         # Use the URL path component provided by settings
         if backend_url.port is not None:
@@ -75,10 +65,8 @@ class MLWorker(StompWSClient):
         self._ws_max_reply_payload_size = MAX_STOMP_ML_WORKER_REPLY_SIZE
         self._api_key = api_key
         self._hf_token = hf_token
-        self._worker_info = MLWorkerInfo(id=self._worker_type, is_remote=self.is_remote_worker())
-
-    def is_remote_worker(self):
-        return self._worker_type is not INTERNAL_WORKER_ID
+        # TODO(Bazire): Cleanup this
+        self._worker_info = MLWorkerInfo(id=self._worker_name)
 
     async def config_handler(self, frame: Frame) -> List[Frame]:
         payload = ConfigPayload.parse_raw(frame.body)
@@ -89,18 +77,14 @@ class MLWorker(StompWSClient):
 
     async def action_handler(self, frame: Frame) -> List[Frame]:
         data = ActionPayload.parse_raw(frame.body)
-        logging.info(f"Running job {data.id}: {data.action.name}")
+        logging.info("Running job %s: %s", data.id, data.action.name)
 
         # Dispatch the action
-        client_params = (
-            {
-                "url": self._backend_url,
-                "key": self._api_key,
-                "hf_token": self._hf_token,
-            }
-            if self.is_remote_worker()
-            else None
-        )
+        client_params = {
+            "url": self._backend_url,
+            "key": self._api_key,
+            "hf_token": self._hf_token,
+        }
         if data.action == MLWorkerAction.stopWorker:
             LOGGER.info("Marking worker as stopping...")
             self.stop()
@@ -132,7 +116,7 @@ class MLWorker(StompWSClient):
         return [
             StompFrame.SEND.build_frame(
                 headers={
-                    HeaderType.DESTINATION: f"/app/ml-worker/{self._worker_type}/reply",
+                    HeaderType.DESTINATION: f"/app/ml-worker/{self._worker_name}/reply",
                 },
                 body=FragmentedPayload(
                     id=data.id,
@@ -149,19 +133,23 @@ class MLWorker(StompWSClient):
         LOGGER.info("Subscribing for action...")
         await self.subscribe(
             websocket,
-            f"/ml-worker/{self._worker_type}/action",
-            f"ws-worker-{self._worker_type}-action",
+            f"/ml-worker/{self._worker_name}/action",
+            f"ws-worker-{self._worker_name}-action",
             self.action_handler,
         )
         LOGGER.info("Subscribing for config...")
         await self.subscribe(
             websocket,
-            f"/ml-worker/{self._worker_type}/config",
-            f"ws-worker-{self._worker_type}-config",
+            f"/ml-worker/{self._worker_name}/config",
+            f"ws-worker-{self._worker_name}-config",
             self.config_handler,
         )
 
-    async def start(self, nb_workers: Optional[int] = None, restart: bool = False):
+    async def start(
+        self,
+        restart: bool = False,
+        nb_workers: Optional[int] = None,
+    ):
         load_plugins()
         start_pool(nb_workers)
         await super().start(restart=restart)

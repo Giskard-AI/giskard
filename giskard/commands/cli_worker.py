@@ -46,14 +46,6 @@ def start_stop_options(func):
         help="Remote Giskard hub url",
         callback=validate_url,
     )
-    @click.option(
-        "--server",
-        "-s",
-        "is_server",
-        is_flag=True,
-        default=False,
-        help="Server mode. Used by Giskard embedded ML Worker",
-    )
     @functools.wraps(func)
     def wrapper(*args, **kwargs):
         return func(*args, **kwargs)
@@ -91,7 +83,13 @@ def start_stop_options(func):
     default=None,
     help="Number of processes to use for parallelism (None for number of cpu)",
 )
-def start_command(url: AnyHttpUrl, is_server, api_key, is_daemon, hf_token, nb_workers):
+@click.option(
+    "--name",
+    "worker_name",
+    default="external_worker",
+    help="Name/id of the worker starting",
+)
+def start_command(url: AnyHttpUrl, api_key, is_daemon, hf_token, nb_workers, worker_name):
     """\b
     Start ML Worker.
 
@@ -104,16 +102,14 @@ def start_command(url: AnyHttpUrl, is_server, api_key, is_daemon, hf_token, nb_w
     """
     analytics.track(
         "giskard-worker:start",
-        {"is_server": is_server, "url": anonymize(url), "is_daemon": is_daemon},
+        {"url": anonymize(url), "is_daemon": is_daemon},
     )
-    api_key = initialize_api_key(api_key, is_server)
-    hf_token = initialize_hf_token(hf_token, is_server)
-    _start_command(is_server, url, api_key, is_daemon, hf_token, int(nb_workers) if nb_workers is not None else None)
+    api_key = initialize_api_key(api_key)
+    hf_token = initialize_hf_token(hf_token)
+    _start_command(worker_name, url, api_key, is_daemon, hf_token, int(nb_workers) if nb_workers is not None else None)
 
 
-def initialize_api_key(api_key, is_server):
-    if is_server:
-        return None
+def initialize_api_key(api_key):
     if not api_key:
         api_key = click.prompt("Enter Giskard hub API key", type=str)
     if "GSK_API_KEY" in os.environ:
@@ -122,9 +118,7 @@ def initialize_api_key(api_key, is_server):
     return api_key
 
 
-def initialize_hf_token(hf_token, is_server):
-    if is_server:
-        return None
+def initialize_hf_token(hf_token):
     # HF token is not mandantory unless connection error
     if "GSK_HF_TOKEN" in os.environ:
         # delete HF token environment variable so that it doesn't get leaked when the test code is executed
@@ -132,18 +126,17 @@ def initialize_hf_token(hf_token, is_server):
     return hf_token
 
 
-def _start_command(is_server, url: AnyHttpUrl, api_key, is_daemon, hf_token=None, nb_workers=None):
+def _start_command(worker_name, url: AnyHttpUrl, api_key, is_daemon, hf_token=None, nb_workers=None):
     from giskard.ml_worker.ml_worker import MLWorker
 
     os.environ["TQDM_DISABLE"] = "1"
-    start_msg = "Starting ML Worker"
-    start_msg += " server" if is_server else " client"
+    start_msg = "Starting ML Worker %s%s"
     if is_daemon:
         start_msg += " daemon"
-    logger.info(start_msg)
-    logger.info(f"Python: {sys.executable} ({platform.python_version()})")
-    logger.info(f"Giskard Home: {settings.home_dir}")
-    pid_file_path = create_pid_file_path(is_server, url)
+    logger.info(start_msg, worker_name, " daemon" if is_daemon else "")
+    logger.info("Python: %s (%s)", sys.executable, platform.python_version())
+    logger.info("Giskard Home: %s", settings.home_dir)
+    pid_file_path = create_pid_file_path(worker_name, url)
     pid_file = PIDLockFile(pid_file_path)
     remove_stale_pid_file(pid_file)
 
@@ -158,7 +151,7 @@ def _start_command(is_server, url: AnyHttpUrl, api_key, is_daemon, hf_token=None
                 logger.error("Daemon mode is not supported on Windows.")
                 return
 
-            run_daemon(is_server, url, api_key, hf_token)
+            run_daemon(worker_name, url, api_key, hf_token)
         else:
             if settings.force_asyncio_event_loop or sys.platform == "win32":
                 logger.info("Using asyncio to run jobs")
@@ -166,7 +159,7 @@ def _start_command(is_server, url: AnyHttpUrl, api_key, is_daemon, hf_token=None
             else:
                 logger.info("Using uvloop to run jobs")
                 from uvloop import run
-            run(_start_worker(is_server, url, api_key, hf_token, nb_workers))
+            run(_start_worker(worker_name, url, api_key, hf_token, nb_workers))
     except KeyboardInterrupt:
         logger.info("Exiting")
         if ml_worker:
@@ -189,11 +182,11 @@ def _ml_worker_description(is_server, url):
     return "server" if is_server else f"client for {url}"
 
 
-async def _start_worker(is_server, url, api_key, hf_token, nb_workers):
+async def _start_worker(worker_name, url, api_key, hf_token, nb_workers):
     from giskard.ml_worker.ml_worker import MLWorker
 
-    ml_worker = MLWorker(is_server, url, api_key, hf_token)
-    await ml_worker.start(nb_workers, restart=True)
+    ml_worker = MLWorker(worker_name, url, api_key, hf_token)
+    await ml_worker.start(restart=True, nb_workers=nb_workers)
 
 
 @worker.command("stop", help="Stop running ML Workers")

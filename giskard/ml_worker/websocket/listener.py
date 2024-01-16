@@ -64,7 +64,6 @@ MAX_STOMP_ML_WORKER_REPLY_SIZE = 1500
 @dataclass
 class MLWorkerInfo:
     id: str
-    is_remote: bool
 
 
 def websocket_log_actor(ml_worker: MLWorkerInfo, req: ActionPayload, *args, **kwargs):
