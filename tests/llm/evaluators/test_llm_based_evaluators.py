@@ -3,6 +3,7 @@ from unittest.mock import Mock
 import pandas as pd
 import pytest
 
+from giskard.core.test_result import TestResultStatus
 from giskard.llm.client import LLMFunctionCall, LLMOutput
 from giskard.llm.evaluators.base import LLMBasedEvaluator
 from giskard.llm.evaluators.plausibility import PlausibilityEvaluator
@@ -65,6 +66,11 @@ def test_evaluator_correctly_flags_examples(Evaluator, args, kwargs):
     assert "This is a model for testing purposes" in args[0][0][0]["content"]
     assert args[1]["functions"][0]["name"] == "evaluate_model"
 
+    assert result.details.inputs == eval_dataset.df.loc[:, model.feature_names].to_dict("list")
+    assert result.details.outputs == model.predict(eval_dataset).prediction
+    assert result.details.results == [TestResultStatus.PASSED, TestResultStatus.FAILED]
+    assert result.details.metadata == {"reason": [None, "For some reason"]}
+
 
 @pytest.mark.parametrize(
     "Evaluator,args,kwargs",
@@ -102,3 +108,8 @@ def test_evaluator_handles_generation_errors(Evaluator, args, kwargs):
     assert len(result.failure_examples) == 0
     assert len(result.errors) == 1
     assert result.errors[0]["message"] == "Invalid function call arguments received"
+
+    assert result.details.inputs == eval_dataset.df.loc[:, model.feature_names].to_dict("list")
+    assert result.details.outputs == model.predict(eval_dataset).prediction
+    assert result.details.results == [TestResultStatus.PASSED, TestResultStatus.ERROR]
+    assert result.details.metadata == {"reason": [None, "Invalid function call arguments received"]}
