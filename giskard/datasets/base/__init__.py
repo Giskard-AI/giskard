@@ -559,9 +559,7 @@ class Dataset(ColumnMetadataMixin):
     def load(cls, local_path: str):
         with open(local_path, "rb") as ds_stream:
             return pd.read_csv(
-                ZstdDecompressor().stream_reader(ds_stream),
-                keep_default_na=False,
-                na_values=["_GSK_NA_"],
+                ZstdDecompressor().stream_reader(ds_stream), keep_default_na=False, na_values=["_GSK_NA_"]
             )
 
     @classmethod
