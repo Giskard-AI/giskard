@@ -397,6 +397,44 @@ class Suite:
 
         return TestSuiteResult(passed, results)
 
+    def to_unittest(self, **suite_gen_args) -> List[TestPartial]:
+        """Create a list of tests that can be easily passed for unittest execution using the `assert_` method
+
+        Parameters
+        ----------
+        **suite_run_args : Optional[dict]
+            Any arguments passed here will be applied to all the tests in the suite whenever they match with the
+            arguments defined for each test. If a test contains an argument that has already been defined, it will not
+            get overridden. If any inputs on the test suite are missing, an error will be raised.
+
+        Returns
+        -------
+        List[TestPartial]
+            containing the tests to execute in a unit test script
+        """
+        run_args = self.default_params.copy()
+        run_args.update(suite_gen_args)
+
+        unittests: List[TestPartial] = list()
+        required_params = self.find_required_params()
+        undefined_params = {k: v for k, v in required_params.items() if k not in run_args}
+        if len(undefined_params):
+            raise ValueError(f"Missing {len(undefined_params)} required parameters: {undefined_params}")
+
+        for test_partial in self.tests:
+            test_params = self.create_test_params(test_partial, run_args)
+            unittest: TestPartial = test_partial.giskard_test.get_builder()(**test_params)
+            params_str = ", ".join(
+                f"{param}={getattr(value, 'name', None) or value}"  # Use attribute name if set
+                for param, value in unittest.params.items()
+            )
+            fullname = f"{test_partial.test_id}({params_str})"
+            # pass the test_id attribute to be used as unit test name
+            setattr(unittest, "fullname", fullname)
+            unittests.append(unittest)
+
+        return unittests
+
     @staticmethod
     def create_test_params(test_partial, kwargs):
         if isinstance(test_partial.giskard_test, GiskardTestMethod):
