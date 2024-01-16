@@ -5,6 +5,7 @@ from langchain.chains import LLMChain
 from langchain.llms.fake import FakeListLLM
 
 from giskard import Dataset, Model
+from giskard.core.test_result import TestResultStatus
 from giskard.testing.tests.llm import test_llm_ground_truth, test_llm_ground_truth_similarity
 
 INPUT_DATA = [
@@ -138,8 +139,9 @@ def test_of_test_llm_ground_truth(test, dataset, responses, should_pass, failed_
     result = test(model, dataset).execute()
 
     assert result.passed is should_pass
-    expected_output_df = dataset.df[failed_mask]
-    assert list(expected_output_df.index) == list(result.output_ds[0].df.index)
+    assert [
+        TestResultStatus.FAILED if has_failed else TestResultStatus.PASSED for has_failed in failed_mask
+    ] == result.details.results
 
 
 def _make_model(responses):
