@@ -327,7 +327,7 @@ def _upload_generated_output_df(client, datasets, project_key, result):
 
 def do_run_adhoc_test(arguments, test):
     logger.info(f"Executing {test.meta.display_name or f'{test.meta.module}.{test.meta.name}'}")
-    return test.get_builder()(**arguments).execute()
+    return test(**arguments).execute()
 
 
 def map_suite_input_ws(i: websocket.SuiteInput):
