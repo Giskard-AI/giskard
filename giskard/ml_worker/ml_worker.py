@@ -22,8 +22,6 @@ from giskard.utils.analytics_collector import analytics
 
 LOGGER = logging.getLogger(__name__)
 
-INTERNAL_WORKER_ID = "INTERNAL"
-EXTERNAL_WORKER_ID = "EXTERNAL"
 MAX_STOMP_ML_WORKER_REPLY_SIZE = 1500
 
 

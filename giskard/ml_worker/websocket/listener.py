@@ -247,7 +247,6 @@ def on_ml_worker_get_info(ml_worker: MLWorkerInfo, params: GetInfoParam, *args, 
         interpreterVersion=platform.python_version(),
         installedPackages=installed_packages,
         mlWorkerId=ml_worker.id,
-        isRemote=ml_worker.is_remote,
     )
 
 
