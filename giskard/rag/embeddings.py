@@ -1,3 +1,5 @@
+from typing import Sequence
+
 from abc import ABC, abstractmethod
 
 import numpy as np
@@ -15,7 +17,7 @@ class OpenAIEmbeddings(EmbeddingsBase):
         self.model = model
         self._client = client if client is not None else OpenAI()
 
-    def embed_text(self, text: str) -> str:
+    def embed_text(self, text: str) -> np.array:
         text = text.replace("\n", " ")
         try:
             out = self._client.embeddings.create(input=[text], model=self.model)
@@ -23,3 +25,12 @@ class OpenAIEmbeddings(EmbeddingsBase):
         except Exception as err:
             raise ValueError(f"Embedding creation failed for text: {text}.") from err
         return np.array(embeddings)
+
+    def embed_documents(self, documents: Sequence) -> np.array:
+        text_batch = [doc.page_content.replace("\n", " ") for doc in documents]
+        try:
+            out = self._client.embeddings.create(input=text_batch, model=self.model)
+            embeddings = [element.embedding for element in out.data]
+        except Exception as err:
+            raise ValueError("Batched embedding creation failed.") from err
+        return np.stack(embeddings)

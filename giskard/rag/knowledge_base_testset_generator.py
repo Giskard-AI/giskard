@@ -1,3 +1,5 @@
+from typing import Sequence
+
 import numpy as np
 import pandas as pd
 
@@ -24,6 +26,7 @@ class KnowledgeBaseTestsetGenerator(BaseDataGenerator):
         context_window_length: int = 8192,
         embedding_model: EmbeddingsBase = None,
         language: str = "english",
+        knowledge_base_features: Sequence[str] = None,
         *args,
         **kwargs,
     ):
@@ -33,13 +36,11 @@ class KnowledgeBaseTestsetGenerator(BaseDataGenerator):
         self.context_neighbors = context_neighbors
         self.context_similarity_threshold = context_similarity_threshold
 
-        # ideally should be moved into llm_client object but OpenAI has no API to retrieve
-        # model context length
         self.context_window_length = context_window_length
         self.embedding_model = embedding_model if embedding_model is not None else OpenAIEmbeddings()
         self.language = language
 
-        self.knowledge_base = VectorStore.from_df(knowledge_df, self.embedding_model)
+        self.knowledge_base = VectorStore.from_df(knowledge_df, self.embedding_model, features=knowledge_base_features)
 
     def _make_generate_input_functions(self, return_attribute_name):
         return [
@@ -69,7 +70,6 @@ class KnowledgeBaseTestsetGenerator(BaseDataGenerator):
             model_description=self.model_description,
             language=self.language,
         )
-
         prompt = self._prevent_context_window_overflow(prompt)
         return self._llm_complete(prompt, self._make_generate_input_functions("question"))
 
@@ -87,8 +87,6 @@ class KnowledgeBaseTestsetGenerator(BaseDataGenerator):
             )
             if score < self.context_similarity_threshold  # should we keep it or not ?
         ]
-
-        print(f"Retrieved {len(relevant_contexts)} relevant contexts.")
         return relevant_contexts
 
     def _format_context(self, contexts):
@@ -101,7 +99,7 @@ class KnowledgeBaseTestsetGenerator(BaseDataGenerator):
         # Prevent context overflow
         # general rule of thumbs to count tokens: 1 token ~ 4 characters
         # https://help.openai.com/en/articles/4936856-what-are-tokens-and-how-to-count-them
-        return prompt[: self.context_window_length // 4]
+        return prompt[: self.context_window_length * 4]
 
     def _llm_complete(self, prompt, functions):
         try:
@@ -118,7 +116,7 @@ class KnowledgeBaseTestsetGenerator(BaseDataGenerator):
 
         return generated
 
-    def generate_testset(self, num_samples: int = 10) -> Dataset:
+    def generate_dataset(self, num_samples: int = 10) -> Dataset:
         generated_questions = []
         for idx in range(num_samples):
             seed_contexts = self._extract_seed_context()
