@@ -54,6 +54,5 @@ class VectorStore:
 
     def similarity_search_with_score(self, query, k):
         query_emb = self.embedding_model.embed_text(query)
-        print(query_emb)
         distances, indices = self.index.search(query_emb[None, :], k=k)
         return [(self.documents[i], d) for d, i in zip(distances[0], indices[0])]
