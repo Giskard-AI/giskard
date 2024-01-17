@@ -166,8 +166,9 @@ def _start_command(worker_name, url: AnyHttpUrl, api_key, is_daemon, hf_token=No
             ml_worker.stop()
     except lockfile.AlreadyLocked:
         existing_pid = read_pid_from_pidfile(pid_file_path)
+        # TODO(Bazire) : update the info to include worker_name
         logger.warning(
-            f"Another ML Worker {_ml_worker_description(is_server, url)} "
+            f"Another ML Worker {_ml_worker_description(url)} "
             f"is already running with PID: {existing_pid}. "
             "Not starting a new one. "
             'To stop a running worker for this instance execute: "giskard worker stop" or '
@@ -178,8 +179,8 @@ def _start_command(worker_name, url: AnyHttpUrl, api_key, is_daemon, hf_token=No
             pid_file.release()
 
 
-def _ml_worker_description(is_server, url):
-    return "server" if is_server else f"client for {url}"
+def _ml_worker_description(url):
+    return f"client for {url}"
 
 
 async def _start_worker(worker_name, url, api_key, hf_token, nb_workers):
