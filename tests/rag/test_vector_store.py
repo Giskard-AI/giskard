@@ -35,8 +35,8 @@ def test_vector_store_creation_from_df():
     df = pd.DataFrame(["This is a test string"] * 5)
 
     embedding_model = Mock()
-    random_embedding = np.random.rand(dimension)
-    embedding_model.embed_text.side_effect = [random_embedding] * 5
+    random_embedding = np.random.rand(5, dimension)
+    embedding_model.embed_documents.side_effect = [random_embedding]
 
     store = VectorStore.from_df(df, embedding_model)
     assert store.index.d == dimension
@@ -44,7 +44,7 @@ def test_vector_store_creation_from_df():
     assert len(store.documents) == 5
     assert store.index.ntotal == 5
 
-    assert np.allclose(store.embeddings[0], random_embedding)
+    assert np.allclose(store.embeddings, random_embedding)
 
 
 def test_vector_store_similarity_search_with_score():
@@ -59,7 +59,6 @@ def test_vector_store_similarity_search_with_score():
 
     query = "This is test string 50"
     retrieved_elements = store.similarity_search_with_score(query, k=3)
-    print([(ret.page_content, score) for (ret, score) in retrieved_elements])
     assert len(retrieved_elements) == 3
     assert retrieved_elements[0][0].page_content == "This is test string 50"
     assert retrieved_elements[0][1] == 0.0
