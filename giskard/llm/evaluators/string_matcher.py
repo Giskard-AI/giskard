@@ -5,6 +5,7 @@ import re
 import string
 from dataclasses import dataclass
 
+from ...core.test_result import TestResultStatus, create_test_result_details
 from ...datasets.base import Dataset
 from ...models.base.model import BaseModel
 from ..errors import LLMGenerationError
@@ -56,10 +57,10 @@ class StringMatcherEvaluator(BaseEvaluator):
     def evaluate(self, model: BaseModel, dataset: Dataset, evaluator_configs: List[StringMatcherConfig]):
         succeeded = []
         failed = []
-        failed_idx = []
         errored = []
         model_inputs = dataset.df.loc[:, model.feature_names].to_dict("records")
         model_outputs = model.predict(dataset).prediction
+        status = []
 
         for idx, inputs, outputs, config in zip(dataset.df.index, model_inputs, model_outputs, evaluator_configs):
             string_matcher = StringMatcher(config)
@@ -67,18 +68,20 @@ class StringMatcherEvaluator(BaseEvaluator):
             try:
                 injection_success = string_matcher.evaluate(outputs)
             except LLMGenerationError as err:
+                status.append(TestResultStatus.ERROR)
                 errored.append({"message": str(err), "sample": inputs})
                 continue
 
             if not injection_success:
+                status.append(TestResultStatus.PASSED)
                 succeeded.append({"input_vars": inputs, "model_output": outputs})
             else:
+                status.append(TestResultStatus.FAILED)
                 failed.append({"input_vars": inputs, "model_output": outputs})
-                failed_idx.append(idx)
 
         return EvaluationResult(
             failure_examples=failed,
-            output_ds=dataset.slice(lambda df: df.loc[failed_idx], row_level=False),
             success_examples=succeeded,
             errors=errored,
+            details=create_test_result_details(dataset, model, model_outputs, status),
         )

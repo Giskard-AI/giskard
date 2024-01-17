@@ -21,10 +21,7 @@ def test_llm_output_requirement(RequirementEvaluator):
 
     # Successful test
     RequirementEvaluator.return_value.evaluate.return_value = EvaluationResult(
-        output_ds=dataset.slice(lambda df: df.iloc[[]], row_level=False),
-        failure_examples=[],
-        success_examples=_demo_samples,
-        errors=[],
+        failure_examples=[], success_examples=_demo_samples, errors=[]
     )
 
     my_test = llm_tests.test_llm_output_against_requirement(
@@ -36,8 +33,6 @@ def test_llm_output_requirement(RequirementEvaluator):
     assert res.passed
     assert res.metric == 0
     assert res.output_df is None
-    assert len(res.output_ds) == 1
-    assert len(res.output_ds[0].df) == 0
 
     RequirementEvaluator.assert_called_once_with(
         ["The model should not generate content that incites harm or violence"]
@@ -46,21 +41,15 @@ def test_llm_output_requirement(RequirementEvaluator):
 
     # Failed test
     RequirementEvaluator.return_value.evaluate.return_value = EvaluationResult(
-        output_ds=dataset.slice(lambda df: df, row_level=False),
-        failure_examples=_demo_samples,
-        success_examples=[],
-        errors=[],
+        failure_examples=_demo_samples, success_examples=[], errors=[]
     )
     res = my_test.execute()
     assert not res.passed
     assert res.metric == 2
     assert res.metric_name == "Failing examples"
-    assert len(res.output_ds) == 1
-    assert len(res.output_ds[0].df) == len(dataset.df)
 
     # Errored tests
     RequirementEvaluator.return_value.evaluate.return_value = EvaluationResult(
-        output_ds=dataset.slice(lambda df: df.iloc[[]], row_level=False),
         failure_examples=[],
         success_examples=_demo_samples,
         errors=[{"message": "Something went wrong!", "sample": dict()}],
@@ -90,7 +79,7 @@ def test_llm_single_output_requirement(RequirementEvaluator):
 
     # Successful test
     RequirementEvaluator.return_value.evaluate.return_value = EvaluationResult(
-        failure_examples=[], success_examples=demo_sample, errors=[], output_ds=Dataset(pd.DataFrame({"feature": []}))
+        failure_examples=[], success_examples=demo_sample, errors=[]
     )
 
     my_test = llm_tests.test_llm_single_output_against_requirement(
@@ -116,7 +105,6 @@ def test_llm_single_output_requirement(RequirementEvaluator):
 
     # Failed test
     RequirementEvaluator.return_value.evaluate.return_value = EvaluationResult(
-        output_ds=Dataset(pd.DataFrame({"feature": ["value"]})),
         failure_examples=demo_sample,
         success_examples=[],
         errors=[],
@@ -128,7 +116,6 @@ def test_llm_single_output_requirement(RequirementEvaluator):
 
     # Errored tests
     RequirementEvaluator.return_value.evaluate.return_value = EvaluationResult(
-        output_ds=Dataset(pd.DataFrame({"feature": []})),
         failure_examples=[],
         success_examples=demo_sample,
         errors=[{"message": "Something went wrong!", "sample": dict()}],
@@ -154,7 +141,6 @@ def test_llm_output_requirement_per_row(PerRowRequirementEvaluator):
 
     # Successful test
     PerRowRequirementEvaluator.return_value.evaluate.return_value = EvaluationResult(
-        output_ds=dataset.slice(lambda df: df.iloc[[]], row_level=False),
         failure_examples=[],
         success_examples=_demo_samples,
         errors=[],
@@ -176,7 +162,6 @@ def test_llm_output_requirement_per_row(PerRowRequirementEvaluator):
 
     # Failed test
     PerRowRequirementEvaluator.return_value.evaluate.return_value = EvaluationResult(
-        output_ds=dataset.slice(lambda df: df.iloc[dataset.df.index], row_level=False),
         failure_examples=_demo_samples,
         success_examples=[],
         errors=[],
@@ -185,12 +170,9 @@ def test_llm_output_requirement_per_row(PerRowRequirementEvaluator):
     assert not res.passed
     assert res.metric == 2
     assert res.metric_name == "Failing examples"
-    assert len(res.output_ds) == 1
-    assert isinstance(res.output_ds[0], Dataset)
 
     # Errored tests
     PerRowRequirementEvaluator.return_value.evaluate.return_value = EvaluationResult(
-        output_ds=dataset.slice(lambda df: df.iloc[[]], row_level=False),
         failure_examples=[],
         success_examples=_demo_samples,
         errors=[{"message": "Something went wrong!", "sample": dict()}],
