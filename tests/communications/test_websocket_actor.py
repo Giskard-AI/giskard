@@ -38,50 +38,27 @@ def test_websocket_actor_echo():
 
 
 def test_websocket_actor_get_info():
-    internal_ml_worker = utils.MockedWebSocketMLWorker(is_server=True)  # Internal worker
-    external_ml_worker = utils.MockedWebSocketMLWorker(is_server=False)  # External worker
+    ml_worker = utils.MockedWebSocketMLWorker(worker_name="some_name")  # External worker
 
     without_package_params = websocket.GetInfoParam(list_packages=False)
     with_package_params = websocket.GetInfoParam(list_packages=True)
 
-    # Internal worker, without packages
-    server_ml_worker_info = listener.on_ml_worker_get_info(
-        ml_worker=listener.MLWorkerInfo(internal_ml_worker.ml_worker_id),
-        params=without_package_params,
-    )
-    assert isinstance(server_ml_worker_info, websocket.GetInfo)
-    assert not server_ml_worker_info.isRemote
-    assert server_ml_worker_info.mlWorkerId == ml_worker.INTERNAL_WORKER_ID
-    assert 0 == len(server_ml_worker_info.installedPackages.values())
-
-    # Internal worker, with packages
-    server_ml_worker_info = listener.on_ml_worker_get_info(
-        ml_worker=listener.MLWorkerInfo(internal_ml_worker.ml_worker_id),
-        params=with_package_params,
-    )
-    assert isinstance(server_ml_worker_info, websocket.GetInfo)
-    assert not server_ml_worker_info.isRemote
-    assert server_ml_worker_info.mlWorkerId == ml_worker.INTERNAL_WORKER_ID
-    assert 0 != len(server_ml_worker_info.installedPackages.values())
-
     # External worker, without packages
     remote_ml_worker_info = listener.on_ml_worker_get_info(
-        ml_worker=listener.MLWorkerInfo(external_ml_worker.ml_worker_id),
+        ml_worker=listener.MLWorkerInfo(ml_worker._worker_name),
         params=without_package_params,
     )
     assert isinstance(remote_ml_worker_info, websocket.GetInfo)
-    assert remote_ml_worker_info.isRemote
-    assert remote_ml_worker_info.mlWorkerId == ml_worker.EXTERNAL_WORKER_ID
+    assert remote_ml_worker_info.mlWorkerId == ml_worker._worker_name
     assert 0 == len(remote_ml_worker_info.installedPackages.values())
 
     # External worker, with packages
     remote_ml_worker_info = listener.on_ml_worker_get_info(
-        ml_worker=listener.MLWorkerInfo(external_ml_worker.ml_worker_id),
+        ml_worker=listener.MLWorkerInfo(ml_worker._worker_name),
         params=with_package_params,
     )
     assert isinstance(remote_ml_worker_info, websocket.GetInfo)
-    assert remote_ml_worker_info.isRemote
-    assert remote_ml_worker_info.mlWorkerId == ml_worker.EXTERNAL_WORKER_ID
+    assert remote_ml_worker_info.mlWorkerId == ml_worker._worker_name
     assert 0 != len(remote_ml_worker_info.installedPackages.values())
 
 

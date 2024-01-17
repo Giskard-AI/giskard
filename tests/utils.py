@@ -19,7 +19,6 @@ from giskard.client import dtos
 from giskard.client.giskard_client import GiskardClient
 from giskard.core.savable import Artifact
 from giskard.datasets.base import Dataset
-from giskard.ml_worker import ml_worker
 from giskard.models.base.model import BaseModel
 from giskard.path_utils import get_size
 from giskard.settings import settings
@@ -146,13 +145,14 @@ def get_email_files():
 
 
 class MockedWebSocketMLWorker:
-    def __init__(self, backend_url=None, api_key=None, hf_token=None) -> None:
+    def __init__(self, backend_url=None, api_key=None, hf_token=None, worker_name=None) -> None:
         client = MockedClient(mock_all=True)
         self.client = client
 
         self.backend_url = backend_url
         self.api_key = api_key
         self.hf_token = hf_token
+        self._worker_name = worker_name
 
 
 class MockedProjectCacheDir:
