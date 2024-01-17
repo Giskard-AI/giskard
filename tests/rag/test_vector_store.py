@@ -4,7 +4,7 @@ import numpy as np
 import pandas as pd
 import pytest
 
-from giskard.rag import Document, VectorStore
+from giskard.rag.vector_store import Document, VectorStore
 
 
 def test_vector_store_creation():

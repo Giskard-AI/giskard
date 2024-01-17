@@ -1,4 +1,4 @@
-from giskard.rag import Document
+from giskard.rag.vector_store import Document
 
 
 def test_single_feature_document_creation():
