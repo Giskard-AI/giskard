@@ -18,11 +18,11 @@ def _test_output_against_requirement(model, dataset, evaluator):
         messages = [TestMessage(TestMessageLevel.ERROR, err["message"]) for err in eval_result.errors]
     return TestResult(
         passed=eval_result.passed,
-        output_ds=[eval_result.output_ds],
         metric=len(eval_result.failure_examples),
         metric_name="Failing examples",
         is_error=eval_result.has_errors,
         messages=messages,
+        details=eval_result.details,
     )
 
 
@@ -152,9 +152,4 @@ def test_llm_single_output_against_requirement(
     )
 
     # Run normal output requirement test
-    test_result = _test_output_against_requirement(model, dataset, RequirementEvaluator([requirement]))
-
-    # Test without dataset as input does not currently support debugging
-    test_result.output_ds = None
-
-    return test_result
+    return _test_output_against_requirement(model, dataset, RequirementEvaluator([requirement]))

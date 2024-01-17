@@ -98,8 +98,19 @@ class GiskardTest(Artifact[TestFunctionMeta], ABC):
 
         return giskard_test
 
-    def get_builder(self):
-        return type(self)
+    def assert_(self):
+        """Wrap execution of the test into a "assert" for unit test executions."""
+        result = self.execute()
+        if isinstance(result, bool):
+            assert result
+        else:
+            if result.messages:
+                message = " ".join([getattr(message, "text", None) or repr(message) for message in result.messages])
+            else:
+                # Pass more context in case the message is empty
+                message = " ".join(str(result).replace("\n", " ").split())
+
+            assert result.passed, message
 
 
 Function = Callable[..., Result]
@@ -170,9 +181,6 @@ class GiskardTestMethod(GiskardTest):
             output.append(f"Named inputs: {self.params}")
 
         return "\n".join(output)
-
-    def get_builder(self):
-        return GiskardTestMethod(self.test_fn)
 
     def _save_locally(self, local_dir: Path):
         with open(Path(local_dir) / "data.pkl", "wb") as f:

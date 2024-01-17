@@ -1,9 +1,7 @@
 import logging
 import os
-import uuid
 from concurrent.futures import Future
 from threading import Thread
-from time import sleep
 from uuid import UUID
 
 from giskard.settings import settings
@@ -74,9 +72,6 @@ def start_pool(max_workers: int = None):
         LOGGER.warning("Execution in pool is disabled, this should only happen for test and debug")
         return
     POOL.start(max_workers=max_workers)
-    # Warmup the pool
-    for _ in range(100):
-        call_in_pool(job_id=uuid.uuid4(), fn=sleep, args=[0])
 
 
 def shutdown_pool():

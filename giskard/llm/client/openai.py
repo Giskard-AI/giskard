@@ -65,7 +65,7 @@ class BaseOpenAIClient(LLMClient, ABC):
             try:
                 function_call = LLMFunctionCall(
                     function=fc["name"],
-                    args=json.loads(fc["arguments"]),
+                    args=json.loads(fc["arguments"], strict=False),
                 )
             except (json.JSONDecodeError, KeyError) as err:
                 raise LLMGenerationError("Could not parse function call") from err
