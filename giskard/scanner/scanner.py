@@ -1,4 +1,4 @@
-from typing import Optional, Sequence, Any
+from typing import Any, Optional, Sequence
 
 import datetime
 import uuid
@@ -70,9 +70,8 @@ class Scanner:
 
     def analyze(
         self,
-        model: Any,
-        dataset: Optional[Any] = None,
-        detectors: Optional[Sequence[Any]] = None,
+        model: BaseModel,
+        dataset: Optional[Dataset] = None,
         features: Optional[Sequence[str]] = None,
         verbose=True,
         raise_exceptions=False,
@@ -99,17 +98,14 @@ class Scanner:
             A report object containing the detected issues and other information.
         """
 
-        if isinstance(model, BaseModel) and isinstance(dataset, Dataset):
-            # Check that the model and dataset were appropriately wrapped with Giskard
-            model, dataset, model_validation_time = self._validate_model_and_dataset(model, dataset)
+        # Check that the model and dataset were appropriately wrapped with Giskard
+        model, dataset, model_validation_time = self._validate_model_and_dataset(model, dataset)
 
-            # Check that provided features are valid
-            features = self._validate_features(features, model, dataset)
-        else:
-            verbose = False
+        # Check that provided features are valid
+        features = self._validate_features(features, model, dataset)
 
         # Initialize LLM logger if needed
-        if isinstance(model, BaseModel) and model.is_text_generation:
+        if model.is_text_generation:
             get_default_client().logger.reset()
 
         # Good, we can start
@@ -117,8 +113,7 @@ class Scanner:
         time_start = perf_counter()
 
         # Collect the detectors
-        if detectors is None:
-            detectors = self.get_detectors(tags=[model.meta.model_type.value])
+        detectors = self.get_detectors(tags=[model.meta.model_type.value])
 
         # Print cost estimate
         if verbose:
@@ -139,8 +134,7 @@ class Scanner:
         if verbose:
             self._print_execution_summary(model, issues, errors, elapsed)
 
-        if isinstance(model, BaseModel) and isinstance(dataset, Dataset):
-            self._collect_analytics(model, dataset, issues, elapsed, model_validation_time, detectors)
+        self._collect_analytics(model, dataset, issues, elapsed, model_validation_time, detectors)
 
         return ScanReport(issues, model=model, dataset=dataset)
 
