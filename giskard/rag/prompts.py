@@ -13,7 +13,7 @@ Here is the context:
 </context>
 
 Remember you are a client of {model_name}, you are looking for information to help you with your shopping.
-Please call the `generate_inputs` function with the generated inputs.
+Please call the `generate_inputs` function with the generated inputs. You must generate 1 input.
 """
 
 ANSWER_GENERATION_PROMPT = """Your task is to answer a question based on a provided context.
