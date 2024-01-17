@@ -1,4 +1,4 @@
-from typing import Optional, Sequence
+from typing import Optional, Sequence, Any
 
 import datetime
 import uuid
@@ -70,8 +70,9 @@ class Scanner:
 
     def analyze(
         self,
-        model: BaseModel,
-        dataset: Optional[Dataset] = None,
+        model: Any,
+        dataset: Optional[Any] = None,
+        detectors: Optional[Sequence[Any]] = None,
         features: Optional[Sequence[str]] = None,
         verbose=True,
         raise_exceptions=False,
@@ -98,14 +99,17 @@ class Scanner:
             A report object containing the detected issues and other information.
         """
 
-        # Check that the model and dataset were appropriately wrapped with Giskard
-        model, dataset, model_validation_time = self._validate_model_and_dataset(model, dataset)
+        if isinstance(model, BaseModel) and isinstance(dataset, Dataset):
+            # Check that the model and dataset were appropriately wrapped with Giskard
+            model, dataset, model_validation_time = self._validate_model_and_dataset(model, dataset)
 
-        # Check that provided features are valid
-        features = self._validate_features(features, model, dataset)
+            # Check that provided features are valid
+            features = self._validate_features(features, model, dataset)
+        else:
+            verbose = False
 
         # Initialize LLM logger if needed
-        if model.is_text_generation:
+        if isinstance(model, BaseModel) and model.is_text_generation:
             get_default_client().logger.reset()
 
         # Good, we can start
@@ -113,7 +117,8 @@ class Scanner:
         time_start = perf_counter()
 
         # Collect the detectors
-        detectors = self.get_detectors(tags=[model.meta.model_type.value])
+        if detectors is None:
+            detectors = self.get_detectors(tags=[model.meta.model_type.value])
 
         # Print cost estimate
         if verbose:
@@ -134,7 +139,8 @@ class Scanner:
         if verbose:
             self._print_execution_summary(model, issues, errors, elapsed)
 
-        self._collect_analytics(model, dataset, issues, elapsed, model_validation_time, detectors)
+        if isinstance(model, BaseModel) and isinstance(dataset, Dataset):
+            self._collect_analytics(model, dataset, issues, elapsed, model_validation_time, detectors)
 
         return ScanReport(issues, model=model, dataset=dataset)
 
@@ -360,6 +366,123 @@ class Scanner:
         if model.is_text_generation:
             measured = self._get_cost_measure()
             print(COST_SUMMARY_TEMPLATE.format(**measured))
+        if errors:
+            warning(
+                f"{len(errors)} errors were encountered while running detectors. Please check the log to understand what went wrong. "
+                "You can run the scan again with `raise_exceptions=True` to disable graceful handling."
+            )
+
+
+class ScannerPlugin(Scanner):
+    """Scanner that can be used with any model, dataset and custom detector.
+    Each detector should return a list of Issues when the run method is called.
+    """
+
+    def analyze(
+        self,
+        model: Any,
+        dataset: Any,
+        detectors: Sequence[Any],
+        verbose=True,
+        raise_exceptions=False,
+    ) -> ScanReport:
+        """Runs the analysis of a model and dataset with the help of custom detectors, detecting issues.
+
+        Parameters
+        ----------
+        model : Any
+            A model object.
+        dataset : Any
+            A dataset object.
+        detectors : Sequence[Any]
+            A list of detector objects that implements a run method which takes a model and dataset as input
+            and outputs a list of Issues.
+        verbose : bool
+            Whether to print detailed info messages. Enabled by default.
+        raise_exceptions : bool
+            Whether to raise an exception if detection errors are encountered. By default, errors are logged and
+            handled gracefully, without interrupting the scan.
+
+        Returns
+        -------
+        ScanReport
+            A report object containing the detected issues and other information.
+        """
+
+        # Good, we can start
+        maybe_print("🔎 Running scan…", verbose=verbose)
+        time_start = perf_counter()
+
+        # @TODO: this should be selective to specific warnings
+        with warnings.catch_warnings():
+            warnings.simplefilter("ignore")
+            issues, errors = self._run_detectors(
+                detectors, model, dataset, verbose=verbose, raise_exceptions=raise_exceptions
+            )
+
+        issues = self._postprocess(issues)
+
+        # Scan completed
+        elapsed = perf_counter() - time_start
+
+        if verbose:
+            self._print_execution_summary(model, issues, errors, elapsed)
+
+        return ScanReport(issues, model=model, dataset=dataset)
+
+    def _run_detectors(self, detectors, model, dataset, verbose=True, raise_exceptions=False):
+        if not detectors:
+            raise RuntimeError("No issue detectors available. Scan will not be performed.")
+
+        logger.info(f"Running detectors: {[d.__class__.__name__ for d in detectors]}")
+
+        issues = []
+        errors = []
+        for detector in detectors:
+            maybe_print(f"Running detector {detector.__class__.__name__}…", verbose=verbose)
+            detector_start = perf_counter()
+            try:
+                detected_issues = detector.run(model, dataset)
+            except Exception as err:
+                logger.error(f"Detector {detector.__class__.__name__} failed with error: {err}")
+                errors.append((detector, err))
+                analytics.track(
+                    "scan:run-detector:error",
+                    {
+                        "scan_uuid": self.uuid.hex,
+                        "detector": fullname(detector),
+                        "error": str(err),
+                        "error_class": fullname(err),
+                    },
+                )
+                if raise_exceptions:
+                    raise err
+
+                detected_issues = []
+            detected_issues = sorted(detected_issues, key=lambda i: -i.importance)[:MAX_ISSUES_PER_DETECTOR]
+            detector_elapsed = perf_counter() - detector_start
+            maybe_print(
+                f"{detector.__class__.__name__}: {len(detected_issues)} issue{'s' if len(detected_issues) > 1 else ''} detected. (Took {datetime.timedelta(seconds=detector_elapsed)})",
+                verbose=verbose,
+            )
+            analytics.track(
+                "scan:detector-run",
+                {
+                    "scan_uuid": self.uuid.hex,
+                    "detector": fullname(detector),
+                    "detector_elapsed": detector_elapsed,
+                    "detected_issues": len(detected_issues),
+                },
+            )
+
+            issues.extend(detected_issues)
+
+        return issues, errors
+
+    def _print_execution_summary(self, model, issues, errors, elapsed):
+        print(
+            f"Scan completed: {len(issues) or 'no'} issue{'s' if len(issues) != 1 else ''} found. (Took {datetime.timedelta(seconds=elapsed)})"
+        )
         if errors:
             warning(
                 f"{len(errors)} errors were encountered while running detectors. Please check the log to understand what went wrong. "
