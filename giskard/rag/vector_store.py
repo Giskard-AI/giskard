@@ -41,18 +41,12 @@ class VectorStore:
     def from_df(cls, df: pd.DataFrame, embedding_model: EmbeddingsBase, features: Sequence[str] = None):
         if len(df) > 0:
             documents = [Document(knowledge_chunk, features=features) for knowledge_chunk in df.to_dict("records")]
-            try:
-                embeddings = np.stack(
-                    [embedding_model.embed_text(document.page_content) for document in documents]
-                ).astype("float32")
-            except Exception as err:
-                raise ValueError("Failed to embed the list of documents.") from err
-
+            embeddings = embedding_model.embed_documents(documents).astype("float32")
             return cls(documents, embeddings, embedding_model)
         else:
             raise ValueError("Cannot generate a vector store from empty DataFrame.")
 
     def similarity_search_with_score(self, query, k):
-        query_emb = self.embedding_model.embed_text(query)
-        distances, indices = self.index.search(query_emb[None, :], k=k)
+        query_emb = self.embedding_model.embed_text(query).astype("float32")
+        distances, indices = self.index.search(query_emb[None, :], k)
         return [(self.documents[i], d) for d, i in zip(distances[0], indices[0])]
