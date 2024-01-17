@@ -2,7 +2,7 @@ from unittest.mock import Mock
 
 import numpy as np
 
-from giskard.rag import OpenAIEmbeddings
+from giskard.rag.embeddings import OpenAIEmbeddings
 
 
 def test_openai_embeddings_model():
