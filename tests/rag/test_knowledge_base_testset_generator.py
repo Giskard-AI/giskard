@@ -68,10 +68,10 @@ def test_testset_generation():
     embedding_model = Mock()
     # evenly spaced embeddings for the knowledge base elements and specifically chosen embeddings for
     # each mock embedding calls.
-    embedding_model.embed_text.side_effect = [np.ones(embedding_dimension) * idx / 100 for idx in range(4)] + [
-        np.ones(8) * 0.02,
-        np.ones(8) * 10,
-    ]
+    kb_embeddings = np.ones((4, embedding_dimension)) * np.arange(4)[:, None] / 100
+    query_embeddings = np.ones((2, embedding_dimension)) * np.array([0.02, 10])[:, None]
+    embedding_model.embed_documents.side_effect = [kb_embeddings]
+    embedding_model.embed_text.side_effect = list(query_embeddings)
 
     knowledge_base_df = make_knowledge_base_df()
     testset_generator = KnowledgeBaseTestsetGenerator(
@@ -90,7 +90,7 @@ def test_testset_generation():
         "Scamorza is a Southern Italian cow's milk cheese."
     )
 
-    test_set = testset_generator.generate_testset(num_samples=2)
+    test_set = testset_generator.generate_dataset(num_samples=2)
     assert len(test_set) == 2
     assert test_set.loc[0, "question"] == "Where is Camembert from?"
     assert test_set.loc[0, "reference_answer"] == "Camembert was created in Normandy, in the northwest of France."
