@@ -7,7 +7,7 @@ import pytest
 
 from giskard import slicing_function, transformation_function
 from giskard.datasets.base import Dataset
-from giskard.ml_worker import ml_worker, websocket
+from giskard.ml_worker import websocket
 from giskard.ml_worker.websocket import listener
 from giskard.ml_worker.websocket.action import MLWorkerAction
 from giskard.models.base.model import BaseModel
