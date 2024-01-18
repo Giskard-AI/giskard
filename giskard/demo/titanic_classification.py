@@ -57,7 +57,7 @@ def get_model_and_df(model: str = ModelTypes.LOGISTIC_REGRESSION, max_iter: int 
     cat_transormer = Pipeline(
         [
             ("imputer", SimpleImputer(strategy="constant", fill_value="missing")),
-            ("onehot", OneHotEncoder(handle_unknown="ignore", sparse=False)),
+            ("onehot", OneHotEncoder(handle_unknown="ignore", sparse_output=False)),
         ]
     )
 
