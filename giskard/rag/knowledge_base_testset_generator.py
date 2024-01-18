@@ -3,11 +3,11 @@ from typing import Sequence
 import numpy as np
 import pandas as pd
 
-from ..datasets import Dataset
 from ..llm.errors import LLMGenerationError
 from ..llm.generators import BaseDataGenerator
 from .embeddings import EmbeddingsBase, OpenAIEmbeddings
 from .prompts import ANSWER_GENERATION_PROMPT, QUESTION_GENERATION_PROMPT
+from .testset import TestSet
 from .vector_store import VectorStore
 
 
@@ -25,8 +25,9 @@ class KnowledgeBaseTestsetGenerator(BaseDataGenerator):
         context_similarity_threshold: float = 0.2,
         context_window_length: int = 8192,
         embedding_model: EmbeddingsBase = None,
-        language: str = "english",
+        language: str = "en",
         knowledge_base_features: Sequence[str] = None,
+        seed: int = None,
         *args,
         **kwargs,
     ):
@@ -39,6 +40,7 @@ class KnowledgeBaseTestsetGenerator(BaseDataGenerator):
         self.context_window_length = context_window_length
         self.embedding_model = embedding_model if embedding_model is not None else OpenAIEmbeddings()
         self.language = language
+        self.rng = np.random.default_rng(seed=seed)
 
         self.knowledge_base = VectorStore.from_df(knowledge_df, self.embedding_model, features=knowledge_base_features)
 
@@ -79,7 +81,7 @@ class KnowledgeBaseTestsetGenerator(BaseDataGenerator):
         return self._llm_complete(prompt, self._make_generate_input_functions("answer"))
 
     def _extract_seed_context(self):
-        seed_context = np.random.choice(self.knowledge_base.documents)
+        seed_context = self.rng.choice(self.knowledge_base.documents)
         relevant_contexts = [
             context
             for (context, score) in self.knowledge_base.similarity_search_with_score(
@@ -116,7 +118,7 @@ class KnowledgeBaseTestsetGenerator(BaseDataGenerator):
 
         return generated
 
-    def generate_dataset(self, num_samples: int = 10) -> Dataset:
+    def generate_dataset(self, num_samples: int = 10) -> TestSet:
         generated_questions = []
         for idx in range(num_samples):
             seed_contexts = self._extract_seed_context()
@@ -134,4 +136,4 @@ class KnowledgeBaseTestsetGenerator(BaseDataGenerator):
                 }
             )
 
-        return pd.DataFrame(generated_questions)
+        return TestSet(df=pd.DataFrame(generated_questions))
