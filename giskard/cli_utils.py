@@ -60,13 +60,11 @@ def is_pid_stale(pid):
 
 
 def create_pid_file_path(worker_name, url):
-    # TODO(Bazire): Should we still do that ? or just base in on worker_name ?
     hash_value = ml_worker_id(worker_name, url)
     return run_dir / f"ml-worker-{hash_value}.pid"
 
 
 def ml_worker_id(worker_name, url):
-    # TODO(Bazire): Should we still do that ? or just base in on worker_name ?
     key = f"{sys.executable}{str(url)}{worker_name}"
     hash_value = hashlib.sha1(key.encode()).hexdigest()
     return hash_value
@@ -74,31 +72,6 @@ def ml_worker_id(worker_name, url):
 
 def validate_url(_ctx, _param, value) -> AnyHttpUrl:
     return parse_obj_as(AnyHttpUrl, value)
-
-
-def run_daemon(worker_name, url, api_key, hf_token):
-    from daemon import DaemonContext
-    from daemon.daemon import change_working_directory
-
-    from giskard.ml_worker.ml_worker import MLWorker
-
-    log_path = get_log_path()
-    logger.info("Writing logs to %s", log_path)
-    pid_file = PIDLockFile(create_pid_file_path(worker_name, url))
-
-    with Path(log_path).open("w+t", encoding="utf-8") as fp:
-        with DaemonContext(pidfile=pid_file, stdout=fp):
-            # For some reason requests.utils.should_bypass_proxies that's called inside every request made by requests
-            # hangs when the process runs as a daemon. A dirty temporary fix is to disable proxies for daemon mode.
-            # True reasons for this to happen to be investigated
-            os.environ["no_proxy"] = "*"
-
-            workdir = settings.home_dir / "tmp" / f"daemon-run-{os.getpid()}"
-            workdir.mkdir(exist_ok=True, parents=True)
-            change_working_directory(workdir)
-
-            logger.info("Daemon PID: %s", os.getpid())
-            asyncio.get_event_loop().run_until_complete(MLWorker(worker_name, url, api_key, hf_token).start())
 
 
 def get_log_path():
