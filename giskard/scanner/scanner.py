@@ -216,7 +216,7 @@ class BaseScanner:
 
 
 class Scanner(BaseScanner):
-    def __init__(self, params: dict | None = None, only=None):
+    def __init__(self, params: Optional[dict] = None, only=None):
         super().__init__(params, only)
 
     def analyze(
