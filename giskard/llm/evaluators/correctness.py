@@ -1,5 +1,3 @@
-from typing import Sequence
-
 from giskard.datasets import Dataset
 from giskard.llm.errors import LLMGenerationError
 from giskard.llm.evaluators.base import (
@@ -41,7 +39,8 @@ Call the `evaluate_model` function with the result of your evaluation.
 
 class CorrectnessEvaluator(LLMBasedEvaluator):
     _default_eval_prompt = CORRECTNESS_EVALUATION_PROMPT
-    _required_features = ["question", "reference_answer"]
+    _question_feature_name = "question"
+    _reference_answer_feature_name = "reference_answer"
 
     def _make_evaluate_functions(self):
         return EVALUATE_MODEL_FUNCTIONS
@@ -55,14 +54,32 @@ class CorrectnessEvaluator(LLMBasedEvaluator):
             ground_truth=ground_truth,
         )
 
-    def evaluate(self, model: BaseModel, dataset: Dataset, feature_names: Sequence = None):
-        feature_names = self._required_features if feature_names is None else feature_names
+    def evaluate(
+        self,
+        model: BaseModel,
+        dataset: Dataset,
+        question_feature_name: str = None,
+        reference_answer_feature_name: str = None,
+    ):
+        question_feature_name = (
+            question_feature_name if question_feature_name is not None else self._question_feature_name
+        )
+        reference_answer_feature_name = (
+            reference_answer_feature_name
+            if reference_answer_feature_name is not None
+            else self._reference_answer_feature_name
+        )
+        qa_feature_names = [question_feature_name, reference_answer_feature_name]
 
-        if any([name not in dataset.df for name in feature_names]):
-            raise ValueError(f"Missing at least one required feature in the evaluation dataset among: {feature_names}.")
+        # question and reference_answer feature names must be present in the dataset
+        if not (question_feature_name in dataset.df and reference_answer_feature_name in dataset.df):
+            raise ValueError(
+                f"Missing at least one required feature in the evaluation dataset among: {qa_feature_names}."
+            )
 
-        if any([name not in model.feature_names for name in feature_names]):
-            raise ValueError(f"Missing at least one required feature in the evaluated model among: {feature_names}.")
+        # question feature name must be inside model's features
+        if question_feature_name not in model.feature_names:
+            raise ValueError(f"Missing question feature: {question_feature_name} inside model's features.")
 
         model_outputs = model.predict(dataset).prediction
         succeeded = []
@@ -71,7 +88,10 @@ class CorrectnessEvaluator(LLMBasedEvaluator):
         for evaluation_question, model_output in zip(dataset.df.to_dict("records"), model_outputs):
             try:
                 passed, reason = self._evaluate_single(
-                    model, evaluation_question[feature_names[0]], evaluation_question[feature_names[1]], model_output
+                    model,
+                    evaluation_question[question_feature_name],
+                    evaluation_question[reference_answer_feature_name],
+                    model_output,
                 )
                 sample = {
                     **evaluation_question,
