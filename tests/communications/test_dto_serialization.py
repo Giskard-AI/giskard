@@ -57,7 +57,6 @@ MANDATORY_FIELDS = {
         "interpreterVersion",
         "installedPackages",
         "mlWorkerId",
-        "isRemote",
         "pid",
         "processStartTime",
         "giskardClientVersion",
