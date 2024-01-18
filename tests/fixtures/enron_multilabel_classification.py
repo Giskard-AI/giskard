@@ -152,7 +152,7 @@ def enron_raw_model(enron_raw_data: pd.DataFrame) -> Tuple[Pipeline, List[str]]:
     categorical_transformer = Pipeline(
         [
             ("imputer", SimpleImputer(strategy="constant", fill_value="missing")),
-            ("onehot", OneHotEncoder(handle_unknown="ignore")),
+            ("onehot", OneHotEncoder(handle_unknown="ignore", sparse=False)),
         ]
     )
 
