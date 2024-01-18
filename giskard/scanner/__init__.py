@@ -6,7 +6,7 @@ from typing import Optional, Sequence
 from ..datasets.base import Dataset
 from ..models.base import BaseModel
 from .logger import logger
-from .scanner import Scanner
+from .scanner import BaseScanner, Scanner
 
 
 def _register_default_detectors():
@@ -60,10 +60,10 @@ def scan(
     ScanReport
         A scan report object containing the results of the scan.
     """
-    scanner = Scanner(params, only=only)
-    return scanner.analyze(
+    scanner_cls = Scanner if isinstance(model, BaseModel) else BaseScanner
+    return scanner_cls.analyze(
         model, dataset=dataset, features=features, verbose=verbose, raise_exceptions=raise_exceptions
     )
 
 
-__all__ = ["scan", "Scanner", "logger"]
+__all__ = ["scan", "Scanner", "BaseScanner", "logger"]

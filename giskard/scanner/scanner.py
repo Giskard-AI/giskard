@@ -1,4 +1,4 @@
-from typing import Optional, Sequence
+from typing import Any, Optional, Sequence
 
 import datetime
 import uuid
@@ -24,7 +24,7 @@ from ..utils.analytics_collector import (
 )
 from .issues import DataLeakage, Issue, Stochasticity
 from .logger import logger
-from .registry import DetectorRegistry
+from .registry import Detector, DetectorRegistry
 from .report import ScanReport
 
 MAX_ISSUES_PER_DETECTOR = 15
@@ -46,7 +46,7 @@ PROMPT_TOKEN_COST = 0.03e-3
 SAMPLED_TOKEN_COST = 0.06e-3
 
 
-class Scanner:
+class BaseScanner:
     def __init__(self, params: Optional[dict] = None, only=None):
         """Scanner for model issues & vulnerabilities.
 
@@ -67,6 +67,157 @@ class Scanner:
         self.params = params or dict()
         self.only = only
         self.uuid = uuid.uuid4()
+
+    def analyze_without_analytics(
+        self,
+        model: Any,
+        dataset: Optional[Any] = None,
+        detectors: Optional[Detector] = None,
+        verbose=True,
+        raise_exceptions=False,
+        **kwargs,
+    ) -> ScanReport:
+        maybe_print("🔎 Running scan…", verbose=verbose)
+
+        # Collect the detectors
+        detectors = (
+            detectors if detectors is not None else self.get_detectors(tags=[model.model_type])
+        )  # string and not an Enum member
+
+        # @TODO: this should be selective to specific warnings
+        with warnings.catch_warnings():
+            warnings.simplefilter("ignore")
+            issues, errors = self._run_detectors(
+                detectors, model, dataset, verbose=verbose, raise_exceptions=raise_exceptions, **kwargs
+            )
+
+        issues = self._postprocess(issues)
+
+        return ScanReport(issues, model=model, dataset=dataset), errors
+
+        # Scan completed
+
+    def analyze(
+        self,
+        model: Any,
+        dataset: Optional[Any] = None,
+        detectors: Optional[Detector] = None,
+        verbose=True,
+        raise_exceptions=False,
+        **kwargs,
+    ) -> ScanReport:
+        time_start = perf_counter()
+        report, errors = self.analyze_without_analytics(model, dataset, detectors, verbose, raise_exceptions, **kwargs)
+        elapsed = perf_counter() - time_start
+        if verbose:
+            self._print_execution_summary(report.issues, errors, elapsed)
+        self._collect_analytics(model, dataset, report.issues, elapsed, detectors)
+
+        return report
+
+    def _track_analytics(self, detector, **kwargs):
+        info = {
+            "scan_uuid": self.uuid.hex,
+            "detector": fullname(detector),
+            **kwargs,
+        }
+
+        analytics.track(
+            "scan:run-detector:error",
+            info,
+        )
+
+    def _run_detectors(self, detectors, model, dataset, verbose=True, raise_exceptions=False, **kwargs):
+        if not detectors:
+            raise RuntimeError("No issue detectors available. Scan will not be performed.")
+
+        logger.info(f"Running detectors: {[d.__class__.__name__ for d in detectors]}")
+
+        issues = []
+        errors = []
+        for detector in detectors:
+            maybe_print(f"Running detector {detector.__class__.__name__}…", verbose=verbose)
+            detector_start = perf_counter()
+            try:
+                detected_issues = detector.run(model, dataset, **kwargs)
+            except Exception as err:
+                logger.error(f"Detector {detector.__class__.__name__} failed with error: {err}")
+                errors.append((detector, err))
+                self._track_analytics(detector, error=str(err), error_class=fullname(err))
+                if raise_exceptions:
+                    raise err
+
+                detected_issues = []
+            detected_issues = sorted(detected_issues, key=lambda i: -i.importance)[:MAX_ISSUES_PER_DETECTOR]
+            detector_elapsed = perf_counter() - detector_start
+            maybe_print(
+                f"{detector.__class__.__name__}: {len(detected_issues)} issue{'s' if len(detected_issues) > 1 else ''} detected. (Took {datetime.timedelta(seconds=detector_elapsed)})",
+                verbose=verbose,
+            )
+            self._track_analytics(detector, detector_elapsed=detector_elapsed, detected_issues=len(detected_issues))
+            issues.extend(detected_issues)
+
+        return issues, errors
+
+    @analytics_method
+    def _collect_analytics(self, model, dataset, issues, elapsed, detectors, **kwargs):
+        issues_counter = Counter([fullname(i) for i in issues]) if issues else {}
+
+        properties = dict(
+            elapsed=elapsed,
+            total_issues=len(issues),
+            detectors=[d.__class__.__name__ for d in detectors],
+            **kwargs,
+            **issues_counter,
+        )
+        properties.update(get_model_properties(model))
+        properties.update(get_dataset_properties(dataset))
+
+        cost_estimate = self._get_cost_estimate(model, dataset, detectors)
+        properties.update(cost_estimate)
+
+        analytics.track("scan", properties)
+
+    def get_detectors(self, tags: Optional[Sequence[str]] = None) -> Sequence:
+        """Returns the detector instances."""
+        detectors = []
+        classes = DetectorRegistry.get_detector_classes(tags=tags)
+
+        # Filter detector classes
+        if self.only:
+            only_classes = DetectorRegistry.get_detector_classes(tags=self.only)
+            keys_to_keep = set(only_classes.keys()).intersection(classes.keys())
+            classes = {k: classes[k] for k in keys_to_keep}
+
+        # Configure instances
+        for name, detector_cls in classes.items():
+            kwargs = self.params.get(name) or dict()
+            detectors.append(detector_cls(**kwargs))
+
+        return detectors
+
+    def _postprocess(self, issues: Sequence[Issue]) -> Sequence[Issue]:
+        # If we detected a Stochasticity issue, we will have a possibly false
+        # positive DataLeakage issue. We remove it here.
+        if any(issue.group == Stochasticity for issue in issues):
+            issues = [issue for issue in issues if issue.group != DataLeakage]
+
+        return issues
+
+    def _print_execution_summary(self, issues, errors, elapsed):
+        print(
+            f"Scan completed: {len(issues) or 'no'} issue{'s' if len(issues) != 1 else ''} found. (Took {datetime.timedelta(seconds=elapsed)})"
+        )
+        if errors:
+            warning(
+                f"{len(errors)} errors were encountered while running detectors. Please check the log to understand what went wrong. "
+                "You can run the scan again with `raise_exceptions=True` to disable graceful handling."
+            )
+
+
+class Scanner(BaseScanner):
+    def __init__(self, params: dict | None = None, only=None):
+        super().__init__(params, only)
 
     def analyze(
         self,
@@ -108,92 +259,29 @@ class Scanner:
         if model.is_text_generation:
             get_default_client().logger.reset()
 
-        # Good, we can start
-        maybe_print("🔎 Running scan…", verbose=verbose)
-        time_start = perf_counter()
-
         # Collect the detectors
-        detectors = self.get_detectors(tags=[model.meta.model_type.value])
+        detectors = self.get_detectors(tags=[model.model_type.value])
 
         # Print cost estimate
         if verbose:
             self._print_cost_estimate(model, dataset, detectors)
 
-        # @TODO: this should be selective to specific warnings
-        with warnings.catch_warnings():
-            warnings.simplefilter("ignore")
-            issues, errors = self._run_detectors(
-                detectors, model, dataset, features, verbose=verbose, raise_exceptions=raise_exceptions
-            )
-
-        issues = self._postprocess(issues)
-
-        # Scan completed
+        time_start = perf_counter()
+        report, errors = self.analyze_without_analytics(
+            model, dataset, detectors, verbose, raise_exceptions, features=features
+        )
         elapsed = perf_counter() - time_start
-
         if verbose:
-            self._print_execution_summary(model, issues, errors, elapsed)
+            self._print_execution_summary(report.issues, errors, elapsed)
+            if model.is_text_generation:
+                measured = self._get_cost_measure()
+                print(COST_SUMMARY_TEMPLATE.format(**measured))
 
-        self._collect_analytics(model, dataset, issues, elapsed, model_validation_time, detectors)
+        self._collect_analytics(
+            model, dataset, report.issues, elapsed, detectors, model_validation_time=model_validation_time
+        )
 
-        return ScanReport(issues, model=model, dataset=dataset)
-
-    def _run_detectors(self, detectors, model, dataset, features, verbose=True, raise_exceptions=False):
-        if not detectors:
-            raise RuntimeError("No issue detectors available. Scan will not be performed.")
-
-        logger.info(f"Running detectors: {[d.__class__.__name__ for d in detectors]}")
-
-        issues = []
-        errors = []
-        for detector in detectors:
-            maybe_print(f"Running detector {detector.__class__.__name__}…", verbose=verbose)
-            detector_start = perf_counter()
-            try:
-                detected_issues = detector.run(model, dataset, features=features)
-            except Exception as err:
-                logger.error(f"Detector {detector.__class__.__name__} failed with error: {err}")
-                errors.append((detector, err))
-                analytics.track(
-                    "scan:run-detector:error",
-                    {
-                        "scan_uuid": self.uuid.hex,
-                        "detector": fullname(detector),
-                        "error": str(err),
-                        "error_class": fullname(err),
-                    },
-                )
-                if raise_exceptions:
-                    raise err
-
-                detected_issues = []
-            detected_issues = sorted(detected_issues, key=lambda i: -i.importance)[:MAX_ISSUES_PER_DETECTOR]
-            detector_elapsed = perf_counter() - detector_start
-            maybe_print(
-                f"{detector.__class__.__name__}: {len(detected_issues)} issue{'s' if len(detected_issues) > 1 else ''} detected. (Took {datetime.timedelta(seconds=detector_elapsed)})",
-                verbose=verbose,
-            )
-            analytics.track(
-                "scan:detector-run",
-                {
-                    "scan_uuid": self.uuid.hex,
-                    "detector": fullname(detector),
-                    "detector_elapsed": detector_elapsed,
-                    "detected_issues": len(detected_issues),
-                },
-            )
-
-            issues.extend(detected_issues)
-
-        return issues, errors
-
-    def _postprocess(self, issues: Sequence[Issue]) -> Sequence[Issue]:
-        # If we detected a Stochasticity issue, we will have a possibly false
-        # positive DataLeakage issue. We remove it here.
-        if any(issue.group == Stochasticity for issue in issues):
-            issues = [issue for issue in issues if issue.group != DataLeakage]
-
-        return issues
+        return report
 
     def _validate_model_and_dataset(self, model, dataset):
         if not isinstance(model, BaseModel):
@@ -280,41 +368,10 @@ class Scanner:
         return model, dataset
 
     @analytics_method
-    def _collect_analytics(self, model, dataset, issues, elapsed, model_validation_time, detectors):
-        issues_counter = Counter([fullname(i) for i in issues]) if issues else {}
-
-        properties = dict(
-            elapsed=elapsed,
-            model_validation_time=model_validation_time,
-            total_issues=len(issues),
-            detectors=[d.__class__.__name__ for d in detectors],
-            **issues_counter,
+    def _collect_analytics(self, model, dataset, issues, elapsed, detectors, model_validation_time):
+        super()._collect_analytics(
+            model, dataset, issues, elapsed, model_validation_time, detectors, model_validation_time
         )
-        properties.update(get_model_properties(model))
-        properties.update(get_dataset_properties(dataset))
-
-        cost_estimate = self._get_cost_estimate(model, dataset, detectors)
-        properties.update(cost_estimate)
-
-        analytics.track("scan", properties)
-
-    def get_detectors(self, tags: Optional[Sequence[str]] = None) -> Sequence:
-        """Returns the detector instances."""
-        detectors = []
-        classes = DetectorRegistry.get_detector_classes(tags=tags)
-
-        # Filter detector classes
-        if self.only:
-            only_classes = DetectorRegistry.get_detector_classes(tags=self.only)
-            keys_to_keep = set(only_classes.keys()).intersection(classes.keys())
-            classes = {k: classes[k] for k in keys_to_keep}
-
-        # Configure instances
-        for name, detector_cls in classes.items():
-            kwargs = self.params.get(name) or dict()
-            detectors.append(detector_cls(**kwargs))
-
-        return detectors
 
     def _get_cost_estimate(self, model, dataset, detectors):
         cost_estimates = [d.get_cost_estimate(model, dataset) for d in detectors if hasattr(d, "get_cost_estimate")]
@@ -352,19 +409,6 @@ class Scanner:
         if model.is_text_generation:
             estimates = self._get_cost_estimate(model, dataset, detectors)
             print(COST_ESTIMATE_TEMPLATE.format(num_detectors=len(detectors), **estimates))
-
-    def _print_execution_summary(self, model, issues, errors, elapsed):
-        print(
-            f"Scan completed: {len(issues) or 'no'} issue{'s' if len(issues) != 1 else ''} found. (Took {datetime.timedelta(seconds=elapsed)})"
-        )
-        if model.is_text_generation:
-            measured = self._get_cost_measure()
-            print(COST_SUMMARY_TEMPLATE.format(**measured))
-        if errors:
-            warning(
-                f"{len(errors)} errors were encountered while running detectors. Please check the log to understand what went wrong. "
-                "You can run the scan again with `raise_exceptions=True` to disable graceful handling."
-            )
 
 
 def maybe_print(*args, **kwargs):
