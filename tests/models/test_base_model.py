@@ -139,17 +139,17 @@ def test_fetch_model_meta(request):
 def test_named_and_IDed_model_str():
     uid = str(uuid.uuid4())
     model = _CustomModel(name="foo", model_type="regression", id=uid)
-    assert str(model) == f"foo-{uid}"
+    assert str(model) == f"foo({uid})"
 
 
 def test_named_model_str():
     model = _CustomModel(name="bar", model_type="regression")
-    assert str(model).split("-")[0] == "bar"
+    assert str(model).split("(")[0] == "bar"
 
 
 def test_unnamed_model_str():
     model = _CustomModel(model_type="regression")
-    assert str(model).split("-")[0] == "_CustomModel"
+    assert str(model).split("(")[0] == "_CustomModel"
 
 
 def test_repr_named_model():

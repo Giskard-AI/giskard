@@ -14,12 +14,12 @@ def df() -> pd.DataFrame:
 def test_named_and_IDed_dataset_str(df: pd.DataFrame):
     uid = uuid.uuid4()
     dataset = Dataset(name="foo", id=uid, df=df)
-    assert str(dataset) == f"foo-{uid}"
+    assert str(dataset) == f"foo({uid})"
 
 
 def test_named_dataset_str(df: pd.DataFrame):
     dataset = Dataset(name="bar", df=df)
-    assert str(dataset).split("-")[0] == "bar"
+    assert str(dataset).split("(")[0] == "bar"
 
 
 def test_unnamed_dataset_str(df: pd.DataFrame):

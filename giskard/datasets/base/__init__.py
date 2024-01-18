@@ -758,7 +758,7 @@ class Dataset(ColumnMetadataMixin):
 
     def __str__(self) -> str:
         if self.name:  # handle both None and empty string
-            return f"{self.name}-{self.id}"
+            return f"{self.name}({self.id})"
         return super().__str__()  # default to `<giskard.datasets.base.Dataset object at ...>`
 
 

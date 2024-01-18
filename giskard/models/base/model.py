@@ -592,5 +592,5 @@ class BaseModel(ABC):
 
     def __str__(self) -> str:
         if self.name:  # handle both None and empty string
-            return f"{self.name}-{self.id}"
+            return f"{self.name}({self.id})"
         return super().__str__()  # default to `<giskard.models.base.Model object at ...>`
