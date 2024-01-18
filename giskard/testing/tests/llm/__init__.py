@@ -1,3 +1,4 @@
+from .correctness import test_llm_correctness
 from .ground_truth import test_llm_ground_truth, test_llm_ground_truth_similarity
 from .hallucination import test_llm_output_coherency, test_llm_output_plausibility
 from .injections import (
@@ -24,4 +25,5 @@ __all__ = [
     "test_llm_output_against_strings",
     "test_llm_ground_truth_similarity",
     "test_llm_ground_truth",
+    "test_llm_correctness",
 ]
