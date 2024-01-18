@@ -157,9 +157,9 @@ class CallableDocumentation:
     description: Optional[str]
     parameters: Optional[Dict[str, str]]
 
-    def __init__(self):
-        self.description = None
-        self.parameters = None
+    def __init__(self, description: Optional[str] = None, parameters: Optional[Dict[str, str]] = None):
+        self.description = description
+        self.parameters = parameters
 
     def to_dict(self):
         return {
@@ -359,7 +359,14 @@ class CallableMeta(SavableMeta, ABC):
         self.name = json["name"]
         self.display_name = json["displayName"]
         self.module = json["module"]
-        self.doc = json["doc"]
+        self.doc = (
+            CallableDocumentation(
+                description=json["doc"]["description"],
+                parameters=json["doc"]["parameters"],
+            )
+            if json["doc"]
+            else None
+        )
         self.module_doc = json["moduleDoc"]
         self.code = json["code"]
         self.tags = json["tags"]
