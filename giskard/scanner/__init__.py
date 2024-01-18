@@ -60,7 +60,8 @@ def scan(
     ScanReport
         A scan report object containing the results of the scan.
     """
-    scanner_cls = Scanner if isinstance(model, BaseModel) else BaseScanner
+    scanner_kwargs = {"params": params, "only": only}
+    scanner_cls = Scanner(**scanner_kwargs) if isinstance(model, BaseModel) else BaseScanner(**scanner_kwargs)
     return scanner_cls.analyze(
         model, dataset=dataset, features=features, verbose=verbose, raise_exceptions=raise_exceptions
     )
