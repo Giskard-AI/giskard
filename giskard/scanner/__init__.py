@@ -5,7 +5,7 @@ from typing import Any, Optional, Sequence
 
 from ..models.base import BaseModel
 from .logger import logger
-from .scanner import BaseScanner, Scanner, ScannableModel
+from .scanner import BaseScanner, ScannableModel, Scanner
 
 
 def _register_default_detectors():

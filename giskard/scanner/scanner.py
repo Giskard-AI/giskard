@@ -3,9 +3,9 @@ from typing import Any, Optional, Sequence
 import datetime
 import uuid
 import warnings
+from abc import ABC, abstractmethod
 from collections import Counter
 from time import perf_counter
-from abc import ABC, abstractmethod
 
 import pandas as pd
 
@@ -46,6 +46,7 @@ OpenAI API costs for evaluation amount to ${estimated_usd:.2f} (standard pricing
 PROMPT_TOKEN_COST = 0.03e-3
 SAMPLED_TOKEN_COST = 0.06e-3
 
+
 class ScannableModel(ABC):
     @property
     @abstractmethod
@@ -56,6 +57,7 @@ class ScannableModel(ABC):
             str: A custom model type (typically refers to AI keywords like: classification, regression, vision, etc.).
         """
         ...
+
 
 class BaseScanner:
     def __init__(self, params: Optional[dict] = None, only=None):
