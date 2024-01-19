@@ -432,5 +432,12 @@ class CreateSubDatasetParam(ConfiguredBaseModel):
     copiedRows: Dict[str, List[int]]
 
 
+class CreateDatasetParam(ConfiguredBaseModel):
+    projectKey: str
+    name: str
+    headers: List[str]
+    rows: List[List[str]]
+
+
 class CreateSubDataset(WorkerReply):
     datasetUuid: str
