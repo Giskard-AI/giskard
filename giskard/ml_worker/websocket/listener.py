@@ -503,7 +503,7 @@ def dataset_processing(
 def run_ad_hoc_test(
     client: Optional[GiskardClient], params: websocket.RunAdHocTestParam, *args, **kwargs
 ) -> websocket.RunAdHocTest:
-    test: GiskardTest = GiskardTest.download(params.testUuid, client, None)
+    test: GiskardTest = GiskardTest.download(params.testUuid, client, params.projectKey)
 
     arguments = parse_function_arguments(client, params.arguments)
     if params.debug:
@@ -534,7 +534,7 @@ def run_test_suite(
     try:
         tests = [
             {
-                "test": GiskardTest.download(t.testUuid, client, None),
+                "test": GiskardTest.download(t.testUuid, client, params.projectKey),
                 "arguments": parse_function_arguments(client, t.arguments, loaded_artifacts),
                 "id": t.id,
             }
