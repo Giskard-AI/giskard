@@ -85,7 +85,8 @@ class CorrectnessEvaluator(LLMBasedEvaluator):
         succeeded = []
         failed = []
         errored = []
-        for evaluation_question, model_output in zip(dataset.df.to_dict("records"), model_outputs):
+        failed_index = []
+        for idx, (evaluation_question, model_output) in enumerate(zip(dataset.df.to_dict("records"), model_outputs)):
             try:
                 passed, reason = self._evaluate_single(
                     model,
@@ -102,14 +103,18 @@ class CorrectnessEvaluator(LLMBasedEvaluator):
                 if passed:
                     succeeded.append(sample)
                 else:
+                    failed_index.append(idx)
                     failed.append(sample)
             except LLMGenerationError as err:
                 errored.append({"message": str(err), "sample": {**evaluation_question, "model_output": model_output}})
 
-        return EvaluationResult(
-            failure_examples=failed,
-            success_examples=succeeded,
-            errors=errored,
+        return (
+            EvaluationResult(
+                failure_examples=failed,
+                success_examples=succeeded,
+                errors=errored,
+            ),
+            failed_index,
         )
 
     def _evaluate_single(self, model: BaseModel, question, reference_answer, model_output):
