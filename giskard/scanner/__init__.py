@@ -1,12 +1,25 @@
 """The scanner module provides a way to automatically detect issues in tabular, NLP, and LLM models. It works by running a
 set of automatic detectors depending on the model type. The detectors analyze the model and report any issues they find.
 """
-from typing import Optional, Sequence
+from typing import Any, Optional, Sequence
 
-from ..datasets.base import Dataset
+from abc import ABC, abstractmethod
+
 from ..models.base import BaseModel
 from .logger import logger
 from .scanner import BaseScanner, Scanner
+
+
+class ScannableModel(ABC):
+    @property
+    @abstractmethod
+    def model_type(self) -> str:
+        """model_type dictates the tag-based loading of detectors from the registry. The model_type should return a string that matches at least one of the associated detector's tags.
+
+        Returns:
+            str: A custom model type (typically refers to AI keywords like: classification, regression, vision, etc.).
+        """
+        ...
 
 
 def _register_default_detectors():
@@ -24,8 +37,8 @@ _register_default_detectors()
 
 
 def scan(
-    model: BaseModel,
-    dataset: Optional[Dataset] = None,
+    model: ScannableModel,
+    dataset: Optional[Any] = None,
     features: Optional[Sequence[str]] = None,
     params=None,
     only=None,

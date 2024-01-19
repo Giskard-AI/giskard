@@ -22,6 +22,7 @@ from ..utils.analytics_collector import (
     get_dataset_properties,
     get_model_properties,
 )
+from . import ScannableModel
 from .issues import DataLeakage, Issue, Stochasticity
 from .logger import logger
 from .registry import Detector, DetectorRegistry
@@ -70,7 +71,7 @@ class BaseScanner:
 
     def analyze_without_analytics(
         self,
-        model: Any,
+        model: ScannableModel,
         dataset: Optional[Any] = None,
         detectors: Optional[Detector] = None,
         verbose=True,
@@ -99,7 +100,7 @@ class BaseScanner:
 
     def analyze(
         self,
-        model: Any,
+        model: ScannableModel,
         dataset: Optional[Any] = None,
         detectors: Optional[Detector] = None,
         verbose=True,
