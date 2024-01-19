@@ -5,6 +5,7 @@ import uuid
 import warnings
 from collections import Counter
 from time import perf_counter
+from abc import ABC, abstractmethod
 
 import pandas as pd
 
@@ -22,7 +23,6 @@ from ..utils.analytics_collector import (
     get_dataset_properties,
     get_model_properties,
 )
-from . import ScannableModel
 from .issues import DataLeakage, Issue, Stochasticity
 from .logger import logger
 from .registry import Detector, DetectorRegistry
@@ -46,6 +46,16 @@ OpenAI API costs for evaluation amount to ${estimated_usd:.2f} (standard pricing
 PROMPT_TOKEN_COST = 0.03e-3
 SAMPLED_TOKEN_COST = 0.06e-3
 
+class ScannableModel(ABC):
+    @property
+    @abstractmethod
+    def model_type(self) -> str:
+        """model_type dictates the tag-based loading of detectors from the registry. The model_type should return a string that matches at least one of the associated detector's tags.
+
+        Returns:
+            str: A custom model type (typically refers to AI keywords like: classification, regression, vision, etc.).
+        """
+        ...
 
 class BaseScanner:
     def __init__(self, params: Optional[dict] = None, only=None):

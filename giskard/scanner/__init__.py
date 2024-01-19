@@ -3,23 +3,9 @@ set of automatic detectors depending on the model type. The detectors analyze th
 """
 from typing import Any, Optional, Sequence
 
-from abc import ABC, abstractmethod
-
 from ..models.base import BaseModel
 from .logger import logger
-from .scanner import BaseScanner, Scanner
-
-
-class ScannableModel(ABC):
-    @property
-    @abstractmethod
-    def model_type(self) -> str:
-        """model_type dictates the tag-based loading of detectors from the registry. The model_type should return a string that matches at least one of the associated detector's tags.
-
-        Returns:
-            str: A custom model type (typically refers to AI keywords like: classification, regression, vision, etc.).
-        """
-        ...
+from .scanner import BaseScanner, Scanner, ScannableModel
 
 
 def _register_default_detectors():
