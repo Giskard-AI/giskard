@@ -12,6 +12,25 @@ from .. import debug_description_prefix
     debug_description=debug_description_prefix + "that are <b>failing the evaluation criteria</b>.",
 )
 def test_llm_correctness(model: BaseModel, dataset: Dataset, threshold: float = 0.5):
+    """Tests if LLM answers are correct with respect to a known reference answers.
+
+    The test is passed when the ratio of correct answers is higher than the
+    threshold.
+
+    Parameters
+    ----------
+    model : BaseModel
+        Model used to compute the test
+    dataset : Dataset
+        Dataset used to compute the test
+    threshold : float
+        The threshold value for the ratio of invariant rows.
+
+    Returns
+    -------
+    TestResult
+        A TestResult object containing the test result.
+    """
     correctness_evaluator = CorrectnessEvaluator()
     eval_result, failed_idx = correctness_evaluator.evaluate(model, dataset)
     output_ds = list()

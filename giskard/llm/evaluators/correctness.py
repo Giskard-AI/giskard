@@ -38,6 +38,10 @@ Call the `evaluate_model` function with the result of your evaluation.
 
 
 class CorrectnessEvaluator(LLMBasedEvaluator):
+    """Correctness evaluator class: assess the correctness of a model answers
+    given questions and associated reference answers.
+    """
+
     _default_eval_prompt = CORRECTNESS_EVALUATION_PROMPT
     _question_feature_name = "question"
     _reference_answer_feature_name = "reference_answer"
