@@ -12,13 +12,52 @@ from .vector_store import VectorStore
 
 
 class KnowledgeBaseTestsetGenerator(BaseDataGenerator):
+    """Testset generator for testing RAG models.
+
+    Explore a given knowledge base and generate question/answer pairs to test the model.
+
+    Each generated item contains the following field
+    - question: a question about a part of the knowledge base
+    - reference_answer: the expected answer according to the knowledge base
+    - reference_context: relevant elements directly extracted from the knowledge base
+    - difficulty_level: an indicator of how difficult the question is
+
+    Parameters
+    ----------
+    knowledge_df: pd.DataFrame
+        a dataframe containing the whole knowledge base
+    model_name: str
+        name of the model to be tested
+    model_description: str
+        a description of the model to be tested, to get more fitting questions
+    context_neighbors: int
+        the maximum number of extracted element from the knowledge base to get a relevant context for question generation
+    context_similarity_threshold: float = 0.2
+        a similarity threshold to filter irrelevant element from the knowledge base during context creation
+    context_window_length: int = 8192
+        context window length of the llm used in the `llm_client` of the generator
+    embedding_model: EmbeddingsBase = None
+        an embedding model to build the knowledge base index
+    language: str = "en"
+        the language in which question are generated (following ISO 639-1)
+    knowledge_base_features: Sequence[str] = None
+        a list of columns from the `knowledge_df` to include inside the knowledge base. If the
+        `knowledge_df` only has one column, it will be used by default has the content of
+        the knowledge base elements. If `knowledge_df` has multiple columns they will be
+        concatenated into a single column with the name of the column before the respective content.
+        If `knowledge_base_features` is specified, only the columns from it are considered.
+
+        Example: "col_1: content column 1, col_2: content column 2"
+    seed: int = None
+    """
+
     _question_generation_prompt = QUESTION_GENERATION_PROMPT
     _answer_generation_prompt = ANSWER_GENERATION_PROMPT
     _difficulty_level = 1
 
     def __init__(
         self,
-        knowledge_df,
+        knowledge_df: pd.DataFrame,
         model_name: str,
         model_description: str,
         context_neighbors: int = 4,
@@ -119,6 +158,24 @@ class KnowledgeBaseTestsetGenerator(BaseDataGenerator):
         return generated
 
     def generate_dataset(self, num_samples: int = 10) -> TestSet:
+        """Generates a testset from the knowledge base.
+
+        Parameters
+        ----------
+        num_samples : int
+            The number of question to generate, by default 10.
+
+        Returns
+        -------
+        TestSet
+            The generated test set.
+
+        Each generated question has the following field:
+        - question: a question about a part of the knowledge base
+        - reference_answer: the expected answer according to the knowledge base
+        - reference_context: relevant elements directly extracted from the knowledge base
+        - difficulty_level: an indicator of how difficult the question is
+        """
         generated_questions = []
         for idx in range(num_samples):
             seed_contexts = self._extract_seed_context()
