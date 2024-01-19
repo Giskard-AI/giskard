@@ -27,15 +27,25 @@ def test_default_parameters_are_used_at_runtime(german_credit_data, german_credi
     # This will miss dataset
     suite = Suite(default_params=dict(model=german_credit_model))
     suite.add_test(my_test)
-    with pytest.raises(ValueError):
-        suite.run()
+    result = suite.run()
+    assert not result.passed
+    _, test_result, _ = result.results[0]
+    assert test_result.is_error
 
     # But we can pass dataset at runtime
-    suite.run(dataset=german_credit_data)
+    result = suite.run(dataset=german_credit_data)
+    assert result.passed
+    _, test_result, _ = result.results[0]
+    assert not test_result.is_error
+    assert test_result.passed
 
     # Or we can provide it in the suite defaults
     suite.default_params["dataset"] = german_credit_data
-    suite.run()
+    result = suite.run()
+    assert result.passed
+    _, test_result, _ = result.results[0]
+    assert not test_result.is_error
+    assert test_result.passed
 
 
 def test_runtime_parameters_override_default_parameters(german_credit_data, german_credit_model):
