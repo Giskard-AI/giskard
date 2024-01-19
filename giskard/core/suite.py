@@ -25,6 +25,7 @@ from giskard.registry.transformation_function import TransformationFunction
 from ..client.python_utils import warning
 from ..utils.analytics_collector import analytics
 from ..utils.artifacts import serialize_parameter
+from .kwargs_utils import get_imports_code
 
 logger = logging.getLogger(__name__)
 
@@ -510,7 +511,7 @@ class Suite:
             )
 
             kwargs_params = [
-                f"kwargs[{repr(pname)}] = {repr(value)}"
+                f"{get_imports_code(value)}\nkwargs[{repr(pname)}] = {repr(value)}"
                 for pname, value in t.provided_inputs.items()
                 if pname not in t.giskard_test.meta.args
             ]
