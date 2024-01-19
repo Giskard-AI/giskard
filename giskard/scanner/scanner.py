@@ -371,7 +371,7 @@ class Scanner(BaseScanner):
     @analytics_method
     def _collect_analytics(self, model, dataset, issues, elapsed, detectors, model_validation_time):
         super()._collect_analytics(
-            model, dataset, issues, elapsed, model_validation_time, detectors, model_validation_time
+            model, dataset, issues, elapsed, detectors, model_validation_time=model_validation_time
         )
 
     def _get_cost_estimate(self, model, dataset, detectors):
