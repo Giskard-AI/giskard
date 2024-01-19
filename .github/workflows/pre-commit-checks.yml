@@ -9,6 +9,7 @@ on:
 env:
   GSK_DISABLE_ANALYTICS: true
   SENTRY_ENABLED: false
+  GITGUARDIAN_API_KEY: ${{ secrets.GITGUARDIAN_API_KEY }}
 defaults:
   run:
     shell: bash
