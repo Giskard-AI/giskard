@@ -17,6 +17,7 @@ from giskard.exceptions.IllegalArgumentError import IllegalArgumentError
 from giskard.ml_worker import websocket
 from giskard.ml_worker.websocket import (
     AbortParams,
+    CreateDatasetParam,
     CreateSubDatasetParam,
     DatasetProcessingParam,
     Documentation,
@@ -67,6 +68,8 @@ def parse_action_param(action: MLWorkerAction, params):
         return GetPushParam.parse_obj(params)
     elif action == MLWorkerAction.createSubDataset:
         return CreateSubDatasetParam.parse_obj(params)
+    elif action == MLWorkerAction.createDataset:
+        return CreateDatasetParam.parse_obj(params)
     elif action == MLWorkerAction.getLogs:
         return GetLogsParams.parse_obj(params)
     return params
@@ -404,3 +407,7 @@ def do_create_sub_dataset(datasets: Dict[str, Dataset], name: Optional[str], row
         column_types=dataset_list[0].column_types,
         validation=False,
     )
+
+
+def do_create_dataset(name: Optional[str], headers: List[str], rows: List[List[str]]):
+    return Dataset(pd.DataFrame(rows, columns=headers), name=name, validation=False)
