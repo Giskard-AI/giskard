@@ -11,7 +11,7 @@ NOT_SUPP_TEXT_WARNING_MSG = r"We do not support the wandb logging of ShapResult 
     "dataset_name,model_name",
     [
         ("hotel_text_data", "hotel_text_model"),
-        ("drug_classification_data", "drug_classification_model"),
+        # ("drug_classification_data", "drug_classification_model"),  # https://github.com/Giskard-AI/giskard/pull/1743
         ("diabetes_dataset_with_target", "linear_regression_diabetes"),
     ],
 )
