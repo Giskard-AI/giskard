@@ -92,10 +92,10 @@ def test_testset_generation():
 
     test_set = testset_generator.generate_dataset(num_samples=2)
     assert len(test_set) == 2
-    assert test_set.loc[0, "question"] == "Where is Camembert from?"
-    assert test_set.loc[0, "reference_answer"] == "Camembert was created in Normandy, in the northwest of France."
-    assert test_set.loc[0, "reference_context"] == CONTEXT_STRING
-    assert test_set.loc[0, "difficulty_level"] == 1
+    assert test_set.df.loc[0, "question"] == "Where is Camembert from?"
+    assert test_set.df.loc[0, "reference_answer"] == "Camembert was created in Normandy, in the northwest of France."
+    assert test_set.df.loc[0, "reference_context"] == CONTEXT_STRING
+    assert test_set.df.loc[0, "difficulty_level"] == 1
 
-    assert test_set.loc[1, "question"] == "Where is Camembert from?"
-    assert test_set.loc[1, "reference_context"] == ""
+    assert test_set.df.loc[1, "question"] == "Where is Camembert from?"
+    assert test_set.df.loc[1, "reference_context"] == ""
