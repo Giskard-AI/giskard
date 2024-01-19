@@ -316,7 +316,7 @@ class RunAdHocTest(WorkerReply):
 
 class RunAdHocTestParam(ConfiguredBaseModel):
     testUuid: str
-    isCustom: bool = False
+    isCustom: Optional[bool] = False
     arguments: Optional[List[FuncArgument]] = None
     debug: Optional[bool] = None
     projectKey: Optional[str] = None
@@ -348,7 +348,7 @@ class SuiteTestArgument(ConfiguredBaseModel):
     id: int
     testUuid: str
     arguments: Optional[List[FuncArgument]] = None
-    isCustom: bool = False
+    isCustom: Optional[bool] = False
 
 
 class TestSuite(WorkerReply):
