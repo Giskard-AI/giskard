@@ -561,7 +561,7 @@ def run_test_suite(
                 test_args: Dict[str, Any] = copy(test_args)
                 test_args.update(**test_args.pop("kwargs"))
             updated_test_args.append(test_args)
-            suite.add_test(t["test"].get_builder()(**test_args), t["id"])
+            suite.add_test(t["test"](**test_args), t["id"])
 
         suite_result = suite.run(**global_arguments)
 
