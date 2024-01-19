@@ -80,4 +80,4 @@ def scan(
     )
 
 
-__all__ = ["scan", "Scanner", "BaseScanner", "logger"]
+__all__ = ["scan", "ScannableModel", "Scanner", "BaseScanner", "logger"]
