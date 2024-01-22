@@ -239,7 +239,7 @@ class Model(CloudpickleSerializableModel):
         local_path = Path(local_dir)
         class_file = local_path / MODEL_CLASS_PKL
         if class_file.exists():
-            clazz = cls.get_model_class(class_file, model_py_ver)
+            clazz = super().get_model_class(class_file, model_py_ver)
             return clazz.load(local_path, model_py_ver=model_py_ver, *args, **kwargs)
         else:
-            cls.load(local_path, model_py_ver=model_py_ver, *args, **kwargs)
+            return super().load(local_path, model_py_ver=model_py_ver, *args, **kwargs)
