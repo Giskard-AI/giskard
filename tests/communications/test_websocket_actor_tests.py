@@ -95,7 +95,7 @@ def test_websocket_actor_run_ad_hoc_test_legacy_debug(enron_data: Dataset):
             projectKey="projectKey",
         )
         with utils.MockedClient(mock_all=False) as (client, mr):
-            utils.register_uri_for_artifact_meta_info(mr, my_simple_test_legacy_debug, None)
+            utils.register_uri_for_artifact_meta_info(mr, my_simple_test_legacy_debug, project_key)
             utils.register_uri_for_dataset_meta_info(mr, enron_data, project_key)
             utils.register_uri_for_any_dataset_artifact_info_upload(mr, register_files=True)
 
@@ -300,7 +300,7 @@ def test_websocket_actor_run_ad_hoc_test_legacy_debug_no_name(enron_data: Datase
             projectKey="projectKey",
         )
         with utils.MockedClient(mock_all=False) as (client, mr):
-            utils.register_uri_for_artifact_meta_info(mr, my_simple_test_legacy_debug_no_name, None)
+            utils.register_uri_for_artifact_meta_info(mr, my_simple_test_legacy_debug_no_name, project_key)
             utils.register_uri_for_dataset_meta_info(mr, enron_data, project_key)
             utils.register_uri_for_any_dataset_artifact_info_upload(mr, register_files=True)
 
