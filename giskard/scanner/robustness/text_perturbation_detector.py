@@ -1,10 +1,10 @@
 from typing import Sequence
 
 from ...datasets.base import Dataset
+from ...functions.text_transformations import TextTransformation
 from ...models.base import BaseModel
 from ..decorators import detector
 from .base_detector import BaseTextPerturbationDetector
-from .text_transformations import TextTransformation
 
 
 @detector(
@@ -24,7 +24,7 @@ class TextPerturbationDetector(BaseTextPerturbationDetector):
     """
 
     def _get_default_transformations(self, model: BaseModel, dataset: Dataset) -> Sequence[TextTransformation]:
-        from .text_transformations import (
+        from ...functions.text_transformations import (
             TextLowercase,
             TextPunctuationRemovalTransformation,
             TextTitleCase,

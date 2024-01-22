@@ -22,7 +22,7 @@ def test_gender_transformation():
         }
     )
 
-    from giskard.scanner.robustness.text_transformations import TextGenderTransformation
+    from giskard.functions.text_transformations import TextGenderTransformation
 
     t = TextGenderTransformation(column="text")
 
@@ -47,7 +47,7 @@ def test_uppercase_transformation():
         }
     )
 
-    from giskard.scanner.robustness.text_transformations import TextUppercase
+    from giskard.functions.text_transformations import TextUppercase
 
     t = TextUppercase(column="text")
 
@@ -72,7 +72,7 @@ def test_lowercase_transformation():
         }
     )
 
-    from giskard.scanner.robustness.text_transformations import TextLowercase
+    from giskard.functions.text_transformations import TextLowercase
 
     t = TextLowercase(column="text")
 
@@ -99,7 +99,7 @@ def test_punctuation_strip_transformation():
         }
     )
 
-    from giskard.scanner.robustness.text_transformations import TextPunctuationRemovalTransformation
+    from giskard.functions.text_transformations import TextPunctuationRemovalTransformation
 
     t = TextPunctuationRemovalTransformation(column="text")
 
@@ -128,7 +128,7 @@ def test_religion_based_transformation():
             ]
         }
     )
-    from giskard.scanner.robustness.text_transformations import TextReligionTransformation
+    from giskard.functions.text_transformations import TextReligionTransformation
 
     t = TextReligionTransformation(column="text", rng_seed=10)
 
@@ -166,7 +166,7 @@ def test_country_based_transformation():
             ]
         }
     )
-    from giskard.scanner.robustness.text_transformations import TextNationalityTransformation
+    from giskard.functions.text_transformations import TextNationalityTransformation
 
     t = TextNationalityTransformation(column="text", rng_seed=0)
 
@@ -190,7 +190,7 @@ def test_country_based_transformation():
 
 
 def test_country_based_transformation_edge_cases():
-    from giskard.scanner.robustness.text_transformations import TextNationalityTransformation
+    from giskard.functions.text_transformations import TextNationalityTransformation
 
     df = pd.DataFrame(
         {
@@ -218,7 +218,7 @@ def test_country_based_transformation_edge_cases():
 
 
 def test_country_based_transformation_escapes_special_chars():
-    from giskard.scanner.robustness.text_transformations import TextNationalityTransformation
+    from giskard.functions.text_transformations import TextNationalityTransformation
 
     df = pd.DataFrame(
         {
@@ -241,7 +241,7 @@ def test_country_based_transformation_escapes_special_chars():
 
 
 def test_typo_transformation():
-    from giskard.scanner.robustness.text_transformations import TextTypoTransformation
+    from giskard.functions.text_transformations import TextTypoTransformation
 
     t = TextTypoTransformation(column="text", rng_seed=1)
     p = t.make_perturbation("If one doesn't know his mistakes, he won't want to correct them.")
@@ -250,7 +250,7 @@ def test_typo_transformation():
 
 
 def test_ocr_typo_transformation():
-    from giskard.scanner.robustness.text_transformations import TextFromOCRTypoTransformation
+    from giskard.functions.text_transformations import TextFromOCRTypoTransformation
 
     t = TextFromOCRTypoTransformation(column="text", rng_seed=1, min_length=10)
     p = t.make_perturbation("If one doesn't know his mistakes, he won't want to correct them.")
@@ -262,7 +262,7 @@ def test_ocr_typo_transformation():
 
 
 def test_text_to_speech_typo_transformation():
-    from giskard.scanner.robustness.text_transformations import TextFromSpeechTypoTransformation
+    from giskard.functions.text_transformations import TextFromSpeechTypoTransformation
 
     df = pd.DataFrame(
         {

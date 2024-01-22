@@ -24,6 +24,6 @@ Textual transformation functions
 Special transformations used by the scan
 ----------------------------------------
 
-.. automodule:: giskard.scanner.robustness.text_transformations
+.. automodule:: giskard.functions.text_transformations
    :members:
    :show-inheritance:

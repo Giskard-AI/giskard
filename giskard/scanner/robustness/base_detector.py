@@ -6,12 +6,12 @@ import numpy as np
 import pandas as pd
 
 from ...datasets.base import Dataset
+from ...functions.text_transformations import TextTransformation
 from ...llm import LLMImportError
 from ...models.base import BaseModel
 from ..issues import Issue, IssueLevel, Robustness
 from ..logger import logger
 from ..registry import Detector
-from .text_transformations import TextTransformation
 
 
 class BaseTextPerturbationDetector(Detector):

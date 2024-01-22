@@ -6,11 +6,11 @@ from pathlib import Path
 import numpy as np
 import pandas as pd
 
-from ...core.core import DatasetProcessFunctionMeta
-from ...datasets import Dataset
-from ...functions.transformation import gruber
-from ...registry.registry import get_object_uuid
-from ...registry.transformation_function import TransformationFunction
+from ..core.core import DatasetProcessFunctionMeta
+from ..datasets import Dataset
+from ..functions.transformation import gruber
+from ..registry.registry import get_object_uuid
+from ..registry.transformation_function import TransformationFunction
 
 
 class TextTransformation(TransformationFunction):

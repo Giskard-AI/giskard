@@ -1,11 +1,11 @@
 from typing import Sequence
 
 from ...datasets.base import Dataset
+from ...functions.text_transformations import TextTransformation
 from ...models.base import BaseModel
 from ..decorators import detector
 from ..issues import Ethical
 from .base_detector import BaseTextPerturbationDetector
-from .text_transformations import TextTransformation
 
 
 @detector(
@@ -27,7 +27,7 @@ class EthicalBiasDetector(BaseTextPerturbationDetector):
     _taxonomy = ["avid-effect:ethics:E0101", "avid-effect:performance:P0201"]
 
     def _get_default_transformations(self, model: BaseModel, dataset: Dataset) -> Sequence[TextTransformation]:
-        from .text_transformations import (
+        from ...functions.text_transformations import (
             TextGenderTransformation,
             TextNationalityTransformation,
             TextReligionTransformation,

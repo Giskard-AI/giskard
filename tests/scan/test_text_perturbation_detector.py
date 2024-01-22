@@ -63,7 +63,7 @@ def test_llm_text_transformation():
         column_types={"instruct": "text", "question": "text"},
     )
 
-    from giskard.scanner.robustness.text_transformations import TextTypoTransformation
+    from giskard.functions.text_transformations import TextTypoTransformation
 
     analyzer = TextPerturbationDetector(transformations=[TextTypoTransformation])
     analyzer.run(model, dataset, features=["instruct", "question"])

@@ -17,20 +17,20 @@ import pandas as pd
 
 from giskard.core.core import SupportedModelTypes
 from giskard.datasets.base import Dataset
-from giskard.functions.transformation import add_value
-from giskard.models.base.model import BaseModel
-from giskard.push.utils import (
-    SupportedPerturbationType,
-    TransformationInfo,
-    coltype_to_supported_perturbation_type,
-)
-from giskard.scanner.robustness.text_transformations import (
+from giskard.functions.text_transformations import (
     TextGenderTransformation,
     TextLowercase,
     TextPunctuationRemovalTransformation,
     TextTitleCase,
     TextTypoTransformation,
     TextUppercase,
+)
+from giskard.functions.transformation import add_value
+from giskard.models.base.model import BaseModel
+from giskard.push.utils import (
+    SupportedPerturbationType,
+    TransformationInfo,
+    coltype_to_supported_perturbation_type,
 )
 
 from ..push import PerturbationPush
