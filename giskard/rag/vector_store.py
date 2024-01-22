@@ -2,8 +2,8 @@ from typing import Optional, Sequence
 
 import numpy as np
 import pandas as pd
-from faiss import IndexFlatL2
 
+from ..core.errors import GiskardInstallationError
 from .embeddings import EmbeddingsBase
 
 
@@ -34,6 +34,11 @@ class VectorStore:
             raise ValueError("Documents and embeddings must contains at least one element.")
         if len(embeddings) != len(documents):
             raise ValueError("Documents and embeddings must have the same length.")
+
+        try:
+            from faiss import IndexFlatL2
+        except ImportError as err:
+            raise GiskardInstallationError(flavor="llm") from err
 
         self.embeddings = embeddings
         self.documents = documents

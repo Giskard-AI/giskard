@@ -3,7 +3,8 @@ from typing import Sequence
 from abc import ABC, abstractmethod
 
 import numpy as np
-from openai import OpenAI
+
+from ..core.errors import GiskardInstallationError
 
 
 class EmbeddingsBase(ABC):
@@ -23,6 +24,12 @@ class OpenAIEmbeddings(EmbeddingsBase):
 
     def __init__(self, model: str = "text-embedding-ada-002", client=None):
         self.model = model
+
+        try:
+            from openai import OpenAI
+        except ImportError as err:
+            raise GiskardInstallationError(flavor="llm") from err
+
         self._client = client if client is not None else OpenAI()
 
     def embed_text(self, text: str) -> np.ndarray:
