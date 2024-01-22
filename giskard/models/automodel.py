@@ -1,13 +1,15 @@
-from typing import Any, Callable, Iterable, Optional
+from typing import Any, Callable, Iterable, Optional, Tuple
 
 import inspect
 import logging
 from importlib import import_module
+from pathlib import Path
 
 import pandas as pd
 
 from ..core.core import ModelType, SupportedModelTypes
 from ..utils.analytics_collector import analytics
+from .base.model import MODEL_CLASS_PKL
 from .base.serialization import CloudpickleSerializableModel
 from .function import PredictionFunctionModel
 
@@ -198,3 +200,46 @@ class Model(CloudpickleSerializableModel):
             )
 
             return obj
+
+    """@classmethod
+    def load_model(cls, local_dir, model_py_ver: Optional[Tuple[str, str, str]] = None, *args, **kwargs):
+
+        local_path = Path(local_dir)
+        class_file = local_path / MODEL_CLASS_PKL
+        if class_file.exists():
+                clazz = cls.get_model_class(class_file, model_py_ver)
+                return clazz.load_model(local_path, *args, **kwargs)
+        else:
+            cls.load_model(local_path, model_py_ver)"""
+
+    @classmethod
+    def load(cls, local_dir, model_py_ver: Optional[Tuple[str, str, str]] = None, *args, **kwargs):
+        """
+        Load a giskard model from the specified local directory.
+
+        Parameters:
+        - local_dir (str): The local directory path where the model is stored.
+        - model_py_ver (Optional[Tuple[str, str, str]]): A tuple representing the Python version used to save the model.
+        This is optional and can be used to handle version-specific loading logic.
+        - *args: Additional positional arguments to be passed to the `load_model` method of the model class.
+        - **kwargs: Additional keyword arguments to be passed to the `load_model` method of the model class.
+
+        Returns:
+        - The loaded model instance.
+
+        Raises:
+        - ValueError: If the specified `local_dir` does not contain the required class information.
+
+        Note:
+        - If the specified `local_dir` contains the required class information, it loads the model using the
+        retrieved model class and passes any additional arguments to the `load` method of the model class.
+        - If the class information is not found in the specified directory, it tries to load the model
+        using the `load` method of the current class.
+        """
+        local_path = Path(local_dir)
+        class_file = local_path / MODEL_CLASS_PKL
+        if class_file.exists():
+            clazz = cls.get_model_class(class_file, model_py_ver)
+            return clazz.load(local_path, model_py_ver=model_py_ver, *args, **kwargs)
+        else:
+            cls.load(local_path, model_py_ver=model_py_ver, *args, **kwargs)
