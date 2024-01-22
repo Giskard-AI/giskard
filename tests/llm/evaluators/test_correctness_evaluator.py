@@ -63,7 +63,7 @@ def test_correctness_evaluator_correctly_flags_examples():
 
     evaluator = CorrectnessEvaluator(llm_client=client)
 
-    result = evaluator.evaluate(model, dataset)
+    result, failed_indices = evaluator.evaluate(model, dataset)
 
     assert len(result.success_examples) == 1
     assert len(result.failure_examples) == 1
@@ -112,7 +112,7 @@ def test_correctness_evaluator_handles_generation_errors():
 
     evaluator = CorrectnessEvaluator(llm_client=client)
 
-    result = evaluator.evaluate(model, dataset)
+    result, failed_indices = evaluator.evaluate(model, dataset)
 
     assert len(result.success_examples) == 1
     assert len(result.errors) == 1
@@ -134,8 +134,8 @@ def test_raises_error_if_missing_feature_in_dataset():
 def test_raises_error_if_missing_feature_in_model():
     dataset = _make_eval_dataset()
 
-    model = _make_mock_model(feature_names=["question"])
+    model = _make_mock_model(feature_names=["reference_answer"])
 
     evaluator = CorrectnessEvaluator(llm_client=Mock())
-    with pytest.raises(ValueError, match="Missing at least one required feature in the evaluated model among"):
+    with pytest.raises(ValueError, match="Missing question feature: 'question' inside model's features."):
         evaluator.evaluate(model, dataset)

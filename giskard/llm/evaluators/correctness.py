@@ -83,7 +83,7 @@ class CorrectnessEvaluator(LLMBasedEvaluator):
 
         # question feature name must be inside model's features
         if question_feature_name not in model.feature_names:
-            raise ValueError(f"Missing question feature: {question_feature_name} inside model's features.")
+            raise ValueError(f"Missing question feature: '{question_feature_name}' inside model's features.")
 
         model_outputs = model.predict(dataset).prediction
         succeeded = []
