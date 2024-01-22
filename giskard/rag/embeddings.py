@@ -5,18 +5,16 @@ from abc import ABC, abstractmethod
 import numpy as np
 from openai import OpenAI
 
-from .vector_store import Document
-
 
 class EmbeddingsBase(ABC):
     """Base class to build custom embedding models."""
 
     @abstractmethod
-    def embed_text(self, text: str) -> str:
+    def embed_text(self, text: str) -> np.ndarray:
         ...
 
     @abstractmethod
-    def embed_documents(self, documents: Sequence[Document]) -> str:
+    def embed_documents(self, documents: Sequence) -> np.ndarray:
         ...
 
 
@@ -27,7 +25,7 @@ class OpenAIEmbeddings(EmbeddingsBase):
         self.model = model
         self._client = client if client is not None else OpenAI()
 
-    def embed_text(self, text: str) -> np.array:
+    def embed_text(self, text: str) -> np.ndarray:
         text = text.replace("\n", " ")
         try:
             out = self._client.embeddings.create(input=[text], model=self.model)
@@ -36,7 +34,7 @@ class OpenAIEmbeddings(EmbeddingsBase):
             raise ValueError(f"Embedding creation failed for text: {text}.") from err
         return np.array(embeddings)
 
-    def embed_documents(self, documents: Sequence[Document]) -> np.array:
+    def embed_documents(self, documents: Sequence) -> np.ndarray:
         text_batch = [doc.page_content.replace("\n", " ") for doc in documents]
         try:
             out = self._client.embeddings.create(input=text_batch, model=self.model)

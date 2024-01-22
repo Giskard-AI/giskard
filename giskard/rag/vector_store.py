@@ -8,6 +8,8 @@ from .embeddings import EmbeddingsBase
 
 
 class Document:
+    """A class to wrap the elements of the knowledge base into a unified format."""
+
     def __init__(self, document: dict, features: Optional[Sequence] = None):
         if len(document) == 1:
             self.page_content = list(document.values())[0]
@@ -23,6 +25,10 @@ class Document:
 
 
 class VectorStore:
+    """Stores all embedded Document of the knowledge base.
+    Relies on `FlatIndexL2` class from FAISS.
+    """
+
     def __init__(self, documents: Sequence[Document], embeddings: np.array, embedding_model: EmbeddingsBase):
         if len(embeddings) == 0 or len(documents) == 0:
             raise ValueError("Documents and embeddings must contains at least one element.")
@@ -46,7 +52,7 @@ class VectorStore:
         else:
             raise ValueError("Cannot generate a vector store from empty DataFrame.")
 
-    def similarity_search_with_score(self, query, k):
+    def similarity_search_with_score(self, query: str, k: int) -> Sequence:
         query_emb = self.embedding_model.embed_text(query).astype("float32")
         distances, indices = self.index.search(query_emb[None, :], k)
         return [(self.documents[i], d) for d, i in zip(distances[0], indices[0])]
