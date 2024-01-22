@@ -122,6 +122,7 @@ def test_accent_removal_transformation():
                 "çà et là",
                 "Tiếng Việt",
                 "État",
+                "你好",
             ]
         }
     )
@@ -137,6 +138,7 @@ def test_accent_removal_transformation():
     assert transformed_text[1] == "ca et la"
     assert transformed_text[2] == "Tieng Viet"
     assert transformed_text[3] == "Etat"
+    assert transformed_text[4] == "你好"
 
 
 def test_religion_based_transformation():
