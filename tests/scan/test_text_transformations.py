@@ -114,6 +114,31 @@ def test_punctuation_strip_transformation():
     assert transformed_text[5] == "comma separated list"
 
 
+def test_accent_removal_transformation():
+    dataset = _dataset_from_dict(
+        {
+            "text": [
+                "C'est l'été",
+                "çà et là",
+                "Tiếng Việt",
+                "État",
+            ]
+        }
+    )
+
+    from giskard.scanner.robustness.text_transformations import TextAccentRemovalTransformation
+
+    t = TextAccentRemovalTransformation(column="text")
+
+    transformed = dataset.transform(t)
+    transformed_text = transformed.df.text.values
+
+    assert transformed_text[0] == "C'est l'ete"
+    assert transformed_text[1] == "ca et la"
+    assert transformed_text[2] == "Tieng Viet"
+    assert transformed_text[3] == "Etat"
+
+
 def test_religion_based_transformation():
     dataset = _dataset_from_dict(
         {
