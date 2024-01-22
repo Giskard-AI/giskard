@@ -231,14 +231,14 @@ class Model(CloudpickleSerializableModel):
         - ValueError: If the specified `local_dir` does not contain the required class information.
 
         Note:
-        - If the specified `local_dir` contains the required class information, it loads the model using the
+        - If the cls is Model and the specified `local_dir` contains the required class information, it loads the model using the
         retrieved model class and passes any additional arguments to the `load` method of the model class.
-        - If the class information is not found in the specified directory, it tries to load the model
+        - If the custom class is used or if the class information is not found in the specified directory, it tries to load the model
         using the `load` method of the current class.
         """
         local_path = Path(local_dir)
         class_file = local_path / MODEL_CLASS_PKL
-        if class_file.exists():
+        if class_file.exists() and cls == Model:  # case where Model.load used to load custom class
             clazz = super().get_model_class(class_file, model_py_ver)
             return clazz.load(local_path, model_py_ver=model_py_ver, *args, **kwargs)
         else:
