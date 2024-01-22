@@ -174,7 +174,7 @@ dependencies = [
     "markdown",                 # needed for display of scan results in notebook
     "colorama",                 # needed for the scan
     "griffe>=0.36.9",
-    "faiss-cpu>=1.7.4",
+    "uvloop>=0.19.0",
 ]
 
 [project.optional-dependencies]
@@ -182,6 +182,8 @@ llm = [
     "openai",
     "evaluate>=0.4.1",
     "bert-score>=0.3.13",
+    "faiss-cpu>=1.7.4",
+
 ]
 
 hub = [
