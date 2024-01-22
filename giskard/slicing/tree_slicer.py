@@ -9,6 +9,7 @@ from sklearn.model_selection import GridSearchCV
 from sklearn.tree import DecisionTreeClassifier, DecisionTreeRegressor
 from sklearn.tree._tree import Tree as SklearnTree
 
+from ..utils.analytics_collector import analytics
 from .base import BaseSlicer
 from .slice import GreaterThan, LowerThan, Query, QueryBasedSliceFunction
 
@@ -79,6 +80,8 @@ class DecisionTreeSlicer(BaseSlicer):
                     "min_impurity_decrease": np.linspace(data_var / 100, data_var / 10, 10)
                 },
             )
+            gs.fit(data.loc[:, features], data.loc[:, target])
+            dt = gs.best_estimator_
         else:
             logger.debug("Target is not numeric, using a classification tree.")
             dt = DecisionTreeClassifier(
@@ -86,16 +89,24 @@ class DecisionTreeSlicer(BaseSlicer):
                 splitter="best",
                 min_samples_leaf=min_samples,
                 max_leaf_nodes=20,
+                min_impurity_decrease=0,
             )
-            gs = GridSearchCV(dt, {"min_impurity_decrease": np.linspace(0.001, 0.1, 10)})
-
-        gs.fit(data.loc[:, features], data.loc[:, target])
-        dt = gs.best_estimator_
+            dt.fit(data.loc[:, features], data.loc[:, target])
 
         # Need at least a split, otherwise return now.
         if dt.tree_.node_count < 2:
             logger.debug("No split found, stopping now.")
             return []
+
+        analytics.track(
+            "scan:dt_params",
+            {
+                "n_samples": len(data),
+                "min_samples": min_samples,
+                "node_count": dt.tree_.node_count,
+                "impurity": dt.tree_.impurity.tolist(),
+            },
+        )
 
         # Make test slices
         slice_candidates = make_slices_from_tree(dt.tree_, features)

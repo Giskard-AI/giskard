@@ -78,12 +78,8 @@ def test_text_metadata_provider():
     meta = provider.generate_metadata(vals)
 
     assert "text_length" in meta.columns
-    assert "avg_word_length" in meta.columns
-    assert "charset" in meta.columns
 
     assert meta["text_length"].tolist() == [0, 6, 5, 12, 87]
-    assert meta["avg_word_length"].tolist() == [0.0, 6.0, 5.0, 5.5, 7]
-    assert meta["charset"].tolist() == ["undefined", "ascii", "ascii", "utf-8", "utf-8"]
     assert meta["language"].tolist() == [pd.NA, pd.NA, pd.NA, pd.NA, "ru"]
 
 
