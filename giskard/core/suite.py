@@ -487,7 +487,7 @@ class Suite:
             self.id = client.save_test_suite(self.to_dto(client, project_key, uploaded_uuid_status))
             analytics.track("hub:test_suite:uploaded")
 
-        print(f"Test suite has been saved: {client.host_url}/main/projects/{project_key}/test-suite/{self.id}/overview")
+        print(f"Test suite has been saved: {client.host_url}/main/projects/{project_key}/testing/suite/{self.id}")
 
         return self
 
