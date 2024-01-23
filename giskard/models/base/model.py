@@ -240,21 +240,25 @@ class BaseModel(ABC):
         return self.model_type == SupportedModelTypes.TEXT_GENERATION
 
     @classmethod
+    def get_model_class(cls, class_file: Path, model_py_ver: Optional[Tuple[str, str, str]] = None):
+        with open(class_file, "rb") as f:
+            try:
+                # According to https://github.com/cloudpipe/cloudpickle#cloudpickle:
+                # Cloudpickle can only be used to send objects between the exact same version of Python.
+                clazz = cloudpickle.load(f)
+            except Exception as e:
+                raise python_env_exception_helper(cls.__name__, e, required_py_ver=model_py_ver)
+            if not issubclass(clazz, BaseModel):
+                raise ValueError(f"Unknown model class: {clazz}. Models should inherit from 'BaseModel' class")
+            return clazz
+
+    @classmethod
     def determine_model_class(
         cls, meta, local_dir, model_py_ver: Optional[Tuple[str, str, str]] = None, *_args, **_kwargs
     ):
         class_file = Path(local_dir) / MODEL_CLASS_PKL
         if class_file.exists():
-            with open(class_file, "rb") as f:
-                try:
-                    # According to https://github.com/cloudpipe/cloudpickle#cloudpickle:
-                    # Cloudpickle can only be used to send objects between the exact same version of Python.
-                    clazz = cloudpickle.load(f)
-                except Exception as e:
-                    raise python_env_exception_helper(cls.__name__, e, required_py_ver=model_py_ver)
-                if not issubclass(clazz, BaseModel):
-                    raise ValueError(f"Unknown model class: {clazz}. Models should inherit from 'BaseModel' class")
-                return clazz
+            return cls.get_model_class(class_file, model_py_ver)
         else:
             return getattr(importlib.import_module(meta.loader_module), meta.loader_class)
 
@@ -562,10 +566,10 @@ class BaseModel(ABC):
     @classmethod
     def load(cls, local_dir, model_py_ver: Optional[Tuple[str, str, str]] = None, *_args, **kwargs):
         class_file = Path(local_dir) / MODEL_CLASS_PKL
-        model_id, meta = cls.read_meta_from_local_dir(local_dir)
+        model_meta_info, meta = cls.read_meta_from_local_dir(local_dir)
 
         constructor_params = meta.__dict__
-        constructor_params["id"] = model_id
+        constructor_params["id"] = model_meta_info.id
         del constructor_params["loader_module"]
         del constructor_params["loader_class"]
 
@@ -589,3 +593,8 @@ class BaseModel(ABC):
 
     def to_mlflow(self, *_args, **_kwargs):
         raise NotImplementedError()
+
+    def __str__(self) -> str:
+        if self.name:  # handle both None and empty string
+            return f"{self.name}({self.id})"
+        return super().__str__()  # default to `<giskard.models.base.Model object at ...>`

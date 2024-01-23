@@ -9,6 +9,7 @@ on:
 env:
   GSK_DISABLE_ANALYTICS: true
   SENTRY_ENABLED: false
+  GITGUARDIAN_API_KEY: ${{ secrets.GITGUARDIAN_API_KEY }}
 defaults:
   run:
     shell: bash
@@ -20,3 +21,5 @@ jobs:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
       - uses: pre-commit/action@v3.0.0
+        env:
+          SKIP: ggshield

@@ -92,10 +92,10 @@ def test_websocket_actor_run_ad_hoc_test_legacy_debug(enron_data: Dataset):
                 ),
             ],
             debug=True,
-            projectKey="projectKey",
+            projectKey=project_key,
         )
         with utils.MockedClient(mock_all=False) as (client, mr):
-            utils.register_uri_for_artifact_meta_info(mr, my_simple_test_legacy_debug, None)
+            utils.register_uri_for_artifact_meta_info(mr, my_simple_test_legacy_debug, project_key)
             utils.register_uri_for_dataset_meta_info(mr, enron_data, project_key)
             utils.register_uri_for_any_dataset_artifact_info_upload(mr, register_files=True)
 
@@ -297,10 +297,10 @@ def test_websocket_actor_run_ad_hoc_test_legacy_debug_no_name(enron_data: Datase
                 ),
             ],
             debug=True,
-            projectKey="projectKey",
+            projectKey=project_key,
         )
         with utils.MockedClient(mock_all=False) as (client, mr):
-            utils.register_uri_for_artifact_meta_info(mr, my_simple_test_legacy_debug_no_name, None)
+            utils.register_uri_for_artifact_meta_info(mr, my_simple_test_legacy_debug_no_name, project_key)
             utils.register_uri_for_dataset_meta_info(mr, enron_data, project_key)
             utils.register_uri_for_any_dataset_artifact_info_upload(mr, register_files=True)
 
@@ -333,9 +333,9 @@ def test_websocket_actor_run_test_suite():
             ],
             globalArguments=[],
         )
-        utils.register_uri_for_artifact_meta_info(mr, my_simple_test, None)
-        utils.register_uri_for_artifact_meta_info(mr, my_simple_test_successful, None)
-        utils.register_uri_for_artifact_meta_info(mr, my_simple_test_error, None)
+        utils.register_uri_for_artifact_meta_info(mr, my_simple_test, params.projectKey)
+        utils.register_uri_for_artifact_meta_info(mr, my_simple_test_successful, params.projectKey)
+        utils.register_uri_for_artifact_meta_info(mr, my_simple_test_error, params.projectKey)
 
         reply = listener.run_test_suite(client, params)
 
@@ -429,7 +429,7 @@ def test_websocket_actor_run_test_suite_share_models_and_dataset_instance():
                 ),
             ],
         )
-        utils.register_uri_for_artifact_meta_info(mr, same_prediction, None)
+        utils.register_uri_for_artifact_meta_info(mr, same_prediction, params.projectKey)
 
         utils.register_uri_for_model_meta_info(mr, random_model, "project_key")
         utils.register_uri_for_model_artifact_info(mr, random_model, "project_key", register_file_contents=True)
@@ -494,7 +494,7 @@ def test_websocket_actor_run_test_suite_with_global_arguments():
                 websocket.FuncArgument(name="value", int=MY_TEST_GLOBAL_VALUE, none=False),
             ],
         )
-        utils.register_uri_for_artifact_meta_info(mr, my_test_return, None)
+        utils.register_uri_for_artifact_meta_info(mr, my_test_return, params.projectKey)
 
         reply = listener.run_test_suite(client, params)
 
@@ -529,7 +529,7 @@ def test_websocket_actor_run_test_suite_with_test_input():
                 websocket.FuncArgument(name="value", int=MY_TEST_GLOBAL_VALUE, none=False),
             ],
         )
-        utils.register_uri_for_artifact_meta_info(mr, my_test_return, None)
+        utils.register_uri_for_artifact_meta_info(mr, my_test_return, params.projectKey)
 
         reply = listener.run_test_suite(client, params)
 
@@ -566,7 +566,7 @@ def test_websocket_actor_run_test_suite_with_legacy_debug():
                 websocket.FuncArgument(name="value", int=MY_TEST_GLOBAL_VALUE, none=False),
             ],
         )
-        utils.register_uri_for_artifact_meta_info(mr, my_simple_test__legacy_debug, None)
+        utils.register_uri_for_artifact_meta_info(mr, my_simple_test__legacy_debug, params.projectKey)
         utils.register_uri_for_any_dataset_artifact_info_upload(mr, True)
 
         reply = listener.run_test_suite(client, params)
@@ -600,7 +600,7 @@ def test_websocket_actor_run_test_suite_with_kwargs():
                 websocket.FuncArgument(name="value", int=MY_TEST_GLOBAL_VALUE, none=False),
             ],
         )
-        utils.register_uri_for_artifact_meta_info(mr, my_test_return, None)
+        utils.register_uri_for_artifact_meta_info(mr, my_test_return, params.projectKey)
 
         reply = listener.run_test_suite(client, params)
 
