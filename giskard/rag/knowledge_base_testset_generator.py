@@ -1,12 +1,18 @@
 from typing import Sequence
 
+import json
+
 import numpy as np
 import pandas as pd
 
 from ..llm.errors import LLMGenerationError
 from ..llm.generators import BaseDataGenerator
 from .embeddings import EmbeddingsBase, OpenAIEmbeddings
-from .prompts import ANSWER_GENERATION_PROMPT, QUESTION_GENERATION_PROMPT
+from .prompts import (
+    QA_GENERATION_ASSISTANT_EXAMPLE,
+    QA_GENERATION_CONTEXT_EXAMPLE,
+    QA_GENERATION_SYSTEM_PROMPT,
+)
 from .testset import TestSet
 from .vector_store import VectorStore
 
@@ -51,8 +57,10 @@ class KnowledgeBaseTestsetGenerator(BaseDataGenerator):
     seed: int = None
     """
 
-    _question_generation_prompt = QUESTION_GENERATION_PROMPT
-    _answer_generation_prompt = ANSWER_GENERATION_PROMPT
+    _qa_generation_system_prompt = QA_GENERATION_SYSTEM_PROMPT
+    _qa_generation_context_example = QA_GENERATION_CONTEXT_EXAMPLE
+    _qa_generation_assistant_example = QA_GENERATION_ASSISTANT_EXAMPLE
+
     _difficulty_level = 1
 
     def __init__(
@@ -67,6 +75,7 @@ class KnowledgeBaseTestsetGenerator(BaseDataGenerator):
         language: str = "en",
         knowledge_base_features: Sequence[str] = None,
         seed: int = None,
+        include_examples: bool = True,
         *args,
         **kwargs,
     ):
@@ -80,6 +89,7 @@ class KnowledgeBaseTestsetGenerator(BaseDataGenerator):
         self.embedding_model = embedding_model if embedding_model is not None else OpenAIEmbeddings()
         self.language = language
         self.rng = np.random.default_rng(seed=seed)
+        self.include_examples = include_examples
 
         self.knowledge_base = VectorStore.from_df(knowledge_df, self.embedding_model, features=knowledge_base_features)
 
@@ -104,20 +114,19 @@ class KnowledgeBaseTestsetGenerator(BaseDataGenerator):
             }
         ]
 
-    def _generate_question_from_context(self, context):
-        prompt = self._question_generation_prompt.format(
-            context=context,
-            model_name=self.model_name,
-            model_description=self.model_description,
-            language=self.language,
-        )
-        prompt = self._prevent_context_window_overflow(prompt)
-        return self._llm_complete(prompt, self._make_generate_input_functions("question"))
+    def _generate_question_answer_from_context(self, context):
+        messages = [{"role": "system", "content": self._qa_generation_system_prompt}]
+        if self.include_examples:
+            messages.extend(
+                [
+                    {"role": "user", "content": self._qa_generation_context_example},
+                    {"role": "assistant", "content": self._qa_generation_assistant_example},
+                ]
+            )
+        messages.append({"role": "user", "content": context})
 
-    def _generate_answer_from_context(self, question, context):
-        prompt = self._answer_generation_prompt.format(question=question, context=context)
-        prompt = self._prevent_context_window_overflow(prompt)
-        return self._llm_complete(prompt, self._make_generate_input_functions("answer"))
+        generated_qa = self._llm_complete(messages=messages)
+        return generated_qa["question"], generated_qa["answer"]
 
     def _extract_seed_context(self):
         seed_context = self.rng.choice(self.knowledge_base.documents)
@@ -131,9 +140,7 @@ class KnowledgeBaseTestsetGenerator(BaseDataGenerator):
         return relevant_contexts
 
     def _format_context(self, contexts):
-        context_string = "\n\n".join(
-            ["### Context {} ###\n{}\n######".format(idx + 1, c.page_content) for idx, c in enumerate(contexts)]
-        )
+        context_string = "\n------\n".join(["", *[doc.page_content for doc in contexts], ""])
         return context_string
 
     def _prevent_context_window_overflow(self, prompt):
@@ -142,16 +149,14 @@ class KnowledgeBaseTestsetGenerator(BaseDataGenerator):
         # https://help.openai.com/en/articles/4936856-what-are-tokens-and-how-to-count-them
         return prompt[: self.context_window_length * 4]
 
-    def _llm_complete(self, prompt, functions):
+    def _llm_complete(self, messages):
         try:
             out = self.llm_client.complete(
-                messages=[{"role": "system", "content": prompt}],
-                functions=functions,
-                function_call={"name": "generate_inputs"},
+                messages=messages,
                 temperature=self.llm_temperature,
                 caller_id=self.__class__.__name__,
             )
-            generated = out.function_call.args["inputs"]
+            generated = json.loads(out.message, strict=False)
         except (AttributeError, KeyError) as err:
             raise LLMGenerationError("Could not parse generated inputs") from err
 
@@ -181,13 +186,12 @@ class KnowledgeBaseTestsetGenerator(BaseDataGenerator):
             seed_contexts = self._extract_seed_context()
             context = self._format_context(seed_contexts)
 
-            question = self._generate_question_from_context(context)[0]
-            answer = self._generate_answer_from_context(question["question"], context)[0]
+            question, answer = self._generate_question_answer_from_context(context)
 
             generated_questions.append(
                 {
-                    "question": question["question"],
-                    "reference_answer": answer["answer"],
+                    "question": question,
+                    "reference_answer": answer,
                     "reference_context": context,
                     "difficulty_level": self._difficulty_level,
                 }
