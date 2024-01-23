@@ -1,5 +1,7 @@
-from typing import List, Optional
+from typing import Any, List, Optional
 
+import math
+from abc import abstractmethod
 from dataclasses import dataclass
 from enum import Enum
 
@@ -25,6 +27,70 @@ class IssueGroup:
     description: str
 
 
+class ExampleManager:
+    """
+    Abstract class to manage examples, in order to deal with other data types than pandas dataframes
+    and render them in html
+    """
+
+    def __init__(self):
+        self._examples = []
+        self._max_num = math.inf
+
+    def add_examples(self, example: Any):
+        """
+        Add examples to the example manager
+
+        Args:
+            example (Any): new example to be added
+        """
+        if isinstance(example, list):
+            self._examples += example
+        else:
+            self._examples.append(example)
+
+    def head(self, n):
+        """
+        Change the max nmuber of elements to display
+
+        Args:
+            n (int): number of elements to display
+
+        Returns:
+            ExampleManager: current object with max number of elements set to n
+        """
+        self._max_num = n
+        return self
+
+    def __len__(self):
+        return len(self._examples)
+
+    def len(self):
+        return self.__len__()
+
+    @abstractmethod
+    def to_html(self):
+        """
+        Renders html
+        """
+        ...
+
+
+class ExampleManagerDataFrame(ExampleManager):
+    """
+    Example manager for pandas dataframes
+    """
+
+    def __init__(self):
+        self._examples = pd.DataFrame()
+
+    def add_examples(self, example):
+        self._examples = pd.concat([self._examples, example])
+
+    def head(self, n):
+        return self._examples.head(n)
+
+
 class Issue:
     def __init__(
         self,
@@ -41,6 +107,7 @@ class Issue:
         features: Optional[List[str]] = None,
         tests=None,
         taxonomy: List[str] = None,
+        example_manager: Optional[ExampleManager] = ExampleManagerDataFrame,
     ):
         """Issue represents a single model vulnerability detected by Giskard.
 
@@ -90,6 +157,9 @@ class Issue:
         self._features = features
         self._tests = tests
         self.taxonomy = taxonomy or []
+        self.example_manager = example_manager()
+        if self._examples is not None:
+            self.example_manager.add_examples(self._examples)
 
     def __repr__(self):
         return f"<{self.__class__.__name__} group='{self.group.name}' level='{self.level}'>"
@@ -129,16 +199,11 @@ class Issue:
             **self.meta,
         )
 
-    def examples(self, n=3) -> pd.DataFrame:
-        if self._examples is not None:
-            return self._examples.head(n)
-        return pd.DataFrame()
+    def examples(self, n=3) -> Any:
+        return self.example_manager.head(n)
 
-    def add_examples(self, examples: pd.DataFrame):
-        if self._examples is None:
-            self._examples = examples
-        else:
-            self._examples = pd.concat([self._examples, examples])
+    def add_examples(self, examples: Any):
+        self.example_manager.add_examples(examples)
 
     def generate_tests(self, with_names=False) -> list:
         tests = self._tests(self) if callable(self._tests) else self._tests
