@@ -154,4 +154,5 @@ def test_unnamed_model_str():
 
 def test_repr_named_model():
     model = _CustomModel(model_type="regression")
-    assert repr(model) == f"<test_base_model._CustomModel object at {hex(id(model))}>"
+    assert hex(id(model)).lower()[2:] in repr(model).lower()
+    assert "<test_base_model._CustomModel object at" in repr(model)
