@@ -94,27 +94,6 @@ class KnowledgeBaseTestsetGenerator(BaseDataGenerator):
 
         self.knowledge_base = VectorStore.from_df(knowledge_df, self.embedding_model, features=knowledge_base_features)
 
-    def _make_generate_input_functions(self, return_attribute_name):
-        return [
-            {
-                "name": "generate_inputs",
-                "description": "generates inputs for model audit",
-                "parameters": {
-                    "type": "object",
-                    "properties": {
-                        "inputs": {
-                            "type": "array",
-                            "items": {
-                                "type": "object",
-                                "properties": {return_attribute_name: {"type": "string"}},
-                            },
-                        }
-                    },
-                    "required": ["inputs"],
-                },
-            }
-        ]
-
     def _generate_question_answer_from_context(self, context):
         messages = [{"role": "system", "content": self._qa_generation_system_prompt}]
         if self.include_examples:
@@ -124,7 +103,7 @@ class KnowledgeBaseTestsetGenerator(BaseDataGenerator):
                     {"role": "assistant", "content": self._qa_generation_assistant_example},
                 ]
             )
-        messages.append({"role": "user", "content": context})
+        messages.append({"role": "user", "content": context + self._one_output_requirement})
 
         generated_qa = self._llm_complete(messages=messages)
         return generated_qa["question"], generated_qa["answer"]
@@ -142,7 +121,6 @@ class KnowledgeBaseTestsetGenerator(BaseDataGenerator):
 
     def _format_context(self, contexts):
         context_string = "\n------\n".join(["", *[doc.page_content for doc in contexts], ""])
-        context_string = context_string + self._one_output_requirement
         return context_string
 
     def _prevent_context_window_overflow(self, prompt):
