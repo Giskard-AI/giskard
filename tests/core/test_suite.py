@@ -21,10 +21,11 @@ def my_test(model: BaseModel):
 
 def test_save_suite_with_artifact_error():
     model = FailingModel(model_type="regression")
+    regex_model_name = str(model).replace("(", "\\(").replace(")", "\\)")
 
     with MockedClient() as (client, mr), pytest.warns(
         UserWarning,
-        match=f"Failed to upload {str(model)} used in the test suite. The test suite will be partially uploaded.",
+        match=f"Failed to upload {regex_model_name} used in the test suite. The test suite will be partially uploaded.",
     ):
         utils.register_uri_for_artifact_meta_info(mr, my_test, None)
 
