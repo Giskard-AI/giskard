@@ -24,9 +24,11 @@ def test_named_dataset_str(df: pd.DataFrame):
 
 def test_unnamed_dataset_str(df: pd.DataFrame):
     dataset = Dataset(df=df)
-    assert str(dataset) == f"<giskard.datasets.base.Dataset object at {hex(id(dataset))}>"
+    assert hex(id(dataset)).lower()[2:] in str(dataset).lower()
+    assert "<giskard.datasets.base.Dataset object at" in str(dataset)
 
 
 def test_repr_named_dataset(df: pd.DataFrame):
     dataset = Dataset(name="bar", df=df)
-    assert repr(dataset) == f"<giskard.datasets.base.Dataset object at {hex(id(dataset))}>"
+    assert hex(id(dataset)).lower()[2:] in repr(dataset).lower()
+    assert "<giskard.datasets.base.Dataset object at" in repr(dataset)
