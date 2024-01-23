@@ -108,6 +108,7 @@ class Issue:
         tests=None,
         taxonomy: List[str] = None,
         example_manager: Optional[ExampleManager] = ExampleManagerDataFrame,
+        display_warnings: Optional[bool] = True,
     ):
         """Issue represents a single model vulnerability detected by Giskard.
 
@@ -143,6 +144,10 @@ class Issue:
         taxonomy : Optional[str]
             List of taxonomy machine tags, in MISP format. A machine tag is composed of a namespace (MUST), a predicate
             (MUST) and an (OPTIONAL) value, like ``namespace:predicate:value``.
+        example_manager : Optional[ExampleManager]
+            Example manager to handle examples
+        display_warnings : Optional[bool]
+            Whether to display warnings or not
         """
         self.group = group
         self.model = model
@@ -157,6 +162,7 @@ class Issue:
         self._features = features
         self._tests = tests
         self.taxonomy = taxonomy or []
+        self.display_warnings = display_warnings
         self.example_manager = example_manager()
         if self._examples is not None:
             self.example_manager.add_examples(self._examples)
