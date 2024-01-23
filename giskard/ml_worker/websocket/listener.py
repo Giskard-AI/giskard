@@ -32,6 +32,7 @@ from giskard.ml_worker.utils.cache import CACHE
 from giskard.ml_worker.websocket import CallToActionKind, GetInfoParam, PushKind
 from giskard.ml_worker.websocket.action import ActionPayload, MLWorkerAction
 from giskard.ml_worker.websocket.utils import (
+    do_create_dataset,
     do_create_sub_dataset,
     do_run_adhoc_test,
     function_argument_to_ws,
@@ -503,7 +504,7 @@ def dataset_processing(
 def run_ad_hoc_test(
     client: Optional[GiskardClient], params: websocket.RunAdHocTestParam, *args, **kwargs
 ) -> websocket.RunAdHocTest:
-    test: GiskardTest = GiskardTest.download(params.testUuid, client, None)
+    test: GiskardTest = GiskardTest.download(params.testUuid, client, params.projectKey)
 
     arguments = parse_function_arguments(client, params.arguments)
     if params.debug:
@@ -534,7 +535,7 @@ def run_test_suite(
     try:
         tests = [
             {
-                "test": GiskardTest.download(t.testUuid, client, None),
+                "test": GiskardTest.download(t.testUuid, client, params.projectKey),
                 "arguments": parse_function_arguments(client, t.arguments, loaded_artifacts),
                 "id": t.id,
             }
@@ -563,7 +564,7 @@ def run_test_suite(
                 test_args: Dict[str, Any] = copy(test_args)
                 test_args.update(**test_args.pop("kwargs"))
             updated_test_args.append(test_args)
-            suite.add_test(t["test"].get_builder()(**test_args), t["id"])
+            suite.add_test(t["test"](**test_args), t["id"])
 
         suite_result = suite.run(**global_arguments)
 
@@ -748,6 +749,15 @@ def create_sub_dataset(
     sub_dataset = do_create_sub_dataset(datasets, params.name, params.copiedRows)
 
     return websocket.CreateSubDataset(datasetUuid=sub_dataset.upload(client=client, project_key=params.projectKey))
+
+
+@websocket_actor(MLWorkerAction.createDataset)
+def create_dataset(
+    client: Optional[GiskardClient], params: websocket.CreateDatasetParam, *arg, **kwargs
+) -> websocket.CreateSubDataset:
+    dataset = do_create_dataset(params.name, params.headers, params.rows)
+
+    return websocket.CreateSubDataset(datasetUuid=dataset.upload(client=client, project_key=params.projectKey))
 
 
 def tail_file(file_path: Path, n_lines: int):

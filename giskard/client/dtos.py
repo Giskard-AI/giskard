@@ -15,6 +15,7 @@ class TestInputDTO(ConfiguredBaseModel):
 
 
 class SuiteTestDTO(ConfiguredBaseModel):
+    id: int
     testUuid: str
     functionInputs: Dict[str, TestInputDTO]
     displayName: Optional[str] = None

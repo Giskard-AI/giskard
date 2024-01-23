@@ -98,9 +98,6 @@ class GiskardTest(Artifact[TestFunctionMeta], ABC):
 
         return giskard_test
 
-    def get_builder(self):
-        return type(self)
-
     def assert_(self):
         """Wrap execution of the test into a "assert" for unit test executions."""
         result = self.execute()
@@ -184,9 +181,6 @@ class GiskardTestMethod(GiskardTest):
             output.append(f"Named inputs: {self.params}")
 
         return "\n".join(output)
-
-    def get_builder(self):
-        return GiskardTestMethod(self.test_fn)
 
     def _save_locally(self, local_dir: Path):
         with open(Path(local_dir) / "data.pkl", "wb") as f:

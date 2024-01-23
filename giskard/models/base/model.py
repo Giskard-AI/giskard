@@ -562,10 +562,10 @@ class BaseModel(ABC):
     @classmethod
     def load(cls, local_dir, model_py_ver: Optional[Tuple[str, str, str]] = None, *_args, **kwargs):
         class_file = Path(local_dir) / MODEL_CLASS_PKL
-        model_id, meta = cls.read_meta_from_local_dir(local_dir)
+        model_meta_info, meta = cls.read_meta_from_local_dir(local_dir)
 
         constructor_params = meta.__dict__
-        constructor_params["id"] = model_id
+        constructor_params["id"] = model_meta_info.id
         del constructor_params["loader_module"]
         del constructor_params["loader_class"]
 
@@ -589,3 +589,8 @@ class BaseModel(ABC):
 
     def to_mlflow(self, *_args, **_kwargs):
         raise NotImplementedError()
+
+    def __str__(self) -> str:
+        if self.name:  # handle both None and empty string
+            return f"{self.name}({self.id})"
+        return super().__str__()  # default to `<giskard.models.base.Model object at ...>`
