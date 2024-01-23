@@ -60,6 +60,7 @@ class KnowledgeBaseTestsetGenerator(BaseDataGenerator):
     _qa_generation_system_prompt = QA_GENERATION_SYSTEM_PROMPT
     _qa_generation_context_example = QA_GENERATION_CONTEXT_EXAMPLE
     _qa_generation_assistant_example = QA_GENERATION_ASSISTANT_EXAMPLE
+    _one_output_requirement = "\n\nRemember you should only generate one question and answer pair."
 
     _difficulty_level = 1
 
@@ -141,6 +142,7 @@ class KnowledgeBaseTestsetGenerator(BaseDataGenerator):
 
     def _format_context(self, contexts):
         context_string = "\n------\n".join(["", *[doc.page_content for doc in contexts], ""])
+        context_string = context_string + self._one_output_requirement
         return context_string
 
     def _prevent_context_window_overflow(self, prompt):
