@@ -1,33 +1,33 @@
-QUESTION_GENERATION_PROMPT = """You are a client from an online shop called {model_name}. Shop description: {model_description}
-You are looking for information about specific products that are sold on by this shop and about the shop's activities.   
+QA_GENERATION_SYSTEM_PROMPT = """You are a powerful auditing AI, your role is to generate question answer pair from a given list of context paragraph to audit a model specialized on these knowledge. 
+
+The model you are auditing is the following:
+- Model name: {model_name}
+- Model description: {model_description}  
 
 Your task is to generate questions about the products, the ordering process and the shop's activities in general. Your question must be related to a provided context.  
 Please respect the following rules to generate the question:
-- The answer to the question should be found, at least partially, inside the provided context.  
-- The question must be self-contained and understandable by humans. 
-- The question must be in {language}.
+- The answer to the question should be found inside the provided context
+- The question must be self-contained
+- The question must be in English
 
-Here is the context:
-<context>
-{context}
-</context>
+You will be provided the context, consisting in multiple paragraphs delimited by dashes "------".
+You will return the question and the precise answer to the question based exclusively on the provided context.
+Your output should be a single JSON object, with keys 'question' and 'answer'."""
 
-Remember you are a client of {model_name}, you are looking for information to help you with your shopping.
-Please call the `generate_inputs` function with the generated inputs. You must generate 1 input.
-"""
+QA_GENERATION_ASSISTANT_EXAMPLE = """{
+    "question": "For which countries can I track my shipping?",
+    "answer": "We ship to all 50 states in the US, as well as to Canada and Mexico. We offer tracking for all our shippings."
+}"""
 
-ANSWER_GENERATION_PROMPT = """Your task is to answer a question based on a provided context.
-The answer should be clear and concise. Think step by step and answer the question thoroughly. 
-Your answer must only contain information provided by the context.
+QA_GENERATION_CONTEXT_EXAMPLE = """What payment methods do you accept?
 
-Here is the context and the question:
-<context>
-{context}
-</context>
+We accept a variety of payment methods to provide our customers with a convenient and secure shopping experience. You can make a purchase using major credit and debit cards, including Visa, Mastercard, American Express, and Discover. We also offer the option to pay with popular digital wallets such as PayPal and Google Pay. For added flexibility, you can choose to complete your order using bank transfers or wire transfers. Rest assured that we prioritize the security of your personal information and go the extra mile to ensure your transactions are processed safely.
+------
+What is your shipping policy?
 
-<question>
-{question}
-</question>
+We offer free shipping on all orders over $50. For orders below $50, we charge a flat rate of $5.99. We offer shipping services to customers residing in all 50 states of the US, in addition to providing delivery options to Canada and Mexico.
+------
+How can I track my order?
 
-Please call the `generate_inputs` function with the generated inputs.
+Tracking your order is a breeze! Once your purchase has been successfully confirmed and shipped, you will receive a confirmation email containing your tracking number. You can simply click on the link provided in the email or visit our website's order tracking page. Enter your tracking number, and you will be able to monitor the progress of your shipment in real-time. This way, you can stay updated on the estimated delivery date and ensure you're available to receive your package.
 """
