@@ -161,6 +161,11 @@ class KnowledgeBaseTestsetGenerator(BaseDataGenerator):
             generated = json.loads(out.message, strict=False)
         except (AttributeError, KeyError) as err:
             raise LLMGenerationError("Could not parse generated inputs") from err
+        except json.decoder.JSONDecodeError as err:
+            if "Extra data:" in str(err):
+                raise LLMGenerationError("Generator model output more than one question/answer pair.") from err
+            else:
+                raise err
 
         return generated
 
