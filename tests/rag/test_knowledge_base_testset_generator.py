@@ -3,7 +3,7 @@ from unittest.mock import Mock
 import numpy as np
 import pandas as pd
 
-from giskard.llm.client import LLMFunctionCall, LLMOutput
+from giskard.llm.client import LLMOutput
 from giskard.rag import KnowledgeBaseTestsetGenerator
 
 
@@ -23,45 +23,28 @@ def make_knowledge_base_df():
     return knowledge_base_df
 
 
-CONTEXT_STRING = """### Context 1 ###
+CONTEXT_STRING = """
+------
 Scamorza is a Southern Italian cow's milk cheese.
-######
-
-### Context 2 ###
+------
 Bleu d'Auvergne is a French blue cheese, named for its place of origin in the Auvergne region.
-######
-
-### Context 3 ###
+------
 Freeriding is a style of snowboarding or skiing performed on natural, un-groomed terrain, without a set course, goals or rules.
-######"""
+------
+"""
 
 
 def test_testset_generation():
     llm_client = Mock()
-    llm_client.complete.side_effect = [
-        LLMOutput(
-            None,
-            LLMFunctionCall(
-                "generate_inputs",
-                {
-                    "inputs": [
-                        {"question": "Where is Camembert from?"},
-                    ]
-                },
-            ),
-        ),
-        LLMOutput(
-            None,
-            LLMFunctionCall(
-                "generate_inputs",
-                {
-                    "inputs": [
-                        {"answer": "Camembert was created in Normandy, in the northwest of France."},
-                    ]
-                },
-            ),
-        ),
-    ] * 2
+    llm_client.complete.side_effect = (
+        [
+            LLMOutput(
+                """{"question": "Where is Camembert from?",
+"answer": "Camembert was created in Normandy, in the northwest of France."}"""
+            )
+        ]
+        * 2
+    )
 
     embedding_dimension = 8
 
@@ -98,4 +81,4 @@ def test_testset_generation():
     assert test_set.df.loc[0, "difficulty_level"] == 1
 
     assert test_set.df.loc[1, "question"] == "Where is Camembert from?"
-    assert test_set.df.loc[1, "reference_context"] == ""
+    assert test_set.df.loc[1, "reference_context"] == "\n------\n"
