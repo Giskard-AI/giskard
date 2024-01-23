@@ -174,7 +174,6 @@ dependencies = [
     "markdown",                 # needed for display of scan results in notebook
     "colorama",                 # needed for the scan
     "griffe>=0.36.9",
-    "uvloop>=0.19.0",
 ]
 
 [project.optional-dependencies]
