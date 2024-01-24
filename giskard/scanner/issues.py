@@ -30,17 +30,17 @@ class ExampleManager:
     Example manager for pandas dataframes
     """
 
-    def __init__(self):
-        self._examples = pd.DataFrame()
+    def __init__(self, examples: pd.DataFrame = None):
+        self.examples = pd.DataFrame() or examples
 
     def add_examples(self, example):
-        self._examples = pd.concat([self._examples, example])
+        self.examples = pd.concat([self.examples, example])
 
     def head(self, n):
-        return self._examples.head(n)
+        return self.examples.head(n)
 
     def to_html(self):
-        return self._examples.to_html()
+        return self.examples.to_html()
 
 
 class Issue:
