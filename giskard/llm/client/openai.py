@@ -1,4 +1,4 @@
-from typing import Dict, Optional, Sequence
+from typing import Dict, List, Optional, Sequence
 
 import json
 from abc import ABC, abstractmethod
@@ -7,7 +7,7 @@ from tenacity import retry, retry_if_exception_type, stop_after_attempt, wait_ex
 
 from ..config import LLMConfigurationError
 from ..errors import LLMGenerationError, LLMImportError
-from . import LLMClient, LLMFunctionCall, LLMLogger, LLMOutput
+from . import LLMClient, LLMFunctionCall, LLMLogger, LLMMessage
 from .base import LLMToolCall
 
 try:
@@ -44,9 +44,44 @@ class BaseOpenAIClient(LLMClient, ABC):
     ) -> dict:
         ...
 
+    @staticmethod
+    def _parse_function_call(function_call) -> LLMFunctionCall:
+        try:
+            return LLMFunctionCall(
+                name=function_call["name"],
+                arguments=json.loads(function_call["arguments"]),
+            )
+        except (json.JSONDecodeError, KeyError) as err:
+            raise LLMGenerationError("Could not parse function call") from err
+
+    @staticmethod
+    def _parse_tool_call(tool_call) -> LLMToolCall:
+        return LLMToolCall(
+            id=tool_call["id"],
+            type=tool_call["type"],
+            function=BaseOpenAIClient._parse_function_call(tool_call["function"]),
+        )
+
+    @staticmethod
+    def _parse_tool_calls(tool_calls) -> List[LLMToolCall]:
+        return [BaseOpenAIClient._parse_tool_call(tool_call) for tool_call in tool_calls]
+
+    @staticmethod
+    def _parse_message(response) -> LLMMessage:
+        return LLMMessage(
+            role=response["role"],
+            content=response["content"],
+            function_call=BaseOpenAIClient._parse_function_call(response["function_call"])
+            if "function_call" in response and response["function_call"] is not None
+            else None,
+            tool_calls=BaseOpenAIClient._parse_tool_calls(response["tool_calls"])
+            if "tool_calls" in response and response["tool_calls"] is not None
+            else None,
+        )
+
     def complete(
         self,
-        messages,
+        messages: Sequence[LLMMessage],
         functions=None,
         temperature=0.5,
         max_tokens=None,
@@ -55,7 +90,7 @@ class BaseOpenAIClient(LLMClient, ABC):
         tools=None,
         tool_choice=None,
     ):
-        cc = self._completion(
+        llm_message = self._completion(
             messages=messages,
             temperature=temperature,
             functions=functions,
@@ -66,28 +101,7 @@ class BaseOpenAIClient(LLMClient, ABC):
             tool_choice=tool_choice,
         )
 
-        function_call = None
-
-        if fc := cc.get("function_call"):
-            try:
-                function_call = LLMFunctionCall(
-                    function=fc["name"],
-                    args=json.loads(fc["arguments"], strict=False),
-                )
-            except (json.JSONDecodeError, KeyError) as err:
-                raise LLMGenerationError("Could not parse function call") from err
-
-        tool_calls = []
-        for tool_call in cc.get("tool_calls") or []:
-            tool_calls.append(
-                LLMToolCall(
-                    id=tool_call["id"],
-                    function=tool_call["function"]["name"],
-                    args=json.loads(tool_call["function"]["arguments"]),
-                )
-            )
-
-        return LLMOutput(message=cc["content"], function_call=function_call, tool_calls=tool_calls)
+        return BaseOpenAIClient._parse_message(llm_message)
 
 
 class LegacyOpenAIClient(BaseOpenAIClient):

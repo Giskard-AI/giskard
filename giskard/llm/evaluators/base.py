@@ -109,7 +109,7 @@ class LLMBasedEvaluator(BaseEvaluator):
                     temperature=self.llm_temperature,
                     caller_id=self.__class__.__name__,
                 )
-                if len(out.tool_calls) != 1 or "passed_test" not in out.tool_calls[0].args:
+                if len(out.tool_calls) != 1 or "passed_test" not in out.tool_calls[0].function.arguments:
                     raise LLMGenerationError("Invalid function call arguments received")
             except LLMGenerationError as err:
                 status.append(TestResultStatus.ERROR)
@@ -117,7 +117,7 @@ class LLMBasedEvaluator(BaseEvaluator):
                 errored.append({"message": str(err), "sample": sample})
                 continue
 
-            args = out.tool_calls[0].args
+            args = out.tool_calls[0].function.arguments
             reasons.append(args.get("reason"))
             if args["passed_test"]:
                 status.append(TestResultStatus.PASSED)

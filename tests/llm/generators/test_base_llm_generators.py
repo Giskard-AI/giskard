@@ -3,7 +3,7 @@ from unittest.mock import Mock
 import pytest
 
 from giskard.datasets.base import Dataset
-from giskard.llm.client import LLMFunctionCall, LLMOutput
+from giskard.llm.client import LLMFunctionCall, LLMMessage, LLMToolCall
 from giskard.llm.errors import LLMGenerationError
 from giskard.llm.generators.adversarial import AdversarialDataGenerator
 from giskard.llm.generators.base import BaseDataGenerator
@@ -22,21 +22,26 @@ from giskard.llm.generators.sycophancy import SycophancyDataGenerator
 def test_generator_returns_dataset(Generator, args, kwargs):
     llm_client = Mock()
     llm_client.complete.side_effect = [
-        LLMOutput(
-            None,
-            None,
-            [
-                LLMFunctionCall(
-                    "generate_inputs",
-                    {
-                        "inputs": [
-                            {"question": "What is the meaning of life?", "other_feature": "test"},
-                            {
-                                "question": "What is the airspeed velocity of an unladen swallow?",
-                                "other_feature": "pass",
-                            },
-                        ]
-                    },
+        LLMMessage(
+            role="assistant",
+            content=None,
+            function_call=None,
+            tool_calls=[
+                LLMToolCall(
+                    id="call_abc123",
+                    type="function",
+                    function=LLMFunctionCall(
+                        name="generate_inputs",
+                        arguments={
+                            "inputs": [
+                                {"question": "What is the meaning of life?", "other_feature": "test"},
+                                {
+                                    "question": "What is the airspeed velocity of an unladen swallow?",
+                                    "other_feature": "pass",
+                                },
+                            ]
+                        },
+                    ),
                 )
             ],
         )
@@ -89,7 +94,7 @@ def test_generator_returns_dataset(Generator, args, kwargs):
 def test_generator_raises_generation_error_if_tool_call_fails(Generator, args, kwargs):
     # Missing tool call
     llm_client = Mock()
-    llm_client.complete.side_effect = [LLMOutput("Sorry, I can't.", None)]
+    llm_client.complete.side_effect = [LLMMessage.create_message("assistant", "Sorry, I can't.")]
 
     model = Mock()
     model.feature_names = ["question", "other_feature"]
@@ -104,7 +109,18 @@ def test_generator_raises_generation_error_if_tool_call_fails(Generator, args, k
     # Wrong tool call
     llm_client = Mock()
     llm_client.complete.side_effect = [
-        LLMOutput(None, tool_calls=[LLMFunctionCall("wrong_function", {"have_no_inputs": True})])
+        LLMMessage(
+            role="assistant",
+            tool_calls=[
+                LLMToolCall(
+                    id="call_abc123",
+                    type="function",
+                    function=LLMFunctionCall("wrong_function", {"have_no_inputs": True}),
+                )
+            ],
+            content=None,
+            function_call=None,
+        )
     ]
 
     model = Mock()
@@ -128,18 +144,23 @@ def test_generator_raises_generation_error_if_tool_call_fails(Generator, args, k
 def test_generator_casts_based_on_column_types(Generator, args, kwargs):
     llm_client = Mock()
     llm_client.complete.side_effect = [
-        LLMOutput(
-            None,
-            None,
-            [
-                LLMFunctionCall(
-                    "generate_inputs",
-                    {
-                        "inputs": [
-                            {"question": True, "other_feature": 1},
-                            {"question": False, "other_feature": 2},
-                        ]
-                    },
+        LLMMessage(
+            role="assistant",
+            content=None,
+            function_call=None,
+            tool_calls=[
+                LLMToolCall(
+                    id="call_abc123",
+                    type="function",
+                    function=LLMFunctionCall(
+                        name="generate_inputs",
+                        arguments={
+                            "inputs": [
+                                {"question": True, "other_feature": 1},
+                                {"question": False, "other_feature": 2},
+                            ]
+                        },
+                    ),
                 )
             ],
         )
@@ -176,21 +197,26 @@ def test_generator_casts_based_on_column_types(Generator, args, kwargs):
 def test_generator_adds_languages_requirements_in_prompts(Generator, args, kwargs):
     llm_client = Mock()
     llm_client.complete.side_effect = [
-        LLMOutput(
-            None,
-            None,
-            [
-                LLMFunctionCall(
-                    "generate_inputs",
-                    {
-                        "inputs": [
-                            {"question": "What is the meaning of life?", "other_feature": "test"},
-                            {
-                                "question": "Quel est le rôle des gaz à effet de serre dans le réchauffement climatique??",
-                                "other_feature": "pass",
-                            },
-                        ]
-                    },
+        LLMMessage(
+            role="assistant",
+            content=None,
+            function_call=None,
+            tool_calls=[
+                LLMToolCall(
+                    id="call_abc123",
+                    type="function",
+                    function=LLMFunctionCall(
+                        name="generate_inputs",
+                        arguments={
+                            "inputs": [
+                                {"question": "What is the meaning of life?", "other_feature": "test"},
+                                {
+                                    "question": "Quel est le rôle des gaz à effet de serre dans le réchauffement climatique??",
+                                    "other_feature": "pass",
+                                },
+                            ]
+                        },
+                    ),
                 )
             ],
         )
@@ -232,21 +258,26 @@ def test_generator_adds_languages_requirements_in_prompts(Generator, args, kwarg
 def test_generator_empty_languages_requirements(Generator, args, kwargs):
     llm_client = Mock()
     llm_client.complete.side_effect = [
-        LLMOutput(
-            None,
-            None,
-            [
-                LLMFunctionCall(
-                    "generate_inputs",
-                    {
-                        "inputs": [
-                            {"question": "What is the meaning of life?", "other_feature": "test"},
-                            {
-                                "question": "Quel est le rôle des gaz à effet de serre dans le réchauffement climatique??",
-                                "other_feature": "pass",
-                            },
-                        ]
-                    },
+        LLMMessage(
+            role="assistant",
+            content=None,
+            function_call=None,
+            tool_calls=[
+                LLMToolCall(
+                    id="call_abc123",
+                    type="function",
+                    function=LLMFunctionCall(
+                        name="generate_inputs",
+                        arguments={
+                            "inputs": [
+                                {"question": "What is the meaning of life?", "other_feature": "test"},
+                                {
+                                    "question": "Quel est le rôle des gaz à effet de serre dans le réchauffement climatique??",
+                                    "other_feature": "pass",
+                                },
+                            ]
+                        },
+                    ),
                 )
             ],
         )
