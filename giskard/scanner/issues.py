@@ -25,19 +25,22 @@ class IssueGroup:
     description: str
 
 
-@dataclass
 class ExampleManager:
     """
     Example manager for pandas dataframes
     """
 
-    examples: pd.DataFrame = pd.DataFrame()
+    def __init__(self):
+        self._examples = pd.DataFrame()
 
     def add_examples(self, example):
-        self.examples = pd.concat([self.examples, example])
+        self._examples = pd.concat([self._examples, example])
 
     def head(self, n):
-        return self.examples.head(n)
+        return self._examples.head(n)
+
+    def to_html(self):
+        return self._examples.to_html()
 
 
 class Issue:
