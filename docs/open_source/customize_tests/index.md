@@ -28,9 +28,4 @@ data_transformations/index
 :link: data_transformations/index.html
 ::::
 
-::::{grid-item-card} <br/><h3>🧰 RAG toolset</h3>
-:text-align: center
-:link: testset_generation/index.html
-::::
-
 :::::
