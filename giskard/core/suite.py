@@ -78,10 +78,15 @@ def parse_function_arguments(client, project_key, function_inputs):
     return arguments
 
 
+TestName = str
+TestParams = Dict[str, Any]
+SuiteResult = Tuple[TestName, TestResult, TestParams]
+
+
 class TestSuiteResult:
     """Represents the result of a test suite."""
 
-    def __init__(self, passed: bool, results: List[Tuple[str, TestResult, Dict[str, Any]]]):
+    def __init__(self, passed: bool, results: List[SuiteResult]):
         self.passed = passed
         self.results = results
 
@@ -400,7 +405,7 @@ class Suite:
         run_args = self.default_params.copy()
         run_args.update(suite_run_args)
 
-        results: List[(str, TestResult, Dict[str, Any])] = list()
+        results: List[SuiteResult] = list()
         required_params = self.find_required_params()
         undefined_params = {k: v for k, v in required_params.items() if k not in run_args}
         if len(undefined_params):
