@@ -25,7 +25,6 @@ def test_generator_returns_dataset(Generator, args, kwargs):
         LLMOutput(
             None,
             None,
-            None,
             [
                 LLMFunctionCall(
                     "generate_inputs",
@@ -90,7 +89,7 @@ def test_generator_returns_dataset(Generator, args, kwargs):
 def test_generator_raises_generation_error_if_tool_call_fails(Generator, args, kwargs):
     # Missing tool call
     llm_client = Mock()
-    llm_client.complete.side_effect = [LLMOutput(None, "Sorry, I can't.", None)]
+    llm_client.complete.side_effect = [LLMOutput("Sorry, I can't.", None)]
 
     model = Mock()
     model.feature_names = ["question", "other_feature"]
@@ -105,7 +104,7 @@ def test_generator_raises_generation_error_if_tool_call_fails(Generator, args, k
     # Wrong tool call
     llm_client = Mock()
     llm_client.complete.side_effect = [
-        LLMOutput(None, None, tool_calls=[LLMFunctionCall("wrong_function", {"have_no_inputs": True})])
+        LLMOutput(None, tool_calls=[LLMFunctionCall("wrong_function", {"have_no_inputs": True})])
     ]
 
     model = Mock()
@@ -130,7 +129,6 @@ def test_generator_casts_based_on_column_types(Generator, args, kwargs):
     llm_client = Mock()
     llm_client.complete.side_effect = [
         LLMOutput(
-            None,
             None,
             None,
             [
@@ -179,7 +177,6 @@ def test_generator_adds_languages_requirements_in_prompts(Generator, args, kwarg
     llm_client = Mock()
     llm_client.complete.side_effect = [
         LLMOutput(
-            None,
             None,
             None,
             [
@@ -236,7 +233,6 @@ def test_generator_empty_languages_requirements(Generator, args, kwargs):
     llm_client = Mock()
     llm_client.complete.side_effect = [
         LLMOutput(
-            None,
             None,
             None,
             [

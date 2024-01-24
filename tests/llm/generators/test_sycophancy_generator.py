@@ -10,7 +10,6 @@ def test_generator_returns_dataset():
     llm_client.complete.side_effect = [
         LLMOutput(
             None,
-            None,
             LLMFunctionCall(
                 "generate_inputs",
                 {

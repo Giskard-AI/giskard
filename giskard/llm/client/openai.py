@@ -87,7 +87,7 @@ class BaseOpenAIClient(LLMClient, ABC):
                 )
             )
 
-        return LLMOutput(raw_output=cc, message=cc["content"], function_call=function_call, tool_calls=tool_calls)
+        return LLMOutput(message=cc["content"], function_call=function_call, tool_calls=tool_calls)
 
 
 class LegacyOpenAIClient(BaseOpenAIClient):

@@ -21,7 +21,6 @@ class LLMToolCall:
 
 @dataclass
 class LLMOutput:
-    raw_output: Any
     message: Optional[str] = None
     function_call: Optional[LLMFunctionCall] = None
     tool_calls: Sequence[LLMToolCall] = field(default_factory=list)
