@@ -50,9 +50,7 @@ class DataFrameScanExamples(ScanExamples):
     """
 
     def __init__(self, examples: pd.DataFrame = None):
-        if examples is None:
-            examples = pd.DataFrame()
-        self.examples = examples
+        self.examples = pd.DataFrame() if examples is None else examples
 
     def add_examples(self, example):
         self.examples = pd.concat([self.examples, example])
@@ -80,7 +78,7 @@ class Issue:
         features: Optional[List[str]] = None,
         tests=None,
         taxonomy: List[str] = None,
-        example_manager: Optional[ScanExamples] = None,
+        scan_examples: Optional[ScanExamples] = None,
         display_footer_info: Optional[bool] = True,
     ):
         """Issue represents a single model vulnerability detected by Giskard.
@@ -117,7 +115,7 @@ class Issue:
         taxonomy : Optional[str]
             List of taxonomy machine tags, in MISP format. A machine tag is composed of a namespace (MUST), a predicate
             (MUST) and an (OPTIONAL) value, like ``namespace:predicate:value``.
-        example_manager : Optional[ScanExamples]
+        scan_examples : Optional[ScanExamples]
             A ScanExamples object to manage examples
         display_footer_info : Optional[bool]
             Whether to display warnings or not
@@ -136,11 +134,9 @@ class Issue:
         self._tests = tests
         self.taxonomy = taxonomy or []
         self.display_footer_info = display_footer_info
-        if example_manager is None:
-            example_manager = DataFrameScanExamples()
-        self.example_manager = example_manager
+        self.scan_examples = DataFrameScanExamples() if scan_examples is None else scan_examples
         if self._examples is not None:
-            self.example_manager.add_examples(self._examples)
+            self.scan_examples.add_examples(self._examples)
 
     def __repr__(self):
         return f"<{self.__class__.__name__} group='{self.group.name}' level='{self.level}'>"
@@ -181,10 +177,10 @@ class Issue:
         )
 
     def examples(self, n=3) -> Any:
-        return self.example_manager.head(n)
+        return self.scan_examples.head(n)
 
     def add_examples(self, examples: Any):
-        self.example_manager.add_examples(examples)
+        self.scan_examples.add_examples(examples)
 
     def generate_tests(self, with_names=False) -> list:
         tests = self._tests(self) if callable(self._tests) else self._tests
