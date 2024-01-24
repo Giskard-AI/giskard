@@ -1,7 +1,7 @@
 from typing import Any, List, Optional
 
-import math
 from abc import abstractmethod
+from copy import deepcopy
 from dataclasses import dataclass
 from enum import Enum
 
@@ -33,10 +33,10 @@ class ExampleManager:
     and render them in html
     """
 
-    def __init__(self):
-        self._examples = []
-        self._max_num = math.inf
+    def __init__(self, examples: list = []):
+        self._examples = deepcopy(examples)
 
+    @abstractmethod
     def add_examples(self, example: Any):
         """
         Add examples to the example manager
@@ -44,29 +44,22 @@ class ExampleManager:
         Args:
             example (Any): new example to be added
         """
-        if isinstance(example, list):
-            self._examples += example
-        else:
-            self._examples.append(example)
+        ...
 
     def head(self, n):
         """
-        Change the max nmuber of elements to display
+        Returns a new example manager keeping only n first examples
 
         Args:
-            n (int): number of elements to display
+            n (int): number of elements to keep
 
         Returns:
-            ExampleManager: current object with max number of elements set to n
+            ExampleManager: new example manager with n first examples
         """
-        self._max_num = n
-        return self
+        return type(self)(self._examples[:n])
 
     def __len__(self):
         return len(self._examples)
-
-    def len(self):
-        return self.__len__()
 
     @abstractmethod
     def to_html(self):
@@ -108,7 +101,7 @@ class Issue:
         tests=None,
         taxonomy: List[str] = None,
         example_manager: Optional[ExampleManager] = ExampleManagerDataFrame,
-        display_warnings: Optional[bool] = True,
+        display_footer_info: Optional[bool] = True,
     ):
         """Issue represents a single model vulnerability detected by Giskard.
 
@@ -146,7 +139,7 @@ class Issue:
             (MUST) and an (OPTIONAL) value, like ``namespace:predicate:value``.
         example_manager : Optional[ExampleManager]
             Example manager to handle examples
-        display_warnings : Optional[bool]
+        display_footer_info : Optional[bool]
             Whether to display warnings or not
         """
         self.group = group
@@ -162,7 +155,7 @@ class Issue:
         self._features = features
         self._tests = tests
         self.taxonomy = taxonomy or []
-        self.display_warnings = display_warnings
+        self.display_footer_info = display_footer_info
         self.example_manager = example_manager()
         if self._examples is not None:
             self.example_manager.add_examples(self._examples)
