@@ -1,7 +1,5 @@
 from typing import Any, List, Optional
 
-from abc import abstractmethod
-from copy import deepcopy
 from dataclasses import dataclass
 from enum import Enum
 
@@ -28,48 +26,6 @@ class IssueGroup:
 
 
 class ExampleManager:
-    """
-    Abstract class to manage examples, in order to deal with other data types than pandas dataframes
-    and render them in html
-    """
-
-    def __init__(self, examples: list = []):
-        self._examples = deepcopy(examples)
-
-    @abstractmethod
-    def add_examples(self, example: Any):
-        """
-        Add examples to the example manager
-
-        Args:
-            example (Any): new example to be added
-        """
-        ...
-
-    def head(self, n):
-        """
-        Returns a new example manager keeping only n first examples
-
-        Args:
-            n (int): number of elements to keep
-
-        Returns:
-            ExampleManager: new example manager with n first examples
-        """
-        return type(self)(self._examples[:n])
-
-    def __len__(self):
-        return len(self._examples)
-
-    @abstractmethod
-    def to_html(self):
-        """
-        Renders html
-        """
-        ...
-
-
-class ExampleManagerDataFrame(ExampleManager):
     """
     Example manager for pandas dataframes
     """
@@ -100,7 +56,7 @@ class Issue:
         features: Optional[List[str]] = None,
         tests=None,
         taxonomy: List[str] = None,
-        example_manager: Optional[ExampleManager] = ExampleManagerDataFrame,
+        example_manager: Optional[type] = ExampleManager,
         display_footer_info: Optional[bool] = True,
     ):
         """Issue represents a single model vulnerability detected by Giskard.
