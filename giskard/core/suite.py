@@ -5,6 +5,8 @@ import logging
 import traceback
 from dataclasses import dataclass
 from functools import singledispatchmethod
+from xml.dom import minidom
+from xml.etree.ElementTree import Element, SubElement, tostring
 
 from mlflow import MlflowClient
 
@@ -25,6 +27,7 @@ from giskard.registry.transformation_function import TransformationFunction
 from ..client.python_utils import warning
 from ..utils.analytics_collector import analytics
 from ..utils.artifacts import serialize_parameter
+from .kwargs_utils import get_imports_code
 
 logger = logging.getLogger(__name__)
 
@@ -44,7 +47,7 @@ def parse_function_arguments(client, project_key, function_inputs):
     arguments = dict()
 
     for value in function_inputs:
-        if value["isAlias"]:
+        if value["isAlias"] or value["isDefaultValue"]:
             continue
         if value["type"] == "Dataset":
             arguments[value["name"]] = Dataset.download(client, project_key, value["value"], False)
@@ -66,12 +69,12 @@ def parse_function_arguments(client, project_key, function_inputs):
             arguments[value["name"]] = str(value["value"])
         elif value["type"] == "bool":
             arguments[value["name"]] = bool(value["value"])
-        elif value["type"] == "kwargs":
+        elif value["type"] == "Kwargs":
             kwargs = dict()
             exec(value["value"], {"kwargs": kwargs})
             arguments.update(kwargs)
         else:
-            raise IllegalArgumentError("Unknown argument type")
+            raise IllegalArgumentError(f"Unknown argument type: {value['type']}")
     return arguments
 
 
@@ -154,6 +157,50 @@ class TestSuiteResult:
             ) from e
         run.log({"Test suite results/Test-Suite Results": wandb.Table(columns=columns, data=data)})
 
+    def to_junit(self):
+        """Convert the test suite result to JUnit XML format."""
+        testsuites = Element("testsuites", {"tests": str(len(self.results))})
+
+        for test_tuple in self.results:
+            test_name, test, _ = test_tuple
+            testsuite = SubElement(
+                testsuites,
+                "testsuite",
+                {
+                    "name": f"Test {test_name} (metric={test.metric})",
+                },
+            )
+            testcase = SubElement(
+                testsuite, "testcase", {"name": test.metric_name, "time": str(test.metric)}
+            )  # replace with actual time
+
+            if not test.passed:
+                failure = SubElement(
+                    testcase,
+                    "failure",
+                    {
+                        "message": f"Test failed with metric of {test.metric}",
+                        "type": "TestFailed" if not test.is_error else "Error",
+                    },
+                )
+                # Add full test result information here
+                for k, v in test.__dict__.items():
+                    if k != "messages" and k != "is_error":
+                        SubElement(failure, "detail", {"name": k, "value": str(v)})
+                for message in test.messages:
+                    SubElement(failure, "detail", {"name": "message", "value": message})
+            else:
+                # Add test result information here
+                for k, v in test.__dict__.items():
+                    if k != "messages" and k != "is_error":
+                        SubElement(testcase, "detail", {"name": k, "value": str(v)})
+                for message in test.messages:
+                    SubElement(testcase, "detail", {"name": "message", "value": message})
+
+        # Convert to string
+        xml_str = minidom.parseString(tostring(testsuites)).toprettyxml(indent="   ")
+        return xml_str
+
 
 class SuiteInput:
     """Represents an input parameter for a test suite.
@@ -227,6 +274,7 @@ class TestPartial:
     provided_inputs: Dict[str, Any]
     test_id: Union[int, str]
     display_name: Optional[str] = None
+    suite_test_id: int = 0
 
 
 def single_binary_result(test_results: List):
@@ -277,7 +325,11 @@ def build_test_input_dto(client, p, pname, ptype, project_key, uploaded_uuid_sta
 
 
 def generate_test_partial(
-    test_fn: Test, test_id: Optional[Union[int, str]] = None, display_name: Optional[str] = None, **params
+    test_fn: Test,
+    test_id: Optional[Union[int, str]] = None,
+    display_name: Optional[str] = None,
+    suite_test_id: int = 0,
+    **params,
 ) -> TestPartial:
     if isinstance(test_fn, GiskardTestMethod):
         actual_params = {k: v for k, v in test_fn.params.items() if v is not None}
@@ -296,7 +348,7 @@ def generate_test_partial(
     if test_id is None:
         test_id = test_fn.meta.name if test_fn.meta.display_name is None else test_fn.meta.display_name
 
-    return TestPartial(test_fn, actual_params, test_id, display_name)
+    return TestPartial(test_fn, actual_params, test_id, display_name, suite_test_id)
 
 
 class Suite:
@@ -306,7 +358,7 @@ class Suite:
     methods to add new tests, execute all tests, and save the suite to a Giskard instance.
     """
 
-    id: int
+    id: Optional[int]
     tests: List[TestPartial]
     name: str
     default_params: Dict[str, Any]
@@ -325,6 +377,7 @@ class Suite:
         self.tests = list()
         self.name = name
         self.default_params = default_params if default_params else dict()
+        self.id = None
 
     def run(self, verbose: bool = True, **suite_run_args):
         """Execute all the tests that have been added to the test suite through the `add_test` method.
@@ -357,7 +410,7 @@ class Suite:
             test_params = self.create_test_params(test_partial, run_args)
 
             try:
-                result = test_partial.giskard_test.get_builder()(**test_params).execute()
+                result = test_partial.giskard_test(**test_params).execute()
 
                 if isinstance(result, bool):
                     result = TestResult(passed=result)
@@ -390,6 +443,44 @@ class Suite:
             logger.info(f"{test_name} ({params}): {format_test_result(r)}")
 
         return TestSuiteResult(passed, results)
+
+    def to_unittest(self, **suite_gen_args) -> List[TestPartial]:
+        """Create a list of tests that can be easily passed for unittest execution using the `assert_` method
+
+        Parameters
+        ----------
+        **suite_run_args : Optional[dict]
+            Any arguments passed here will be applied to all the tests in the suite whenever they match with the
+            arguments defined for each test. If a test contains an argument that has already been defined, it will not
+            get overridden. If any inputs on the test suite are missing, an error will be raised.
+
+        Returns
+        -------
+        List[TestPartial]
+            containing the tests to execute in a unit test script
+        """
+        run_args = self.default_params.copy()
+        run_args.update(suite_gen_args)
+
+        unittests: List[TestPartial] = list()
+        required_params = self.find_required_params()
+        undefined_params = {k: v for k, v in required_params.items() if k not in run_args}
+        if len(undefined_params):
+            raise ValueError(f"Missing {len(undefined_params)} required parameters: {undefined_params}")
+
+        for test_partial in self.tests:
+            test_params = self.create_test_params(test_partial, run_args)
+            unittest: TestPartial = test_partial.giskard_test(**test_params)
+            params_str = ", ".join(
+                f"{param}={getattr(value, 'name', None) or value}"  # Use attribute name if set
+                for param, value in unittest.params.items()
+            )
+            fullname = f"{test_partial.test_id}({params_str})"
+            # pass the test_id attribute to be used as unit test name
+            setattr(unittest, "fullname", fullname)
+            unittests.append(unittest)
+
+        return unittests
 
     @staticmethod
     def create_test_params(test_partial, kwargs):
@@ -435,10 +526,15 @@ class Suite:
             if isinstance(arg, BaseModel) or isinstance(arg, Dataset):
                 _try_upload_artifact(arg, client, project_key, uploaded_uuid_status)
 
-        self.id = client.save_test_suite(self.to_dto(client, project_key, uploaded_uuid_status))
+        if self.id:
+            client.update_test_suite(self.id, self.to_dto(client, project_key, uploaded_uuid_status))
+            analytics.track("hub:test_suite:updated")
+        else:
+            self.id = client.save_test_suite(self.to_dto(client, project_key, uploaded_uuid_status))
+            analytics.track("hub:test_suite:uploaded")
 
-        print(f"Test suite has been saved: {client.host_url}/main/projects/{project_key}/test-suite/{self.id}/overview")
-        analytics.track("hub:test_suite:uploaded")
+        print(f"Test suite has been saved: {client.host_url}/main/projects/{project_key}/testing/suite/{self.id}")
+
         return self
 
     def to_dto(self, client: GiskardClient, project_key: str, uploaded_uuid_status: Optional[Dict[str, bool]] = None):
@@ -465,7 +561,7 @@ class Suite:
             )
 
             kwargs_params = [
-                f"kwargs[{repr(pname)}] = {repr(value)}"
+                f"{get_imports_code(value)}\nkwargs[{repr(pname)}] = {repr(value)}"
                 for pname, value in t.provided_inputs.items()
                 if pname not in t.giskard_test.meta.args
             ]
@@ -474,6 +570,7 @@ class Suite:
 
             suite_tests.append(
                 SuiteTestDTO(
+                    id=t.suite_test_id,
                     testUuid=t.giskard_test.upload(client),
                     functionInputs=params,
                     displayName=t.display_name,
@@ -483,7 +580,12 @@ class Suite:
         return TestSuiteDTO(name=self.name, project_key=project_key, tests=suite_tests, function_inputs=list())
 
     def add_test(
-        self, test_fn: Test, test_id: Optional[Union[int, str]] = None, display_name: Optional[str] = None, **params
+        self,
+        test_fn: Test,
+        test_id: Optional[Union[int, str]] = None,
+        display_name: Optional[str] = None,
+        suite_test_id: int = 0,
+        **params,
     ) -> "Suite":
         """Add a test to the suite.
 
@@ -507,7 +609,7 @@ class Suite:
             The current instance of the test suite to allow chained calls.
 
         """
-        self.tests.append(generate_test_partial(test_fn, test_id, display_name, **params))
+        self.tests.append(generate_test_partial(test_fn, test_id, display_name, suite_test_id, **params))
 
         return self
 
@@ -641,7 +743,7 @@ class Suite:
         ):
             return
 
-        self.add_test(GiskardTest.download(test_func.uuid, None, None).get_builder()(**suite_args))
+        self.add_test(GiskardTest.download(test_func.uuid, None, None)(**suite_args))
 
     def _contains_test(self, test: TestFunctionMeta):
         return any(t.giskard_test == test for t in self.tests)
@@ -666,7 +768,7 @@ class Suite:
         for test_json in suite_dto.tests:
             test = GiskardTest.download(test_json.testUuid, client, None)
             test_arguments = parse_function_arguments(client, project_key, test_json.functionInputs.values())
-            suite.add_test(test.get_builder()(**test_arguments))
+            suite.add_test(test(**test_arguments), suite_test_id=test_json.id)
 
         return suite
 

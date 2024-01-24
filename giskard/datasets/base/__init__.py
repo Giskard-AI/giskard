@@ -559,9 +559,7 @@ class Dataset(ColumnMetadataMixin):
     def load(cls, local_path: str):
         with open(local_path, "rb") as ds_stream:
             return pd.read_csv(
-                ZstdDecompressor().stream_reader(ds_stream),
-                keep_default_na=False,
-                na_values=["_GSK_NA_"],
+                ZstdDecompressor().stream_reader(ds_stream), keep_default_na=False, na_values=["_GSK_NA_"]
             )
 
     @classmethod
@@ -757,6 +755,11 @@ class Dataset(ColumnMetadataMixin):
                 "dataset_text_col_cnt": len([c for c, t in self.column_types.items() if t == "text"]),
             },
         )
+
+    def __str__(self) -> str:
+        if self.name:  # handle both None and empty string
+            return f"{self.name}({self.id})"
+        return super().__str__()  # default to `<giskard.datasets.base.Dataset object at ...>`
 
 
 def _cast_to_list_like(object):

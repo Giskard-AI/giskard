@@ -134,3 +134,25 @@ def test_fetch_model_meta(request):
             # Should raise due to missing of values
             with pytest.raises(ValidationError):
                 client.load_model_meta(project_key, uuid=str(model.id))
+
+
+def test_named_and_IDed_model_str():
+    uid = str(uuid.uuid4())
+    model = _CustomModel(name="foo", model_type="regression", id=uid)
+    assert str(model) == f"foo({uid})"
+
+
+def test_named_model_str():
+    model = _CustomModel(name="bar", model_type="regression")
+    assert str(model).split("(")[0] == "bar"
+
+
+def test_unnamed_model_str():
+    model = _CustomModel(model_type="regression")
+    assert str(model).split("(")[0] == "_CustomModel"
+
+
+def test_repr_named_model():
+    model = _CustomModel(model_type="regression")
+    assert hex(id(model)).lower()[2:] in repr(model).lower()
+    assert "<test_base_model._CustomModel object at" in repr(model)

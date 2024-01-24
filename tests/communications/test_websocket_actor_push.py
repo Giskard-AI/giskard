@@ -15,7 +15,7 @@ EXPECTED_COUNTS_GERMAN_CREDIT_PUSH_KIND_SAMPLE_INDEX = {
     websocket.PushKind.CONTRIBUTION: ("contribution", 3),
     websocket.PushKind.OVERCONFIDENCE: ("overconfidence", 17),
     websocket.PushKind.PERTURBATION: ("perturbation", 35),
-    websocket.PushKind.BORDERLINE: ("borderline", 31),
+    websocket.PushKind.UNDERCONFIDENCE: ("underconfidence", 31),
 }
 
 
@@ -391,7 +391,7 @@ def test_websocket_actor_get_push_perturbation_wrong_cta(kind, row, cta_kind, ge
     "kind,row",
     [
         EXPECTED_COUNTS_GERMAN_CREDIT_PUSH_KIND_SAMPLE_INDEX[websocket.PushKind.OVERCONFIDENCE],
-        EXPECTED_COUNTS_GERMAN_CREDIT_PUSH_KIND_SAMPLE_INDEX[websocket.PushKind.BORDERLINE],
+        EXPECTED_COUNTS_GERMAN_CREDIT_PUSH_KIND_SAMPLE_INDEX[websocket.PushKind.UNDERCONFIDENCE],
     ],
 )
 @pytest.mark.parametrize(
@@ -450,7 +450,7 @@ def test_websocket_actor_get_push_overconfidence_borderline_cta_save_example(
     [
         EXPECTED_COUNTS_GERMAN_CREDIT_PUSH_KIND_SAMPLE_INDEX[k]
         for k in EXPECTED_COUNTS_GERMAN_CREDIT_PUSH_KIND_SAMPLE_INDEX
-        if k != websocket.PushKind.OVERCONFIDENCE and k != websocket.PushKind.BORDERLINE
+        if k != websocket.PushKind.OVERCONFIDENCE and k != websocket.PushKind.UNDERCONFIDENCE
     ],
 )
 @pytest.mark.parametrize(
@@ -501,7 +501,7 @@ def test_websocket_actor_get_push_overconfidence_wrong_cta(
 
 
 @pytest.mark.parametrize(
-    "kind,row", [EXPECTED_COUNTS_GERMAN_CREDIT_PUSH_KIND_SAMPLE_INDEX[websocket.PushKind.BORDERLINE]]
+    "kind,row", [EXPECTED_COUNTS_GERMAN_CREDIT_PUSH_KIND_SAMPLE_INDEX[websocket.PushKind.UNDERCONFIDENCE]]
 )
 @pytest.mark.parametrize(
     "cta_kind",
@@ -510,7 +510,7 @@ def test_websocket_actor_get_push_overconfidence_wrong_cta(
         websocket.CallToActionKind.ADD_TEST_TO_CATALOG,
     ],
 )
-def test_websocket_actor_get_push_borderline(kind, row, cta_kind, german_credit_model, german_credit_data):
+def test_websocket_actor_get_push_underconfidence(kind, row, cta_kind, german_credit_model, german_credit_data):
     assert EXPECTED_COUNTS["german_credit_model"][kind][row] != 0
     push_kind = websocket.PushKind[kind.upper()]
 
@@ -561,7 +561,7 @@ def test_websocket_actor_get_push_borderline(kind, row, cta_kind, german_credit_
     [
         EXPECTED_COUNTS_GERMAN_CREDIT_PUSH_KIND_SAMPLE_INDEX[k]
         for k in EXPECTED_COUNTS_GERMAN_CREDIT_PUSH_KIND_SAMPLE_INDEX
-        if k != websocket.PushKind.BORDERLINE
+        if k != websocket.PushKind.UNDERCONFIDENCE
     ],
 )
 @pytest.mark.parametrize(
@@ -571,7 +571,9 @@ def test_websocket_actor_get_push_borderline(kind, row, cta_kind, german_credit_
         websocket.CallToActionKind.ADD_TEST_TO_CATALOG,
     ],
 )
-def test_websocket_actor_get_push_non_borderline_test_cta(kind, row, cta_kind, german_credit_model, german_credit_data):
+def test_websocket_actor_get_push_non_underconfidence_test_cta(
+    kind, row, cta_kind, german_credit_model, german_credit_data
+):
     assert EXPECTED_COUNTS["german_credit_model"][kind][row] != 0
     push_kind = websocket.PushKind[kind.upper()]
 
