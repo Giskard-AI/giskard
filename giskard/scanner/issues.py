@@ -1,5 +1,6 @@
 from typing import Any, List, Optional
 
+from abc import ABC, abstractmethod
 from dataclasses import dataclass
 from enum import Enum
 
@@ -25,13 +26,33 @@ class IssueGroup:
     description: str
 
 
-class ExampleManager:
+class ScanExamples(ABC):
     """
-    Example manager for pandas dataframes
+    Abstract class to manage examples from different data types.
+    """
+
+    @abstractmethod
+    def add_examples(self, example: Any):
+        ...
+
+    @abstractmethod
+    def head(self, n: int):
+        ...
+
+    @abstractmethod
+    def to_html(self):
+        ...
+
+
+class DataFrameScanExamples(ScanExamples):
+    """
+    ScanExamples class to manage examples from pandas dataframes
     """
 
     def __init__(self, examples: pd.DataFrame = None):
-        self.examples = pd.DataFrame() or examples
+        if examples is None:
+            examples = pd.DataFrame()
+        self.examples = examples
 
     def add_examples(self, example):
         self.examples = pd.concat([self.examples, example])
@@ -59,7 +80,7 @@ class Issue:
         features: Optional[List[str]] = None,
         tests=None,
         taxonomy: List[str] = None,
-        example_manager: Optional[type] = ExampleManager,
+        example_manager: Optional[ScanExamples] = None,
         display_footer_info: Optional[bool] = True,
     ):
         """Issue represents a single model vulnerability detected by Giskard.
@@ -96,8 +117,8 @@ class Issue:
         taxonomy : Optional[str]
             List of taxonomy machine tags, in MISP format. A machine tag is composed of a namespace (MUST), a predicate
             (MUST) and an (OPTIONAL) value, like ``namespace:predicate:value``.
-        example_manager : Optional[ExampleManager]
-            Example manager to handle examples
+        example_manager : Optional[ScanExamples]
+            A ScanExamples object to manage examples
         display_footer_info : Optional[bool]
             Whether to display warnings or not
         """
@@ -115,7 +136,9 @@ class Issue:
         self._tests = tests
         self.taxonomy = taxonomy or []
         self.display_footer_info = display_footer_info
-        self.example_manager = example_manager()
+        if example_manager is None:
+            example_manager = DataFrameScanExamples()
+        self.example_manager = example_manager
         if self._examples is not None:
             self.example_manager.add_examples(self._examples)
 
