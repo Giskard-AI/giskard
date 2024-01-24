@@ -474,7 +474,7 @@ class Suite:
             raise ValueError(f"Missing {len(undefined_params)} required parameters: {undefined_params}")
 
         for test_partial in self.tests:
-            test_params = self.create_test_params(test_partial, run_args)
+            test_params: TestParams = self.create_test_params(test_partial, run_args)
             unittest: TestPartial = test_partial.giskard_test(**test_params)
             params_str = ", ".join(
                 f"{param}={getattr(value, 'name', None) or value}"  # Use attribute name if set
@@ -488,13 +488,13 @@ class Suite:
         return unittests
 
     @staticmethod
-    def create_test_params(test_partial, kwargs):
+    def create_test_params(test_partial, kwargs) -> TestParams:
         if isinstance(test_partial.giskard_test, GiskardTestMethod):
             available_params = inspect.signature(test_partial.giskard_test.test_fn).parameters.items()
         else:
             available_params = inspect.signature(test_partial.giskard_test.__init__).parameters.items()
 
-        test_params = {}
+        test_params: TestParams = {}
         for pname, p in available_params:
             if pname in test_partial.provided_inputs:
                 if isinstance(test_partial.provided_inputs[pname], SuiteInput):
