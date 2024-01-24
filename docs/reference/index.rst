@@ -13,3 +13,4 @@ API Reference
    transformation-functions/index
    push/index
    suite/index
+   rag-toolset/index

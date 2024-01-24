@@ -16,6 +16,7 @@ open_source/installation_library/index
 open_source/scan/index
 open_source/customize_tests/index
 open_source/integrate_tests/index
+open_source/testset_generation/index
 ```
 
 ```{toctree}
@@ -75,6 +76,7 @@ reference/datasets/index
 reference/scan/index
 reference/tests/index
 reference/slicing-functions/index
+reference/rag-toolset/index
 reference/transformation-functions/index
 reference/push/index
 reference/suite/index
