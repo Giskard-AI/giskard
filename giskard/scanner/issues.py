@@ -55,7 +55,7 @@ class DataFrameScanExamples(ScanExamples):
     def add_examples(self, example: pd.DataFrame):
         self.examples = pd.concat([self.examples, example])
 
-    def head(self, n):
+    def head(self, n: int):
         return self.examples.head(n)
 
     def to_html(self):
