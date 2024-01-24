@@ -52,7 +52,7 @@ class DataFrameScanExamples(ScanExamples):
     def __init__(self, examples: pd.DataFrame = None):
         self.examples = pd.DataFrame() if examples is None else examples
 
-    def add_examples(self, example):
+    def add_examples(self, example: pd.DataFrame):
         self.examples = pd.concat([self.examples, example])
 
     def head(self, n):
