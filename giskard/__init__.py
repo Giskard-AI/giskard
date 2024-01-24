@@ -5,7 +5,7 @@
 # https://docs.python.org/3/library/warnings.html#temporarily-suppressing-warnings
 from importlib import metadata as importlib_metadata
 
-from . import demo, push
+from . import demo
 from .client.giskard_client import GiskardClient
 from .client.project import Project
 from .core.suite import Suite, SuiteInput
@@ -49,7 +49,6 @@ __all__ = [
     "Dataset",
     "GiskardClient",
     "test",
-    "push",
     "Model",
     "Suite",
     "slicing_function",
