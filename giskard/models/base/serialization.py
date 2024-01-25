@@ -3,7 +3,6 @@ from typing import Optional, Tuple, Union
 from pathlib import Path
 
 import cloudpickle
-import mlflow
 
 from giskard.exceptions.giskard_exception import python_env_exception_helper
 
@@ -25,6 +24,8 @@ class MLFlowSerializableModel(WrapperModel):
     """
 
     def save(self, local_path: Union[str, Path], *args, **kwargs) -> None:
+        import mlflow
+
         # MLFlow requires the target directory to be empty before the model is
         # saved, thus we have to call ``save_model`` first and then save the
         # rest of the metadata.
