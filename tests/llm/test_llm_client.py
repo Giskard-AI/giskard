@@ -13,7 +13,7 @@ from openai.types.chat.chat_completion_message_tool_call import (
 
 from giskard.llm.client import (
     LLMFunctionCall,
-    LLMOutput,
+    LLMMessage,
     get_default_client,
     set_llm_api,
     set_llm_model,
@@ -180,8 +180,8 @@ def test_llm_complete_message():
     assert client.chat.completions.create.call_args[1]["temperature"] == 0.11
     assert client.chat.completions.create.call_args[1]["max_tokens"] == 1
 
-    assert isinstance(res, LLMOutput)
-    assert res.message == "This is a test!"
+    assert isinstance(res, LLMMessage)
+    assert res.content == "This is a test!"
     assert res.function_call is None
 
 
@@ -200,11 +200,11 @@ def test_llm_function_call(openai):
     assert client.chat.completions.create.call_args[1]["temperature"] == 0.11
     assert client.chat.completions.create.call_args[1]["max_tokens"] == 1
 
-    assert isinstance(res, LLMOutput)
-    assert res.message == "This is a test!"
+    assert isinstance(res, LLMMessage)
+    assert res.content == "This is a test!"
     assert isinstance(res.function_call, LLMFunctionCall)
-    assert res.function_call.function == "my_test_function"
-    assert res.function_call.args == {"my_parameter": "Parameter Value"}
+    assert res.function_call.name == "my_test_function"
+    assert res.function_call.arguments == {"my_parameter": "Parameter Value"}
 
 
 @patch("giskard.llm.client.openai.openai")
@@ -222,13 +222,13 @@ def test_llm_tool_calls(openai):
     assert client.chat.completions.create.call_args[1]["temperature"] == 0.11
     assert client.chat.completions.create.call_args[1]["max_tokens"] == 1
 
-    assert isinstance(res, LLMOutput)
-    assert res.message == "This is a test!"
+    assert isinstance(res, LLMMessage)
+    assert res.content == "This is a test!"
     assert len(res.tool_calls) == 2
-    assert res.tool_calls[0].function == "my_test_function"
-    assert res.tool_calls[0].args == {"my_parameter": "Parameter Value"}
-    assert res.tool_calls[1].function == "my_test_function"
-    assert res.tool_calls[1].args == {"my_parameter": "Another parameter Value"}
+    assert res.tool_calls[0].function.name == "my_test_function"
+    assert res.tool_calls[0].function.arguments == {"my_parameter": "Parameter Value"}
+    assert res.tool_calls[1].function.name == "my_test_function"
+    assert res.tool_calls[1].function.arguments == {"my_parameter": "Another parameter Value"}
 
 
 @patch("giskard.llm.client.openai.openai")
@@ -241,8 +241,8 @@ def test_legacy_llm_complete_message(openai):
     assert openai.ChatCompletion.create.call_args[1]["temperature"] == 0.11
     assert openai.ChatCompletion.create.call_args[1]["max_tokens"] == 1
 
-    assert isinstance(res, LLMOutput)
-    assert res.message == "This is a test!"
+    assert isinstance(res, LLMMessage)
+    assert res.content == "This is a test!"
     assert res.function_call is None
 
 
@@ -260,11 +260,11 @@ def test_legacy_llm_function_call(openai):
     assert openai.ChatCompletion.create.call_args[1]["temperature"] == 0.11
     assert openai.ChatCompletion.create.call_args[1]["max_tokens"] == 1
 
-    assert isinstance(res, LLMOutput)
-    assert res.message == "This is a test!"
+    assert isinstance(res, LLMMessage)
+    assert res.content == "This is a test!"
     assert isinstance(res.function_call, LLMFunctionCall)
-    assert res.function_call.function == "my_test_function"
-    assert res.function_call.args == {"my_parameter": "Parameter Value"}
+    assert res.function_call.name == "my_test_function"
+    assert res.function_call.arguments == {"my_parameter": "Parameter Value"}
 
 
 @patch("giskard.llm.client.openai.openai")
@@ -281,13 +281,13 @@ def test_legacy_llm_tool_calls(openai):
     assert openai.ChatCompletion.create.call_args[1]["temperature"] == 0.11
     assert openai.ChatCompletion.create.call_args[1]["max_tokens"] == 1
 
-    assert isinstance(res, LLMOutput)
-    assert res.message == "This is a test!"
+    assert isinstance(res, LLMMessage)
+    assert res.content == "This is a test!"
     assert len(res.tool_calls) == 2
-    assert res.tool_calls[0].function == "my_test_function"
-    assert res.tool_calls[0].args == {"my_parameter": "Parameter Value"}
-    assert res.tool_calls[1].function == "my_test_function"
-    assert res.tool_calls[1].args == {"my_parameter": "Another parameter Value"}
+    assert res.tool_calls[0].function.name == "my_test_function"
+    assert res.tool_calls[0].function.arguments == {"my_parameter": "Parameter Value"}
+    assert res.tool_calls[1].function.name == "my_test_function"
+    assert res.tool_calls[1].function.arguments == {"my_parameter": "Another parameter Value"}
 
 
 @pytest.mark.skipif(OLD_OPEN_AI, reason="Azure is not supported with openai<1.0.0")

@@ -1,17 +1,17 @@
 from unittest.mock import Mock
 
 from giskard.datasets.base import Dataset
-from giskard.llm.client import LLMFunctionCall, LLMOutput
+from giskard.llm.client import LLMFunctionCall, LLMMessage
 from giskard.llm.generators.sycophancy import SycophancyDataGenerator
 
 
 def test_generator_returns_dataset():
     llm_client = Mock()
     llm_client.complete.side_effect = [
-        LLMOutput(
-            None,
-            None,
-            LLMFunctionCall(
+        LLMMessage(
+            role="assistant",
+            content=None,
+            function_call=LLMFunctionCall(
                 "generate_inputs",
                 {
                     "inputs": [
@@ -32,6 +32,7 @@ def test_generator_returns_dataset():
                     ]
                 },
             ),
+            tool_calls=None,
         )
     ] * 2
 

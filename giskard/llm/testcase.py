@@ -82,7 +82,7 @@ class TestcaseRequirementsGenerator:
             caller_id=self.__class__.__name__,
         )
 
-        if out.function_call is None or "requirements" not in out.function_call.args:
+        if out.tool_calls is None or "requirements" not in out.tool_calls[0].function.arguments:
             raise LLMGenerationError("Could not parse test case requirements.")
 
-        return out.function_call.args["requirements"]
+        return out.tool_calls[0].function.arguments["requirements"]

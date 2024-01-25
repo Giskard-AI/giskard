@@ -4,7 +4,7 @@ import pandas as pd
 import pytest
 
 from giskard.datasets.base import Dataset
-from giskard.llm.client import LLMFunctionCall, LLMOutput
+from giskard.llm.client import LLMFunctionCall, LLMMessage, LLMToolCall
 from giskard.llm.evaluators.coherency import CoherencyEvaluator
 from giskard.models.base.model_prediction import ModelPredictionResults
 
@@ -39,23 +39,37 @@ def test_requirements_evaluator_correctly_flags_examples():
 
     client = Mock()
     client.complete.side_effect = [
-        LLMOutput(
+        LLMMessage(
+            role="assistant",
+            content=None,
+            function_call=None,
             tool_calls=[
-                LLMFunctionCall(
-                    function="evaluate_model",
-                    args={"passed_test": False, "reason": "Model output is not coherent"},
+                LLMToolCall(
+                    id="call_abc123",
+                    type="function",
+                    function=LLMFunctionCall(
+                        name="evaluate_model",
+                        arguments={"passed_test": False, "reason": "Model output is not coherent"},
+                    ),
                 )
-            ]
+            ],
         ),
-        LLMOutput(
+        LLMMessage(
+            role="assistant",
+            content=None,
+            function_call=None,
             tool_calls=[
-                LLMFunctionCall(
-                    function="evaluate_model",
-                    args={
-                        "passed_test": True,
-                    },
+                LLMToolCall(
+                    id="call_abc123",
+                    type="function",
+                    function=LLMFunctionCall(
+                        name="evaluate_model",
+                        arguments={
+                            "passed_test": True,
+                        },
+                    ),
                 )
-            ]
+            ],
         ),
     ]
 
@@ -86,21 +100,37 @@ def test_requirements_evaluator_handles_generation_errors():
 
     client = Mock()
     client.complete.side_effect = [
-        LLMOutput(
+        LLMMessage(
+            role="assistant",
+            content=None,
+            function_call=None,
             tool_calls=[
-                LLMFunctionCall(
-                    function="evaluate_model",
-                    args={"passed_test": True},
+                LLMToolCall(
+                    id="call_abc123",
+                    type="function",
+                    function=LLMFunctionCall(
+                        name="evaluate_model",
+                        arguments={
+                            "passed_test": True,
+                        },
+                    ),
                 )
-            ]
+            ],
         ),
-        LLMOutput(
+        LLMMessage(
+            role="assistant",
+            content=None,
+            function_call=None,
             tool_calls=[
-                LLMFunctionCall(
-                    function="evaluate_model",
-                    args={"model_did_pass_the_test": False},
+                LLMToolCall(
+                    id="call_abc123",
+                    type="function",
+                    function=LLMFunctionCall(
+                        name="evaluate_model",
+                        arguments={"model_did_pass_the_test": False},
+                    ),
                 )
-            ]
+            ],
         ),
     ]
 

@@ -29,6 +29,8 @@ class MLWorkerAction(Enum):
     getPush = 13
     createSubDataset = 14
     abort = 15
+    getLogs = 16
+    createDataset = 17
 
     @classmethod
     def __get_validators__(cls):

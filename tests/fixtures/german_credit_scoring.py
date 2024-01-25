@@ -14,7 +14,7 @@ from giskard.core.core import SupportedModelTypes
 from giskard.datasets.base import Dataset
 from giskard.models.catboost import CatboostModel
 from giskard.models.sklearn import SKLearnModel
-from giskard.utils.logging import Timer
+from giskard.utils.logging_utils import Timer
 from tests import path
 
 logger = logging.getLogger(__name__)

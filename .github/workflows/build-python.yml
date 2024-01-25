@@ -112,7 +112,9 @@ jobs:
           restore-keys: ${{ matrix.os }}-${{ matrix.python-version }}-python-giskard-test-resources
 
       - name: Install dependencies
-        run: pdm install -G :all
+        run: |
+          pdm install -G :all
+          pdm list
 
       - name: Lint code
         run: pdm run lint

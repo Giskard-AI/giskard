@@ -81,7 +81,7 @@ class UnderconfidenceDetector(LossBasedDetector):
                 description = (
                     "For records in your dataset where {slicing_fn}, we found a significantly higher number of "
                     "underconfident predictions ({num_underconfident_samples} samples, corresponding to "
-                    "{metric_value_perc:.1f}% of the predictions in the data slice)."
+                    "{metric_value_perc:.2f}% of the predictions in the data slice)."
                 )
                 issue = Issue(
                     model,
@@ -91,7 +91,7 @@ class UnderconfidenceDetector(LossBasedDetector):
                     description=description,
                     slicing_fn=slice_fn,
                     meta={
-                        "metric": "Overconfidence rate",
+                        "metric": "Underconfidence rate",
                         "metric_value": slice_rate,
                         "metric_value_perc": slice_rate * 100,
                         "metric_reference_value": reference_rate,

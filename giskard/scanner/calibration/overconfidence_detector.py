@@ -81,7 +81,7 @@ class OverconfidenceDetector(LossBasedDetector):
                 description = (
                     "For records in the dataset where {slicing_fn}, we found a significantly higher number of "
                     "overconfident wrong predictions ({num_overconfident_samples} samples, corresponding to "
-                    "{metric_value_perc}% of the wrong predictions in the data slice)."
+                    "{metric_value_perc:.2f}% of the wrong predictions in the data slice)."
                 )
                 issue = Issue(
                     model,

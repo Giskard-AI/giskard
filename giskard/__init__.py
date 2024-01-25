@@ -29,7 +29,7 @@ from .registry.slicing_function import SlicingFunction, slicing_function
 from .registry.transformation_function import TransformationFunction, transformation_function
 from .scanner import scan
 from .utils.analytics_collector import analytics
-from .utils.logging import configure_logging
+from .utils.logging_utils import configure_logging
 
 configure_logging()
 

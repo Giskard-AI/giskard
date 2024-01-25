@@ -25,6 +25,7 @@ MANDATORY_FIELDS = {
     "AbortParams": ["job_id"],
     "ArtifactRef": ["id"],
     "Catalog": ["tests", "slices", "transformations"],
+    "CreateDatasetParam": ["projectKey", "name", "headers", "rows"],
     "CreateSubDataset": ["datasetUuid"],
     "CreateSubDatasetParam": ["projectKey", "sample", "name", "copiedRows"],
     "DataFrame": ["rows"],
@@ -63,6 +64,8 @@ MANDATORY_FIELDS = {
         "giskardClientVersion",
     ],
     "GetInfoParam": ["list_packages"],
+    "GetLogs": ["logs"],
+    "GetLogsParams": ["job_id", "nb_last_lines"],
     "GetPushParam": ["model", "dataset", "column_types", "column_dtypes", "rowIdx"],
     "GetPushResponse": [],
     "IdentifierSingleTestResult": ["id", "result"],
@@ -79,20 +82,21 @@ MANDATORY_FIELDS = {
     "RunModelForDataFrameParam": ["model", "dataframe", "column_types", "column_dtypes"],
     "RunModelParam": ["model", "dataset", "inspectionId", "project_key"],
     "SingleTestResult": ["passed"],
+    "SingleTestResultDetails": ["inputs", "outputs", "results", "metadata"],
     "SuiteInput": ["name", "type"],
     "SuiteTestArgument": ["id", "testUuid"],
     "TestFunctionArgument": ["name", "type", "optional", "default", "argOrder"],
     "TestMessage": ["type", "text"],
-    "TestSuite": ["is_error", "is_pass", "logs"],
+    "TestSuite": ["is_error", "is_pass"],
     "TestSuiteParam": ["projectKey"],
     "WeightsPerFeature": [],
     "WorkerReply": [],
 }
-
 OPTIONAL_FIELDS = {
     "AbortParams": [],
     "ArtifactRef": ["project_key", "sample"],
     "Catalog": [],
+    "CreateDatasetParam": [],
     "CreateSubDataset": [],
     "CreateSubDatasetParam": [],
     "DataFrame": [],
@@ -153,8 +157,10 @@ OPTIONAL_FIELDS = {
     "GeneratedTestSuite": ["inputs"],
     "GetInfo": [],
     "GetInfoParam": [],
+    "GetLogs": [],
+    "GetLogsParams": [],
     "GetPushParam": ["dataframe", "target", "push_kind", "cta_kind"],
-    "GetPushResponse": ["contribution", "perturbation", "overconfidence", "borderline", "action"],
+    "GetPushResponse": ["contribution", "perturbation", "overconfidence", "underconfidence", "action"],
     "IdentifierSingleTestResult": ["arguments"],
     "ModelMeta": ["model_type"],
     "NamedSingleTestResult": [],
@@ -188,7 +194,9 @@ OPTIONAL_FIELDS = {
         "reference_slices_size",
         "output_df_id",
         "failed_indexes",
+        "details",
     ],
+    "SingleTestResultDetails": [],
     "SuiteInput": ["modelMeta", "datasetMeta"],
     "SuiteTestArgument": ["arguments"],
     "TestFunctionArgument": [],
@@ -198,7 +206,6 @@ OPTIONAL_FIELDS = {
     "WeightsPerFeature": ["weights"],
     "WorkerReply": [],
 }
-
 ALIASED_FIELDS = {
     "FuncArgument": {"float_arg": "float", "int_arg": "int", "str_arg": "str", "bool_arg": "bool", "is_none": "none"}
 }

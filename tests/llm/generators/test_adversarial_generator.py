@@ -1,28 +1,32 @@
 from unittest.mock import Mock
 
-from giskard.llm.client import LLMFunctionCall, LLMOutput
+from giskard.llm.client import LLMFunctionCall, LLMMessage, LLMToolCall
 from giskard.llm.generators.adversarial import AdversarialDataGenerator
 
 
 def test_generator_formats_prompt_with_issue_desc_and_requirement():
     llm_client = Mock()
     llm_client.complete.side_effect = [
-        LLMOutput(
-            None,
-            None,
-            None,
-            [
-                LLMFunctionCall(
-                    "generate_inputs",
-                    {
-                        "inputs": [
-                            {"question": "What is the meaning of life?", "other_feature": "test"},
-                            {
-                                "question": "What is the airspeed velocity of an unladen swallow?",
-                                "other_feature": "pass",
-                            },
-                        ]
-                    },
+        LLMMessage(
+            role="assistant",
+            content=None,
+            function_call=None,
+            tool_calls=[
+                LLMToolCall(
+                    id="call_abc123",
+                    type="function",
+                    function=LLMFunctionCall(
+                        name="generate_inputs",
+                        arguments={
+                            "inputs": [
+                                {"question": "What is the meaning of life?", "other_feature": "test"},
+                                {
+                                    "question": "What is the airspeed velocity of an unladen swallow?",
+                                    "other_feature": "pass",
+                                },
+                            ]
+                        },
+                    ),
                 )
             ],
         )

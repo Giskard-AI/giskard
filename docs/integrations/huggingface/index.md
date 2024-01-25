@@ -30,14 +30,16 @@ The demo Giskard Space is read-only. To upload your own models, datasets and pro
 
 Leverage the Hugging Face (HF) Space to easily test & debug your own ML models. This implies that you deploy a private HF space containing the Giskard Hub and upload your Python objects (such as ML models, test suites, datasets, slicing functions, or transformation functions) to your HF Space. To do so, follow these steps:
 
-### 1. Duplicate the demo Space from Giskard
-Begin by visiting the [Giskard HF space](https://huggingface.co/spaces/giskardai/giskard) and duplicate the space (as depicted below).
+### 1. Create a new Space using the Giskard Docker template
+Begin by visiting [HuggingFace Spaces](https://huggingface.co/spaces) and click on "Create new Space" as depicted below. 
+Alternatively, navigate directly [here](https://huggingface.co/new-space?template=giskardai%2Fgiskard) to create a new space
+from the Giskard template.
 
-![Duplication image](../../assets/integrations/hfs/duplicate_this_space.png)
+![New space](../../assets/integrations/hfs/create_new_space.png)
 
-During duplication, you're presented with options to modify the **owner**, the **visibility** and the **hardware**:
+You can then deploy Giskard on Spaces with just a few clicks. You need to define the **Owner** (your personal account or an organization), a **Space name**, and the **Visibility**.
 
-![Space Duplication popup](../../assets/integrations/hfs/paid_tier.png)
+![Space from template](../../assets/integrations/hfs/create_from_template.png)
 
 :::{hint}
 **Owner and visibility**:
@@ -46,7 +48,7 @@ If you don't want to publicly share your model, set your Space to **private** an
 We recommend to use paid hardware to get the best out of Giskard's HF Space. You can also incorporate [persistent storage](https://huggingface.co/docs/hub/spaces-storage) to retain your data even after the Space reboots. With free hardware that lacks persistent storage, any inactivity beyond 48 hours will result in the space being shut down. This will lead to a loss of all data within your Giskard Space.
 :::
 
-Once you're ready, click on Duplicate Space. The building process will take several minutes.
+Once you're ready, click on "Create Space" to confirm the creation. The build process will take a few minutes.
 
 ### 2. Create a new Giskard project
 
@@ -84,6 +86,23 @@ client = GiskardClient(url, api_key, hf_token)
 
 client.upload(...)
 ```
+
+## Upgrade your Giskard Hub in HuggingFace Spaces
+
+When installing the Hub in HuggingFace Spaces, the latest version will be fetched. The version will always remain the same unless you manually run an upgrade. Upgrades are recommended to get the latest features and bug fixes deployed by Giskard.
+
+To do so, you can open the `Dockerfile` in your repository. The first line should be similar to this:
+
+```
+FROM docker.io/giskardai/giskard:<version>
+```
+
+Change `<version>` to the latest version and save the file. After the build and rebooting of the Space, you should be able to enjoy the latest features in the Giskard Hub.
+
+:::{warn}
+If you have not activated persistent storage, you might loose the data in your current Giskard instance on Hugging Face Spaces.
+Make sure that your projects have backups in case.
+:::
 
 ## Feedback and support
 

@@ -25,6 +25,8 @@ from giskard.client.python_utils import warning
 from giskard.core.core import SMT, DatasetMeta, ModelMeta, TestFunctionMeta
 from giskard.utils.analytics_collector import analytics, anonymize
 
+UNKNOWN_ERROR = "No details or messages available."
+
 logger = logging.getLogger(__name__)
 
 
@@ -48,16 +50,38 @@ def explain_error(resp):
         message = "Access denied. Please check your permissions."
     else:
         try:
-            if resp.title:
-                message = f"{resp.title}: "
-            elif resp.detail:
-                message += f"{resp.detail}\n"
-            else:
-                message = resp.message
-        except Exception:
-            message = "No details or messages available."
+            message = extract_error_message_from_json(resp)
+            message = message or extract_error_message_from_response(resp)
+        except Exception as e:
+            logger.warning(f"Failed to extract error message from response: {e}")
+        message = message or UNKNOWN_ERROR
 
     return GiskardError(status=status, code=code, message=message)
+
+
+def extract_error_message_from_response(resp):
+    message = ""
+    try:
+        if resp.title:
+            message = resp.title
+        if resp.detail:
+            message += f" {resp.detail}\n"
+        return message
+    except Exception:  # noqa
+        return message
+
+
+def extract_error_message_from_json(resp):
+    message = ""
+    try:
+        resp = resp.json()
+        if "title" in resp:
+            message = f"{resp['title']}:"
+        if "detail" in resp:
+            message += f" {resp['detail']}\n"
+        return message
+    except Exception:  # noqa
+        return message
 
 
 def _get_status(resp):
@@ -388,3 +412,6 @@ class GiskardClient:
 
     def save_test_suite(self, dto: TestSuiteDTO):
         return self._session.post(f"testing/project/{dto.project_key}/suites", json=dto.dict()).json()
+
+    def update_test_suite(self, suite_id: int, dto: TestSuiteDTO):
+        return self._session.put(f"testing/project/{dto.project_key}/suite/{suite_id}", json=dto.dict()).json()

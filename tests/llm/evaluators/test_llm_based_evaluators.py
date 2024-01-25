@@ -3,7 +3,8 @@ from unittest.mock import Mock
 import pandas as pd
 import pytest
 
-from giskard.llm.client import LLMFunctionCall, LLMOutput
+from giskard.core.test_result import TestResultStatus
+from giskard.llm.client import LLMFunctionCall, LLMMessage, LLMToolCall
 from giskard.llm.evaluators.base import LLMBasedEvaluator
 from giskard.llm.evaluators.plausibility import PlausibilityEvaluator
 from giskard.llm.evaluators.requirements import PerRowRequirementEvaluator, RequirementEvaluator
@@ -33,21 +34,34 @@ def test_evaluator_correctly_flags_examples(Evaluator, args, kwargs):
 
     client = Mock()
     client.complete.side_effect = [
-        LLMOutput(
+        LLMMessage(
+            role="assistant",
+            content=None,
+            function_call=None,
             tool_calls=[
-                LLMFunctionCall(
-                    function="evaluate_model",
-                    args={"passed_test": True},
+                LLMToolCall(
+                    id="call_abc123",
+                    type="function",
+                    function=LLMFunctionCall(
+                        name="evaluate_model",
+                        arguments={"passed_test": True},
+                    ),
                 )
-            ]
+            ],
         ),
-        LLMOutput(
+        LLMMessage(
+            role="assistant",
+            content=None,
+            function_call=None,
             tool_calls=[
-                LLMFunctionCall(
-                    function="evaluate_model",
-                    args={"passed_test": False, "reason": "For some reason"},
+                LLMToolCall(
+                    id="call_abc123",
+                    type="function",
+                    function=LLMFunctionCall(
+                        name="evaluate_model", arguments={"passed_test": False, "reason": "For some reason"}
+                    ),
                 )
-            ]
+            ],
         ),
     ]
 
@@ -69,6 +83,11 @@ def test_evaluator_correctly_flags_examples(Evaluator, args, kwargs):
     assert "This is a model for testing purposes" in args[0][0][0]["content"]
     assert args[1]["tools"][0]["function"]["name"] == "evaluate_model"
 
+    assert result.details.inputs == eval_dataset.df.loc[:, model.feature_names].to_dict("list")
+    assert result.details.outputs == model.predict(eval_dataset).prediction
+    assert result.details.results == [TestResultStatus.PASSED, TestResultStatus.FAILED]
+    assert result.details.metadata == {"reason": [None, "For some reason"]}
+
 
 @pytest.mark.parametrize(
     "Evaluator,args,kwargs",
@@ -84,21 +103,35 @@ def test_evaluator_handles_generation_errors(Evaluator, args, kwargs):
 
     client = Mock()
     client.complete.side_effect = [
-        LLMOutput(
+        LLMMessage(
+            role="assistant",
+            content=None,
+            function_call=None,
             tool_calls=[
-                LLMFunctionCall(
-                    function="evaluate_model",
-                    args={"passed_test": True},
+                LLMToolCall(
+                    id="call_abc123",
+                    type="function",
+                    function=LLMFunctionCall(
+                        name="evaluate_model",
+                        arguments={"passed_test": True},
+                    ),
                 )
-            ]
+            ],
         ),
-        LLMOutput(
+        LLMMessage(
+            role="assistant",
+            content=None,
+            function_call=None,
             tool_calls=[
-                LLMFunctionCall(
-                    function="evaluate_model",
-                    args={"model_did_pass_the_test": False},
+                LLMToolCall(
+                    id="call_abc123",
+                    type="function",
+                    function=LLMFunctionCall(
+                        name="evaluate_model",
+                        arguments={"model_did_pass_the_test": False},
+                    ),
                 )
-            ]
+            ],
         ),
     ]
 
@@ -110,3 +143,8 @@ def test_evaluator_handles_generation_errors(Evaluator, args, kwargs):
     assert len(result.failure_examples) == 0
     assert len(result.errors) == 1
     assert result.errors[0]["message"] == "Invalid function call arguments received"
+
+    assert result.details.inputs == eval_dataset.df.loc[:, model.feature_names].to_dict("list")
+    assert result.details.outputs == model.predict(eval_dataset).prediction
+    assert result.details.results == [TestResultStatus.PASSED, TestResultStatus.ERROR]
+    assert result.details.metadata == {"reason": [None, "Invalid function call arguments received"]}

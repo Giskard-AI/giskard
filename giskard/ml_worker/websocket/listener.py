@@ -27,12 +27,12 @@ from giskard.core.suite import Suite, generate_test_partial
 from giskard.datasets.base import Dataset
 from giskard.exceptions.giskard_exception import GiskardException
 from giskard.ml_worker import websocket
-from giskard.ml_worker.core.log_listener import LogListener
 from giskard.ml_worker.stomp.parsing import Frame
 from giskard.ml_worker.utils.cache import CACHE
 from giskard.ml_worker.websocket import CallToActionKind, GetInfoParam, PushKind
 from giskard.ml_worker.websocket.action import ActionPayload, MLWorkerAction
 from giskard.ml_worker.websocket.utils import (
+    do_create_dataset,
     do_create_sub_dataset,
     do_run_adhoc_test,
     function_argument_to_ws,
@@ -48,14 +48,14 @@ from giskard.models.model_explanation import explain, explain_text
 from giskard.push import Push
 from giskard.push.contribution import create_contribution_push
 from giskard.push.perturbation import create_perturbation_push
-from giskard.push.prediction import create_borderline_push, create_overconfidence_push
+from giskard.push.prediction import create_overconfidence_push, create_underconfidence_push
 from giskard.registry.giskard_test import GiskardTest
 from giskard.registry.slicing_function import SlicingFunction
 from giskard.registry.transformation_function import TransformationFunction
 from giskard.settings import settings
 from giskard.utils import call_in_pool, cancel_in_pool, list_pool_job_ids
 from giskard.utils.analytics_collector import analytics
-from giskard.utils.file_utils import get_file_name
+from giskard.utils.file_utils import get_file_name, job_logs_path
 from giskard.utils.worker_pool import GiskardMLWorkerException
 
 logger = logging.getLogger(__name__)
@@ -279,10 +279,10 @@ def run_classification_mode(model, dataset, prediction_results):
     return results, calculated
 
 
-def run_other_model(dataset, prediction_results):
+def run_other_model(dataset, prediction_results, is_text_generation):
     results = pd.Series(prediction_results.prediction)
     preds_serie = results
-    if dataset.target and dataset.target in dataset.df.columns:
+    if dataset.target and dataset.target in dataset.df.columns and not is_text_generation:
         target_serie = dataset.df[dataset.target]
         diff = preds_serie - target_serie
         diff_percent = pd.Series(
@@ -345,7 +345,7 @@ def run_model(client: Optional[GiskardClient], params: websocket.RunModelParam, 
     if model.is_classification:
         results, calculated = run_classification_mode(model, dataset, prediction_results)
     else:
-        results, calculated = run_other_model(dataset, prediction_results)
+        results, calculated = run_other_model(dataset, prediction_results, model.is_text_generation)
 
     with tempfile.TemporaryDirectory(prefix="giskard-") as f:
         tmp_dir = Path(f)
@@ -504,7 +504,7 @@ def dataset_processing(
 def run_ad_hoc_test(
     client: Optional[GiskardClient], params: websocket.RunAdHocTestParam, *args, **kwargs
 ) -> websocket.RunAdHocTest:
-    test: GiskardTest = GiskardTest.download(params.testUuid, client, None)
+    test: GiskardTest = GiskardTest.download(params.testUuid, client, params.projectKey)
 
     arguments = parse_function_arguments(client, params.arguments)
     if params.debug:
@@ -530,14 +530,12 @@ def run_ad_hoc_test(
 def run_test_suite(
     client: Optional[GiskardClient], params: websocket.TestSuiteParam, *args, **kwargs
 ) -> websocket.TestSuite:
-    log_listener = LogListener()
-
     loaded_artifacts = defaultdict(dict)
 
     try:
         tests = [
             {
-                "test": GiskardTest.download(t.testUuid, client, None),
+                "test": GiskardTest.download(t.testUuid, client, params.projectKey),
                 "arguments": parse_function_arguments(client, t.arguments, loaded_artifacts),
                 "id": t.id,
             }
@@ -566,7 +564,7 @@ def run_test_suite(
                 test_args: Dict[str, Any] = copy(test_args)
                 test_args.update(**test_args.pop("kwargs"))
             updated_test_args.append(test_args)
-            suite.add_test(t["test"].get_builder()(**test_args), t["id"])
+            suite.add_test(t["test"](**test_args), t["id"])
 
         suite_result = suite.run(**global_arguments)
 
@@ -585,12 +583,11 @@ def run_test_suite(
             is_error=False,
             is_pass=suite_result.passed,
             results=identifier_single_test_results,
-            logs=log_listener.close(),
         )
 
     except Exception as exc:
         logger.exception("An error occurred during the test suite execution: %s", exc)
-        return websocket.TestSuite(is_error=True, is_pass=False, results=[], logs=log_listener.close())
+        return websocket.TestSuite(is_error=True, is_pass=False, results=[])
 
 
 @websocket_actor(MLWorkerAction.echo, execute_in_pool=False)
@@ -655,7 +652,7 @@ def get_push(
         else [
             PushKind.CONTRIBUTION,
             PushKind.OVERCONFIDENCE,
-            PushKind.BORDERLINE,
+            PushKind.UNDERCONFIDENCE,
             PushKind.PERTURBATION,
         ]
     )
@@ -686,7 +683,7 @@ def get_push(
         contribution=all_ws_res.get(PushKind.CONTRIBUTION),
         perturbation=all_ws_res.get(PushKind.PERTURBATION),
         overconfidence=all_ws_res.get(PushKind.OVERCONFIDENCE),
-        borderline=all_ws_res.get(PushKind.BORDERLINE),
+        underconfidence=all_ws_res.get(PushKind.UNDERCONFIDENCE),
         action=action,
     )
 
@@ -732,7 +729,7 @@ def get_push_objects(client: Optional[GiskardClient], params: websocket.GetPushP
         PushKind.CONTRIBUTION: create_contribution_push,
         PushKind.PERTURBATION: create_perturbation_push,
         PushKind.OVERCONFIDENCE: create_overconfidence_push,
-        PushKind.BORDERLINE: create_borderline_push,
+        PushKind.UNDERCONFIDENCE: create_underconfidence_push,
     }
 
     return push_functions[params.push_kind](model, dataset, df)
@@ -752,3 +749,37 @@ def create_sub_dataset(
     sub_dataset = do_create_sub_dataset(datasets, params.name, params.copiedRows)
 
     return websocket.CreateSubDataset(datasetUuid=sub_dataset.upload(client=client, project_key=params.projectKey))
+
+
+@websocket_actor(MLWorkerAction.createDataset)
+def create_dataset(
+    client: Optional[GiskardClient], params: websocket.CreateDatasetParam, *arg, **kwargs
+) -> websocket.CreateSubDataset:
+    dataset = do_create_dataset(params.name, params.headers, params.rows)
+
+    return websocket.CreateSubDataset(datasetUuid=dataset.upload(client=client, project_key=params.projectKey))
+
+
+def tail_file(file_path: Path, n_lines: int):
+    if not file_path.exists():
+        raise FileNotFoundError(f"File {file_path.name} does not exist")
+    if n_lines is None:
+        n_lines = -1
+    with open(file_path, "rb") as f:
+        for curr_line in range(n_lines):
+            try:
+                f.seek(-2, os.SEEK_END if curr_line == 0 else os.SEEK_CUR)
+                while f.read(1) != b"\n":
+                    f.seek(-2, os.SEEK_CUR)
+            except OSError:
+                f.seek(0)
+                break
+        return f.read().decode()
+
+
+@websocket_actor(MLWorkerAction.getLogs, execute_in_pool=False)
+def get_logs(params: websocket.GetLogsParams, *arg, **kwargs):
+    job_id = params.job_id
+    assert job_id, "Job ID is required"
+
+    return websocket.GetLogs(logs=tail_file(job_logs_path(job_id), params.nb_last_lines))

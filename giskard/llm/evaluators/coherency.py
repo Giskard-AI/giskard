@@ -104,7 +104,7 @@ class CoherencyEvaluator(LLMBasedEvaluator):
             caller_id=self.__class__.__name__,
         )
 
-        if len(out.tool_calls) != 1 or "passed_test" not in out.tool_calls[0].args:
+        if len(out.tool_calls) != 1 or "passed_test" not in out.tool_calls[0].function.arguments:
             raise LLMGenerationError("Invalid function call arguments received")
 
-        return out.tool_calls[0].args["passed_test"], out.tool_calls[0].args.get("reason")
+        return out.tool_calls[0].function.arguments["passed_test"], out.tool_calls[0].function.arguments.get("reason")
