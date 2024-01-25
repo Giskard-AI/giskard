@@ -6,6 +6,7 @@ from enum import Enum
 
 import pandas as pd
 
+from ..core.validation import configured_validate_arguments
 from ..datasets import Dataset
 from ..models.base import BaseModel
 from ..registry.slicing_function import SlicingFunction
@@ -28,11 +29,21 @@ class IssueGroup:
 
 class ScanExamples(ABC):
     """
-    Abstract class to manage examples from different data types.
+    Abstract class to manage examples from different data types,
+    so that they can be displayed in a scan report.
+
+    Methods
+    -------
+        extend(examples: Any):
+            Abstract method to add examples
+        head(n: int):
+            Abstract method that should give access to first n examples
+        to_html():
+            Abstract method to render html content to display examples
     """
 
     @abstractmethod
-    def add_examples(self, example: Any):
+    def extend(self, examples: Any):
         ...
 
     @abstractmethod
@@ -49,16 +60,48 @@ class DataFrameScanExamples(ScanExamples):
     ScanExamples class to manage examples from pandas dataframes
     """
 
-    def __init__(self, examples: pd.DataFrame = None):
+    @configured_validate_arguments
+    def __init__(self, examples: Optional[pd.DataFrame] = None):
         self.examples = pd.DataFrame() if examples is None else examples
 
-    def add_examples(self, example: pd.DataFrame):
-        self.examples = pd.concat([self.examples, example])
+    @configured_validate_arguments
+    def extend(self, examples: pd.DataFrame):
+        """
+        Add examples to self.examples
 
+        Parameters
+        ----------
+        examples : pd.DataFrame
+            New examples to add
+        """
+        self.examples = pd.concat([self.examples, examples])
+
+    @configured_validate_arguments
     def head(self, n: int):
+        """
+        Returns a pd.DataFrame containing n first examples
+
+        Parameters
+        ----------
+        n : int
+            Number of examples to return
+
+        Returns
+        -------
+        pd.DataFrame
+            New examples
+        """
         return self.examples.head(n)
 
     def to_html(self):
+        """
+        Renders html content to display examples
+
+        Returns
+        -------
+        str
+            HTML content
+        """
         return self.examples.to_html()
 
 
@@ -79,7 +122,7 @@ class Issue:
         tests=None,
         taxonomy: List[str] = None,
         scan_examples: Optional[ScanExamples] = None,
-        display_footer_info: Optional[bool] = True,
+        display_footer_info: bool = True,
     ):
         """Issue represents a single model vulnerability detected by Giskard.
 
@@ -129,14 +172,13 @@ class Issue:
         self.transformation_fn = transformation_fn
         self.slicing_fn = slicing_fn
         self.importance = importance
-        self._examples = examples
         self._features = features
         self._tests = tests
         self.taxonomy = taxonomy or []
         self.display_footer_info = display_footer_info
         self.scan_examples = DataFrameScanExamples() if scan_examples is None else scan_examples
-        if self._examples is not None:
-            self.scan_examples.add_examples(self._examples)
+        if examples is not None:
+            self.scan_examples.extend(examples)
 
     def __repr__(self):
         return f"<{self.__class__.__name__} group='{self.group.name}' level='{self.level}'>"
@@ -180,7 +222,7 @@ class Issue:
         return self.scan_examples.head(n)
 
     def add_examples(self, examples: Any):
-        self.scan_examples.add_examples(examples)
+        self.scan_examples.extend(examples)
 
     def generate_tests(self, with_names=False) -> list:
         tests = self._tests(self) if callable(self._tests) else self._tests
