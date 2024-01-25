@@ -9,10 +9,13 @@ from ...datasets.base import Dataset
 from ...llm import LLMImportError
 from ...models.base import BaseModel
 from ..issues import Issue, IssueLevel, Robustness
-from ..logger import logger
+from ..scanlogger import logger
+from giskard.utils.xprint import Template, CYAN_STYLE, BOLD_STYLE
 from ..registry import Detector
 from .text_transformations import TextTransformation
 
+Transformations = Template(content = "Running with transformations {}\tthreshold={}\toutput_sensitivity={}\tnum_samples={}", pstyles=[CYAN_STYLE, BOLD_STYLE, BOLD_STYLE, BOLD_STYLE])
+FeatureTest = Template(content = "Testing `{}` for perturbation `{}`\tFail rate: {}", pstyles=[BOLD_STYLE, BOLD_STYLE, BOLD_STYLE])
 
 class BaseTextPerturbationDetector(Detector):
     """Base class for metamorphic detectors based on text transformations."""
@@ -62,10 +65,7 @@ class BaseTextPerturbationDetector(Detector):
             if dataset.column_types[f] == "text" and pd.api.types.is_string_dtype(dataset.df[f].dtype)
         ]
 
-        logger.info(
-            f"{self.__class__.__name__}: Running with transformations={[t.name for t in transformations]} "
-            f"threshold={self.threshold} output_sensitivity={self.output_sensitivity} num_samples={self.num_samples}"
-        )
+        logger.info([t.name for t in transformations], self.threshold, self.output_sensitivity, self.num_samples, template=Transformations)
 
         issues = []
         for transformation in transformations:
@@ -148,9 +148,7 @@ class BaseTextPerturbationDetector(Detector):
 
             pass_rate = passed.mean()
             fail_rate = 1 - pass_rate
-            logger.info(
-                f"{self.__class__.__name__}: Testing `{feature}` for perturbation `{transformation.name}`\tFail rate: {fail_rate:.3f}"
-            )
+            logger.debug(feature, transformation.name, fail_rate, template=FeatureTest)
 
             if fail_rate >= threshold:
                 # Severity

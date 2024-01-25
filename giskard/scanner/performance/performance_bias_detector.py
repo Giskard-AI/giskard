@@ -16,9 +16,19 @@ from ..common.examples import ExampleExtractor
 from ..common.loss_based_detector import LossBasedDetector
 from ..decorators import detector
 from ..issues import Issue, IssueLevel, Performance
-from ..logger import logger
+from ..scanlogger import logger
+from giskard.utils.xprint import Template, BOLD_STYLE, BLUE_STYLE, YELLOW_STYLE, MAGENTA_STYLE, CYAN_STYLE, RED_STYLE
 from .metrics import PerformanceMetric, get_metric
 
+SliceNumber = Template(content="Testing {} slices for performance issues.", pstyles=[BOLD_STYLE])
+SkipNoSamples = Template(content="Skipping slice {} because metric was estimated on < 20 samples.", pstyles=[BOLD_STYLE])
+SkipNoP = Template(content="Skipping slice {} since the p-value could not be estimated.", pstyles=[BOLD_STYLE])
+SliceTest = Template(content="Testing slice {} \t {} = {} (global {}) Δm = {} \t is_issue = {}", pstyles=[BOLD_STYLE, BOLD_STYLE, BOLD_STYLE, BOLD_STYLE, BOLD_STYLE, YELLOW_STYLE])
+BHpThreshold = Template(content = "Benjamini–Hocheberg p-value threshold is {}", pstyles=[BOLD_STYLE])
+BHpOut = Template(content = "Kept {} significant issues out of {}", pstyles=[BLUE_STYLE, BLUE_STYLE])
+SelectedMetric = Template(content = "Selected metric: {}", pstyles=[BLUE_STYLE])
+pValueError = Template(content = "The p-value could not be calculated: {}", pstyles=[RED_STYLE])
+pValue = Template(content = "p-value = {}", pstyles=[MAGENTA_STYLE])
 
 @detector(name="performance_bias", tags=["performance_bias", "performance", "classification", "regression"])
 class PerformanceBiasDetector(LossBasedDetector):
@@ -124,7 +134,7 @@ class IssueFinder:
         self.alpha = alpha
 
     def detect(self, model: BaseModel, dataset: Dataset, slices: Sequence[SlicingFunction]):
-        logger.info(f"PerformanceBiasDetector: Testing {len(slices)} slices for performance issues.")
+        logger.info(len(slices), template=SliceNumber)
 
         # Prepare metrics
         metrics = self._get_default_metrics(model, dataset) if self.metrics is None else self.metrics
@@ -143,9 +153,9 @@ class IssueFinder:
             p_values = np.array(p_values)
             p_values_rank = p_values.argsort() + 1
             p_value_threshold = p_values[p_values <= p_values_rank / len(p_values) * self.alpha].max()
-            logger.info(f"PerformanceBiasDetector: Benjamini–Hocheberg p-value threshold is {p_value_threshold:.3e}")
+            logger.info(p_value_threshold, template = BHpThreshold)
             issues = [issue for issue in issues if issue.meta.get("p_value", np.nan) <= p_value_threshold]
-            logger.info(f"PerformanceBiasDetector: Kept {len(issues)} significant issues out of {len(p_values)}.")
+            logger.info(len(issues), len(p_values), template=BHpOut)
 
         # Group issues by slice and keep only the most critical
         issues_by_slice = defaultdict(list)
@@ -185,16 +195,12 @@ class IssueFinder:
 
             # If we do not have enough samples, skip the slice
             if not compute_pvalue and slice_metric.affected_samples < 20:
-                logger.info(
-                    f"PerformanceBiasDetector: Skipping slice {slice_fn} because metric was estimated on < 20 samples."
-                )
+                logger.debug(slice_fn, template=SkipNoSamples)
                 continue
 
             # If the p-value could not be estimated, skip the slice
             if compute_pvalue and p_value is not None and np.isnan(p_value):
-                logger.info(
-                    f"PerformanceBiasDetector: Skipping slice {slice_fn} since the p-value could not be estimated."
-                )
+                logger.debug(slice_fn, template=SkipNoP)
                 continue
 
             p_values.append(p_value)
@@ -207,11 +213,7 @@ class IssueFinder:
             else:
                 is_issue = relative_delta > self.threshold
 
-            logger.info(
-                f"PerformanceBiasDetector: Testing slice {slice_fn}\t{metric.name} = {slice_metric.value:.3f} "
-                f"(global {ref_metric.value:.3f}) Δm = {relative_delta:.3f}"
-                f"\tis_issue = {is_issue}"
-            )
+            logger.debug(slice_fn, metric.name, slice_metric.value, ref_metric.value, relative_delta, is_issue, template=SliceTest)
 
             if is_issue:
                 level = IssueLevel.MAJOR if abs(relative_delta) > 2 * self.threshold else IssueLevel.MEDIUM
@@ -308,16 +310,16 @@ def _calculate_pvalue_from_contingency_table(slice_metric, comp_metric, max_size
 
     # if the slice size is too small, use Fisher's exact test, otherwise use a G-test
     if min(min(row) for row in ctable) <= max_size_fisher:
-        logger.debug("PerformanceBiasDetector: Fisher's exact test")
+        logger.debug("Using Fisher's exact test since the slice size is too small")
         return scipy.stats.fisher_exact(ctable, alternative="two-sided")[1]
-    logger.debug("PerformanceBiasDetector: G-test")
+    logger.debug("Using G-test")
     return scipy.stats.chi2_contingency(ctable, correction=False, lambda_="log-likelihood")[1]
 
 
 def _calculate_pvalue_from_permutation_test(
     slice_dataset, comp_dataset, dataset, model, metric, perm_test_resamples=1000
 ):
-    logger.debug("PerformanceBiasDetector: permutation test")
+    logger.debug("Doing permutation test")
 
     def statistic(slice_ids, comp_ids):
         perm_slice_dataset = Dataset(
@@ -357,9 +359,9 @@ def _calculate_slice_metrics(
 
     try:
         # If we have raw values for the metric, we perform a standard t-test
-        logger.debug(f"PerformanceBiasDetector: metric name = {slice_metric.name}")
+        logger.debug(slice_metric.name, template=SelectedMetric)
         if slice_metric.raw_values is not None:
-            logger.debug("PerformanceBiasDetector: t-test")
+            logger.debug("Performing a t-test")
             alternative = "less" if metric.greater_is_better else "greater"
             _, pvalue = scipy.stats.ttest_ind(
                 slice_metric.raw_values, comp_metric.raw_values, equal_var=False, alternative=alternative
@@ -374,7 +376,7 @@ def _calculate_slice_metrics(
             )
     except ValueError as err:
         pvalue = np.nan
-        logger.debug(f"PerformanceBiasDetector: p-value could not be calculated: {err}")
+        logger.debug(err, template=pValueError)
 
-    logger.debug(f"PerformanceBiasDetector: p-value = {pvalue}")
+    logger.debug(pvalue, template=pValue)
     return slice_dataset, slice_metric, pvalue

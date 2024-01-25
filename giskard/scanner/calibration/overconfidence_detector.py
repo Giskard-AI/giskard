@@ -13,8 +13,10 @@ from ..common.examples import ExampleExtractor
 from ..common.loss_based_detector import LossBasedDetector
 from ..decorators import detector
 from ..issues import Issue, IssueLevel, Overconfidence
-from ..logger import logger
+from ..scanlogger import logger
+from giskard.utils.xprint import Template, BLUE_STYLE
 
+ConfidenceThreshold = Template(content = "Using overconfidence threshold = {}", pstyles=[BLUE_STYLE])
 
 @detector(name="overconfidence", tags=["overconfidence", "classification"])
 class OverconfidenceDetector(LossBasedDetector):
@@ -55,7 +57,7 @@ class OverconfidenceDetector(LossBasedDetector):
         dataset_with_meta.load_metadata_from_instance(dataset.column_meta)
 
         p_threshold = self.p_threshold or _default_overconfidence_threshold(model)
-        logger.info(f"{self.__class__.__name__}: Using overconfidence threshold = {p_threshold}")
+        logger.info(p_threshold, template=ConfidenceThreshold)
 
         reference_rate = (dataset_with_meta.df[self.LOSS_COLUMN_NAME].dropna() > p_threshold).mean()
 

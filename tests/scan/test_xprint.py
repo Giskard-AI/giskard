@@ -1,4 +1,4 @@
-from giskard.scanner.xprint import (
+from giskard.utils.xprint import (
     BLACK_COLOR,
     BLACK_STYLE,
     BLUE_COLOR,
@@ -119,6 +119,6 @@ def test_xprint(capsys):
     xprint("test")
     captured = capsys.readouterr()
     assert captured.out == "{}{}{} test {}\n".format(RESET, BOLD, RESET, RESET)
-    xprint("test", template=Catalog.Green)
+    xprint("5", template=Catalog.Detector)
     captured = capsys.readouterr()
     assert captured.out == "{}{}{} test {}\n".format(RESET, BOLD, GREEN_COLOR, RESET)

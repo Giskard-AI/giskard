@@ -90,70 +90,14 @@ BLUE_STYLE = Style(color=BLUE_COLOR)
 MAGENTA_STYLE = Style(color=MAGENTA_COLOR)
 CYAN_STYLE = Style(color=CYAN_COLOR)
 WHITE_STYLE = Style(color=WHITE_COLOR)
-
-SCAN_COST_ESTIMATE_CONTENT = """ ⚠️ {}
-This automatic scan will use LLM-assisted detectors based on GPT-4 to identify vulnerabilities in your model.
-These are the total estimated costs:
-Estimated calls to your model: ~{}
-Estimated OpenAI GPT-4 calls for evaluation: {} (~{} prompt tokens and ~{} sampled tokens)
-OpenAI API costs for evaluation are estimated to ${}.
-"""
-
-SCAN_COST_SUMMARY_CONTENT = """💵 {}
-LLM-assisted detectors have used the following resources:
-OpenAI GPT-4 calls for evaluation: {} ({} prompt tokens and {} sampled tokens)
-OpenAI API costs for evaluation amount to ${} (standard pricing).
-"""
-
-
-@dataclass(frozen=True)
-class Catalog:
-    Black = Template(content="{}", pstyles=[BLACK_STYLE])
-    Red = Template(content="{}", pstyles=[RED_STYLE])
-    Green = Template(content="{}", pstyles=[GREEN_STYLE])
-    Yellow = Template(content="{}", pstyles=[YELLOW_STYLE])
-    Blue = Template(content="{}", pstyles=[BLUE_STYLE])
-    Magenta = Template(content="{}", pstyles=[MAGENTA_STYLE])
-    Cyan = Template(content="{}", pstyles=[CYAN_STYLE])
-    White = Template(content="{}", pstyles=[WHITE_STYLE])
-
-    Detector = Template(content="Running {}…", pstyles=[BLUE_STYLE])
-    PromptsNumber = Template(content="Evaluating {} prompts…", pstyles=[CYAN_STYLE])
-    PromptEvaluation = Template(
-        content="Evaluating {} prompt with the {} evaluator…", pstyles=[MAGENTA_STYLE, YELLOW_STYLE]
-    )
-    Evaluation = Template(content="Evaluating prompts with the {} evaluator…", pstyles=[YELLOW_STYLE])
-    PromptInjectionSuccess = Template(
-        content="{} of the {} prompts manipulated your model into jailbreak.", pstyles=[GREEN_STYLE, MAGENTA_STYLE]
-    )
-    PromptInjectionFailure = Template(
-        content="The injection of {} prompts manipulated your model into jailbreak {} of the times.",
-        pstyles=[MAGENTA_STYLE, RED_STYLE],
-    )
-    StartSummary = Template(
-        content="-" * (CHARS_LIMIT // 2 - 8) + " Summary of {} " + "-" * (CHARS_LIMIT // 2 - 8), pstyles=[BLUE_STYLE]
-    )
-    DetectedIssues = Template(content="{}: {} detected. (Took {})", pstyles=[BLUE_STYLE, RED_STYLE, MAGENTA_STYLE])
-    NoDetectedIssues = Template(content="{}: {} detected. (Took {})", pstyles=[BLUE_STYLE, GREEN_STYLE, MAGENTA_STYLE])
-    ScanCostEstimate = Template(
-        content=SCAN_COST_ESTIMATE_CONTENT,
-        pstyles=[YELLOW_STYLE, MAGENTA_STYLE, MAGENTA_STYLE, CYAN_STYLE, CYAN_STYLE, RED_STYLE],
-    )
-    ScanCostSummary = Template(
-        content=SCAN_COST_SUMMARY_CONTENT,
-        pstyles=[YELLOW_STYLE, MAGENTA_STYLE, MAGENTA_STYLE, CYAN_STYLE, CYAN_STYLE, RED_STYLE],
-    )
-
+BOLD_STYLE = Style(font=BOLD)
 
 def xprint(
     *args,
     template: Optional[Template] = None,
     filename: Optional[str] = None,
-    verbose: bool = True,
     **kwargs,
 ):
-    if not verbose:
-        return
 
     args = style(*args, template=template)
 

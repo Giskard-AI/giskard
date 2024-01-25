@@ -13,8 +13,18 @@ from ...models.base import BaseModel
 from ...registry.slicing_function import SlicingFunction
 from ...slicing.slice_finder import SliceFinder
 from ..issues import Issue
-from ..logger import logger
+from ..scanlogger import logger
+from giskard.utils.xprint import Template, BOLD, RED_STYLE, BLUE_STYLE, GREEN_STYLE, YELLOW_STYLE, MAGENTA_STYLE, CYAN_STYLE, BOLD_STYLE
 from ..registry import Detector
+
+NotEnoughData = Template(content = "Skipping scan because the dataset is too small (< {} samples).", pstyles=[RED_STYLE])
+LimitSize = Template(content = "Limiting dataset size to {} samples.", pstyles=[CYAN_STYLE])
+LossDone = Template(content = "Loss calculated (took {})", pstyles=[BOLD_STYLE])
+NumberSlicesFound = Template(content = "{} slices found (took {})", pstyles=[BOLD_STYLE, BOLD_STYLE])
+IssuesNumber = Template(content = "{} issues found (took {})", pstyles=[RED_STYLE, BOLD_STYLE])
+NoIssues = Template(content = "{} issues found (took {})", pstyles=[GREEN_STYLE, BOLD_STYLE])
+Red = Template(content="{}", pstyles=[RED_STYLE])
+
 
 
 class LossBasedDetector(Detector):
@@ -28,51 +38,41 @@ class LossBasedDetector(Detector):
         self.max_dataset_size = max_dataset_size
 
     def run(self, model: BaseModel, dataset: Dataset, features: Sequence[str]):
+        
         if self._needs_target and dataset.target is None:
-            logger.info(f"{self.__class__.__name__}: Skipping detection because the dataset has no target column.")
+            logger.critical("Skipping detection because the dataset has no target column.", template=Red)
             return []
-
-        logger.info(f"{self.__class__.__name__}: Running")
 
         # Check if we have enough data to run the scan
         if len(dataset) < self.MIN_DATASET_LENGTH:
-            logger.warning(
-                f"{self.__class__.__name__}: Skipping scan because the dataset is too small"
-                f" (< {self.MIN_DATASET_LENGTH} samples)."
+            logger.critical(
+                self.MIN_DATASET_LENGTH, template = NotEnoughData
             )
             return []
 
         # If the dataset is very large, limit to a subsample
         self.max_dataset_size = self.max_dataset_size or self.MAX_DATASET_SIZE // len(features)
         if len(dataset) > self.max_dataset_size:
-            logger.info(f"{self.__class__.__name__}: Limiting dataset size to {self.max_dataset_size} samples.")
+            logger.info(self.max_dataset_size, template=LimitSize)
             dataset = get_dataset_subsample(dataset, model, self.max_dataset_size)
 
         # Calculate loss
-        logger.info(f"{self.__class__.__name__}: Calculating loss")
+        logger.info("Computing loss")
         start = perf_counter()
         meta = self._calculate_loss(model, dataset)
         elapsed = perf_counter() - start
-        logger.info(f"{self.__class__.__name__}: Loss calculated (took {datetime.timedelta(seconds=elapsed)})")
+        logger.info(datetime.timedelta(seconds=elapsed), template=LossDone)
 
         # Find slices
-        logger.info(f"{self.__class__.__name__}: Finding data slices")
+        logger.info("Finding data slices")
         start = perf_counter()
         slices = self._find_slices(model, dataset, features, meta)
         elapsed = perf_counter() - start
-        logger.info(
-            f"{self.__class__.__name__}: {len(slices)} slices found (took {datetime.timedelta(seconds=elapsed)})"
-        )
+        logger.info(len(slices), datetime.timedelta(seconds=elapsed), template=NumberSlicesFound)
 
         # Create issues from the slices
-        logger.info(f"{self.__class__.__name__}: Analyzing issues")
-        start = perf_counter()
+        logger.info("Analyzing issues")
         issues = self._find_issues(slices, model, dataset, meta)
-        elapsed = perf_counter() - start
-        logger.info(
-            f"{self.__class__.__name__}: {len(issues)} issues found (took {datetime.timedelta(seconds=elapsed)})"
-        )
-
         return issues
 
     @property

@@ -10,7 +10,10 @@ from ..common.examples import ExampleExtractor
 from ..common.loss_based_detector import LossBasedDetector
 from ..decorators import detector
 from ..issues import Issue, IssueLevel, Underconfidence
-from ..logger import logger
+from ..scanlogger import logger
+from giskard.utils.xprint import Template, BOLD_STYLE
+
+UnderconfTest = Template(content = "Testing slice {}\tUnderconfidence rate (slice) = {} (global {}) Δm = {}", pstyles=[BOLD_STYLE, BOLD_STYLE, BOLD_STYLE, BOLD_STYLE])
 
 
 @detector(name="underconfidence", tags=["underconfidence", "classification"])
@@ -72,9 +75,7 @@ class UnderconfidenceDetector(LossBasedDetector):
 
             relative_delta = (slice_rate - reference_rate) / reference_rate
 
-            logger.info(
-                f"{self.__class__.__name__}: Testing slice {slice_fn}\tUnderconfidence rate (slice) = {slice_rate:.3f} (global {reference_rate:.3f}) Δm = {relative_delta:.3f}"
-            )
+            logger.info(slice_fn, slice_rate, reference_rate, relative_delta, template=UnderconfTest)
 
             if relative_delta > self.threshold:
                 level = IssueLevel.MAJOR if relative_delta > 2 * self.threshold else IssueLevel.MEDIUM

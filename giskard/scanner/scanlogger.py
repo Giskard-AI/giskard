@@ -1,21 +1,11 @@
 import enum
 from typing import Optional
 
-from giskard.scanner.xprint import (
-    BLACK_STYLE,
-    BLUE_STYLE,
-    BOLD,
-    CHARS_LIMIT,
-    CYAN_STYLE,
-    GREEN_STYLE,
-    MAGENTA_STYLE,
-    RED_STYLE,
-    WHITE_STYLE,
-    YELLOW_STYLE,
+from giskard.utils.xprint import (
     Template,
     xprint,
 )
-    
+
 class ScanLoggerLevel(enum.Enum):
     DEBUG = 0
     INFO = 5
@@ -24,15 +14,17 @@ class ScanLoggerLevel(enum.Enum):
 class ScanLogger:
     level: ScanLoggerLevel = ScanLoggerLevel.INFO
     
-    def setLevel(self, 
-        level: ScanLoggerLevel
-    ):
-        if not isinstance(level, ScanLoggerLevel):
-            raise ValueError("Invalid log level. Please provide a ScanLoggerLevel enum.")
-        self.level = level
+    def setLevel(self, level: str):
+        level_map = {
+            "DEBUG": ScanLoggerLevel.DEBUG,
+            "INFO": ScanLoggerLevel.INFO,
+            "CRITICAL": ScanLoggerLevel.CRITICAL
+        }
+
+        if level not in level_map:
+            raise ValueError(f"Invalid log level: {level}. Please provide 'DEBUG', 'INFO', or 'CRITICAL'.")
         
-    def checkLevel(self):
-        return self.level.name
+        self.level = level_map[level]
         
     def debug(self,
         *args,
@@ -62,4 +54,3 @@ class ScanLogger:
             xprint(*args, template = template, filename = filename, **kwargs)
     
 logger = ScanLogger()
-logger.setLevel(ScanLoggerLevel.INFO)

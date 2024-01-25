@@ -175,3 +175,5 @@ generated
 # npm
 node_modules/
 mlruns
+example.ipynb
+logged_demo.ipynb
