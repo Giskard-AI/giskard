@@ -14,6 +14,7 @@
 <summary>👉{{ view.group.name }} issues ({{ view.issues|length }})</summary>
 
 {% for issue in view.issues -%}
+{{ issue.description }}
 
 | Level | Data slice | Metric | Deviation |
 |-------|------------|--------|-----------|
@@ -31,7 +32,6 @@
 
 <details>
 <summary> 🔍✨Examples</summary>
-{{ issue.description }}
 
 {% if issue.examples(3)|length %}
 {{ issue.examples(issue.meta.num_examples if "num_examples" in issue.meta else 3).to_markdown(
@@ -43,7 +43,7 @@ else True)|replace("\\n", "<br>")|safe }}
 {% endfor %}
 
 </details>
+<!-- line breaker -->
 {% endfor -%}
 <br />
-<!-- line breaker -->
 
