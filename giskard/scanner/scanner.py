@@ -99,7 +99,7 @@ class Scanner:
         model: BaseModel,
         dataset: Optional[Dataset] = None,
         features: Optional[Sequence[str]] = None,
-        level="INFO",
+        verbosity_level="INFO",
         raise_exceptions=False,
     ) -> ScanReport:
         """Runs the analysis of a model and dataset, detecting issues.
@@ -112,8 +112,8 @@ class Scanner:
             A Giskard dataset object.
         features : Sequence[str], optional
             A list of features to analyze. If not provided, all model features will be analyzed.
-        level : String
-            Logger level to know which messages should go in the output. INFO by default.
+        verbosity_level : String
+            Logger verbosity level to know which messages should go in the output. INFO by default.
         raise_exceptions : bool
             Whether to raise an exception if detection errors are encountered. By default, errors are logged and
             handled gracefully, without interrupting the scan.
@@ -135,7 +135,7 @@ de
             get_default_client().logger.reset()
             
         # Set logger level to the user's input
-        logger.setLevel(level)
+        logger.setLevel(verbosity_level)
 
         # Good, we can start
         logger.info("🔎 Running scan…")
@@ -394,7 +394,7 @@ de
 
         if model.is_text_generation:
             measured = self._get_cost_measure()
-            logger.info(**measured, COST_SUMMARY_TEMPLATE)
+            logger.info(**measured, template=COST_SUMMARY_TEMPLATE)
         if errors:
             warning(
                 f"{len(errors)} errors were encountered while running detectors. Please check the log to understand what went wrong. "

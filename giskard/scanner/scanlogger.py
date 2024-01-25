@@ -1,30 +1,28 @@
 import enum
-from typing import Optional
-
+from typing import Optional, Union, Literal
+from giskard.core.validation import configured_validate_arguments
 from giskard.utils.xprint import (
     Template,
     xprint,
 )
 
 class ScanLoggerLevel(enum.Enum):
-    DEBUG = 0
-    INFO = 5
-    CRITICAL = 10
+    DEBUG = 10
+    INFO = 20
+    CRITICAL = 50
+
+
+LoggerLevel = Union[ScanLoggerLevel, Literal["DEBUG", "INFO", "CRITICAL"]]
 
 class ScanLogger:
     level: ScanLoggerLevel = ScanLoggerLevel.INFO
     
-    def setLevel(self, level: str):
-        level_map = {
-            "DEBUG": ScanLoggerLevel.DEBUG,
-            "INFO": ScanLoggerLevel.INFO,
-            "CRITICAL": ScanLoggerLevel.CRITICAL
-        }
-
-        if level not in level_map:
-            raise ValueError(f"Invalid log level: {level}. Please provide 'DEBUG', 'INFO', or 'CRITICAL'.")
-        
-        self.level = level_map[level]
+    @configured_validate_arguments
+    def setLevel(self, level: LoggerLevel):
+        if isinstance(level, ScanLoggerLevel):
+            self.level = level
+        else:
+            self.level = ScanLoggerLevel[level]
         
     def debug(self,
         *args,

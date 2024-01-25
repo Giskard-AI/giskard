@@ -75,7 +75,7 @@ class UnderconfidenceDetector(LossBasedDetector):
 
             relative_delta = (slice_rate - reference_rate) / reference_rate
 
-            logger.info(slice_fn, slice_rate, reference_rate, relative_delta, template=UnderconfTest)
+            logger.debug(slice_fn, slice_rate, reference_rate, relative_delta, template=UnderconfTest)
 
             if relative_delta > self.threshold:
                 level = IssueLevel.MAJOR if relative_delta > 2 * self.threshold else IssueLevel.MEDIUM
