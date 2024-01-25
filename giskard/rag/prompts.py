@@ -8,7 +8,7 @@ Your task is to generate questions about the products, the ordering process and 
 Please respect the following rules to generate the question:
 - The answer to the question should be found inside the provided context
 - The question must be self-contained
-- The question and answer must be in {language}
+- The question and answer must be in this language: {language}
 
 You will be provided the context, consisting in multiple paragraphs delimited by dashes "------".
 You will return the question and the precise answer to the question based exclusively on the provided context.

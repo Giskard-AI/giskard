@@ -94,7 +94,16 @@ class KnowledgeBaseTestsetGenerator(BaseDataGenerator):
         self.knowledge_base = VectorStore.from_df(knowledge_df, self.embedding_model, features=knowledge_base_features)
 
     def _generate_question_answer_from_context(self, context):
-        messages = [{"role": "system", "content": self._qa_generation_system_prompt}]
+        messages = [
+            {
+                "role": "system",
+                "content": self._qa_generation_system_prompt.format(
+                    model_name=self.model_name,
+                    model_description=self.model_description,
+                    language=self.language,
+                ),
+            }
+        ]
         if self.include_examples:
             messages.extend(
                 [
