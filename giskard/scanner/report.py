@@ -6,9 +6,7 @@ import tempfile
 import warnings
 from pathlib import Path
 
-import mlflow
 import pandas as pd
-from mlflow import MlflowClient
 
 from giskard.core.errors import GiskardImportError
 from giskard.utils.analytics_collector import analytics, anonymize
@@ -214,7 +212,7 @@ class ScanReport:
 
     def to_mlflow(
         self,
-        mlflow_client: MlflowClient = None,
+        mlflow_client=None,
         mlflow_run_id: str = None,
         summary: bool = True,
         model_artifact_path: str = "",
@@ -223,6 +221,9 @@ class ScanReport:
 
         Log the current scan results in an HTML format to the active MLflow run.
         """
+        import mlflow
+
+        mlflow_client: mlflow.MlflowClient = mlflow_client
         results_df = self.get_scan_summary_for_mlflow(self)
         if model_artifact_path != "":
             model_artifact_path = "-for-" + model_artifact_path
