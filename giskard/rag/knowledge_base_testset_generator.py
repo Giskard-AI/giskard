@@ -60,7 +60,6 @@ class KnowledgeBaseTestsetGenerator(BaseDataGenerator):
     _qa_generation_system_prompt = QA_GENERATION_SYSTEM_PROMPT
     _qa_generation_context_example = QA_GENERATION_CONTEXT_EXAMPLE
     _qa_generation_assistant_example = QA_GENERATION_ASSISTANT_EXAMPLE
-    _one_output_requirement = "\n\nRemember you should only generate one question and answer pair."
 
     _difficulty_level = 1
 
@@ -103,7 +102,7 @@ class KnowledgeBaseTestsetGenerator(BaseDataGenerator):
                     {"role": "assistant", "content": self._qa_generation_assistant_example},
                 ]
             )
-        messages.append({"role": "user", "content": context + self._one_output_requirement})
+        messages.append({"role": "user", "content": context})
 
         generated_qa = self._llm_complete(messages=messages)
         return generated_qa["question"], generated_qa["answer"]
@@ -140,6 +139,7 @@ class KnowledgeBaseTestsetGenerator(BaseDataGenerator):
         except (AttributeError, KeyError) as err:
             raise LLMGenerationError("Could not parse generated inputs") from err
         except json.decoder.JSONDecodeError as err:
+            print("ERROR RES", out)
             if "Extra data:" in str(err):
                 raise LLMGenerationError("Generator model output more than one question/answer pair.") from err
             else:

@@ -12,7 +12,7 @@ Please respect the following rules to generate the question:
 
 You will be provided the context, consisting in multiple paragraphs delimited by dashes "------".
 You will return the question and the precise answer to the question based exclusively on the provided context.
-Your output should be a unique JSON object, with keys 'question' and 'answer'."""
+Your output should be a single JSON object, with keys 'question' and 'answer'. Make sure you return a valid JSON object."""
 
 QA_GENERATION_ASSISTANT_EXAMPLE = """{
     "question": "For which countries can I track my shipping?",
