@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from typing import TYPE_CHECKING
+
 from abc import ABC, abstractmethod
 
 if TYPE_CHECKING:
@@ -14,12 +15,14 @@ class BaseTool(ABC):
     default_name: str = ...
     default_description: str = ...
 
-    def __init__(self,
-                 model: BaseModel = None,
-                 dataset: Dataset = None,
-                 scan_result: ScanReport = None,
-                 name: str = None,
-                 description: str = None):
+    def __init__(
+        self,
+        model: BaseModel = None,
+        dataset: Dataset = None,
+        scan_result: ScanReport = None,
+        name: str = None,
+        description: str = None,
+    ):
         self._model = model
         self._dataset = dataset
         self._scan_result = scan_result
@@ -64,13 +67,14 @@ class BasePredictTool(BaseTool, ABC):
                     "properties": {
                         "features_dict": {
                             "type": "object",
-                            "properties": {feature: {"type": dtype} for feature, dtype in
-                                           list(feature_json_type.items())}
+                            "properties": {
+                                feature: {"type": dtype} for feature, dtype in list(feature_json_type.items())
+                            },
                         }
                     },
-                    "required": ["features_dict"]
-                }
-            }
+                    "required": ["features_dict"],
+                },
+            },
         }
 
     @abstractmethod

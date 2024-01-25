@@ -1,5 +1,5 @@
-from giskard.llm.talk.tools.base import BaseTool
 from giskard.llm.talk.config import ToolDescription
+from giskard.llm.talk.tools.base import BaseTool
 
 
 class IssuesScannerTool(BaseTool):
@@ -14,7 +14,7 @@ class IssuesScannerTool(BaseTool):
             "function": {
                 "name": self.name,
                 "description": self.description,
-            }
+            },
         }
 
     def __call__(self) -> str:

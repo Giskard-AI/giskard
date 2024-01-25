@@ -25,8 +25,10 @@ class PredictUserInputTool(BasePredictTool):
     def _prepare_input(self, feature_values: dict) -> Dataset:
         # Prepare background sample.
         from giskard.models.model_explanation import _get_background_example
-        background_df = self._model.prepare_dataframe(self._dataset.df, self._dataset.column_dtypes,
-                                                      self._dataset.target)
+
+        background_df = self._model.prepare_dataframe(
+            self._dataset.df, self._dataset.column_dtypes, self._dataset.target
+        )
         background_sample = _get_background_example(background_df, self._dataset.column_types)
 
         # Fill background sample with known values.

@@ -10,8 +10,7 @@ from giskard.core.errors import GiskardImportError
 
 
 def _calculate_shap_values(data_to_explain: "Dataset", model: "BaseModel", dataset: "Dataset") -> np.ndarray:
-    from giskard.models.model_explanation import _get_background_example
-    from giskard.models.model_explanation import _prepare_for_explanation
+    from giskard.models.model_explanation import _get_background_example, _prepare_for_explanation
 
     try:
         from shap import KernelExplainer
@@ -35,13 +34,13 @@ def _calculate_shap_values(data_to_explain: "Dataset", model: "BaseModel", datas
     return shap_values
 
 
-def explain_with_shap(data_to_explain: "Dataset", model: "BaseModel", dataset: "Dataset", only_highest_proba: bool = True):
+def explain_with_shap(
+    data_to_explain: "Dataset", model: "BaseModel", dataset: "Dataset", only_highest_proba: bool = True
+):
     from giskard.models.model_explanation import _get_highest_proba_shap
 
     try:
         from shap import Explanation
-
-        from giskard.models.shap_result import ShapResult
     except ImportError as e:
         raise GiskardImportError("shap") from e
     shap_values = _calculate_shap_values(data_to_explain, model, dataset)

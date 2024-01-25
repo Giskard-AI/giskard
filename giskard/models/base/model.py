@@ -1,9 +1,8 @@
-import json
-
-from typing import Iterable, List, Optional, Tuple, Type, Union, TYPE_CHECKING
+from typing import TYPE_CHECKING, Iterable, List, Optional, Tuple, Type, Union
 
 import builtins
 import importlib
+import json
 import logging
 import platform
 import posixpath
@@ -17,25 +16,34 @@ import numpy as np
 import pandas as pd
 import yaml
 from openai.types.chat.chat_completion_message import ChatCompletionMessage
-from openai.types.chat.chat_completion_message_tool_call import ChatCompletionMessageToolCall, Function
+from openai.types.chat.chat_completion_message_tool_call import (
+    ChatCompletionMessageToolCall,
+    Function,
+)
 
 from giskard.client.dtos import ModelMetaInfo
-from ..talk_result import TalkResult
 
 from ...client.giskard_client import GiskardClient
 from ...core.core import ModelMeta, ModelType, SupportedModelTypes
 from ...core.validation import configured_validate_arguments
 from ...datasets.base import Dataset
-from ...llm import get_default_client, set_llm_model
-from ...llm.talk.config import MODEL_INSTRUCTION, ERROR_RESPONSE, LLM_MODEL, SUMMARY_PROMPT
-from ...llm.talk.tools import *
 from ...exceptions.giskard_exception import GiskardException, python_env_exception_helper
+from ...llm import get_default_client, set_llm_model
+from ...llm.talk.config import ERROR_RESPONSE, LLM_MODEL, MODEL_INSTRUCTION, SUMMARY_PROMPT
+from ...llm.talk.tools import (
+    BaseTool,
+    IssuesScannerTool,
+    PredictDatasetInputTool,
+    PredictUserInputTool,
+    SHAPExplanationTool,
+)
 from ...models.cache import ModelCache
 from ...path_utils import get_size
 from ...registry.utils import dump_by_value
 from ...settings import settings
 from ...utils.logging import Timer
 from ..cache import get_cache_enabled
+from ..talk_result import TalkResult
 from ..utils import np_types_to_native
 from .model_prediction import ModelPredictionResults
 
@@ -109,15 +117,15 @@ class BaseModel(ABC):
 
     @configured_validate_arguments
     def __init__(
-            self,
-            model_type: ModelType,
-            name: Optional[str] = None,
-            description: Optional[str] = None,
-            feature_names: Optional[Iterable] = None,
-            classification_threshold: Optional[float] = 0.5,
-            classification_labels: Optional[Iterable] = None,
-            id: Optional[str] = None,
-            **kwargs,
+        self,
+        model_type: ModelType,
+        name: Optional[str] = None,
+        description: Optional[str] = None,
+        feature_names: Optional[Iterable] = None,
+        classification_threshold: Optional[float] = 0.5,
+        classification_labels: Optional[Iterable] = None,
+        id: Optional[str] = None,
+        **kwargs,
     ) -> None:
         """
         Initialize a new instance of the BaseModel class.
@@ -252,7 +260,7 @@ class BaseModel(ABC):
 
     @classmethod
     def determine_model_class(
-            cls, meta, local_dir, model_py_ver: Optional[Tuple[str, str, str]] = None, *_args, **_kwargs
+        cls, meta, local_dir, model_py_ver: Optional[Tuple[str, str, str]] = None, *_args, **_kwargs
     ):
         class_file = Path(local_dir) / MODEL_CLASS_PKL
         if class_file.exists():
@@ -607,7 +615,7 @@ class BaseModel(ABC):
             PredictDatasetInputTool.default_name: PredictDatasetInputTool(model=self, dataset=dataset),
             PredictUserInputTool.default_name: PredictUserInputTool(model=self, dataset=dataset),
             SHAPExplanationTool.default_name: SHAPExplanationTool(model=self, dataset=dataset),
-            IssuesScannerTool.default_name: IssuesScannerTool(scan_result=scan_report)
+            IssuesScannerTool.default_name: IssuesScannerTool(scan_result=scan_report),
         }
 
     @staticmethod
@@ -619,10 +627,10 @@ class BaseModel(ABC):
                 ChatCompletionMessageToolCall(
                     id=tool_call.id,
                     function=Function(arguments=str(tool_call.args), name=tool_call.function),
-                    type="function"
+                    type="function",
                 )
                 for tool_call in tool_calls
-            ]
+            ],
         )
 
     @staticmethod
@@ -635,8 +643,9 @@ class BaseModel(ABC):
 
         return "\n".join(context)
 
-    def talk(self,
-             question: str, context: str = "", dataset: Dataset = None, scan_report: "ScanReport" = None) -> TalkResult:
+    def talk(
+        self, question: str, context: str = "", dataset: Dataset = None, scan_report: "ScanReport" = None
+    ) -> TalkResult:
         set_llm_model(LLM_MODEL)
         client = get_default_client()
 
@@ -647,19 +656,16 @@ class BaseModel(ABC):
             model_name=self.meta.name,
             model_description=self.meta.description,
             feature_names=self.meta.feature_names,
-            context=context
+            context=context,
         )
 
-        messages = [
-            {"role": "system", "content": system_prompt},
-            {"role": "user", "content": question}
-        ]
+        messages = [{"role": "system", "content": system_prompt}, {"role": "user", "content": question}]
 
         response = client.complete(
             messages=messages,
             tools=[tool.specification for tool in list(available_tools.values())],
             tool_choice="auto",
-            temperature=0.1
+            temperature=0.1,
         )
 
         if response.message:
@@ -676,14 +682,10 @@ class BaseModel(ABC):
                 tool = available_tools[tool_name]
 
                 try:
-                    tool_response = tool(
-                        **tool_args
-                    )
+                    tool_response = tool(**tool_args)
                 except Exception as error_msg:
                     tool_response = ERROR_RESPONSE.format(
-                        tool_name=tool_name,
-                        tool_args=tool_args,
-                        error_msg=error_msg.args[0]
+                        tool_name=tool_name, tool_args=tool_args, error_msg=error_msg.args[0]
                     )
 
                 # Append the tool's response to the conversation.
@@ -697,16 +699,12 @@ class BaseModel(ABC):
                 )
 
             # Get the final model's response, based on the tool's output.
-            response = client.complete(
-                messages=messages,
-                temperature=0.1
-            )
+            response = client.complete(messages=messages, temperature=0.1)
             messages.append(response.raw_output)
 
         # Summarise the conversation.
         context = self._gather_context(messages)
         summary = client.complete(
-            messages=[{"role": "user", "content": SUMMARY_PROMPT.format(context=context)}],
-            temperature=0.1
+            messages=[{"role": "user", "content": SUMMARY_PROMPT.format(context=context)}], temperature=0.1
         )
         return TalkResult(response, summary)

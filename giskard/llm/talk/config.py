@@ -55,29 +55,37 @@ Tool arguments: "{tool_args}"\n
 """
 
 # Tools descriptions (instructions).
-_PREDICT_DATASET_INPUT_TOOL_DESCRIPTION = ("Your task is to return prediction of a feature vector extracted from the "
-                                           "dataset. You expect a dictionary with features and their values to filter "
-                                           "rows from the dataset, then you run the model prediction on that rows and "
-                                           "finally return the prediction result.")
+_PREDICT_DATASET_INPUT_TOOL_DESCRIPTION = (
+    "Your task is to return prediction of a feature vector extracted from the "
+    "dataset. You expect a dictionary with features and their values to filter "
+    "rows from the dataset, then you run the model prediction on that rows and "
+    "finally return the prediction result."
+)
 
-_PREDICT_USER_INPUT_TOOL_DESCRIPTION = ("Your task is to return prediction of a feature vector (partially) built from "
-                                        "the user input. You expect a dictionary with features and their values, "
-                                        "extracted from the user input, then you fill the values of features not "
-                                        "mentioned in the user query and build input row. Then you run the model "
-                                        "prediction on that row and finally return the prediction result.")
+_PREDICT_USER_INPUT_TOOL_DESCRIPTION = (
+    "Your task is to return prediction of a feature vector (partially) built from "
+    "the user input. You expect a dictionary with features and their values, "
+    "extracted from the user input, then you fill the values of features not "
+    "mentioned in the user query and build input row. Then you run the model "
+    "prediction on that row and finally return the prediction result."
+)
 
-_SHAP_EXPLANATION_TOOL_DESCRIPTION = ("You expect a dictionary with feature names as keys and their values as dict "
-                                      "values, which you use to filter rows in the dataset, then you run the SHAP "
-                                      "explanation on that filtered rows, and finally you return the SHAP explanation "
-                                      "result as well as the model prediction result."
-                                      "Please note, that the bigger SHAP value - the more important feature is for the"
-                                      "prediction.")
+_SHAP_EXPLANATION_TOOL_DESCRIPTION = (
+    "You expect a dictionary with feature names as keys and their values as dict "
+    "values, which you use to filter rows in the dataset, then you run the SHAP "
+    "explanation on that filtered rows, and finally you return the SHAP explanation "
+    "result as well as the model prediction result."
+    "Please note, that the bigger SHAP value - the more important feature is for the"
+    "prediction."
+)
 
-_ISSUES_SCANNER_TOOL_DESCRIPTION = ("Your task is to give the user a summary of the 'giskard' scan result. For your "
-                                    "info, this feature is used to detect ML model's vulnerabilities such as "
-                                    "performance bias, hallucination, prompt injection, data leakage, spurious "
-                                    "correlation, overconfidence, etc. You return a table, where the important "
-                                    "columns are 'Description', 'Vulnerability', 'Level', 'Metric' and 'Deviation'")
+_ISSUES_SCANNER_TOOL_DESCRIPTION = (
+    "Your task is to give the user a summary of the 'giskard' scan result. For your "
+    "info, this feature is used to detect ML model's vulnerabilities such as "
+    "performance bias, hallucination, prompt injection, data leakage, spurious "
+    "correlation, overconfidence, etc. You return a table, where the important "
+    "columns are 'Description', 'Vulnerability', 'Level', 'Metric' and 'Deviation'"
+)
 
 
 class ToolDescription(str, Enum):
