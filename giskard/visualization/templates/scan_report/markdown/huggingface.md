@@ -1,13 +1,3 @@
-{% if issues|length == 0 %}
-<div class="m-4">
-    <div class="p-3 bg-green-100/40 rounded-sm w-full flex align-middle">
-        <p class="ml-2 my-1 text-green-50 text-sm">
-            We found no issues in your model. Good job!
-        </p>
-    </div>
-</div>
-{% endif %}
-
 {% for view in groups -%}
 
 <details>
