@@ -114,14 +114,20 @@ class GiskardAnalyticsCollector:
         self.is_enabled = not settings.disable_analytics
         self.giskard_version = None
         self.ip = None
-        self.environment = EnvironmentDetector().detect()
-        if self.is_enabled:
-            self.mp = self.configure_mixpanel()
-            self.distinct_user_id = GiskardAnalyticsCollector.machine_based_user_id()
+        self._initialised = False
+
+    def _lazy_init(self):
+        if self.is_enabled and not self._initialised:
+            self.environment = EnvironmentDetector().detect()
+            self.mp = self._configure_mixpanel()
+            self.distinct_user_id = self._machine_based_user_id()
+            self._initialize_giskard_version()
+            self._initialize_user_properties()
+            self._initialised = True
 
     @staticmethod
     @analytics_method
-    def configure_mixpanel() -> Mixpanel:
+    def _configure_mixpanel() -> Mixpanel:
         is_dev_mode = os.environ.get("GISKARD_DEV_MODE", "n").lower() in [
             "yes",
             "true",
@@ -150,8 +156,7 @@ class GiskardAnalyticsCollector:
     @threaded
     @analytics_method
     def _track(self, event_name, properties=None, meta=None, force=False):
-        self.initialize_giskard_version()
-        self.initialize_user_properties()
+        self._lazy_init()
 
         if self.is_enabled or force:
             merged_props = {
@@ -173,15 +178,15 @@ class GiskardAnalyticsCollector:
                 meta=meta,
             )
 
-    def initialize_giskard_version(self):
+    def _initialize_giskard_version(self):
         if not self.giskard_version:
             import giskard
 
             self.giskard_version = giskard.get_version()
 
-    def initialize_user_properties(self):
+    def _initialize_user_properties(self):
         if not self.ip:
-            self.initialize_geo()
+            self._initialize_geo()
             self.mp.people_set(
                 self.distinct_user_id,
                 {
@@ -193,14 +198,14 @@ class GiskardAnalyticsCollector:
             )
 
     @staticmethod
-    def machine_based_user_id():
+    def _machine_based_user_id():
         try:
             return anonymize(str(uuid.getnode()) + getpass.getuser())
         except BaseException:  # noqa NOSONAR
             # https://bugs.python.org/issue40821
             return "unknown"
 
-    def initialize_geo(self):
+    def _initialize_geo(self):
         """
         Query a user's IP address to convert it to an aggregated telemetry:
             - city

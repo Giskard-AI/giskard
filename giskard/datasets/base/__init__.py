@@ -12,7 +12,6 @@ import numpy as np
 import pandas
 import pandas as pd
 import yaml
-from mlflow import MlflowClient
 from pandas.api.types import is_list_like, is_numeric_dtype
 from xxhash import xxh3_128_hexdigest
 from zstandard import ZstdDecompressor
@@ -33,11 +32,6 @@ from giskard.settings import settings
 from ...utils.analytics_collector import analytics
 from ...utils.file_utils import get_file_name
 from ..metadata.indexing import ColumnMetadataMixin
-
-try:
-    import wandb  # noqa
-except ImportError:
-    pass
 
 SAMPLE_SIZE = 1000
 
@@ -698,9 +692,10 @@ class Dataset(ColumnMetadataMixin):
 
         return dataset
 
-    def to_mlflow(self, mlflow_client: MlflowClient = None, mlflow_run_id: str = None):
+    def to_mlflow(self, mlflow_client=None, mlflow_run_id: str = None):
         import mlflow
 
+        mlflow_client: mlflow.MlflowClient = mlflow_client  # Doing typing here, to avoid import from mlflow
         # To avoid file being open in write mode and read at the same time,
         # First, we'll write it, then make sure to remove it
         with tempfile.NamedTemporaryFile(prefix="dataset-", suffix=".csv", delete=False) as f:
