@@ -61,7 +61,7 @@ jobs:
         with:
           token: ${{ secrets.RELEASE_PAT_TOKEN }}
           event-type: create-release
-          repository: giskard-ai/giskard-hub
+          repository: ${{ github.repository_owner }}/giskard-hub
           client-payload: |
             {
               "version": "${{ inputs.version }}",
