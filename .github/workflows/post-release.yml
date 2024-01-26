@@ -40,4 +40,5 @@ jobs:
         run: pdm build
 
       - name: Push to Pipy
+        if: false
         run: pdm publish --no-build --username "${{ secrets.PIPY_USERNAME }}" --password "${{ secrets.PIPY_PASSWORD }}"

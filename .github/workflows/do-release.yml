@@ -36,7 +36,7 @@ jobs:
         with:
           token: ${{ secrets.RELEASE_PAT_TOKEN }}
           event-type: create-release
-          repository: giskard-ai/giskard-hub
+          repository: ${{ github.repository_owner }}/giskard-hub
           client-payload: |
             {
               "version": "${{ github.ref_name }}",
@@ -44,6 +44,7 @@ jobs:
             }
 
       - name: Post to a Slack channel
+        if: false
         id: slack
         uses: slackapi/slack-github-action@v1.25.0
         with:
