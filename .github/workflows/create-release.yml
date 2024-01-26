@@ -21,12 +21,12 @@ jobs:
           username: ${{ github.actor }}
           token: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Interrupt job
-        if: ${{ steps.is_organization_member.outputs.result == 'false' }}
-        shell: bash
-        run: |
-          echo "Job failed due to user not being a member of Giskard-AI organization and the 'safe for build' label not being set on the PR"
-          exit 1
+      # - name: Interrupt job
+      #   if: ${{ steps.is_organization_member.outputs.result == 'false' }}
+      #   shell: bash
+      #   run: |
+      #     echo "Job failed due to user not being a member of Giskard-AI organization and the 'safe for build' label not being set on the PR"
+      #     exit 1
 
       - name: Checkout code
         uses: actions/checkout@v4.1.0
