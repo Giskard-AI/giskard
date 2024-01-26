@@ -179,9 +179,8 @@ class TextPunctuationRemovalTransformation(TextTransformation):
         return "".join(pieces)
 
 
+@transformation_function(name="Accent Removal", row_level=False)
 class TextAccentRemovalTransformation(TextTransformation):
-    name = "Accent Removal"
-
     def __init__(self, column, rate=1.0, rng_seed=1729):
         super().__init__(column)
         self.rate = rate

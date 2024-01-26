@@ -20,6 +20,7 @@ Textual transformation functions
 .. autofunction:: giskard.functions.text_transformations.TextTypoTransformation
 .. autofunction:: giskard.functions.text_transformations.TextFromOCRTypoTransformation
 .. autofunction:: giskard.functions.text_transformations.TextPunctuationRemovalTransformation
+.. autofunction:: giskard.functions.text_transformations.TextAccentRemovalTransformation
 .. autofunction:: giskard.functions.text_transformations.TextGenderTransformation
 .. autofunction:: giskard.functions.text_transformations.TextReligionTransformation
 .. autofunction:: giskard.functions.text_transformations.TextNationalityTransformation
