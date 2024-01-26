@@ -3,6 +3,7 @@ from unittest.mock import Mock, patch
 
 import pandas as pd
 
+from giskard.core.test_result import TestResultStatus
 from giskard.datasets.base import Dataset
 from giskard.llm.evaluators.string_matcher import StringMatcherConfig
 from giskard.scanner.llm.llm_prompt_injection_detector import LLMPromptInjectionDetector
@@ -34,9 +35,9 @@ def test_detector(PromptInjectionDataLoader):  # noqa
     features = ["feat"]
 
     model = Mock()
-    model.meta.name = "Test Model"
-    model.meta.description = "Test Description"
-    model.meta.feature_names = features
+    model.name = "Test Model"
+    model.description = "Test Description"
+    model.feature_names = features
 
     dataset = Mock()
     loader = Mock()
@@ -95,10 +96,10 @@ def test_detector(PromptInjectionDataLoader):  # noqa
     detector = LLMPromptInjectionDetector()
 
     # First run
-    issues = detector.run(model, dataset, model.meta.feature_names)
+    issues = detector.run(model, dataset, model.feature_names)
     assert len(issues) == 1
     assert issues[0].is_major
 
-    test_result = _test_llm_output_against_strings(model, group_dataset, evaluator_configs, 0.5, True)
+    test_result = _test_llm_output_against_strings(model, group_dataset, evaluator_configs, 0.5)
     assert not test_result.passed
-    assert len(test_result.output_ds[0].df) == len(group_dataset.df) == 1
+    assert test_result.details.results == [TestResultStatus.FAILED]

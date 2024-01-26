@@ -45,7 +45,7 @@ def test_runtime_parameters_override_default_parameters(german_credit_data, germ
         return np.stack((np.ones(len(df)), np.zeros(len(df)))).T
 
     bad_model = Model(
-        constant_pred, model_type="classification", classification_labels=german_credit_model.meta.classification_labels
+        constant_pred, model_type="classification", classification_labels=german_credit_model.classification_labels
     )
 
     # The test will not pass
@@ -55,3 +55,23 @@ def test_runtime_parameters_override_default_parameters(german_credit_data, germ
 
     # With the right model, the test will pass
     assert suite.run(model=german_credit_model).passed
+
+
+def test_export_for_unittest_with_default(german_credit_data, german_credit_model):
+    my_test = test_accuracy(threshold=0.7)
+
+    suite = Suite(default_params=dict(model=german_credit_model, dataset=german_credit_data))
+    suite.add_test(my_test)
+    tests_list = suite.to_unittest()
+    assert len(tests_list) == 1
+    assert bool(tests_list[0].fullname)
+
+
+def test_export_for_unittest_with_export_args(german_credit_data, german_credit_model):
+    my_test = test_accuracy(threshold=0.7)
+
+    suite = Suite()
+    suite.add_test(my_test)
+    tests_list = suite.to_unittest(model=german_credit_model, dataset=german_credit_data)
+    assert len(tests_list) == 1
+    assert bool(tests_list[0].fullname)

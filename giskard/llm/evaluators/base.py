@@ -3,6 +3,7 @@ from typing import Optional, Sequence
 from abc import ABC, abstractmethod
 from dataclasses import dataclass
 
+from ...core.test_result import TestResultDetails, TestResultStatus, create_test_result_details
 from ...datasets.base import Dataset
 from ...models.base.model import BaseModel
 from ..client import LLMClient, get_default_client
@@ -35,7 +36,7 @@ class EvaluationResult:
     failure_examples: Sequence[dict]
     success_examples: Sequence[dict]
     errors: Sequence[dict]
-    output_ds: Optional[Dataset] = None
+    details: Optional[TestResultDetails] = None
 
     @property
     def passed(self):
@@ -72,8 +73,8 @@ class LLMBasedEvaluator(BaseEvaluator):
 
     def _make_evaluate_prompt(self, model: BaseModel, input_vars, model_output, row_idx):
         return self.eval_prompt.format(
-            model_name=model.meta.name,
-            model_description=model.meta.description,
+            model_name=model.name,
+            model_description=model.description,
             input_vars=input_vars,
             model_output=model_output,
         )
@@ -86,11 +87,12 @@ class LLMBasedEvaluator(BaseEvaluator):
 
         succeeded = []
         failed = []
-        failed_idx = []
         errored = []
+        status = []
+        reasons = []
         for row_index, input_vars, model_output in zip(
             dataset.df.index,
-            dataset.df.loc[:, model.meta.feature_names].to_dict("records"),
+            dataset.df.loc[:, model.feature_names].to_dict("records"),
             model_outputs,
         ):
             sample = {"input_vars": input_vars, "model_output": model_output}
@@ -107,19 +109,23 @@ class LLMBasedEvaluator(BaseEvaluator):
                 if out.function_call is None or "passed_test" not in out.function_call.args:
                     raise LLMGenerationError("Invalid function call arguments received")
             except LLMGenerationError as err:
+                status.append(TestResultStatus.ERROR)
+                reasons.append(str(err))
                 errored.append({"message": str(err), "sample": sample})
                 continue
 
             args = out.function_call.args
+            reasons.append(args.get("reason"))
             if args["passed_test"]:
+                status.append(TestResultStatus.PASSED)
                 succeeded.append({"input_vars": input_vars, "model_output": model_output, "reason": args.get("reason")})
             else:
-                failed_idx.append(row_index)
+                status.append(TestResultStatus.FAILED)
                 failed.append({"input_vars": input_vars, "model_output": model_output, "reason": args.get("reason")})
 
         return EvaluationResult(
-            output_ds=dataset.slice(lambda df: df.loc[failed_idx], row_level=False),
             failure_examples=failed,
             success_examples=succeeded,
             errors=errored,
+            details=create_test_result_details(dataset, model, model_outputs, status, {"reason": reasons}),
         )

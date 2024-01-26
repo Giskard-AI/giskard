@@ -9,6 +9,7 @@ mlflow/index
 wandb/index
 dagshub/index
 huggingface/index
+pytest/index
 ```
 
 ::::::{grid} 1 1 2 2
@@ -37,4 +38,9 @@ huggingface/index
 ::::{grid-item-card} <br/><h3>🐶 DagsHub</h3>
 :text-align: center
 :link: dagshub/index.html
+::::
+
+::::{grid-item-card} <br/><h3>🧪 Pytest</h3>
+:text-align: center
+:link: pytest/index.html
 ::::

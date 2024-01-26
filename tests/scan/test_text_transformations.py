@@ -185,6 +185,33 @@ def test_number_to_words_transformation():
     assert transformed_text[1] == "Le coût total des articles était de cent cinquante-sept,vingt-trois $."
 
 
+def test_accent_removal_transformation():
+    dataset = _dataset_from_dict(
+        {
+            "text": [
+                "C'est l'été",
+                "çà et là",
+                "Tiếng Việt",
+                "État",
+                "你好",
+            ]
+        }
+    )
+
+    from giskard.scanner.robustness.text_transformations import TextAccentRemovalTransformation
+
+    t = TextAccentRemovalTransformation(column="text")
+
+    transformed = dataset.transform(t)
+    transformed_text = transformed.df.text.values
+
+    assert transformed_text[0] == "C'est l'ete"
+    assert transformed_text[1] == "ca et la"
+    assert transformed_text[2] == "Tieng Viet"
+    assert transformed_text[3] == "Etat"
+    assert transformed_text[4] == "你好"
+
+
 def test_religion_based_transformation():
     dataset = _dataset_from_dict(
         {
@@ -318,6 +345,18 @@ def test_typo_transformation():
     p = t.make_perturbation("If one doesn't know his mistakes, he won't want to correct them.")
 
     assert p == "If one doesn't know his misakes, he won't want to corrcet them."
+
+
+def test_ocr_typo_transformation():
+    from giskard.scanner.robustness.text_transformations import TextFromOCRTypoTransformation
+
+    t = TextFromOCRTypoTransformation(column="text", rng_seed=1, min_length=10)
+    p = t.make_perturbation("If one doesn't know his mistakes, he won't want to correct them.")
+    short_string = "Short"
+    p2 = t.make_perturbation(short_string)
+
+    assert p == "If one doesn't know his mi5takes, he won't want to corrct them."
+    assert p2 == short_string
 
 
 def test_text_to_speech_typo_transformation():

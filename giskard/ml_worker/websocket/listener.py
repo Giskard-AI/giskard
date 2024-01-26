@@ -13,6 +13,7 @@ from concurrent.futures import CancelledError, Future
 from copy import copy
 from dataclasses import dataclass
 from pathlib import Path
+from uuid import UUID
 
 import numpy as np
 import pandas as pd
@@ -26,12 +27,12 @@ from giskard.core.suite import Suite, generate_test_partial
 from giskard.datasets.base import Dataset
 from giskard.exceptions.giskard_exception import GiskardException
 from giskard.ml_worker import websocket
-from giskard.ml_worker.core.log_listener import LogListener
 from giskard.ml_worker.stomp.parsing import Frame
 from giskard.ml_worker.utils.cache import CACHE
 from giskard.ml_worker.websocket import CallToActionKind, GetInfoParam, PushKind
 from giskard.ml_worker.websocket.action import ActionPayload, MLWorkerAction
 from giskard.ml_worker.websocket.utils import (
+    do_create_dataset,
     do_create_sub_dataset,
     do_run_adhoc_test,
     function_argument_to_ws,
@@ -47,14 +48,14 @@ from giskard.models.model_explanation import explain, explain_text
 from giskard.push import Push
 from giskard.push.contribution import create_contribution_push
 from giskard.push.perturbation import create_perturbation_push
-from giskard.push.prediction import create_borderline_push, create_overconfidence_push
+from giskard.push.prediction import create_overconfidence_push, create_underconfidence_push
 from giskard.registry.giskard_test import GiskardTest
 from giskard.registry.slicing_function import SlicingFunction
 from giskard.registry.transformation_function import TransformationFunction
 from giskard.settings import settings
-from giskard.utils import call_in_pool
+from giskard.utils import call_in_pool, cancel_in_pool, list_pool_job_ids
 from giskard.utils.analytics_collector import analytics
-from giskard.utils.file_utils import get_file_name
+from giskard.utils.file_utils import get_file_name, job_logs_path
 from giskard.utils.worker_pool import GiskardMLWorkerException
 
 logger = logging.getLogger(__name__)
@@ -75,7 +76,7 @@ WEBSOCKET_ACTORS = dict((action.name, websocket_log_actor) for action in MLWorke
 
 
 def wrapped_handle_result(
-    action: MLWorkerAction, start: float, rep_id: Optional[str], worker_info: MLWorkerInfo, ignore_timeout: bool
+    action: MLWorkerAction, start: float, job_id: Optional[UUID], worker_info: MLWorkerInfo, ignore_timeout: bool
 ):
     async def handle_result(future: Union[Future, Callable[..., websocket.WorkerReply]]):
         info = None  # Needs to be defined in case of cancellation
@@ -120,7 +121,7 @@ def wrapped_handle_result(
                 },
             )
 
-        if rep_id:
+        if job_id:
             if isinstance(info, Frame):
                 return info
             return info.json(by_alias=True) if info else "{}"
@@ -156,7 +157,7 @@ async def dispatch_action(
     ignore_timeout=False,
 ):
     # Parse the response ID
-    rep_id = req.id
+    job_id = req.id
     # Parse the param
     params = req.param
 
@@ -171,29 +172,27 @@ async def dispatch_action(
     )
     start = time.process_time()
 
-    result_handler = wrapped_handle_result(action, start, rep_id, worker_info, ignore_timeout=ignore_timeout)
+    result_handler = wrapped_handle_result(action, start, job_id, worker_info, ignore_timeout=ignore_timeout)
     # If execution should be done in a pool
+    kwargs = {
+        "callback": callback,
+        "action": action,
+        "params": params,
+        "ml_worker": worker_info,
+        "client_params": client_params,
+    }
     if execute_in_pool and settings.use_pool:
         logger.debug("Submitting for action %s '%s' into the pool", action.name, callback.__name__)
-        kwargs = {
-            "callback": callback,
-            "action": action,
-            "params": params,
-            "ml_worker": worker_info,
-            "client_params": client_params,
-        }
-
         future = call_in_pool(
-            parse_and_execute,
+            job_id=job_id,
+            fn=parse_and_execute,
             kwargs=kwargs,
             timeout=timeout,
         )
     else:
 
         def future():
-            return parse_and_execute(
-                callback=callback, action=action, params=params, ml_worker=worker_info, client_params=client_params
-            )
+            return parse_and_execute(**kwargs)
 
     return await result_handler(future)
 
@@ -222,10 +221,15 @@ def websocket_actor(
     return websocket_actor_callback
 
 
+@websocket_actor(MLWorkerAction.abort, execute_in_pool=False)
+def on_abort(params: websocket.AbortParams, *args, **kwargs):
+    cancel_in_pool(params.job_id)
+    return websocket.AbortParams(job_id=params.job_id)
+
+
 @websocket_actor(MLWorkerAction.getInfo, execute_in_pool=False)
 def on_ml_worker_get_info(ml_worker: MLWorkerInfo, params: GetInfoParam, *args, **kwargs) -> websocket.GetInfo:
     logger.info("Collecting ML Worker info from WebSocket")
-
     # TODO(Bazire): seems to be deprecated https://setuptools.pypa.io/en/latest/pkg_resources.html#workingset-objects
     installed_packages = {p.project_name: p.version for p in pkg_resources.working_set} if params.list_packages else {}
     current_process = psutil.Process(os.getpid())
@@ -258,9 +262,9 @@ def on_ml_worker_stop_worker(*args, **kwargs) -> None:
 
 def run_classification_mode(model, dataset, prediction_results):
     results = prediction_results.all_predictions
-    labels = {k: v for k, v in enumerate(model.meta.classification_labels)}
+    labels = {k: v for k, v in enumerate(model.classification_labels)}
     label_serie = dataset.df[dataset.target] if dataset.target else None
-    if len(model.meta.classification_labels) > 2 or model.meta.classification_threshold is None:
+    if len(model.classification_labels) > 2 or model.classification_threshold is None:
         preds_serie = prediction_results.all_predictions.idxmax(axis="columns")
         sorted_predictions = np.sort(prediction_results.all_predictions.values)
         abs_diff = pd.Series(
@@ -268,17 +272,17 @@ def run_classification_mode(model, dataset, prediction_results):
             name="absDiff",
         )
     else:
-        diff = prediction_results.all_predictions.iloc[:, 1] - model.meta.classification_threshold
+        diff = prediction_results.all_predictions.iloc[:, 1] - model.classification_threshold
         preds_serie = (diff >= 0).astype(int).map(labels).rename("predictions")
         abs_diff = pd.Series(diff.abs(), name="absDiff")
     calculated = pd.concat([preds_serie, label_serie, abs_diff], axis=1)
     return results, calculated
 
 
-def run_other_model(dataset, prediction_results):
+def run_other_model(dataset, prediction_results, is_text_generation):
     results = pd.Series(prediction_results.prediction)
     preds_serie = results
-    if dataset.target and dataset.target in dataset.df.columns:
+    if dataset.target and dataset.target in dataset.df.columns and not is_text_generation:
         target_serie = dataset.df[dataset.target]
         diff = preds_serie - target_serie
         diff_percent = pd.Series(
@@ -341,7 +345,7 @@ def run_model(client: Optional[GiskardClient], params: websocket.RunModelParam, 
     if model.is_classification:
         results, calculated = run_classification_mode(model, dataset, prediction_results)
     else:
-        results, calculated = run_other_model(dataset, prediction_results)
+        results, calculated = run_other_model(dataset, prediction_results, model.is_text_generation)
 
     with tempfile.TemporaryDirectory(prefix="giskard-") as f:
         tmp_dir = Path(f)
@@ -426,12 +430,12 @@ def explain_text_ws(
         raise ValueError(f"Column {text_column} is not of type text")
     text_document = params.columns[text_column]
     input_df = pd.DataFrame({k: [v] for k, v in params.columns.items()})
-    if model.meta.feature_names:
-        input_df = input_df[model.meta.feature_names]
+    if model.feature_names:
+        input_df = input_df[model.feature_names]
     (list_words, list_weights) = explain_text(model, input_df, text_column, text_document)
     # Classification model contains classification labels, but regression model does not
-    classification_labels = model.meta.classification_labels if model.meta.classification_labels else ["WEIGHTS"]
-    list_weights = list_weights if model.meta.classification_labels else [list_weights]
+    classification_labels = model.classification_labels if model.classification_labels else ["WEIGHTS"]
+    list_weights = list_weights if model.classification_labels else [list_weights]
     map_features_weight = dict(zip(classification_labels, list_weights))
     return websocket.ExplainText(
         weights={
@@ -444,6 +448,11 @@ def explain_text_ws(
 
 @websocket_actor(MLWorkerAction.getCatalog)
 def get_catalog(*args, **kwargs) -> websocket.Catalog:
+    # import modules with artefact definition to populate the registry
+    from giskard import testing  # noqa
+    from giskard.functions import slicing, transformation  # noqa
+    from giskard.push.push_test_catalog import catalog  # noqa
+
     return websocket.Catalog(
         tests=map_function_meta_ws("TEST"),
         slices=map_dataset_process_function_meta_ws("SLICE"),
@@ -495,7 +504,7 @@ def dataset_processing(
 def run_ad_hoc_test(
     client: Optional[GiskardClient], params: websocket.RunAdHocTestParam, *args, **kwargs
 ) -> websocket.RunAdHocTest:
-    test: GiskardTest = GiskardTest.download(params.testUuid, client, None)
+    test: GiskardTest = GiskardTest.download(params.testUuid, client, params.projectKey)
 
     arguments = parse_function_arguments(client, params.arguments)
     if params.debug:
@@ -521,14 +530,12 @@ def run_ad_hoc_test(
 def run_test_suite(
     client: Optional[GiskardClient], params: websocket.TestSuiteParam, *args, **kwargs
 ) -> websocket.TestSuite:
-    log_listener = LogListener()
-
     loaded_artifacts = defaultdict(dict)
 
     try:
         tests = [
             {
-                "test": GiskardTest.download(t.testUuid, client, None),
+                "test": GiskardTest.download(t.testUuid, client, params.projectKey),
                 "arguments": parse_function_arguments(client, t.arguments, loaded_artifacts),
                 "id": t.id,
             }
@@ -557,7 +564,7 @@ def run_test_suite(
                 test_args: Dict[str, Any] = copy(test_args)
                 test_args.update(**test_args.pop("kwargs"))
             updated_test_args.append(test_args)
-            suite.add_test(t["test"].get_builder()(**test_args), t["id"])
+            suite.add_test(t["test"](**test_args), t["id"])
 
         suite_result = suite.run(**global_arguments)
 
@@ -576,17 +583,16 @@ def run_test_suite(
             is_error=False,
             is_pass=suite_result.passed,
             results=identifier_single_test_results,
-            logs=log_listener.close(),
         )
 
     except Exception as exc:
         logger.exception("An error occurred during the test suite execution: %s", exc)
-        return websocket.TestSuite(is_error=True, is_pass=False, results=[], logs=log_listener.close())
+        return websocket.TestSuite(is_error=True, is_pass=False, results=[])
 
 
 @websocket_actor(MLWorkerAction.echo, execute_in_pool=False)
-def echo(params: websocket.EchoMsg, *args, **kwargs) -> websocket.EchoMsg:
-    return params
+def echo(params: websocket.EchoMsg, *args, **kwargs) -> websocket.EchoResponse:
+    return websocket.EchoResponse(msg=params.msg, job_ids=list_pool_job_ids())
 
 
 def handle_cta(
@@ -646,7 +652,7 @@ def get_push(
         else [
             PushKind.CONTRIBUTION,
             PushKind.OVERCONFIDENCE,
-            PushKind.BORDERLINE,
+            PushKind.UNDERCONFIDENCE,
             PushKind.PERTURBATION,
         ]
     )
@@ -677,7 +683,7 @@ def get_push(
         contribution=all_ws_res.get(PushKind.CONTRIBUTION),
         perturbation=all_ws_res.get(PushKind.PERTURBATION),
         overconfidence=all_ws_res.get(PushKind.OVERCONFIDENCE),
-        borderline=all_ws_res.get(PushKind.BORDERLINE),
+        underconfidence=all_ws_res.get(PushKind.UNDERCONFIDENCE),
         action=action,
     )
 
@@ -723,7 +729,7 @@ def get_push_objects(client: Optional[GiskardClient], params: websocket.GetPushP
         PushKind.CONTRIBUTION: create_contribution_push,
         PushKind.PERTURBATION: create_perturbation_push,
         PushKind.OVERCONFIDENCE: create_overconfidence_push,
-        PushKind.BORDERLINE: create_borderline_push,
+        PushKind.UNDERCONFIDENCE: create_underconfidence_push,
     }
 
     return push_functions[params.push_kind](model, dataset, df)
@@ -743,3 +749,37 @@ def create_sub_dataset(
     sub_dataset = do_create_sub_dataset(datasets, params.name, params.copiedRows)
 
     return websocket.CreateSubDataset(datasetUuid=sub_dataset.upload(client=client, project_key=params.projectKey))
+
+
+@websocket_actor(MLWorkerAction.createDataset)
+def create_dataset(
+    client: Optional[GiskardClient], params: websocket.CreateDatasetParam, *arg, **kwargs
+) -> websocket.CreateSubDataset:
+    dataset = do_create_dataset(params.name, params.headers, params.rows)
+
+    return websocket.CreateSubDataset(datasetUuid=dataset.upload(client=client, project_key=params.projectKey))
+
+
+def tail_file(file_path: Path, n_lines: int):
+    if not file_path.exists():
+        raise FileNotFoundError(f"File {file_path.name} does not exist")
+    if n_lines is None:
+        n_lines = -1
+    with open(file_path, "rb") as f:
+        for curr_line in range(n_lines):
+            try:
+                f.seek(-2, os.SEEK_END if curr_line == 0 else os.SEEK_CUR)
+                while f.read(1) != b"\n":
+                    f.seek(-2, os.SEEK_CUR)
+            except OSError:
+                f.seek(0)
+                break
+        return f.read().decode()
+
+
+@websocket_actor(MLWorkerAction.getLogs, execute_in_pool=False)
+def get_logs(params: websocket.GetLogsParams, *arg, **kwargs):
+    job_id = params.job_id
+    assert job_id, "Job ID is required"
+
+    return websocket.GetLogs(logs=tail_file(job_logs_path(job_id), params.nb_last_lines))

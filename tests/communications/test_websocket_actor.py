@@ -1,4 +1,5 @@
 import shutil
+import time
 import uuid
 
 import pandas as pd
@@ -11,6 +12,7 @@ from giskard.ml_worker.websocket import listener
 from giskard.ml_worker.websocket.action import MLWorkerAction
 from giskard.models.base.model import BaseModel
 from giskard.settings import settings
+from giskard.utils import call_in_pool, start_pool
 from giskard.utils.file_utils import get_file_name
 from tests import utils
 
@@ -30,8 +32,9 @@ def test_all_registered_websocket_actor():
 def test_websocket_actor_echo():
     msg = websocket.EchoMsg(msg="echo")
     reply = listener.echo(msg)
-    assert isinstance(reply, websocket.EchoMsg)
+    assert isinstance(reply, websocket.EchoResponse)
     assert reply.msg == msg.msg
+    assert reply.job_ids == []
 
 
 def test_websocket_actor_get_info():
@@ -406,7 +409,7 @@ def test_websocket_actor_explain_text_ws_classification(internal, request):
         reply = listener.explain_text_ws(client=None if internal else client, params=params)
         assert isinstance(reply, websocket.ExplainText)
         # Classification labels
-        for label in model.meta.classification_labels:
+        for label in model.classification_labels:
             assert label in reply.weights.keys()
 
 
@@ -570,3 +573,23 @@ def test_websocket_actor_create_sub_dataset(request):
 
         assert isinstance(reply, websocket.CreateSubDataset)
         assert reply.datasetUuid != str(dataset.id)
+
+
+def test_websocket_actor_cancel_job():
+    max_wait_sec = 10
+    wait_sec = 0.1
+
+    with utils.MockedClient(mock_all=False) as (client, mr):
+        start_pool(5)
+        job_id = uuid.uuid4()
+        future = call_in_pool(job_id=job_id, fn=time.sleep, args=(max_wait_sec,))
+        while not future.running() and max_wait_sec > 0:
+            max_wait_sec -= wait_sec
+            time.sleep(wait_sec)
+        assert future.running()
+        reply = listener.on_abort(client=client, params=websocket.AbortParams(job_id=job_id))
+        assert isinstance(reply, websocket.AbortParams)
+        assert reply.job_id == job_id
+        assert future.done()
+        assert isinstance(future.exception(), TimeoutError)
+        assert str(future.exception()) == "Task killed with reason: CANCELLED"

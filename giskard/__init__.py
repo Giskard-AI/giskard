@@ -3,18 +3,9 @@
 
 # The following code block is made to remove pydantic 2.0 warnings, especially for MLFlow
 # https://docs.python.org/3/library/warnings.html#temporarily-suppressing-warnings
-import warnings
-
-with warnings.catch_warnings():
-    warnings.simplefilter("ignore")
-    try:
-        from mlflow.gateway.config import MlflowModelServingConfig  # noqa
-    except ImportError:
-        pass
-
 from importlib import metadata as importlib_metadata
 
-from . import demo, push
+from . import demo
 from .client.giskard_client import GiskardClient
 from .client.project import Project
 from .core.suite import Suite, SuiteInput
@@ -29,7 +20,7 @@ from .registry.slicing_function import SlicingFunction, slicing_function
 from .registry.transformation_function import TransformationFunction, transformation_function
 from .scanner import scan
 from .utils.analytics_collector import analytics
-from .utils.logging import configure_logging
+from .utils.logging_utils import configure_logging
 
 configure_logging()
 
@@ -58,7 +49,6 @@ __all__ = [
     "Dataset",
     "GiskardClient",
     "test",
-    "push",
     "Model",
     "Suite",
     "slicing_function",
