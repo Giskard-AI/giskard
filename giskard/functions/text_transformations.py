@@ -30,40 +30,32 @@ class TextTransformation(BaseTransformationFunction):
         raise NotImplementedError()
 
 
-@transformation_function(row_level=False)
+@transformation_function(name="Transform to uppercase", row_level=False)
 class TextUppercase(TextTransformation):
-    name = "Transform to uppercase"
-
     def execute(self, data: pd.DataFrame) -> pd.DataFrame:
         feature_data = data[self.column].dropna().astype(str)
         data.loc[feature_data.index, self.column] = feature_data.str.upper()
         return data
 
 
-@transformation_function(row_level=False)
+@transformation_function(name="Transform to lowercase", row_level=False)
 class TextLowercase(TextTransformation):
-    name = "Transform to lowercase"
-
     def execute(self, data: pd.DataFrame) -> pd.DataFrame:
         feature_data = data[self.column].dropna().astype(str)
         data.loc[feature_data.index, self.column] = feature_data.str.lower()
         return data
 
 
-@transformation_function(row_level=False)
+@transformation_function(name="Transform to title case", row_level=False)
 class TextTitleCase(TextTransformation):
-    name = "Transform to title case"
-
     def execute(self, data: pd.DataFrame) -> pd.DataFrame:
         feature_data = data[self.column].dropna().astype(str)
         data.loc[feature_data.index, self.column] = feature_data.str.title()
         return data
 
 
-@transformation_function(row_level=False)
+@transformation_function(name="Add typos", row_level=False)
 class TextTypoTransformation(TextTransformation):
-    name = "Add typos"
-
     def __init__(self, column, rate=0.05, min_length=10, rng_seed=1729):
         super().__init__(column)
         from ..scanner.robustness.entity_swap import typos
@@ -118,10 +110,8 @@ class TextTypoTransformation(TextTransformation):
         return char
 
 
-@transformation_function(row_level=False)
+@transformation_function(name="Add typos from OCR", row_level=False)
 class TextFromOCRTypoTransformation(TextTransformation):
-    name = "Add typos from OCR"
-
     def __init__(self, column, rate=0.05, min_length=10, rng_seed=1729):
         super().__init__(column)
         from ..scanner.robustness.entity_swap import ocr_typos
@@ -166,10 +156,8 @@ class TextFromOCRTypoTransformation(TextTransformation):
         return char
 
 
-@transformation_function(row_level=False)
+@transformation_function(name="Punctuation Removal", row_level=False)
 class TextPunctuationRemovalTransformation(TextTransformation):
-    name = "Punctuation Removal"
-
     _punctuation = "¡!¿?⸘‽“”‘’‛‟.,‚„'\"′″´˝`…:;­–‑—§¶†‡/-‒‼︎⁇⁈⁉︎❛❜❝❞"
 
     def __init__(self, *args, **kwargs):
@@ -191,8 +179,6 @@ class TextPunctuationRemovalTransformation(TextTransformation):
 
 
 class TextLanguageBasedTransformation(TextTransformation):
-    needs_dataset = True
-
     def __init__(self, column, rng_seed=1729):
         super().__init__(column)
         self._lang_dictionary = dict()
@@ -222,10 +208,8 @@ class TextLanguageBasedTransformation(TextTransformation):
             return None
 
 
-@transformation_function(row_level=False, needs_dataset=True)
+@transformation_function(name="Switch Gender", row_level=False, needs_dataset=True)
 class TextGenderTransformation(TextLanguageBasedTransformation):
-    name = "Switch Gender"
-
     def _load_dictionaries(self):
         from ..scanner.robustness.entity_swap import gender_switch_en, gender_switch_fr
 
@@ -254,10 +238,8 @@ class TextGenderTransformation(TextLanguageBasedTransformation):
             return None
 
 
-@transformation_function(row_level=False, needs_dataset=True)
+@transformation_function(name="Switch Religion", row_level=False, needs_dataset=True)
 class TextReligionTransformation(TextLanguageBasedTransformation):
-    name = "Switch Religion"
-
     def _load_dictionaries(self):
         from ..scanner.robustness.entity_swap import religion_dict_en, religion_dict_fr
 
@@ -293,10 +275,10 @@ class TextReligionTransformation(TextLanguageBasedTransformation):
         return text
 
 
-@transformation_function(row_level=False, needs_dataset=True)
+@transformation_function(
+    name="Switch countries from high- to low-income and vice versa", row_level=False, needs_dataset=True
+)
 class TextNationalityTransformation(TextLanguageBasedTransformation):
-    name = "Switch countries from high- to low-income and vice versa"
-
     def _load_dictionaries(self):
         with Path(__file__).parent.joinpath("nationalities.json").open("r") as f:
             nationalities_dict = json.load(f)
@@ -335,10 +317,8 @@ class TextNationalityTransformation(TextLanguageBasedTransformation):
         return text
 
 
-@transformation_function(row_level=False, needs_dataset=True)
+@transformation_function(name="Add text from speech typos", row_level=False, needs_dataset=True)
 class TextFromSpeechTypoTransformation(TextLanguageBasedTransformation):
-    name = "Add text from speech typos"
-
     def __init__(self, column, rng_seed=1729, min_length=10):
         super().__init__(column, rng_seed=rng_seed)
 

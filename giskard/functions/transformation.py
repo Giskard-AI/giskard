@@ -2,7 +2,6 @@ import random
 import re
 import string
 
-import numpy as np
 import pandas as pd
 from scipy.stats import median_abs_deviation
 
@@ -69,22 +68,6 @@ def keyboard_typo_transformation(text: str, rate: float = 0.1) -> str:
 
     # Join the words back into a string
     return " ".join(words)
-
-
-@transformation_function(name="To uppercase", tags=["text"], cell_level=True)
-def uppercase_transformation(text: str) -> str:
-    """
-    Transform the text to uppercase
-    """
-    return np.nan if pd.isnull(text) else text.upper()
-
-
-@transformation_function(name="To lowercase", tags=["text"], cell_level=True)
-def lowercase_transformation(text: str) -> str:
-    """
-    Transform the text of the column 'column_name' to lowercase
-    """
-    return np.nan if pd.isnull(text) else text.lower()
 
 
 @transformation_function(name="Strip punctuation", tags=["text"], cell_level=True)
