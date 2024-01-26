@@ -38,7 +38,7 @@ def _evaluate(dataset, model, evaluator_config):
 @pytest.mark.parametrize(
     "dataset_name,model_name",
     [
-        # ("drug_classification_data", "drug_classification_model"),  # https://github.com/Giskard-AI/giskard/pull/1743
+        ("drug_classification_data", "drug_classification_model"),
         ("diabetes_dataset_with_target", "linear_regression_diabetes"),
         ("hotel_text_data", "hotel_text_model"),
     ],
