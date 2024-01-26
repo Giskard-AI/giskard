@@ -1,10 +1,9 @@
-from typing import Optional, Sequence
+from typing import Callable, Optional, Sequence
 
 import numpy as np
 import pandas as pd
 
 from ..core.errors import GiskardInstallationError
-from .embeddings import EmbeddingsBase
 
 
 class Document:
@@ -29,7 +28,7 @@ class VectorStore:
     Relies on `FlatIndexL2` class from FAISS.
     """
 
-    def __init__(self, documents: Sequence[Document], embeddings: np.array, embedding_model: EmbeddingsBase):
+    def __init__(self, documents: Sequence[Document], embeddings: np.array, embedding_fn: Callable):
         if len(embeddings) == 0 or len(documents) == 0:
             raise ValueError("Documents and embeddings must contains at least one element.")
         if len(embeddings) != len(documents):
@@ -42,22 +41,23 @@ class VectorStore:
 
         self.embeddings = embeddings
         self.documents = documents
-        self.embedding_model = embedding_model
+        self.embedding_fn = embedding_fn
 
         self.dimension = self.embeddings[0].shape[0]
         self.index = IndexFlatL2(self.dimension)
         self.index.add(self.embeddings)
 
     @classmethod
-    def from_df(cls, df: pd.DataFrame, embedding_model: EmbeddingsBase, features: Sequence[str] = None):
+    def from_df(cls, df: pd.DataFrame, embedding_fn: Callable, features: Sequence[str] = None):
         if len(df) > 0:
             documents = [Document(knowledge_chunk, features=features) for knowledge_chunk in df.to_dict("records")]
-            embeddings = embedding_model.embed_documents(documents).astype("float32")
-            return cls(documents, embeddings, embedding_model)
+            raw_texts = [d.page_content for d in documents]
+            embeddings = embedding_fn(raw_texts).astype("float32")
+            return cls(documents, embeddings, embedding_fn)
         else:
             raise ValueError("Cannot generate a vector store from empty DataFrame.")
 
-    def similarity_search_with_score(self, query: str, k: int) -> Sequence:
-        query_emb = self.embedding_model.embed_text(query).astype("float32")
-        distances, indices = self.index.search(query_emb[None, :], k)
+    def similarity_search_with_score(self, query: Sequence[str], k: int) -> Sequence:
+        query_emb = self.embedding_fn(query).astype("float32")
+        distances, indices = self.index.search(query_emb, k)
         return [(self.documents[i], d) for d, i in zip(distances[0], indices[0])]

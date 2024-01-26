@@ -2,7 +2,7 @@ from .. import Dataset, Suite
 from ..testing.tests.llm import test_llm_correctness
 
 
-class TestSet(Dataset):
+class QATestset(Dataset):
     """A wrapper class around `Dataset` to allow automatic creation
     of a `Suite` based on the question/answer pairs inside the `TestSet`.
     """
