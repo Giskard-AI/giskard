@@ -9,9 +9,6 @@ from pathlib import Path
 from urllib.parse import urljoin
 from uuid import UUID
 
-from mlflow.store.artifact.artifact_repo import verify_artifact_path
-from mlflow.utils.file_utils import relative_path_to_artifact_path
-from mlflow.utils.rest_utils import augmented_raise_for_status
 from requests import Response
 from requests.adapters import HTTPAdapter
 from requests.auth import AuthBase
@@ -306,6 +303,8 @@ class GiskardClient:
         print(f"Model successfully uploaded to project key '{project_key}' with ID = {model_id}")
 
     def log_artifacts(self, local_dir, artifact_path=None):
+        from mlflow.utils.file_utils import relative_path_to_artifact_path
+
         local_dir = os.path.abspath(local_dir)
         for root, _, filenames in os.walk(local_dir):
             if root == local_dir:
@@ -321,6 +320,7 @@ class GiskardClient:
         if local_file.exists():
             logger.info(f"Artifact {artifact_path} already exists, skipping download")
             return
+        from mlflow.utils.rest_utils import augmented_raise_for_status
 
         files = self._session.get("artifact-info/" + artifact_path)
         augmented_raise_for_status(files)
@@ -340,6 +340,9 @@ class GiskardClient:
                     out.write(chunk)
 
     def log_artifact(self, local_file, artifact_path=None):
+        from mlflow.store.artifact.artifact_repo import verify_artifact_path
+        from mlflow.utils.rest_utils import augmented_raise_for_status
+
         verify_artifact_path(artifact_path)
 
         file_name = os.path.basename(local_file)
