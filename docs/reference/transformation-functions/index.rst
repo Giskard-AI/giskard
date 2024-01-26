@@ -14,10 +14,16 @@ Transformation functions
 Textual transformation functions
 --------------------------------
 
-.. autofunction:: giskard.functions.transformation.keyboard_typo_transformation
-.. autofunction:: giskard.functions.transformation.uppercase_transformation
-.. autofunction:: giskard.functions.transformation.lowercase_transformation
-.. autofunction:: giskard.functions.transformation.strip_punctuation
+.. autofunction:: giskard.functions.text_transformations.TextUppercase
+.. autofunction:: giskard.functions.text_transformations.TextLowercase
+.. autofunction:: giskard.functions.text_transformations.TextTitleCase
+.. autofunction:: giskard.functions.text_transformations.TextTypoTransformation
+.. autofunction:: giskard.functions.text_transformations.TextFromOCRTypoTransformation
+.. autofunction:: giskard.functions.text_transformations.TextPunctuationRemovalTransformation
+.. autofunction:: giskard.functions.text_transformations.TextGenderTransformation
+.. autofunction:: giskard.functions.text_transformations.TextReligionTransformation
+.. autofunction:: giskard.functions.text_transformations.TextNationalityTransformation
+.. autofunction:: giskard.functions.text_transformations.TextFromSpeechTypoTransformation
 .. autofunction:: giskard.functions.transformation.change_writing_style
 
 
