@@ -1,9 +1,9 @@
 name: Do Github release
 
-on:
-  push:
-    tags:
-      - "v*.*.*"
+on: {}
+  # push:
+  #   tags:
+  #     - "v*.*.*"
 permissions:
   contents: write
 
