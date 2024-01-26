@@ -78,6 +78,7 @@ class KnowledgeBaseTestsetGenerator(BaseDataGenerator):
         knowledge_base_features: Sequence[str] = None,
         seed: int = None,
         include_examples: bool = True,
+        embedding_model: str = "text-embedding-ada-002",
         *args,
         **kwargs,
     ):
@@ -86,14 +87,16 @@ class KnowledgeBaseTestsetGenerator(BaseDataGenerator):
         self.model_description = model_description
         self.context_neighbors = context_neighbors
         self.context_similarity_threshold = context_similarity_threshold
-
+        self.embedding_model = embedding_model
         self.context_window_length = context_window_length
         self.language = language
         self.rng = np.random.default_rng(seed=seed)
         self.include_examples = include_examples
 
         self.knowledge_base = VectorStore.from_df(
-            knowledge_df, self.llm_client.embeddings, features=knowledge_base_features
+            knowledge_df,
+            lambda query: self.llm_client.embeddings(query, model=self.embedding_model),
+            features=knowledge_base_features,
         )
 
     def _generate_question_answer_from_context(self, context):
@@ -179,14 +182,14 @@ class KnowledgeBaseTestsetGenerator(BaseDataGenerator):
 
         Returns
         -------
-        TestSet
+        QATestset
             The generated test set.
+            Each generated question has the following field:
+                - *question*: a question about a part of the knowledge base
+                - *reference_answer*: the expected answer according to the knowledge base
+                - *reference_context*: relevant elements directly extracted from the knowledge base
+                - *difficulty_level*: an indicator of how difficult the question is
 
-        Each generated question has the following field:
-        - question: a question about a part of the knowledge base
-        - reference_answer: the expected answer according to the knowledge base
-        - reference_context: relevant elements directly extracted from the knowledge base
-        - difficulty_level: an indicator of how difficult the question is
         """
         generated_questions = []
         for idx in range(num_samples):

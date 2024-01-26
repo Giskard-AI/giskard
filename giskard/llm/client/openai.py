@@ -73,14 +73,13 @@ class BaseOpenAIClient(LLMClient, ABC):
 
         return LLMOutput(message=cc["content"], function_call=function_call)
 
+    @abstractmethod
+    def _embeddings_generation(self, texts: Sequence[str], model: str):
+        ...
+
     def embeddings(self, texts: Sequence[str], model: str = "text-embedding-ada-002") -> np.ndarray:
         texts = [t.replace("\n", " ") for t in texts]
-        try:
-            out = self._client.embeddings.create(input=texts, model=model)
-            embeddings = [element.embedding for element in out.data]
-        except Exception as err:
-            print(err)
-            raise ValueError("Batched embedding creation failed.") from err
+        embeddings = self._embeddings_generation(texts, model)
         return np.stack(embeddings)
 
 
@@ -131,6 +130,20 @@ class LegacyOpenAIClient(BaseOpenAIClient):
 
         return completion["choices"][0]["message"]
 
+    def _embeddings_generation(self, texts: Sequence[str], model: str):
+        try:
+            out = openai.Embedding.create(input=texts, engine=model)
+            embeddings = [element["embedding"] for element in out["data"]]
+
+        except openai.error.InvalidRequestError as err:
+            raise ValueError(
+                f"The embedding model: '{model}' was not found,"
+                "make sure the model is correctly deployed on your endpoint."
+            ) from err
+        except Exception as err:
+            raise ValueError("Embedding creation failed.") from err
+        return embeddings
+
 
 class OpenAIClient(BaseOpenAIClient):
     def __init__(self, model: str, client=None):
@@ -173,3 +186,18 @@ class OpenAIClient(BaseOpenAIClient):
         )
 
         return completion.choices[0].message.model_dump()
+
+    def _embeddings_generation(self, texts: Sequence[str], model: str):
+        try:
+            out = self._client.embeddings.create(input=texts, model=model)
+            embeddings = [element.embedding for element in out.data]
+        except openai.NotFoundError as err:
+            raise ValueError(
+                f"The embedding model: '{model}' was not found,"
+                "make sure the model is correctly deployed on "
+                f"the specified endpoint: {self._client._base_url}."
+            ) from err
+        except Exception as err:
+            raise ValueError("Embedding creation failed.") from err
+
+        return embeddings
