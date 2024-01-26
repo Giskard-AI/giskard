@@ -48,9 +48,9 @@ class AdversarialDataGenerator(BaseDataGenerator):
     def _make_generate_input_prompt(self, model: BaseModel, num_inputs: int):
         input_prompt = self.prompt.format(
             issue_description=self.issue_description,
-            model_name=model.meta.name,
-            model_description=model.meta.description,
-            feature_names=", ".join(model.meta.feature_names),
+            model_name=model.name,
+            model_description=model.description,
+            feature_names=", ".join(model.feature_names),
             num_samples=num_inputs,
             requirement=self.requirement,
         )

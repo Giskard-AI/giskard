@@ -49,8 +49,8 @@ class BaseRequirementEvaluator(LLMBasedEvaluator):
 
     def _make_evaluate_prompt(self, model: BaseModel, input_vars, model_output, row_idx):
         return self.eval_prompt.format(
-            model_name=model.meta.name,
-            model_description=model.meta.description,
+            model_name=model.name,
+            model_description=model.description,
             input_vars=input_vars,
             model_output=model_output,
             requirements=self.requirements(row_idx),
@@ -71,9 +71,10 @@ class RequirementEvaluator(BaseRequirementEvaluator):
 class PerRowRequirementEvaluator(BaseRequirementEvaluator):
     """Evaluator for requirements evaluated individually for each row in a dataset."""
 
-    def __init__(self, requirements_df: pd.DataFrame, *args, **kwargs):
+    def __init__(self, requirements_df: pd.DataFrame, prefix: str = "", *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.requirements_df = requirements_df
+        self.prefix = prefix
 
     def requirements(self, row_idx):
-        return "\n".join([f"- {r}" for r in self.requirements_df.iloc[row_idx]])
+        return "\n".join([f"- {self.prefix}{r}" for r in self.requirements_df.iloc[row_idx]])

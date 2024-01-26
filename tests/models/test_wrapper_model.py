@@ -54,7 +54,7 @@ def test_wrapper_model_saves_and_loads_batch_size():
     )
     with tempfile.TemporaryDirectory() as tmpdir:
         model.batch_size = 127
-        model.save(tmpdir)
+        model.save(tmpdir, should_register_by_reference=True)
         loaded_model = Model.load(tmpdir)
 
         assert loaded_model.batch_size == 127

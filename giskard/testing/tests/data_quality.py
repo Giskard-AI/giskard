@@ -1,7 +1,7 @@
 """
 Module for data quality tests.
 """
-from typing import Iterable
+from typing import Iterable, List, Optional
 
 from collections import Counter, defaultdict
 
@@ -16,17 +16,22 @@ from giskard.registry.decorators import test
 
 
 @test(name="Data uniqueness test", tags=["data"])
-def test_data_uniqueness(dataset: Dataset, column: str, threshold: float = 0.8):
-    """
-    Test for checking the uniqueness of data in a column.
+def test_data_uniqueness(dataset: Dataset, column: str, threshold: float = 0.8) -> TestResult:
+    """Test for checking the uniqueness of data in a column.
 
-    Args:
-        dataset (Dataset): The dataset to test.
-        column (str): The column to check for uniqueness.
-        threshold (float): The minimum uniqueness ratio for the test to pass.
+    Parameters
+    ----------
+    dataset : Dataset
+        The dataset to test.
+    column : str
+        The column to check for uniqueness.
+    threshold : float, optional
+        The minimum uniqueness ratio for the test to pass., by default 0.8
 
-    Returns:
-        TestResult: The result of the test.
+    Returns
+    -------
+    TestResult
+        The result of the test.
     """
     column_data = dataset.df[column]
     uniqueness_ratio = len(column_data.unique()) / len(column_data)
@@ -35,18 +40,22 @@ def test_data_uniqueness(dataset: Dataset, column: str, threshold: float = 0.8):
 
 
 @test(name="Data completeness test", tags=["data"])
-def test_data_completeness(dataset: Dataset, column_name: str, threshold: float):
-    """
-    Test for checking the completeness of data in a dataset.
+def test_data_completeness(dataset: Dataset, column_name: str, threshold: float) -> TestResult:
+    """Test for checking the completeness of data in a dataset.
 
-    Args:
-        dataset (Dataset): The dataset to test.
-        column_name (str): The name of the column to test.
-        threshold (float): The minimum completeness ratio for the test to pass.
+    Parameters
+    ----------
+    dataset : Dataset
+        The dataset to test.
+    column_name : str
+        The name of the column to test.
+    threshold : float
+        The minimum completeness ratio for the test to pass.
 
-    Returns:
-        TestResult: A TestResult object indicating whether the
-        test passed and the completeness ratio.
+    Returns
+    -------
+    TestResult
+        A TestResult object indicating whether the test passed and the completeness ratio.
     """
     output_ds = dataset.slice(lambda df: df[df[column_name].isnull()], row_level=False)
     completeness_ratio = 1 - len(output_ds.df) / len(dataset.df)
@@ -58,18 +67,24 @@ def test_data_completeness(dataset: Dataset, column_name: str, threshold: float)
 
 
 @test(name="Data validation (valid range)", tags=["data"])
-def test_valid_range(dataset: Dataset, column: str, min_value=None, max_value=None):
-    """
-    Test for checking if data in a column falls within a specified range.
+def test_valid_range(dataset: Dataset, column: str, min_value: float = None, max_value: float = None) -> TestResult:
+    """Test for checking if data in a column falls within a specified range.
 
-    Args:
-        dataset (Dataset): The dataset to test.
-        column (str): The column to check.
-        min_value (float, optional): The minimum valid value. Defaults to None.
-        max_value (float, optional): The maximum valid value. Defaults to None.
+    Parameters
+    ----------
+    dataset : Dataset
+        The dataset to test
+    column : str
+        The column to check
+    min_value : float, optional
+        The minimum valid value, by default None
+    max_value : float, optional
+        The maximum valid value, by default None
 
-    Returns:
-        TestResult: The result of the test.
+    Returns
+    -------
+    TestResult
+        The result of the test
     """
     if min_value is not None and max_value is not None:
         output_ds = dataset.slice(lambda df: df[(min_value > df[column]) | (df[column] > max_value)], row_level=False)
@@ -88,17 +103,22 @@ def test_valid_range(dataset: Dataset, column: str, min_value=None, max_value=No
 
 
 @test(name="Data validation (valid values)", tags=["data"])
-def test_valid_values(dataset: Dataset, column: str, valid_values=None):
-    """
-    Test for checking if data in a column is in a set of valid values.
+def test_valid_values(dataset: Dataset, column: str, valid_values: Optional[List] = None) -> TestResult:
+    """Test for checking if data in a column is in a set of valid values.
 
-    Args:
-        dataset (Dataset): The dataset to test.
-        column (str): The column to check.
-        valid_values (list, optional): A list of valid values. Defaults to None.
+    Parameters
+    ----------
+    dataset : Dataset
+        The dataset to test
+    column : str
+        The column to check
+    valid_values : Optional[List], optional
+        A list of valid values, by default None
 
-    Returns:
-        TestResult: The result of the test.
+    Returns
+    -------
+    TestResult
+        The result of the test
     """
     if valid_values is None:
         raise ValueError("valid_values must be provided")
@@ -118,21 +138,26 @@ def test_data_correlation(
     column2: str = None,
     should_correlate: bool = True,
     correlation_threshold: float = 0.0,
-):
-    """
-    Test for analyzing correlations between two specific features.
+) -> TestResult:
+    """Test for analyzing correlations between two specific features.
 
-    Args:
-        dataset (Dataset): The dataset to test.
-        column1 (str, optional): The first column to check. Defaults to None.
-        column2 (str, optional): The second column to check. Defaults to None.
-        should_correlate (bool, optional): Whether
-        the two columns should correlate. Defaults to True.
-        correlation_threshold (float, optional): The minimum absolute
-        correlation that is considered significant. Defaults to 0.
+    Parameters
+    ----------
+    dataset : Dataset
+        The dataset to test
+    column1 : str, optional
+        The first column to check, by default None
+    column2 : str, optional
+        The second column to check, by default None
+    should_correlate : bool, optional
+        Whether the two columns should correlate, by default True
+    correlation_threshold : float, optional
+        The minimum absolute correlation that is considered significant, by default 0.0
 
-    Returns:
-        TestResult: The result of the test, containing the correlation between the two columns.
+    Returns
+    -------
+    TestResult
+        The result of the test, containing the correlation between the two columns
     """
     # Calculate the correlation between the two columns
     correlation = dataset.df[column1].corr(dataset.df[column2])
@@ -147,20 +172,24 @@ def test_data_correlation(
 
 
 @test(name="Outlier value test", tags=["data"])
-def test_outlier_value(dataset: Dataset, column: str, eps: float = 0.5, min_samples: int = 5):
-    """
-    Test for identifying outliers or anomalies in a column of the dataset using DBSCAN.
+def test_outlier_value(dataset: Dataset, column: str, eps: float = 0.5, min_samples: int = 5) -> TestResult:
+    """Test for identifying outliers or anomalies in a column of the dataset using DBSCAN.
 
-    Args:
-        dataset (Dataset): The dataset to test.
-        column (str): The column to check for anomalies.
-        eps (float): The maximum distance between two
-        samples for one to be considered as in the neighborhood of the other.
-        min_samples (int): The number of samples in a neighborhood
-        for a point to be considered as a core point.
+    Parameters
+    ----------
+    dataset : Dataset
+        The dataset to test
+    column : str
+        The column to check for anomalies
+    eps : float, optional
+        The maximum distance between two samples for one to be considered as in the neighborhood of the other, by default 0.5
+    min_samples : int, optional
+        The number of samples in a neighborhood for a point to be considered as a core point, by default 5
 
-    Returns:
-        TestResult: The result of the test, containing the indices of the anomalies.
+    Returns
+    -------
+    TestResult
+        The result of the test, containing the indices of the anomalies
     """
     column_data = dataset.df[column].values.reshape(-1, 1)
     model = DBSCAN(eps=eps, min_samples=min_samples)
@@ -174,22 +203,27 @@ def test_outlier_value(dataset: Dataset, column: str, eps: float = 0.5, min_samp
 @test(name="Foreign constraint test", tags=["data"])
 def test_foreign_constraint(
     dataset: Dataset, column: str, target_dataset: Dataset, target_column: str, threshold: float = 0.0
-):
+) -> TestResult:
+    """Ensure that all data in a column of one dataset are present in a column of another dataset.
+
+    Parameters
+    ----------
+    dataset : Dataset
+        The dataset to check
+    column : str
+        The column in the dataset to check
+    target_dataset : Dataset
+        The dataset to compare against
+    target_column : str
+        The column in the target dataset to compare against
+    threshold : float, optional
+        The maximum allowed ratio of missing values, by default 0.0
+
+    Returns
+    -------
+    TestResult
+        The result of the test, indicating whether the test passed and the ratio of missing values
     """
-    Ensure that all data in a column of one dataset are present in a column of another dataset.
-
-    Args:
-        dataset (Dataset): The dataset to check.
-        column (str): The column in the dataset to check.
-        target_dataset (Dataset): The dataset to compare against.
-        target_column (str): The column in the target dataset to compare against.
-        threshold (float, optional): The maximum allowed ratio of missing values. Defaults to 0.0.
-
-    Returns:
-        TestResult: The result of the test, indicating whether
-        the test passed and the ratio of missing values.
-    """
-
     output_ds = dataset.slice(
         lambda df: df[~dataset.df[column].isin(target_dataset.df[target_column].unique())], row_level=False
     )
@@ -202,16 +236,20 @@ def test_foreign_constraint(
 
 
 @test(name="Label consistency test", tags=["data"])
-def test_label_consistency(dataset: Dataset, label_column: str):
-    """
-    Test for checking the consistency of datatype across each label throughout dataset.
+def test_label_consistency(dataset: Dataset, label_column: str) -> TestResult:
+    """Test for checking the consistency of datatype across each label throughout dataset.
 
-    Args:
-        dataset (Dataset): The dataset to test.
-        label_column (str): The column containing the labels.
+    Parameters
+    ----------
+    dataset : Dataset
+        The dataset to test
+    label_column : str
+        The column containing the labels
 
-    Returns:
-        TestResult: The result of the test.
+    Returns
+    -------
+    TestResult
+        The result of the test
     """
     # Group the dataset by the label column
     groups = defaultdict(list)
@@ -233,17 +271,22 @@ def test_label_consistency(dataset: Dataset, label_column: str):
 
 
 @test(name="Mislabeling test", tags=["data"])
-def test_mislabeling(dataset: Dataset, labelled_column: str, reference_columns: Iterable[str]):
-    """
-    Test for detecting mislabelled data.
+def test_mislabeling(dataset: Dataset, labelled_column: str, reference_columns: Iterable[str]) -> TestResult:
+    """Test for detecting mislabelled data
 
-    Args:
-        dataset (giskard.Dataset): The dataset to test.
-        labelled_column (str): The column containing the labels.
-        reference_columns (Iterable[str]): The columns containing the data to check for consistency.
+    Parameters
+    ----------
+    dataset : Dataset
+        The dataset to test
+    labelled_column : str
+        The column containing the labels
+    reference_columns : Iterable[str]
+        The columns containing the data to check for consistency
 
-    Returns:
-        TestResult: The result of the test, containing the indices of the mislabelled data.
+    Returns
+    -------
+    TestResult
+        The result of the test, containing the indices of the mislabelled data
     """
     # Copy the dataset to avoid changing the original data
     dataset_copy = dataset.df.copy()
@@ -282,19 +325,24 @@ def test_mislabeling(dataset: Dataset, labelled_column: str, reference_columns: 
 @test(name="Feature importance test", tags=["data"])
 def test_feature_importance(
     dataset: Dataset, feature_columns: Iterable[str], target_column: str, importance_threshold: float = 0
-):
-    """
-    Test for analyzing the importance of features in a classification problem.
+) -> TestResult:
+    """Test for analyzing the importance of features in a classification problem
 
-    Args:
-        dataset (Dataset): The dataset to test.
-        feature_columns (List[str]): The columns containing the features.
-        target_column (str): The column containing the target variable.
-        importance_threshold (float, optional): The minimum importance
-        that is considered significant. Defaults to 0.
+    Parameters
+    ----------
+    dataset : Dataset
+        The dataset to test
+    feature_columns : Iterable[str]
+        The columns containing the features
+    target_column : str
+        The column containing the target variable
+    importance_threshold : float, optional
+        The minimum importance that is considered significant, by default 0
 
-    Returns:
-        TestResult: The result of the test, containing the feature importances.
+    Returns
+    -------
+    TestResult
+        The result of the test, containing the feature importances
     """
     features = list(feature_columns)
     x = dataset.df[features]
@@ -314,18 +362,26 @@ def test_feature_importance(
 
 
 @test(name="Class imbalance test", tags=["data"])
-def test_class_imbalance(dataset: Dataset, target_column: str, lower_threshold: float, upper_threshold: float):
-    """
-    Test for assessing the distribution of classes in classification problems.
+def test_class_imbalance(
+    dataset: Dataset, target_column: str, lower_threshold: float, upper_threshold: float
+) -> TestResult:
+    """Test for assessing the distribution of classes in classification problems.
 
-    Args:
-        dataset (giskard.Dataset): The dataset to test.
-        target_column (str): The column containing the target variable.
-        lower_threshold (float): The minimum allowed class proportion.
-        upper_threshold (float): The maximum allowed class proportion.
+    Parameters
+    ----------
+    dataset : Dataset
+        The dataset to test
+    target_column : str
+        The column containing the target variable
+    lower_threshold : float
+        The minimum allowed class proportion
+    upper_threshold : float
+        The maximum allowed class proportion
 
-    Returns:
-        TestResult: The result of the test, containing the class proportions.
+    Returns
+    -------
+    TestResult
+        The result of the test, containing the class proportions
     """
     # Convert classes to strings and calculate the class proportions
     class_counts = Counter(dataset.df[target_column].astype(str))

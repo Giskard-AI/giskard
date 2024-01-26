@@ -10,6 +10,7 @@ wandb/index
 dagshub/index
 huggingface/index
 avid/index
+pytest/index
 ```
 
 ::::{grid} 1 1 2 2
@@ -43,4 +44,9 @@ avid/index
 :::{grid-item-card} <br/><h3>📒 AVID</h3>
 :text-align: center
 :link: avid/index.html
+:::
+
+:::{grid-item-card} <br/><h3>🧪 Pytest</h3>
+:text-align: center
+:link: pytest/index.html
 :::

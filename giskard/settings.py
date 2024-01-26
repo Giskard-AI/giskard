@@ -34,6 +34,7 @@ class Settings(BaseModel):
     loglevel: str = "INFO"
     cache_dir: str = "cache"
     disable_analytics: bool = False
+    force_asyncio_event_loop: bool = False
     min_workers: int = 2
     use_pool: bool = True  # For testing/debugging only, do not disable
 

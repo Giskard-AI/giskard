@@ -124,7 +124,7 @@ class SlicingFunction(RegistryArtifact[DatasetProcessFunctionMeta]):
 
     @classmethod
     def _load_no_code(cls, meta: DatasetProcessFunctionMeta):
-        from ....slicing.slice import Query, QueryBasedSliceFunction
+        from ..slicing.slice import Query, QueryBasedSliceFunction
 
         return QueryBasedSliceFunction(Query.from_clauses(meta.clauses))
 

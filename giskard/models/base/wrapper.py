@@ -7,7 +7,6 @@ from inspect import isfunction, signature
 from pathlib import Path
 
 import cloudpickle
-import mlflow
 import numpy as np
 import pandas as pd
 import yaml
@@ -176,10 +175,10 @@ class WrapperModel(BaseModel, ABC):
             raw_predictions = np.append(1 - raw_predictions, raw_predictions, axis=1)
 
         # For classification models, the last dimension must be equal to the number of classes
-        if raw_predictions.shape[-1] != len(self.meta.classification_labels):
+        if raw_predictions.shape[-1] != len(self.classification_labels):
             raise ValueError(
                 f"The output of your model has shape {raw_predictions.shape}, but we expect it to be (n_entries, n_classes), \n"
-                f"where `n_classes` is the number of classes in your model output ({len(self.meta.classification_labels)} in this case)."
+                f"where `n_classes` is the number of classes in your model output ({len(self.classification_labels)} in this case)."
             )
 
         return raw_predictions
@@ -326,6 +325,8 @@ class WrapperModel(BaseModel, ABC):
             return {"batch_size": None}
 
     def to_mlflow(self, artifact_path: str = "prediction-function-from-giskard", *_args, **_kwargs):
+        import mlflow
+
         def _giskard_predict(df):
             return self.predict(df)
 

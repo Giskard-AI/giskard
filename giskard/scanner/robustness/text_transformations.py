@@ -1,6 +1,7 @@
 import itertools
 import json
 import re
+import unicodedata
 from pathlib import Path
 
 import numpy as np
@@ -123,6 +124,53 @@ class TextTypoTransformation(TextTransformation):
         return char
 
 
+class TextFromOCRTypoTransformation(TextTransformation):
+    name = "Add typos from OCR"
+
+    def __init__(self, column, rate=0.05, min_length=10, rng_seed=1729):
+        super().__init__(column)
+        from .entity_swap import ocr_typos
+
+        self.rate = rate
+        self.min_length = min_length
+        self._ocr_typos = ocr_typos
+        self.rng = np.random.default_rng(seed=rng_seed)
+
+    def make_perturbation(self, x):
+        # Check if the input is None
+        if x is None:
+            return None
+        # Skip if the text is too short
+        if len(x) < self.min_length:
+            return x
+
+        # OCR typos consist only of replacements and deletions
+        category_prob = [0.8, 0.2]  # Probability [replacement, deletion]
+
+        # How many typos to introduce
+        num_typos = self.rng.poisson(self.rate * len(re.sub(r"\s+", "", x)))
+
+        # Are they replacement or deletion?
+        pos_cat = self.rng.choice(2, size=num_typos, p=category_prob, replace=True)
+
+        for cat in pos_cat:
+            # Get a random position avoiding spaces for deletion
+            i = self.rng.integers(0, len(x))
+            if cat == 0:  # Replacement
+                if x[i].lower() in self._ocr_typos:
+                    x = x[:i] + self._random_ocr_typo(x[i]) + x[i + 1 :]
+            elif cat == 1:  # Deletion
+                if not x[i].isspace():  # Don’t delete spaces
+                    x = x[:i] + x[i + 1 :]
+        return x
+
+    def _random_ocr_typo(self, char):
+        if char.lower() in self._ocr_typos:
+            typo = self.rng.choice(self._ocr_typos[char.lower()])
+            return typo if char.islower() else typo.upper()
+        return char
+
+
 class TextPunctuationRemovalTransformation(TextTransformation):
     name = "Punctuation Removal"
 
@@ -144,6 +192,22 @@ class TextPunctuationRemovalTransformation(TextTransformation):
             pieces[i] = self._regex.sub(" ", pieces[i]).translate(self._trans_table)
 
         return "".join(pieces)
+
+
+class TextAccentRemovalTransformation(TextTransformation):
+    name = "Accent Removal"
+
+    def __init__(self, column, rate=1.0, rng_seed=1729):
+        super().__init__(column)
+        self.rate = rate
+        self.rng = np.random.default_rng(seed=rng_seed)
+
+    def make_perturbation(self, text):
+        return "".join(
+            char
+            for char in unicodedata.normalize("NFD", text)
+            if unicodedata.category(char) != "Mn" or self.rng.random() > self.rate
+        )
 
 
 class TextLanguageBasedTransformation(TextTransformation):

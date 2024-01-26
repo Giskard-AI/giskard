@@ -14,10 +14,15 @@ def configure_logging():
     logging.getLogger("shap").setLevel(logging.WARNING)
     logging.getLogger("pyngrok").setLevel(logging.ERROR)
     logging.getLogger("giskard").setLevel(logging.WARNING)
+    configure_basic_logging(stdout_handler)
+
+
+def configure_basic_logging(handler, force=False):
     logging.basicConfig(
         level=settings.loglevel,
         format="%(asctime)s pid:%(process)d %(threadName)s %(name)-12s %(levelname)-8s %(message)s",
-        handlers=[stdout_handler],
+        handlers=[handler],
+        force=force,
     )
 
 
