@@ -25,6 +25,7 @@ class TextPerturbationDetector(BaseTextPerturbationDetector):
 
     def _get_default_transformations(self, model: BaseModel, dataset: Dataset) -> Sequence[TextTransformation]:
         from .text_transformations import (
+            TextAccentRemovalTransformation,
             TextLowercase,
             TextPunctuationRemovalTransformation,
             TextTitleCase,
@@ -38,4 +39,5 @@ class TextPerturbationDetector(BaseTextPerturbationDetector):
             TextTitleCase,
             TextTypoTransformation,
             TextPunctuationRemovalTransformation,
+            TextAccentRemovalTransformation,
         ]
