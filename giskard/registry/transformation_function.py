@@ -39,10 +39,13 @@ class TransformationFunction(RegistryArtifact[DatasetProcessFunctionMeta]):
     def _get_name(cls) -> str:
         return "transformations"
 
-    def __init__(self, func: Optional[TransformationFunctionType], row_level=True, cell_level=False):
+    def __init__(
+        self, func: Optional[TransformationFunctionType], row_level=True, cell_level=False, needs_dataset=False
+    ):
         self.func = func
         self.row_level = row_level
         self.cell_level = cell_level
+        self.needs_dataset = needs_dataset
 
         test_uuid = get_object_uuid(func)
         meta = tests_registry.get_test(test_uuid)
@@ -108,6 +111,7 @@ def transformation_function(
     _fn: Union[TransformationFunctionType, Type[TransformationFunction]] = None,
     row_level=True,
     cell_level=False,
+    needs_dataset=False,
     name=None,
     tags: Optional[List[str]] = None,
 ):
@@ -141,7 +145,7 @@ def transformation_function(
 
         if inspect.isclass(func) and issubclass(func, TransformationFunction):
             return func
-        return _wrap_transformation_function(func, row_level, cell_level)()
+        return _wrap_transformation_function(func, row_level, cell_level, needs_dataset)()
 
     if callable(_fn):
         return functools.wraps(_fn)(inner(_fn))
@@ -149,9 +153,11 @@ def transformation_function(
         return inner
 
 
-def _wrap_transformation_function(original: Callable, row_level: bool, cell_level: bool):
+def _wrap_transformation_function(original: Callable, row_level: bool, cell_level: bool, needs_dataset: bool):
     if inspect.isclass(original):
-        transformation_fn = functools.wraps(original.__init__)(TransformationFunction(original, row_level, cell_level))
+        transformation_fn = functools.wraps(original.__init__)(
+            TransformationFunction(original, row_level, cell_level, needs_dataset)
+        )
     else:
         transformation_fn = functools.wraps(original)(TransformationFunction(original, row_level, cell_level))
 

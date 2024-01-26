@@ -222,7 +222,7 @@ class TextLanguageBasedTransformation(TextTransformation):
             return None
 
 
-@transformation_function(row_level=False)
+@transformation_function(row_level=False, needs_dataset=True)
 class TextGenderTransformation(TextLanguageBasedTransformation):
     name = "Switch Gender"
 
@@ -254,7 +254,7 @@ class TextGenderTransformation(TextLanguageBasedTransformation):
             return None
 
 
-@transformation_function(row_level=False)
+@transformation_function(row_level=False, needs_dataset=True)
 class TextReligionTransformation(TextLanguageBasedTransformation):
     name = "Switch Religion"
 
@@ -293,7 +293,7 @@ class TextReligionTransformation(TextLanguageBasedTransformation):
         return text
 
 
-@transformation_function(row_level=False)
+@transformation_function(row_level=False, needs_dataset=True)
 class TextNationalityTransformation(TextLanguageBasedTransformation):
     name = "Switch countries from high- to low-income and vice versa"
 
@@ -335,7 +335,7 @@ class TextNationalityTransformation(TextLanguageBasedTransformation):
         return text
 
 
-@transformation_function(row_level=False)
+@transformation_function(row_level=False, needs_dataset=True)
 class TextFromSpeechTypoTransformation(TextLanguageBasedTransformation):
     name = "Add text from speech typos"
 
