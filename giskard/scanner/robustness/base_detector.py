@@ -63,7 +63,7 @@ class BaseTextPerturbationDetector(Detector):
         ]
 
         logger.info(
-            f"{self.__class__.__name__}: Running with transformations={[t.name for t in transformations]} "
+            f"{self.__class__.__name__}: Running with transformations={[t.meta.display_name for t in transformations]} "
             f"threshold={self.threshold} output_sensitivity={self.output_sensitivity} num_samples={self.num_samples}"
         )
 
@@ -149,7 +149,7 @@ class BaseTextPerturbationDetector(Detector):
             pass_rate = passed.mean()
             fail_rate = 1 - pass_rate
             logger.info(
-                f"{self.__class__.__name__}: Testing `{feature}` for perturbation `{transformation.name}`\tFail rate: {fail_rate:.3f}"
+                f"{self.__class__.__name__}: Testing `{feature}` for perturbation `{transformation.meta.display_name}`\tFail rate: {fail_rate:.3f}"
             )
 
             if fail_rate >= threshold:
@@ -196,7 +196,7 @@ class BaseTextPerturbationDetector(Detector):
 
                 # Add examples
                 examples = original_data.df.loc[~passed, (feature,)].copy()
-                examples[f"{transformation_fn.name}({feature})"] = perturbed_data.df.loc[~passed, feature]
+                examples[f"{transformation_fn.meta.display_name}({feature})"] = perturbed_data.df.loc[~passed, feature]
 
                 examples["Original prediction"] = original_pred.prediction[~passed]
                 examples["Prediction after perturbation"] = perturbed_pred.prediction[~passed]
@@ -221,7 +221,7 @@ def _generate_robustness_tests(issue: Issue):
 
     # Only generates a single metamorphic test
     return {
-        f"Invariance to “{issue.transformation_fn}”": test_metamorphic_invariance(
+        f"Invariance to “{issue.transformation_fn.meta.display_name}”": test_metamorphic_invariance(
             transformation_function=issue.transformation_fn,
             slicing_function=None,
             threshold=1 - issue.meta["threshold"],
