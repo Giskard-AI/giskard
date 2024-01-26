@@ -42,6 +42,7 @@ os.environ["OPENAI_API_KEY"] = "sk-…"
 ::::::{tab-item} Azure OpenAI
 
 Require `openai>=1.0.0`
+Make sure that both the LLM and Embeddings models are both deployed on the Azure endpoint. The default embedding model used by the Giskard client is `text-embedding-ada-002`. 
 
 ```python
 import os
