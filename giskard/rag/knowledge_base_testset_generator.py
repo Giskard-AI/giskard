@@ -44,8 +44,8 @@ class KnowledgeBaseTestsetGenerator(BaseDataGenerator):
         a similarity threshold to filter irrelevant element from the knowledge base during context creation
     context_window_length: int = 8192
         context window length of the llm used in the `llm_client` of the generator
-    embedding_model: EmbeddingsBase = None
-        an embedding model to build the knowledge base index
+    embedding_fn: Callable = None
+        an embedding function to build the knowledge base index
     language: str = "en"
         the language in which question are generated (following ISO 639-1)
     knowledge_base_features: Sequence[str] = None
@@ -69,8 +69,8 @@ class KnowledgeBaseTestsetGenerator(BaseDataGenerator):
     def __init__(
         self,
         knowledge_df: pd.DataFrame,
-        model_name: str,
-        model_description: str,
+        model_name: str = "",
+        model_description: str = "",
         context_neighbors: int = 4,
         context_similarity_threshold: float = 0.2,
         context_window_length: int = 8192,
