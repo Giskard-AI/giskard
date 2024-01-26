@@ -2,6 +2,8 @@ from typing import Sequence
 
 import pandas as pd
 
+from giskard.utils.xprint import BOLD_STYLE, Template
+
 from ...datasets import Dataset
 from ...models.base import BaseModel
 from ...registry.slicing_function import SlicingFunction
@@ -11,9 +13,11 @@ from ..common.loss_based_detector import LossBasedDetector
 from ..decorators import detector
 from ..issues import Issue, IssueLevel, Underconfidence
 from ..scanlogger import logger
-from giskard.utils.xprint import Template, BOLD_STYLE
 
-UnderconfTest = Template(content = "Testing slice {}\tUnderconfidence rate (slice) = {} (global {}) Δm = {}", pstyles=[BOLD_STYLE, BOLD_STYLE, BOLD_STYLE, BOLD_STYLE])
+UnderconfTest = Template(
+    content="Testing slice {}\tUnderconfidence rate (slice) = {} (global {}) Δm = {}",
+    pstyles=[BOLD_STYLE, BOLD_STYLE, BOLD_STYLE, BOLD_STYLE],
+)
 
 
 @detector(name="underconfidence", tags=["underconfidence", "classification"])

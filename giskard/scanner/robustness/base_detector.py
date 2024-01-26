@@ -5,17 +5,24 @@ from abc import abstractmethod
 import numpy as np
 import pandas as pd
 
+from giskard.utils.xprint import BOLD_STYLE, CYAN_STYLE, Template
+
 from ...datasets.base import Dataset
 from ...llm import LLMImportError
 from ...models.base import BaseModel
 from ..issues import Issue, IssueLevel, Robustness
-from ..scanlogger import logger
-from giskard.utils.xprint import Template, CYAN_STYLE, BOLD_STYLE
 from ..registry import Detector
+from ..scanlogger import logger
 from .text_transformations import TextTransformation
 
-Transformations = Template(content = "Running with transformations {}\tthreshold={}\toutput_sensitivity={}\tnum_samples={}", pstyles=[CYAN_STYLE, BOLD_STYLE, BOLD_STYLE, BOLD_STYLE])
-FeatureTest = Template(content = "Testing `{}` for perturbation `{}`\tFail rate: {}", pstyles=[BOLD_STYLE, BOLD_STYLE, BOLD_STYLE])
+Transformations = Template(
+    content="Running with transformations {}\tthreshold={}\toutput_sensitivity={}\tnum_samples={}",
+    pstyles=[CYAN_STYLE, BOLD_STYLE, BOLD_STYLE, BOLD_STYLE],
+)
+FeatureTest = Template(
+    content="Testing `{}` for perturbation `{}`\tFail rate: {}", pstyles=[BOLD_STYLE, BOLD_STYLE, BOLD_STYLE]
+)
+
 
 class BaseTextPerturbationDetector(Detector):
     """Base class for metamorphic detectors based on text transformations."""
@@ -65,7 +72,13 @@ class BaseTextPerturbationDetector(Detector):
             if dataset.column_types[f] == "text" and pd.api.types.is_string_dtype(dataset.df[f].dtype)
         ]
 
-        logger.info([t.name for t in transformations], self.threshold, self.output_sensitivity, self.num_samples, template=Transformations)
+        logger.info(
+            [t.name for t in transformations],
+            self.threshold,
+            self.output_sensitivity,
+            self.num_samples,
+            template=Transformations,
+        )
 
         issues = []
         for transformation in transformations:

@@ -2,6 +2,8 @@ from typing import Sequence
 
 import pandas as pd
 
+from giskard.utils.xprint import BLUE_STYLE, Template
+
 from ...datasets import Dataset
 from ...models.base import BaseModel
 from ...registry.slicing_function import SlicingFunction
@@ -14,9 +16,9 @@ from ..common.loss_based_detector import LossBasedDetector
 from ..decorators import detector
 from ..issues import Issue, IssueLevel, Overconfidence
 from ..scanlogger import logger
-from giskard.utils.xprint import Template, BLUE_STYLE
 
-ConfidenceThreshold = Template(content = "Using overconfidence threshold = {}", pstyles=[BLUE_STYLE])
+ConfidenceThreshold = Template(content="Using overconfidence threshold = {}", pstyles=[BLUE_STYLE])
+
 
 @detector(name="overconfidence", tags=["overconfidence", "classification"])
 class OverconfidenceDetector(LossBasedDetector):

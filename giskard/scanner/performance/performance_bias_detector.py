@@ -7,6 +7,15 @@ import pandas as pd
 import scipy
 from sklearn import metrics
 
+from giskard.utils.xprint import (
+    BLUE_STYLE,
+    BOLD_STYLE,
+    MAGENTA_STYLE,
+    RED_STYLE,
+    YELLOW_STYLE,
+    Template,
+)
+
 from ...client.python_utils import warning
 from ...datasets.base import Dataset
 from ...models._precooked import PrecookedModel
@@ -17,18 +26,23 @@ from ..common.loss_based_detector import LossBasedDetector
 from ..decorators import detector
 from ..issues import Issue, IssueLevel, Performance
 from ..scanlogger import logger
-from giskard.utils.xprint import Template, BOLD_STYLE, BLUE_STYLE, YELLOW_STYLE, MAGENTA_STYLE, CYAN_STYLE, RED_STYLE
 from .metrics import PerformanceMetric, get_metric
 
 SliceNumber = Template(content="Testing {} slices for performance issues.", pstyles=[BOLD_STYLE])
-SkipNoSamples = Template(content="Skipping slice {} because metric was estimated on < 20 samples.", pstyles=[BOLD_STYLE])
+SkipNoSamples = Template(
+    content="Skipping slice {} because metric was estimated on < 20 samples.", pstyles=[BOLD_STYLE]
+)
 SkipNoP = Template(content="Skipping slice {} since the p-value could not be estimated.", pstyles=[BOLD_STYLE])
-SliceTest = Template(content="Testing slice {} \t {} = {} (global {}) Δm = {} \t is_issue = {}", pstyles=[BOLD_STYLE, BOLD_STYLE, BOLD_STYLE, BOLD_STYLE, BOLD_STYLE, YELLOW_STYLE])
-BHpThreshold = Template(content = "Benjamini–Hocheberg p-value threshold is {}", pstyles=[BOLD_STYLE])
-BHpOut = Template(content = "Kept {} significant issues out of {}", pstyles=[BLUE_STYLE, BLUE_STYLE])
-SelectedMetric = Template(content = "Selected metric: {}", pstyles=[BLUE_STYLE])
-pValueError = Template(content = "The p-value could not be calculated: {}", pstyles=[RED_STYLE])
-pValue = Template(content = "p-value = {}", pstyles=[MAGENTA_STYLE])
+SliceTest = Template(
+    content="Testing slice {} \t {} = {} (global {}) Δm = {} \t is_issue = {}",
+    pstyles=[BOLD_STYLE, BOLD_STYLE, BOLD_STYLE, BOLD_STYLE, BOLD_STYLE, YELLOW_STYLE],
+)
+BHpThreshold = Template(content="Benjamini–Hocheberg p-value threshold is {}", pstyles=[BOLD_STYLE])
+BHpOut = Template(content="Kept {} significant issues out of {}", pstyles=[BLUE_STYLE, BLUE_STYLE])
+SelectedMetric = Template(content="Selected metric: {}", pstyles=[BLUE_STYLE])
+pValueError = Template(content="The p-value could not be calculated: {}", pstyles=[RED_STYLE])
+pValue = Template(content="p-value = {}", pstyles=[MAGENTA_STYLE])
+
 
 @detector(name="performance_bias", tags=["performance_bias", "performance", "classification", "regression"])
 class PerformanceBiasDetector(LossBasedDetector):
@@ -153,7 +167,7 @@ class IssueFinder:
             p_values = np.array(p_values)
             p_values_rank = p_values.argsort() + 1
             p_value_threshold = p_values[p_values <= p_values_rank / len(p_values) * self.alpha].max()
-            logger.info(p_value_threshold, template = BHpThreshold)
+            logger.info(p_value_threshold, template=BHpThreshold)
             issues = [issue for issue in issues if issue.meta.get("p_value", np.nan) <= p_value_threshold]
             logger.info(len(issues), len(p_values), template=BHpOut)
 
@@ -213,7 +227,15 @@ class IssueFinder:
             else:
                 is_issue = relative_delta > self.threshold
 
-            logger.debug(slice_fn, metric.name, slice_metric.value, ref_metric.value, relative_delta, is_issue, template=SliceTest)
+            logger.debug(
+                slice_fn,
+                metric.name,
+                slice_metric.value,
+                ref_metric.value,
+                relative_delta,
+                is_issue,
+                template=SliceTest,
+            )
 
             if is_issue:
                 level = IssueLevel.MAJOR if abs(relative_delta) > 2 * self.threshold else IssueLevel.MEDIUM

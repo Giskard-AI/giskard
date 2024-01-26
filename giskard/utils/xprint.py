@@ -92,13 +92,13 @@ CYAN_STYLE = Style(color=CYAN_COLOR)
 WHITE_STYLE = Style(color=WHITE_COLOR)
 BOLD_STYLE = Style(font=BOLD)
 
+
 def xprint(
     *args,
     template: Optional[Template] = None,
     filename: Optional[str] = None,
     **kwargs,
 ):
-
     args = style(*args, template=template)
 
     if filename is not None:

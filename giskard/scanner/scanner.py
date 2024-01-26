@@ -8,6 +8,18 @@ from time import perf_counter
 
 import pandas as pd
 
+from giskard.utils.xprint import (
+    BLUE_STYLE,
+    BOLD_STYLE,
+    CHARS_LIMIT,
+    CYAN_STYLE,
+    GREEN_STYLE,
+    MAGENTA_STYLE,
+    RED_STYLE,
+    YELLOW_STYLE,
+    Template,
+)
+
 from ..client.python_utils import warning
 from ..core.model_validation import validate_model
 from ..datasets.base import Dataset
@@ -23,10 +35,9 @@ from ..utils.analytics_collector import (
     get_model_properties,
 )
 from .issues import DataLeakage, Issue, Stochasticity
-from .scanlogger import logger
-from giskard.utils.xprint import Template, BOLD_STYLE, BLUE_STYLE, YELLOW_STYLE, MAGENTA_STYLE, CYAN_STYLE, RED_STYLE, GREEN_STYLE, CHARS_LIMIT
 from .registry import DetectorRegistry
 from .report import ScanReport
+from .scanlogger import logger
 
 Detector = Template(content="Running {}", pstyles=[BLUE_STYLE])
 RunningDetectors = Template(content="Running detectors: {}\n", pstyles=[BLUE_STYLE])
@@ -48,22 +59,28 @@ StartSummary = Template(
 DetectedIssues = Template(content="{}: {} detected. (Took {})", pstyles=[BLUE_STYLE, RED_STYLE, MAGENTA_STYLE])
 NoDetectedIssues = Template(content="{}: {} detected. (Took {})", pstyles=[BLUE_STYLE, GREEN_STYLE, MAGENTA_STYLE])
 ErrorFail = Template(content="Detector {} failed with error: {}", pstyles=[BLUE_STYLE, GREEN_STYLE])
-IssuesNumber = Template(content = "{}: {} issues detected (took {})\n", pstyles=[BLUE_STYLE, RED_STYLE, BOLD_STYLE])
-NoIssues = Template(content = "{}: {} issue detected (took {})\n", pstyles=[BLUE_STYLE, GREEN_STYLE, BOLD_STYLE])
-ScanCompletedGood = Template(content = "Scan completed: {} issue detected (took {})!", pstyles=[GREEN_STYLE, BOLD_STYLE])
-ScanCompletedBad = Template(content = "Scan completed: {} issues detected (took {}).", pstyles=[RED_STYLE, BOLD_STYLE])
+IssuesNumber = Template(content="{}: {} issues detected (took {})\n", pstyles=[BLUE_STYLE, RED_STYLE, BOLD_STYLE])
+NoIssues = Template(content="{}: {} issue detected (took {})\n", pstyles=[BLUE_STYLE, GREEN_STYLE, BOLD_STYLE])
+ScanCompletedGood = Template(content="Scan completed: {} issue detected (took {})!", pstyles=[GREEN_STYLE, BOLD_STYLE])
+ScanCompletedBad = Template(content="Scan completed: {} issues detected (took {}).", pstyles=[RED_STYLE, BOLD_STYLE])
 
-COST_ESTIMATE_TEMPLATE = Template(content="""This automatic scan will use LLM-assisted detectors based on GPT-4 to identify vulnerabilities in your model.
+COST_ESTIMATE_TEMPLATE = Template(
+    content="""This automatic scan will use LLM-assisted detectors based on GPT-4 to identify vulnerabilities in your model.
 These are the total estimated costs:
 Estimated calls to your model: ~{}
 Estimated OpenAI GPT-4 calls for evaluation: {} (~{} prompt tokens and ~{} sampled tokens)
 OpenAI API costs for evaluation are estimated to ${}.
-""", pstyles=[BOLD_STYLE, BOLD_STYLE, BOLD_STYLE, BOLD_STYLE, BLUE_STYLE])
+""",
+    pstyles=[BOLD_STYLE, BOLD_STYLE, BOLD_STYLE, BOLD_STYLE, BLUE_STYLE],
+)
 
-COST_SUMMARY_TEMPLATE = Template("""LLM-assisted detectors have used the following resources:
+COST_SUMMARY_TEMPLATE = Template(
+    """LLM-assisted detectors have used the following resources:
 OpenAI GPT-4 calls for evaluation: {} ({} prompt tokens and {} sampled tokens)
 OpenAI API costs for evaluation amount to ${} (standard pricing).
-""", pstyles=[BOLD_STYLE, BOLD_STYLE, BOLD_STYLE, BLUE_STYLE])
+""",
+    pstyles=[BOLD_STYLE, BOLD_STYLE, BOLD_STYLE, BLUE_STYLE],
+)
 
 MAX_ISSUES_PER_DETECTOR = 15
 
@@ -104,24 +121,24 @@ class Scanner:
     ) -> ScanReport:
         """Runs the analysis of a model and dataset, detecting issues.
 
-        Parameters
-        ----------
-        model : BaseModel
-            A Giskard model object.
-        dataset : Dataset
-            A Giskard dataset object.
-        features : Sequence[str], optional
-            A list of features to analyze. If not provided, all model features will be analyzed.
-        verbosity_level : String
-            Logger verbosity level to know which messages should go in the output. INFO by default.
-        raise_exceptions : bool
-            Whether to raise an exception if detection errors are encountered. By default, errors are logged and
-            handled gracefully, without interrupting the scan.
-de
-        Returns
-        -------
-        ScanReport
-            A report object containing the detected issues and other information.
+                Parameters
+                ----------
+                model : BaseModel
+                    A Giskard model object.
+                dataset : Dataset
+                    A Giskard dataset object.
+                features : Sequence[str], optional
+                    A list of features to analyze. If not provided, all model features will be analyzed.
+                verbosity_level : String
+                    Logger verbosity level to know which messages should go in the output. INFO by default.
+                raise_exceptions : bool
+                    Whether to raise an exception if detection errors are encountered. By default, errors are logged and
+                    handled gracefully, without interrupting the scan.
+        de
+                Returns
+                -------
+                ScanReport
+                    A report object containing the detected issues and other information.
         """
 
         # Check that the model and dataset were appropriately wrapped with Giskard
@@ -133,7 +150,7 @@ de
         # Initialize LLM logger if needed
         if model.is_text_generation:
             get_default_client().logger.reset()
-            
+
         # Set logger level to the user's input
         logger.setLevel(verbosity_level)
 
@@ -150,9 +167,7 @@ de
         # @TODO: this should be selective to specific warnings
         with warnings.catch_warnings():
             warnings.simplefilter("ignore")
-            issues, errors = self._run_detectors(
-                detectors, model, dataset, features, raise_exceptions=raise_exceptions
-            )
+            issues, errors = self._run_detectors(detectors, model, dataset, features, raise_exceptions=raise_exceptions)
 
         issues = self._postprocess(issues)
 
@@ -169,12 +184,12 @@ de
         if not detectors:
             raise RuntimeError("No issue detectors available. Scan will not be performed.")
 
-        logger.info(f"{', '.join([d.__class__.__name__ for d in detectors])}", template = RunningDetectors)
+        logger.info(f"{', '.join([d.__class__.__name__ for d in detectors])}", template=RunningDetectors)
 
         issues = []
         errors = []
         for detector in detectors:
-            logger.info(detector.__class__.__name__, template = Detector)
+            logger.info(detector.__class__.__name__, template=Detector)
             detector_start = perf_counter()
             try:
                 detected_issues = detector.run(model, dataset, features=features)
@@ -198,11 +213,21 @@ de
             num_issues = len(detected_issues)
 
             detector_elapsed = perf_counter() - detector_start
-            
+
             if num_issues > 0:
-                logger.critical(detector.__class__.__name__, num_issues, datetime.timedelta(seconds=detector_elapsed), template=IssuesNumber)
+                logger.critical(
+                    detector.__class__.__name__,
+                    num_issues,
+                    datetime.timedelta(seconds=detector_elapsed),
+                    template=IssuesNumber,
+                )
             else:
-                logger.critical(detector.__class__.__name__, num_issues, datetime.timedelta(seconds=detector_elapsed), template=NoIssues)
+                logger.critical(
+                    detector.__class__.__name__,
+                    num_issues,
+                    datetime.timedelta(seconds=detector_elapsed),
+                    template=NoIssues,
+                )
 
             analytics.track(
                 "scan:detector-run",
@@ -386,7 +411,7 @@ de
 
     def _print_execution_summary(self, model, issues, errors, elapsed):
         num_issues = len(issues)
-        
+
         if num_issues > 0:
             logger.critical(num_issues, datetime.timedelta(seconds=elapsed), template=ScanCompletedBad)
         else:

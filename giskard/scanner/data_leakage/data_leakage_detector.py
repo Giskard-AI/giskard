@@ -15,7 +15,6 @@ from ..registry import Detector
 @detector(name="data_leakage", tags=["data_leakage", "classification", "regression"])
 class DataLeakageDetector(Detector):
     def run(self, model: BaseModel, dataset: Dataset, features: Optional[Sequence[str]] = None):
-
         # Dataset prediction
         ds_predictions = pd.Series(list(model.predict(dataset).raw), dataset.df.index, dtype=object)
 
