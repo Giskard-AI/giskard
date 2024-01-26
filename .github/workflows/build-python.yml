@@ -7,7 +7,7 @@ on:
     branches:
       - main
     paths-ignore:
-      - .github
+      - .github/**
   pull_request:
   workflow_dispatch:
     inputs:
