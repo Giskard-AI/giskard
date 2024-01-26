@@ -1,6 +1,6 @@
 import pandas as pd
 
-from giskard.rag import TestSet
+from giskard.rag import QATestset
 
 
 def make_testset_df():
@@ -21,7 +21,7 @@ def make_testset_df():
 
 
 def test_testset_suite_conversion():
-    testset = TestSet(df=make_testset_df())
+    testset = QATestset(df=make_testset_df())
     suite = testset.to_test_suite()
 
     assert "dataset" in suite.default_params
