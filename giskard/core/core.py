@@ -226,10 +226,7 @@ class CallableMeta(SavableMeta, ABC):
             self.args = {param.name: param for param in parameters}
 
     def extract_parameters(self, callable_obj) -> List[FunctionArgument]:
-        if inspect.isclass(callable_obj):
-            parameters = list(inspect.signature(callable_obj.__init__).parameters.values())[1:]
-        else:
-            parameters = list(inspect.signature(callable_obj).parameters.values())
+        parameters = list(inspect.signature(callable_obj).parameters.values())
 
         return [
             FunctionArgument(
@@ -459,7 +456,12 @@ class DatasetProcessFunctionMeta(CallableMeta):
             self.column_type = None
 
     def extract_parameters(self, callable_obj) -> List[FunctionArgument]:
-        return unknown_annotations_to_kwargs(CallableMeta.extract_parameters(self, callable_obj)[1:])
+        params = CallableMeta.extract_parameters(self, callable_obj)
+
+        if not inspect.isclass(callable_obj):
+            params = CallableMeta.extract_parameters(self, callable_obj)[1:]
+
+        return unknown_annotations_to_kwargs(params)
 
     def to_json(self):
         json = super().to_json()

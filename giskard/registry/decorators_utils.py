@@ -14,12 +14,19 @@ def make_all_optional_or_suite_input(fn: Callable):
             Parameter(
                 name=par.name,
                 kind=par.kind,
-                default=None if par.default == inspect.Signature.empty else par.default,
-                annotation=Optional[Union[SuiteInput, par.annotation]],
+                default=None
+                if par.default == inspect.Signature.empty
+                and par.kind != Parameter.VAR_POSITIONAL
+                and par.kind != Parameter.VAR_KEYWORD
+                else par.default,
+                annotation=Optional[Union[SuiteInput, par.annotation]]
+                if par.kind != Parameter.VAR_POSITIONAL and par.kind != Parameter.VAR_KEYWORD
+                else par.annotation,
             )
             for par in sig.parameters.values()
         ]
     )
+
     fn.__signature__ = sig
 
     fn.__annotations__ = {k: Optional[Union[SuiteInput, v]] for k, v in fn.__annotations__.items()}

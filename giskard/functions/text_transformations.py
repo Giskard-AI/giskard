@@ -6,26 +6,17 @@ from pathlib import Path
 import numpy as np
 import pandas as pd
 
-from ..core.core import DatasetProcessFunctionMeta
 from ..datasets import Dataset
 from ..functions.transformation import gruber
-from ..registry.registry import get_object_uuid
-from ..registry.transformation_function import TransformationFunction
+from ..registry.transformation_function import BaseTransformationFunction, transformation_function
 
 
-class TextTransformation(TransformationFunction):
+class TextTransformation(BaseTransformationFunction):
     name: str
 
-    def __init__(self, column):
-        super().__init__(None, row_level=False, cell_level=False)
+    def __init__(self, column: str):
+        super().__init__()
         self.column = column
-        self.meta = DatasetProcessFunctionMeta(type="TRANSFORMATION")
-        self.meta.uuid = get_object_uuid(self)
-        self.meta.code = self.name
-        self.meta.name = self.name
-        self.meta.display_name = self.name
-        self.meta.tags = ["pickle", "scan"]
-        self.meta.doc = self.meta.default_doc("Automatically generated transformation function")
 
     def __str__(self):
         return self.name
@@ -39,6 +30,7 @@ class TextTransformation(TransformationFunction):
         raise NotImplementedError()
 
 
+@transformation_function(row_level=False)
 class TextUppercase(TextTransformation):
     name = "Transform to uppercase"
 
@@ -48,6 +40,7 @@ class TextUppercase(TextTransformation):
         return data
 
 
+@transformation_function(row_level=False)
 class TextLowercase(TextTransformation):
     name = "Transform to lowercase"
 
@@ -57,6 +50,7 @@ class TextLowercase(TextTransformation):
         return data
 
 
+@transformation_function(row_level=False)
 class TextTitleCase(TextTransformation):
     name = "Transform to title case"
 
@@ -66,12 +60,13 @@ class TextTitleCase(TextTransformation):
         return data
 
 
+@transformation_function(row_level=False)
 class TextTypoTransformation(TextTransformation):
     name = "Add typos"
 
     def __init__(self, column, rate=0.05, min_length=10, rng_seed=1729):
         super().__init__(column)
-        from .entity_swap import typos
+        from ..scanner.robustness.entity_swap import typos
 
         self.rate = rate
         self.min_length = min_length
@@ -123,12 +118,13 @@ class TextTypoTransformation(TextTransformation):
         return char
 
 
+@transformation_function(row_level=False)
 class TextFromOCRTypoTransformation(TextTransformation):
     name = "Add typos from OCR"
 
     def __init__(self, column, rate=0.05, min_length=10, rng_seed=1729):
         super().__init__(column)
-        from .entity_swap import ocr_typos
+        from ..scanner.robustness.entity_swap import ocr_typos
 
         self.rate = rate
         self.min_length = min_length
@@ -170,6 +166,7 @@ class TextFromOCRTypoTransformation(TextTransformation):
         return char
 
 
+@transformation_function(row_level=False)
 class TextPunctuationRemovalTransformation(TextTransformation):
     name = "Punctuation Removal"
 
@@ -225,11 +222,12 @@ class TextLanguageBasedTransformation(TextTransformation):
             return None
 
 
+@transformation_function(row_level=False)
 class TextGenderTransformation(TextLanguageBasedTransformation):
     name = "Switch Gender"
 
     def _load_dictionaries(self):
-        from .entity_swap import gender_switch_en, gender_switch_fr
+        from ..scanner.robustness.entity_swap import gender_switch_en, gender_switch_fr
 
         self._lang_dictionary = {"en": gender_switch_en, "fr": gender_switch_fr}
 
@@ -256,11 +254,12 @@ class TextGenderTransformation(TextLanguageBasedTransformation):
             return None
 
 
+@transformation_function(row_level=False)
 class TextReligionTransformation(TextLanguageBasedTransformation):
     name = "Switch Religion"
 
     def _load_dictionaries(self):
-        from .entity_swap import religion_dict_en, religion_dict_fr
+        from ..scanner.robustness.entity_swap import religion_dict_en, religion_dict_fr
 
         self._lang_dictionary = {"en": religion_dict_en, "fr": religion_dict_fr}
 
@@ -294,6 +293,7 @@ class TextReligionTransformation(TextLanguageBasedTransformation):
         return text
 
 
+@transformation_function(row_level=False)
 class TextNationalityTransformation(TextLanguageBasedTransformation):
     name = "Switch countries from high- to low-income and vice versa"
 
@@ -335,6 +335,7 @@ class TextNationalityTransformation(TextLanguageBasedTransformation):
         return text
 
 
+@transformation_function(row_level=False)
 class TextFromSpeechTypoTransformation(TextLanguageBasedTransformation):
     name = "Add text from speech typos"
 
@@ -344,7 +345,7 @@ class TextFromSpeechTypoTransformation(TextLanguageBasedTransformation):
         self.min_length = min_length
 
     def _load_dictionaries(self):
-        from .entity_swap import speech_typos
+        from ..scanner.robustness.entity_swap import speech_typos
 
         self._word_typos = speech_typos
 

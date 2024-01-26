@@ -2,6 +2,7 @@ from typing import Callable, List, Optional, Set, Type, Union
 
 import functools
 import inspect
+from abc import abstractmethod
 
 import pandas as pd
 
@@ -19,6 +20,12 @@ from giskard.registry.registry import get_object_uuid, tests_registry
 TransformationFunctionType = Callable[..., Union[pd.Series, pd.DataFrame]]
 
 default_tags = ["transformation"]
+
+
+class BaseTransformationFunction:
+    @abstractmethod
+    def execute(self, data: pd.DataFrame) -> pd.DataFrame:
+        pass
 
 
 class TransformationFunction(RegistryArtifact[DatasetProcessFunctionMeta]):
@@ -74,7 +81,11 @@ class TransformationFunction(RegistryArtifact[DatasetProcessFunctionMeta]):
         Returns:
             Union[pd.Series, pd.DataFrame]: _description_
         """
+        if inspect.isclass(self.func) and issubclass(self.func, BaseTransformationFunction):
+            return self.func(**self.params).execute(data)
+
         func = configured_validate_arguments(self.func)
+
         if self.cell_level:
             actual_params = {k: v for k, v in self.params.items() if k != "column_name"}
 
@@ -139,10 +150,13 @@ def transformation_function(
 
 
 def _wrap_transformation_function(original: Callable, row_level: bool, cell_level: bool):
-    transformation_fn = functools.wraps(original)(TransformationFunction(original, row_level, cell_level))
+    if inspect.isclass(original):
+        transformation_fn = functools.wraps(original.__init__)(TransformationFunction(original, row_level, cell_level))
+    else:
+        transformation_fn = functools.wraps(original)(TransformationFunction(original, row_level, cell_level))
 
-    if not cell_level:
-        validate_arg_type(transformation_fn, 0, pd.Series if row_level else pd.DataFrame)
+        if not inspect.isclass(original) and not cell_level:
+            validate_arg_type(transformation_fn, 0, pd.Series if row_level else pd.DataFrame)
 
     drop_arg(transformation_fn, 0)
 
