@@ -3,6 +3,8 @@ from typing import Any, Dict, Optional
 from abc import ABC, abstractmethod
 from dataclasses import dataclass
 
+import numpy as np
+
 from .logger import LLMLogger
 
 
@@ -34,4 +36,8 @@ class LLMClient(ABC):
         function_call: Optional[Dict] = None,
         caller_id: Optional[str] = None,
     ) -> LLMOutput:
+        ...
+
+    @abstractmethod
+    def embeddings(self, text) -> np.ndarray:
         ...

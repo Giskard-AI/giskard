@@ -3,6 +3,7 @@ from typing import Dict, Optional, Sequence
 import json
 from abc import ABC, abstractmethod
 
+import numpy as np
 from tenacity import retry, retry_if_exception_type, stop_after_attempt, wait_exponential
 
 from ..config import LLMConfigurationError
@@ -71,6 +72,16 @@ class BaseOpenAIClient(LLMClient, ABC):
                 raise LLMGenerationError("Could not parse function call") from err
 
         return LLMOutput(message=cc["content"], function_call=function_call)
+
+    def embeddings(self, texts: Sequence[str], model: str = "text-embedding-ada-002") -> np.ndarray:
+        texts = [t.replace("\n", " ") for t in texts]
+        try:
+            out = self._client.embeddings.create(input=texts, model=model)
+            embeddings = [element.embedding for element in out.data]
+        except Exception as err:
+            print(err)
+            raise ValueError("Batched embedding creation failed.") from err
+        return np.stack(embeddings)
 
 
 class LegacyOpenAIClient(BaseOpenAIClient):

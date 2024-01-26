@@ -1,20 +1,22 @@
 from typing import Sequence
 
 import json
+import logging
 
 import numpy as np
 import pandas as pd
 
-from ..llm.errors import LLMGenerationError
 from ..llm.generators import BaseDataGenerator
-from .embeddings import EmbeddingsBase, OpenAIEmbeddings
 from .prompts import (
+    FIX_JSON_FORMAT_PROMPT,
     QA_GENERATION_ASSISTANT_EXAMPLE,
     QA_GENERATION_CONTEXT_EXAMPLE,
     QA_GENERATION_SYSTEM_PROMPT,
 )
-from .testset import TestSet
+from .testset import QATestset
 from .vector_store import VectorStore
+
+logger = logging.getLogger(__name__)
 
 
 class KnowledgeBaseTestsetGenerator(BaseDataGenerator):
@@ -60,6 +62,7 @@ class KnowledgeBaseTestsetGenerator(BaseDataGenerator):
     _qa_generation_system_prompt = QA_GENERATION_SYSTEM_PROMPT
     _qa_generation_context_example = QA_GENERATION_CONTEXT_EXAMPLE
     _qa_generation_assistant_example = QA_GENERATION_ASSISTANT_EXAMPLE
+    _fix_json_prompt = FIX_JSON_FORMAT_PROMPT
 
     _difficulty_level = 1
 
@@ -71,7 +74,6 @@ class KnowledgeBaseTestsetGenerator(BaseDataGenerator):
         context_neighbors: int = 4,
         context_similarity_threshold: float = 0.2,
         context_window_length: int = 8192,
-        embedding_model: EmbeddingsBase = None,
         language: str = "en",
         knowledge_base_features: Sequence[str] = None,
         seed: int = None,
@@ -86,12 +88,13 @@ class KnowledgeBaseTestsetGenerator(BaseDataGenerator):
         self.context_similarity_threshold = context_similarity_threshold
 
         self.context_window_length = context_window_length
-        self.embedding_model = embedding_model if embedding_model is not None else OpenAIEmbeddings()
         self.language = language
         self.rng = np.random.default_rng(seed=seed)
         self.include_examples = include_examples
 
-        self.knowledge_base = VectorStore.from_df(knowledge_df, self.embedding_model, features=knowledge_base_features)
+        self.knowledge_base = VectorStore.from_df(
+            knowledge_df, self.llm_client.embeddings, features=knowledge_base_features
+        )
 
     def _generate_question_answer_from_context(self, context):
         messages = [
@@ -113,15 +116,14 @@ class KnowledgeBaseTestsetGenerator(BaseDataGenerator):
             )
         messages.append({"role": "user", "content": context})
 
-        generated_qa = self._llm_complete(messages=messages)
-        return generated_qa["question"], generated_qa["answer"]
+        return self._llm_complete(messages=messages)
 
     def _extract_seed_context(self):
         seed_context = self.rng.choice(self.knowledge_base.documents)
         relevant_contexts = [
             context
             for (context, score) in self.knowledge_base.similarity_search_with_score(
-                seed_context.page_content, k=self.context_neighbors
+                [seed_context.page_content], k=self.context_neighbors
             )
             if score < self.context_similarity_threshold  # should we keep it or not ?
         ]
@@ -144,18 +146,30 @@ class KnowledgeBaseTestsetGenerator(BaseDataGenerator):
                 temperature=self.llm_temperature,
                 caller_id=self.__class__.__name__,
             )
-            generated = json.loads(out.message, strict=False)
-        except (AttributeError, KeyError) as err:
-            raise LLMGenerationError("Could not parse generated inputs") from err
-        except json.decoder.JSONDecodeError as err:
-            if "Extra data:" in str(err):
-                raise LLMGenerationError("Generator model output more than one question/answer pair.") from err
-            else:
-                raise err
 
+            generated = json.loads(out.message, strict=False)
+        except json.decoder.JSONDecodeError:
+            logger.warning("JSON decoding error, trying to fix the JSON string.")
+            generated = self._try_fix_json_message(out.message)
         return generated
 
-    def generate_dataset(self, num_samples: int = 10) -> TestSet:
+    def _try_fix_json_message(self, incorrect_json):
+        try:
+            out = self.llm_client.complete(
+                messages=[
+                    {"role": "system", "content": self._fix_json_prompt},
+                    {"role": "user", "content": incorrect_json},
+                ],
+                temperature=0,
+                caller_id=self.__class__.__name__,
+            )
+            corrected_message = json.loads(out.message)
+        except Exception:
+            logger.warning("Fixing JSON format failed, question generation skipped.")
+            return None
+        return corrected_message
+
+    def generate_dataset(self, num_samples: int = 10) -> QATestset:
         """Generates a testset from the knowledge base.
 
         Parameters
@@ -179,15 +193,16 @@ class KnowledgeBaseTestsetGenerator(BaseDataGenerator):
             seed_contexts = self._extract_seed_context()
             context = self._format_context(seed_contexts)
 
-            question, answer = self._generate_question_answer_from_context(context)
+            generated_qa = self._generate_question_answer_from_context(context)
 
-            generated_questions.append(
-                {
-                    "question": question,
-                    "reference_answer": answer,
-                    "reference_context": context,
-                    "difficulty_level": self._difficulty_level,
-                }
-            )
+            if generated_qa is not None:
+                generated_questions.append(
+                    {
+                        "question": generated_qa["question"],
+                        "reference_answer": generated_qa["answer"],
+                        "reference_context": context,
+                        "difficulty_level": self._difficulty_level,
+                    }
+                )
 
-        return TestSet(df=pd.DataFrame(generated_questions))
+        return QATestset(df=pd.DataFrame(generated_questions))
