@@ -5,7 +5,7 @@ from typing import Optional, Sequence
 
 from ..datasets.base import Dataset
 from ..models.base import BaseModel
-from .logger import logger
+from .scanlogger import LoggerLevel, ScanLoggerLevel, logger
 from .scanner import Scanner
 
 
@@ -29,7 +29,7 @@ def scan(
     features: Optional[Sequence[str]] = None,
     params=None,
     only=None,
-    verbosity_level="INFO",
+    verbosity_level: LoggerLevel = ScanLoggerLevel.INFO.name,
     raise_exceptions=False,
 ):
     """Automatically detects model vulnerabilities.

@@ -20,10 +20,7 @@ class ScanLogger:
 
     @configured_validate_arguments
     def setLevel(self, level: LoggerLevel):
-        if isinstance(level, ScanLoggerLevel):
-            self.level = level
-        else:
-            self.level = ScanLoggerLevel[level]
+        self.level = level if isinstance(level, ScanLoggerLevel) else ScanLoggerLevel[level]
 
     def debug(
         self,

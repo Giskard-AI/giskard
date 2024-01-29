@@ -4,6 +4,7 @@ from giskard.utils.xprint import (
     BLUE_COLOR,
     BLUE_STYLE,
     BOLD,
+    BOLD_STYLE,
     CHARS_LIMIT,
     CYAN_COLOR,
     CYAN_STYLE,
@@ -19,7 +20,6 @@ from giskard.utils.xprint import (
     WHITE_STYLE,
     YELLOW_COLOR,
     YELLOW_STYLE,
-    Catalog,
     Style,
     Template,
     get_design_templates,
@@ -27,6 +27,8 @@ from giskard.utils.xprint import (
     style,
     xprint,
 )
+
+TestTemplate = Template(content="Testing {} slices for performance issues.", pstyles=[BOLD_STYLE])
 
 
 def test_constants():
@@ -56,6 +58,7 @@ def test_aliases():
     assert MAGENTA_STYLE == Style(color=MAGENTA_COLOR)
     assert CYAN_STYLE == Style(color=CYAN_COLOR)
     assert WHITE_STYLE == Style(color=WHITE_COLOR)
+    assert BOLD_STYLE == Style(font=BOLD)
 
 
 def test_defaults():
@@ -88,37 +91,11 @@ def test_defaults():
     assert args[3] == default_processing[1]
 
 
-def test_catalog():
-    catalog = Catalog()
-    attributes = [
-        "Black",
-        "Red",
-        "Green",
-        "Yellow",
-        "Blue",
-        "Magenta",
-        "Cyan",
-        "White",
-        "Detector",
-        "PromptsNumber",
-        "PromptEvaluation",
-        "Evaluation",
-        "PromptInjectionSuccess",
-        "PromptInjectionFailure",
-        "StartSummary",
-        "DetectedIssues",
-        "NoDetectedIssues",
-        "ScanCostEstimate",
-        "ScanCostSummary",
-    ]
-    for attribute in attributes:
-        assert hasattr(catalog, attribute)
-
-
 def test_xprint(capsys):
-    xprint("test")
+    xprint("test", 5, [1, 2])
     captured = capsys.readouterr()
-    assert captured.out == "{}{}{} test {}\n".format(RESET, BOLD, RESET, RESET)
-    xprint("5", template=Catalog.Detector)
+    assert captured.out == "{}{}{} test 5 [1, 2] {}\n".format(RESET, BOLD, RESET, RESET)
+    xprint("5", template=TestTemplate)
     captured = capsys.readouterr()
-    assert captured.out == "{}{}{} test {}\n".format(RESET, BOLD, GREEN_COLOR, RESET)
+    print(captured)
+    assert captured.out == "Testing{}{}{} 5 {}slices for performance issues.\n".format(RESET, BOLD, RESET, RESET)

@@ -167,9 +167,9 @@ class IssueFinder:
             p_values = np.array(p_values)
             p_values_rank = p_values.argsort() + 1
             p_value_threshold = p_values[p_values <= p_values_rank / len(p_values) * self.alpha].max()
-            logger.info(p_value_threshold, template=BHpThreshold)
+            logger.debug(p_value_threshold, template=BHpThreshold)
             issues = [issue for issue in issues if issue.meta.get("p_value", np.nan) <= p_value_threshold]
-            logger.info(len(issues), len(p_values), template=BHpOut)
+            logger.debug(len(issues), len(p_values), template=BHpOut)
 
         # Group issues by slice and keep only the most critical
         issues_by_slice = defaultdict(list)
