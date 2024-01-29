@@ -43,8 +43,7 @@ jobs:
           python-version: '3.10'
           cache: false
 
-      # Build the release candidate wheel
-      - name: Build RC wheel
+      - name: Build release candidate wheel
         run: pdm build
 
       - name: Upload RC wheel artifact
@@ -64,6 +63,5 @@ jobs:
           repository: ${{ github.repository_owner }}/giskard-hub
           client-payload: |
             {
-              "version": "${{ inputs.version }}",
-              "ref": "${{ github.ref }}"
+              "version_name": "v${{ inputs.version }}"
             }
