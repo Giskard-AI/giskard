@@ -66,8 +66,9 @@ jobs:
           git push origin main
           git push origin ${{ env.VERSION_NAME }}
 
+      - run: mkdir -p dist
+
       - name: Download wheel (release candidate)
-        if: ${{ github.event.action == 'create-release' }}
         working-directory: dist
         run: gh -R ${{ github.repository_owner }}/giskard run download -n rc-wheel
         env:
