@@ -230,7 +230,6 @@ class GetInfo(WorkerReply):
     interpreterVersion: str
     installedPackages: Dict[str, str]
     mlWorkerId: str
-    isRemote: bool
     pid: int
     processStartTime: int
     giskardClientVersion: str

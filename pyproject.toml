@@ -108,7 +108,7 @@ doc = [
     "nbsphinx>=0.9.2",
     "ipython==8.12.0",
     "scrapy",
-    "requests"
+    "requests",
 ]
 
 [project.scripts]
@@ -177,11 +177,7 @@ dependencies = [
 ]
 
 [project.optional-dependencies]
-llm = [
-    "openai",
-    "evaluate>=0.4.1",
-    "bert-score>=0.3.13",
-]
+llm = ["openai", "evaluate>=0.4.1", "bert-score>=0.3.13"]
 
 hub = [
     # Worker deps
@@ -193,10 +189,9 @@ hub = [
     "click>=7.0",
     "docker>=6.0.0",
     "shap>=0.41.0",
-    "llvmlite>=0.40.0",        # Needed to be installable for Poetry
-    "numba>=0.50.0",           # Needed to be installable for Poetry
+    "llvmlite>=0.40.0",    # Needed to be installable for Poetry
+    "numba>=0.50.0",       # Needed to be installable for Poetry
     "lockfile>=0.12.2",
-    "python-daemon>=2.2.2,<3",
     "pycryptodome>=3.6.1",
     "pyngrok>=6.0.0",
 ]

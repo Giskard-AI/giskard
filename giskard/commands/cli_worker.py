@@ -5,6 +5,7 @@ import logging
 import os
 import platform
 import sys
+from pathlib import Path
 
 import click
 import lockfile
@@ -19,7 +20,6 @@ from giskard.cli_utils import (
     follow_file,
     get_log_path,
     remove_stale_pid_file,
-    run_daemon,
     tail,
     validate_url,
 )
@@ -47,12 +47,37 @@ def start_stop_options(func):
         callback=validate_url,
     )
     @click.option(
-        "--server",
-        "-s",
-        "is_server",
-        is_flag=True,
-        default=False,
-        help="Server mode. Used by Giskard embedded ML Worker",
+        "--name",
+        "worker_name",
+        default="external_worker",
+        help="Name/id of the worker starting",
+    )
+    @functools.wraps(func)
+    def wrapper(*args, **kwargs):
+        return func(*args, **kwargs)
+
+    return wrapper
+
+
+def start_options(func):
+    @click.option(
+        "--key",
+        "-k",
+        "api_key",
+        envvar="GSK_API_KEY",
+        help="Giskard hub API key",
+    )
+    @click.option(
+        "--hf-token",
+        "hf_token",
+        envvar="GSK_HF_TOKEN",
+        help="Access token for Giskard hosted in a private Hugging Face Spaces",
+    )
+    @click.option(
+        "--parallelism",
+        "nb_workers",
+        default=None,
+        help="Number of processes to use for parallelism (None for number of cpu)",
     )
     @functools.wraps(func)
     def wrapper(*args, **kwargs):
@@ -64,34 +89,8 @@ def start_stop_options(func):
 @worker.command("start")
 @common_options
 @start_stop_options
-@click.option(
-    "--key",
-    "-k",
-    "api_key",
-    envvar="GSK_API_KEY",
-    help="Giskard hub API key",
-)
-@click.option(
-    "--daemon",
-    "-d",
-    "is_daemon",
-    is_flag=True,
-    default=False,
-    help="Should ML Worker be started as a Daemon in a background",
-)
-@click.option(
-    "--hf-token",
-    "hf_token",
-    envvar="GSK_HF_TOKEN",
-    help="Access token for Giskard hosted in a private Hugging Face Spaces",
-)
-@click.option(
-    "--parallelism",
-    "nb_workers",
-    default=None,
-    help="Number of processes to use for parallelism (None for number of cpu)",
-)
-def start_command(url: AnyHttpUrl, is_server, api_key, is_daemon, hf_token, nb_workers):
+@start_options
+def start_command(url: AnyHttpUrl, api_key, hf_token, nb_workers, worker_name):
     """\b
     Start ML Worker.
 
@@ -104,16 +103,14 @@ def start_command(url: AnyHttpUrl, is_server, api_key, is_daemon, hf_token, nb_w
     """
     analytics.track(
         "giskard-worker:start",
-        {"is_server": is_server, "url": anonymize(url), "is_daemon": is_daemon},
+        {"url": anonymize(url)},
     )
-    api_key = initialize_api_key(api_key, is_server)
-    hf_token = initialize_hf_token(hf_token, is_server)
-    _start_command(is_server, url, api_key, is_daemon, hf_token, int(nb_workers) if nb_workers is not None else None)
+    api_key = initialize_api_key(api_key)
+    hf_token = initialize_hf_token(hf_token)
+    _start_command(worker_name, url, api_key, hf_token, int(nb_workers) if nb_workers is not None else None)
 
 
-def initialize_api_key(api_key, is_server):
-    if is_server:
-        return None
+def initialize_api_key(api_key):
     if not api_key:
         api_key = click.prompt("Enter Giskard hub API key", type=str)
     if "GSK_API_KEY" in os.environ:
@@ -122,9 +119,7 @@ def initialize_api_key(api_key, is_server):
     return api_key
 
 
-def initialize_hf_token(hf_token, is_server):
-    if is_server:
-        return None
+def initialize_hf_token(hf_token):
     # HF token is not mandantory unless connection error
     if "GSK_HF_TOKEN" in os.environ:
         # delete HF token environment variable so that it doesn't get leaked when the test code is executed
@@ -132,49 +127,39 @@ def initialize_hf_token(hf_token, is_server):
     return hf_token
 
 
-def _start_command(is_server, url: AnyHttpUrl, api_key, is_daemon, hf_token=None, nb_workers=None):
+def _start_command(worker_name, url: AnyHttpUrl, api_key, hf_token=None, nb_workers=None):
     from giskard.ml_worker.ml_worker import MLWorker
 
     os.environ["TQDM_DISABLE"] = "1"
-    start_msg = "Starting ML Worker"
-    start_msg += " server" if is_server else " client"
-    if is_daemon:
-        start_msg += " daemon"
-    logger.info(start_msg)
-    logger.info(f"Python: {sys.executable} ({platform.python_version()})")
-    logger.info(f"Giskard Home: {settings.home_dir}")
-    pid_file_path = create_pid_file_path(is_server, url)
+    logger.info("Starting ML Worker %s", worker_name)
+    logger.info("Python: %s (%s)", sys.executable, platform.python_version())
+    logger.info("Giskard Home: %s", settings.home_dir)
+
+    pid_file_path = create_pid_file_path(worker_name, url)
+    logger.info("Creating pid file : %s", pid_file_path)
+
     pid_file = PIDLockFile(pid_file_path)
     remove_stale_pid_file(pid_file)
 
     ml_worker: Optional[MLWorker] = None
     try:
         pid_file.acquire()
-        if is_daemon:
-            # Releasing the lock because it will be re-acquired by a daemon process
-            pid_file.release()
-            # If on windows, throw error and exit
-            if sys.platform == "win32":
-                logger.error("Daemon mode is not supported on Windows.")
-                return
-
-            run_daemon(is_server, url, api_key, hf_token)
+        if settings.force_asyncio_event_loop or sys.platform == "win32":
+            logger.info("Using asyncio to run jobs")
+            from asyncio import run
         else:
-            if settings.force_asyncio_event_loop or sys.platform == "win32":
-                logger.info("Using asyncio to run jobs")
-                from asyncio import run
-            else:
-                logger.info("Using uvloop to run jobs")
-                from uvloop import run
-            run(_start_worker(is_server, url, api_key, hf_token, nb_workers))
+            logger.info("Using uvloop to run jobs")
+            from uvloop import run
+        run(_start_worker(worker_name, url, api_key, hf_token, nb_workers))
     except KeyboardInterrupt:
         logger.info("Exiting")
         if ml_worker:
             ml_worker.stop()
     except lockfile.AlreadyLocked:
         existing_pid = read_pid_from_pidfile(pid_file_path)
+        # TODO(Bazire) : update the info to include worker_name
         logger.warning(
-            f"Another ML Worker {_ml_worker_description(is_server, url)} "
+            f"Another ML Worker {_ml_worker_description(worker_name, url)} "
             f"is already running with PID: {existing_pid}. "
             "Not starting a new one. "
             'To stop a running worker for this instance execute: "giskard worker stop" or '
@@ -185,80 +170,65 @@ def _start_command(is_server, url: AnyHttpUrl, api_key, is_daemon, hf_token=None
             pid_file.release()
 
 
-def _ml_worker_description(is_server, url):
-    return "server" if is_server else f"client for {url}"
+def _ml_worker_description(worker_name: str, url: AnyHttpUrl):
+    return f"named {worker_name} for {url}"
 
 
-async def _start_worker(is_server, url, api_key, hf_token, nb_workers):
+async def _start_worker(worker_name, url, api_key, hf_token, nb_workers):
     from giskard.ml_worker.ml_worker import MLWorker
 
-    ml_worker = MLWorker(is_server, url, api_key, hf_token)
-    await ml_worker.start(nb_workers, restart=True)
+    ml_worker = MLWorker(worker_name, url, api_key, hf_token)
+    await ml_worker.start(restart=True, nb_workers=nb_workers)
 
 
 @worker.command("stop", help="Stop running ML Workers")
 @common_options
 @start_stop_options
 @click.option("--all", "-a", "stop_all", is_flag=True, default=False, help="Stop all running ML Workers")
-def stop_command(is_server, url, stop_all):
+def stop_command(worker_name, url, stop_all):
     import re
 
     analytics.track(
         "giskard-worker:stop",
-        {"is_server": is_server, "url": anonymize(url), "stop_all": stop_all},
+        {"url": anonymize(url), "stop_all": stop_all},
     )
     if stop_all:
-        for pid_fname in os.listdir(run_dir):
-            if not re.match(r"^ml-worker-.*\.pid$", pid_fname):
+        for pid_path in run_dir.iterdir():
+            if not re.match(r"^ml-worker-.*\.pid$", pid_path.name):
                 continue
-            _stop_pid_fname(pid_fname)
+            _stop_pid_fname(pid_path)
     else:
-        _find_and_stop(is_server, url)
+        _find_and_stop(worker_name, url)
 
 
 @worker.command("restart", help="Restart ML Worker")
 @common_options
 @start_stop_options
-@click.option("--api-key", "-k", "api_key", help="Giskard hub API key")
-@click.option(
-    "--hf-token",
-    "hf_token",
-    help="Access token for Giskard hosted in a private Hugging Face Spaces",
-)
-def restart_command(is_server, url, api_key, hf_token):
+@start_options
+def restart_command(url: AnyHttpUrl, api_key, hf_token, nb_workers, worker_name):
     analytics.track(
         "giskard-worker:restart",
-        {"is_server": is_server, "url": anonymize(url)},
+        {"url": anonymize(url)},
     )
-    api_key = initialize_api_key(api_key, is_server)
-
-    _find_and_stop(is_server, url)
-    _start_command(is_server, url, api_key, is_daemon=True, hf_token=hf_token)
+    _find_and_stop(worker_name, url)
+    _start_command(worker_name, url, api_key, hf_token=hf_token, nb_workers=nb_workers)
 
 
-def _stop_pid_fname(pid_fname):
-    pid_file_path = str(run_dir / pid_fname)
-    remove_stale_pid_file(PIDLockFile(pid_file_path))
-    pid = read_pid_from_pidfile(pid_file_path)
+def _stop_pid_fname(pid_path: Path):
+    pid_file_path = str(pid_path)
+    remove_stale_pid_file(PIDLockFile(pid_path))
+    pid = read_pid_from_pidfile(pid_path)
     if pid:
         worker_process = psutil.Process(pid)
         worker_process.terminate()
-        logger.info(f"Stopped ML Worker Daemon by PID: {pid}")
-    remove_existing_pidfile(pid_file_path)
-
-
-def _find_and_stop(is_server, url):
-    pid_file_path = str(create_pid_file_path(is_server, url))
-    remove_stale_pid_file(PIDLockFile(pid_file_path))
-    pid = read_pid_from_pidfile(pid_file_path)
-    logger.info("Stopping ML Worker Daemon")
-    if pid:
-        worker_process = psutil.Process(pid)
-        worker_process.terminate()
-        logger.info(f"Stopped ML Worker {_ml_worker_description(is_server, url)}")
+        logger.info("Stopped ML Worker by PID: %s", pid)
     else:
-        logger.info(f"ML Worker {_ml_worker_description(is_server, url)} is not running")
+        logger.info("ML Worker (PID %s, path %s) is not running", pid, pid_path)
     remove_existing_pidfile(pid_file_path)
+
+
+def _find_and_stop(worker_name: str, url: AnyHttpUrl):
+    return _stop_pid_fname(create_pid_file_path(worker_name, url))
 
 
 @worker.command("logs")
