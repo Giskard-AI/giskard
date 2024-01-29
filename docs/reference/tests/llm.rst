@@ -19,3 +19,4 @@ Ground Truth
 --------------
 .. autofunction:: giskard.testing.tests.llm.test_llm_ground_truth
 .. autofunction:: giskard.testing.tests.llm.test_llm_ground_truth_similarity
+.. autofunction:: giskard.testing.tests.llm.test_llm_as_a_judge_ground_truth_similarity

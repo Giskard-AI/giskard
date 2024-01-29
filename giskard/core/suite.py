@@ -8,8 +8,6 @@ from functools import singledispatchmethod
 from xml.dom import minidom
 from xml.etree.ElementTree import Element, SubElement, tostring
 
-from mlflow import MlflowClient
-
 from giskard.client.dtos import SuiteInfo, SuiteTestDTO, TestInputDTO, TestSuiteDTO
 from giskard.client.giskard_client import GiskardClient
 from giskard.core.core import TestFunctionMeta
@@ -94,9 +92,10 @@ class TestSuiteResult:
         widget = TestSuiteResultWidget(self)
         return widget.render_html()
 
-    def to_mlflow(self, mlflow_client: MlflowClient = None, mlflow_run_id: str = None):
+    def to_mlflow(self, mlflow_client=None, mlflow_run_id: str = None):
         import mlflow
 
+        mlflow_client: mlflow.MlflowClient = mlflow_client
         from giskard.integrations.mlflow.giskard_evaluator_utils import process_text
 
         metrics = dict()
