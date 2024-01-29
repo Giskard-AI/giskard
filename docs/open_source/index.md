@@ -6,9 +6,9 @@
 
 installation_library/index
 scan/index
+testset_generation/index
 customize_tests/index
 integrate_tests/index
-testset_generation/index
 ```
 
 ::::::{grid} 1 1 2 2
@@ -24,6 +24,11 @@ testset_generation/index
 :link: scan/index.html
 ::::
 
+::::{grid-item-card} <br/><h3>🧰 RAG Toolset</h3>
+:text-align: center
+:link: testset_generation/index.html
+::::
+
 ::::{grid-item-card} <br/><h3>🧪 Customize your tests</h3>
 :text-align: center
 :link: customize_tests/index.html
@@ -32,9 +37,4 @@ testset_generation/index
 ::::{grid-item-card} <br/><h3>🔁 Integrate your tests</h3>
 :text-align: center
 :link: integrate_tests/index.html
-::::
-
-::::{grid-item-card} <br/><h3>🧰 RAG Toolset</h3>
-:text-align: center
-:link: testset_generation/index.html
 ::::
