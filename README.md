@@ -1,4 +1,4 @@
-<p align="center">
+<p align="center"> 
   <img alt="giskardlogo" src="readme/giskard_logo.png#gh-light-mode-only">
   <img alt="giskardlogo" src="readme/giskard_logo_green.png#gh-dark-mode-only">
 </p>
