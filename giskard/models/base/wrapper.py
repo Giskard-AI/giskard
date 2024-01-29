@@ -7,7 +7,6 @@ from inspect import isfunction, signature
 from pathlib import Path
 
 import cloudpickle
-import mlflow
 import numpy as np
 import pandas as pd
 import yaml
@@ -326,6 +325,8 @@ class WrapperModel(BaseModel, ABC):
             return {"batch_size": None}
 
     def to_mlflow(self, artifact_path: str = "prediction-function-from-giskard", *_args, **_kwargs):
+        import mlflow
+
         def _giskard_predict(df):
             return self.predict(df)
 
