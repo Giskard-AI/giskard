@@ -77,7 +77,7 @@ class TestResult:
     messages: List[TestMessage] = field(default_factory=list, repr=False)
     props: Dict[str, str] = field(default_factory=dict, repr=False)
     metric_name: str = "Metric"
-    metric: float = 0
+    metric: Optional[float] = None
     missing_count: int = 0
     missing_percent: float = 0
     unexpected_count: int = 0
