@@ -215,14 +215,14 @@ class Scanner:
             detector_elapsed = perf_counter() - detector_start
 
             if num_issues > 0:
-                logger.critical(
+                logger.info(
                     detector.__class__.__name__,
                     num_issues,
                     datetime.timedelta(seconds=detector_elapsed),
                     template=IssuesNumber,
                 )
             else:
-                logger.critical(
+                logger.info(
                     detector.__class__.__name__,
                     num_issues,
                     datetime.timedelta(seconds=detector_elapsed),
@@ -407,6 +407,7 @@ class Scanner:
     def _print_cost_estimate(self, model, dataset, detectors):
         if model.is_text_generation:
             estimates = self._get_cost_estimate(model, dataset, detectors)
+            print(estimates)
             logger.info(**estimates, template=COST_ESTIMATE_TEMPLATE)
 
     def _print_execution_summary(self, model, issues, errors, elapsed):

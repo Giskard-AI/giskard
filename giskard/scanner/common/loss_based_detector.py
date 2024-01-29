@@ -7,7 +7,7 @@ from time import perf_counter
 import pandas as pd
 
 from giskard.scanner.common.utils import get_dataset_subsample
-from giskard.utils.xprint import BOLD_STYLE, CYAN_STYLE, GREEN_STYLE, RED_STYLE, Template
+from giskard.utils.xprint import BOLD_STYLE, CYAN_STYLE, RED_STYLE, Template
 
 from ...datasets.base import Dataset
 from ...models.base import BaseModel
@@ -21,8 +21,6 @@ NotEnoughData = Template(content="Skipping scan because the dataset is too small
 LimitSize = Template(content="Limiting dataset size to {} samples.", pstyles=[CYAN_STYLE])
 LossDone = Template(content="Loss calculated (took {})", pstyles=[BOLD_STYLE])
 NumberSlicesFound = Template(content="{} slices found (took {})", pstyles=[BOLD_STYLE, BOLD_STYLE])
-IssuesNumber = Template(content="{} issues found (took {})", pstyles=[RED_STYLE, BOLD_STYLE])
-NoIssues = Template(content="{} issues found (took {})", pstyles=[GREEN_STYLE, BOLD_STYLE])
 Red = Template(content="{}", pstyles=[RED_STYLE])
 
 
@@ -53,21 +51,21 @@ class LossBasedDetector(Detector):
             dataset = get_dataset_subsample(dataset, model, self.max_dataset_size)
 
         # Calculate loss
-        logger.info("Computing loss")
+        logger.debug("Computing loss")
         start = perf_counter()
         meta = self._calculate_loss(model, dataset)
         elapsed = perf_counter() - start
-        logger.info(datetime.timedelta(seconds=elapsed), template=LossDone)
+        logger.debug(datetime.timedelta(seconds=elapsed), template=LossDone)
 
         # Find slices
-        logger.info("Finding data slices")
+        logger.debug("Finding data slices")
         start = perf_counter()
         slices = self._find_slices(model, dataset, features, meta)
         elapsed = perf_counter() - start
-        logger.info(len(slices), datetime.timedelta(seconds=elapsed), template=NumberSlicesFound)
+        logger.debug(len(slices), datetime.timedelta(seconds=elapsed), template=NumberSlicesFound)
 
         # Create issues from the slices
-        logger.info("Analyzing issues")
+        logger.debug("Analyzing issues")
         issues = self._find_issues(slices, model, dataset, meta)
         return issues
 

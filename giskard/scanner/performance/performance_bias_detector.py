@@ -148,7 +148,7 @@ class IssueFinder:
         self.alpha = alpha
 
     def detect(self, model: BaseModel, dataset: Dataset, slices: Sequence[SlicingFunction]):
-        logger.info(len(slices), template=SliceNumber)
+        logger.debug(len(slices), template=SliceNumber)
 
         # Prepare metrics
         metrics = self._get_default_metrics(model, dataset) if self.metrics is None else self.metrics
