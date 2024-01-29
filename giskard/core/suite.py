@@ -5,8 +5,8 @@ import logging
 import traceback
 from dataclasses import dataclass
 from functools import singledispatchmethod
-
-from mlflow import MlflowClient
+from xml.dom import minidom
+from xml.etree.ElementTree import Element, SubElement, tostring
 
 from giskard.client.dtos import SuiteInfo, SuiteTestDTO, TestInputDTO, TestSuiteDTO
 from giskard.client.giskard_client import GiskardClient
@@ -92,9 +92,10 @@ class TestSuiteResult:
         widget = TestSuiteResultWidget(self)
         return widget.render_html()
 
-    def to_mlflow(self, mlflow_client: MlflowClient = None, mlflow_run_id: str = None):
+    def to_mlflow(self, mlflow_client=None, mlflow_run_id: str = None):
         import mlflow
 
+        mlflow_client: mlflow.MlflowClient = mlflow_client
         from giskard.integrations.mlflow.giskard_evaluator_utils import process_text
 
         metrics = dict()
@@ -154,6 +155,50 @@ class TestSuiteResult:
                 "repository for further assistance: https://github.com/Giskard-AI/giskard."
             ) from e
         run.log({"Test suite results/Test-Suite Results": wandb.Table(columns=columns, data=data)})
+
+    def to_junit(self):
+        """Convert the test suite result to JUnit XML format."""
+        testsuites = Element("testsuites", {"tests": str(len(self.results))})
+
+        for test_tuple in self.results:
+            test_name, test, _ = test_tuple
+            testsuite = SubElement(
+                testsuites,
+                "testsuite",
+                {
+                    "name": f"Test {test_name} (metric={test.metric})",
+                },
+            )
+            testcase = SubElement(
+                testsuite, "testcase", {"name": test.metric_name, "time": str(test.metric)}
+            )  # replace with actual time
+
+            if not test.passed:
+                failure = SubElement(
+                    testcase,
+                    "failure",
+                    {
+                        "message": f"Test failed with metric of {test.metric}",
+                        "type": "TestFailed" if not test.is_error else "Error",
+                    },
+                )
+                # Add full test result information here
+                for k, v in test.__dict__.items():
+                    if k != "messages" and k != "is_error":
+                        SubElement(failure, "detail", {"name": k, "value": str(v)})
+                for message in test.messages:
+                    SubElement(failure, "detail", {"name": "message", "value": message})
+            else:
+                # Add test result information here
+                for k, v in test.__dict__.items():
+                    if k != "messages" and k != "is_error":
+                        SubElement(testcase, "detail", {"name": k, "value": str(v)})
+                for message in test.messages:
+                    SubElement(testcase, "detail", {"name": "message", "value": message})
+
+        # Convert to string
+        xml_str = minidom.parseString(tostring(testsuites)).toprettyxml(indent="   ")
+        return xml_str
 
 
 class SuiteInput:
@@ -487,7 +532,7 @@ class Suite:
             self.id = client.save_test_suite(self.to_dto(client, project_key, uploaded_uuid_status))
             analytics.track("hub:test_suite:uploaded")
 
-        print(f"Test suite has been saved: {client.host_url}/main/projects/{project_key}/test-suite/{self.id}/overview")
+        print(f"Test suite has been saved: {client.host_url}/main/projects/{project_key}/testing/suite/{self.id}")
 
         return self
 
