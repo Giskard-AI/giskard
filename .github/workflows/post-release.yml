@@ -66,8 +66,28 @@ jobs:
           git push origin main
           git push origin ${{ env.VERSION_NAME }}
 
-      - name: Build wheel
-        run: pdm build
+      - name: Download wheel (release candidate)
+        if: ${{ github.event.action == 'create-release' }}
+        working-directory: dist
+        run: gh -R ${{ github.repository_owner }}/giskard run download -n rc-wheel
+        env:
+          GH_TOKEN: ${{ github.token }}
+
+      - name: Validate wheel version
+        working-directory: dist
+        run: |
+          python -m pip install pkginfo
+          ls giskard-*.whl | xargs -I {} python3 -c 'import pkginfo; print(pkginfo.wheel.Wheel("{}").version)' > WHEEL_VERSION
+          if [ ! `grep ${{ env.VERSION_NUMBER }} WHEEL_VERSION` ]
+          then
+            echo "Expected wheel version ${{ env.VERSION_NUMBER }}, got $(cat WHEEL_VERSION)"
+            exit 1
+          fi
+  
+      # build .tar.gz sdist tarball
+      # --no-clean preserves the previously downloaded wheel in dist/
+      - name: Build source distribution tarball
+        run: pdm build --no-wheel --no-clean
 
       - name: Create Github Release
         id: github-release
