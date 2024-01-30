@@ -112,6 +112,10 @@ class GiskardTest(Artifact[TestFunctionMeta], ABC):
 
             assert result.passed, message
 
+    @property
+    def display_name(self):
+        return self.meta.display_name
+
 
 Function = Callable[..., Result]
 
