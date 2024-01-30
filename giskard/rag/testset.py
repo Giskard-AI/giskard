@@ -7,8 +7,9 @@ class QATestset(Dataset):
     of a `Suite` based on the question/answer pairs inside the `TestSet`.
     """
 
-    def to_test_suite(self):
+    def to_test_suite(self, name=None):
         suite_default_params = {"dataset": self}
-        suite = Suite(name="Test suite generated from testset", default_params=suite_default_params)
+        name = name or "Test suite generated from testset"
+        suite = Suite(name=name, default_params=suite_default_params)
         suite.add_test(test_llm_correctness, "TestsetCorrectnessTest", "TestsetCorrectnessTest")
         return suite

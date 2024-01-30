@@ -12,11 +12,13 @@ from .prompts import (
     QA_GENERATION_ASSISTANT_EXAMPLE,
     QA_GENERATION_CONTEXT_EXAMPLE,
     QA_GENERATION_SYSTEM_PROMPT,
+    QA_GENERATION_SYSTEM_PROMPT_MODEL,
 )
 from .testset import QATestset
 from .vector_store import VectorStore
 
 logger = logging.getLogger(__name__)
+logger.setLevel(logging.INFO)
 
 
 class KnowledgeBaseTestsetGenerator(BaseDataGenerator):
@@ -60,6 +62,7 @@ class KnowledgeBaseTestsetGenerator(BaseDataGenerator):
     """
 
     _qa_generation_system_prompt = QA_GENERATION_SYSTEM_PROMPT
+    _qa_generation_system_prompt_model = QA_GENERATION_SYSTEM_PROMPT_MODEL
     _qa_generation_context_example = QA_GENERATION_CONTEXT_EXAMPLE
     _qa_generation_assistant_example = QA_GENERATION_ASSISTANT_EXAMPLE
     _fix_json_prompt = FIX_JSON_FORMAT_PROMPT
@@ -100,14 +103,21 @@ class KnowledgeBaseTestsetGenerator(BaseDataGenerator):
         )
 
     def _generate_question_answer_from_context(self, context):
+        if self.model_name is not None or self.model_description is not None:
+            system_prompt = self._qa_generation_system_prompt_model.format(
+                model_name=self.model_name,
+                model_description=self.model_description,
+                language=self.language,
+            )
+        else:
+            system_prompt = self._qa_generation_system_prompt.format(
+                language=self.language,
+            )
+
         messages = [
             {
                 "role": "system",
-                "content": self._qa_generation_system_prompt.format(
-                    model_name=self.model_name,
-                    model_description=self.model_description,
-                    language=self.language,
-                ),
+                "content": system_prompt,
             }
         ]
         if self.include_examples:
@@ -193,6 +203,7 @@ class KnowledgeBaseTestsetGenerator(BaseDataGenerator):
         """
         generated_questions = []
         for idx in range(num_samples):
+            logger.info(f"Generating question {idx + 1}/{num_samples}")
             seed_contexts = self._extract_seed_context()
             context = self._format_context(seed_contexts)
 
@@ -208,4 +219,4 @@ class KnowledgeBaseTestsetGenerator(BaseDataGenerator):
                     }
                 )
 
-        return QATestset(df=pd.DataFrame(generated_questions))
+        return QATestset(df=pd.DataFrame(generated_questions), target=None)
