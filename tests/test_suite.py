@@ -2,7 +2,7 @@ import numpy as np
 import pytest
 
 from giskard import Model, Suite
-from giskard.core.suite import single_binary_result
+from giskard.core.suite import single_binary_result, SuiteResult
 from giskard.core.test_result import TestResult
 from giskard.testing import test_accuracy
 
@@ -75,3 +75,11 @@ def test_export_for_unittest_with_export_args(german_credit_data, german_credit_
     tests_list = suite.to_unittest(model=german_credit_model, dataset=german_credit_data)
     assert len(tests_list) == 1
     assert bool(tests_list[0].fullname)
+
+
+def test_suite_result_backward_compatibility():
+    """This allow backward compatibility by going moving Suiteresult from a tuple to a dataclass"""
+    test_name, result, params = SuiteResult("name", TestResult(), {})
+    assert test_name == "name"
+    assert result == TestResult()
+    assert params == {}

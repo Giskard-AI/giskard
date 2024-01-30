@@ -3,6 +3,7 @@ from typing import Any, Dict, List, Optional, Tuple, Union
 import inspect
 import logging
 import traceback
+import warnings
 from dataclasses import dataclass
 from functools import singledispatchmethod
 from xml.dom import minidom
@@ -80,7 +81,32 @@ def parse_function_arguments(client, project_key, function_inputs):
 
 TestName = str
 TestParams = Dict[str, Any]
-SuiteResult = Tuple[TestName, TestResult, TestParams]
+
+
+@dataclass
+class SuiteResult:
+    test_name: TestName
+    result: TestResult
+    params: TestParams
+
+    @property
+    def _tuple(self):
+        # Method to ensure backward compatibility
+        return (self.test_name, self.result, self.params)
+
+    def __getitem__(self, i):
+        warnings.warn(
+            "The test results has been changed to a class, getting attribute by index will be removed in the future.",
+            category=DeprecationWarning,
+        )
+        return self._tuple[i]
+
+    def __iter__(self):
+        warnings.warn(
+            "The test results has been changed to a class, the iterator function will be removed in the future..",
+            category=DeprecationWarning,
+        )
+        return self._tuple.__iter__()
 
 
 class TestSuiteResult:
@@ -106,15 +132,16 @@ class TestSuiteResult:
 
         metrics = dict()
         for test_result in self.results:
-            test_name = process_text(test_result[0])
-            metric_name = process_text(test_result[1].metric_name)
+            test_name = process_text(test_result.test_name)
+            metric_name = process_text(test_result.result.metric_name)
+            result = test_result.result
             # TODO: Improve this in GSK-2041
             mlflow_metric_name = test_name if metric_name == "Metric" else f"{metric_name} for {test_name}"
             if mlflow_client is None and mlflow_run_id is None:
-                mlflow.log_metric(mlflow_metric_name, test_result[1].metric)
+                mlflow.log_metric(mlflow_metric_name, result.metric)
             elif mlflow_client and mlflow_run_id:
-                mlflow_client.log_metric(mlflow_run_id, mlflow_metric_name, test_result[1].metric)
-            metrics[mlflow_metric_name] = test_result[1].metric
+                mlflow_client.log_metric(mlflow_run_id, mlflow_metric_name, result.metric)
+            metrics[mlflow_metric_name] = result.metric
 
         return metrics
 
@@ -139,7 +166,10 @@ class TestSuiteResult:
         # Log just a test description and a metric.
         columns = ["Metric name", "Data slice", "Metric value", "Passed"]
         try:
-            data = [[*_parse_test_name(result[0]), result[1].metric, result[1].passed] for result in self.results]
+            data = [
+                [*_parse_test_name(test_result.test_name), test_result.result.metric, test_result.result.passed]
+                for test_result in self.results
+            ]
             analytics.track(
                 "wandb_integration:test_suite",
                 {
@@ -166,40 +196,40 @@ class TestSuiteResult:
         """Convert the test suite result to JUnit XML format."""
         testsuites = Element("testsuites", {"tests": str(len(self.results))})
 
-        for test_tuple in self.results:
-            test_name, test, _ = test_tuple
+        for test_result in self.results:
+            test_name, result = test_result.test_name, test_result.result
             testsuite = SubElement(
                 testsuites,
                 "testsuite",
                 {
-                    "name": f"Test {test_name} (metric={test.metric})",
+                    "name": f"Test {test_name} (metric={result.metric})",
                 },
             )
             testcase = SubElement(
-                testsuite, "testcase", {"name": test.metric_name, "time": str(test.metric)}
+                testsuite, "testcase", {"name": result.metric_name, "time": str(result.metric)}
             )  # replace with actual time
 
-            if not test.passed:
+            if not result.passed:
                 failure = SubElement(
                     testcase,
                     "failure",
                     {
-                        "message": f"Test failed with metric of {test.metric}",
-                        "type": "TestFailed" if not test.is_error else "Error",
+                        "message": f"Test failed with metric of {result.metric}",
+                        "type": "TestFailed" if not result.is_error else "Error",
                     },
                 )
                 # Add full test result information here
-                for k, v in test.__dict__.items():
+                for k, v in result.__dict__.items():
                     if k != "messages" and k != "is_error":
                         SubElement(failure, "detail", {"name": k, "value": str(v)})
-                for message in test.messages:
+                for message in result.messages:
                     SubElement(failure, "detail", {"name": "message", "value": message})
             else:
                 # Add test result information here
-                for k, v in test.__dict__.items():
+                for k, v in result.__dict__.items():
                     if k != "messages" and k != "is_error":
                         SubElement(testcase, "detail", {"name": k, "value": str(v)})
-                for message in test.messages:
+                for message in result.messages:
                     SubElement(testcase, "detail", {"name": "message", "value": message})
 
         # Convert to string
@@ -420,7 +450,7 @@ class Suite:
                 if isinstance(result, bool):
                     result = TestResult(passed=result)
 
-                results.append((test_partial.test_id, result, test_params))
+                results.append(SuiteResult(test_partial.test_id, result, test_params))
                 if verbose:
                     print(
                         """Executed '{0}' with arguments {1}: {2}""".format(test_partial.test_id, test_params, result)
@@ -429,7 +459,7 @@ class Suite:
                 error = traceback.format_exc()
                 logging.exception(f"An error happened during test execution for test: {test_partial.test_id}")
                 results.append(
-                    (
+                    SuiteResult(
                         test_partial.test_id,
                         TestResult(
                             passed=False,
@@ -440,7 +470,7 @@ class Suite:
                     )
                 )
 
-        passed = single_binary_result([result for name, result, params in results])
+        passed = single_binary_result([r.result for r in results])
 
         logger.info(f"Executed test suite '{self.name or 'unnamed'}'")
         logger.info(f"result: {'success' if passed else 'failed'}")
