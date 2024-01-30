@@ -1,4 +1,4 @@
-from typing import Any, Dict, List, Optional, Tuple, Union
+from typing import Any, Callable, Dict, List, Optional, Tuple, Union
 
 import inspect
 import logging
@@ -8,8 +8,6 @@ from dataclasses import dataclass
 from functools import singledispatchmethod
 from xml.dom import minidom
 from xml.etree.ElementTree import Element, SubElement, tostring
-
-from mlflow import MlflowClient
 
 from giskard.client.dtos import SuiteInfo, SuiteTestDTO, TestInputDTO, TestSuiteDTO
 from giskard.client.giskard_client import GiskardClient
@@ -125,9 +123,10 @@ class TestSuiteResult:
         widget = TestSuiteResultWidget(self)
         return widget.render_html()
 
-    def to_mlflow(self, mlflow_client: MlflowClient = None, mlflow_run_id: str = None):
+    def to_mlflow(self, mlflow_client=None, mlflow_run_id: str = None):
         import mlflow
 
+        mlflow_client: mlflow.MlflowClient = mlflow_client
         from giskard.integrations.mlflow.giskard_evaluator_utils import process_text
 
         metrics = dict()
@@ -645,6 +644,35 @@ class Suite:
 
         """
         self.tests.append(generate_test_partial(test_fn, test_id, display_name, suite_test_id, **params))
+
+        return self
+
+    def upgrade_test(
+        self, test: GiskardTest, migrate_params_fn: Optional[Callable[[Dict[str, Any]], Dict[str, Any]]] = None
+    ) -> "Suite":
+        """Upgrade a test with a new version, the test being upgraded are matched using display_name tests property.
+
+        Parameters
+        ----------
+        test : GiskardTest
+            The newest version of a test to be upgraded
+        migrate_params_fn : Optional[Callable[[Dict[str, Any]], Dict[str, Any]]]
+            An optional callback used to migrate the old test params into the new params
+
+        Returns
+        -------
+        Suite
+            The current instance of the test suite to allow chained calls.
+
+        """
+
+        for test_to_upgrade in self.tests:
+            if test_to_upgrade.giskard_test.display_name != test.display_name:
+                continue
+
+            test_to_upgrade.giskard_test = test
+            if migrate_params_fn is not None:
+                test_to_upgrade.provided_inputs = migrate_params_fn(test_to_upgrade.provided_inputs.copy())
 
         return self
 
