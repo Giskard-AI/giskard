@@ -1,6 +1,7 @@
 import itertools
 import json
 import re
+import unicodedata
 from pathlib import Path
 
 import numpy as np
@@ -191,6 +192,22 @@ class TextPunctuationRemovalTransformation(TextTransformation):
             pieces[i] = self._regex.sub(" ", pieces[i]).translate(self._trans_table)
 
         return "".join(pieces)
+
+
+class TextAccentRemovalTransformation(TextTransformation):
+    name = "Accent Removal"
+
+    def __init__(self, column, rate=1.0, rng_seed=1729):
+        super().__init__(column)
+        self.rate = rate
+        self.rng = np.random.default_rng(seed=rng_seed)
+
+    def make_perturbation(self, text):
+        return "".join(
+            char
+            for char in unicodedata.normalize("NFD", text)
+            if unicodedata.category(char) != "Mn" or self.rng.random() > self.rate
+        )
 
 
 class TextLanguageBasedTransformation(TextTransformation):
