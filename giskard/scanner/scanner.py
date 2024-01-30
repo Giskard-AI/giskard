@@ -61,17 +61,22 @@ NoDetectedIssues = Template(content="{}: {} detected. (Took {})", pstyles=[BLUE_
 ErrorFail = Template(content="Detector {} failed with error: {}", pstyles=[BLUE_STYLE, GREEN_STYLE])
 IssuesNumber = Template(content="{}: {} issues detected (took {})\n", pstyles=[BLUE_STYLE, RED_STYLE, BOLD_STYLE])
 NoIssues = Template(content="{}: {} issue detected (took {})\n", pstyles=[BLUE_STYLE, GREEN_STYLE, BOLD_STYLE])
-ScanCompletedGood = Template(content="Scan completed: {} issue detected (took {})!", pstyles=[GREEN_STYLE, BOLD_STYLE])
-ScanCompletedBad = Template(content="Scan completed: {} issues detected (took {}).", pstyles=[RED_STYLE, BOLD_STYLE])
+ScanCompletedGood = Template(
+    content="Scan completed: {} issue detected (took {})!\n", pstyles=[GREEN_STYLE, BOLD_STYLE]
+)
+ScanCompletedBad = Template(content="Scan completed: {} issues detected (took {}).\n", pstyles=[RED_STYLE, BOLD_STYLE])
+WarningTemplate = Template(content="{}", pstyles=[YELLOW_STYLE])
+
 
 COST_ESTIMATE_TEMPLATE = Template(
-    content="""This automatic scan will use LLM-assisted detectors based on GPT-4 to identify vulnerabilities in your model.
+    content=""" \U000026a0 Disclaimer \U000026a0
+This automatic scan will use LLM-assisted detectors based on GPT-4 to identify vulnerabilities in your model.
 These are the total estimated costs:
 Estimated calls to your model: ~{}
 Estimated OpenAI GPT-4 calls for evaluation: {} (~{} prompt tokens and ~{} sampled tokens)
 OpenAI API costs for evaluation are estimated to ${}.
 """,
-    pstyles=[BOLD_STYLE, BOLD_STYLE, BOLD_STYLE, BOLD_STYLE, BLUE_STYLE],
+    pstyles=[BLUE_STYLE, BLUE_STYLE, BLUE_STYLE, BLUE_STYLE, CYAN_STYLE],
 )
 
 COST_SUMMARY_TEMPLATE = Template(
@@ -79,7 +84,7 @@ COST_SUMMARY_TEMPLATE = Template(
 OpenAI GPT-4 calls for evaluation: {} ({} prompt tokens and {} sampled tokens)
 OpenAI API costs for evaluation amount to ${} (standard pricing).
 """,
-    pstyles=[BOLD_STYLE, BOLD_STYLE, BOLD_STYLE, BLUE_STYLE],
+    pstyles=[BLUE_STYLE, BLUE_STYLE, BLUE_STYLE, CYAN_STYLE],
 )
 
 MAX_ISSUES_PER_DETECTOR = 15
@@ -87,6 +92,22 @@ MAX_ISSUES_PER_DETECTOR = 15
 # Hardcoded for now…
 PROMPT_TOKEN_COST = 0.03e-3
 SAMPLED_TOKEN_COST = 0.06e-3
+
+
+def get_decision_from_user():
+    while True:
+        try:
+            value = str(input("➡️ Would you like to proceed [y/n]? "))
+        except ValueError:
+            logger.critical("Your input must be a string. Try again.", template=WarningTemplate)
+            continue
+
+        if value.lower() not in ["y", "n"]:
+            logger.critical("The only accepted answers are 'y' or 'n'. Try again.", template=WarningTemplate)
+            continue
+        else:
+            break
+    return value
 
 
 class Scanner:
@@ -184,7 +205,7 @@ class Scanner:
         if not detectors:
             raise RuntimeError("No issue detectors available. Scan will not be performed.")
 
-        logger.info(f"{', '.join([d.__class__.__name__ for d in detectors])}", template=RunningDetectors)
+        logger.critical(f"{', '.join([d.__class__.__name__ for d in detectors])}", template=RunningDetectors)
 
         issues = []
         errors = []
@@ -407,8 +428,12 @@ class Scanner:
     def _print_cost_estimate(self, model, dataset, detectors):
         if model.is_text_generation:
             estimates = self._get_cost_estimate(model, dataset, detectors)
-            print(estimates)
-            logger.info(**estimates, template=COST_ESTIMATE_TEMPLATE)
+            logger.critical(*estimates.values(), template=COST_ESTIMATE_TEMPLATE)
+            if float(estimates["estimated_usd"]) != 0:
+                user_input = get_decision_from_user()
+                if user_input != "y":
+                    logger.critical("⛔ Scan aborted…", template=WarningTemplate)
+                    raise KeyboardInterrupt
 
     def _print_execution_summary(self, model, issues, errors, elapsed):
         num_issues = len(issues)
@@ -420,7 +445,7 @@ class Scanner:
 
         if model.is_text_generation:
             measured = self._get_cost_measure()
-            logger.info(**measured, template=COST_SUMMARY_TEMPLATE)
+            logger.critical(*measured.values(), template=COST_SUMMARY_TEMPLATE)
         if errors:
             warning(
                 f"{len(errors)} errors were encountered while running detectors. Please check the log to understand what went wrong. "

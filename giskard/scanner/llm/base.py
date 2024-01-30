@@ -10,7 +10,7 @@ from ...models.base.model import BaseModel
 from ...testing.tests.llm import test_llm_output_against_requirement
 from ..issues import Issue
 from ..registry import Detector
-from ..scanner import logger
+from ..scanlogger import logger
 
 
 class RequirementBasedDetector(Detector):
@@ -57,14 +57,14 @@ class RequirementBasedDetector(Detector):
     def run(self, model: BaseModel, dataset: Dataset, features=None) -> Sequence[Issue]:
         issue_description = self.get_issue_description()
 
-        logger.info(f"{self.__class__.__name__}: Generating test case requirements")
+        logger.debug("Generating test case requirements")
         requirements_gen = TestcaseRequirementsGenerator(issue_description)
         requirements = requirements_gen.generate_requirements(model, self.num_requirements)
 
-        logger.info(f"{self.__class__.__name__}: Evaluating test cases")
+        logger.debug("Evaluating test cases")
         issues = []
         for requirement in requirements:
-            logger.info(f"{self.__class__.__name__}: Evaluating requirement: {requirement}")
+            logger.debug(f"Evaluating requirement: {requirement}")
 
             languages = dataset.extract_languages(columns=model.meta.feature_names)
 
@@ -80,11 +80,9 @@ class RequirementBasedDetector(Detector):
                 issues.append(
                     self.make_issue(model, eval_dataset, requirement, pd.DataFrame(eval_result.failure_examples))
                 )
-                logger.info(
-                    f"{self.__class__.__name__}: Test case failed ({len(eval_result.failure_examples)} failed examples)"
-                )
+                logger.debug(f"Test case failed ({len(eval_result.failure_examples)} failed examples)")
             else:
-                logger.info(f"{self.__class__.__name__}: Test case passed")
+                logger.debug("Test case passed")
 
         return issues
 

@@ -1,12 +1,11 @@
 from typing import Sequence
 
-from giskard.scanner import logger
-
 from ...datasets.base import Dataset
 from ...llm.client import get_default_client
 from ...models.base.model import BaseModel
 from ..decorators import detector
 from ..issues import Issue, IssueLevel, OutputFormatting
+from ..scanlogger import logger
 from .base import RequirementBasedDetector
 
 BREAKER_PROMPT = """Based on the following model description, does this AI model require a specific format for its output?
@@ -69,8 +68,8 @@ class LLMOutputFormattingDetector(RequirementBasedDetector):
         )
 
         if out.message.strip().upper() != "Y":
-            logger.warning(
-                f"{self.__class__.__name__}: Skipping output format checks because we could not define format requirements based on the model description."
+            logger.info(
+                "Skipping output format checks because we could not define format requirements based on the model description."
             )
             return []
 
