@@ -38,7 +38,7 @@ jobs:
         run:  sed -i 's/^\(version *= *\).*$/\1"${{ inputs.version }}"/' pyproject.toml
 
       - name: Setup PDM
-        uses: pdm-project/setup-pdm@v3
+        uses: pdm-project/setup-pdm@v4
         with:
           python-version: '3.10'
           cache: false
@@ -56,7 +56,7 @@ jobs:
           path: dist/*whl
 
       - name: Trigger release process in giskard-hub
-        uses: peter-evans/repository-dispatch@v2
+        uses: peter-evans/repository-dispatch@v3
         with:
           token: ${{ secrets.RELEASE_PAT_TOKEN }}
           event-type: create-release
