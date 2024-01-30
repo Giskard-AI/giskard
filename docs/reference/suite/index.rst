@@ -6,6 +6,10 @@ Test suite
    .. automethod:: __init__
    .. automethod:: run
    .. automethod:: add_test
+   .. automethod:: add_test
+   .. automethod:: remove_test
+   .. automethod:: upgrade_test
+   .. automethod:: update_test_params
    .. automethod:: upload
    .. automethod:: download
 
