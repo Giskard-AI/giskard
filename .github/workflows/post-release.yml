@@ -102,7 +102,6 @@ jobs:
             dist/giskard-*.whl
 
       - name: Post to a Slack channel
-        if: false
         id: slack
         uses: slackapi/slack-github-action@v1.25.0
         with:
@@ -115,5 +114,4 @@ jobs:
           SLACK_BOT_TOKEN: ${{ secrets.SLACK_BOT_TOKEN }}
 
       - name: Push to Pipy
-        if: false
         run: pdm publish --no-build --username "${{ secrets.PIPY_USERNAME }}" --password "${{ secrets.PIPY_PASSWORD }}"
