@@ -10,7 +10,7 @@
 
 ## What is AVID?
 
-The AI Vulnerability Database ([AVID](https://avidml.org)) is an open-source knowledge base of failure modes of AI
+The AI Vulnerability Database ([AVID](https://avidml.org)) is an open-source knowledge base focused on documenting the failure modes of AI
 models, datasets, and systems.
 
 The AVID project has two focus areas:
@@ -30,7 +30,7 @@ your vulnerability reports with the community.
 By default, all Giskard scan reports indicate the **AVID taxonomy categories** that are relevant to the detected
 vulnerabilities. You can find this information in the detail view of each issue in the scan widget:
 
-![dagshub](../../assets/integrations/avid/avid_taxonomy.gif)
+![avid](../../assets/integrations/avid/avid_taxonomy.gif)
 
 
 ### Exporting AVID reports from the Giskard scan
