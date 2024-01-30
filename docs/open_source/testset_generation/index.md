@@ -84,15 +84,25 @@ Once the knowledge base is loaded as a pandas `DataFrame`, you can generate the 
 from giskard.rag import KnowledgeBaseTestsetGenerator
 
 generator = KnowledgeBaseTestsetGenerator(knowledge_base_df, 
-                    model_name="Model name",
-                    model_description="Description of the model",
+                    model_name="Model name", # Optional, provide a name to your model to get better fitting questions
+                    model_description="Description of the model", # Optional, briefly describe the task done by your model
                     knowledge_base_features=["page_content"])
 
 testset = generator.generate_dataset(num_samples=10)
 ```
 
-## Step 3: Evaluate your model
-Once your testset is ready, you can evaluate your model using the `CorrectnessEvaluator`. This can be done directly or through a Giskard test which wraps the evaluator. The `CorrectnessEvaluator` asks a question to the given model and compares the model answer with the reference answer from the testset. Specifically, we use GPT-4 to assess whether the model answer is acceptable given the reference answer.  
+## Step 3: Wrap your model
+To evaluate your model, you must wrap it as a `giskard.Model`. This step is necessary to ensure a common format for your model and its metadata.You can wrap anything as long as you can represent it in a Python function (for example an API call call to Azure or OpenAI). We also have pre-built wrappers for LangChain objects, or you can create your own wrapper by extending the `giskard.Model` class if you need to wrap a complex object such as a custom-made RAG communicating with a vectorstore.
+
+To do so, you can follow the instructions from the [LLM Scan feature](../scan/scan_llm/index.md#step-1-wrap-your-model) or from the {doc}`Reference API </reference/models/index>`. 
+
+Detailed examples can also be found on our {doc}`LLM tutorials section </tutorials/llm_tutorials/index>`.
+
+
+## Step 4: Evaluate your model
+Once your `testset` is ready, you can evaluate your wrapped model using the `CorrectnessEvaluator`. This can be done directly or through a Giskard test which wraps the evaluator. The `CorrectnessEvaluator` asks a question to the given model and compares the model answer with the reference answer from the testset. Specifically, we use GPT-4 to assess whether the model answer is acceptable given the reference answer. 
+
+
 :::::::{tab-set}
 ::::::{tab-item} Direct Evaluation
 
@@ -101,7 +111,7 @@ The `CorrectnessEvaluator` asks all the questions from the testset to your model
 from giskard.llm.evaluators import CorrectnessEvaluator
 
 correctness_evaluator = CorrectnessEvaluator()
-eval_result, failed_indices = correctness_evaluator.evaluate(model, dataset)
+eval_result, failed_indices = correctness_evaluator.evaluate(giskard_model, testset)
 ```
 ::::::
 ::::::{tab-item} Giskard test
@@ -109,7 +119,7 @@ You can also evaluate your model with the `test_llm_correctness` function, which
 ```python
 from giskard.testing.tests.llm import test_llm_correctness
 
-test_result = test_llm_correctness(model, testset, threshold=0.8).execute()
+test_result = test_llm_correctness(giskard_model, testset, threshold=0.8).execute()
 ```
 ::::::
 :::::::
@@ -123,7 +133,7 @@ The questions generated in the testset may have highlighted some vulnerabilities
 Turn the generated testset into an actionable test suite that you can save and reuse in further iterations.
 
 ```python
-test_suite = scan_results.generate_test_suite("My first test suite")
+test_suite = testset.to_test_suite("My first test suite")
 
 # You can run the test suite locally to verify that it reproduces the issues
 test_suite.run()

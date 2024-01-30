@@ -72,7 +72,7 @@ set_llm_model('my-gpt-4-model')
 
 We are now ready to start.
 
-
+(model-wrapping)=
 ## Step 1: Wrap your model
 
 Start by **wrapping your model**. This step is necessary to ensure a common format for your model and its metadata.
