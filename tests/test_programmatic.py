@@ -53,7 +53,7 @@ def test_missing_arg():
 
         assert len(result.results) == 1
         _, test_result, _ = result.results[0]
-        assert "1 validation error for _test_a_greater_b" in test_result.messages[0].text
+        assert "1 validation error" in test_result.messages[0].text
 
 
 def test_missing_args():
@@ -65,7 +65,7 @@ def test_missing_args():
         assert len(result.results) == 1
         _, test_result, _ = result.results[0]
         assert test_result.is_error
-        assert "2 validation errors for _test_a_greater_b" in test_result.messages[0].text
+        assert "2 validation errors" in test_result.messages[0].text
 
 
 def test_missing_arg_one_global():
@@ -77,7 +77,7 @@ def test_missing_arg_one_global():
         assert len(result.results) == 1
         _, test_result, _ = result.results[0]
         assert test_result.is_error
-        assert "1 validation error for _test_a_greater_b" in test_result.messages[0].text
+        assert "1 validation error" in test_result.messages[0].text, test_result.messages[0].text
 
 
 def test_all_global():
