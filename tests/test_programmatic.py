@@ -46,35 +46,38 @@ def test_a_greater_b_pass():
 
 
 def test_missing_arg():
-    result = Suite().add_test(_test_a_greater_b(a=2)).run()
+    with pytest.warns(match="Missing 1 required parameters: {'b': <class 'int'>}"):
+        result = Suite().add_test(_test_a_greater_b(a=2)).run()
 
-    assert not result.passed
+        assert not result.passed
 
-    assert len(result.results) == 1
-    _, test_result, _ = result.results[0]
-    assert "1 validation error for _test_a_greater_b" in test_result.messages[0].text
+        assert len(result.results) == 1
+        _, test_result, _ = result.results[0]
+        assert "1 validation error for _test_a_greater_b" in test_result.messages[0].text
 
 
 def test_missing_args():
-    result = Suite().add_test(_test_a_greater_b()).run()
+    with pytest.warns(match="Missing 2 required parameters: {'a': <class 'int'>, 'b': <class 'int'>}"):
+        result = Suite().add_test(_test_a_greater_b()).run()
 
-    assert not result.passed
+        assert not result.passed
 
-    assert len(result.results) == 1
-    _, test_result, _ = result.results[0]
-    assert test_result.is_error
-    assert "2 validation errors for _test_a_greater_b" in test_result.messages[0].text
+        assert len(result.results) == 1
+        _, test_result, _ = result.results[0]
+        assert test_result.is_error
+        assert "2 validation errors for _test_a_greater_b" in test_result.messages[0].text
 
 
 def test_missing_arg_one_global():
-    result = Suite().add_test(_test_a_greater_b()).run(a=2)
+    with pytest.warns(match="Missing 1 required parameters: {'b': <class 'int'>}"):
+        result = Suite().add_test(_test_a_greater_b()).run(a=2)
 
-    assert not result.passed
+        assert not result.passed
 
-    assert len(result.results) == 1
-    _, test_result, _ = result.results[0]
-    assert test_result.is_error
-    assert "1 validation error for _test_a_greater_b" in test_result.messages[0].text
+        assert len(result.results) == 1
+        _, test_result, _ = result.results[0]
+        assert test_result.is_error
+        assert "1 validation error for _test_a_greater_b" in test_result.messages[0].text
 
 
 def test_all_global():
