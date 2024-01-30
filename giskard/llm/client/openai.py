@@ -22,6 +22,8 @@ AUTH_ERROR_MESSAGE = (
 
 
 class BaseOpenAIClient(LLMClient, ABC):
+    _max_embedding_chunk_size = 2048
+
     def __init__(self, model: str):
         self._logger = LLMLogger()
         self.model = model
@@ -77,10 +79,17 @@ class BaseOpenAIClient(LLMClient, ABC):
     def _embeddings_generation(self, texts: Sequence[str], model: str):
         ...
 
-    def embeddings(self, texts: Sequence[str], model: str = "text-embedding-ada-002") -> np.ndarray:
+    def embeddings(
+        self, texts: Sequence[str], model: str = "text-embedding-ada-002", chunk_size: int = 2048
+    ) -> np.ndarray:
         texts = [t.replace("\n", " ") for t in texts]
-        embeddings = self._embeddings_generation(texts, model)
-        return np.stack(embeddings)
+        if not isinstance(chunk_size, int) or chunk_size > self._max_embedding_chunk_size or chunk_size < 1:
+            raise ValueError(f"Chunk size must be an integer between 0 and {self._max_embedding_chunk_size}.")
+
+        chunks_indices = list(range(chunk_size, len(texts), chunk_size))
+        chunks = np.split(texts, chunks_indices)
+        embedded_chunks = [self._embeddings_generation(list(chunk), model) for chunk in chunks]
+        return np.stack([emb for embeddings in embedded_chunks for emb in embeddings])
 
 
 class LegacyOpenAIClient(BaseOpenAIClient):
