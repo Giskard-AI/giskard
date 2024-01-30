@@ -1,8 +1,20 @@
-QA_GENERATION_SYSTEM_PROMPT = """You are a powerful auditing AI, your role is to generate question answer pair from a given list of context paragraph to audit a model specialized on these knowledge. 
+QA_GENERATION_SYSTEM_PROMPT_MODEL = """You are a powerful auditing AI, your role is to generate question answer pair from a given list of context paragraph to audit a model specialized on these knowledge. 
 
 The model you are auditing is the following:
 - Model name: {model_name}
 - Model description: {model_description}  
+
+Your task is to generate questions about the products, the ordering process and the shop's activities in general. Your question must be related to a provided context.  
+Please respect the following rules to generate the question:
+- The answer to the question should be found inside the provided context
+- The question must be self-contained
+- The question and answer must be in this language: {language}
+
+You will be provided the context, consisting in multiple paragraphs delimited by dashes "------".
+You will return the question and the precise answer to the question based exclusively on the provided context.
+Your output should be a single JSON object, with keys 'question' and 'answer'. Make sure you return a valid JSON object."""
+
+QA_GENERATION_SYSTEM_PROMPT = """You are a powerful auditing AI, your role is to generate question answer pair from a given list of context paragraph to audit a model specialized on these knowledge. 
 
 Your task is to generate questions about the products, the ordering process and the shop's activities in general. Your question must be related to a provided context.  
 Please respect the following rules to generate the question:
