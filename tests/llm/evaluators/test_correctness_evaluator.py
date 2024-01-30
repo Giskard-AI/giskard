@@ -63,7 +63,7 @@ def test_correctness_evaluator_correctly_flags_examples():
 
     evaluator = CorrectnessEvaluator(llm_client=client)
 
-    result, failed_indices = evaluator.evaluate(model, dataset)
+    result = evaluator.evaluate(model, dataset)
 
     assert len(result.success_examples) == 1
     assert len(result.failure_examples) == 1
@@ -112,7 +112,7 @@ def test_correctness_evaluator_handles_generation_errors():
 
     evaluator = CorrectnessEvaluator(llm_client=client)
 
-    result, failed_indices = evaluator.evaluate(model, dataset)
+    result = evaluator.evaluate(model, dataset)
 
     assert len(result.success_examples) == 1
     assert len(result.errors) == 1

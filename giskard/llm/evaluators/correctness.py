@@ -1,11 +1,8 @@
-from giskard.datasets import Dataset
-from giskard.llm.errors import LLMGenerationError
-from giskard.llm.evaluators.base import (
-    EVALUATE_MODEL_FUNCTIONS,
-    EvaluationResult,
-    LLMBasedEvaluator,
-)
-from giskard.models.base.model import BaseModel
+from ...core.test_result import TestResultStatus, create_test_result_details
+from ...datasets import Dataset
+from ...models.base.model import BaseModel
+from ..errors import LLMGenerationError
+from .base import EVALUATE_MODEL_FUNCTIONS, EvaluationResult, LLMBasedEvaluator
 
 CORRECTNESS_EVALUATION_PROMPT = """Your role is to test AI models. Your task consists in assessing whether a model output correctly answers a question. 
 You are provided with the ground truth answer to the question. Your task is then to evaluate if the model answer is close to the ground thruth answer. 
@@ -89,7 +86,8 @@ class CorrectnessEvaluator(LLMBasedEvaluator):
         succeeded = []
         failed = []
         errored = []
-        failed_index = []
+        status = []
+        reasons = []
         for idx, (evaluation_question, model_output) in enumerate(zip(dataset.df.to_dict("records"), model_outputs)):
             try:
                 passed, reason = self._evaluate_single(
@@ -98,6 +96,7 @@ class CorrectnessEvaluator(LLMBasedEvaluator):
                     evaluation_question[reference_answer_feature_name],
                     model_output,
                 )
+                reasons.append(reason)
                 sample = {
                     **evaluation_question,
                     "reason": reason,
@@ -106,19 +105,20 @@ class CorrectnessEvaluator(LLMBasedEvaluator):
                 }
                 if passed:
                     succeeded.append(sample)
+                    status.append(TestResultStatus.PASSED)
                 else:
-                    failed_index.append(idx)
+                    status.append(TestResultStatus.FAILED)
                     failed.append(sample)
             except LLMGenerationError as err:
+                status.append(TestResultStatus.ERROR)
+                reasons.append(str(err))
                 errored.append({"message": str(err), "sample": {**evaluation_question, "model_output": model_output}})
 
-        return (
-            EvaluationResult(
-                failure_examples=failed,
-                success_examples=succeeded,
-                errors=errored,
-            ),
-            failed_index,
+        return EvaluationResult(
+            failure_examples=failed,
+            success_examples=succeeded,
+            errors=errored,
+            details=create_test_result_details(dataset, model, model_outputs, status, {"reason": reasons}),
         )
 
     def _evaluate_single(self, model: BaseModel, question, reference_answer, model_output):
