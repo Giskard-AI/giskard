@@ -61,6 +61,7 @@ integrations/mlflow/index
 integrations/wandb/index
 integrations/dagshub/index
 integrations/huggingface/index
+integrations/avid/index
 integrations/pytest/index
 ```
 
