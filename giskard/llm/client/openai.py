@@ -45,6 +45,35 @@ class BaseOpenAIClient(LLMClient, ABC):
         ...
 
     @staticmethod
+    def _serialize_function_call(function_call: LLMFunctionCall) -> Dict:
+        return {"name": function_call.name, "arguments": json.dumps(function_call.arguments)}
+
+    @staticmethod
+    def _serialize_tool_call(tool_call: LLMToolCall) -> Dict:
+        return {
+            "id": tool_call.id,
+            "type": tool_call.type,
+            "function": BaseOpenAIClient._serialize_function_call(tool_call.function),
+        }
+
+    @staticmethod
+    def _serialize_tool_calls(tool_calls: List[LLMToolCall]) -> List[Dict]:
+        return [BaseOpenAIClient._serialize_tool_call(tool_call) for tool_call in tool_calls]
+
+    @staticmethod
+    def _serialize_message(response: LLMMessage) -> Dict:
+        result = {
+            "role": response.role,
+            "content": response.content,
+            "function_call": BaseOpenAIClient._serialize_function_call(response.function_call)
+            if response.function_call
+            else None,
+            "tool_calls": BaseOpenAIClient._serialize_tool_calls(response.tool_calls) if response.tool_calls else None,
+        }
+
+        return {key: value for key, value in result.items() if value is not None}
+
+    @staticmethod
     def _parse_function_call(function_call) -> LLMFunctionCall:
         try:
             return LLMFunctionCall(
@@ -92,7 +121,7 @@ class BaseOpenAIClient(LLMClient, ABC):
     ):
         llm_message = self._completion(
             messages=[
-                message.model_dump(exclude_none=True) if isinstance(message, LLMMessage) else message
+                BaseOpenAIClient._serialize_message(message) if isinstance(message, LLMMessage) else message
                 for message in messages
             ],
             temperature=temperature,
@@ -141,7 +170,7 @@ class LegacyOpenAIClient(BaseOpenAIClient):
             completion = openai.ChatCompletion.create(
                 model=self.model,
                 messages=[
-                    message.model_dump(exclude_none=True) if isinstance(message, LLMMessage) else message
+                    BaseOpenAIClient._serialize_message(message) if isinstance(message, LLMMessage) else message
                     for message in messages
                 ],
                 temperature=temperature,
