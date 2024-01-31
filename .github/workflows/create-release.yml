@@ -50,7 +50,7 @@ jobs:
       - name: Upload RC wheel artifact
         uses: actions/upload-artifact@v4
         with:
-          name: rc-wheel
+          name: rc-wheel-${{ inputs.version }}
           path: dist/*whl
 
       - name: Trigger release process in giskard-hub

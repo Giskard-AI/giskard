@@ -70,7 +70,7 @@ jobs:
 
       - name: Download wheel (release candidate)
         working-directory: dist
-        run: gh -R ${{ github.repository_owner }}/giskard run download -n rc-wheel
+        run: gh -R ${{ github.repository_owner }}/giskard run download -n rc-wheel-${{ env.VERSION_NUMBER }}
         env:
           GH_TOKEN: ${{ github.token }}
 
