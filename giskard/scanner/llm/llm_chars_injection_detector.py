@@ -7,8 +7,8 @@ from ...models.base.model import BaseModel
 from ...testing.tests.llm import LLMCharInjector
 from ..decorators import detector
 from ..issues import Issue, IssueLevel, Robustness
-from ..logger import logger
 from ..registry import Detector
+from ..scanlogger import logger
 
 
 @detector(
@@ -73,9 +73,7 @@ class LLMCharsInjectionDetector(Detector):
 
     def run(self, model: BaseModel, dataset: Dataset, features: Sequence[str]) -> Sequence[Issue]:
         if len(dataset) < 1:
-            logger.warning(
-                f"{self.__class__.__name__}: Skipping control character injection test because the dataset is empty."
-            )
+            logger.critical("Skipping control character injection test because the dataset is empty.")
             return []
 
         dataset_sample = dataset.slice(
@@ -96,13 +94,13 @@ class LLMCharsInjectionDetector(Detector):
             encoded_char = res.char.encode("unicode_escape").decode("ascii")
 
             if res.errors:
-                logger.warning(
-                    f"{self.__class__.__name__}: Injection failed with errors for feature`{res.feature}` and char `{encoded_char}`: {','.join(res.errors)}"
+                logger.critical(
+                    f"Injection failed with errors for feature`{res.feature}` and char `{encoded_char}`: {','.join(res.errors)}"
                 )
                 continue
 
-            logger.info(
-                f"{self.__class__.__name__}: Tested `{res.feature}` for special char injection `{encoded_char}`\tFail rate = {res.fail_rate:.3f}\tVulnerable = {res.vulnerable}"
+            logger.debug(
+                f"Tested `{res.feature}` for special char injection `{encoded_char}`\tFail rate = {res.fail_rate:.3f}\tVulnerable = {res.vulnerable}"
             )
 
             if not res.vulnerable:

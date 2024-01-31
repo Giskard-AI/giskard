@@ -8,6 +8,18 @@ from time import perf_counter
 
 import pandas as pd
 
+from giskard.utils.xprint import (
+    BLUE_STYLE,
+    BOLD_STYLE,
+    CHARS_LIMIT,
+    CYAN_STYLE,
+    GREEN_STYLE,
+    MAGENTA_STYLE,
+    RED_STYLE,
+    YELLOW_STYLE,
+    Template,
+)
+
 from ..client.python_utils import warning
 from ..core.model_validation import validate_model
 from ..datasets.base import Dataset
@@ -23,27 +35,78 @@ from ..utils.analytics_collector import (
     get_model_properties,
 )
 from .issues import DataLeakage, Issue, Stochasticity
-from .logger import logger
 from .registry import DetectorRegistry
 from .report import ScanReport
+from .scanlogger import logger
+
+Detector = Template(content="Running {}", pstyles=[BLUE_STYLE])
+RunningDetectors = Template(content="Running detectors: {}\n", pstyles=[BLUE_STYLE])
+PromptsNumber = Template(content="Evaluating {} prompts…", pstyles=[CYAN_STYLE])
+PromptEvaluation = Template(
+    content="Evaluating {} prompt with the {} evaluator…", pstyles=[MAGENTA_STYLE, YELLOW_STYLE]
+)
+Evaluation = Template(content="Evaluating prompts with the {} evaluator…", pstyles=[YELLOW_STYLE])
+PromptInjectionSuccess = Template(
+    content="{} of the {} prompts manipulated your model into jailbreak.", pstyles=[GREEN_STYLE, MAGENTA_STYLE]
+)
+PromptInjectionFailure = Template(
+    content="The injection of {} prompts manipulated your model into jailbreak {} of the times.",
+    pstyles=[MAGENTA_STYLE, RED_STYLE],
+)
+StartSummary = Template(
+    content="-" * (CHARS_LIMIT // 2 - 8) + " Summary of {} " + "-" * (CHARS_LIMIT // 2 - 8), pstyles=[BLUE_STYLE]
+)
+DetectedIssues = Template(content="{}: {} detected. (Took {})", pstyles=[BLUE_STYLE, RED_STYLE, MAGENTA_STYLE])
+NoDetectedIssues = Template(content="{}: {} detected. (Took {})", pstyles=[BLUE_STYLE, GREEN_STYLE, MAGENTA_STYLE])
+ErrorFail = Template(content="Detector {} failed with error: {}", pstyles=[BLUE_STYLE, GREEN_STYLE])
+IssuesNumber = Template(content="{}: {} issues detected (took {})\n", pstyles=[BLUE_STYLE, RED_STYLE, BOLD_STYLE])
+NoIssues = Template(content="{}: {} issue detected (took {})\n", pstyles=[BLUE_STYLE, GREEN_STYLE, BOLD_STYLE])
+ScanCompletedGood = Template(
+    content="Scan completed: {} issue detected (took {})!\n", pstyles=[GREEN_STYLE, BOLD_STYLE]
+)
+ScanCompletedBad = Template(content="Scan completed: {} issues detected (took {}).\n", pstyles=[RED_STYLE, BOLD_STYLE])
+WarningTemplate = Template(content="{}", pstyles=[YELLOW_STYLE])
+
+
+COST_ESTIMATE_TEMPLATE = Template(
+    content=""" \U000026a0 Disclaimer \U000026a0
+This automatic scan will use LLM-assisted detectors based on GPT-4 to identify vulnerabilities in your model.
+These are the total estimated costs:
+Estimated calls to your model: ~{}
+Estimated OpenAI GPT-4 calls for evaluation: {} (~{} prompt tokens and ~{} sampled tokens)
+OpenAI API costs for evaluation are estimated to ${}.
+""",
+    pstyles=[BLUE_STYLE, BLUE_STYLE, BLUE_STYLE, BLUE_STYLE, CYAN_STYLE],
+)
+
+COST_SUMMARY_TEMPLATE = Template(
+    """LLM-assisted detectors have used the following resources:
+OpenAI GPT-4 calls for evaluation: {} ({} prompt tokens and {} sampled tokens)
+OpenAI API costs for evaluation amount to ${} (standard pricing).
+""",
+    pstyles=[BLUE_STYLE, BLUE_STYLE, BLUE_STYLE, CYAN_STYLE],
+)
 
 MAX_ISSUES_PER_DETECTOR = 15
-
-COST_ESTIMATE_TEMPLATE = """This automatic scan will use LLM-assisted detectors based on GPT-4 to identify vulnerabilities in your model.
-These are the total estimated costs:
-Estimated calls to your model: ~{num_model_calls}
-Estimated OpenAI GPT-4 calls for evaluation: {num_llm_calls} (~{num_llm_prompt_tokens} prompt tokens and ~{num_llm_sampled_tokens} sampled tokens)
-OpenAI API costs for evaluation are estimated to ${estimated_usd:.2f}.
-"""
-
-COST_SUMMARY_TEMPLATE = """LLM-assisted detectors have used the following resources:
-OpenAI GPT-4 calls for evaluation: {num_llm_calls} ({num_llm_prompt_tokens} prompt tokens and {num_llm_sampled_tokens} sampled tokens)
-OpenAI API costs for evaluation amount to ${estimated_usd:.2f} (standard pricing).
-"""
 
 # Hardcoded for now…
 PROMPT_TOKEN_COST = 0.03e-3
 SAMPLED_TOKEN_COST = 0.06e-3
+
+
+def get_decision_from_user():
+    while True:
+        try:
+            value = str(input("➡️ Would you like to proceed [y/n]? "))
+        except ValueError:
+            logger.critical("Your input must be a string. Try again.", template=WarningTemplate)
+            continue
+
+        if value.lower() not in ["y", "n"]:
+            logger.critical("The only accepted answers are 'y' or 'n'. Try again.", template=WarningTemplate)
+        else:
+            break
+    return value
 
 
 class Scanner:
@@ -73,29 +136,29 @@ class Scanner:
         model: BaseModel,
         dataset: Optional[Dataset] = None,
         features: Optional[Sequence[str]] = None,
-        verbose=True,
+        verbosity_level="INFO",
         raise_exceptions=False,
     ) -> ScanReport:
         """Runs the analysis of a model and dataset, detecting issues.
 
-        Parameters
-        ----------
-        model : BaseModel
-            A Giskard model object.
-        dataset : Dataset
-            A Giskard dataset object.
-        features : Sequence[str], optional
-            A list of features to analyze. If not provided, all model features will be analyzed.
-        verbose : bool
-            Whether to print detailed info messages. Enabled by default.
-        raise_exceptions : bool
-            Whether to raise an exception if detection errors are encountered. By default, errors are logged and
-            handled gracefully, without interrupting the scan.
-
-        Returns
-        -------
-        ScanReport
-            A report object containing the detected issues and other information.
+                Parameters
+                ----------
+                model : BaseModel
+                    A Giskard model object.
+                dataset : Dataset
+                    A Giskard dataset object.
+                features : Sequence[str], optional
+                    A list of features to analyze. If not provided, all model features will be analyzed.
+                verbosity_level : String
+                    Logger verbosity level to know which messages should go in the output. INFO by default.
+                raise_exceptions : bool
+                    Whether to raise an exception if detection errors are encountered. By default, errors are logged and
+                    handled gracefully, without interrupting the scan.
+        de
+                Returns
+                -------
+                ScanReport
+                    A report object containing the detected issues and other information.
         """
 
         # Check that the model and dataset were appropriately wrapped with Giskard
@@ -108,51 +171,50 @@ class Scanner:
         if model.is_text_generation:
             get_default_client().logger.reset()
 
+        # Set logger level to the user's input
+        logger.setlevel(verbosity_level)
+
         # Good, we can start
-        maybe_print("🔎 Running scan…", verbose=verbose)
+        logger.info("🔎 Running scan…")
         time_start = perf_counter()
 
         # Collect the detectors
         detectors = self.get_detectors(tags=[model.meta.model_type.value])
 
         # Print cost estimate
-        if verbose:
-            self._print_cost_estimate(model, dataset, detectors)
+        self._print_cost_estimate(model, dataset, detectors)
 
         # @TODO: this should be selective to specific warnings
         with warnings.catch_warnings():
             warnings.simplefilter("ignore")
-            issues, errors = self._run_detectors(
-                detectors, model, dataset, features, verbose=verbose, raise_exceptions=raise_exceptions
-            )
+            issues, errors = self._run_detectors(detectors, model, dataset, features, raise_exceptions=raise_exceptions)
 
         issues = self._postprocess(issues)
 
         # Scan completed
         elapsed = perf_counter() - time_start
 
-        if verbose:
-            self._print_execution_summary(model, issues, errors, elapsed)
+        self._print_execution_summary(model, issues, errors, elapsed)
 
         self._collect_analytics(model, dataset, issues, elapsed, model_validation_time, detectors)
 
         return ScanReport(issues, model=model, dataset=dataset)
 
-    def _run_detectors(self, detectors, model, dataset, features, verbose=True, raise_exceptions=False):
+    def _run_detectors(self, detectors, model, dataset, features, raise_exceptions=False):
         if not detectors:
             raise RuntimeError("No issue detectors available. Scan will not be performed.")
 
-        logger.info(f"Running detectors: {[d.__class__.__name__ for d in detectors]}")
+        logger.critical(f"{', '.join([d.__class__.__name__ for d in detectors])}", template=RunningDetectors)
 
         issues = []
         errors = []
         for detector in detectors:
-            maybe_print(f"Running detector {detector.__class__.__name__}…", verbose=verbose)
+            logger.info(detector.__class__.__name__, template=Detector)
             detector_start = perf_counter()
             try:
                 detected_issues = detector.run(model, dataset, features=features)
             except Exception as err:
-                logger.error(f"Detector {detector.__class__.__name__} failed with error: {err}")
+                logger.critical(detector.__class__.__name__, err, template=ErrorFail)
                 errors.append((detector, err))
                 analytics.track(
                     "scan:run-detector:error",
@@ -168,11 +230,25 @@ class Scanner:
 
                 detected_issues = []
             detected_issues = sorted(detected_issues, key=lambda i: -i.importance)[:MAX_ISSUES_PER_DETECTOR]
+            num_issues = len(detected_issues)
+
             detector_elapsed = perf_counter() - detector_start
-            maybe_print(
-                f"{detector.__class__.__name__}: {len(detected_issues)} issue{'s' if len(detected_issues) > 1 else ''} detected. (Took {datetime.timedelta(seconds=detector_elapsed)})",
-                verbose=verbose,
-            )
+
+            if num_issues > 0:
+                logger.info(
+                    detector.__class__.__name__,
+                    num_issues,
+                    datetime.timedelta(seconds=detector_elapsed),
+                    template=IssuesNumber,
+                )
+            else:
+                logger.info(
+                    detector.__class__.__name__,
+                    num_issues,
+                    datetime.timedelta(seconds=detector_elapsed),
+                    template=NoIssues,
+                )
+
             analytics.track(
                 "scan:detector-run",
                 {
@@ -351,22 +427,26 @@ class Scanner:
     def _print_cost_estimate(self, model, dataset, detectors):
         if model.is_text_generation:
             estimates = self._get_cost_estimate(model, dataset, detectors)
-            print(COST_ESTIMATE_TEMPLATE.format(num_detectors=len(detectors), **estimates))
+            logger.critical(*estimates.values(), template=COST_ESTIMATE_TEMPLATE)
+            if float(estimates["estimated_usd"]) != 0:
+                user_input = get_decision_from_user()
+                if user_input != "y":
+                    logger.critical("⛔ Scan aborted…", template=WarningTemplate)
+                    raise KeyboardInterrupt
 
     def _print_execution_summary(self, model, issues, errors, elapsed):
-        print(
-            f"Scan completed: {len(issues) or 'no'} issue{'s' if len(issues) != 1 else ''} found. (Took {datetime.timedelta(seconds=elapsed)})"
-        )
+        num_issues = len(issues)
+
+        if num_issues > 0:
+            logger.critical(num_issues, datetime.timedelta(seconds=elapsed), template=ScanCompletedBad)
+        else:
+            logger.critical(num_issues, datetime.timedelta(seconds=elapsed), template=ScanCompletedGood)
+
         if model.is_text_generation:
             measured = self._get_cost_measure()
-            print(COST_SUMMARY_TEMPLATE.format(**measured))
+            logger.critical(*measured.values(), template=COST_SUMMARY_TEMPLATE)
         if errors:
             warning(
                 f"{len(errors)} errors were encountered while running detectors. Please check the log to understand what went wrong. "
                 "You can run the scan again with `raise_exceptions=True` to disable graceful handling."
             )
-
-
-def maybe_print(*args, **kwargs):
-    if kwargs.pop("verbose", True):
-        print(*args, **kwargs)

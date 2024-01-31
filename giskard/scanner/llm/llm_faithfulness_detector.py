@@ -1,12 +1,11 @@
 from typing import Sequence
 
-from giskard.scanner import logger
-
 from ...datasets.base import Dataset
 from ...llm.client import get_default_client
 from ...models.base.model import BaseModel
 from ..decorators import detector
 from ..issues import Issue, IssueLevel, Robustness
+from ..scanlogger import logger
 from .base import RequirementBasedDetector
 
 BREAKER_PROMPT = """Based on the following model description, does this AI model is performing a text reformulation or summarization task? Answer Y or N."""
@@ -43,9 +42,7 @@ class LLMFaithfulnessDetector(RequirementBasedDetector):
         )
 
         if out.message.strip().upper() != "Y":
-            logger.warning(
-                f"{self.__class__.__name__}: Skipping faithfulness checks because the model is performing a different task."
-            )
+            logger.info("Skipping faithfulness checks because the model is performing a different task.")
             return []
 
         return super().run(model, dataset, features=features)

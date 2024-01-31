@@ -2,8 +2,6 @@ from typing import Sequence
 
 import pandas as pd
 
-from giskard.scanner import logger
-
 from ...datasets.base import Dataset
 from ...llm.evaluators import PlausibilityEvaluator
 from ...llm.generators import ImplausibleDataGenerator
@@ -12,6 +10,7 @@ from ...testing.tests.llm.hallucination import test_llm_output_plausibility
 from ..decorators import detector
 from ..issues import Hallucination, Issue, IssueLevel
 from ..registry import Detector
+from ..scanlogger import logger
 from .base import _estimate_base_token_counts
 
 
@@ -65,7 +64,7 @@ class LLMImplausibleOutputDetector(Detector):
         eval_dataset = generator.generate_dataset(
             model, num_samples=self.num_samples, column_types=dataset.column_types
         )
-        logger.debug(f"{self.__class__.__name__}: Generated {len(eval_dataset)} inputs")
+        logger.debug(f"Generated {len(eval_dataset)} inputs")
 
         # Evaluate the model outputs
         evaluator = PlausibilityEvaluator()

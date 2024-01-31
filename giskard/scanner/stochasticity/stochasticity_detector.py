@@ -6,7 +6,6 @@ from giskard.models import cache as models_cache
 from giskard.models.base import BaseModel
 from giskard.scanner.decorators import detector
 from giskard.scanner.issues import Issue, IssueLevel, Stochasticity
-from giskard.scanner.logger import logger
 
 from ..registry import Detector
 
@@ -20,7 +19,6 @@ class StochasticityDetector(Detector):
     """
 
     def run(self, model: BaseModel, dataset: Dataset, features=None):
-        logger.info("StochasticityDetector: Running")
         sample_size = min(100, len(dataset))
         reduced_dataset = dataset.slice(lambda df: df.sample(sample_size), row_level=False)
 

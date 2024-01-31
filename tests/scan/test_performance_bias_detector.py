@@ -1,4 +1,3 @@
-import logging
 from unittest import mock
 
 import numpy as np
@@ -11,16 +10,14 @@ from giskard.scanner.performance import PerformanceBiasDetector
 from giskard.scanner.performance.performance_bias_detector import _calculate_slice_metrics
 
 
-def test_performance_bias_detector_skips_small_datasets(german_credit_model, german_credit_data, caplog):
+def test_performance_bias_detector_skips_small_datasets(german_credit_model, german_credit_data, capsys):
     small_dataset = german_credit_data.slice(lambda df: df.sample(50), row_level=False)
     detector = PerformanceBiasDetector()
-    with caplog.at_level(logging.WARNING):
-        issues = detector.run(german_credit_model, small_dataset, features=german_credit_model.feature_names)
-    record = caplog.records[-1]
+    issues = detector.run(german_credit_model, small_dataset, features=german_credit_model.feature_names)
+    captured = capsys.readouterr()
 
     assert len(issues) == 0
-    assert record.levelname == "WARNING"
-    assert "Skipping scan because the dataset is too small" in record.message
+    assert "Skipping scan because the dataset is too small" in captured.out
 
 
 def test_performance_bias_detector_trims_large_dataset(german_credit_model, german_credit_data):

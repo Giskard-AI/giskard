@@ -5,7 +5,7 @@ from typing import Optional, Sequence
 
 from ..datasets.base import Dataset
 from ..models.base import BaseModel
-from .logger import logger
+from .scanlogger import LoggerLevel, ScanLoggerLevel, logger
 from .scanner import Scanner
 
 
@@ -29,7 +29,7 @@ def scan(
     features: Optional[Sequence[str]] = None,
     params=None,
     only=None,
-    verbose=True,
+    verbosity_level: LoggerLevel = ScanLoggerLevel.INFO.name,
     raise_exceptions=False,
 ):
     """Automatically detects model vulnerabilities.
@@ -49,8 +49,8 @@ def scan(
     only : list
         A tag list to limit the scan to a subset of detectors. For example,
         ``giskard.scan(model, dataset, only=["performance"])`` will only run detectors for performance issues.
-    verbose : bool
-        Whether to print detailed info messages. Enabled by default.
+    verbosity_level : string
+        Logger verbosity level to know which messages should go in the output. INFO by default.
     raise_exceptions : bool
         Whether to raise an exception if detection errors are encountered. By default, errors are logged and
         handled gracefully, without interrupting the scan.
@@ -62,7 +62,7 @@ def scan(
     """
     scanner = Scanner(params, only=only)
     return scanner.analyze(
-        model, dataset=dataset, features=features, verbose=verbose, raise_exceptions=raise_exceptions
+        model, dataset=dataset, features=features, verbosity_level=verbosity_level, raise_exceptions=raise_exceptions
     )
 
 

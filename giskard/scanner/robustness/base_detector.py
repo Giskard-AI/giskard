@@ -5,13 +5,23 @@ from abc import abstractmethod
 import numpy as np
 import pandas as pd
 
+from giskard.utils.xprint import BOLD_STYLE, CYAN_STYLE, Template
+
 from ...datasets.base import Dataset
 from ...llm import LLMImportError
 from ...models.base import BaseModel
 from ..issues import Issue, IssueLevel, Robustness
-from ..logger import logger
 from ..registry import Detector
+from ..scanlogger import logger
 from .text_transformations import TextTransformation
+
+Transformations = Template(
+    content="Running with transformations {}\tthreshold={}\toutput_sensitivity={}\tnum_samples={}",
+    pstyles=[CYAN_STYLE, BOLD_STYLE, BOLD_STYLE, BOLD_STYLE],
+)
+FeatureTest = Template(
+    content="Testing `{}` for perturbation `{}`\tFail rate: {}", pstyles=[BOLD_STYLE, BOLD_STYLE, BOLD_STYLE]
+)
 
 
 class BaseTextPerturbationDetector(Detector):
@@ -63,8 +73,11 @@ class BaseTextPerturbationDetector(Detector):
         ]
 
         logger.info(
-            f"{self.__class__.__name__}: Running with transformations={[t.name for t in transformations]} "
-            f"threshold={self.threshold} output_sensitivity={self.output_sensitivity} num_samples={self.num_samples}"
+            [t.name for t in transformations],
+            self.threshold,
+            self.output_sensitivity,
+            self.num_samples,
+            template=Transformations,
         )
 
         issues = []
@@ -148,9 +161,7 @@ class BaseTextPerturbationDetector(Detector):
 
             pass_rate = passed.mean()
             fail_rate = 1 - pass_rate
-            logger.info(
-                f"{self.__class__.__name__}: Testing `{feature}` for perturbation `{transformation.name}`\tFail rate: {fail_rate:.3f}"
-            )
+            logger.debug(feature, transformation.name, fail_rate, template=FeatureTest)
 
             if fail_rate >= threshold:
                 # Severity

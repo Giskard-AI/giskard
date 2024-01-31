@@ -2,6 +2,8 @@ from typing import Sequence
 
 import pandas as pd
 
+from giskard.utils.xprint import BOLD_STYLE, Template
+
 from ...datasets.base import Dataset
 from ...models.base import BaseModel
 from ...slicing.slice_finder import SliceFinder
@@ -9,8 +11,10 @@ from ...testing.tests.statistic import _cramer_v, _mutual_information, _theil_u
 from ..common.examples import ExampleExtractor
 from ..decorators import detector
 from ..issues import Issue, IssueLevel, SpuriousCorrelation
-from ..logger import logger
 from ..registry import Detector
+from ..scanlogger import logger
+
+Association = Template(content="Current slice: {}\tAssociation = {}", pstyles=[BOLD_STYLE, BOLD_STYLE])
 
 
 @detector(name="spurious_correlation", tags=["spurious_correlation", "classification"])
@@ -20,8 +24,6 @@ class SpuriousCorrelationDetector(Detector):
         self.method = method
 
     def run(self, model: BaseModel, dataset: Dataset, features: Sequence[str]):
-        logger.info(f"{self.__class__.__name__}: Running")
-
         # Dataset prediction
         ds_predictions = pd.Series(model.predict(dataset).prediction, dataset.df.index)
 
@@ -64,7 +66,7 @@ class SpuriousCorrelationDetector(Detector):
                 dx.dropna(inplace=True)
 
                 metric_value = measure_fn(dx.feature, dx.prediction)
-                logger.info(f"{self.__class__.__name__}: {slice_fn}\tAssociation = {metric_value:.3f}")
+                logger.debug(slice_fn, metric_value, template=Association)
 
                 if metric_value > self.threshold:
                     predictions = dx[dx.feature > 0].prediction.value_counts(normalize=True)
