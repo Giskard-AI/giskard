@@ -635,7 +635,7 @@ class BaseModel(ABC):
             tool_calls=[
                 ChatCompletionMessageToolCall(
                     id=tool_call.id,
-                    function=Function(arguments=str(tool_call.args), name=tool_call.function),
+                    function=Function(arguments=str(tool_call.function.arguments), name=tool_call.function.name),
                     type="function",
                 )
                 for tool_call in tool_calls
@@ -677,15 +677,15 @@ class BaseModel(ABC):
             temperature=0.1,
         )
 
-        if response.message:
-            messages.append(response.raw_output)
+        if content := response.content:
+            messages.append({"role": "assistant", "content": content})
 
         if tool_calls := response.tool_calls:
-            messages.append(self._form_tool_calls_message(tool_calls))
+            messages.append(response)
 
             for tool_call in tool_calls:
-                tool_args = tool_call.args
-                tool_name = tool_call.function
+                tool_name = tool_call.function.name
+                tool_args = tool_call.function.arguments
 
                 # Get the reference to the chosen callable tool.
                 tool = available_tools[tool_name]
@@ -709,7 +709,7 @@ class BaseModel(ABC):
 
             # Get the final model's response, based on the tool's output.
             response = client.complete(messages=messages, temperature=0.1)
-            messages.append(response.raw_output)
+            messages.append(response)
 
         # Summarise the conversation.
         context = self._gather_context(messages)
