@@ -94,7 +94,7 @@ testset = generator.generate_dataset(num_samples=10)
 ## Step 3: Wrap your model
 To evaluate your model, you must wrap it as a `giskard.Model`. This step is necessary to ensure a common format for your model and its metadata.You can wrap anything as long as you can represent it in a Python function (for example an API call call to Azure or OpenAI). We also have pre-built wrappers for LangChain objects, or you can create your own wrapper by extending the `giskard.Model` class if you need to wrap a complex object such as a custom-made RAG communicating with a vectorstore.
 
-To do so, you can follow the instructions from the [LLM Scan feature](../scan/scan_llm/index.md#step-1-wrap-your-model) or from the {doc}`Reference API </reference/models/index>`. 
+To do so, you can follow the instructions from the [LLM Scan feature](../scan/scan_llm/index.md#step-1-wrap-your-model) or from the {doc}`Reference API </reference/models/index>`. Make sure that you pass `feature_names = "question"` when wrapping your model, so that it matches the question column of the testset. 
 
 Detailed examples can also be found on our {doc}`LLM tutorials section </tutorials/llm_tutorials/index>`.
 
