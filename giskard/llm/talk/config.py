@@ -1,6 +1,6 @@
 from enum import Enum
 
-LLM_MODEL = "gpt-4-1106-preview"
+LLM_MODEL = "gpt-4-0125-preview"
 
 MODEL_INSTRUCTION = """You are an agent designed to help a user obtain information about the model and/or it's 
 predictions.
