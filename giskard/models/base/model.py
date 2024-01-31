@@ -15,11 +15,6 @@ import cloudpickle
 import numpy as np
 import pandas as pd
 import yaml
-from openai.types.chat.chat_completion_message import ChatCompletionMessage
-from openai.types.chat.chat_completion_message_tool_call import (
-    ChatCompletionMessageToolCall,
-    Function,
-)
 
 from giskard.client.dtos import ModelMetaInfo
 
@@ -627,21 +622,6 @@ class BaseModel(ABC):
             SHAPExplanationTool.default_name: SHAPExplanationTool(model=self, dataset=dataset),
             IssuesScannerTool.default_name: IssuesScannerTool(scan_result=scan_report),
         }
-
-    @staticmethod
-    def _form_tool_calls_message(tool_calls):
-        return ChatCompletionMessage(
-            content=None,
-            role="assistant",
-            tool_calls=[
-                ChatCompletionMessageToolCall(
-                    id=tool_call.id,
-                    function=Function(arguments=str(tool_call.function.arguments), name=tool_call.function.name),
-                    type="function",
-                )
-                for tool_call in tool_calls
-            ],
-        )
 
     @staticmethod
     def _gather_context(message_list: list) -> str:
