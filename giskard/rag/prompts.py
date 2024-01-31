@@ -54,7 +54,7 @@ class QAGenerationPrompt:
     example_answer = QA_GENERATION_ASSISTANT_EXAMPLE
 
     @classmethod
-    def format_system_prompt(cls, model_name, model_description, language):
+    def _format_system_prompt(cls, model_name, model_description, language):
         language = language or "en"
         if model_name is not None or model_description is not None:
             system_prompt = cls.system_prompt_with_description.format(
@@ -73,7 +73,7 @@ class QAGenerationPrompt:
         return system_message
 
     @classmethod
-    def format_examples(cls, examples):
+    def _format_example_prompt(cls, examples):
         if examples is not None:
             return examples
         elif cls.example_prompt is not None:
@@ -84,6 +84,11 @@ class QAGenerationPrompt:
                 examples.append({"role": "assistant", "content": cls.example_answer})
             return examples
         return []
+
+    @classmethod
+    def format_context(cls, contexts):
+        context_string = "\n------\n".join(["", *[doc.page_content for doc in contexts], ""])
+        return context_string
 
     @classmethod
     def create_messages(
@@ -97,9 +102,9 @@ class QAGenerationPrompt:
     ):
         messages = list()
 
-        messages.append(cls.format_system_prompt(model_name, model_description, language))
+        messages.append(cls._format_system_prompt(model_name, model_description, language))
         if add_examples:
-            messages.extend(cls.format_examples(examples))
+            messages.extend(cls._format_example_prompt(examples))
 
         if user_content is not None:
             messages.append({"role": "user", "content": user_content})
@@ -168,3 +173,77 @@ class QuestionComplexificationPrompt(QAGenerationPrompt):
     system_prompt_raw = COMPLEXIFICATION_SYSTEM_PROMPT
     example_prompt = COMPLEXIFICATION_PROMPT_EXAMPLE
     example_answer = COMPLEXIFICATION_ANSWER_EXAMPLE
+
+    @classmethod
+    def format_user_content(cls, question, context):
+        context_string = f"<question>\n{question}\n</question>\n<context>\n{context}\n</context>"
+        return context_string
+
+    @classmethod
+    def create_messages(cls, **kwargs):
+        kwargs["user_content"] = cls.format_user_content(*kwargs["user_content"])
+        return super().create_messages(**kwargs)
+
+
+DISTRACTING_QUESTION_SYSTEM_PROMPT = """You are an expert at rewritting question.
+Your task is to re-write questions that will be used to evaluate a language model.
+
+Your task is to complexify questions given a provided context. 
+Please respect the following rules to generate the question:
+- The new question must include a condition or constraint based on the provided context. 
+- The new question must have the same answer as the original question.
+- The question must be plausible according to the context and the model description.
+- The question must be self-contained and understandable by humans. 
+- The question must be in french.
+
+You will be provided the question and its answer delimited with <question></question> and <answer></answer> tags.
+You will also be provided a context paragraph delimited with <context></context> tags.
+You will return the reformulated question as a single JSON object, with the key 'question'. Make sure you return a valid JSON object.
+"""
+
+DISTRACTING_QUESTION_SYSTEM_PROMPT_WITH_DESCRIPTION = """You are an expert at rewritting question.
+Your task is to re-write questions that will be used to evaluate the following model:
+- Model name: {model_name}
+- Model description: {model_description}  
+
+Your task is to complexify questions given a provided context. 
+Please respect the following rules to generate the question:
+- The new question must include a condition or constraint based on the provided context. 
+- The original question direction should be preserved.
+- The question must be plausible according to the context and the model description.
+- The question must be self-contained and understandable by humans. 
+- The question must be in french.
+
+You will be provided the question delimited with <question></question> tags.
+You will also be provided a context paragraph delimited with <context></context> tags.
+You will return the reformulated question as a single JSON object, with the key 'question'. Make sure you return a valid JSON object.
+"""
+
+DISCTRACTING_QUESTION_PROMPT_EXAMPLE = """<question>
+What job offer do you have for engineering student?
+</question>
+<answer>
+We have plenty of different jobs for engineering student depending on your speciality: mechanical engineer, data scientist, electronic designer and many more.
+</answer>
+<context>
+Sometimes employers assume being accessible and inclusive only means providing physical access like ramps, accessible bathrooms and automatic opening doors. However, there are many other important ways to demonstrate that you welcome and want to attract a diverse workforce including people with disability.
+<context>
+"""
+
+DISCTRACTING_QUESTION_ANSWER_EXAMPLE = """{
+    "question": "Do you have any job opening suitable for disabled engineering students? "
+}"""
+
+
+class DistractingQuestionPrompt(QuestionComplexificationPrompt):
+    system_prompt_with_description = DISTRACTING_QUESTION_SYSTEM_PROMPT_WITH_DESCRIPTION
+    system_prompt_raw = DISTRACTING_QUESTION_SYSTEM_PROMPT
+    example_prompt = DISCTRACTING_QUESTION_PROMPT_EXAMPLE
+    example_answer = DISCTRACTING_QUESTION_ANSWER_EXAMPLE
+
+    @classmethod
+    def format_user_content(cls, question, answer, context):
+        context_string = (
+            f"<question>\n{question}\n</question>\n<answer>\n{answer}\n</answer>\n<context>\n{context}\n</context>"
+        )
+        return context_string

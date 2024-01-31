@@ -8,7 +8,12 @@ import numpy as np
 import pandas as pd
 
 from ..llm.generators import BaseDataGenerator
-from .prompts import FIX_JSON_FORMAT_PROMPT, QAGenerationPrompt, QuestionComplexificationPrompt
+from .prompts import (
+    FIX_JSON_FORMAT_PROMPT,
+    DistractingQuestionPrompt,
+    QAGenerationPrompt,
+    QuestionComplexificationPrompt,
+)
 from .testset import QATestset
 from .vector_store import VectorStore
 
@@ -19,6 +24,7 @@ logger.setLevel(logging.INFO)
 class DifficultyLevel(int, Enum):
     DIFF_1 = 1
     DIFF_2 = 2
+    DIFF_3 = 3
 
 
 class KnowledgeBaseTestsetGenerator(BaseDataGenerator):
@@ -106,6 +112,8 @@ class KnowledgeBaseTestsetGenerator(BaseDataGenerator):
                 return self._generate_question_answer_from_context
             case DifficultyLevel.DIFF_2:
                 return self._generate_complex_questions_from_context
+            case DifficultyLevel.DIFF_3:
+                return self._generate_distraction_questions_from_context
             case _:
                 raise NotImplementedError(f"Missing case for difficulty level {level}.")
 
@@ -128,9 +136,24 @@ class KnowledgeBaseTestsetGenerator(BaseDataGenerator):
             model_name=self.model_name,
             model_description=self.model_description,
             language=self.language,
-            user_content=self._format_question_context_for_complexification(generated_qa["question"], context),
+            user_content=(generated_qa["question"], context),
         )
         generated_qa["difficulty"] = DifficultyLevel.DIFF_2
+        out = self._llm_complete(messages=messages)
+        generated_qa["question"] = out["question"]
+        return generated_qa
+
+    def _generate_distraction_questions_from_context(self, context):
+        generated_qa = self._generate_question_answer_from_context(context)
+
+        distracting_context = self.rng.choice(self.knowledge_base.documents).page_content
+        messages = DistractingQuestionPrompt.create_messages(
+            model_name=self.model_name,
+            model_description=self.model_description,
+            language=self.language,
+            user_content=(generated_qa["question"], generated_qa["answer"], distracting_context),
+        )
+        generated_qa["difficulty"] = DifficultyLevel.DIFF_3
         out = self._llm_complete(messages=messages)
         generated_qa["question"] = out["question"]
         return generated_qa
@@ -145,14 +168,6 @@ class KnowledgeBaseTestsetGenerator(BaseDataGenerator):
             if score < self.context_similarity_threshold  # should we keep it or not ?
         ]
         return relevant_contexts
-
-    def _format_context(self, contexts):
-        context_string = "\n------\n".join(["", *[doc.page_content for doc in contexts], ""])
-        return context_string
-
-    def _format_question_context_for_complexification(self, question, context):
-        context_string = f"<question>\n{question}\n</question>\n<context>\n{context}\n</context>"
-        return context_string
 
     def _prevent_context_window_overflow(self, prompt):
         # Prevent context overflow
@@ -213,9 +228,9 @@ class KnowledgeBaseTestsetGenerator(BaseDataGenerator):
         generated_questions = []
         for level in difficulty_levels:
             for idx in range(num_samples):
-                logger.info(f"Generating question {idx + 1}/{num_samples} for difficulty level {level}.")
+                logger.info(f"Generating question {idx + 1}/{num_samples} for difficulty level {str(level.value)}.")
                 seed_contexts = self._extract_seed_context()
-                context = self._format_context(seed_contexts)
+                context = QAGenerationPrompt.format_context(seed_contexts)
 
                 generation_fn = self._difficulty_level_mapping(level)
                 generated_qa = generation_fn(context)
