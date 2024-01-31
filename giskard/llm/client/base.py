@@ -1,5 +1,6 @@
 from typing import Any, Dict, List, Optional, Sequence
 
+import json
 from abc import ABC, abstractmethod
 from dataclasses import dataclass
 
@@ -11,12 +12,18 @@ class LLMFunctionCall:
     name: str
     arguments: Any
 
+    def toJSON(self):
+        return json.dumps(self, default=lambda o: o.__dict__)
+
 
 @dataclass
 class LLMToolCall:
     id: str
     type: str
     function: LLMFunctionCall
+
+    def toJSON(self):
+        return json.dumps(self, default=lambda o: o.__dict__)
 
 
 @dataclass
@@ -29,6 +36,9 @@ class LLMMessage:
     @staticmethod
     def create_message(role: str, content: str):
         return LLMMessage(role=role, content=content, function_call=None, tool_calls=None)
+
+    def toJSON(self):
+        return json.dumps(self, default=lambda o: o.__dict__)
 
 
 class LLMClient(ABC):
