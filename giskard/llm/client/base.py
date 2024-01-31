@@ -1,33 +1,24 @@
 from typing import Any, Dict, List, Optional, Sequence
 
-import json
 from abc import ABC, abstractmethod
-from dataclasses import dataclass
+
+from pydantic import BaseModel
 
 from .logger import LLMLogger
 
 
-@dataclass
-class LLMFunctionCall:
+class LLMFunctionCall(BaseModel):
     name: str
     arguments: Any
 
-    def toJSON(self):
-        return json.dumps(self, default=lambda o: o.__dict__)
 
-
-@dataclass
-class LLMToolCall:
+class LLMToolCall(BaseModel):
     id: str
     type: str
     function: LLMFunctionCall
 
-    def toJSON(self):
-        return json.dumps(self, default=lambda o: o.__dict__)
 
-
-@dataclass
-class LLMMessage:
+class LLMMessage(BaseModel):
     role: str
     content: Optional[str]
     function_call: Optional[LLMFunctionCall]
@@ -36,9 +27,6 @@ class LLMMessage:
     @staticmethod
     def create_message(role: str, content: str):
         return LLMMessage(role=role, content=content, function_call=None, tool_calls=None)
-
-    def toJSON(self):
-        return json.dumps(self, default=lambda o: o.__dict__)
 
 
 class LLMClient(ABC):
