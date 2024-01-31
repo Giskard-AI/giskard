@@ -39,6 +39,7 @@ jobs:
         with:
           fetch-tags: true
           ref: main
+          token: ${{ secrets.RELEASE_PAT_TOKEN }} # Needed to trigger other actions
 
       - name: Setup PDM
         uses: pdm-project/setup-pdm@v4
