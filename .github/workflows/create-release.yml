@@ -52,6 +52,8 @@ jobs:
         with:
           name: rc-wheel-${{ inputs.version }}
           path: dist/*whl
+          if-no-files-found: error
+          retention-days: 1
 
       - name: Trigger release process in giskard-hub
         uses: peter-evans/repository-dispatch@v2
