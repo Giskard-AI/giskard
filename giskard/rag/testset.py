@@ -13,3 +13,15 @@ class QATestset(Dataset):
         suite = Suite(name=name, default_params=suite_default_params)
         suite.add_test(test_llm_correctness, "TestsetCorrectnessTest", "TestsetCorrectnessTest")
         return suite
+
+    def copy(self):
+        testset = QATestset(
+            df=self.df.copy(),
+            target=self.target,
+            column_types=self.column_types.copy(),
+            validation=False,
+        )
+
+        if hasattr(self, "column_meta"):
+            testset.load_metadata_from_instance(self.column_meta)
+        return testset

@@ -36,8 +36,11 @@ def test_llm_correctness(model: BaseModel, dataset: Dataset, threshold: float = 
     output_ds = list()
     if not eval_result.passed:
         failed_indices = [
-            idx for idx, status in enumerate(eval_result.details.results) if status == TestResultStatus.FAILED
+            idx
+            for idx, status in zip(dataset.df.index, eval_result.details.results)
+            if status == TestResultStatus.FAILED
         ]
+
         output_ds.append(dataset.slice(lambda df: df.loc[failed_indices], row_level=False))
 
     passed = bool(eval_result.passed_ratio > threshold)
