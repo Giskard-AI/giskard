@@ -108,8 +108,9 @@ jobs:
         with:
           # Slack channel id, channel name, or user id to post message.
           # See also: https://api.slack.com/methods/chat.postMessage#channels
+          # On special mentions: https://api.slack.com/reference/surfaces/formatting#special-mentions
           channel-id: 'C02Q2772VEH'
-          slack-message: "<@channel> New release: ${{  github.ref_name }} is being made !:tada:\nRelease notes there: ${{  steps.github-release.outputs.url }}"
+          slack-message: "<!channel> New release: ${{  github.ref_name }} is being made !:tada:\nRelease notes there: ${{  steps.github-release.outputs.url }}"
           # For posting a rich message using Block Kit
         env:
           SLACK_BOT_TOKEN: ${{ secrets.SLACK_BOT_TOKEN }}
