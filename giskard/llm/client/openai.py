@@ -91,7 +91,10 @@ class BaseOpenAIClient(LLMClient, ABC):
         tool_choice=None,
     ):
         llm_message = self._completion(
-            messages=messages,
+            messages=[
+                message.model_dump(exclude_none=True) if isinstance(message, LLMMessage) else message
+                for message in messages
+            ],
             temperature=temperature,
             functions=functions,
             function_call=function_call,
@@ -137,7 +140,10 @@ class LegacyOpenAIClient(BaseOpenAIClient):
         try:
             completion = openai.ChatCompletion.create(
                 model=self.model,
-                messages=[message.model_dump() if isinstance(message, LLMMessage) else message for message in messages],
+                messages=[
+                    message.model_dump(exclude_none=True) if isinstance(message, LLMMessage) else message
+                    for message in messages
+                ],
                 temperature=temperature,
                 max_tokens=max_tokens,
                 **extra_params,

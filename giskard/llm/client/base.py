@@ -1,27 +1,23 @@
 from typing import Any, Dict, List, Optional, Sequence
 
 from abc import ABC, abstractmethod
-from dataclasses import dataclass
 
 from pydantic import BaseModel
 
 from .logger import LLMLogger
 
 
-@dataclass
 class LLMFunctionCall(BaseModel):
     name: str
     arguments: Any
 
 
-@dataclass
 class LLMToolCall(BaseModel):
     id: str
     type: str
     function: LLMFunctionCall
 
 
-@dataclass
 class LLMMessage(BaseModel):
     role: str
     content: Optional[str]
