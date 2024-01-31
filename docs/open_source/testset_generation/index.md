@@ -130,13 +130,13 @@ The questions generated in the testset may have highlighted some vulnerabilities
 
 ### 1. Generate a test suite from the testset:
 
-Turn the generated testset into an actionable test suite that you can save and reuse in further iterations.
+Turn the generated testset into an actionable test suite that you can save and reuse in further iterations. Note that you need to pass your wrapped model when executing the suite, since the suite was generated only from the testset.
 
 ```python
 test_suite = testset.to_test_suite("My first test suite")
 
 # You can run the test suite locally to verify that it reproduces the issues
-test_suite.run()
+test_suite.run(giskard_model)
 ```
 
 Jump to the [test customization](https://docs.giskard.ai/en/latest/open_source/customize_tests/index.html) and [test integration](https://docs.giskard.ai/en/latest/open_source/integrate_tests/index.html) sections to find out everything you can do with test suites.
