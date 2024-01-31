@@ -53,7 +53,8 @@ def test_testset_generation():
     # each mock embedding calls.
     kb_embeddings = np.ones((4, embedding_dimension)) * np.arange(4)[:, None] / 100
     query_embeddings = np.ones((2, embedding_dimension)) * np.array([0.02, 10])[:, None]
-    llm_client.embeddings.side_effect = [kb_embeddings] + list(query_embeddings[:, None, :])
+
+    llm_client.embeddings.side_effect = [kb_embeddings]
 
     knowledge_base_df = make_knowledge_base_df()
     testset_generator = KnowledgeBaseTestsetGenerator(
@@ -63,6 +64,9 @@ def test_testset_generation():
         llm_client=llm_client,
         context_neighbors=3,
     )
+    testset_generator.rng = Mock()
+    testset_generator.rng.choice = Mock()
+    testset_generator.rng.choice.side_effect = list(query_embeddings)
 
     assert testset_generator.knowledge_base.index.d == 8
     assert testset_generator.knowledge_base.embeddings.shape == (4, 8)

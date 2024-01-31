@@ -2,23 +2,23 @@ from typing import Sequence
 
 import json
 import logging
+from enum import Enum
 
 import numpy as np
 import pandas as pd
 
 from ..llm.generators import BaseDataGenerator
-from .prompts import (
-    FIX_JSON_FORMAT_PROMPT,
-    QA_GENERATION_ASSISTANT_EXAMPLE,
-    QA_GENERATION_CONTEXT_EXAMPLE,
-    QA_GENERATION_SYSTEM_PROMPT,
-    QA_GENERATION_SYSTEM_PROMPT_MODEL,
-)
+from .prompts import FIX_JSON_FORMAT_PROMPT, QAGenerationPrompt, QuestionComplexificationPrompt
 from .testset import QATestset
 from .vector_store import VectorStore
 
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.INFO)
+
+
+class DifficultyLevel(int, Enum):
+    DIFF_1 = 1
+    DIFF_2 = 2
 
 
 class KnowledgeBaseTestsetGenerator(BaseDataGenerator):
@@ -61,19 +61,17 @@ class KnowledgeBaseTestsetGenerator(BaseDataGenerator):
     seed: int = None
     """
 
-    _qa_generation_system_prompt = QA_GENERATION_SYSTEM_PROMPT
-    _qa_generation_system_prompt_model = QA_GENERATION_SYSTEM_PROMPT_MODEL
-    _qa_generation_context_example = QA_GENERATION_CONTEXT_EXAMPLE
-    _qa_generation_assistant_example = QA_GENERATION_ASSISTANT_EXAMPLE
+    # _qa_generation_system_prompt = QA_GENERATION_SYSTEM_PROMPT
+    # _qa_generation_system_prompt_model = QA_GENERATION_SYSTEM_PROMPT_MODEL
+    # _qa_generation_context_example = QA_GENERATION_CONTEXT_EXAMPLE
+    # _qa_generation_assistant_example = QA_GENERATION_ASSISTANT_EXAMPLE
     _fix_json_prompt = FIX_JSON_FORMAT_PROMPT
-
-    _difficulty_level = 1
 
     def __init__(
         self,
         knowledge_df: pd.DataFrame,
-        model_name: str = "",
-        model_description: str = "",
+        model_name: str = None,
+        model_description: str = None,
         context_neighbors: int = 4,
         context_similarity_threshold: float = 0.2,
         context_window_length: int = 8192,
@@ -102,41 +100,47 @@ class KnowledgeBaseTestsetGenerator(BaseDataGenerator):
             features=knowledge_base_features,
         )
 
+    def _difficulty_level_mapping(self, level: DifficultyLevel):
+        match level:
+            case DifficultyLevel.DIFF_1:
+                return self._generate_question_answer_from_context
+            case DifficultyLevel.DIFF_2:
+                return self._generate_complex_questions_from_context
+            case _:
+                raise NotImplementedError(f"Missing case for difficulty level {level}.")
+
     def _generate_question_answer_from_context(self, context):
-        if self.model_name is not None or self.model_description is not None:
-            system_prompt = self._qa_generation_system_prompt_model.format(
-                model_name=self.model_name,
-                model_description=self.model_description,
-                language=self.language,
-            )
-        else:
-            system_prompt = self._qa_generation_system_prompt.format(
-                language=self.language,
-            )
+        messages = QAGenerationPrompt.create_messages(
+            model_name=self.model_name,
+            model_description=self.model_description,
+            language=self.language,
+            user_content=context,
+        )
 
-        messages = [
-            {
-                "role": "system",
-                "content": system_prompt,
-            }
-        ]
-        if self.include_examples:
-            messages.extend(
-                [
-                    {"role": "user", "content": self._qa_generation_context_example},
-                    {"role": "assistant", "content": self._qa_generation_assistant_example},
-                ]
-            )
-        messages.append({"role": "user", "content": context})
+        generated_qa = self._llm_complete(messages=messages)
+        generated_qa["difficulty"] = DifficultyLevel.DIFF_1
+        return generated_qa
 
-        return self._llm_complete(messages=messages)
+    def _generate_complex_questions_from_context(self, context):
+        generated_qa = self._generate_question_answer_from_context(context)
+
+        messages = QuestionComplexificationPrompt.create_messages(
+            model_name=self.model_name,
+            model_description=self.model_description,
+            language=self.language,
+            user_content=self._format_question_context_for_complexification(generated_qa["question"], context),
+        )
+        generated_qa["difficulty"] = DifficultyLevel.DIFF_2
+        out = self._llm_complete(messages=messages)
+        generated_qa["question"] = out["question"]
+        return generated_qa
 
     def _extract_seed_context(self):
-        seed_context = self.rng.choice(self.knowledge_base.documents)
+        seed_embedding = self.rng.choice(self.knowledge_base.embeddings)
         relevant_contexts = [
             context
-            for (context, score) in self.knowledge_base.similarity_search_with_score(
-                [seed_context.page_content], k=self.context_neighbors
+            for (context, score) in self.knowledge_base.vector_similarity_search_with_score(
+                seed_embedding[None], k=self.context_neighbors
             )
             if score < self.context_similarity_threshold  # should we keep it or not ?
         ]
@@ -144,6 +148,10 @@ class KnowledgeBaseTestsetGenerator(BaseDataGenerator):
 
     def _format_context(self, contexts):
         context_string = "\n------\n".join(["", *[doc.page_content for doc in contexts], ""])
+        return context_string
+
+    def _format_question_context_for_complexification(self, question, context):
+        context_string = f"<question>\n{question}\n</question>\n<context>\n{context}\n</context>"
         return context_string
 
     def _prevent_context_window_overflow(self, prompt):
@@ -182,7 +190,7 @@ class KnowledgeBaseTestsetGenerator(BaseDataGenerator):
             return None
         return corrected_message
 
-    def generate_dataset(self, num_samples: int = 10) -> QATestset:
+    def generate_dataset(self, num_samples: int = 10, difficulty_levels: Sequence[DifficultyLevel] = None) -> QATestset:
         """Generates a testset from the knowledge base.
 
         Parameters
@@ -201,22 +209,27 @@ class KnowledgeBaseTestsetGenerator(BaseDataGenerator):
                 - *difficulty_level*: an indicator of how difficult the question is
 
         """
+        difficulty_levels = difficulty_levels or [DifficultyLevel.DIFF_1]
         generated_questions = []
-        for idx in range(num_samples):
-            logger.info(f"Generating question {idx + 1}/{num_samples}")
-            seed_contexts = self._extract_seed_context()
-            context = self._format_context(seed_contexts)
+        for level in difficulty_levels:
+            for idx in range(num_samples):
+                logger.info(f"Generating question {idx + 1}/{num_samples} for difficulty level {level}.")
+                seed_contexts = self._extract_seed_context()
+                context = self._format_context(seed_contexts)
 
-            generated_qa = self._generate_question_answer_from_context(context)
+                generation_fn = self._difficulty_level_mapping(level)
+                generated_qa = generation_fn(context)
 
-            if generated_qa is not None:
-                generated_questions.append(
-                    {
-                        "question": generated_qa["question"],
-                        "reference_answer": generated_qa["answer"],
-                        "reference_context": context,
-                        "difficulty_level": self._difficulty_level,
-                    }
-                )
+                if generated_qa is not None:
+                    generated_questions.append(
+                        {
+                            "question": generated_qa["question"],
+                            "reference_answer": generated_qa["answer"],
+                            "reference_context": context,
+                            "difficulty_level": generated_qa["difficulty"],
+                        }
+                    )
+                else:
+                    logger.warning("Error in question generation, skipping it.")
 
         return QATestset(df=pd.DataFrame(generated_questions), target=None)
