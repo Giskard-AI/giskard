@@ -104,7 +104,6 @@ def get_decision_from_user():
 
         if value.lower() not in ["y", "n"]:
             logger.critical("The only accepted answers are 'y' or 'n'. Try again.", template=WarningTemplate)
-            continue
         else:
             break
     return value
@@ -173,7 +172,7 @@ class Scanner:
             get_default_client().logger.reset()
 
         # Set logger level to the user's input
-        logger.setLevel(verbosity_level)
+        logger.setlevel(verbosity_level)
 
         # Good, we can start
         logger.info("🔎 Running scan…")
