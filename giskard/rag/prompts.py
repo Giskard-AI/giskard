@@ -1,10 +1,10 @@
-QA_GENERATION_SYSTEM_PROMPT_MODEL = """You are a powerful auditing AI, your role is to generate question answer pair from a given list of context paragraph to audit a model specialized on these knowledge. 
+QA_GENERATION_SYSTEM_PROMPT_WITH_DESCRIPTION = """You are a powerful auditing AI, your role is to generate question answer pair from a given list of context paragraph to audit a model specialized on these knowledge. 
 
 The model you are auditing is the following:
 - Model name: {model_name}
 - Model description: {model_description}  
 
-Your task is to generate questions about the products, the ordering process and the shop's activities in general. Your question must be related to a provided context.  
+Your question must be related to a provided context.  
 Please respect the following rules to generate the question:
 - The answer to the question should be found inside the provided context
 - The question must be self-contained
@@ -16,7 +16,7 @@ Your output should be a single JSON object, with keys 'question' and 'answer'. M
 
 QA_GENERATION_SYSTEM_PROMPT = """You are a powerful auditing AI, your role is to generate question answer pair from a given list of context paragraph to audit a model specialized on these knowledge. 
 
-Your task is to generate questions about the products, the ordering process and the shop's activities in general. Your question must be related to a provided context.  
+Your question must be related to a provided context.  
 Please respect the following rules to generate the question:
 - The answer to the question should be found inside the provided context
 - The question must be self-contained
@@ -45,3 +45,126 @@ Tracking your order is a breeze! Once your purchase has been successfully confir
 """
 
 FIX_JSON_FORMAT_PROMPT = """Fix the following json string so it contains a single valid json. Make sure to start and end with curly brackets."""
+
+
+class QAGenerationPrompt:
+    system_prompt_with_description = QA_GENERATION_SYSTEM_PROMPT_WITH_DESCRIPTION
+    system_prompt_raw = QA_GENERATION_SYSTEM_PROMPT
+    example_prompt = QA_GENERATION_CONTEXT_EXAMPLE
+    example_answer = QA_GENERATION_ASSISTANT_EXAMPLE
+
+    @classmethod
+    def format_system_prompt(cls, model_name, model_description, language):
+        language = language or "en"
+        if model_name is not None or model_description is not None:
+            system_prompt = cls.system_prompt_with_description.format(
+                model_name=model_name,
+                model_description=model_description,
+                language=language,
+            )
+        else:
+            system_prompt = cls.system_prompt_raw.format(
+                language=language,
+            )
+        system_message = {
+            "role": "system",
+            "content": system_prompt,
+        }
+        return system_message
+
+    @classmethod
+    def format_examples(cls, examples):
+        if examples is not None:
+            return examples
+        elif cls.example_prompt is not None:
+            examples = []
+            if cls.example_prompt is not None:
+                examples.append({"role": "user", "content": cls.example_prompt})
+            if cls.example_prompt is not None:
+                examples.append({"role": "assistant", "content": cls.example_answer})
+            return examples
+        return []
+
+    @classmethod
+    def create_messages(
+        cls,
+        model_name=None,
+        model_description=None,
+        language=None,
+        add_examples=False,
+        examples=None,
+        user_content=None,
+    ):
+        messages = list()
+
+        messages.append(cls.format_system_prompt(model_name, model_description, language))
+        if add_examples:
+            messages.extend(cls.format_examples(examples))
+
+        if user_content is not None:
+            messages.append({"role": "user", "content": user_content})
+
+        return messages
+
+
+COMPLEXIFICATION_SYSTEM_PROMPT_WITH_DESCRIPTION = """You are an expert at writing questions. 
+Your task is to re-write questions that will be used to evaluate the following model:
+- Model name: {model_name}
+- Model description: {model_description}  
+
+Respect the following rules to reformulate the question:
+- The re-written question should not be longer than the original question by up to 10 to 15 words. 
+- The re-written question should be more elaborated than the original, use elements from the context to enrich the questions. 
+- The re-written question should be more difficult to handle for AI models but it must be understood and answerable by humans.
+- Add one or more constraints / conditions to the question.
+- The re-written question must be in {language}.
+
+You will be provided the question delimited with <question></question> tags.
+You will also be provided a relevant context which contain the answer to the question, delimited with <context></context> tags. It consists in multiple paragraphs delimited by dashes "------".
+You will return the reformulated question as a single JSON object, with the key 'question'. Make sure you return a valid JSON object.
+"""
+
+COMPLEXIFICATION_SYSTEM_PROMPT = """You are an expert at writing questions. 
+Your task is to re-write questions that will be used to evaluate a language model.
+
+Respect the following rules to reformulate the question:
+- The re-written question should not be longer than the original question by up to 10 to 15 words. 
+- The re-written question should be more elaborated than the original, use elements from the context to enrich the questions. 
+- The re-written question should be more difficult to handle for AI models but it must be understood and answerable by humans.
+- Add one or more constraints / conditions to the question.
+- The re-written question must be in {language}.
+
+You will be provided the question delimited with <question></question> tags.
+You will also be provided a relevant context which contain the answer to the question, delimited with <context></context> tags. It consists in multiple paragraphs delimited by dashes "------".
+You will return the reformulated question as a single JSON object, with the key 'question'. Make sure you return a valid JSON object.
+"""
+
+COMPLEXIFICATION_PROMPT_EXAMPLE = """<question>
+For which countries can I track my shipping?
+</question>
+
+<context>
+What payment methods do you accept?
+
+\tWe accept a variety of payment methods to provide our customers with a convenient and secure shopping experience. You can make a purchase using major credit and debit cards, including Visa, Mastercard, American Express, and Discover. We also offer the option to pay with popular digital wallets such as PayPal and Google Pay. For added flexibility, you can choose to complete your order using bank transfers or wire transfers. Rest assured that we prioritize the security of your personal information and go the extra mile to ensure your transactions are processed safely.
+------
+\tWhat is your shipping policy?
+
+We offer free shipping on all orders over $50. For orders below $50, we charge a flat rate of $5.99. We offer shipping services to customers residing in all 50\n states of the US, in addition to providing delivery options to Canada and Mexico.
+------
+\tHow can I track my order?
+
+Tracking your order is a breeze! Once your purchase has been successfully confirmed and shipped, you will receive a confirmation email containing your tracking number. You can simply click on the link provided in the email or visit our website's order tracking page. Enter your tracking number, and you will be able to monitor the progress of your shipment in real-time. This way, you can stay updated on the estimated delivery date and ensure you're available to receive your package.
+<context>
+"""
+
+COMPLEXIFICATION_ANSWER_EXAMPLE = """{
+    "question": "Can you provide my a list of the countries from which I can follow the advancement of the delivery of my shipping?"
+}"""
+
+
+class QuestionComplexificationPrompt(QAGenerationPrompt):
+    system_prompt_with_description = COMPLEXIFICATION_SYSTEM_PROMPT_WITH_DESCRIPTION
+    system_prompt_raw = COMPLEXIFICATION_SYSTEM_PROMPT
+    example_prompt = COMPLEXIFICATION_PROMPT_EXAMPLE
+    example_answer = COMPLEXIFICATION_ANSWER_EXAMPLE
