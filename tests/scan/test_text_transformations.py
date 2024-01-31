@@ -114,6 +114,77 @@ def test_punctuation_strip_transformation():
     assert transformed_text[5] == "comma separated list"
 
 
+def test_number_to_words_transformation():
+    dataset = _dataset_from_dict(
+        {
+            "text": [
+                "We have scheduled the meeting for 12/15/2023 at our office.",  # Don't transform dates
+                "You can access the report at https://www.example123.com/report2023.",  # Don't transform URLs
+                "The serial number of the device is XC1234-AB56. Please send your queries to contact123@service4u.com.",  # Don't transform emails
+                "The dataset contains approximately 1500 entries spanning 5 years.",
+                "The total cost of the project is estimated to be around $4,500.75.",
+                "For more information, call us at +1-800-555-0199.",
+                "Der Zug soll um 09:45 Uhr ankommen.",  # German
+                "Die Gesamtkosten der Artikel betragen 45,67 Dollar.",  # German
+                "La tasa de éxito de este procedimiento es del 98,6%.",  # Spanish
+                "Hoy corrió 13,2 millas en el maratón.",  # Spanish
+                "Son anniversaire est le 22 du mois.",  # French
+                "Le coût total des articles était de 157,23 $.",  # French
+            ]
+        }
+    )
+
+    from giskard.scanner.robustness.text_transformations import TextNumberToWordTransformation
+
+    t = TextNumberToWordTransformation(column="text")
+
+    transformed = dataset.transform(t)
+    transformed_text = transformed.df.text.values[:6]
+    # English tests
+    assert transformed_text[0] == "We have scheduled the meeting for 12/15/2023 at our office."
+    assert transformed_text[1] == "You can access the report at https://www.example123.com/report2023."
+    assert (
+        transformed_text[2]
+        == "The serial number of the device is XC1234-AB56. Please send your queries to contact123@service4u.com."
+    )
+    assert (
+        transformed_text[3]
+        == "The dataset contains approximately one thousand, five hundred entries spanning five years."
+    )
+    assert (
+        transformed_text[4]
+        == "The total cost of the project is estimated to be around $four,five hundred point seven five."
+    )
+    assert (
+        transformed_text[5]
+        == "For more information, call us at +one-eight hundred-five hundred and fifty-five-one hundred and ninety-nine."
+    )
+
+    # German tests
+    t = TextNumberToWordTransformation(column="text")
+
+    transformed = dataset.transform(t)
+    transformed_text = transformed.df.text.values[6:8]
+    assert transformed_text[0] == "Der Zug soll um neun:fünfundvierzig Uhr ankommen."
+    assert transformed_text[1] == "Die Gesamtkosten der Artikel betragen fünfundvierzig,siebenundsechzig Dollar."
+
+    # Spanish tests
+    t = TextNumberToWordTransformation(column="text")
+
+    transformed = dataset.transform(t)
+    transformed_text = transformed.df.text.values[8:10]
+    assert transformed_text[0] == "La tasa de éxito de este procedimiento es del noventa y ocho,seis%."
+    assert transformed_text[1] == "Hoy corrió trece,dos millas en el maratón."
+
+    # French tests
+    t = TextNumberToWordTransformation(column="text")
+
+    transformed = dataset.transform(t)
+    transformed_text = transformed.df.text.values[10:12]
+    assert transformed_text[0] == "Son anniversaire est le vingt-deux du mois."
+    assert transformed_text[1] == "Le coût total des articles était de cent cinquante-sept,vingt-trois $."
+
+
 def test_accent_removal_transformation():
     dataset = _dataset_from_dict(
         {
