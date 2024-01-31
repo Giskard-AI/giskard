@@ -137,7 +137,7 @@ class LegacyOpenAIClient(BaseOpenAIClient):
         try:
             completion = openai.ChatCompletion.create(
                 model=self.model,
-                messages=messages,
+                messages=[message.model_dump() if isinstance(message, LLMMessage) else message for message in messages],
                 temperature=temperature,
                 max_tokens=max_tokens,
                 **extra_params,
