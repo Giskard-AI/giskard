@@ -104,7 +104,7 @@ jobs:
           cache: false
 
       - name: Cache Giskard test resources
-        uses: actions/cache@v3
+        uses: actions/cache@v4
         if: ${{ github.event_name == 'pull_request' || inputs.use-cache }}
         with:
           path: ~/.giskard
