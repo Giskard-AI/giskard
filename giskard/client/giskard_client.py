@@ -1,4 +1,5 @@
 """API Client to interact with the Giskard app"""
+
 from typing import List
 
 import json
@@ -179,20 +180,27 @@ class GiskardClient:
         response = self._session.get("project", params={"key": project_key}).json()
         return Project(self._session, response["key"], response["id"])
 
-    def create_project(self, project_key: str, name: str, description: str = None) -> Project:
+    def create_project(self, project_key: str, name: str, kernel_name: str, description: str = None) -> Project:
+        """Function to create a project in Giskard
+
+        Parameters
+        ----------
+        project_key : str
+            The unique value of the project which will be used to identify  and fetch the project in future
+        name : str
+            The name of the project
+        kernel_name : str
+            The name of the kernel to run on
+        description : str, optional
+            Describe your project, by default None
+
+        Returns
+        -------
+        Project
+            The project created in giskard
+
         """
-        Function to create a project in Giskard
-        Args:
-            project_key:
-                The unique value of the project which will be used to identify  and fetch the project in future
-            name:
-                The name of the project
-            description:
-                Describe your project
-        Returns:
-            Project:
-                The project created in giskard
-        """
+        # TODO(Bazire): handle properly the "auto" detection/creation of kernel
         analytics.track(
             "Create Project",
             {
@@ -202,9 +210,10 @@ class GiskardClient:
             },
         )
         try:
+            # TODO(Bazire) : use typed object for validation here
             response = self._session.post(
                 "project",
-                json={"description": description, "key": project_key, "name": name},
+                json={"description": description, "key": project_key, "name": name, "kernelName": kernel_name},
             ).json()
         except GiskardError as e:
             if e.code == "error.http.409":
