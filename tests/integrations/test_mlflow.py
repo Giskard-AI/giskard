@@ -14,14 +14,14 @@ mlflow_model_types = {
 
 
 def _evaluate(dataset, model, evaluator_config):
-    import os
     import platform
 
     with TemporaryDirectory() as f:
-        if platform.system() == "Windows":
-            f = f.replace(os.sep, "/")
-            f = "file://" + f
-        mlflow.set_tracking_uri(Path(f))
+        # MLFlow logic for windows seems to say : "Start with drive, no need for file:"
+        # https://github.com/mlflow/mlflow/blob/b414a22bdead12a1865a0ab59460eb6b158db7d0/mlflow/utils/uri.py#L65C1-L66C1
+        # Since it's not working, let's just skip it for windows..
+        if platform.system() != "Windows":
+            mlflow.set_tracking_uri(Path(f))
         experiment_id = mlflow.create_experiment("test", artifact_location=f)
         with mlflow.start_run(experiment_id=experiment_id):
             model_info = model.to_mlflow()
