@@ -98,7 +98,7 @@ jobs:
           fetch-depth: 0
 
       - name: Setup PDM
-        uses: pdm-project/setup-pdm@v3
+        uses: pdm-project/setup-pdm@v4
         with:
           python-version: ${{ matrix.python-version }}
           cache: false
@@ -204,7 +204,7 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4.1.0
       - name: Setup PDM
-        uses: pdm-project/setup-pdm@v3
+        uses: pdm-project/setup-pdm@v4
         with:
           python-version: "3.10"
           cache: false
@@ -232,7 +232,7 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4.1.0
       - name: Setup PDM
-        uses: pdm-project/setup-pdm@v3
+        uses: pdm-project/setup-pdm@v4
         with:
           python-version: "3.10"
           cache: false
@@ -251,7 +251,7 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4.1.0
       - name: Setup PDM
-        uses: pdm-project/setup-pdm@v3
+        uses: pdm-project/setup-pdm@v4
         with:
           python-version: "3.10"
           version: "2.10.4" # Fix to repair the CI, use latest version when fixed on pdm
@@ -284,7 +284,7 @@ jobs:
           fetch-depth: 0
 
       - name: Setup PDM
-        uses: pdm-project/setup-pdm@v3
+        uses: pdm-project/setup-pdm@v4
         with:
           python-version: "3.10"
           cache: false
