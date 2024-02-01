@@ -27,6 +27,7 @@ class TextPerturbationDetector(BaseTextPerturbationDetector):
         from .text_transformations import (
             TextAccentRemovalTransformation,
             TextLowercase,
+            TextNumberToWordTransformation,
             TextPunctuationRemovalTransformation,
             TextTitleCase,
             TextTypoTransformation,
@@ -39,5 +40,6 @@ class TextPerturbationDetector(BaseTextPerturbationDetector):
             TextTitleCase,
             TextTypoTransformation,
             TextPunctuationRemovalTransformation,
+            TextNumberToWordTransformation,
             TextAccentRemovalTransformation,
         ]
