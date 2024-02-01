@@ -32,7 +32,7 @@ jobs:
             dist/giskard-*.whl
 
       - name: Repository Dispatch
-        uses: peter-evans/repository-dispatch@v2
+        uses: peter-evans/repository-dispatch@v3
         with:
           token: ${{ secrets.RELEASE_PAT_TOKEN }}
           event-type: create-release
