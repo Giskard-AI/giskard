@@ -22,6 +22,8 @@ def _evaluate(dataset, model, evaluator_config):
         # Since it's not working, let's just skip it for windows..
         if platform.system() != "Windows":
             mlflow.set_tracking_uri(Path(f))
+        else:
+            mlflow.set_registry_uri("")
         experiment_id = mlflow.create_experiment("test", artifact_location=f)
         with mlflow.start_run(experiment_id=experiment_id):
             model_info = model.to_mlflow()
