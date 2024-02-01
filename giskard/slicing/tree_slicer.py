@@ -60,8 +60,9 @@ class DecisionTreeSlicer(BaseSlicer):
         if len(data) < min_samples:
             return []
 
-        mode = None
-        if pd.api.types.is_numeric_dtype(data[target]):
+        mode = "Regression" if pd.api.types.is_numeric_dtype(data[target]) else "Classification"
+
+        if mode == "Regression":
             logger.debug("Target is numeric, using regression tree.")
             criterion = self._choose_tree_criterion(data.loc[:, target].values)
             logger.debug(f"Using `{criterion}` criterion.")
@@ -83,7 +84,6 @@ class DecisionTreeSlicer(BaseSlicer):
             )
             gs.fit(data.loc[:, features], data.loc[:, target])
             dt = gs.best_estimator_
-            mode = "Regression"
         else:
             logger.debug("Target is not numeric, using a classification tree.")
             dt = DecisionTreeClassifier(
@@ -94,25 +94,27 @@ class DecisionTreeSlicer(BaseSlicer):
                 min_impurity_decrease=0,
             )
             dt.fit(data.loc[:, features], data.loc[:, target])
-            mode = "Classification"
 
         # Need at least a split, otherwise return now.
         if dt.tree_.node_count < 2:
             logger.debug("No split found, stopping now.")
             return []
 
-        # track analytics with a 10% probability
-        if np.random.rand() < 0.1:
-            analytics.track(
-                "scan:tree_slicer_params",
-                {
-                    "n_samples": len(data),
-                    "min_samples": min_samples,
-                    "node_count": dt.tree_.node_count,
-                    "impurity": dt.tree_.impurity.tolist(),
-                    "mode": mode,
-                },
-            )
+        try:
+            # track analytics with a 10% probability
+            if np.random.default_rng().uniform() < 0.9:
+                analytics.track(
+                    "scan:tree_slicer_params",
+                    {
+                        "n_samples": len(data),
+                        "min_samples": min_samples,
+                        "node_count": dt.tree_.node_count,
+                        "impurity": dt.tree_.impurity.tolist(),
+                        "mode": mode,
+                    },
+                )
+        except AttributeError:
+            logger.debug("Error accessing tree parameters for analytics.")
 
         # Make test slices
         slice_candidates = make_slices_from_tree(dt.tree_, features)
