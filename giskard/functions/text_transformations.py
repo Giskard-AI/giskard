@@ -6,6 +6,7 @@ from pathlib import Path
 
 import numpy as np
 import pandas as pd
+from num2words import num2words
 
 from ..datasets import Dataset
 from ..functions.transformation import gruber
@@ -252,6 +253,19 @@ class TextGenderTransformation(TextLanguageBasedTransformation):
             return (word, self._lang_dictionary[language][word.lower()])
         except KeyError:
             return None
+
+
+@transformation_function(name="Numbers to Words", row_level=False, needs_dataset=True)
+class TextNumberToWordTransformation(TextLanguageBasedTransformation):
+    name = "Transform numbers to words"
+
+    def _load_dictionaries(self):
+        # Regex to match numbers in text
+        self._regex = re.compile(r"(?<!\d/)(?<!\d\.)\b\d+(?:\.\d+)?\b(?!(?:\.\d+)?@|\d?/?\d)")
+
+    def make_perturbation(self, row):
+        # Replace numbers with words
+        return self._regex.sub(lambda x: num2words(x.group(), lang=row["language__gsk__meta"]), row[self.column])
 
 
 @transformation_function(name="Switch Religion", row_level=False, needs_dataset=True)
