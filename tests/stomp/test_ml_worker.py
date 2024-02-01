@@ -214,7 +214,7 @@ async def test_ml_worker_get_info(requests_mock: requests_mock.Mocker, patch_set
         "interpreter",
         "interpreterVersion",
         "installedPackages",
-        "mlWorkerId",
+        "kernelName",
         "pid",
         "processStartTime",
         "giskardClientVersion",
