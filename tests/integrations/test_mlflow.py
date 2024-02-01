@@ -6,6 +6,9 @@ import pytest
 
 from giskard.core.core import SupportedModelTypes
 
+# Fix for windows: [Bug: log_artifact fails when tracking uri scheme is 'file'](https://github.com/mlflow/mlflow/issues/7819)
+mlflow.set_tracking_uri("http://127.0.0.1:5002")
+
 mlflow_model_types = {
     SupportedModelTypes.CLASSIFICATION: "classifier",
     SupportedModelTypes.REGRESSION: "regressor",
