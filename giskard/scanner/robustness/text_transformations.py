@@ -284,9 +284,9 @@ class TextNumberToWordTransformation(TextLanguageBasedTransformation):
     def make_perturbation(self, row):
         # Replace numbers with words
         value = row[self.column]
-        lang = row["language__gsk__meta"]
-        if pd.isna(value) or pd.isna(lang):
+        if pd.isna(value):
             return value
+        lang = row["language__gsk__meta"] if not pd.isna(row["language__gsk__meta"]) else "en"
         return self._regex.sub(lambda x: num2words(x.group(), lang=lang), value)
 
 
