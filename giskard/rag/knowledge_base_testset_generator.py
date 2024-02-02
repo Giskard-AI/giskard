@@ -107,15 +107,14 @@ class KnowledgeBaseTestsetGenerator(BaseDataGenerator):
         )
 
     def _difficulty_level_mapping(self, level: DifficultyLevel):
-        match level:
-            case DifficultyLevel.DIFF_1:
-                return self._generate_question_answer_from_context
-            case DifficultyLevel.DIFF_2:
-                return self._generate_complex_questions_from_context
-            case DifficultyLevel.DIFF_3:
-                return self._generate_distraction_questions_from_context
-            case _:
-                raise NotImplementedError(f"Missing case for difficulty level {level}.")
+        if level == DifficultyLevel.DIFF_1:
+            return self._generate_question_answer_from_context
+        elif level == DifficultyLevel.DIFF_2:
+            return self._generate_complex_questions_from_context
+        elif level == DifficultyLevel.DIFF_3:
+            return self._generate_distraction_questions_from_context
+        else:
+            raise NotImplementedError(f"Missing case for difficulty level {level}.")
 
     def _generate_question_answer_from_context(self, context):
         messages = QAGenerationPrompt.create_messages(
