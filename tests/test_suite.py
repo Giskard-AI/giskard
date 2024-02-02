@@ -2,7 +2,7 @@ import numpy as np
 import pytest
 
 from giskard import Model, Suite
-from giskard.core.suite import single_binary_result, SuiteResult
+from giskard.core.suite import SuiteResult, single_binary_result
 from giskard.core.test_result import TestResult
 from giskard.testing import test_accuracy
 
