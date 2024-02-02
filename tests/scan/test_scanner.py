@@ -225,16 +225,18 @@ def test_scanner_warns_if_too_many_features():
     ):
         scanner.analyze(model, dataset)
 
-    # Model specifying few feature names should not raise a warning
+    # Model specifying few feature names should not raise the warning
     model = Model(
         lambda x: np.ones(len(x)),
         model_type="classification",
         classification_labels=[0, 1],
         feature_names=["1", "2", "3"],
     )
-    with warnings.catch_warnings():
-        warnings.simplefilter("error")
+
+    with warnings.catch_warnings(record=True) as record:
         scanner.analyze(model, dataset)
+    msg = "It looks like your dataset has a very large number of features"
+    assert not [r for r in record if msg in str(r.message)]
 
 
 def test_can_limit_features_to_subset():
