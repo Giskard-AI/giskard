@@ -1,14 +1,26 @@
 import random
 import re
-import string
 
-import numpy as np
 import pandas as pd
 from scipy.stats import median_abs_deviation
 
-from giskard.registry.transformation_function import transformation_function
-
+from ..datasets import Dataset
 from ..llm import get_default_client
+from ..registry.transformation_function import transformation_function
+from ..scanner.robustness.text_transformations import (
+    TextAccentRemovalTransformation,
+    TextFromOCRTypoTransformation,
+    TextFromSpeechTypoTransformation,
+    TextGenderTransformation,
+    TextLowercase,
+    TextNationalityTransformation,
+    TextNumberToWordTransformation,
+    TextPunctuationRemovalTransformation,
+    TextReligionTransformation,
+    TextTitleCase,
+    TextTypoTransformation,
+    TextUppercase,
+)
 
 nearbykeys = {
     "a": ["q", "w", "s", "x", "z"],
@@ -71,39 +83,64 @@ def keyboard_typo_transformation(text: str, rate: float = 0.1) -> str:
     return " ".join(words)
 
 
-@transformation_function(name="To uppercase", tags=["text"], cell_level=True)
-def uppercase_transformation(text: str) -> str:
-    """
-    Transform the text to uppercase
-    """
-    return np.nan if pd.isnull(text) else text.upper()
+@transformation_function(name="Transform to uppercase", row_level=False)
+def text_uppercase(data: pd.DataFrame, column: str):
+    return TextUppercase(column).execute(data)
 
 
-@transformation_function(name="To lowercase", tags=["text"], cell_level=True)
-def lowercase_transformation(text: str) -> str:
-    """
-    Transform the text of the column 'column_name' to lowercase
-    """
-    return np.nan if pd.isnull(text) else text.lower()
+@transformation_function(name="Transform to lowercase", row_level=False)
+def text_lowercase(data: pd.DataFrame, column: str):
+    return TextLowercase(column).execute(data)
 
 
-@transformation_function(name="Strip punctuation", tags=["text"], cell_level=True)
-def strip_punctuation(text: str) -> str:
-    """
-    Remove all punctuation symbols (e.g., ., !, ?) from the text of the column 'column_name'
-    """
-    if pd.isnull(text):
-        return text
+@transformation_function(name="Transform to title case", row_level=False)
+def text_title_case(data: pd.DataFrame, column: str):
+    return TextTitleCase(column).execute(data)
 
-    split_urls_from_text = gruber.split(text)
 
-    # The non-URLs are always even-numbered entries in the list and the URLs are odd-numbered.
-    for i in range(0, len(split_urls_from_text), 2):
-        split_urls_from_text[i] = split_urls_from_text[i].translate(str.maketrans("", "", string.punctuation))
+@transformation_function(name="Add typos", row_level=False)
+def text_typo(data: pd.DataFrame, column: str, rate: float = 0.05, min_length: int = 10, rng_seed: int = 1729):
+    return TextTypoTransformation(column, rate, min_length, rng_seed).execute(data)
 
-    stripped_text = "".join(split_urls_from_text)
 
-    return stripped_text
+@transformation_function(name="Add typos from OCR", row_level=False)
+def text_typo_from_ocr(data: pd.DataFrame, column: str, rate: float = 0.05, min_length: int = 10, rng_seed: int = 1729):
+    return TextFromOCRTypoTransformation(column, rate, min_length, rng_seed).execute(data)
+
+
+@transformation_function(name="Punctuation Removal", row_level=False)
+def text_punctuation_removal(data: pd.DataFrame, column: str):
+    return TextPunctuationRemovalTransformation(column).execute(data)
+
+
+@transformation_function(name="Accent Removal", row_level=False)
+def text_accent_removal(data: pd.DataFrame, column: str, rate: float = 1.0, rng_seed: int = 1729):
+    return TextAccentRemovalTransformation(column, rate, rng_seed).execute(data)
+
+
+@transformation_function(name="Switch Gender", row_level=False)
+def text_gender_switch(dataset: Dataset, column: str):
+    return TextGenderTransformation(column).execute(dataset)
+
+
+@transformation_function(name="Transform numbers to words", row_level=False)
+def text_number_to_word(dataset: Dataset, column: str):
+    return TextNumberToWordTransformation(column).execute(dataset)
+
+
+@transformation_function(name="Switch Religion", row_level=False)
+def text_religion_switch(dataset: Dataset, column: str):
+    return TextReligionTransformation(column).execute(dataset)
+
+
+@transformation_function(name="Switch countries from high- to low-income and vice versa", row_level=False)
+def text_nationality_switch(dataset: Dataset, column: str):
+    return TextNationalityTransformation(column).execute(dataset)
+
+
+@transformation_function(name="Add text from speech typos", row_level=False)
+def text_typo_from_speech(dataset: Dataset, column: str, rng_seed: int = 1729, min_length: int = 10):
+    return TextFromSpeechTypoTransformation(column, rng_seed, min_length).execute(dataset)
 
 
 @transformation_function(name="Change writing style", row_level=False, tags=["text"])
