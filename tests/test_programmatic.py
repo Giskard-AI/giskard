@@ -307,3 +307,81 @@ def test_with_custom_types():
 
     result = _test_with_custom_types(b=CustomClass(2), a=CustomClass(3)).execute()
     assert result
+
+
+def test_upgrade_test_with_migration():
+    @test(name="Named test")
+    def my_named_test(is_pass: bool):
+        return is_pass
+
+    suite = Suite().add_test(my_named_test(True), "True").add_test(my_named_test(False), "False")
+
+    assert len(suite.tests) == 2
+    assert suite.tests[0].test_id == "True"
+    assert suite.tests[0].giskard_test.meta.uuid == my_named_test.meta.uuid
+    assert suite.tests[0].provided_inputs == {"is_pass": True}
+    assert suite.tests[1].test_id == "False"
+    assert suite.tests[1].giskard_test.meta.uuid == my_named_test.meta.uuid
+    assert suite.tests[1].provided_inputs == {"is_pass": False}
+
+    @test(name="Named test")
+    def my_named_test_v2(passed: bool):
+        return passed
+
+    suite.upgrade_test(my_named_test_v2, lambda params: {"passed": params["is_pass"]})
+
+    assert len(suite.tests) == 2
+    assert suite.tests[0].test_id == "True"
+    assert suite.tests[0].giskard_test.meta.uuid == my_named_test_v2.meta.uuid
+    assert suite.tests[0].provided_inputs == {"passed": True}
+    assert suite.tests[1].test_id == "False"
+    assert suite.tests[1].giskard_test.meta.uuid == my_named_test_v2.meta.uuid
+    assert suite.tests[1].provided_inputs == {"passed": False}
+
+
+def test_upgrade_test_without():
+    @test(name="Named test")
+    def my_named_test(is_pass: bool):
+        return is_pass
+
+    suite = Suite().add_test(my_named_test(True), "True")
+
+    assert len(suite.tests) == 1
+    assert suite.tests[0].test_id == "True"
+    assert suite.tests[0].giskard_test.meta.uuid == my_named_test.meta.uuid
+    assert suite.tests[0].provided_inputs == {"is_pass": True}
+
+    @test(name="Named test")
+    def my_named_test_v2(passed: bool):
+        return passed
+
+    suite.upgrade_test(my_named_test_v2)
+
+    assert len(suite.tests) == 1
+    assert suite.tests[0].test_id == "True"
+    assert suite.tests[0].giskard_test.meta.uuid == my_named_test_v2.meta.uuid
+    assert suite.tests[0].provided_inputs == {"is_pass": True}
+
+
+def test_upgrade_test_not_matching():
+    @test(name="Named test")
+    def my_named_test(is_pass: bool):
+        return is_pass
+
+    suite = Suite().add_test(my_named_test(True), "True")
+
+    assert len(suite.tests) == 1
+    assert suite.tests[0].test_id == "True"
+    assert suite.tests[0].giskard_test.meta.uuid == my_named_test.meta.uuid
+    assert suite.tests[0].provided_inputs == {"is_pass": True}
+
+    @test(name="Named test V2")
+    def my_named_test_v2(passed: bool):
+        return passed
+
+    suite.upgrade_test(my_named_test_v2)
+
+    assert len(suite.tests) == 1
+    assert suite.tests[0].test_id == "True"
+    assert suite.tests[0].giskard_test.meta.uuid == my_named_test.meta.uuid
+    assert suite.tests[0].provided_inputs == {"is_pass": True}
