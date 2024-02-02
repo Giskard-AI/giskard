@@ -7,20 +7,6 @@ from scipy.stats import median_abs_deviation
 from ..datasets import Dataset
 from ..llm import get_default_client
 from ..registry.transformation_function import transformation_function
-from ..scanner.robustness.text_transformations import (
-    TextAccentRemovalTransformation,
-    TextFromOCRTypoTransformation,
-    TextFromSpeechTypoTransformation,
-    TextGenderTransformation,
-    TextLowercase,
-    TextNationalityTransformation,
-    TextNumberToWordTransformation,
-    TextPunctuationRemovalTransformation,
-    TextReligionTransformation,
-    TextTitleCase,
-    TextTypoTransformation,
-    TextUppercase,
-)
 
 nearbykeys = {
     "a": ["q", "w", "s", "x", "z"],
@@ -85,61 +71,87 @@ def keyboard_typo_transformation(text: str, rate: float = 0.1) -> str:
 
 @transformation_function(name="Transform to uppercase", row_level=False)
 def text_uppercase(data: pd.DataFrame, column: str):
+    from ..scanner.robustness.text_transformations import TextUppercase
+
     return TextUppercase(column).execute(data)
 
 
 @transformation_function(name="Transform to lowercase", row_level=False)
 def text_lowercase(data: pd.DataFrame, column: str):
+    from ..scanner.robustness.text_transformations import TextLowercase
+
     return TextLowercase(column).execute(data)
 
 
 @transformation_function(name="Transform to title case", row_level=False)
 def text_title_case(data: pd.DataFrame, column: str):
+    from ..scanner.robustness.text_transformations import TextTitleCase
+
     return TextTitleCase(column).execute(data)
 
 
 @transformation_function(name="Add typos", row_level=False)
 def text_typo(data: pd.DataFrame, column: str, rate: float = 0.05, min_length: int = 10, rng_seed: int = 1729):
+    from ..scanner.robustness.text_transformations import TextTypoTransformation
+
     return TextTypoTransformation(column, rate, min_length, rng_seed).execute(data)
 
 
 @transformation_function(name="Add typos from OCR", row_level=False)
 def text_typo_from_ocr(data: pd.DataFrame, column: str, rate: float = 0.05, min_length: int = 10, rng_seed: int = 1729):
+    from ..scanner.robustness.text_transformations import TextFromOCRTypoTransformation
+
     return TextFromOCRTypoTransformation(column, rate, min_length, rng_seed).execute(data)
 
 
 @transformation_function(name="Punctuation Removal", row_level=False)
 def text_punctuation_removal(data: pd.DataFrame, column: str):
+    from ..scanner.robustness.text_transformations import TextPunctuationRemovalTransformation
+
     return TextPunctuationRemovalTransformation(column).execute(data)
 
 
 @transformation_function(name="Accent Removal", row_level=False)
 def text_accent_removal(data: pd.DataFrame, column: str, rate: float = 1.0, rng_seed: int = 1729):
+    from ..scanner.robustness.text_transformations import TextAccentRemovalTransformation
+
     return TextAccentRemovalTransformation(column, rate, rng_seed).execute(data)
 
 
-@transformation_function(name="Switch Gender", row_level=False)
+@transformation_function(name="Switch Gender", row_level=False, needs_dataset=True)
 def text_gender_switch(dataset: Dataset, column: str):
+    from ..scanner.robustness.text_transformations import TextGenderTransformation
+
     return TextGenderTransformation(column).execute(dataset)
 
 
-@transformation_function(name="Transform numbers to words", row_level=False)
+@transformation_function(name="Transform numbers to words", row_level=False, needs_dataset=True)
 def text_number_to_word(dataset: Dataset, column: str):
+    from ..scanner.robustness.text_transformations import TextNumberToWordTransformation
+
     return TextNumberToWordTransformation(column).execute(dataset)
 
 
-@transformation_function(name="Switch Religion", row_level=False)
+@transformation_function(name="Switch Religion", row_level=False, needs_dataset=True)
 def text_religion_switch(dataset: Dataset, column: str):
+    from ..scanner.robustness.text_transformations import TextReligionTransformation
+
     return TextReligionTransformation(column).execute(dataset)
 
 
-@transformation_function(name="Switch countries from high- to low-income and vice versa", row_level=False)
+@transformation_function(
+    name="Switch countries from high- to low-income and vice versa", row_level=False, needs_dataset=True
+)
 def text_nationality_switch(dataset: Dataset, column: str):
+    from ..scanner.robustness.text_transformations import TextNationalityTransformation
+
     return TextNationalityTransformation(column).execute(dataset)
 
 
-@transformation_function(name="Add text from speech typos", row_level=False)
+@transformation_function(name="Add text from speech typos", row_level=False, needs_dataset=True)
 def text_typo_from_speech(dataset: Dataset, column: str, rng_seed: int = 1729, min_length: int = 10):
+    from ..scanner.robustness.text_transformations import TextFromSpeechTypoTransformation
+
     return TextFromSpeechTypoTransformation(column, rng_seed, min_length).execute(dataset)
 
 

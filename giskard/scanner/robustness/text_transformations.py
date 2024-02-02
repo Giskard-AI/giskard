@@ -18,8 +18,8 @@ from ...registry.transformation_function import TransformationFunction
 class TextTransformation(TransformationFunction):
     name: str
 
-    def __init__(self, column):
-        super().__init__(None, row_level=False, cell_level=False)
+    def __init__(self, column, needs_dataset=False):
+        super().__init__(None, row_level=False, cell_level=False, needs_dataset=needs_dataset)
         self.column = column
         self.meta = DatasetProcessFunctionMeta(type="TRANSFORMATION")
         self.meta.uuid = get_object_uuid(self)
@@ -212,10 +212,8 @@ class TextAccentRemovalTransformation(TextTransformation):
 
 
 class TextLanguageBasedTransformation(TextTransformation):
-    needs_dataset = True
-
     def __init__(self, column, rng_seed=1729):
-        super().__init__(column)
+        super().__init__(column, needs_dataset=True)
         self._lang_dictionary = dict()
         self._load_dictionaries()
         self.rng = np.random.default_rng(seed=rng_seed)
