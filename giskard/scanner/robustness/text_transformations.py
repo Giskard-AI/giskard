@@ -283,7 +283,11 @@ class TextNumberToWordTransformation(TextLanguageBasedTransformation):
 
     def make_perturbation(self, row):
         # Replace numbers with words
-        return self._regex.sub(lambda x: num2words(x.group(), lang=row["language__gsk__meta"]), row[self.column])
+        value = row[self.column]
+        lang = row["language__gsk__meta"]
+        if pd.isna(value) or pd.isna(lang):
+            return value
+        return self._regex.sub(lambda x: num2words(x.group(), lang=lang), value)
 
 
 class TextReligionTransformation(TextLanguageBasedTransformation):
