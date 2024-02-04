@@ -84,4 +84,4 @@ class BasePredictTool(BaseTool, ABC):
     def __call__(self, features_dict: dict) -> str:
         model_input = self._prepare_input(features_dict)
         prediction = self._model.predict(model_input).prediction
-        return ", ".join(prediction)
+        return ", ".join(map(str, prediction))
