@@ -42,7 +42,7 @@ class LLMFaithfulnessDetector(RequirementBasedDetector):
             caller_id=self.__class__.__name__,
         )
 
-        if out.message.strip().upper() != "Y":
+        if out.content.strip().upper() != "Y":
             logger.warning(
                 f"{self.__class__.__name__}: Skipping faithfulness checks because the model is performing a different task."
             )
