@@ -11,7 +11,7 @@
 
 It is possible to execute Giskard tests via pytest with very minimal code. Using pytest to execute tests can facilitate the integration with CI/CD scripts and leverage builtin functionalities like test report or advanced markings (xfail, skip).
 
-Once defined in a script, the execution of the tests can be triggred using the pytest command:
+Once defined in a script, the execution of the tests can be triggered using the pytest command:
 
 ```console
 $ pytest test_ml_model.py
