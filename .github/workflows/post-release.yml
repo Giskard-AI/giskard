@@ -4,6 +4,8 @@ on:
   repository_dispatch:
     types:
       - post-release
+      # Client payload should contain
+      # version_name: vX.Y.Z (with prefix)
 permissions:
   contents: write
 
@@ -24,11 +26,20 @@ jobs:
         run: |
           echo "Job failed due to user not being a member of Giskard-AI organization and the 'safe for build' label not being set on the PR"
           exit 1
+
+      - name: Write release version env vars (with/without v)
+        run: |
+          VERSION_NAME="${{ github.event.client_payload.version_name }}"
+          VERSION_NUMBER="${VERSION_NAME:1}"
+          echo "VERSION_NUMBER=${VERSION_NUMBER}" >> $GITHUB_ENV
+          echo "VERSION_NAME=${VERSION_NAME}" >> $GITHUB_ENV
+
       - name: Checkout code
         uses: actions/checkout@v4.1.0
         with:
           fetch-tags: true
-          ref: ${{ github.event.client_payload.version  }}
+          ref: main
+          token: ${{ secrets.RELEASE_PAT_TOKEN }} # Needed to trigger other actions
 
       - name: Setup PDM
         uses: pdm-project/setup-pdm@v4
@@ -36,8 +47,73 @@ jobs:
           python-version: '3.10'
           cache: false
 
-      - name: Build wheel
-        run: pdm build
+      - name: Edit pyproject.toml
+        run:  sed -i 's/^\(version *= *\).*$/\1"${{ env.VERSION_NUMBER }}"/' pyproject.toml
+
+      - name: Configure git
+        run:  |
+          git config --global user.name 'BotReleaser'
+          git config --global user.email 'bot.releaser@users.noreply.github.com'
+
+      - name: Adding file
+        run:  |
+          git add pyproject.toml
+          git fetch --quiet --tags
+          git commit -m "${{ env.VERSION_NAME }}" --allow-empty
+          git tag ${{ env.VERSION_NAME }}
+
+      - name: Push to main and tags
+        run: |
+          git push origin main
+          git push origin ${{ env.VERSION_NAME }}
+
+      - run: mkdir -p dist
+
+      - name: Download wheel (release candidate)
+        working-directory: dist
+        run: gh -R ${{ github.repository_owner }}/giskard run download -n rc-wheel-${{ env.VERSION_NUMBER }}
+        env:
+          GH_TOKEN: ${{ github.token }}
+
+      - name: Validate wheel version
+        working-directory: dist
+        run: |
+          python -m pip install pkginfo
+          ls giskard-*.whl | xargs -I {} python3 -c 'import pkginfo; print(pkginfo.wheel.Wheel("{}").version)' > WHEEL_VERSION
+          if [ ! `grep ${{ env.VERSION_NUMBER }} WHEEL_VERSION` ]
+          then
+            echo "Expected wheel version ${{ env.VERSION_NUMBER }}, got $(cat WHEEL_VERSION)"
+            exit 1
+          fi
+  
+      # build .tar.gz sdist tarball
+      # --no-clean preserves the previously downloaded wheel in dist/
+      - name: Build source distribution tarball
+        run: pdm build --no-wheel --no-clean
+
+      - name: Create Github Release
+        id: github-release
+        uses: softprops/action-gh-release@v1
+        with:
+          tag_name: ${{ env.VERSION_NAME }}
+          fail_on_unmatched_files: true
+          generate_release_notes: true
+          files: |
+            dist/giskard-*.tar.gz
+            dist/giskard-*.whl
 
       - name: Push to Pipy
         run: pdm publish --no-build --username "${{ secrets.PIPY_USERNAME }}" --password "${{ secrets.PIPY_PASSWORD }}"
+
+      - name: Post to a Slack channel
+        id: slack
+        uses: slackapi/slack-github-action@v1.25.0
+        with:
+          # Slack channel id, channel name, or user id to post message.
+          # See also: https://api.slack.com/methods/chat.postMessage#channels
+          # On special mentions: https://api.slack.com/reference/surfaces/formatting#special-mentions
+          channel-id: ${{ vars.SLACK_CHANNEL_ID }}
+          slack-message: "<!channel> New release: ${{ env.VERSION_NAME }} is being made !:tada:\nRelease notes there: ${{ steps.github-release.outputs.url }}"
+          # For posting a rich message using Block Kit
+        env:
+          SLACK_BOT_TOKEN: ${{ secrets.SLACK_BOT_TOKEN }}
