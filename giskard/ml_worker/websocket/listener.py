@@ -567,12 +567,12 @@ def run_test_suite(
         suite_result = suite.run(**global_arguments)
 
         identifier_single_test_results = []
-        for t, (identifier, result, _), test_args in zip(tests, suite_result.results, updated_test_args):
+        for t, test_result, test_args in zip(tests, suite_result.results, updated_test_args):
             arguments = Suite.create_test_params(generate_test_partial(t["test"], **test_args), global_arguments)
             identifier_single_test_results.append(
                 websocket.IdentifierSingleTestResult(
-                    id=identifier,
-                    result=map_result_to_single_test_result_ws(result, datasets, client, params.projectKey),
+                    id=test_result.test_name,
+                    result=map_result_to_single_test_result_ws(test_result.result, datasets, client, params.projectKey),
                     arguments=function_argument_to_ws(arguments),
                 )
             )

@@ -3,7 +3,7 @@ from typing import Optional
 import logging
 import os
 
-from .base import LLMClient, LLMFunctionCall, LLMOutput
+from .base import LLMClient, LLMFunctionCall, LLMMessage, LLMToolCall
 from .logger import LLMLogger
 
 _default_client = None
@@ -75,7 +75,8 @@ def get_default_client() -> LLMClient:
 __all__ = [
     "LLMClient",
     "LLMFunctionCall",
-    "LLMOutput",
+    "LLMToolCall",
+    "LLMMessage",
     "LLMLogger",
     "get_default_client",
     "set_llm_model",
