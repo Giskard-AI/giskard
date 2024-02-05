@@ -65,7 +65,7 @@ ml_runtime = [
     "nltk>=3.8.1",
     "xgboost>=1.7.5",
     "lightgbm>=3.3.5",
-    "imbalanced-learn>=0.10.1",
+    "imbalanced-learn>=0.12.0",
     "catboost>=1.1.1",
     "requests-mock>=1.10.0",
     "tensorflow-hub>=0.12.0",
@@ -108,7 +108,7 @@ doc = [
     "nbsphinx>=0.9.2",
     "ipython==8.12.0",
     "scrapy",
-    "requests"
+    "requests",
 ]
 
 [project.scripts]
@@ -132,7 +132,7 @@ giskard = "giskard.integrations.mlflow.giskard_evaluator:GiskardEvaluator"
 name = "giskard"
 readme = "README.md"
 license = { text = "Apache Software License 2.0" }
-version = "2.6.0"
+version = "2.7.0"
 description = "The testing framework dedicated to ML models, from tabular to LLMs"
 authors = [{ name = "Giskard AI", email = "hello@giskard.ai" }]
 keywords = ["Artificial Intelligence", "Machine Learning", "Quality", "MLOps"]
@@ -156,8 +156,8 @@ dependencies = [
     "zstandard>=0.10.0",
     "mlflow-skinny>=2",
     "numpy>=1.22.0",
-    "scikit-learn>=1.0, <1.4.0",
-    "scipy>=1.7.3",
+    "scikit-learn>=1.0",
+    "scipy>=1.7.3, <1.12.0",
     "mixpanel>=4.4.0",
     "requests>=2.19",
     "pydantic<3,>1",
@@ -173,15 +173,12 @@ dependencies = [
     "packaging",                # used in settings
     "markdown",                 # needed for display of scan results in notebook
     "colorama",                 # needed for the scan
+    "num2words>=0.5.13",
     "griffe>=0.36.9",
 ]
 
 [project.optional-dependencies]
-llm = [
-    "openai",
-    "evaluate>=0.4.1",
-    "bert-score>=0.3.13",
-]
+llm = ["openai", "evaluate>=0.4.1", "bert-score>=0.3.13"]
 
 hub = [
     # Worker deps
