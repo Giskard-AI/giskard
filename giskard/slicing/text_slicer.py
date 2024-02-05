@@ -204,7 +204,7 @@ class MetadataSliceFunction(SlicingFunction):
         return dataset.df[mask]
 
     def __str__(self):
-        # Clauses should have format like "avg_word_length(my_column) > x"
+        # Clauses should have format like "text_length(my_column) > x"
         q = copy.deepcopy(self.query)
         for c in q.get_all_clauses():
             c.column += f"({self.feature})"
