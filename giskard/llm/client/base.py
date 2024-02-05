@@ -1,4 +1,4 @@
-from typing import Any, Dict, Optional
+from typing import Any, Dict, List, Optional, Sequence
 
 from abc import ABC, abstractmethod
 from dataclasses import dataclass
@@ -10,14 +10,27 @@ from .logger import LLMLogger
 
 @dataclass
 class LLMFunctionCall:
-    function: str
-    args: Any
+    name: str
+    arguments: Any
 
 
 @dataclass
-class LLMOutput:
-    message: Optional[str] = None
-    function_call: Optional[LLMFunctionCall] = None
+class LLMToolCall:
+    id: str
+    type: str
+    function: LLMFunctionCall
+
+
+@dataclass
+class LLMMessage:
+    role: str
+    content: Optional[str]
+    function_call: Optional[LLMFunctionCall]
+    tool_calls: Optional[List[LLMToolCall]]
+
+    @staticmethod
+    def create_message(role: str, content: str):
+        return LLMMessage(role=role, content=content, function_call=None, tool_calls=None)
 
 
 class LLMClient(ABC):
@@ -29,13 +42,15 @@ class LLMClient(ABC):
     @abstractmethod
     def complete(
         self,
-        messages,
+        messages: Sequence[LLMMessage],
         functions=None,
         temperature=0.5,
         max_tokens=None,
         function_call: Optional[Dict] = None,
         caller_id: Optional[str] = None,
-    ) -> LLMOutput:
+        tools=None,
+        tool_choice=None,
+    ) -> LLMMessage:
         ...
 
     @abstractmethod
