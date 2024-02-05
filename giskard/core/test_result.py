@@ -14,8 +14,8 @@ class TestResultStatus(Enum):
 
 
 class TestMessageLevel(Enum):
-    ERROR = (1,)
-    INFO = 2
+    ERROR = "ERROR"
+    INFO = "INFP"
 
 
 @dataclass
