@@ -1,4 +1,4 @@
-from typing import Dict, Optional, Sequence
+from typing import Dict, List, Optional, Sequence
 
 import json
 from abc import ABC, abstractmethod
@@ -7,7 +7,8 @@ from tenacity import retry, retry_if_exception_type, stop_after_attempt, wait_ex
 
 from ..config import LLMConfigurationError
 from ..errors import LLMGenerationError, LLMImportError
-from . import LLMClient, LLMFunctionCall, LLMLogger, LLMOutput
+from . import LLMClient, LLMFunctionCall, LLMLogger, LLMMessage
+from .base import LLMToolCall
 
 try:
     import openai
@@ -38,39 +39,101 @@ class BaseOpenAIClient(LLMClient, ABC):
         function_call: Optional[Dict] = None,
         max_tokens=None,
         caller_id: Optional[str] = None,
+        tools=None,
+        tool_choice=None,
     ) -> dict:
         ...
 
+    @staticmethod
+    def _serialize_function_call(function_call: LLMFunctionCall) -> Dict:
+        return {"name": function_call.name, "arguments": json.dumps(function_call.arguments)}
+
+    @staticmethod
+    def _serialize_tool_call(tool_call: LLMToolCall) -> Dict:
+        return {
+            "id": tool_call.id,
+            "type": tool_call.type,
+            "function": BaseOpenAIClient._serialize_function_call(tool_call.function),
+        }
+
+    @staticmethod
+    def _serialize_tool_calls(tool_calls: List[LLMToolCall]) -> List[Dict]:
+        return [BaseOpenAIClient._serialize_tool_call(tool_call) for tool_call in tool_calls]
+
+    @staticmethod
+    def _serialize_message(response: LLMMessage) -> Dict:
+        result = {
+            "role": response.role,
+            "content": response.content,
+            "function_call": BaseOpenAIClient._serialize_function_call(response.function_call)
+            if response.function_call
+            else None,
+            "tool_calls": BaseOpenAIClient._serialize_tool_calls(response.tool_calls) if response.tool_calls else None,
+        }
+
+        return {key: value for key, value in result.items() if value is not None}
+
+    @staticmethod
+    def _parse_function_call(function_call) -> LLMFunctionCall:
+        try:
+            return LLMFunctionCall(
+                name=function_call["name"],
+                arguments=json.loads(function_call["arguments"]),
+            )
+        except (json.JSONDecodeError, KeyError) as err:
+            raise LLMGenerationError("Could not parse function call") from err
+
+    @staticmethod
+    def _parse_tool_call(tool_call) -> LLMToolCall:
+        return LLMToolCall(
+            id=tool_call["id"],
+            type=tool_call["type"],
+            function=BaseOpenAIClient._parse_function_call(tool_call["function"]),
+        )
+
+    @staticmethod
+    def _parse_tool_calls(tool_calls) -> List[LLMToolCall]:
+        return [BaseOpenAIClient._parse_tool_call(tool_call) for tool_call in tool_calls]
+
+    @staticmethod
+    def _parse_message(response) -> LLMMessage:
+        return LLMMessage(
+            role=response["role"],
+            content=response["content"],
+            function_call=BaseOpenAIClient._parse_function_call(response["function_call"])
+            if "function_call" in response and response["function_call"] is not None
+            else None,
+            tool_calls=BaseOpenAIClient._parse_tool_calls(response["tool_calls"])
+            if "tool_calls" in response and response["tool_calls"] is not None
+            else None,
+        )
+
     def complete(
         self,
-        messages,
+        messages: Sequence[LLMMessage],
         functions=None,
         temperature=0.5,
         max_tokens=None,
         function_call: Optional[Dict] = None,
         caller_id: Optional[str] = None,
+        tools=None,
+        tool_choice=None,
     ):
-        cc = self._completion(
-            messages=messages,
+        llm_message = self._completion(
+            messages=[
+                BaseOpenAIClient._serialize_message(message) if isinstance(message, LLMMessage) else message
+                for message in messages
+            ],
             temperature=temperature,
             functions=functions,
             function_call=function_call,
             max_tokens=max_tokens,
             caller_id=caller_id,
+            tools=tools,
+            tool_choice=tool_choice,
         )
 
-        function_call = None
-
-        if fc := cc.get("function_call"):
-            try:
-                function_call = LLMFunctionCall(
-                    function=fc["name"],
-                    args=json.loads(fc["arguments"], strict=False),
-                )
-            except (json.JSONDecodeError, KeyError) as err:
-                raise LLMGenerationError("Could not parse function call") from err
-
-        return LLMOutput(message=cc["content"], function_call=function_call)
+        return BaseOpenAIClient._parse_message(llm_message)
 
 
 class LegacyOpenAIClient(BaseOpenAIClient):
@@ -90,17 +153,26 @@ class LegacyOpenAIClient(BaseOpenAIClient):
         function_call: Optional[Dict] = None,
         max_tokens=None,
         caller_id: Optional[str] = None,
+        tools=None,
+        tool_choice=None,
     ):
         extra_params = dict()
         if function_call is not None:
             extra_params["function_call"] = function_call
         if functions is not None:
             extra_params["functions"] = functions
+        if tools is not None:
+            extra_params["tools"] = tools
+        if tool_choice is not None:
+            extra_params["tool_choice"] = tool_choice
 
         try:
             completion = openai.ChatCompletion.create(
                 model=self.model,
-                messages=messages,
+                messages=[
+                    BaseOpenAIClient._serialize_message(message) if isinstance(message, LLMMessage) else message
+                    for message in messages
+                ],
                 temperature=temperature,
                 max_tokens=max_tokens,
                 **extra_params,
@@ -135,12 +207,18 @@ class OpenAIClient(BaseOpenAIClient):
         function_call: Optional[Dict] = None,
         max_tokens=None,
         caller_id: Optional[str] = None,
+        tools=None,
+        tool_choice=None,
     ):
         extra_params = dict()
         if function_call is not None:
             extra_params["function_call"] = function_call
         if functions is not None:
             extra_params["functions"] = functions
+        if tools is not None:
+            extra_params["tools"] = tools
+        if tool_choice is not None:
+            extra_params["tool_choice"] = tool_choice
 
         try:
             completion = self._client.chat.completions.create(

@@ -2,7 +2,7 @@ from unittest.mock import Mock
 
 import pandas as pd
 
-from giskard.llm.client import LLMFunctionCall, LLMOutput
+from giskard.llm.client import LLMFunctionCall, LLMMessage, LLMToolCall
 from giskard.llm.evaluators import PerRowRequirementEvaluator, RequirementEvaluator
 from tests.llm.evaluators.utils import make_eval_dataset, make_mock_model
 
@@ -13,17 +13,35 @@ def test_evaluator_prompt_contains_requirements():
 
     client = Mock()
     client.complete.side_effect = [
-        LLMOutput(
-            function_call=LLMFunctionCall(
-                function="evaluate_model",
-                args={"passed_test": True},
-            )
+        LLMMessage(
+            role="assistant",
+            content=None,
+            function_call=None,
+            tool_calls=[
+                LLMToolCall(
+                    id="call_abc123",
+                    type="function",
+                    function=LLMFunctionCall(
+                        name="evaluate_model",
+                        arguments={"passed_test": True},
+                    ),
+                )
+            ],
         ),
-        LLMOutput(
-            function_call=LLMFunctionCall(
-                function="evaluate_model",
-                args={"passed_test": False, "reason": "For some reason"},
-            )
+        LLMMessage(
+            role="assistant",
+            content=None,
+            function_call=None,
+            tool_calls=[
+                LLMToolCall(
+                    id="call_abc123",
+                    type="function",
+                    function=LLMFunctionCall(
+                        name="evaluate_model",
+                        arguments={"passed_test": False, "reason": "For some reason"},
+                    ),
+                )
+            ],
         ),
     ]
 
@@ -40,17 +58,35 @@ def test_evaluator_prompt_contains_row_requirements():
 
     client = Mock()
     client.complete.side_effect = [
-        LLMOutput(
-            function_call=LLMFunctionCall(
-                function="evaluate_model",
-                args={"passed_test": True},
-            )
+        LLMMessage(
+            role="assistant",
+            content=None,
+            function_call=None,
+            tool_calls=[
+                LLMToolCall(
+                    id="call_abc123",
+                    type="function",
+                    function=LLMFunctionCall(
+                        name="evaluate_model",
+                        arguments={"passed_test": True},
+                    ),
+                )
+            ],
         ),
-        LLMOutput(
-            function_call=LLMFunctionCall(
-                function="evaluate_model",
-                args={"passed_test": False, "reason": "For some reason"},
-            )
+        LLMMessage(
+            role="assistant",
+            content=None,
+            function_call=None,
+            tool_calls=[
+                LLMToolCall(
+                    id="call_abc123",
+                    type="function",
+                    function=LLMFunctionCall(
+                        name="evaluate_model",
+                        arguments={"passed_test": False, "reason": "For some reason"},
+                    ),
+                )
+            ],
         ),
     ]
 

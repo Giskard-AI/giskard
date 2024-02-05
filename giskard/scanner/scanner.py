@@ -152,7 +152,7 @@ class Scanner:
             try:
                 detected_issues = detector.run(model, dataset, features=features)
             except Exception as err:
-                logger.error(f"Detector {detector.__class__.__name__} failed with error: {err}")
+                logger.exception(f"Detector {detector.__class__.__name__} failed with error: {err}")
                 errors.append((detector, err))
                 analytics.track(
                     "scan:run-detector:error",
