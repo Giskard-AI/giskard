@@ -1,6 +1,7 @@
 from typing import Optional, Sequence
 
 import logging
+import random
 
 import numpy as np
 import pandas as pd
@@ -60,9 +61,7 @@ class DecisionTreeSlicer(BaseSlicer):
         if len(data) < min_samples:
             return []
 
-        mode = "Regression" if pd.api.types.is_numeric_dtype(data[target]) else "Classification"
-
-        if mode == "Regression":
+        if pd.api.types.is_numeric_dtype(data[target]):
             logger.debug("Target is numeric, using regression tree.")
             criterion = self._choose_tree_criterion(data.loc[:, target].values)
             logger.debug(f"Using `{criterion}` criterion.")
@@ -100,9 +99,9 @@ class DecisionTreeSlicer(BaseSlicer):
             logger.debug("No split found, stopping now.")
             return []
 
-        try:
-            # track analytics with a 10% probability
-            if np.random.default_rng().uniform() < 0.9:
+        # Telemetry (10% of samples)
+        if random.random() < 0.1:
+            try:
                 analytics.track(
                     "scan:tree_slicer_params",
                     {
@@ -110,11 +109,11 @@ class DecisionTreeSlicer(BaseSlicer):
                         "min_samples": min_samples,
                         "node_count": dt.tree_.node_count,
                         "impurity": dt.tree_.impurity.tolist(),
-                        "mode": mode,
+                        "class": dt.__class__.__name__,
                     },
                 )
-        except AttributeError:
-            logger.debug("Error accessing tree parameters for analytics.")
+            except AttributeError:
+                logger.debug("Error accessing tree parameters for analytics.")
 
         # Make test slices
         slice_candidates = make_slices_from_tree(dt.tree_, features)
