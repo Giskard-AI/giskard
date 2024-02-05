@@ -1,9 +1,9 @@
-from typing import Optional, Sequence
+from typing import Any, Dict, Optional, Sequence
 
 from abc import ABC, abstractmethod
 from dataclasses import dataclass
 
-from ...core.test_result import TestResultDetails, TestResultStatus, create_test_result_details
+from ...core.test_result import TestResultDetails, TestResultStatus
 from ...datasets.base import Dataset
 from ...models.base.model import BaseModel
 from ..client import LLMClient, get_default_client
@@ -54,6 +54,21 @@ class EvaluationResult:
     def passed_ratio(self):
         return len(self.success_examples) / (len(self.success_examples) + len(self.failure_examples))
 
+    @classmethod
+    def empty(cls):
+        return EvaluationResult(list(), list(), list(), TestResultDetails.empty())
+
+    def append(self, status: TestResultStatus, inputs, output, metadata, example: dict):
+        self.details = self.details or TestResultDetails.empty()
+        self.details.append(status, inputs, output, metadata)
+
+        if status == TestResultStatus.PASSED:
+            self.success_examples.append(example)
+        elif status == TestResultStatus.FAILED:
+            self.failure_examples.append(example)
+        elif status == TestResultStatus.ERROR:
+            self.errors.append(example)
+
 
 class BaseEvaluator(ABC):
     """Base class for evaluators that define a way of detecting a LLM failure"""
@@ -82,14 +97,13 @@ class LLMBasedEvaluator(BaseEvaluator):
     def _make_evaluate_functions(self, model: BaseModel, input_vars, model_output):
         return EVALUATE_MODEL_FUNCTIONS
 
+    def _get_metadata(self, row_idx, *args, **kwargs) -> Dict[str, Any]:
+        return dict()
+
     def evaluate(self, model: BaseModel, dataset: Dataset):
         model_outputs = model.predict(dataset).prediction
 
-        succeeded = []
-        failed = []
-        errored = []
-        status = []
-        reasons = []
+        evaluation_result = EvaluationResult.empty()
         for row_index, input_vars, model_output in zip(
             dataset.df.index,
             dataset.df.loc[:, model.feature_names].to_dict("records"),
@@ -98,6 +112,7 @@ class LLMBasedEvaluator(BaseEvaluator):
             sample = {"input_vars": input_vars, "model_output": model_output}
             prompt = self._make_evaluate_prompt(model, input_vars, model_output, row_index)
             funcs = self._make_evaluate_functions(model, input_vars, model_output)
+            metadata = self._get_metadata(row_index)
             try:
                 out = self.llm_client.complete(
                     [{"role": "system", "content": prompt}],
@@ -109,23 +124,20 @@ class LLMBasedEvaluator(BaseEvaluator):
                 if out.function_call is None or "passed_test" not in out.function_call.args:
                     raise LLMGenerationError("Invalid function call arguments received")
             except LLMGenerationError as err:
-                status.append(TestResultStatus.ERROR)
-                reasons.append(str(err))
-                errored.append({"message": str(err), "sample": sample})
+                metadata["Reason"] = str(err)
+                evaluation_result.append(
+                    TestResultStatus.ERROR, input_vars, model_output, metadata, {"message": str(err), "sample": sample}
+                )
                 continue
 
             args = out.function_call.args
-            reasons.append(args.get("reason"))
-            if args["passed_test"]:
-                status.append(TestResultStatus.PASSED)
-                succeeded.append({"input_vars": input_vars, "model_output": model_output, "reason": args.get("reason")})
-            else:
-                status.append(TestResultStatus.FAILED)
-                failed.append({"input_vars": input_vars, "model_output": model_output, "reason": args.get("reason")})
+            metadata["Reason"] = args.get("reason")
+            evaluation_result.append(
+                TestResultStatus.PASSED if args["passed_test"] else TestResultStatus.FAILED,
+                input_vars,
+                model_output,
+                metadata,
+                {"input_vars": input_vars, "model_output": model_output, "reason": args.get("reason")},
+            )
 
-        return EvaluationResult(
-            failure_examples=failed,
-            success_examples=succeeded,
-            errors=errored,
-            details=create_test_result_details(dataset, model, model_outputs, status, {"reason": reasons}),
-        )
+        return evaluation_result
