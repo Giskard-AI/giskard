@@ -57,7 +57,7 @@ MANDATORY_FIELDS = {
         "interpreter",
         "interpreterVersion",
         "installedPackages",
-        "mlWorkerId",
+        "kernelName",
         "pid",
         "processStartTime",
         "giskardClientVersion",
