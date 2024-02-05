@@ -4,7 +4,7 @@ import pandas as pd
 import pytest
 
 from giskard.datasets.base import Dataset
-from giskard.llm.client import LLMFunctionCall, LLMOutput
+from giskard.llm.client import LLMFunctionCall, LLMMessage, LLMToolCall
 from giskard.llm.evaluators.coherency import CoherencyEvaluator
 from giskard.models.base.model_prediction import ModelPredictionResults
 
@@ -39,19 +39,37 @@ def test_requirements_evaluator_correctly_flags_examples():
 
     client = Mock()
     client.complete.side_effect = [
-        LLMOutput(
-            function_call=LLMFunctionCall(
-                function="evaluate_model",
-                args={"passed_test": False, "reason": "Model output is not coherent"},
-            )
+        LLMMessage(
+            role="assistant",
+            content=None,
+            function_call=None,
+            tool_calls=[
+                LLMToolCall(
+                    id="call_abc123",
+                    type="function",
+                    function=LLMFunctionCall(
+                        name="evaluate_model",
+                        arguments={"passed_test": False, "reason": "Model output is not coherent"},
+                    ),
+                )
+            ],
         ),
-        LLMOutput(
-            function_call=LLMFunctionCall(
-                function="evaluate_model",
-                args={
-                    "passed_test": True,
-                },
-            )
+        LLMMessage(
+            role="assistant",
+            content=None,
+            function_call=None,
+            tool_calls=[
+                LLMToolCall(
+                    id="call_abc123",
+                    type="function",
+                    function=LLMFunctionCall(
+                        name="evaluate_model",
+                        arguments={
+                            "passed_test": True,
+                        },
+                    ),
+                )
+            ],
         ),
     ]
 
@@ -73,7 +91,7 @@ def test_requirements_evaluator_correctly_flags_examples():
     # Check LLM client calls arguments
     args = client.complete.call_args_list[0]
     assert "This is a model for testing purposes" in args[0][0][0]["content"]
-    assert args[1]["functions"][0]["name"] == "evaluate_model"
+    assert args[1]["tools"][0]["function"]["name"] == "evaluate_model"
 
 
 def test_requirements_evaluator_handles_generation_errors():
@@ -82,17 +100,37 @@ def test_requirements_evaluator_handles_generation_errors():
 
     client = Mock()
     client.complete.side_effect = [
-        LLMOutput(
-            function_call=LLMFunctionCall(
-                function="evaluate_model",
-                args={"passed_test": True},
-            )
+        LLMMessage(
+            role="assistant",
+            content=None,
+            function_call=None,
+            tool_calls=[
+                LLMToolCall(
+                    id="call_abc123",
+                    type="function",
+                    function=LLMFunctionCall(
+                        name="evaluate_model",
+                        arguments={
+                            "passed_test": True,
+                        },
+                    ),
+                )
+            ],
         ),
-        LLMOutput(
-            function_call=LLMFunctionCall(
-                function="evaluate_model",
-                args={"model_did_pass_the_test": False},
-            )
+        LLMMessage(
+            role="assistant",
+            content=None,
+            function_call=None,
+            tool_calls=[
+                LLMToolCall(
+                    id="call_abc123",
+                    type="function",
+                    function=LLMFunctionCall(
+                        name="evaluate_model",
+                        arguments={"model_did_pass_the_test": False},
+                    ),
+                )
+            ],
         ),
     ]
 

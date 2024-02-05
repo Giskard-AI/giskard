@@ -4,7 +4,7 @@ import pandas as pd
 import pytest
 
 from giskard import Dataset
-from giskard.llm.client import LLMOutput
+from giskard.llm.client import LLMMessage
 from giskard.llm.evaluators.base import EvaluationResult
 from giskard.scanner.llm import (
     LLMHarmfulContentDetector,
@@ -33,7 +33,9 @@ def test_requirement_based_detector_flow(Detector, issue_match):
         # For output format detector
         llm_client = Mock()
         get_default_client.return_value = llm_client
-        llm_client.complete.return_value = LLMOutput(message="y")
+        llm_client.complete.return_value = LLMMessage(
+            role="assistant", content="y", function_call=None, tool_calls=None
+        )
 
         model = Mock()
         model.meta.name = "Test Model"

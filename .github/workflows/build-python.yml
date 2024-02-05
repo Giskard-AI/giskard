@@ -10,29 +10,29 @@ on:
   workflow_dispatch:
     inputs:
       run-integration-tests:
-        description: 'If integration test should be run'
+        description: "If integration test should be run"
         required: true
         type: boolean
         default: false
       use-cache:
-        description: 'If cache should be used'
+        description: "If cache should be used"
         required: true
         type: boolean
         default: true
       is-dispatch:
-        description: 'Just to identify manual dispatch'
+        description: "Just to identify manual dispatch"
         required: true
         type: boolean
         default: true
   workflow_call:
     inputs:
       run-integration-tests:
-        description: 'If integration test should be run'
+        description: "If integration test should be run"
         required: true
         type: boolean
         default: false
       use-cache:
-        description: 'If cache should be used'
+        description: "If cache should be used"
         required: true
         type: boolean
         default: false
@@ -53,7 +53,7 @@ jobs:
     strategy:
       fail-fast: false # Do not stop when any job fails
       matrix:
-        python-version: [ "3.9", "3.10", "3.11" ]
+        python-version: ["3.9", "3.10", "3.11"]
         os: [ubuntu-latest]
         pydantic_v1: [false]
         pandas_v1: [false]
@@ -98,13 +98,13 @@ jobs:
           fetch-depth: 0
 
       - name: Setup PDM
-        uses: pdm-project/setup-pdm@v3
+        uses: pdm-project/setup-pdm@v4
         with:
           python-version: ${{ matrix.python-version }}
-          cache: true
+          cache: false
 
       - name: Cache Giskard test resources
-        uses: actions/cache@v3
+        uses: actions/cache@v4
         if: ${{ github.event_name == 'pull_request' || inputs.use-cache }}
         with:
           path: ~/.giskard
@@ -116,8 +116,6 @@ jobs:
           pdm install -G :all
           pdm list
 
-      - name: Lint code
-        run: pdm run lint
       - name: Re-install lightgbm from sources for MacOS
         if: ${{ matrix.os == 'macos-latest' }}
         run: |
@@ -156,6 +154,9 @@ jobs:
         run: |
           pdm run pip freeze | grep '^pandas'
           pdm run pip freeze | grep -q '^pandas==${{ matrix.pandas_v1 && '1' || '2' }}\.'
+
+      - name: Lint code
+        run: pdm run lint
 
       - name: Test code (concurrency)
         run: pdm test-worker
@@ -203,9 +204,9 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4.1.0
       - name: Setup PDM
-        uses: pdm-project/setup-pdm@v3
+        uses: pdm-project/setup-pdm@v4
         with:
-          python-version: '3.10'
+          python-version: "3.10"
           cache: false
       - name: Build wheel
         run: pdm build
@@ -231,9 +232,9 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4.1.0
       - name: Setup PDM
-        uses: pdm-project/setup-pdm@v3
+        uses: pdm-project/setup-pdm@v4
         with:
-          python-version: '3.10'
+          python-version: "3.10"
           cache: false
       - name: Build wheel
         run: pdm build
@@ -250,10 +251,10 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4.1.0
       - name: Setup PDM
-        uses: pdm-project/setup-pdm@v3
+        uses: pdm-project/setup-pdm@v4
         with:
-          python-version: '3.10'
-          version: '2.10.4' # Fix to repair the CI, use latest version when fixed on pdm
+          python-version: "3.10"
+          version: "2.10.4" # Fix to repair the CI, use latest version when fixed on pdm
           cache: false
       - name: Build wheel
         run: pdm build
@@ -283,15 +284,15 @@ jobs:
           fetch-depth: 0
 
       - name: Setup PDM
-        uses: pdm-project/setup-pdm@v3
+        uses: pdm-project/setup-pdm@v4
         with:
           python-version: "3.10"
-          cache: true
+          cache: false
 
       - name: Set up Pandoc (needed for doc)
         uses: r-lib/actions/setup-pandoc@v2
         with:
-          pandoc-version: '3.1.7' # https://github.com/jgm/pandoc/releases
+          pandoc-version: "3.1.7" # https://github.com/jgm/pandoc/releases
 
       - name: Install dependencies
         run: pdm install -G :all
