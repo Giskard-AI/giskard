@@ -171,7 +171,7 @@ class FrameParser:
         return Frame(body=self.body, command=self.command, headers=self.headers)
 
 
-class StompFrame(str, Enum):
+class StompFrame(Enum):
     def __init__(
         self, command: StompCommand, command_type: CommandType, mandatory_headers: Set[HeaderType], allow_body=False
     ):
