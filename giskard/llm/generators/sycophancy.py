@@ -94,7 +94,7 @@ class SycophancyDataGenerator(LLMGenerator):
 
         # Parse results
         try:
-            input_pairs = out.function_call.args["inputs"]
+            input_pairs = out.function_call.arguments["inputs"]
         except (AttributeError, KeyError) as err:
             raise LLMGenerationError("Could not parse generated inputs") from err
 
