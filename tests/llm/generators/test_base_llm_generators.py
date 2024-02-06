@@ -3,7 +3,7 @@ from unittest.mock import Mock
 import pytest
 
 from giskard.datasets.base import Dataset
-from giskard.llm.client import LLMFunctionCall, LLMOutput
+from giskard.llm.client import LLMFunctionCall, LLMMessage, LLMToolCall
 from giskard.llm.errors import LLMGenerationError
 from giskard.llm.generators.adversarial import AdversarialDataGenerator
 from giskard.llm.generators.base import BaseDataGenerator
@@ -22,17 +22,28 @@ from giskard.llm.generators.sycophancy import SycophancyDataGenerator
 def test_generator_returns_dataset(Generator, args, kwargs):
     llm_client = Mock()
     llm_client.complete.side_effect = [
-        LLMOutput(
-            None,
-            LLMFunctionCall(
-                "generate_inputs",
-                {
-                    "inputs": [
-                        {"question": "What is the meaning of life?", "other_feature": "test"},
-                        {"question": "What is the airspeed velocity of an unladen swallow?", "other_feature": "pass"},
-                    ]
-                },
-            ),
+        LLMMessage(
+            role="assistant",
+            content=None,
+            function_call=None,
+            tool_calls=[
+                LLMToolCall(
+                    id="call_abc123",
+                    type="function",
+                    function=LLMFunctionCall(
+                        name="generate_inputs",
+                        arguments={
+                            "inputs": [
+                                {"question": "What is the meaning of life?", "other_feature": "test"},
+                                {
+                                    "question": "What is the airspeed velocity of an unladen swallow?",
+                                    "other_feature": "pass",
+                                },
+                            ]
+                        },
+                    ),
+                )
+            ],
         )
     ]
 
@@ -60,15 +71,15 @@ def test_generator_returns_dataset(Generator, args, kwargs):
 
     called_prompt = llm_client.complete.call_args[1]["messages"][0]["content"]
     called_temperature = llm_client.complete.call_args[1]["temperature"]
-    called_functions = llm_client.complete.call_args[1]["functions"]
+    called_tools = llm_client.complete.call_args[1]["tools"]
 
     assert (
         called_prompt
         == "My custom prompt Mock model for test This is a model for testing purposes question, other_feature, with 2 samples"
     )
     assert called_temperature == 1.416
-    assert len(called_functions) == 1
-    assert called_functions[0]["name"] == "generate_inputs"
+    assert len(called_tools) == 1
+    assert called_tools[0]["function"]["name"] == "generate_inputs"
 
 
 @pytest.mark.parametrize(
@@ -80,10 +91,10 @@ def test_generator_returns_dataset(Generator, args, kwargs):
         (AdversarialDataGenerator, ["demo", "demo"], {}),
     ],
 )
-def test_generator_raises_generation_error_if_function_call_fails(Generator, args, kwargs):
-    # Missing function call
+def test_generator_raises_generation_error_if_tool_call_fails(Generator, args, kwargs):
+    # Missing tool call
     llm_client = Mock()
-    llm_client.complete.side_effect = [LLMOutput("Sorry, I can't.", None)]
+    llm_client.complete.side_effect = [LLMMessage.create_message("assistant", "Sorry, I can't.")]
 
     model = Mock()
     model.feature_names = ["question", "other_feature"]
@@ -95,9 +106,22 @@ def test_generator_raises_generation_error_if_function_call_fails(Generator, arg
     with pytest.raises(LLMGenerationError):
         generator.generate_dataset(model, num_samples=2)
 
-    # Wrong function call
+    # Wrong tool call
     llm_client = Mock()
-    llm_client.complete.side_effect = [LLMOutput(None, LLMFunctionCall("wrong_function", {"have_no_inputs": True}))]
+    llm_client.complete.side_effect = [
+        LLMMessage(
+            role="assistant",
+            tool_calls=[
+                LLMToolCall(
+                    id="call_abc123",
+                    type="function",
+                    function=LLMFunctionCall("wrong_function", {"have_no_inputs": True}),
+                )
+            ],
+            content=None,
+            function_call=None,
+        )
+    ]
 
     model = Mock()
     model.feature_names = ["question", "other_feature"]
@@ -120,17 +144,25 @@ def test_generator_raises_generation_error_if_function_call_fails(Generator, arg
 def test_generator_casts_based_on_column_types(Generator, args, kwargs):
     llm_client = Mock()
     llm_client.complete.side_effect = [
-        LLMOutput(
-            None,
-            LLMFunctionCall(
-                "generate_inputs",
-                {
-                    "inputs": [
-                        {"question": True, "other_feature": 1},
-                        {"question": False, "other_feature": 2},
-                    ]
-                },
-            ),
+        LLMMessage(
+            role="assistant",
+            content=None,
+            function_call=None,
+            tool_calls=[
+                LLMToolCall(
+                    id="call_abc123",
+                    type="function",
+                    function=LLMFunctionCall(
+                        name="generate_inputs",
+                        arguments={
+                            "inputs": [
+                                {"question": True, "other_feature": 1},
+                                {"question": False, "other_feature": 2},
+                            ]
+                        },
+                    ),
+                )
+            ],
         )
     ] * 2
 
@@ -139,13 +171,6 @@ def test_generator_casts_based_on_column_types(Generator, args, kwargs):
     model.name = "Mock model for test"
     model.description = "This is a model for testing purposes"
 
-    generator = Generator(
-        *args,
-        **kwargs,
-        llm_client=llm_client,
-        llm_temperature=1.416,
-        prompt="My custom prompt {model_name} {model_description} {feature_names}, with {num_samples} samples",
-    )
     generator = BaseDataGenerator(llm_client=llm_client)
 
     dataset = generator.generate_dataset(model, num_samples=2)
@@ -172,20 +197,28 @@ def test_generator_casts_based_on_column_types(Generator, args, kwargs):
 def test_generator_adds_languages_requirements_in_prompts(Generator, args, kwargs):
     llm_client = Mock()
     llm_client.complete.side_effect = [
-        LLMOutput(
-            None,
-            LLMFunctionCall(
-                "generate_inputs",
-                {
-                    "inputs": [
-                        {"question": "What is the meaning of life?", "other_feature": "test"},
-                        {
-                            "question": "Quel est le rôle des gaz à effet de serre dans le réchauffement climatique??",
-                            "other_feature": "pass",
+        LLMMessage(
+            role="assistant",
+            content=None,
+            function_call=None,
+            tool_calls=[
+                LLMToolCall(
+                    id="call_abc123",
+                    type="function",
+                    function=LLMFunctionCall(
+                        name="generate_inputs",
+                        arguments={
+                            "inputs": [
+                                {"question": "What is the meaning of life?", "other_feature": "test"},
+                                {
+                                    "question": "Quel est le rôle des gaz à effet de serre dans le réchauffement climatique??",
+                                    "other_feature": "pass",
+                                },
+                            ]
                         },
-                    ]
-                },
-            ),
+                    ),
+                )
+            ],
         )
     ]
 
@@ -225,20 +258,28 @@ def test_generator_adds_languages_requirements_in_prompts(Generator, args, kwarg
 def test_generator_empty_languages_requirements(Generator, args, kwargs):
     llm_client = Mock()
     llm_client.complete.side_effect = [
-        LLMOutput(
-            None,
-            LLMFunctionCall(
-                "generate_inputs",
-                {
-                    "inputs": [
-                        {"question": "What is the meaning of life?", "other_feature": "test"},
-                        {
-                            "question": "Quel est le rôle des gaz à effet de serre dans le réchauffement climatique??",
-                            "other_feature": "pass",
+        LLMMessage(
+            role="assistant",
+            content=None,
+            function_call=None,
+            tool_calls=[
+                LLMToolCall(
+                    id="call_abc123",
+                    type="function",
+                    function=LLMFunctionCall(
+                        name="generate_inputs",
+                        arguments={
+                            "inputs": [
+                                {"question": "What is the meaning of life?", "other_feature": "test"},
+                                {
+                                    "question": "Quel est le rôle des gaz à effet de serre dans le réchauffement climatique??",
+                                    "other_feature": "pass",
+                                },
+                            ]
                         },
-                    ]
-                },
-            ),
+                    ),
+                )
+            ],
         )
     ]
 

@@ -98,13 +98,13 @@ class CoherencyEvaluator(LLMBasedEvaluator):
 
         out = self.llm_client.complete(
             [{"role": "system", "content": prompt}],
-            functions=EVALUATE_MODEL_FUNCTIONS,
-            function_call={"name": "evaluate_model"},  # force function call
+            tools=EVALUATE_MODEL_FUNCTIONS,
+            tool_choice={"type": "function", "function": {"name": "evaluate_model"}},  # force tool call
             temperature=self.llm_temperature,
             caller_id=self.__class__.__name__,
         )
 
-        if out.function_call is None or "passed_test" not in out.function_call.args:
+        if len(out.tool_calls) != 1 or "passed_test" not in out.tool_calls[0].function.arguments:
             raise LLMGenerationError("Invalid function call arguments received")
 
-        return out.function_call.args["passed_test"], out.function_call.args.get("reason")
+        return out.tool_calls[0].function.arguments["passed_test"], out.tool_calls[0].function.arguments.get("reason")
