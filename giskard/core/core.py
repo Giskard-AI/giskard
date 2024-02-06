@@ -85,7 +85,7 @@ def create_test_function_id(func):
     return full_name
 
 
-class SupportedModelTypes(Enum):
+class SupportedModelTypes(str, Enum):
     CLASSIFICATION = "classification"
     REGRESSION = "regression"
     TEXT_GENERATION = "text_generation"
@@ -94,7 +94,7 @@ class SupportedModelTypes(Enum):
 ModelType = Union[SupportedModelTypes, Literal["classification", "regression", "text_generation"]]
 
 
-class SupportedColumnTypes(Enum):
+class SupportedColumnTypes(str, Enum):
     NUMERIC = "numeric"
     CATEGORY = "category"
     TEXT = "text"
@@ -422,7 +422,7 @@ class TestFunctionMeta(CallableMeta):
         self.debug_description = json["debug_description"] if "debug_description" in json.keys() else None
 
 
-class DatasetProcessFunctionType(Enum):
+class DatasetProcessFunctionType(str, Enum):
     CLAUSES = "CLAUSES"
     CODE = "CODE"
 
@@ -525,7 +525,7 @@ def extract_optional(field):
         return field
 
 
-class ComparisonType(Enum):
+class ComparisonType(str, Enum):
     IS = "IS"
     IS_NOT = "IS_NOT"
     CONTAINS = "CONTAINS"

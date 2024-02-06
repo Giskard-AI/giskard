@@ -253,7 +253,7 @@ class GetLogs(ConfiguredBaseModel):
     logs: str
 
 
-class TestMessageType(Enum):
+class TestMessageType(str, Enum):
     ERROR = "ERROR"
     INFO = "INFO"
 
@@ -361,14 +361,14 @@ class TestSuiteParam(ConfiguredBaseModel):
     globalArguments: Optional[List[FuncArgument]] = None
 
 
-class PushKind(Enum):
+class PushKind(str, Enum):
     PERTURBATION = "PERTURBATION"
     CONTRIBUTION = "CONTRIBUTION"
     OVERCONFIDENCE = "OVERCONFIDENCE"
     UNDERCONFIDENCE = "UNDERCONFIDENCE"
 
 
-class CallToActionKind(Enum):
+class CallToActionKind(str, Enum):
     NONE = "NONE"
     CREATE_SLICE = "CREATE_SLICE"
     CREATE_TEST = "CREATE_TEST"

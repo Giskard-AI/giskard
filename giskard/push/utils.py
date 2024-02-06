@@ -22,7 +22,7 @@ import numpy as np
 from giskard.datasets import Dataset
 
 
-class SupportedPerturbationType(Enum):
+class SupportedPerturbationType(str, Enum):
     """Enumeration of supported perturbation types."""
 
     NUMERIC = "numeric"

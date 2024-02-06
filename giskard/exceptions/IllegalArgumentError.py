@@ -1,7 +1,7 @@
 from enum import Enum
 
 
-class StatusCode(Enum):
+class StatusCode(str, Enum):
     NO_ERROR = "NO_ERROR"
     INTERNAL = "INTERNAL"
     INVALID_ARGUMENT = "INVALID_ARGUMENT"

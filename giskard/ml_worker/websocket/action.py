@@ -12,7 +12,7 @@ IS_PYDANTIC_V2 = version.parse(pydantic.version.VERSION) >= version.parse("2.0")
 
 
 # Make it so we can use enum in pydantic to parse object
-class MLWorkerAction(Enum):
+class MLWorkerAction(str, Enum):
     getInfo = "getInfo"
     runAdHocTest = "runAdHocTest"
     datasetProcessing = "datasetProcessing"
