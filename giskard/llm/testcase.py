@@ -22,26 +22,32 @@ If you don’t find any relevant requirement, you can skip this test case by cal
 
 GENERATE_REQUIREMENTS_FUNCTIONS = [
     {
-        "name": "generate_requirements",
-        "description": "Generates requirements for model testing",
-        "parameters": {
-            "type": "object",
-            "properties": {
-                "requirements": {
-                    "type": "array",
-                    "items": {"type": "string", "description": "A requirement the model must satisfy"},
-                }
+        "type": "function",
+        "function": {
+            "name": "generate_requirements",
+            "description": "Generates requirements for model testing",
+            "parameters": {
+                "type": "object",
+                "properties": {
+                    "requirements": {
+                        "type": "array",
+                        "items": {"type": "string", "description": "A requirement the model must satisfy"},
+                    }
+                },
+                "required": ["requirements"],
             },
-            "required": ["requirements"],
         },
     },
     {
-        "name": "skip",
-        "description": "Skips the generation when no relevant requirements can be generated",
-        "parameters": {
-            "type": "object",
-            "properties": {},
-            "required": [],
+        "type": "function",
+        "function": {
+            "name": "skip",
+            "description": "Skips the generation when no relevant requirements can be generated",
+            "parameters": {
+                "type": "object",
+                "properties": {},
+                "required": [],
+            },
         },
     },
 ]
@@ -70,13 +76,13 @@ class TestcaseRequirementsGenerator:
         functions = self._make_generate_requirements_functions()
         out = self.llm_client.complete(
             messages=[{"role": "system", "content": prompt}],
-            functions=functions,
-            function_call={"name": "generate_requirements"},
+            tools=functions,
+            tool_choice={"type": "function", "function": {"name": "generate_requirements"}},
             temperature=self.llm_temperature,
             caller_id=self.__class__.__name__,
         )
 
-        if out.function_call is None or "requirements" not in out.function_call.args:
+        if out.tool_calls is None or "requirements" not in out.tool_calls[0].function.arguments:
             raise LLMGenerationError("Could not parse test case requirements.")
 
-        return out.function_call.args["requirements"]
+        return out.tool_calls[0].function.arguments["requirements"]

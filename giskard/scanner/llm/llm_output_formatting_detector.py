@@ -68,7 +68,7 @@ class LLMOutputFormattingDetector(RequirementBasedDetector):
             caller_id=self.__class__.__name__,
         )
 
-        if out.message.strip().upper() != "Y":
+        if out.content.strip().upper() != "Y":
             logger.warning(
                 f"{self.__class__.__name__}: Skipping output format checks because we could not define format requirements based on the model description."
             )
