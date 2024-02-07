@@ -307,9 +307,9 @@ def register_uri_for_artifact_meta_info(mr: requests_mock.Mocker, cf: Artifact, 
 
 def register_uri_for_artifact_info(mr: requests_mock.Mocker, cf: Artifact, project_key: Optional[str] = None):
     artifact_info_url = (
-        posixpath.join(CLIENT_BASE_URL, "artifact-info", project_key, cf._get_name(), cf.meta.uuid)
+        posixpath.join(CLIENT_BASE_URL, "artifact-info", cf._get_name(), cf.meta.uuid)
         if project_key
-        else posixpath.join(CLIENT_BASE_URL, "artifact-info", "global", cf._get_name(), cf.meta.uuid)
+        else posixpath.join(CLIENT_BASE_URL, "artifact-info", cf._get_name(), cf.meta.uuid)
     )
     artifacts = [
         CALLABLE_FUNCTION_PKL_CACHE,
@@ -346,8 +346,8 @@ def register_uri_for_dataset_meta_info(mr: requests_mock.Mocker, dataset: Datase
 def register_uri_for_dataset_artifact_info(
     mr: requests_mock.Mocker, dataset: Dataset, project_key: str, register_file_contents: bool = False
 ):
-    artifact_info_url = posixpath.join(CLIENT_BASE_URL, "artifact-info", project_key, "datasets", str(dataset.id))
-    artifacts_base_url = posixpath.join(CLIENT_BASE_URL, "artifacts", project_key, "datasets", str(dataset.id))
+    artifact_info_url = posixpath.join(CLIENT_BASE_URL, "artifact-info", "datasets", str(dataset.id))
+    artifacts_base_url = posixpath.join(CLIENT_BASE_URL, "artifacts", "datasets", str(dataset.id))
     artifacts = []
     artifact_urls = []
     with tempfile.TemporaryDirectory() as tmpdir:
@@ -412,8 +412,8 @@ def register_uri_for_model_meta_info(mr: requests_mock.Mocker, model: BaseModel,
 def register_uri_for_model_artifact_info(
     mr: requests_mock.Mocker, model: BaseModel, project_key: str, register_file_contents: bool = False
 ):
-    artifact_info_url = posixpath.join(CLIENT_BASE_URL, "artifact-info", project_key, "models", str(model.id))
-    artifacts_base_url = posixpath.join(CLIENT_BASE_URL, "artifacts", project_key, "models", str(model.id))
+    artifact_info_url = posixpath.join(CLIENT_BASE_URL, "artifact-info", "models", str(model.id))
+    artifacts_base_url = posixpath.join(CLIENT_BASE_URL, "artifacts", "models", str(model.id))
     artifacts = []
     artifact_urls = []
     with tempfile.TemporaryDirectory() as tmpdir:
