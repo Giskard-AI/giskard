@@ -61,7 +61,7 @@ def is_url_requested(last_requests, url):
 
 class MockedClient:
     artifact_url_pattern = re.compile(
-        "http://giskard-host:12345/api/v2/artifacts/test-project/models/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/.*"
+        "http://giskard-host:12345/api/v2/artifacts/models/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/.*"
     )
     models_url_pattern = re.compile("http://giskard-host:12345/api/v2/project/test-project/models")
     settings_url_pattern = re.compile("http://giskard-host:12345/api/v2/settings")
@@ -106,7 +106,7 @@ class MockedClient:
 
 def verify_model_upload(my_model, my_data):
     artifact_url_pattern = re.compile(
-        "http://giskard-host:12345/api/v2/artifacts/test-project/models/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/.*"
+        "http://giskard-host:12345/api/v2/artifacts/models/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/.*"
     )
     models_url_pattern = re.compile("http://giskard-host:12345/api/v2/project/test-project/models")
     settings_url_pattern = re.compile("http://giskard-host:12345/api/v2/settings")
@@ -365,7 +365,7 @@ def register_uri_for_dataset_artifact_info(
 def register_uri_for_any_tests_artifact_info_upload(mr: requests_mock.Mocker, register_files=False):
     meta_info_pattern = re.compile("http://giskard-host:12345/api/v2/project/.*/tests")
     artifacts_url_pattern = re.compile(
-        "http://giskard-host:12345/api/v2/artifacts/.*/tests/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/.*"
+        "http://giskard-host:12345/api/v2/artifacts/tests/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/.*"
     )
     mr.register_uri(method=requests_mock.PUT, url=meta_info_pattern, json={})
     if register_files:
@@ -375,7 +375,7 @@ def register_uri_for_any_tests_artifact_info_upload(mr: requests_mock.Mocker, re
 def register_uri_for_any_slices_artifact_info_upload(mr: requests_mock.Mocker, register_files=False):
     meta_info_pattern = re.compile("http://giskard-host:12345/api/v2/project/.*/slices")
     artifacts_url_pattern = re.compile(
-        "http://giskard-host:12345/api/v2/artifacts/.*/slices/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/.*"
+        "http://giskard-host:12345/api/v2/artifacts/slices/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/.*"
     )
     mr.register_uri(method=requests_mock.PUT, url=meta_info_pattern, json={})
     if register_files:
@@ -385,7 +385,7 @@ def register_uri_for_any_slices_artifact_info_upload(mr: requests_mock.Mocker, r
 def register_uri_for_any_transforms_artifact_info_upload(mr: requests_mock.Mocker, register_files=False):
     meta_info_pattern = re.compile("http://giskard-host:12345/api/v2/project/.*/transformations")
     artifacts_url_pattern = re.compile(
-        "http://giskard-host:12345/api/v2/artifacts/.*/transformations/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/.*"
+        "http://giskard-host:12345/api/v2/artifacts/transformations/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/.*"
     )
     mr.register_uri(method=requests_mock.PUT, url=meta_info_pattern, json={})
     if register_files:
@@ -395,7 +395,7 @@ def register_uri_for_any_transforms_artifact_info_upload(mr: requests_mock.Mocke
 def register_uri_for_any_dataset_artifact_info_upload(mr: requests_mock.Mocker, register_files=False):
     meta_info_pattern = re.compile("http://giskard-host:12345/api/v2/project/.*/datasets")
     artifacts_url_pattern = re.compile(
-        "http://giskard-host:12345/api/v2/artifacts/.*/datasets/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/.*"
+        "http://giskard-host:12345/api/v2/artifacts/datasets/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/.*"
     )
     mr.register_uri(method=requests_mock.POST, url=meta_info_pattern)
     if register_files:
