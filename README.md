@@ -36,7 +36,7 @@ We officially support Python 3.9, 3.10 and 3.11.
 ______________________________________________________________________
 
 <p align="center">
-  <img src="readme/architechture_giskard.png" alt="Giskard Architechture" width="800">
+  <img src="https://raw.githubusercontent.com/giskard-ai/giskard/main/readme/architechture_giskard.png" alt="Giskard Architechture" width="800">
 </p>
 
 Giskard is a Python library that automatically **detects vulnerabilities** in AI models, from tabular models to LLM, including performance biases, data leakage, spurious correlation, hallucination, toxicity, security issues and many more.
@@ -44,20 +44,20 @@ Giskard is a Python library that automatically **detects vulnerabilities** in AI
 It's a powerful tool that helps data scientists **save time and effort** drilling down on model issues, and produce more **reliable and trustworthy models**.
 
 <p align="center">
-  <img src="readme/scan_example.gif" alt="Scan Example" width="800">
+  <img src="https://raw.githubusercontent.com/giskard-ai/giskard/main/readme/scan_example.gif" alt="Scan Example" width="800">
 </p>
 
 Instantaneously generate test suites for your models ⤵️
 
 <p align="center">
-  <img src="readme/suite_example.png" alt="Test Suite Example" width="800">
+  <img src="https://raw.githubusercontent.com/giskard-ai/giskard/main/readme/suite_example.png" alt="Test Suite Example" width="800">
 </p>
 
 
 Giskard works with any model, in any environment and integrates seamlessly with your favorite tools ⤵️ <br/>
 
 <p align="center">
-  <img width='600' src="readme/tools.png">
+  <img width='600' src="https://raw.githubusercontent.com/giskard-ai/giskard/main/readme/tools.png">
 </p>
 <br/>
 
@@ -143,7 +143,7 @@ The Giskard hub is Giskard's premium offering. It provides a number of additiona
 If you are interested in learning more about Giskard's premium offering, please [contact us](https://www.giskard.ai/contact).
 
 <p align="center">
-  <img src="readme/catalog_example.png" alt="Scan Example" width="700px">
+  <img src="https://raw.githubusercontent.com/giskard-ai/giskard/main/readme/catalog_example.png" alt="Scan Example" width="700px">
 </p>
 
 ## 1. Start the Giskard hub
