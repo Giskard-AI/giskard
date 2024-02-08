@@ -514,7 +514,7 @@ class Suite:
         required_params = self.find_required_params()
         undefined_params = {k: v for k, v in required_params.items() if k not in run_args}
 
-        if len(undefined_params):
+        if undefined_params:
             warning(f"Missing {len(undefined_params)} required parameters: {undefined_params}")
 
     @staticmethod
