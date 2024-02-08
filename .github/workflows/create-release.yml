@@ -38,18 +38,30 @@ jobs:
       - name: Edit pyproject.toml
         run:  sed -i 's/^\(version *= *\).*$/\1"${{ inputs.version }}"/' pyproject.toml
 
-      - name: Configure git
-        run:  |
-          git config --global user.name 'BotReleaser'
-          git config --global user.email 'bot.releaser@users.noreply.github.com'
+      - name: Setup PDM
+        uses: pdm-project/setup-pdm@v4
+        with:
+          python-version: '3.10'
+          cache: false
 
-      - name: Adding file
-        run:  |
-          git add pyproject.toml
-          git commit -m "v${{ inputs.version }}" --allow-empty
-          git tag v${{ inputs.version }}
+      - name: Build release candidate wheel
+        run: pdm build
 
-      - name: Push to main and tags
-        run: |
-          git push origin main
-          git push origin v${{ inputs.version }}
+      - name: Upload RC wheel artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: rc-wheel-${{ inputs.version }}
+          path: dist/*whl
+          if-no-files-found: error
+          retention-days: 1
+
+      - name: Trigger release process in giskard-hub
+        uses: peter-evans/repository-dispatch@v3
+        with:
+          token: ${{ secrets.RELEASE_PAT_TOKEN }}
+          event-type: create-release
+          repository: ${{ github.repository_owner }}/giskard-hub
+          client-payload: |
+            {
+              "version_name": "v${{ inputs.version }}"
+            }

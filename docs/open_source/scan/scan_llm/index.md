@@ -250,7 +250,7 @@ Jump to the [test customization](https://docs.giskard.ai/en/latest/open_source/c
 
 ### 2. Upload your test suite to the Giskard Hub to:
 * Compare the quality of different models and prompts to decide which one to promote
-* Create more tests relevant to your use case, combining input prompts that make your model fail and custome evaluation criteria
+* Create more tests relevant to your use case, combining input prompts that make your model fail and custom evaluation criteria
 * Share results, and collaborate with your team to integrate business feedback
 
 To upload your test suite, you must have created a project on Giskard Hub and instantiated a Giskard Python client. If you haven't done this yet, follow the first steps of [upload your object](https://docs.giskard.ai/en/latest/giskard_hub/upload/index.html#upload-your-object) guide.
