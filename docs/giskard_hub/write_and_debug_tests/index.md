@@ -34,7 +34,7 @@ To add tests from the catalog, click on "add test" in your test suite tab. This 
 catalog showing all Giskard tests. You then have the possibility to run your test before adding it to your suite. 
 
 > ⚠️ Warning
-> * If you add a test **without** specifying the input of your test, you'll be asked to define the input at **suite execution time**. This input will become a *suite input*. Models are a great suite input to [compare different model](../compare_models/index.md) with the same test suite.
+> * If you add a test **without** specifying the input of your test, you'll be asked to define the input at **suite execution time**. This input will become a *suite input*. Models are a great suite input to [compare different models](../compare_models/index.md) with the same test suite.
 > * If you add a test by **specifying the input** of your test, you won't be asked to define it at suite 
 > execution time. This input becomes a *fixed value* of your suite. Data slices or thresholds are 
 > great fixed values because they are inherent to your suite.
