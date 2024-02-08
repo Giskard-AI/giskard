@@ -193,7 +193,7 @@ def test_dataset_download_with_cache(request):
     dataset: Dataset = request.getfixturevalue("enron_data")
     project_key = str(uuid.uuid4())
 
-    with utils.MockedProjectCacheDir(project_key):
+    with utils.MockedProjectCacheDir():
         # Save the dataset to cache dir
         utils.local_save_dataset_under_giskard_home_cache(dataset, project_key=project_key)
 
@@ -215,7 +215,7 @@ def test_dataset_download(request):
     dataset: Dataset = request.getfixturevalue("enron_data")
     project_key = str(uuid.uuid4())
 
-    with utils.MockedProjectCacheDir(project_key):
+    with utils.MockedProjectCacheDir():
         with utils.MockedClient(mock_all=False) as (client, mr):
             # The dataset needs to request files
             requested_urls = []

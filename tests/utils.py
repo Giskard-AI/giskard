@@ -6,7 +6,6 @@ import os
 import platform
 import posixpath
 import re
-import shutil
 import tarfile
 import tempfile
 from pathlib import Path
@@ -161,47 +160,45 @@ class MockedWebSocketMLWorker:
 
 
 class MockedProjectCacheDir:
-    def __init__(self, project_key=None):
-        self.local_path_root = get_local_cache_project(project_key)
+    def __init__(self):
+        self.initial_cache = settings.cache_dir
+        self.mocked_cache = tempfile.TemporaryDirectory(suffix="cache", dir=settings.home_dir)
+        settings.cache_dir = self.mocked_cache.name
 
     def __enter__(self):
-        self.local_path_root.mkdir(parents=True)
-        return self.local_path_root
+        return self.mocked_cache.__enter__()
 
     def __exit__(self, exc_type, exc_val, exc_tb):
-        shutil.rmtree(str(self.local_path_root), ignore_errors=True)
+        self.mocked_cache.__exit__(exc_type, exc_val, exc_tb)
+        settings.cache_dir = self.initial_cache
 
 
 def get_local_cache_base():
     return settings.home_dir / settings.cache_dir
 
 
-def get_local_cache_project(project_key: Optional[str]):
-    return get_local_cache_base() / (project_key or "global")
+def get_local_cache_artifact(name: str, uuid: str):
+    return get_local_cache_base() / name / uuid
 
 
-def get_local_cache_artifact(project_key: Optional[str], name: str, uuid: str):
-    return get_local_cache_project(project_key) / name / uuid
+def get_local_cache_callable_artifact(artifact: Artifact):
+    return get_local_cache_artifact(artifact._get_name(), artifact.meta.uuid)
 
 
-def get_local_cache_callable_artifact(project_key: Optional[str], artifact: Artifact):
-    return get_local_cache_artifact(project_key, artifact._get_name(), artifact.meta.uuid)
-
-
-def local_save_model_under_giskard_home_cache(model: BaseModel, project_key: str):
-    local_path_model = get_local_cache_artifact(project_key, "models", str(model.id))
+def local_save_model_under_giskard_home_cache(model: BaseModel):
+    local_path_model = get_local_cache_artifact("models", str(model.id))
     local_path_model.mkdir(parents=True)
     model.save(local_path=local_path_model)
 
 
-def local_save_dataset_under_giskard_home_cache(dataset: Dataset, project_key: str):
-    local_path_dataset = get_local_cache_artifact(project_key, "datasets", str(dataset.id))
+def local_save_dataset_under_giskard_home_cache(dataset: Dataset):
+    local_path_dataset = get_local_cache_artifact("datasets", str(dataset.id))
     local_path_dataset.mkdir(parents=True)
     dataset.save(local_path=local_path_dataset, dataset_id=dataset.id)
 
 
-def local_save_artifact_under_giskard_home_cache(artifact: Artifact, project_key: Optional[str]):
-    local_path = get_local_cache_callable_artifact(project_key, artifact)
+def local_save_artifact_under_giskard_home_cache(artifact: Artifact):
+    local_path = get_local_cache_callable_artifact(artifact)
     local_path.mkdir(parents=True)
     artifact.save(local_dir=local_path)
 
@@ -280,12 +277,8 @@ def get_url_for_artifact_meta_info(cf: Artifact, project_key: Optional[str] = No
     )
 
 
-def get_url_for_artifacts_base(cf: Artifact, project_key: Optional[str] = None):
-    return (
-        posixpath.join(CLIENT_BASE_URL, "artifacts", project_key, cf._get_name(), cf.meta.uuid)
-        if project_key
-        else posixpath.join(CLIENT_BASE_URL, "artifacts", "global", cf._get_name(), cf.meta.uuid)
-    )
+def get_url_for_artifacts_base(cf: Artifact):
+    return posixpath.join(CLIENT_BASE_URL, "artifacts", cf._get_name(), cf.meta.uuid)
 
 
 def get_url_for_dataset(dataset: Dataset, project_key: str):
@@ -429,7 +422,7 @@ def register_uri_for_model_artifact_info(
 
 
 def register_uri_for_inspection(mr: requests_mock.Mocker, project_key: str, inspection_id: int, sample: bool):
-    url = posixpath.join(CLIENT_BASE_URL, "artifacts", f"{project_key}/models/inspections/{inspection_id}")
+    url = posixpath.join(CLIENT_BASE_URL, "artifacts", f"models/inspections/{inspection_id}")
     calculated_url = posixpath.join(url, get_file_name("calculated", "csv", sample))
     predictions_url = posixpath.join(url, get_file_name("predictions", "csv", sample))
     mr.register_uri(method=requests_mock.POST, url=calculated_url, json={})

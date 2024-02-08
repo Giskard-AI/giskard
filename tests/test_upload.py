@@ -153,7 +153,7 @@ def test_upload_callable_function(cf: Artifact):
     with MockedClient() as (client, mr):
         cf.upload(client=client, project_key=None)
         # Check local cache
-        cache_dir = get_local_cache_callable_artifact(project_key=None, artifact=cf)
+        cache_dir = get_local_cache_callable_artifact(artifact=cf)
         assert (cache_dir / CALLABLE_FUNCTION_PKL_CACHE).exists()
         assert (cache_dir / CALLABLE_FUNCTION_META_CACHE).exists()
         # Check requested URL
@@ -177,7 +177,7 @@ def test_upload_callable_function_to_project(cf: Artifact):
     with MockedClient() as (client, mr):
         cf.upload(client=client, project_key="test-project")
         # Check local cache
-        cache_dir = get_local_cache_callable_artifact(project_key="test-project", artifact=cf)
+        cache_dir = get_local_cache_callable_artifact(artifact=cf)
         assert (cache_dir / CALLABLE_FUNCTION_PKL_CACHE).exists()
         assert (cache_dir / CALLABLE_FUNCTION_META_CACHE).exists()
         # Check requested URL
