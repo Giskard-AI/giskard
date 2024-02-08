@@ -195,7 +195,7 @@ def test_dataset_download_with_cache(request):
 
     with utils.MockedProjectCacheDir():
         # Save the dataset to cache dir
-        utils.local_save_dataset_under_giskard_home_cache(dataset, project_key=project_key)
+        utils.local_save_dataset_under_giskard_home_cache(dataset)
 
         with utils.MockedClient(mock_all=False) as (client, mr):
             # The dataset can be then loaded from the cache, without further requests
