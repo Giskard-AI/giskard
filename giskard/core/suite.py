@@ -510,7 +510,7 @@ class Suite:
 
         return unittests
 
-    def verify_required_params(self, run_args):
+    def verify_required_params(self, run_args: Dict[str, Any]):
         required_params = self.find_required_params()
         undefined_params = {k: v for k, v in required_params.items() if k not in run_args}
 
