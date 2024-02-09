@@ -24,7 +24,7 @@ class LLMToolCall:
 @dataclass
 class LLMMessage:
     role: str
-    content: Optional[str]
+    content: Optional[str] = None
     function_call: Optional[LLMFunctionCall] = None
     tool_calls: Optional[List[LLMToolCall]] = None
 
