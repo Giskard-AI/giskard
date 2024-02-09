@@ -70,7 +70,7 @@ they are concatenated automatically. If only some of the columns contains releva
 
 
 ```python
-knowledge_base_df = pd.read_*("path/to/your/knowledge_base")
+knowledge_base_df = pd.read_csv("path/to/your/knowledge_base.csv")
 feature_names = ["col1", "col2"]
 knowledge_base_df["page_content"] = knowledge_base_df[feature_names].apply(" ".join, axis=1)
 ```
@@ -83,20 +83,29 @@ Once the knowledge base is loaded as a pandas `DataFrame`, you can generate the 
 ```python
 from giskard.rag import KnowledgeBaseTestsetGenerator, DifficultyLevel
 
-generator = KnowledgeBaseTestsetGenerator(knowledge_base_df, 
-                    model_name="Model name", # Optional, provide a name to your model to get better fitting questions
-                    model_description="Description of the model", # Optional, briefly describe the task done by your model
-                    knowledge_base_features=["page_content"])
+generator = KnowledgeBaseTestsetGenerator(
+    knowledge_base_df, 
+    model_name="Model name", # Optional, provide a name to your model to get better fitting questions
+    model_description="Description of the model", # Optional, briefly describe the task done by your model
+    knowledge_base_features=["page_content"]
+)
 
-testset = generator.generate_dataset(num_samples=10, difficulty_level=[DifficultyLevel.DIFF_1, DifficultyLevel.DIFF_2])
+# Generate a testset with 10 questions & answers for each difficulty level
+testset = generator.generate_dataset(num_samples=10, difficulty_level=[1, 2])
 ```
 
-You can select the difficulty level of the generated questions. There are three distinct difficulty levels available:
-- Level 1: basic questions generated from a piece of the knowledge base
-- Level 2: question made more complex by paraphrasing
-- Level 3: questions with distracting element
+The test set will be a subclass of {ref}`giskard.Dataset`. You can also get it as a pandas DataFrame by accessing `testset.df`.
 
-The generators creates `num_samples` questions per by difficulty level. In the above examples 10 *level 1* questions and 10 *level 2* questions.
+Here's an example of the generated test set:
+
+| question | reference_context | reference_answer | difficulty_level |
+|----------|-------------------|------------------|------------------|
+| For which countries can I track my shipping? | What is your shipping policy? We offer free shipping on all orders over \$50. For orders below \$50, we charge a flat rate of \$5.99. We offer shipping services to customers residing in all 50 states of the US, in addition to providing delivery options to Canada and Mexico. ------  How can I track my order? Once your purchase has been successfully confirmed and shipped, you will receive a confirmation email containing your tracking number. You can simply click on the link provided in the email or visit our website's order tracking page. | We ship to all 50 states in the US, as well as to Canada and Mexico. We offer tracking for all our shippings. | 1 |
+
+You can select the difficulty level of the generated questions. We currently support three difficulty levels:
+- Level 1: simple questions generated from a excerpt of the knowledge base
+- Level 2: question made more complex by paraphrasing
+- Level 3: questions made more difficult by adding a distracting element which is related to the knowledge base but irrelevant to the question
 
 ## Step 3: Wrap your model
 To evaluate your model, you must wrap it as a `giskard.Model`. This step is necessary to ensure a common format for your model and its metadata.You can wrap anything as long as you can represent it in a Python function (for example an API call call to Azure or OpenAI). We also have pre-built wrappers for LangChain objects, or you can create your own wrapper by extending the `giskard.Model` class if you need to wrap a complex object such as a custom-made RAG communicating with a vectorstore.
