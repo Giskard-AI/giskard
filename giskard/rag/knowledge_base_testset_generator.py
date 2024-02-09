@@ -1,4 +1,4 @@
-from typing import Sequence
+from typing import Sequence, Union
 
 import json
 import logging
@@ -18,13 +18,12 @@ from .testset import QATestset
 from .vector_store import VectorStore
 
 logger = logging.getLogger(__name__)
-logger.setLevel(logging.INFO)
 
 
 class DifficultyLevel(int, Enum):
-    DIFF_1 = 1
-    DIFF_2 = 2
-    DIFF_3 = 3
+    EASY = 1
+    COMPLEX = 2
+    DISTRACTING_ELEMENT = 3
 
 
 class KnowledgeBaseTestsetGenerator(BaseDataGenerator):
@@ -107,11 +106,11 @@ class KnowledgeBaseTestsetGenerator(BaseDataGenerator):
         )
 
     def _difficulty_level_mapping(self, level: DifficultyLevel):
-        if level == DifficultyLevel.DIFF_1:
+        if level == DifficultyLevel.EASY:
             return self._generate_question_answer_from_context
-        elif level == DifficultyLevel.DIFF_2:
+        elif level == DifficultyLevel.COMPLEX:
             return self._generate_complex_questions_from_context
-        elif level == DifficultyLevel.DIFF_3:
+        elif level == DifficultyLevel.DISTRACTING_ELEMENT:
             return self._generate_distraction_questions_from_context
         else:
             raise NotImplementedError(f"Missing case for difficulty level {level}.")
@@ -125,7 +124,7 @@ class KnowledgeBaseTestsetGenerator(BaseDataGenerator):
         )
 
         generated_qa = self._llm_complete(messages=messages)
-        generated_qa["difficulty"] = DifficultyLevel.DIFF_1
+        generated_qa["difficulty"] = DifficultyLevel.EASY
         return generated_qa
 
     def _generate_complex_questions_from_context(self, context):
@@ -137,7 +136,7 @@ class KnowledgeBaseTestsetGenerator(BaseDataGenerator):
             language=self.language,
             user_content=(generated_qa["question"], context),
         )
-        generated_qa["difficulty"] = DifficultyLevel.DIFF_2
+        generated_qa["difficulty"] = DifficultyLevel.COMPLEX
         out = self._llm_complete(messages=messages)
         generated_qa["question"] = out["question"]
         return generated_qa
@@ -152,7 +151,7 @@ class KnowledgeBaseTestsetGenerator(BaseDataGenerator):
             language=self.language,
             user_content=(generated_qa["question"], generated_qa["answer"], distracting_context),
         )
-        generated_qa["difficulty"] = DifficultyLevel.DIFF_3
+        generated_qa["difficulty"] = DifficultyLevel.DISTRACTING_ELEMENT
         out = self._llm_complete(messages=messages)
         generated_qa["question"] = out["question"]
         return generated_qa
@@ -174,7 +173,7 @@ class KnowledgeBaseTestsetGenerator(BaseDataGenerator):
         # https://help.openai.com/en/articles/4936856-what-are-tokens-and-how-to-count-them
         return prompt[: self.context_window_length * 4]
 
-    def _llm_complete(self, messages):
+    def _llm_complete(self, messages: Sequence[dict]):
         try:
             out = self.llm_client.complete(
                 messages=messages,
@@ -182,10 +181,10 @@ class KnowledgeBaseTestsetGenerator(BaseDataGenerator):
                 caller_id=self.__class__.__name__,
             )
 
-            generated = json.loads(out.message, strict=False)
+            generated = json.loads(out.content, strict=False)
         except json.decoder.JSONDecodeError:
             logger.warning("JSON decoding error, trying to fix the JSON string.")
-            generated = self._try_fix_json_message(out.message)
+            generated = self._try_fix_json_message(out.content)
         return generated
 
     def _try_fix_json_message(self, incorrect_json):
@@ -198,13 +197,17 @@ class KnowledgeBaseTestsetGenerator(BaseDataGenerator):
                 temperature=0,
                 caller_id=self.__class__.__name__,
             )
-            corrected_message = json.loads(out.message)
+            corrected_message = json.loads(out.content)
         except Exception:
             logger.warning("Fixing JSON format failed, question generation skipped.")
             return None
         return corrected_message
 
-    def generate_dataset(self, num_samples: int = 10, difficulty_levels: Sequence[DifficultyLevel] = None) -> QATestset:
+    def generate_dataset(
+        self,
+        num_samples: int = 10,
+        difficulty: Union[DifficultyLevel, Sequence[DifficultyLevel]] = DifficultyLevel.EASY,
+    ) -> QATestset:
         """Generates a testset from the knowledge base.
 
         Parameters
@@ -223,11 +226,13 @@ class KnowledgeBaseTestsetGenerator(BaseDataGenerator):
                 - *difficulty_level*: an indicator of how difficult the question is
 
         """
-        difficulty_levels = difficulty_levels or [DifficultyLevel.DIFF_1]
+        if not isinstance(difficulty, Sequence):
+            difficulty = [difficulty]
+
         generated_questions = []
-        for level in difficulty_levels:
+        for level in difficulty:
             for idx in range(num_samples):
-                logger.info(f"Generating question {idx + 1}/{num_samples} for difficulty level {str(level.value)}.")
+                logger.info(f"Generating question {idx + 1}/{num_samples} for difficulty level {str(level)}.")
                 seed_contexts = self._extract_seed_context()
                 context = QAGenerationPrompt.format_context(seed_contexts)
 

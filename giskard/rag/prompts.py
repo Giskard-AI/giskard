@@ -1,8 +1,8 @@
-QA_GENERATION_SYSTEM_PROMPT_WITH_DESCRIPTION = """You are a powerful auditing AI, your role is to generate question answer pair from a given list of context paragraph to audit a model specialized on these knowledge. 
+QA_GENERATION_SYSTEM_PROMPT_WITH_DESCRIPTION = """You are a powerful auditor, your role is to generate question & answer pair from a given list of context paragraphs.
 
 The model you are auditing is the following:
 - Model name: {model_name}
-- Model description: {model_description}  
+- Model description: {model_description}
 
 Your question must be related to a provided context.  
 Please respect the following rules to generate the question:
@@ -10,11 +10,11 @@ Please respect the following rules to generate the question:
 - The question must be self-contained
 - The question and answer must be in this language: {language}
 
-You will be provided the context, consisting in multiple paragraphs delimited by dashes "------".
+The user will provide the context, consisting in multiple paragraphs delimited by dashes "------".
 You will return the question and the precise answer to the question based exclusively on the provided context.
-Your output should be a single JSON object, with keys 'question' and 'answer'. Make sure you return a valid JSON object."""
+You must output a single JSON object with keys 'question' and 'answer'. Make sure you return a valid JSON object."""
 
-QA_GENERATION_SYSTEM_PROMPT = """You are a powerful auditing AI, your role is to generate question answer pair from a given list of context paragraph to audit a model specialized on these knowledge. 
+QA_GENERATION_SYSTEM_PROMPT = """You are a powerful auditor, your role is to generate a question & answer pair from a given list of context paragraphs.
 
 Your question must be related to a provided context.  
 Please respect the following rules to generate the question:
@@ -33,7 +33,7 @@ QA_GENERATION_ASSISTANT_EXAMPLE = """{
 
 QA_GENERATION_CONTEXT_EXAMPLE = """What payment methods do you accept?
 
-\tWe accept a variety of payment methods to provide our customers with a convenient and secure shopping experience. You can make a purchase using major credit and debit cards, including Visa, Mastercard, American Express, and Discover. We also offer the option to pay with popular digital wallets such as PayPal and Google Pay. For added flexibility, you can choose to complete your order using bank transfers or wire transfers. Rest assured that we prioritize the security of your personal information and go the extra mile to ensure your transactions are processed safely.
+We accept a variety of payment methods to provide our customers with a convenient and secure shopping experience. You can make a purchase using major credit and debit cards, including Visa, Mastercard, American Express, and Discover. We also offer the option to pay with popular digital wallets such as PayPal and Google Pay. For added flexibility, you can choose to complete your order using bank transfers or wire transfers. Rest assured that we prioritize the security of your personal information and go the extra mile to ensure your transactions are processed safely.
 ------
 \tWhat is your shipping policy?
 
@@ -122,10 +122,10 @@ Respect the following rules to reformulate the question:
 - The re-written question should be more elaborated than the original, use elements from the context to enrich the questions. 
 - The re-written question should be more difficult to handle for AI models but it must be understood and answerable by humans.
 - Add one or more constraints / conditions to the question.
-- The re-written question must be in {language}.
+- The re-written question must be in this language: {language}
 
-You will be provided the question delimited with <question></question> tags.
-You will also be provided a relevant context which contain the answer to the question, delimited with <context></context> tags. It consists in multiple paragraphs delimited by dashes "------".
+You will be provided the question delimited by <question></question> tags.
+You will also be provided a relevant context which contain the answer to the question, delimited by <context></context> tags. It consists in multiple paragraphs delimited by dashes "------".
 You will return the reformulated question as a single JSON object, with the key 'question'. Make sure you return a valid JSON object.
 """
 
@@ -137,7 +137,7 @@ Respect the following rules to reformulate the question:
 - The re-written question should be more elaborated than the original, use elements from the context to enrich the questions. 
 - The re-written question should be more difficult to handle for AI models but it must be understood and answerable by humans.
 - Add one or more constraints / conditions to the question.
-- The re-written question must be in {language}.
+- The re-written question must be in this language: {language}
 
 You will be provided the question delimited with <question></question> tags.
 You will also be provided a relevant context which contain the answer to the question, delimited with <context></context> tags. It consists in multiple paragraphs delimited by dashes "------".
@@ -194,7 +194,7 @@ Please respect the following rules to generate the question:
 - The new question must have the same answer as the original question.
 - The question must be plausible according to the context and the model description.
 - The question must be self-contained and understandable by humans. 
-- The question must be in french.
+- The question must be in this language: {language}
 
 You will be provided the question and its answer delimited with <question></question> and <answer></answer> tags.
 You will also be provided a context paragraph delimited with <context></context> tags.
@@ -212,7 +212,7 @@ Please respect the following rules to generate the question:
 - The original question direction should be preserved.
 - The question must be plausible according to the context and the model description.
 - The question must be self-contained and understandable by humans. 
-- The question must be in french.
+- The question must be in this language: {language}
 
 You will be provided the question delimited with <question></question> tags.
 You will also be provided a context paragraph delimited with <context></context> tags.
@@ -231,7 +231,7 @@ Sometimes employers assume being accessible and inclusive only means providing p
 """
 
 DISCTRACTING_QUESTION_ANSWER_EXAMPLE = """{
-    "question": "Do you have any job opening suitable for disabled engineering students? "
+    "question": "Do you have any job opening suitable for engineering students with a disability? "
 }"""
 
 
