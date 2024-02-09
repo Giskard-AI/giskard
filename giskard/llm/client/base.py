@@ -25,8 +25,8 @@ class LLMToolCall:
 class LLMMessage:
     role: str
     content: Optional[str]
-    function_call: Optional[LLMFunctionCall]
-    tool_calls: Optional[List[LLMToolCall]]
+    function_call: Optional[LLMFunctionCall] = None
+    tool_calls: Optional[List[LLMToolCall]] = None
 
     @staticmethod
     def create_message(role: str, content: str):
