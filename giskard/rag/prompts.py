@@ -185,7 +185,7 @@ class QuestionComplexificationPrompt(QAGenerationPrompt):
         return super().create_messages(**kwargs)
 
 
-DISTRACTING_QUESTION_SYSTEM_PROMPT = """You are an expert at rewritting question.
+DISTRACTING_QUESTION_SYSTEM_PROMPT = """You are an expert at rewriting question.
 Your task is to re-write questions that will be used to evaluate a language model.
 
 Your task is to complexify questions given a provided context. 
@@ -201,7 +201,7 @@ You will also be provided a context paragraph delimited with <context></context>
 You will return the reformulated question as a single JSON object, with the key 'question'. Make sure you return a valid JSON object.
 """
 
-DISTRACTING_QUESTION_SYSTEM_PROMPT_WITH_DESCRIPTION = """You are an expert at rewritting question.
+DISTRACTING_QUESTION_SYSTEM_PROMPT_WITH_DESCRIPTION = """You are an expert at rewriting questions.
 Your task is to re-write questions that will be used to evaluate the following model:
 - Model name: {model_name}
 - Model description: {model_description}  
