@@ -1,6 +1,7 @@
 import pandas as pd
 
 from ..core.suite import Suite
+from ..datasets.base import Dataset
 from ..testing.tests.llm import test_llm_correctness
 
 
@@ -10,6 +11,9 @@ class QATestset:
 
     def to_pandas(self):
         return self._dataframe
+
+    def to_dataset(self):
+        return Dataset(self._dataframe, name="QA Testset", target=False, validation=False)
 
     def save(self, path):
         self._dataframe.to_json(path, orient="records", lines=True)
