@@ -47,7 +47,6 @@ tutorials/nlp_tutorials/index
 :hidden:
 
 knowledge/llm_vulnerabilities/index
-knowledge/llm_scan/index
 knowledge/key_vulnerabilities/index
 knowledge/catalogs/index
 ```
