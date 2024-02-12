@@ -141,7 +141,7 @@ class CorrectnessEvaluator(LLMBasedEvaluator):
 
         try:
             passed_test = out.tool_calls[0].function.arguments["passed_test"]
-            reason = out.tool_calls[0].function.arguments.get("passed_test")
+            reason = out.tool_calls[0].function.arguments.get("reason")
         except (AttributeError, KeyError, IndexError, TypeError):
             raise LLMGenerationError("Invalid function call arguments received")
 
