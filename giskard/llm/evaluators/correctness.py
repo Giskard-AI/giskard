@@ -138,7 +138,11 @@ class CorrectnessEvaluator(LLMBasedEvaluator):
             temperature=self.llm_temperature,
             caller_id=self.__class__.__name__,
         )
-        if out.function_call is None or "passed_test" not in out.function_call.arguments:
+
+        try:
+            passed_test = out.tool_calls[0].function.arguments["passed_test"]
+            reason = out.tool_calls[0].function.argumentsget("passed_test")
+        except (AttributeError, KeyError, IndexError, TypeError):
             raise LLMGenerationError("Invalid function call arguments received")
 
-        return out.function_call.arguments["passed_test"], out.function_call.arguments.get("reason")
+        return passed_test, reason
