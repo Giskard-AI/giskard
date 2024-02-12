@@ -81,7 +81,7 @@ Once the knowledge base is loaded as a pandas `DataFrame`, you can generate the 
 
 
 ```python
-from giskard.rag import KnowledgeBaseTestsetGenerator, DifficultyLevel
+from giskard.rag import KnowledgeBaseTestsetGenerator
 
 generator = KnowledgeBaseTestsetGenerator(
     knowledge_base_df, 
@@ -91,7 +91,7 @@ generator = KnowledgeBaseTestsetGenerator(
 )
 
 # Generate a testset with 10 questions & answers for each difficulty level
-testset = generator.generate_dataset(num_samples=10, difficulty_level=[1, 2])
+testset = generator.generate_dataset(num_samples=10, difficulty=[1, 2])
 ```
 
 The test set will be a subclass of {ref}`giskard.Dataset`. You can also get it as a pandas DataFrame by accessing `testset.df`.
