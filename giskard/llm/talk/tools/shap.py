@@ -1,11 +1,11 @@
 import numpy as np
 
 from giskard.llm.talk.config import ToolDescription
-from giskard.llm.talk.tools.predict import PredictDatasetInputTool
+from giskard.llm.talk.tools.predict import PredictTool
 from giskard.llm.talk.utils.shap import explain_with_shap
 
 
-class SHAPExplanationTool(PredictDatasetInputTool):
+class SHAPExplanationTool(PredictTool):
     default_name: str = "shap_explanation"
     default_description: str = ToolDescription.SHAP_EXPLANATION.value
     _output_template: str = "'{feature_name}' | {attributions_values}"
