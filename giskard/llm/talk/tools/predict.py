@@ -1,13 +1,15 @@
+import pandas as pd
+
 from giskard.datasets.base import Dataset
 from giskard.llm.talk.config import ToolDescription
 from giskard.llm.talk.tools.base import BasePredictTool
 
 
-class PredictDatasetInputTool(BasePredictTool):
-    default_name: str = "predict_dataset_input"
-    default_description: str = ToolDescription.PREDICT_DATASET_INPUT.value
+class PredictTool(BasePredictTool):
+    default_name: str = "predict"
+    default_description: str = ToolDescription.PREDICT.value
 
-    def _prepare_input(self, row_filter: dict) -> Dataset:
+    def _filter_from_dataset(self, row_filter: dict) -> pd.DataFrame:
         filtered_df = self._dataset.df.copy()
         for col_name, col_value in list(row_filter.items()):
             if filtered_df[col_name].dtype == "object":
@@ -15,14 +17,9 @@ class PredictDatasetInputTool(BasePredictTool):
             else:
                 filtered_df = filtered_df[filtered_df[col_name] == col_value]
 
-        return Dataset(filtered_df, target=None)
+        return filtered_df
 
-
-class PredictUserInputTool(BasePredictTool):
-    default_name: str = "predict_user_input"
-    default_description: str = ToolDescription.PREDICT_USER_INPUT.value
-
-    def _prepare_input(self, feature_values: dict) -> Dataset:
+    def _build_from_user_input(self, feature_values: dict) -> pd.DataFrame:
         # Prepare background sample.
         from giskard.models.model_explanation import _get_background_example
 
@@ -35,4 +32,13 @@ class PredictUserInputTool(BasePredictTool):
         for col_name, col_value in list(feature_values.items()):
             background_sample.loc[0, col_name] = col_value
 
-        return Dataset(background_sample, target=None)
+        return background_sample
+
+    def _prepare_input(self, feature_values: dict) -> Dataset:
+        final_input = self._filter_from_dataset(feature_values)
+
+        # If no data were filtered from the dataset, build vector from the user input.
+        if len(final_input) == 0:
+            final_input = self._build_from_user_input(feature_values)
+
+        return Dataset(final_input, target=None)

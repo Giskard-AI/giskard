@@ -70,6 +70,15 @@ _PREDICT_USER_INPUT_TOOL_DESCRIPTION = (
     "prediction on that row and finally return the prediction result."
 )
 
+_PREDICT_TOOL_DESCRIPTION = (
+    "Your task is to return prediction of a feature vector either extracted from"
+    "the dataset, or partially built from the user input. You expect a dictionary "
+    "with features and their values. First you try to filter rows from the dataset. "
+    "If it is not possible, you fill the values of features not mentioned in "
+    "the user query to build an input vector. Then you run the model prediction on "
+    "that vector and finally return the prediction result."
+)
+
 _SHAP_EXPLANATION_TOOL_DESCRIPTION = (
     "You expect a dictionary with feature names as keys and their values as dict "
     "values, which you use to filter rows in the dataset, then you run the SHAP "
@@ -89,7 +98,6 @@ _ISSUES_SCANNER_TOOL_DESCRIPTION = (
 
 
 class ToolDescription(str, Enum):
-    PREDICT_DATASET_INPUT = _PREDICT_DATASET_INPUT_TOOL_DESCRIPTION
-    PREDICT_USER_INPUT = _PREDICT_USER_INPUT_TOOL_DESCRIPTION
+    PREDICT = _PREDICT_TOOL_DESCRIPTION
     SHAP_EXPLANATION = _SHAP_EXPLANATION_TOOL_DESCRIPTION
     ISSUES_SCANNER = _ISSUES_SCANNER_TOOL_DESCRIPTION

@@ -26,13 +26,7 @@ from ...exceptions.giskard_exception import GiskardException, python_env_excepti
 from ...llm import get_default_client, set_llm_model
 from ...llm.client.openai import BaseOpenAIClient
 from ...llm.talk.config import ERROR_RESPONSE, LLM_MODEL, MODEL_INSTRUCTION, SUMMARY_PROMPT
-from ...llm.talk.tools import (
-    BaseTool,
-    IssuesScannerTool,
-    PredictDatasetInputTool,
-    PredictUserInputTool,
-    SHAPExplanationTool,
-)
+from ...llm.talk.tools import BaseTool, IssuesScannerTool, PredictTool, SHAPExplanationTool
 from ...models.cache import ModelCache
 from ...path_utils import get_size
 from ...registry.utils import dump_by_value
@@ -617,8 +611,7 @@ class BaseModel(ABC):
     def _get_available_tools(self, dataset: Dataset, scan_report: "ScanReport") -> dict[str, BaseTool]:
         """Get the dictionary with available tools"""
         return {
-            PredictDatasetInputTool.default_name: PredictDatasetInputTool(model=self, dataset=dataset),
-            PredictUserInputTool.default_name: PredictUserInputTool(model=self, dataset=dataset),
+            PredictTool.default_name: PredictTool(model=self, dataset=dataset),
             SHAPExplanationTool.default_name: SHAPExplanationTool(model=self, dataset=dataset),
             IssuesScannerTool.default_name: IssuesScannerTool(scan_result=scan_report),
         }
