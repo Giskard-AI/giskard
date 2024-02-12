@@ -1,11 +1,23 @@
-from .. import Dataset, Suite
+import pandas as pd
+
+from ..core.suite import Suite
 from ..testing.tests.llm import test_llm_correctness
 
 
-class QATestset(Dataset):
-    """A wrapper class around `Dataset` to allow automatic creation
-    of a `Suite` based on the question/answer pairs inside the `TestSet`.
-    """
+class QATestset:
+    def __init__(self, dataframe: pd.DataFrame):
+        self._dataframe = dataframe
+
+    def to_pandas(self):
+        return self._dataframe
+
+    def save(self, path):
+        self._dataframe.to_json(path, orient="records", lines=True)
+
+    @classmethod
+    def load(cls, path):
+        dataframe = pd.read_json(path, orient="records", lines=True)
+        return cls(dataframe)
 
     def to_test_suite(self, name=None):
         suite_default_params = {"dataset": self}
@@ -15,13 +27,4 @@ class QATestset(Dataset):
         return suite
 
     def copy(self):
-        testset = QATestset(
-            df=self.df.copy(),
-            target=self.target,
-            column_types=self.column_types.copy(),
-            validation=False,
-        )
-
-        if hasattr(self, "column_meta"):
-            testset.load_metadata_from_instance(self.column_meta)
-        return testset
+        return QATestset(self.dataframe.copy())

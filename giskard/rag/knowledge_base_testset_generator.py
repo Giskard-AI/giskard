@@ -251,4 +251,4 @@ class KnowledgeBaseTestsetGenerator(BaseDataGenerator):
                 else:
                     logger.warning("Error in question generation, skipping it.")
 
-        return QATestset(df=pd.DataFrame(generated_questions), target=None)
+        return QATestset(pd.DataFrame(generated_questions))
