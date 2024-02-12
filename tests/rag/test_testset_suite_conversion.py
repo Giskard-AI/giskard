@@ -21,7 +21,7 @@ def make_testset_df():
 
 
 def test_testset_suite_conversion():
-    testset = QATestset(df=make_testset_df())
+    testset = QATestset(make_testset_df())
     suite = testset.to_test_suite()
 
     assert "dataset" in suite.default_params

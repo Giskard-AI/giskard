@@ -77,11 +77,15 @@ def test_testset_generation():
     )
 
     test_set = testset_generator.generate_dataset(num_samples=2)
-    assert len(test_set) == 2
-    assert test_set.df.loc[0, "question"] == "Where is Camembert from?"
-    assert test_set.df.loc[0, "reference_answer"] == "Camembert was created in Normandy, in the northwest of France."
-    assert test_set.df.loc[0, "reference_context"] == CONTEXT_STRING
-    assert test_set.df.loc[0, "difficulty_level"] == 1
 
-    assert test_set.df.loc[1, "question"] == "Where is Camembert from?"
-    assert test_set.df.loc[1, "reference_context"] == "\n------\n"
+    assert len(test_set) == 2
+
+    df = test_set.to_pandas()
+
+    assert df.loc[0, "question"] == "Where is Camembert from?"
+    assert df.loc[0, "reference_answer"] == "Camembert was created in Normandy, in the northwest of France."
+    assert df.loc[0, "reference_context"] == CONTEXT_STRING
+    assert df.loc[0, "difficulty_level"] == 1
+
+    assert df.loc[1, "question"] == "Where is Camembert from?"
+    assert df.loc[1, "reference_context"] == "\n------\n"

@@ -9,6 +9,9 @@ class QATestset:
     def __init__(self, dataframe: pd.DataFrame):
         self._dataframe = dataframe
 
+    def __len__(self):
+        return len(self._dataframe)
+
     def to_pandas(self):
         return self._dataframe
 
@@ -24,7 +27,7 @@ class QATestset:
         return cls(dataframe)
 
     def to_test_suite(self, name=None):
-        suite_default_params = {"dataset": self}
+        suite_default_params = {"dataset": self.to_dataset()}
         name = name or "Test suite generated from testset"
         suite = Suite(name=name, default_params=suite_default_params)
         suite.add_test(test_llm_correctness, "TestsetCorrectnessTest", "TestsetCorrectnessTest")

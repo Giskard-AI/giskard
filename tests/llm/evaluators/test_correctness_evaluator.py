@@ -5,6 +5,7 @@ import pytest
 
 from giskard.datasets.base import Dataset
 from giskard.llm.client import LLMFunctionCall, LLMMessage
+from giskard.llm.client.base import LLMToolCall
 from giskard.llm.evaluators.correctness import CorrectnessEvaluator
 from giskard.models.base.model_prediction import ModelPredictionResults
 
@@ -46,20 +47,32 @@ def test_correctness_evaluator_correctly_flags_examples():
     client.complete.side_effect = [
         LLMMessage(
             role="assistant",
-            function_call=LLMFunctionCall(
-                name="evaluate_model",
-                arguments={"passed_test": True, "reason": ""},
-            ),
+            tool_calls=[
+                LLMToolCall(
+                    id="1",
+                    type="function",
+                    function=LLMFunctionCall(
+                        name="evaluate_model",
+                        arguments={"passed_test": True, "reason": ""},
+                    ),
+                )
+            ],
         ),
         LLMMessage(
             role="assistant",
-            function_call=LLMFunctionCall(
-                name="evaluate_model",
-                arguments={
-                    "passed_test": False,
-                    "reason": "The model output does not agree with the ground truth: Rome is the capital of Italy",
-                },
-            ),
+            tool_calls=[
+                LLMToolCall(
+                    id="2",
+                    type="function",
+                    function=LLMFunctionCall(
+                        name="evaluate_model",
+                        arguments={
+                            "passed_test": False,
+                            "reason": "The model output does not agree with the ground truth: Rome is the capital of Italy",
+                        },
+                    ),
+                )
+            ],
         ),
     ]
 
@@ -85,8 +98,8 @@ def test_correctness_evaluator_correctly_flags_examples():
 
     # Check LLM client calls arguments
     args = client.complete.call_args_list[0]
-    assert "Your role is to test AI models" in args[0][0][0]["content"]
-    assert args[1]["functions"][0]["function"]["name"] == "evaluate_model"
+    assert "Your role is to test AI models" in args[0][0][0].content
+    assert args[1]["tools"][0]["function"]["name"] == "evaluate_model"
 
 
 def test_correctness_evaluator_handles_generation_errors():
@@ -97,20 +110,29 @@ def test_correctness_evaluator_handles_generation_errors():
     client.complete.side_effect = [
         LLMMessage(
             role="assistant",
-            function_call=LLMFunctionCall(
-                name="evaluate_model",
-                arguments={"passed_test": True, "reason": ""},
-            ),
+            tool_calls=[
+                LLMToolCall(
+                    id="1",
+                    type="function",
+                    function=LLMFunctionCall(name="evaluate_model", arguments={"passed_test": True, "reason": ""}),
+                )
+            ],
         ),
         LLMMessage(
             role="assistant",
-            function_call=LLMFunctionCall(
-                name="evaluate_model",
-                arguments={
-                    "pass": False,
-                    "reason": "The model output does not agree with the ground truth: Rome is the capital of Italy",
-                },
-            ),
+            tool_calls=[
+                LLMToolCall(
+                    id="2",
+                    type="function",
+                    function=LLMFunctionCall(
+                        name="evaluate_model",
+                        arguments={
+                            "pass": False,
+                            "reason": "The model output does not agree with the ground truth: Rome is the capital of Italy",
+                        },
+                    ),
+                )
+            ],
         ),
     ]
 
