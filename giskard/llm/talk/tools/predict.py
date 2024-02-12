@@ -1,4 +1,5 @@
 import pandas as pd
+from thefuzz import fuzz
 
 from giskard.datasets.base import Dataset
 from giskard.llm.talk.config import ToolDescription
@@ -10,10 +11,16 @@ class PredictTool(BasePredictTool):
     default_description: str = ToolDescription.PREDICT.value
 
     def _filter_from_dataset(self, row_filter: dict) -> pd.DataFrame:
+        threshold = 85
+
         filtered_df = self._dataset.df.copy()
         for col_name, col_value in list(row_filter.items()):
             if filtered_df[col_name].dtype == "object":
-                filtered_df = filtered_df[filtered_df[col_name].str.lower() == str(col_value).lower()]
+                filtered_df = filtered_df[
+                    filtered_df[col_name].apply(lambda x: fuzz.ratio(x.lower(), col_value.lower()) >= threshold)
+                ]
+                if not len(filtered_df):
+                    break
             else:
                 filtered_df = filtered_df[filtered_df[col_name] == col_value]
 
