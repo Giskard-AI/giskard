@@ -1,5 +1,8 @@
 # 🧰 RAG Testset Generation
 
+> ⚠️ **The RAG toolset is currently in beta version and is subject to change**. Feel free to reach out on our [Discord server](https://discord.gg/fkv7CAr3FE) if you have any trouble with test set generation or to provide feedback.
+
+
 The Giskard python library provides a toolset dedicated to Retrieval Augmented Generative models (RAGs) that generates question & answer pairs from the knowledge base of the model. The generated test set is then used to evaluate your model. 
 
 (difficulty_levels)=
