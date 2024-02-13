@@ -86,6 +86,9 @@ jobs:
           then
             echo "Expected wheel version ${{ env.VERSION_NUMBER }}, got $(cat WHEEL_VERSION)"
             exit 1
+          else
+            echo "Cleaning file"
+            rm -f WHEEL_VERSION
           fi
   
       # build .tar.gz sdist tarball
