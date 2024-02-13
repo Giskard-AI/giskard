@@ -1,3 +1,5 @@
+import pytest
+
 from giskard.rag.vector_store import Document
 
 
@@ -46,15 +48,12 @@ def test_multiple_features_document_creation():
     )
     assert doc.content == "feat1: This a test value for a feature 1\nfeat2: This a test value for a feature 2"
 
-    doc = Document(
-        {
-            "feat1": "This a test value for a feature 1",
-            "feat2": "This a test value for a feature 2",
-            "feat3": "This a test value for a feature 3",
-        },
-        features=["feat4"],
-    )
-    assert (
-        doc.content
-        == "feat1: This a test value for a feature 1\nfeat2: This a test value for a feature 2\nfeat3: This a test value for a feature 3"
-    )
+    with pytest.raises(KeyError):
+        doc = Document(
+            {
+                "feat1": "This a test value for a feature 1",
+                "feat2": "This a test value for a feature 2",
+                "feat3": "This a test value for a feature 3",
+            },
+            features=["feat4"],
+        )
