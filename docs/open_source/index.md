@@ -6,6 +6,7 @@
 
 installation_library/index
 scan/index
+testset_generation/index
 customize_tests/index
 integrate_tests/index
 ```
@@ -21,6 +22,11 @@ integrate_tests/index
 ::::{grid-item-card} <br/><h3>🔍 Scan a model</h3>
 :text-align: center
 :link: scan/index.html
+::::
+
+::::{grid-item-card} <br/><h3>🧰 RAG Toolset</h3>
+:text-align: center
+:link: testset_generation/index.html
 ::::
 
 ::::{grid-item-card} <br/><h3>🧪 Customize your tests</h3>
