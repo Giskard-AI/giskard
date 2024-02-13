@@ -146,14 +146,14 @@ def test_correctness_evaluator_handles_generation_errors():
     assert result.errors[0]["message"] == "Invalid function call arguments received"
 
 
-def test_raises_error_if_missing_feature_in_dataset():
+def test_raises_error_if_missing_column_in_dataset():
     dataset = _make_eval_dataset()
     dataset.df = dataset.df.drop("question", axis=1)
 
     model = _make_mock_model()
 
     evaluator = CorrectnessEvaluator(llm_client=Mock())
-    with pytest.raises(ValueError, match="Missing at least one required feature in the evaluation dataset among"):
+    with pytest.raises(ValueError, match="Missing required columns in the evaluation dataset."):
         evaluator.evaluate(model, dataset)
 
 
@@ -163,5 +163,5 @@ def test_raises_error_if_missing_feature_in_model():
     model = _make_mock_model(feature_names=["reference_answer"])
 
     evaluator = CorrectnessEvaluator(llm_client=Mock())
-    with pytest.raises(ValueError, match="Missing question feature: 'question' inside model's features."):
+    with pytest.raises(ValueError, match="Model has no feature 'question'"):
         evaluator.evaluate(model, dataset)

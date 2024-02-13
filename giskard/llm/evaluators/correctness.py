@@ -36,13 +36,9 @@ Call the `evaluate_model` function with the result of your evaluation.
 
 
 class CorrectnessEvaluator(LLMBasedEvaluator):
-    """Correctness evaluator class: assess the correctness of a model answers
-    given questions and associated reference answers.
-    """
+    """Assess the correctness of a model answers given questions and associated reference answers."""
 
     _default_eval_prompt = CORRECTNESS_EVALUATION_PROMPT
-    _question_feature_name = "question"
-    _reference_answer_feature_name = "reference_answer"
 
     def _make_evaluate_functions(self):
         return EVALUATE_MODEL_FUNCTIONS
@@ -60,41 +56,32 @@ class CorrectnessEvaluator(LLMBasedEvaluator):
         self,
         model: BaseModel,
         dataset: Dataset,
-        question_feature_name: str = None,
-        reference_answer_feature_name: str = None,
+        question_col: str = "question",
+        reference_answer_col: str = "reference_answer",
     ):
-        question_feature_name = (
-            question_feature_name if question_feature_name is not None else self._question_feature_name
-        )
-        reference_answer_feature_name = (
-            reference_answer_feature_name
-            if reference_answer_feature_name is not None
-            else self._reference_answer_feature_name
-        )
-        qa_feature_names = [question_feature_name, reference_answer_feature_name]
-
-        # question and reference_answer feature names must be present in the dataset
-        if not (question_feature_name in dataset.df and reference_answer_feature_name in dataset.df):
+        if not (question_col in dataset.df and reference_answer_col in dataset.df):
             raise ValueError(
-                f"Missing at least one required feature in the evaluation dataset among: {qa_feature_names}."
+                f"Missing required columns in the evaluation dataset. Make sure the dataset has columns {question_col} and {reference_answer_col}."
             )
 
-        # question feature name must be inside model's features
-        if question_feature_name not in model.feature_names:
-            raise ValueError(f"Missing question feature: '{question_feature_name}' inside model's features.")
+        if question_col not in model.feature_names:
+            raise ValueError(
+                f"Model has no feature '{question_col}'. Make sure your Model wrapper accepts '{question_col}'."
+            )
 
         model_outputs = model.predict(dataset).prediction
+
         succeeded = []
         failed = []
         errored = []
         status = []
         reasons = []
-        for idx, (evaluation_question, model_output) in enumerate(zip(dataset.df.to_dict("records"), model_outputs)):
+        for evaluation_question, model_output in zip(dataset.df.to_dict("records"), model_outputs):
             try:
                 passed, reason = self._evaluate_single(
                     model,
-                    evaluation_question[question_feature_name],
-                    evaluation_question[reference_answer_feature_name],
+                    evaluation_question[question_col],
+                    evaluation_question[reference_answer_col],
                     model_output,
                 )
                 reasons.append(reason)
@@ -108,12 +95,12 @@ class CorrectnessEvaluator(LLMBasedEvaluator):
                     succeeded.append(sample)
                     status.append(TestResultStatus.PASSED)
                 else:
-                    status.append(TestResultStatus.FAILED)
                     failed.append(sample)
+                    status.append(TestResultStatus.FAILED)
             except LLMGenerationError as err:
-                status.append(TestResultStatus.ERROR)
-                reasons.append(str(err))
                 errored.append({"message": str(err), "sample": {**evaluation_question, "model_output": model_output}})
+                reasons.append(str(err))
+                status.append(TestResultStatus.ERROR)
 
         return EvaluationResult(
             failure_examples=failed,
@@ -142,7 +129,7 @@ class CorrectnessEvaluator(LLMBasedEvaluator):
         try:
             passed_test = out.tool_calls[0].function.arguments["passed_test"]
             reason = out.tool_calls[0].function.arguments.get("reason")
-        except (AttributeError, KeyError, IndexError, TypeError):
+        except (AttributeError, KeyError, IndexError):
             raise LLMGenerationError("Invalid function call arguments received")
 
         return passed_test, reason

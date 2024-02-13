@@ -1,4 +1,4 @@
-from .knowledge_base_testset_generator import DifficultyLevel, KnowledgeBaseTestsetGenerator
 from .testset import QATestset
+from .testset_generator import DifficultyLevel, TestsetGenerator
 
-__all__ = ["KnowledgeBaseTestsetGenerator", "QATestset", "DifficultyLevel"]
+__all__ = ["TestsetGenerator", "QATestset", "DifficultyLevel"]

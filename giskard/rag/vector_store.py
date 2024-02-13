@@ -62,5 +62,6 @@ class VectorStore:
         return self.vector_similarity_search_with_score(query_emb, k)
 
     def vector_similarity_search_with_score(self, query_emb: np.ndarray, k: int) -> Sequence:
+        query_emb = np.atleast_2d(query_emb)
         distances, indices = self.index.search(query_emb, k)
         return [(self.documents[i], d) for d, i in zip(distances[0], indices[0])]
