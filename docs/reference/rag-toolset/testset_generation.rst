@@ -1,8 +1,8 @@
 Testset Generation
 ======
 
-.. autoclass:: giskard.rag.KnowledgeBaseTestsetGenerator
+.. autoclass:: giskard.rag.TestsetGenerator
     :members:
 
-.. autoclass:: giskard.rag.TestSet
+.. autoclass:: giskard.rag.QATestset
     :members:

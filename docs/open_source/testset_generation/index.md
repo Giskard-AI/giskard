@@ -1,13 +1,15 @@
-# 🧰 RAG toolset
-The Giskard python library provides a toolset dedicated to Retrieval Augmented Generative models (RAGs) that generates question & answer pairs from the knowledge base of the model. The generated testset is then used to evaluate your model. 
+# 🧰 RAG Testset Generation
 
+The Giskard python library provides a toolset dedicated to Retrieval Augmented Generative models (RAGs) that generates question & answer pairs from the knowledge base of the model. The generated test set is then used to evaluate your model. 
+
+(difficulty_levels)=
 ## Generate questions with difficulty levels
 You can currently generate questions with three difficulty levels:
 - **Easy questions (level 1):** simple questions generated from an excerpt of the knowledge base
 - **Complex questions: (level 2)** questions made more complex by paraphrasing
 - **Distracting questions (level 3):** questions made even more difficult by adding a distracting element which is related to the knowledge base but irrelevant to the question
 
-These three difficulty levels allows to evaluate different components of your model. Easy questions are directly generated from your knowledge base. They assess the quality of the answer generation from the context, i.e. the quality of the LLM answer. Complex and distracting questions are more challenging as they can perturb the retrieval componenent of the RAG. These questions are more realistic of a user seeking precise information with your model.
+These three difficulty levels allow you to evaluate different components of your model. Easy questions are directly generated from your knowledge base. They assess the quality of the answer generation from the context, i.e. the quality of the LLM answer. Complex and distracting questions are more challenging as they can perturb the retrieval component of the RAG. These questions are more realistic of a user seeking precise information with your model.
 
 ## Before starting
 
@@ -17,7 +19,7 @@ Before starting, make sure you have installed the LLM flavor of Giskard:
 pip install "giskard[llm]"
 ```
 
-To use the RAG testset generation and evaluation tools, you need to have an OpenAI API key. You can set it in your notebook
+To use the RAG test set generation and evaluation tools, you need to have an OpenAI API key. You can set it in your notebook
 like this:
 
 :::::::{tab-set}
@@ -55,63 +57,99 @@ set_llm_model('my-gpt-4-model')
 We are now ready to start.
 
 
-## Step 1: Format and load your Knowledge Base
-The RAG toolset currently only handles knowledge bases as pandas `DataFrame`. If the DataFrame has multiple columns,
-they are concatenated automatically. If only some of the columns contains relevant information, you can specify it when building the generator by passing a list of column names to the `knowledge_base_features` argument (see [API Reference](https://docs.giskard.ai/en/latest/reference/rag-toolset/testset_generation.html#giskard.rag.KnowledgeBaseTestsetGenerator)).
+## Step 1: Automatically generate a Q&A test set
+
+To start, you only need your data or knowledge base in a pandas `DataFrame`. Then, you can initialize the testset
+generator ({class}`giskard.rag.TestsetGenerator`) by passing your dataframe.
+
+If some columns in your dataframe are not relevant for the generation of questions (e.g. they contain metadata), make sure you specify
+column names to the `knowledge_base_columns` argument (see {class}`giskard.rag.TestsetGenerator`).
+
+To make the question generation more accurate, you can also provide a model name and a model description to the generator. This will help the generator to generate questions that are more relevant to your model's task. You can also specify the language of the generated questions.
 
 
 ```python
+
+from giskard.rag import TestsetGenerator
+
+# Load your data
 knowledge_base_df = pd.read_csv("path/to/your/knowledge_base.csv")
-feature_names = ["col1", "col2"]
+
+# Initialize the testset generator
+generator = TestsetGenerator(
+    knowledge_base_df, 
+    knowledge_base_columns=["column_1", "column_2"],
+    language="en",  # Optional, if you want to  generate questions in a specific language
+
+    # Optionally, you can provide a model name and description to improve the question quality
+    model_name="Shop Assistant",
+    model_description="A model that answers common questions about our products",
+)
 ```
 
-## Step 2: Generate the testset
-Once the knowledge base is loaded as a pandas `DataFrame`, you can generate the testset with the 
-`KnowledgeBaseTestsetGenerator`. 
+We are ready to generate the test set. We can start with a small test set of 10 questions and answers for each difficulty level.
 
+Currently, you can choose the difficulty levels from 1 to 3 (see {ref}`difficulty_levels`)
 
 ```python
-from giskard.rag import KnowledgeBaseTestsetGenerator
+# Generate a testset with 10 questions & answers for each difficulty level (this will take a while)
+testset = generator.generate_testset(num_questions=10, difficulty=[1, 2])
 
-generator = KnowledgeBaseTestsetGenerator(
-    knowledge_base_df, 
-    model_name="Model name", # Optional, provide a name to your model to get better fitting questions
-    model_description="Description of the model", # Optional, briefly describe the task done by your model
-    knowledge_base_features=feature_names
-)
+# Save the generated testset
+testset.save("my_testset.jsonl")
 
-# Generate a testset with 10 questions & answers for each difficulty level
-testset = generator.generate_dataset(num_samples=10, difficulty=[1, 2])
+# Load it back
+from giskard.rag import QATestset
+
+loaded_testset = QATestset.load("my_testset.jsonl")
 ```
 
-The test set will be a subclass of {ref}`giskard.Dataset`. You can also get it as a pandas DataFrame by accessing `testset.df`.
+The test set will be an instance of {ref}`giskard.rag.QATestset`. You can save it and load it later with `QATestset.load("path/to/testset.jsonl")`.
 
-Here's an example of the generated test set:
+You can also convert it to a pandas DataFrame with `testset.to_pandas()`:
+
+```py
+# Convert it to a pandas dataframe
+df = loaded_testset.to_pandas()
+```
+
+Let's have a look at the generated questions:
 
 | question | reference_context | reference_answer | difficulty_level |
 |----------|-------------------|------------------|------------------|
 | For which countries can I track my shipping? | What is your shipping policy? We offer free shipping on all orders over \$50. For orders below \$50, we charge a flat rate of \$5.99. We offer shipping services to customers residing in all 50 states of the US, in addition to providing delivery options to Canada and Mexico. ------  How can I track my order? Once your purchase has been successfully confirmed and shipped, you will receive a confirmation email containing your tracking number. You can simply click on the link provided in the email or visit our website's order tracking page. | We ship to all 50 states in the US, as well as to Canada and Mexico. We offer tracking for all our shippings. | 1 |
 
-## Step 3: Wrap your model
-Before evaluating your model, you must wrap it as a `giskard.Model`. This step is necessary to ensure a common format for your model and its metadata. You can wrap anything as long as you can represent it in a Python function (for example an API call call to Azure or OpenAI). We also have pre-built wrappers for LangChain objects, or you can create your own wrapper by extending the `giskard.Model` class if you need to wrap a complex object such as a custom-made RAG communicating with a vectorstore.
+As you can see, the data contains 4 columns:
+- `question`: the generated question
+- `reference_context`: the context that can be used to answer the question
+- `reference_answer`: the answer to the question (generated with GPT-4)
+- `difficulty_level`: the difficulty level of the question  (1, 2 or 3)
 
-To do so, you can follow the instructions from the [LLM Scan feature](../scan/scan_llm/index.md#step-1-wrap-your-model) or from the {doc}`Reference API </reference/models/index>`. Make sure that you pass `feature_names = "question"` when wrapping your model, so that it matches the question column of the testset. 
+## Step 2: Evaluate your model on the generated test set
+
+Before evaluating your model, you must wrap it as a `giskard.Model`. This step is necessary to ensure a common format for your model and its metadata. You can wrap anything as long as you can represent it in a Python function (for example an API call to Azure or OpenAI). We also have pre-built wrappers for LangChain objects, or you can create your own wrapper by extending the `giskard.Model` class if you need to wrap a complex object such as a custom-made RAG communicating with a vectorstore.
+
+To do so, you can follow the instructions from the [LLM Scan feature](../scan/scan_llm/index.md#step-1-wrap-your-model). Make sure that you pass `feature_names = "question"` when wrapping your model, so that it matches the question column of the test set.
 
 Detailed examples can also be found on our {doc}`LLM tutorials section </tutorials/llm_tutorials/index>`.
 
+Once you have wrapped your model, we can proceed with evaluation.
 
-## Step 4: Generate a test suite to evaluate your model
-Once your `testset` is ready, you can turn it into an actionable test suite that you can save and reuse in further iterations. Note that you need to pass your wrapped model when executing the suite, since the suite is generated only from the testset.
+Let's convert our test set into an actionable test suite ({class}`giskard.Suite`) that we can save and reuse in further iterations.
 
 ```python
 test_suite = testset.to_test_suite("My first test suite")
-test_suite.run(giskard_model)
+
+test_suite.run(model=giskard_model)
 ```
+
+![](./test_suite_widget.png)
 
 Jump to the [test customization](https://docs.giskard.ai/en/latest/open_source/customize_tests/index.html) and [test integration](https://docs.giskard.ai/en/latest/open_source/integrate_tests/index.html) sections to find out everything you can do with test suites.
 
 
-## Next: upload your test suite to the Giskard Hub
+## Step 3: upload your test suite to the Giskard Hub
+
 Uploading a test suite to the hub allows you to:
 * Compare the quality of different models and prompts to decide which one to promote
 * Create more tests relevant to your use case, combining input prompts that make your model fail and custome evaluation criteria
@@ -126,16 +164,17 @@ test_suite.upload(giskard_client, project_id) #project_id should be the id of th
 
 [Here's a demo](https://huggingface.co/spaces/giskardai/giskard) of the Giskard Hub in action.
 
+
 ## What data are being sent to OpenAI/Azure OpenAI
 
-In order to perform LLM-assisted detectors, we will be sending the following information to OpenAI/Azure OpenAI:
+In order to perform the question generation, we will be sending the following information to OpenAI/Azure OpenAI:
 
 - Data provided in your knowledge base
 - Text generated by your model
 - Model name and description
 
-## Will the testset generation work in any language?
-The testset quality depends on GPT-4 capabilities regarding your model's language. 
+## Will the test set generation work in any language?
+Yes, you can specify the language of the generated questions when you initialize the {class}`giskard.rag.TestsetGenerator`.
 
 ## Troubleshooting
 If you encounter any issues, join our [Discord community](https://discord.gg/fkv7CAr3FE) and ask questions in our #support channel.
