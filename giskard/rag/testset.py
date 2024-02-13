@@ -34,4 +34,4 @@ class QATestset:
         return suite
 
     def copy(self):
-        return QATestset(self.dataframe.copy())
+        return QATestset(self._dataframe.copy())
