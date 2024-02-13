@@ -4,10 +4,21 @@ The Giskard python library provides a toolset dedicated to Retrieval Augmented G
 
 (difficulty_levels)=
 ## Generate questions with difficulty levels
+
 You can currently generate questions with three difficulty levels:
-- **Easy questions (level 1):** simple questions generated from an excerpt of the knowledge base
-- **Complex questions: (level 2)** questions made more complex by paraphrasing
-- **Distracting questions (level 3):** questions made even more difficult by adding a distracting element which is related to the knowledge base but irrelevant to the question
+
+```{list-table}
+:header-rows: 1
+:widths: 35, 65
+* - Difficulty Level
+  - Description
+* - **1: Easy questions**
+  - Simple questions generated from an excerpt of the knowledge base
+* - **2: Complex questions**
+  - Questions made more complex by paraphrasing
+* - **3: Distracting questions**
+  - Questions made even more difficult by adding a distracting element which is related to the knowledge base but irrelevant to the question
+```
 
 These three difficulty levels allow you to evaluate different components of your model. Easy questions are directly generated from your knowledge base. They assess the quality of the answer generation from the context, i.e. the quality of the LLM answer. Complex and distracting questions are more challenging as they can perturb the retrieval component of the RAG. These questions are more realistic of a user seeking precise information with your model.
 
@@ -159,7 +170,7 @@ To upload your test suite, you must have created a project on Giskard Hub and in
 
 Then, upload your test suite like this:
 ```python
-test_suite.upload(giskard_client, project_id) #project_id should be the id of the Giskard project in which you want to upload the suite
+test_suite.upload(giskard_client, project_id)  # project_id should be the id of the Giskard project in which you want to upload the suite
 ```
 
 [Here's a demo](https://huggingface.co/spaces/giskardai/giskard) of the Giskard Hub in action.
