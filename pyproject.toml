@@ -178,7 +178,13 @@ dependencies = [
 ]
 
 [project.optional-dependencies]
-llm = ["openai", "evaluate>=0.4.1", "bert-score>=0.3.13"]
+llm = [
+    "openai",
+    "evaluate>=0.4.1",
+    "bert-score>=0.3.13",
+    "tenacity>=4.11.0",
+    "faiss-cpu>=1.7.4",
+]
 
 hub = [
     # Worker deps
