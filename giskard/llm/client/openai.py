@@ -68,9 +68,9 @@ class BaseOpenAIClient(LLMClient, ABC):
         result = {
             "role": response.role,
             "content": response.content,
-            "function_call": BaseOpenAIClient._serialize_function_call(response.function_call)
-            if response.function_call
-            else None,
+            "function_call": (
+                BaseOpenAIClient._serialize_function_call(response.function_call) if response.function_call else None
+            ),
             "tool_calls": BaseOpenAIClient._serialize_tool_calls(response.tool_calls) if response.tool_calls else None,
         }
 
@@ -103,12 +103,16 @@ class BaseOpenAIClient(LLMClient, ABC):
         return LLMMessage(
             role=response["role"],
             content=response["content"],
-            function_call=BaseOpenAIClient._parse_function_call(response["function_call"])
-            if "function_call" in response and response["function_call"] is not None
-            else None,
-            tool_calls=BaseOpenAIClient._parse_tool_calls(response["tool_calls"])
-            if "tool_calls" in response and response["tool_calls"] is not None
-            else None,
+            function_call=(
+                BaseOpenAIClient._parse_function_call(response["function_call"])
+                if "function_call" in response and response["function_call"] is not None
+                else None
+            ),
+            tool_calls=(
+                BaseOpenAIClient._parse_tool_calls(response["tool_calls"])
+                if "tool_calls" in response and response["tool_calls"] is not None
+                else None
+            ),
         )
 
     def complete(
@@ -145,13 +149,9 @@ class BaseOpenAIClient(LLMClient, ABC):
     def embeddings(
         self, texts: Sequence[str], model: str = "text-embedding-ada-002", chunk_size: int = 2048
     ) -> np.ndarray:
-        texts = [t.replace("\n", " ") for t in texts]
-        if not isinstance(chunk_size, int) or chunk_size > self._max_embedding_chunk_size or chunk_size < 1:
-            raise ValueError(f"Chunk size must be an integer between 0 and {self._max_embedding_chunk_size}.")
-
-        chunks_indices = list(range(chunk_size, len(texts), chunk_size))
+        chunks_indices = range(chunk_size, len(texts), chunk_size)
         chunks = np.split(texts, chunks_indices)
-        embedded_chunks = [self._embeddings_generation(list(chunk), model) for chunk in chunks]
+        embedded_chunks = [self._embeddings_generation(chunk, model) for chunk in chunks]
         return np.stack([emb for embeddings in embedded_chunks for emb in embeddings])
 
 
@@ -213,16 +213,16 @@ class LegacyOpenAIClient(BaseOpenAIClient):
 
     def _embeddings_generation(self, texts: Sequence[str], model: str):
         try:
-            out = openai.Embedding.create(input=texts, engine=model)
+            out = openai.Embedding.create(input=list(texts), engine=model)
             embeddings = [element["embedding"] for element in out["data"]]
-
         except openai.error.InvalidRequestError as err:
             raise ValueError(
                 f"The embedding model: '{model}' was not found,"
                 "make sure the model is correctly deployed on your endpoint."
             ) from err
         except Exception as err:
-            raise ValueError("Embedding creation failed.") from err
+            raise RuntimeError("Embedding creation failed.") from err
+
         return embeddings
 
 
@@ -276,7 +276,7 @@ class OpenAIClient(BaseOpenAIClient):
 
     def _embeddings_generation(self, texts: Sequence[str], model: str):
         try:
-            out = self._client.embeddings.create(input=texts, model=model)
+            out = self._client.embeddings.create(input=list(texts), model=model)
             embeddings = [element.embedding for element in out.data]
         except openai.NotFoundError as err:
             raise ValueError(
@@ -285,6 +285,6 @@ class OpenAIClient(BaseOpenAIClient):
                 f"the specified endpoint: {self._client._base_url}."
             ) from err
         except Exception as err:
-            raise ValueError("Embedding creation failed.") from err
+            raise RuntimeError("Embedding creation failed.") from err
 
         return embeddings

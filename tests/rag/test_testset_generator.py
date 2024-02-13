@@ -4,7 +4,7 @@ import numpy as np
 import pandas as pd
 
 from giskard.llm.client import LLMMessage
-from giskard.rag import KnowledgeBaseTestsetGenerator
+from giskard.rag import TestsetGenerator
 
 
 def make_knowledge_base_df():
@@ -58,25 +58,25 @@ def test_testset_generation():
     llm_client.embeddings.side_effect = [kb_embeddings]
 
     knowledge_base_df = make_knowledge_base_df()
-    testset_generator = KnowledgeBaseTestsetGenerator(
+    testset_generator = TestsetGenerator(
         knowledge_base_df,
         model_name="Test model",
         model_description="This is a model for testing purpose.",
         llm_client=llm_client,
         context_neighbors=3,
     )
-    testset_generator.rng = Mock()
-    testset_generator.rng.choice = Mock()
-    testset_generator.rng.choice.side_effect = list(query_embeddings)
+    testset_generator._rng = Mock()
+    testset_generator._rng.choice = Mock()
+    testset_generator._rng.choice.side_effect = list(query_embeddings)
 
-    assert testset_generator.knowledge_base.index.d == 8
-    assert testset_generator.knowledge_base.embeddings.shape == (4, 8)
-    assert len(testset_generator.knowledge_base.documents) == 4
-    assert testset_generator.knowledge_base.documents[2].page_content.startswith(
+    assert testset_generator._vector_store.index.d == 8
+    assert testset_generator._vector_store.embeddings.shape == (4, 8)
+    assert len(testset_generator._vector_store.documents) == 4
+    assert testset_generator._vector_store.documents[2].page_content.startswith(
         "Scamorza is a Southern Italian cow's milk cheese."
     )
 
-    test_set = testset_generator.generate_dataset(num_samples=2)
+    test_set = testset_generator.generate_testset(num_questions=2)
 
     assert len(test_set) == 2
 
