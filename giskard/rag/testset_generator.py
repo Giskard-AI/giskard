@@ -147,7 +147,7 @@ class TestsetGenerator:
     def _generate_question_distracting_element(self, context: str):
         generated_qa = self._generate_question_easy(context)
 
-        distracting_context = self._rng.choice(self._knowledge_base.documents).page_content
+        distracting_context = self._rng.choice(self._knowledge_base.documents).content
         messages = DistractingQuestionPrompt.create_messages(
             model_name=self._model_name,
             model_description=self._model_description,

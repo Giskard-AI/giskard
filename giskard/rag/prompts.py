@@ -87,8 +87,7 @@ class QAGenerationPrompt:
 
     @classmethod
     def format_context(cls, contexts):
-        context_string = "\n------\n".join(["", *[doc.page_content for doc in contexts], ""])
-        return context_string
+        return "\n------\n".join(["", *[doc.content for doc in contexts], ""])
 
     @classmethod
     def create_messages(
@@ -100,9 +99,7 @@ class QAGenerationPrompt:
         examples=None,
         user_content=None,
     ):
-        messages = list()
-
-        messages.append(cls._format_system_prompt(model_name, model_description, language))
+        messages = [cls._format_system_prompt(model_name, model_description, language)]
         if add_examples:
             messages.extend(cls._format_example_prompt(examples))
 
@@ -219,16 +216,21 @@ You will also be provided a context paragraph delimited with <context></context>
 You will return the reformulated question as a single JSON object, with the key 'question'. Make sure you return a valid JSON object.
 """
 
-DISCTRACTING_QUESTION_PROMPT_EXAMPLE = """<question>
-What job offer do you have for engineering student?
+DISTRACTING_QUESTION_USER_INPUT = """<question>
+{question}
 </question>
 <answer>
-We have plenty of different jobs for engineering student depending on your speciality: mechanical engineer, data scientist, electronic designer and many more.
+{answer}
 </answer>
 <context>
-Sometimes employers assume being accessible and inclusive only means providing physical access like ramps, accessible bathrooms and automatic opening doors. However, there are many other important ways to demonstrate that you welcome and want to attract a diverse workforce including people with disability.
-<context>
-"""
+{context}
+</context>"""
+
+DISCTRACTING_QUESTION_PROMPT_EXAMPLE = DISTRACTING_QUESTION_USER_INPUT.format(
+    question="What job offer do you have for engineering student?",
+    answer="We have plenty of different jobs for engineering student depending on your speciality: mechanical engineer, data scientist, electronic designer and many more.",
+    context="Sometimes employers assume being accessible and inclusive only means providing physical access like ramps, accessible bathrooms and automatic opening doors. However, there are many other important ways to demonstrate that you welcome and want to attract a diverse workforce including people with disability.",
+)
 
 DISCTRACTING_QUESTION_ANSWER_EXAMPLE = """{
     "question": "Do you have any job opening suitable for engineering students with a disability? "
@@ -243,7 +245,4 @@ class DistractingQuestionPrompt(QuestionComplexificationPrompt):
 
     @classmethod
     def format_user_content(cls, question, answer, context):
-        context_string = (
-            f"<question>\n{question}\n</question>\n<answer>\n{answer}\n</answer>\n<context>\n{context}\n</context>"
-        )
-        return context_string
+        return DISTRACTING_QUESTION_USER_INPUT.format(question=question, answer=answer, context=context)

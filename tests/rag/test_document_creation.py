@@ -4,7 +4,7 @@ from giskard.rag.vector_store import Document
 def test_single_feature_document_creation():
     doc = Document({"feature": "This a test value for a feature"})
 
-    assert doc.page_content == "This a test value for a feature"
+    assert doc.content == "This a test value for a feature"
     assert doc.metadata == {"feature": "This a test value for a feature"}
 
 
@@ -17,7 +17,7 @@ def test_multiple_features_document_creation():
         }
     )
     assert (
-        doc.page_content
+        doc.content
         == "feat1: This a test value for a feature 1\nfeat2: This a test value for a feature 2\nfeat3: This a test value for a feature 3"
     )
     assert doc.metadata == {
@@ -34,7 +34,7 @@ def test_multiple_features_document_creation():
         },
         features=["feat1"],
     )
-    assert doc.page_content == "This a test value for a feature 1"
+    assert doc.content == "This a test value for a feature 1"
 
     doc = Document(
         {
@@ -44,7 +44,7 @@ def test_multiple_features_document_creation():
         },
         features=["feat1", "feat2"],
     )
-    assert doc.page_content == "feat1: This a test value for a feature 1\nfeat2: This a test value for a feature 2"
+    assert doc.content == "feat1: This a test value for a feature 1\nfeat2: This a test value for a feature 2"
 
     doc = Document(
         {
@@ -55,6 +55,6 @@ def test_multiple_features_document_creation():
         features=["feat4"],
     )
     assert (
-        doc.page_content
+        doc.content
         == "feat1: This a test value for a feature 1\nfeat2: This a test value for a feature 2\nfeat3: This a test value for a feature 3"
     )

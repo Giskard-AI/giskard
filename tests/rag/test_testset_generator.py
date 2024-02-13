@@ -72,7 +72,7 @@ def test_testset_generation():
     assert testset_generator._vector_store.index.d == 8
     assert testset_generator._vector_store.embeddings.shape == (4, 8)
     assert len(testset_generator._vector_store.documents) == 4
-    assert testset_generator._vector_store.documents[2].page_content.startswith(
+    assert testset_generator._vector_store.documents[2].content.startswith(
         "Scamorza is a Southern Italian cow's milk cheese."
     )
 

@@ -60,9 +60,9 @@ def test_vector_store_similarity_search_with_score():
     query = ["This is test string 50"]
     retrieved_elements = store.similarity_search_with_score(query, k=3)
     assert len(retrieved_elements) == 3
-    assert retrieved_elements[0][0].page_content == "This is test string 50"
+    assert retrieved_elements[0][0].content == "This is test string 50"
     assert retrieved_elements[0][1] == 0.0
-    assert retrieved_elements[1][0].page_content == "This is test string 49"
+    assert retrieved_elements[1][0].content == "This is test string 49"
     assert retrieved_elements[1][1] == 8.0
-    assert retrieved_elements[2][0].page_content == "This is test string 51"
+    assert retrieved_elements[2][0].content == "This is test string 51"
     assert retrieved_elements[2][1] == 8.0

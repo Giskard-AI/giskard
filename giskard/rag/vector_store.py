@@ -10,15 +10,12 @@ class Document:
     """A class to wrap the elements of the knowledge base into a unified format."""
 
     def __init__(self, document: dict, features: Optional[Sequence] = None):
-        if len(document) == 1:
-            self.page_content = list(document.values())[0]
-        elif features is not None and any([feat in document for feat in features]):
-            if len(features) == 1:
-                self.page_content = document[features[0]]
-            else:
-                self.page_content = "\n".join([f"{feat}: {document[feat]}" for feat in features])
+        features = features if features is not None else list(document.keys())
+
+        if len(features) == 1:
+            self.content = document[features[0]]
         else:
-            self.page_content = "\n".join([f"{key}: {value}" for key, value in document.items()])
+            self.content = "\n".join(f"{feat}: {document[feat]}" for feat in features)
 
         self.metadata = document
 
@@ -51,7 +48,7 @@ class VectorStore:
     def from_df(cls, df: pd.DataFrame, embedding_fn: Callable, features: Sequence[str] = None):
         if len(df) > 0:
             documents = [Document(knowledge_chunk, features=features) for knowledge_chunk in df.to_dict("records")]
-            raw_texts = [d.page_content for d in documents]
+            raw_texts = [d.content for d in documents]
             embeddings = embedding_fn(raw_texts).astype("float32")
             return cls(documents, embeddings, embedding_fn)
         else:
