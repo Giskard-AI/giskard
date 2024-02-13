@@ -144,10 +144,10 @@ class TestsetGenerator:
         generated_qa["question"] = out["question"]
         return generated_qa
 
-    def _generate_question_distracting_element(self, context: str):
+    def _generate_question_distracting_element(self, context: str) -> dict:
         generated_qa = self._generate_question_easy(context)
 
-        distracting_context = self._rng.choice(self._knowledge_base.documents).content
+        distracting_context = self._rng.choice(self._vector_store.documents).content
         messages = DistractingQuestionPrompt.create_messages(
             model_name=self._model_name,
             model_description=self._model_description,
