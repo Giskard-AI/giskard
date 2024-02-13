@@ -115,7 +115,7 @@ from giskard.rag import QATestset
 loaded_testset = QATestset.load("my_testset.jsonl")
 ```
 
-The test set will be an instance of {ref}`giskard.rag.QATestset`. You can save it and load it later with `QATestset.load("path/to/testset.jsonl")`.
+The test set will be an instance of {class}`~giskard.rag.QATestset`. You can save it and load it later with `QATestset.load("path/to/testset.jsonl")`.
 
 You can also convert it to a pandas DataFrame with `testset.to_pandas()`:
 
