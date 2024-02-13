@@ -1,4 +1,5 @@
 import uuid
+import warnings
 
 import numpy as np
 import pandas as pd
@@ -64,14 +65,15 @@ def test_validate_optional_target():
         my_dataset = Dataset(valid_df)
         validate_optional_target(my_dataset)
 
-    with pytest.warns(None) as record:
+    # https://docs.pytest.org/en/latest/how-to/capture-warnings.html#additional-use-cases-of-warnings-in-tests
+    with warnings.catch_warnings():
+        warnings.simplefilter("error")
+
         my_dataset = Dataset(valid_df, target=None)
         validate_optional_target(my_dataset)
 
         my_dataset = Dataset(valid_df, target="text_column")
         validate_optional_target(my_dataset)
-
-    assert len(record) == 0
 
 
 def test_valid_df_column_types():
@@ -238,8 +240,10 @@ def test_dataset_meta_info():
     mandatory_field_names = []
     optional_field_names = []
     for name, field in get_fields(klass).items():
-        mandatory_field_names.append(get_name(name, field)) if is_required(field) else optional_field_names.append(
-            get_name(name, field)
+        (
+            mandatory_field_names.append(get_name(name, field))
+            if is_required(field)
+            else optional_field_names.append(get_name(name, field))
         )
     assert set(mandatory_field_names) == set(MANDATORY_FIELDS)
     assert set(optional_field_names) == set(OPTIONAL_FIELDS)
