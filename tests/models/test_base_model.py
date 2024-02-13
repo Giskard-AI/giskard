@@ -61,7 +61,7 @@ def test_model_download(request):
     model: BaseModel = request.getfixturevalue("german_credit_model")
     project_key = str(uuid.uuid4())
 
-    with utils.MockedProjectCacheDir(project_key):
+    with utils.MockedProjectCacheDir():
         with utils.MockedClient(mock_all=False) as (client, mr):
             # The model needs to request files
             requested_urls = []
@@ -83,9 +83,9 @@ def test_model_download_with_cache(request):
     model: BaseModel = request.getfixturevalue("german_credit_model")
     project_key = str(uuid.uuid4())
 
-    with utils.MockedProjectCacheDir(project_key):
+    with utils.MockedProjectCacheDir():
         # Save the model to cache dir
-        utils.local_save_model_under_giskard_home_cache(model=model, project_key=project_key)
+        utils.local_save_model_under_giskard_home_cache(model=model)
 
         with utils.MockedClient(mock_all=False) as (client, mr):
             # The model is cached, can be created without further requests

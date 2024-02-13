@@ -354,12 +354,12 @@ def run_model(client: Optional[GiskardClient], params: websocket.RunModelParam, 
         if client:
             client.log_artifact(
                 tmp_dir / predictions_csv,
-                f"{params.project_key}/models/inspections/{params.inspectionId}",
+                f"models/inspections/{params.inspectionId}",
             )
         else:
             log_artifact_local(
                 tmp_dir / predictions_csv,
-                f"{params.project_key}/models/inspections/{params.inspectionId}",
+                f"models/inspections/{params.inspectionId}",
             )
 
         calculated_csv = get_file_name("calculated", "csv", params.dataset.sample)
@@ -367,12 +367,12 @@ def run_model(client: Optional[GiskardClient], params: websocket.RunModelParam, 
         if client:
             client.log_artifact(
                 tmp_dir / calculated_csv,
-                f"{params.project_key}/models/inspections/{params.inspectionId}",
+                f"models/inspections/{params.inspectionId}",
             )
         else:
             log_artifact_local(
                 tmp_dir / calculated_csv,
-                f"{params.project_key}/models/inspections/{params.inspectionId}",
+                f"models/inspections/{params.inspectionId}",
             )
     return websocket.Empty()
 
