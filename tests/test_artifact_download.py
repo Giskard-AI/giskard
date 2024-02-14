@@ -66,11 +66,10 @@ def test_download_global_test_function_from_registry():
     ],
 )
 def test_download_global_test_function_from_local(cf):
-    project_key = str(uuid.uuid4())
-    with MockedProjectCacheDir(project_key):
+    with MockedProjectCacheDir():
         cf.meta.uuid = str(uuid.uuid4())  # Regenerate a UUID to ensure not loading from registry
 
-        local_save_artifact_under_giskard_home_cache(cf, project_key=None)
+        local_save_artifact_under_giskard_home_cache(cf)
 
         # Load from registry using uuid without client
         download_cf = cf.__class__.download(uuid=cf.meta.uuid, client=None, project_key=None)
@@ -91,7 +90,7 @@ def test_download_global_test_function_from_local(cf):
 def test_download_callable_function(cf: Artifact):
     with MockedClient(mock_all=False) as (client, mr):
         cf.meta.uuid = str(uuid.uuid4())  # Regenerate a UUID to ensure not loading from registry
-        cache_dir = get_local_cache_callable_artifact(project_key=None, artifact=cf)
+        cache_dir = get_local_cache_callable_artifact(artifact=cf)
 
         # Save to temp
         with tempfile.TemporaryDirectory() as tmpdir:
@@ -118,7 +117,7 @@ def test_download_callable_function(cf: Artifact):
             requested_urls.extend(register_uri_for_artifact_info(mr, cf, project_key=None))
 
             # Register for Artifacts content
-            artifacts_base_url = get_url_for_artifacts_base(cf, project_key=None)
+            artifacts_base_url = get_url_for_artifacts_base(cf)
             for file in [CALLABLE_FUNCTION_META_CACHE, CALLABLE_FUNCTION_PKL_CACHE]:
                 with open(tmpdir_path / file, "rb") as f:
                     mr.register_uri(
@@ -153,7 +152,7 @@ def test_download_callable_function(cf: Artifact):
 def test_download_global_callable_function_from_module(cf: Artifact):
     with MockedClient(mock_all=False) as (client, mr):
         cf.meta.uuid = str(uuid.uuid4())  # Regenerate a UUID to ensure not loading from registry
-        cache_dir = get_local_cache_callable_artifact(project_key=None, artifact=cf)
+        cache_dir = get_local_cache_callable_artifact(artifact=cf)
 
         requested_urls = []
         # Prepare global URL
@@ -184,10 +183,10 @@ def test_download_global_callable_function_from_module(cf: Artifact):
 def test_download_global_callable_function_from_cache(cf: Artifact):
     with MockedClient(mock_all=False) as (client, mr):
         cf.meta.uuid = str(uuid.uuid4())  # Regenerate a UUID
-        cache_dir = get_local_cache_callable_artifact(project_key=None, artifact=cf)
+        cache_dir = get_local_cache_callable_artifact(artifact=cf)
 
         # Save to local cache
-        local_save_artifact_under_giskard_home_cache(artifact=cf, project_key=None)
+        local_save_artifact_under_giskard_home_cache(artifact=cf)
         assert (cache_dir / CALLABLE_FUNCTION_PKL_CACHE).exists()
         assert (cache_dir / CALLABLE_FUNCTION_META_CACHE).exists()
 
@@ -214,9 +213,9 @@ def test_download_global_callable_function_from_cache(cf: Artifact):
 )
 def test_download_callable_function_in_project(cf: Artifact):
     project_key = str(uuid.uuid4())
-    with MockedClient(mock_all=False) as (client, mr), MockedProjectCacheDir(project_key=project_key):
+    with MockedClient(mock_all=False) as (client, mr), MockedProjectCacheDir():
         cf.meta.uuid = str(uuid.uuid4())  # Regenerate a UUID to ensure not loading from registry
-        cache_dir = get_local_cache_callable_artifact(project_key=project_key, artifact=cf)
+        cache_dir = get_local_cache_callable_artifact(artifact=cf)
 
         # Save to temp
         with tempfile.TemporaryDirectory() as tmpdir:
@@ -243,7 +242,7 @@ def test_download_callable_function_in_project(cf: Artifact):
             requested_urls.extend(register_uri_for_artifact_info(mr, cf, project_key=project_key))
 
             # Register for Artifacts content
-            artifacts_base_url = get_url_for_artifacts_base(cf, project_key=project_key)
+            artifacts_base_url = get_url_for_artifacts_base(cf)
             for file in [CALLABLE_FUNCTION_META_CACHE, CALLABLE_FUNCTION_PKL_CACHE]:
                 with open(tmpdir_path / file, "rb") as f:
                     mr.register_uri(
@@ -277,9 +276,9 @@ def test_download_callable_function_in_project(cf: Artifact):
 )
 def test_download_callable_function_from_module_in_project(cf: Artifact):
     project_key = str(uuid.uuid4())
-    with MockedClient(mock_all=False) as (client, mr), MockedProjectCacheDir(project_key):
+    with MockedClient(mock_all=False) as (client, mr), MockedProjectCacheDir():
         cf.meta.uuid = str(uuid.uuid4())  # Regenerate a UUID to ensure not loading from registry
-        cache_dir = get_local_cache_callable_artifact(project_key=project_key, artifact=cf)
+        cache_dir = get_local_cache_callable_artifact(artifact=cf)
 
         requested_urls = []
         # Prepare global URL
@@ -309,12 +308,12 @@ def test_download_callable_function_from_module_in_project(cf: Artifact):
 )
 def test_download_callable_function_from_cache_in_project(cf: Artifact):
     project_key = str(uuid.uuid4())
-    with MockedClient(mock_all=False) as (client, mr), MockedProjectCacheDir(project_key):
+    with MockedClient(mock_all=False) as (client, mr), MockedProjectCacheDir():
         cf.meta.uuid = str(uuid.uuid4())  # Regenerate a UUID to ensure not loading from registry
-        cache_dir = get_local_cache_callable_artifact(project_key=project_key, artifact=cf)
+        cache_dir = get_local_cache_callable_artifact(artifact=cf)
 
         # Save to local cache
-        local_save_artifact_under_giskard_home_cache(artifact=cf, project_key=project_key)
+        local_save_artifact_under_giskard_home_cache(artifact=cf)
         assert (cache_dir / CALLABLE_FUNCTION_PKL_CACHE).exists()
         assert (cache_dir / CALLABLE_FUNCTION_META_CACHE).exists()
 
