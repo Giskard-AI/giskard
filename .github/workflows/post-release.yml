@@ -6,6 +6,7 @@ on:
       - post-release
       # Client payload should contain
       # version_name: vX.Y.Z (with prefix)
+      # slack_thread_id: (Also named thread_ts == thread timestamp == timestamp of the first message)
 permissions:
   contents: write
 
@@ -20,6 +21,7 @@ jobs:
           organization: Giskard-AI
           username: ${{ github.actor }}
           token: ${{ secrets.GITHUB_TOKEN }}
+
       - name: Interrupt job
         if: ${{ steps.is_organization_member.outputs.result == 'false' }}
         shell: bash
@@ -84,6 +86,9 @@ jobs:
           then
             echo "Expected wheel version ${{ env.VERSION_NUMBER }}, got $(cat WHEEL_VERSION)"
             exit 1
+          else
+            echo "Cleaning file"
+            rm -f WHEEL_VERSION
           fi
   
       # build .tar.gz sdist tarball
@@ -105,15 +110,28 @@ jobs:
       - name: Push to Pipy
         run: pdm publish --no-build --username "${{ secrets.PIPY_USERNAME }}" --password "${{ secrets.PIPY_PASSWORD }}"
 
-      - name: Post to a Slack channel
-        id: slack
+      - name: Set job success env var
+        run: |
+          echo "JOB_SUCCESS=true" >> $GITHUB_ENV
+
+      - name: "@slack Share release process completion"
+        # cancellable always() https://docs.github.com/en/actions/learn-github-actions/expressions#status-check-functions
+        if: ${{ !cancelled() }}
         uses: slackapi/slack-github-action@v1.25.0
-        with:
-          # Slack channel id, channel name, or user id to post message.
-          # See also: https://api.slack.com/methods/chat.postMessage#channels
-          # On special mentions: https://api.slack.com/reference/surfaces/formatting#special-mentions
-          channel-id: ${{ vars.SLACK_CHANNEL_ID }}
-          slack-message: "<!channel> New release: ${{ env.VERSION_NAME }} is being made !:tada:\nRelease notes there: ${{ steps.github-release.outputs.url }}"
-          # For posting a rich message using Block Kit
         env:
           SLACK_BOT_TOKEN: ${{ secrets.SLACK_BOT_TOKEN }}
+          ON_SUCCESS: |-
+            *${{ env.VERSION_NAME }}* has been published to PyPI ! :python: :tada:
+            <${{ steps.github-release.outputs.url }}|Release notes> | <https://pypi.org/project/giskard/${{ env.VERSION_NUMBER }}|PyPI> <!channel>
+          ON_FAILURE: |-
+            Could not publish *${{ env.VERSION_NAME }}* to PyPI :x:
+            <${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}|logs> <!channel>
+        with:
+          channel-id: ${{ vars.SLACK_CHANNEL_ID }}
+          slack-message: ${{ env.JOB_SUCCESS == 'true' && env.ON_SUCCESS || env.ON_FAILURE }}
+          # reploy_broadcast == also send to channel
+          payload: |
+            {
+              "thread_ts": "${{ github.event.client_payload.slack_thread_id }}",
+              "reply_broadcast": true
+            }

@@ -17,7 +17,7 @@ catalogs/index
 :link: catalogs/index.html
 ::::
 
-::::{grid-item-card} <br/><h3>📊  ML models vulnerabilities</h3>
+::::{grid-item-card} <br/><h3>📊 ML models vulnerabilities</h3>
 :text-align: center
 :link: key_vulnerabilities/index.html
 ::::

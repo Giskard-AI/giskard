@@ -14,6 +14,7 @@ getting_started/quickstart/index
 
 open_source/installation_library/index
 open_source/scan/index
+open_source/testset_generation/index
 open_source/customize_tests/index
 open_source/integrate_tests/index
 ```
@@ -74,6 +75,7 @@ cli/index
 reference/models/index
 reference/datasets/index
 reference/scan/index
+reference/rag-toolset/index
 reference/tests/index
 reference/slicing-functions/index
 reference/transformation-functions/index
