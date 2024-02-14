@@ -108,10 +108,10 @@ def test_websocket_actor_run_model_internal(data, model, sample, request):
     project_key = str(uuid.uuid4())  # Use a UUID to separate the resources used by the tests
     inspection_id = 0
 
-    with utils.MockedProjectCacheDir(project_key):
+    with utils.MockedProjectCacheDir():
         # Prepare dataset and model
-        utils.local_save_model_under_giskard_home_cache(model, project_key)
-        utils.local_save_dataset_under_giskard_home_cache(dataset, project_key)
+        utils.local_save_model_under_giskard_home_cache(model)
+        utils.local_save_dataset_under_giskard_home_cache(dataset)
 
         params = websocket.RunModelParam(
             model=websocket.ArtifactRef(project_key=project_key, id=str(model.id)),
@@ -123,7 +123,7 @@ def test_websocket_actor_run_model_internal(data, model, sample, request):
         reply = listener.run_model(client=None, params=params)
         assert isinstance(reply, websocket.Empty)
         # Inspection are logged locally
-        inspection_path = settings.home_dir / "projects" / project_key / "models" / "inspections" / str(inspection_id)
+        inspection_path = settings.home_dir / "artifacts" / "models" / "inspections" / str(inspection_id)
         assert (inspection_path / get_file_name("predictions", "csv", sample)).exists()
         assert (inspection_path / get_file_name("calculated", "csv", sample)).exists()
         # Clean up
@@ -147,7 +147,7 @@ def test_websocket_actor_run_model(data, model, sample, request):
     project_key = str(uuid.uuid4())  # Use a UUID to separate the resources used by the tests
     inspection_id = 0
 
-    with utils.MockedProjectCacheDir(project_key):
+    with utils.MockedProjectCacheDir():
         params = websocket.RunModelParam(
             model=websocket.ArtifactRef(project_key=project_key, id=str(model.id)),
             dataset=websocket.ArtifactRef(project_key=project_key, id=str(dataset.id), sample=sample),
@@ -176,10 +176,10 @@ def test_websocket_actor_run_model_for_data_frame_regression(internal, request):
 
     project_key = str(uuid.uuid4())  # Use a UUID to separate the resources used by the tests
 
-    with utils.MockedProjectCacheDir(project_key), utils.MockedClient(mock_all=False) as (client, mr):
+    with utils.MockedProjectCacheDir(), utils.MockedClient(mock_all=False) as (client, mr):
         # Prepare model
         if internal:
-            utils.local_save_model_under_giskard_home_cache(model, project_key)
+            utils.local_save_model_under_giskard_home_cache(model)
         else:
             utils.register_uri_for_model_meta_info(mr, model, project_key)
             utils.register_uri_for_model_artifact_info(mr, model, project_key, register_file_contents=True)
@@ -216,10 +216,10 @@ def test_websocket_actor_run_model_for_data_frame_classification(internal, reque
 
     project_key = str(uuid.uuid4())  # Use a UUID to separate the resources used by the tests
 
-    with utils.MockedProjectCacheDir(project_key), utils.MockedClient(mock_all=False) as (client, mr):
+    with utils.MockedProjectCacheDir(), utils.MockedClient(mock_all=False) as (client, mr):
         # Prepare model
         if internal:
-            utils.local_save_model_under_giskard_home_cache(model, project_key)
+            utils.local_save_model_under_giskard_home_cache(model)
         else:
             utils.register_uri_for_model_meta_info(mr, model, project_key)
             utils.register_uri_for_model_artifact_info(mr, model, project_key, register_file_contents=True)
@@ -256,10 +256,10 @@ def test_websocket_actor_explain_ws_internal(data, model, request):
 
     project_key = str(uuid.uuid4())  # Use a UUID to separate the resources used by the tests
 
-    with utils.MockedProjectCacheDir(project_key):
+    with utils.MockedProjectCacheDir():
         # Prepare model and dataset
-        utils.local_save_model_under_giskard_home_cache(model, project_key)
-        utils.local_save_dataset_under_giskard_home_cache(dataset, project_key)
+        utils.local_save_model_under_giskard_home_cache(model)
+        utils.local_save_dataset_under_giskard_home_cache(dataset)
 
         params = websocket.ExplainParam(
             model=websocket.ArtifactRef(project_key=project_key, id=str(model.id)),
@@ -278,7 +278,7 @@ def test_websocket_actor_explain_ws(data, model, request):
 
     project_key = str(uuid.uuid4())  # Use a UUID to separate the resources used by the tests
 
-    with utils.MockedProjectCacheDir(project_key), utils.MockedClient(mock_all=False) as (client, mr):
+    with utils.MockedProjectCacheDir(), utils.MockedClient(mock_all=False) as (client, mr):
         # Prepare model and dataset
         utils.register_uri_for_model_meta_info(mr, model, project_key)
         utils.register_uri_for_model_artifact_info(mr, model, project_key, register_file_contents=True)
@@ -301,10 +301,10 @@ def test_websocket_actor_explain_text_ws_regression(internal, request):
 
     project_key = str(uuid.uuid4())  # Use a UUID to separate the resources used by the tests
 
-    with utils.MockedProjectCacheDir(project_key), utils.MockedClient(mock_all=False) as (client, mr):
+    with utils.MockedProjectCacheDir(), utils.MockedClient(mock_all=False) as (client, mr):
         # Prepare model and dataset
         if internal:
-            utils.local_save_model_under_giskard_home_cache(model, project_key)
+            utils.local_save_model_under_giskard_home_cache(model)
         else:
             utils.register_uri_for_model_meta_info(mr, model, project_key)
             utils.register_uri_for_model_artifact_info(mr, model, project_key, register_file_contents=True)
@@ -334,9 +334,9 @@ def test_websocket_actor_explain_text_ws_not_text(request):
 
     project_key = str(uuid.uuid4())  # Use a UUID to separate the resources used by the tests
 
-    with utils.MockedProjectCacheDir(project_key), utils.MockedClient(mock_all=False) as (client, mr):
+    with utils.MockedProjectCacheDir(), utils.MockedClient(mock_all=False) as (client, mr):
         # Prepare model and dataset
-        utils.local_save_model_under_giskard_home_cache(model, project_key)
+        utils.local_save_model_under_giskard_home_cache(model)
 
         not_text_feature_name = None
         for col_name, col_type in dataset.column_types.items():
@@ -362,10 +362,10 @@ def test_websocket_actor_explain_text_ws_classification(internal, request):
 
     project_key = str(uuid.uuid4())  # Use a UUID to separate the resources used by the tests
 
-    with utils.MockedProjectCacheDir(project_key), utils.MockedClient(mock_all=False) as (client, mr):
+    with utils.MockedProjectCacheDir(), utils.MockedClient(mock_all=False) as (client, mr):
         # Prepare model and dataset
         if internal:
-            utils.local_save_model_under_giskard_home_cache(model, project_key)
+            utils.local_save_model_under_giskard_home_cache(model)
         else:
             utils.register_uri_for_model_meta_info(mr, model, project_key)
             utils.register_uri_for_model_artifact_info(mr, model, project_key, register_file_contents=True)
@@ -396,10 +396,10 @@ def test_websocket_actor_dataset_processing_empty(internal, request):
 
     project_key = str(uuid.uuid4())  # Use a UUID to separate the resources used by the tests
 
-    with utils.MockedProjectCacheDir(project_key), utils.MockedClient(mock_all=False) as (client, mr):
+    with utils.MockedProjectCacheDir(), utils.MockedClient(mock_all=False) as (client, mr):
         # Prepare dataset
         if internal:
-            utils.local_save_dataset_under_giskard_home_cache(dataset, project_key)
+            utils.local_save_dataset_under_giskard_home_cache(dataset)
         else:
             utils.register_uri_for_dataset_meta_info(mr, dataset, project_key)
             utils.register_uri_for_dataset_artifact_info(mr, dataset, project_key, register_file_contents=True)
@@ -437,9 +437,9 @@ def test_websocket_actor_dataset_processing_head_slicing_with_cache(callable_und
     project_key = str(uuid.uuid4())  # Use a UUID to separate the resources used by the tests
     callable_function_project_key = project_key if callable_under_project else None
 
-    with utils.MockedProjectCacheDir(project_key):
+    with utils.MockedProjectCacheDir():
         # Prepare dataset
-        utils.local_save_dataset_under_giskard_home_cache(dataset, project_key)
+        utils.local_save_dataset_under_giskard_home_cache(dataset)
 
         head_slice.meta.uuid = str(uuid.uuid4())
 
@@ -487,9 +487,9 @@ def test_websocket_actor_dataset_processing_do_nothing_transform_with_cache(call
 
     project_key = str(uuid.uuid4())  # Use a UUID to separate the resources used by the tests
 
-    with utils.MockedProjectCacheDir(project_key):
+    with utils.MockedProjectCacheDir():
         # Prepare dataset
-        utils.local_save_dataset_under_giskard_home_cache(dataset, project_key)
+        utils.local_save_dataset_under_giskard_home_cache(dataset)
         callable_function_project_key = project_key if callable_under_project else None
 
         do_nothing.meta.uuid = str(uuid.uuid4())
@@ -529,9 +529,9 @@ def test_websocket_actor_create_sub_dataset(request):
     dataset: Dataset = request.getfixturevalue("enron_data")
     project_key = str(uuid.uuid4())
 
-    with utils.MockedProjectCacheDir(project_key=project_key), utils.MockedClient(mock_all=False) as (client, mr):
+    with utils.MockedProjectCacheDir(), utils.MockedClient(mock_all=False) as (client, mr):
         # Prepare dataset
-        utils.local_save_dataset_under_giskard_home_cache(dataset, project_key)
+        utils.local_save_dataset_under_giskard_home_cache(dataset)
         utils.register_uri_for_dataset_meta_info(mr, dataset, project_key)
 
         # Prepare dataset upload requests

@@ -55,6 +55,17 @@ jobs:
           if-no-files-found: error
           retention-days: 1
 
+      - name: "@slack Release process started"
+        id: slack
+        uses: slackapi/slack-github-action@v1.25.0
+        with:
+          channel-id: ${{ vars.SLACK_CHANNEL_ID }}
+          slack-message: |-
+            Release *v${{ inputs.version }}* is on the way :rocket:
+            <${{ github.server_url }}/${{ github.actor }}|@${{ github.actor }}> | <${{ github.server_url }}/${{ github.repository }}/commit/${{ github.sha }}|commit> <!channel>
+        env:
+          SLACK_BOT_TOKEN: ${{ secrets.SLACK_BOT_TOKEN }}
+
       - name: Trigger release process in giskard-hub
         uses: peter-evans/repository-dispatch@v3
         with:
@@ -63,5 +74,6 @@ jobs:
           repository: ${{ github.repository_owner }}/giskard-hub
           client-payload: |
             {
-              "version_name": "v${{ inputs.version }}"
+              "version_name": "v${{ inputs.version }}",
+              "slack_thread_id": "${{ steps.slack.outputs.thread_ts }}"
             }

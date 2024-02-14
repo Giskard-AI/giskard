@@ -32,10 +32,13 @@ class TransformationFunction(RegistryArtifact[DatasetProcessFunctionMeta]):
     def _get_name(cls) -> str:
         return "transformations"
 
-    def __init__(self, func: Optional[TransformationFunctionType], row_level=True, cell_level=False):
+    def __init__(
+        self, func: Optional[TransformationFunctionType], row_level=True, cell_level=False, needs_dataset=False
+    ):
         self.func = func
         self.row_level = row_level
         self.cell_level = cell_level
+        self.needs_dataset = needs_dataset
 
         test_uuid = get_object_uuid(func)
         meta = tests_registry.get_test(test_uuid)
@@ -99,6 +102,7 @@ def transformation_function(
     cell_level=False,
     name=None,
     tags: Optional[List[str]] = None,
+    needs_dataset=False,
 ):
     """
     Decorator that registers a function as a transformation function and returns a TransformationFunction instance.
@@ -130,7 +134,7 @@ def transformation_function(
 
         if inspect.isclass(func) and issubclass(func, TransformationFunction):
             return func
-        return _wrap_transformation_function(func, row_level, cell_level)()
+        return _wrap_transformation_function(func, row_level, cell_level, needs_dataset)()
 
     if callable(_fn):
         return functools.wraps(_fn)(inner(_fn))
@@ -138,11 +142,17 @@ def transformation_function(
         return inner
 
 
-def _wrap_transformation_function(original: Callable, row_level: bool, cell_level: bool):
-    transformation_fn = functools.wraps(original)(TransformationFunction(original, row_level, cell_level))
+def _wrap_transformation_function(original: Callable, row_level: bool, cell_level: bool, needs_dataset: bool):
+    transformation_fn = functools.wraps(original)(
+        TransformationFunction(original, row_level, cell_level, needs_dataset)
+    )
 
     if not cell_level:
-        validate_arg_type(transformation_fn, 0, pd.Series if row_level else pd.DataFrame)
+        from ..datasets import Dataset
+
+        validate_arg_type(
+            transformation_fn, 0, pd.Series if row_level else (Dataset if needs_dataset else pd.DataFrame)
+        )
 
     drop_arg(transformation_fn, 0)
 

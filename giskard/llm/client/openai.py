@@ -3,6 +3,7 @@ from typing import Dict, List, Optional, Sequence
 import json
 from abc import ABC, abstractmethod
 
+import numpy as np
 from tenacity import retry, retry_if_exception_type, stop_after_attempt, wait_exponential
 
 from ..config import LLMConfigurationError
@@ -22,6 +23,8 @@ AUTH_ERROR_MESSAGE = (
 
 
 class BaseOpenAIClient(LLMClient, ABC):
+    _max_embedding_chunk_size = 2048
+
     def __init__(self, model: str):
         self._logger = LLMLogger()
         self.model = model
@@ -65,9 +68,9 @@ class BaseOpenAIClient(LLMClient, ABC):
         result = {
             "role": response.role,
             "content": response.content,
-            "function_call": BaseOpenAIClient._serialize_function_call(response.function_call)
-            if response.function_call
-            else None,
+            "function_call": (
+                BaseOpenAIClient._serialize_function_call(response.function_call) if response.function_call else None
+            ),
             "tool_calls": BaseOpenAIClient._serialize_tool_calls(response.tool_calls) if response.tool_calls else None,
         }
 
@@ -100,12 +103,16 @@ class BaseOpenAIClient(LLMClient, ABC):
         return LLMMessage(
             role=response["role"],
             content=response["content"],
-            function_call=BaseOpenAIClient._parse_function_call(response["function_call"])
-            if "function_call" in response and response["function_call"] is not None
-            else None,
-            tool_calls=BaseOpenAIClient._parse_tool_calls(response["tool_calls"])
-            if "tool_calls" in response and response["tool_calls"] is not None
-            else None,
+            function_call=(
+                BaseOpenAIClient._parse_function_call(response["function_call"])
+                if "function_call" in response and response["function_call"] is not None
+                else None
+            ),
+            tool_calls=(
+                BaseOpenAIClient._parse_tool_calls(response["tool_calls"])
+                if "tool_calls" in response and response["tool_calls"] is not None
+                else None
+            ),
         )
 
     def complete(
@@ -134,6 +141,18 @@ class BaseOpenAIClient(LLMClient, ABC):
         )
 
         return BaseOpenAIClient._parse_message(llm_message)
+
+    @abstractmethod
+    def _embeddings_generation(self, texts: Sequence[str], model: str):
+        ...
+
+    def embeddings(
+        self, texts: Sequence[str], model: str = "text-embedding-ada-002", chunk_size: int = 2048
+    ) -> np.ndarray:
+        chunks_indices = range(chunk_size, len(texts), chunk_size)
+        chunks = np.split(texts, chunks_indices)
+        embedded_chunks = [self._embeddings_generation(chunk, model) for chunk in chunks]
+        return np.stack([emb for embeddings in embedded_chunks for emb in embeddings])
 
 
 class LegacyOpenAIClient(BaseOpenAIClient):
@@ -192,6 +211,20 @@ class LegacyOpenAIClient(BaseOpenAIClient):
 
         return completion["choices"][0]["message"]
 
+    def _embeddings_generation(self, texts: Sequence[str], model: str):
+        try:
+            out = openai.Embedding.create(input=list(texts), engine=model)
+            embeddings = [element["embedding"] for element in out["data"]]
+        except openai.error.InvalidRequestError as err:
+            raise ValueError(
+                f"The embedding model: '{model}' was not found,"
+                "make sure the model is correctly deployed on your endpoint."
+            ) from err
+        except Exception as err:
+            raise RuntimeError("Embedding creation failed.") from err
+
+        return embeddings
+
 
 class OpenAIClient(BaseOpenAIClient):
     def __init__(self, model: str, client=None):
@@ -240,3 +273,18 @@ class OpenAIClient(BaseOpenAIClient):
         )
 
         return completion.choices[0].message.model_dump()
+
+    def _embeddings_generation(self, texts: Sequence[str], model: str):
+        try:
+            out = self._client.embeddings.create(input=list(texts), model=model)
+            embeddings = [element.embedding for element in out.data]
+        except openai.NotFoundError as err:
+            raise ValueError(
+                f"The embedding model: '{model}' was not found,"
+                "make sure the model is correctly deployed on "
+                f"the specified endpoint: {self._client._base_url}."
+            ) from err
+        except Exception as err:
+            raise RuntimeError("Embedding creation failed.") from err
+
+        return embeddings

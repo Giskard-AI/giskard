@@ -3,6 +3,8 @@ from typing import Any, Dict, List, Optional, Sequence
 from abc import ABC, abstractmethod
 from dataclasses import dataclass
 
+import numpy as np
+
 from .logger import LLMLogger
 
 
@@ -22,9 +24,9 @@ class LLMToolCall:
 @dataclass
 class LLMMessage:
     role: str
-    content: Optional[str]
-    function_call: Optional[LLMFunctionCall]
-    tool_calls: Optional[List[LLMToolCall]]
+    content: Optional[str] = None
+    function_call: Optional[LLMFunctionCall] = None
+    tool_calls: Optional[List[LLMToolCall]] = None
 
     @staticmethod
     def create_message(role: str, content: str):
@@ -49,4 +51,8 @@ class LLMClient(ABC):
         tools=None,
         tool_choice=None,
     ) -> LLMMessage:
+        ...
+
+    @abstractmethod
+    def embeddings(self, text) -> np.ndarray:
         ...

@@ -497,7 +497,7 @@ class Dataset(ColumnMetadataMixin):
 
         with tempfile.TemporaryDirectory(prefix="giskard-dataset-") as local_path:
             original_size_bytes, compressed_size_bytes = self.save(Path(local_path), dataset_id)
-            client.log_artifacts(local_path, posixpath.join(project_key, "datasets", dataset_id))
+            client.log_artifacts(local_path, posixpath.join("datasets", dataset_id))
             client.save_dataset_meta(
                 project_key,
                 dataset_id,
@@ -573,7 +573,7 @@ class Dataset(ColumnMetadataMixin):
         Returns:
             Dataset: A Dataset object that represents the downloaded dataset.
         """
-        local_dir = settings.home_dir / settings.cache_dir / project_key / "datasets" / dataset_id
+        local_dir = settings.home_dir / settings.cache_dir / "datasets" / dataset_id
 
         if client is None:
             # internal worker case, no token based http client
@@ -589,7 +589,7 @@ class Dataset(ColumnMetadataMixin):
                     category_features=saved_meta["category_features"],
                 )
         else:
-            client.load_artifact(local_dir, posixpath.join(project_key, "datasets", dataset_id))
+            client.load_artifact(local_dir, posixpath.join("datasets", dataset_id))
             meta: DatasetMeta = client.load_dataset_meta(project_key, dataset_id)
 
         df = cls.load(local_dir / get_file_name("data", "csv.zst", sample))
