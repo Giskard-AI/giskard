@@ -1,4 +1,4 @@
-from typing import Sequence
+from typing import Any, Dict, Sequence
 
 from abc import abstractmethod
 
@@ -78,3 +78,6 @@ class PerRowRequirementEvaluator(BaseRequirementEvaluator):
 
     def requirements(self, row_idx):
         return "\n".join([f"- {self.prefix}{r}" for r in self.requirements_df.iloc[row_idx]])
+
+    def _get_metadata(self, row_idx, *args, **kwargs) -> Dict[str, Any]:
+        return {"Requirement": self.requirements(row_idx)}
