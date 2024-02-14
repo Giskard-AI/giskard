@@ -14,6 +14,7 @@ LLM-as-a-judge
 .. autofunction:: giskard.testing.tests.llm.test_llm_output_against_requirement_per_row
 .. autofunction:: giskard.testing.tests.llm.test_llm_single_output_against_requirement
 .. autofunction:: giskard.testing.tests.llm.test_llm_output_against_requirement
+.. autofunction:: giskard.testing.tests.llm.test_llm_correctness
 
 Ground Truth
 --------------

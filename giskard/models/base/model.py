@@ -468,7 +468,7 @@ class BaseModel(ABC):
             self.save(f)
 
             if client is not None:
-                client.log_artifacts(f, posixpath.join(project_key, "models", str(self.id)))
+                client.log_artifacts(f, posixpath.join("models", str(self.id)))
                 client.save_model_meta(project_key, self.id, self.meta, platform.python_version(), get_size(f))
         return str(self.id)
 
@@ -488,13 +488,13 @@ class BaseModel(ABC):
         Raises:
             AssertionError: If the local directory where the model should be saved does not exist.
         """
-        local_dir = settings.home_dir / settings.cache_dir / project_key / "models" / model_id
+        local_dir = settings.home_dir / settings.cache_dir / "models" / model_id
         if client is None:
             # internal worker case, no token based http client [deprecated, to be removed]
             assert local_dir.exists(), f"Cannot find existing model {project_key}.{model_id} in {local_dir}"
             meta_response, meta = cls.read_meta_from_local_dir(local_dir)
         else:
-            client.load_artifact(local_dir, posixpath.join(project_key, "models", model_id))
+            client.load_artifact(local_dir, posixpath.join("models", model_id))
             meta_response: ModelMetaInfo = client.load_model_meta(project_key, model_id)
             # internal worker case, no token based http client
             if not local_dir.exists():

@@ -38,9 +38,7 @@ def my_simple_test_error():
 
 @pytest.mark.parametrize("debug", [False, None])
 def test_websocket_actor_run_ad_hoc_test_no_debug(debug):
-    project_key = str(uuid.uuid4())
-
-    with utils.MockedProjectCacheDir(project_key):
+    with utils.MockedProjectCacheDir():
         params = websocket.RunAdHocTestParam(
             testUuid=my_simple_test.meta.uuid,
             arguments=[],
@@ -76,8 +74,8 @@ def same_prediction(left: BaseModel, right: BaseModel, ds: giskard.Dataset):
 def test_websocket_actor_run_ad_hoc_test_legacy_debug(enron_data: Dataset):
     project_key = str(uuid.uuid4())
 
-    with utils.MockedProjectCacheDir(project_key):
-        utils.local_save_dataset_under_giskard_home_cache(enron_data, project_key)
+    with utils.MockedProjectCacheDir():
+        utils.local_save_dataset_under_giskard_home_cache(enron_data)
 
         params = websocket.RunAdHocTestParam(
             testUuid=my_simple_test_legacy_debug.meta.uuid,
@@ -111,8 +109,8 @@ def test_websocket_actor_run_ad_hoc_test_legacy_debug(enron_data: Dataset):
 def test_websocket_actor_run_ad_hoc_test_legacy_no_client(enron_data: Dataset):
     project_key = str(uuid.uuid4())
 
-    with utils.MockedProjectCacheDir(project_key):
-        utils.local_save_dataset_under_giskard_home_cache(enron_data, project_key)
+    with utils.MockedProjectCacheDir():
+        utils.local_save_dataset_under_giskard_home_cache(enron_data)
 
         params = websocket.RunAdHocTestParam(
             testUuid=my_simple_test_legacy_debug.meta.uuid,
@@ -136,8 +134,8 @@ def test_websocket_actor_run_ad_hoc_test_legacy_no_client(enron_data: Dataset):
 def test_websocket_actor_run_ad_hoc_test_legacy_no_project_key(enron_data: Dataset):
     project_key = str(uuid.uuid4())
 
-    with utils.MockedProjectCacheDir(project_key):
-        utils.local_save_dataset_under_giskard_home_cache(enron_data, project_key)
+    with utils.MockedProjectCacheDir():
+        utils.local_save_dataset_under_giskard_home_cache(enron_data)
 
         params = websocket.RunAdHocTestParam(
             testUuid=my_simple_test_legacy_debug.meta.uuid,
@@ -169,8 +167,8 @@ def my_simple_test_debug(dataset: Dataset, debug: bool = False):
 def test_websocket_actor_run_ad_hoc_test_debug(enron_data: Dataset):
     project_key = str(uuid.uuid4())
 
-    with utils.MockedProjectCacheDir(project_key):
-        utils.local_save_dataset_under_giskard_home_cache(enron_data, project_key)
+    with utils.MockedProjectCacheDir():
+        utils.local_save_dataset_under_giskard_home_cache(enron_data)
 
         params = websocket.RunAdHocTestParam(
             testUuid=my_simple_test_debug.meta.uuid,
@@ -218,14 +216,14 @@ def my_simple_test_debug_multiple_datasets(dataset: Dataset, dataset2: Dataset, 
 def test_websocket_actor_run_ad_hoc_test_debug_multiple_datasets(enron_data: Dataset):
     project_key = str(uuid.uuid4())
 
-    with utils.MockedProjectCacheDir(project_key):
-        utils.local_save_dataset_under_giskard_home_cache(enron_data, project_key)
+    with utils.MockedProjectCacheDir():
+        utils.local_save_dataset_under_giskard_home_cache(enron_data)
 
         # Create the second dataset
         dataset2 = enron_data.copy()
         dataset2.original_id = uuid.uuid4()
         dataset2.id = dataset2.original_id
-        utils.local_save_dataset_under_giskard_home_cache(dataset2, project_key)
+        utils.local_save_dataset_under_giskard_home_cache(dataset2)
 
         params = websocket.RunAdHocTestParam(
             testUuid=my_simple_test_debug_multiple_datasets.meta.uuid,
@@ -281,8 +279,8 @@ def my_simple_test_legacy_debug_no_name(dataset: Dataset, debug: bool = False):
 def test_websocket_actor_run_ad_hoc_test_legacy_debug_no_name(enron_data: Dataset):
     project_key = str(uuid.uuid4())
 
-    with utils.MockedProjectCacheDir(project_key):
-        utils.local_save_dataset_under_giskard_home_cache(enron_data, project_key)
+    with utils.MockedProjectCacheDir():
+        utils.local_save_dataset_under_giskard_home_cache(enron_data)
 
         params = websocket.RunAdHocTestParam(
             testUuid=my_simple_test_legacy_debug_no_name.meta.uuid,

@@ -34,7 +34,7 @@ from giskard.ml_worker.websocket import (
 )
 from giskard.ml_worker.websocket.action import MLWorkerAction
 from giskard.models.base import BaseModel
-from giskard.path_utils import projects_dir
+from giskard.path_utils import artifacts_dir
 from giskard.registry.registry import tests_registry
 from giskard.registry.slicing_function import SlicingFunction
 from giskard.registry.transformation_function import TransformationFunction
@@ -133,9 +133,9 @@ def log_artifact_local(local_file, artifact_path=None):
     file_name = os.path.basename(local_file)
 
     if artifact_path:
-        artifact_file = projects_dir / artifact_path / file_name
+        artifact_file = artifacts_dir / artifact_path / file_name
     else:
-        artifact_file = projects_dir / file_name
+        artifact_file = artifacts_dir / file_name
     artifact_file.parent.mkdir(parents=True, exist_ok=True)
 
     shutil.copy(local_file, artifact_file)
