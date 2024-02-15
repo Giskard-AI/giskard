@@ -173,6 +173,11 @@ If you are not working in a notebook or want to save the results for later, you 
 ```python
 scan_results.to_html("model_scan_results.html")
 ```
+>  #### 💡 Customize your scan
+>
+> Check our [Advanced scan usage page](https://docs.giskard.ai/en/latest/open_source/scan/advanced_scan/index.html), if you want to:
+>   - Scan with only some **specific detectors**
+>   - Make the scan **faster**
 
 ## What's next? 
 

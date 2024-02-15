@@ -3,27 +3,29 @@
 > ⚠️ **The RAG toolset is currently in early version and is subject to change**. Feel free to reach out on our [Discord server](https://discord.gg/fkv7CAr3FE) if you have any trouble with test set generation or to provide feedback.
 
 
-The Giskard python library provides a toolset dedicated to Retrieval Augmented Generative models (RAGs) that generates question & answer pairs from the knowledge base of the model. The generated test set is then used to evaluate your model. 
+The Giskard python library provides a toolset dedicated to Retrieval Augmented Generative models (RAGs) that generates a list of `question`, `reference_answer` and `reference_context` from the knowledge base of the model. The generated test set is then used to evaluate your RAG model. All questions are asked to your model and its answers are compared against the reference answers to create a score. 
 
 (difficulty_levels)=
 ## Generate questions with difficulty levels
 
-You can currently generate questions with three difficulty levels:
+You can currently generate questions with three difficulty levels. These three difficulty levels allow you to evaluate different components of your model.
 
 ```{list-table}
 :header-rows: 1
-:widths: 35, 65
+:widths: 28, 42, 30
 * - Difficulty Level
   - Description
+  - Targeted RAG component
 * - **1: Easy questions**
   - Simple questions generated from an excerpt of the knowledge base
+  - Basic retrieval and LLM generation
 * - **2: Complex questions**
   - Questions made more complex by paraphrasing
+  - LLM understanding and generation 
 * - **3: Distracting questions**
   - Questions made even more difficult by adding a distracting element which is related to the knowledge base but irrelevant to the question
+  - Robustness of retrieval
 ```
-
-These three difficulty levels allow you to evaluate different components of your model. Easy questions are directly generated from your knowledge base. They assess the quality of the answer generation from the context, i.e. the quality of the LLM answer. Complex and distracting questions are more challenging as they can perturb the retrieval component of the RAG. These questions are more realistic of a user seeking precise information with your model.
 
 ## Before starting
 
