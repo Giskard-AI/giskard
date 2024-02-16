@@ -110,7 +110,7 @@ html_theme_options = {
 add_function_parentheses = False
 # Do not execute the notebooks when building the docs
 docs_version = os.getenv("READTHEDOCS_VERSION", "latest")
-if docs_version == "latest":
+if docs_version == "latest" or docs_version == "stable":
     branch = "main"
 else:
     branch = docs_version.replace("-", "/")
