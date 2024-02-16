@@ -2,6 +2,7 @@ from typing import Optional, Sequence, Union
 
 import json
 import logging
+import uuid
 from enum import Enum
 
 import numpy as np
@@ -127,11 +128,11 @@ class TestsetGenerator:
         )
 
         generated_qa = self._llm_complete(messages=messages)
-        generated_qa["difficulty"] = DifficultyLevel.EASY
-        return generated_qa
+        question_metadata = {"difficulty": DifficultyLevel.EASY}
+        return generated_qa, question_metadata
 
     def _generate_question_complex(self, context: str) -> dict:
-        generated_qa = self._generate_question_easy(context)
+        generated_qa, question_metadata = self._generate_question_easy(context)
 
         messages = QuestionComplexificationPrompt.create_messages(
             model_name=self._model_name,
@@ -139,13 +140,13 @@ class TestsetGenerator:
             language=self._language,
             user_content=(generated_qa["question"], context),
         )
-        generated_qa["difficulty"] = DifficultyLevel.COMPLEX
+        question_metadata["difficulty"] = DifficultyLevel.COMPLEX
         out = self._llm_complete(messages=messages)
         generated_qa["question"] = out["question"]
-        return generated_qa
+        return generated_qa, question_metadata
 
     def _generate_question_distracting_element(self, context: str) -> dict:
-        generated_qa = self._generate_question_easy(context)
+        generated_qa, question_metadata = self._generate_question_easy(context)
 
         distracting_context = self._rng.choice(self._vector_store.documents).content
         messages = DistractingQuestionPrompt.create_messages(
@@ -154,10 +155,11 @@ class TestsetGenerator:
             language=self._language,
             user_content=(generated_qa["question"], generated_qa["answer"], distracting_context),
         )
-        generated_qa["difficulty"] = DifficultyLevel.DISTRACTING_ELEMENT
+        question_metadata["difficulty"] = DifficultyLevel.DISTRACTING_ELEMENT
+        question_metadata["distracting_context"] = distracting_context
         out = self._llm_complete(messages=messages)
         generated_qa["question"] = out["question"]
-        return generated_qa
+        return generated_qa, question_metadata
 
     def _get_random_document_group(self):
         seed_embedding = self._rng.choice(self._vector_store.embeddings)
@@ -226,6 +228,7 @@ class TestsetGenerator:
             difficulty = [difficulty]
 
         generated_questions = []
+        metadata = {}
         for level in difficulty:
             for idx in range(num_questions):
                 logger.info(f"Generating question {idx + 1}/{num_questions} for difficulty level {str(level)}.")
@@ -235,7 +238,7 @@ class TestsetGenerator:
                 generation_fn = self._get_generator_method(level)
 
                 try:
-                    generated_qa = generation_fn(context)
+                    generated_qa, question_metadata = generation_fn(context)
                 except Exception as e:
                     logger.error(f"Encountered error in question generation: {e}. Skipping.")
                     continue
@@ -245,8 +248,9 @@ class TestsetGenerator:
                         "question": generated_qa["question"],
                         "reference_answer": generated_qa["answer"],
                         "reference_context": context,
-                        "difficulty_level": generated_qa["difficulty"],
+                        "id": str(uuid.uuid4()),
                     }
                 )
+                metadata[generated_questions[-1]["id"]] = question_metadata
 
-        return QATestset(pd.DataFrame(generated_questions))
+        return QATestset(pd.DataFrame(generated_questions).set_index("id"), metadata=metadata)
