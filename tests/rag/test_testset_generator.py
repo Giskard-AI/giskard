@@ -5,6 +5,7 @@ import pandas as pd
 
 from giskard.llm.client import LLMMessage
 from giskard.rag import TestsetGenerator
+from giskard.rag.vector_store import Document
 
 
 def make_knowledge_base_df():
@@ -23,6 +24,45 @@ def make_knowledge_base_df():
     return knowledge_base_df
 
 
+def make_testset_generator():
+    llm_client = Mock()
+    llm_client.complete.side_effect = (
+        [
+            LLMMessage(
+                role="assistant",
+                content="""{"question": "Where is Camembert from?",
+"answer": "Camembert was created in Normandy, in the northwest of France."}""",
+            )
+        ]
+        * 5
+    )
+
+    embedding_dimension = 8
+
+    llm_client.embeddings = Mock()
+    # evenly spaced embeddings for the knowledge base elements and specifically chosen embeddings for
+    # each mock embedding calls.
+    kb_embeddings = np.ones((4, embedding_dimension)) * np.arange(4)[:, None] / 100
+    query_embeddings = np.ones((3, embedding_dimension)) * np.array([0.02, 10, 15])[:, None]
+
+    llm_client.embeddings.side_effect = [kb_embeddings]
+
+    knowledge_base_df = make_knowledge_base_df()
+
+    testset_generator = TestsetGenerator(
+        knowledge_base_df,
+        model_name="Test model",
+        model_description="This is a model for testing purpose.",
+        llm_client=llm_client,
+        context_neighbors=3,
+    )
+    testset_generator._rng = Mock()
+    testset_generator._rng.choice = Mock()
+    testset_generator._rng.choice.side_effect = list(query_embeddings) + [Document({"content": "Distracting content"})]
+
+    return testset_generator
+
+
 CONTEXT_STRING = """
 ------
 Scamorza is a Southern Italian cow's milk cheese.
@@ -35,39 +75,7 @@ Freeriding is a style of snowboarding or skiing performed on natural, un-groomed
 
 
 def test_testset_generation():
-    llm_client = Mock()
-    llm_client.complete.side_effect = (
-        [
-            LLMMessage(
-                role="assistant",
-                content="""{"question": "Where is Camembert from?",
-"answer": "Camembert was created in Normandy, in the northwest of France."}""",
-            )
-        ]
-        * 2
-    )
-
-    embedding_dimension = 8
-
-    llm_client.embeddings = Mock()
-    # evenly spaced embeddings for the knowledge base elements and specifically chosen embeddings for
-    # each mock embedding calls.
-    kb_embeddings = np.ones((4, embedding_dimension)) * np.arange(4)[:, None] / 100
-    query_embeddings = np.ones((2, embedding_dimension)) * np.array([0.02, 10])[:, None]
-
-    llm_client.embeddings.side_effect = [kb_embeddings]
-
-    knowledge_base_df = make_knowledge_base_df()
-    testset_generator = TestsetGenerator(
-        knowledge_base_df,
-        model_name="Test model",
-        model_description="This is a model for testing purpose.",
-        llm_client=llm_client,
-        context_neighbors=3,
-    )
-    testset_generator._rng = Mock()
-    testset_generator._rng.choice = Mock()
-    testset_generator._rng.choice.side_effect = list(query_embeddings)
+    testset_generator = make_testset_generator()
 
     assert testset_generator._vector_store.index.d == 8
     assert testset_generator._vector_store.embeddings.shape == (4, 8)
@@ -82,10 +90,19 @@ def test_testset_generation():
 
     df = test_set.to_pandas()
 
-    assert df.loc[0, "question"] == "Where is Camembert from?"
-    assert df.loc[0, "reference_answer"] == "Camembert was created in Normandy, in the northwest of France."
-    assert df.loc[0, "reference_context"] == CONTEXT_STRING
-    assert df.loc[0, "difficulty_level"] == 1
+    assert df.iloc[0]["question"] == "Where is Camembert from?"
+    assert df.iloc[0]["reference_answer"] == "Camembert was created in Normandy, in the northwest of France."
+    assert df.iloc[0]["reference_context"] == CONTEXT_STRING
 
-    assert df.loc[1, "question"] == "Where is Camembert from?"
-    assert df.loc[1, "reference_context"] == "\n------\n"
+    assert df.iloc[1]["question"] == "Where is Camembert from?"
+    assert df.iloc[1]["reference_context"] == "\n------\n"
+
+
+def test_testset_difficulty_levels():
+    testset_generator = make_testset_generator()
+    testset = testset_generator.generate_testset(num_questions=1, difficulty=[1, 2, 3])
+    assert len(testset._metadata) == 3
+    for row_id in testset.to_pandas().index:
+        assert testset._metadata[row_id]["difficulty"] in [1, 2, 3]
+        if testset._metadata[row_id]["difficulty"] == 3:
+            assert testset._metadata[row_id]["distracting_context"] == "Distracting content"
