@@ -1,5 +1,13 @@
 from enum import Enum
 
+from sklearn.metrics import classification_report  # Classification metrics.
+from sklearn.metrics import (  # Regression metrics.
+    explained_variance_score,
+    mean_absolute_error,
+    mean_squared_error,
+    r2_score,
+)
+
 LLM_MODEL = "gpt-4-1106-preview"
 
 MODEL_INSTRUCTION = """You are an agent designed to help a user obtain information about the model and/or it's 
@@ -79,6 +87,16 @@ _PREDICT_TOOL_DESCRIPTION = (
     "that vector and finally return the prediction result."
 )
 
+_CALCULATE_METRIC_TOOL_DESCRIPTION = (
+    "Your task is to calculate a performance metric either for a classification or a "
+    "regression model on a provided dataset. You expect two parameters: a metric name, "
+    "and a dictionary with features and their values. First, you filter rows from the "
+    "dataset, if it is necessary. Then you run the model prediction on that rows or on "
+    "the whole dataset to get the prediction result. Finally, based on obtained "
+    "predictions and the ground truth labels of the dataset, you calculate the value of "
+    "a chosen performance metric and return it."
+)
+
 _SHAP_EXPLANATION_TOOL_DESCRIPTION = (
     "You expect a dictionary with feature names as keys and their values as dict "
     "values, which you use to filter rows in the dataset, then you run the SHAP "
@@ -99,5 +117,18 @@ _ISSUES_SCANNER_TOOL_DESCRIPTION = (
 
 class ToolDescription(str, Enum):
     PREDICT = _PREDICT_TOOL_DESCRIPTION
+    CALCULATE_METRIC = _CALCULATE_METRIC_TOOL_DESCRIPTION
     SHAP_EXPLANATION = _SHAP_EXPLANATION_TOOL_DESCRIPTION
     ISSUES_SCANNER = _ISSUES_SCANNER_TOOL_DESCRIPTION
+
+
+AVAILABLE_METRICS = {
+    "accuracy": classification_report,
+    "f1": classification_report,
+    "precision": classification_report,
+    "recall": classification_report,
+    "r2": r2_score,
+    "explained_variance": explained_variance_score,
+    "mse": mean_squared_error,
+    "mae": mean_absolute_error,
+}
