@@ -21,7 +21,7 @@ model_name = "uploaded model"
 
 def test_upload_df(diabetes_dataset: Dataset, diabetes_dataset_with_target: Dataset):
     artifact_url_pattern = re.compile(
-        r"http://giskard-host:12345/api/v2/artifacts/test-project/datasets/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/[data.csv.zst|giskard\-dataset\-meta.yaml]"
+        r"http://giskard-host:12345/api/v2/artifacts/datasets/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/[data.csv.zst|giskard\-dataset\-meta.yaml]"
     )
     datasets_url_pattern = re.compile("http://giskard-host:12345/api/v2/project/test-project/datasets")
 
@@ -57,7 +57,7 @@ def test_upload_df(diabetes_dataset: Dataset, diabetes_dataset_with_target: Data
 
 def _test_upload_model(model: SKLearnModel, ds: Dataset):
     artifact_url_pattern = re.compile(
-        "http://giskard-host:12345/api/v2/artifacts/test-project/models/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/.*"
+        "http://giskard-host:12345/api/v2/artifacts/models/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/.*"
     )
     models_url_pattern = re.compile("http://giskard-host:12345/api/v2/project/test-project/models")
     with MockedClient() as (client, mr):
@@ -146,14 +146,14 @@ def do_nothing(row):
 )
 def test_upload_callable_function(cf: Artifact):
     artifact_url_pattern = re.compile(
-        "http://giskard-host:12345/api/v2/artifacts/global/"
+        "http://giskard-host:12345/api/v2/artifacts/"
         + cf._get_name()
         + "/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/.*"
     )
     with MockedClient() as (client, mr):
         cf.upload(client=client, project_key=None)
         # Check local cache
-        cache_dir = get_local_cache_callable_artifact(project_key=None, artifact=cf)
+        cache_dir = get_local_cache_callable_artifact(artifact=cf)
         assert (cache_dir / CALLABLE_FUNCTION_PKL_CACHE).exists()
         assert (cache_dir / CALLABLE_FUNCTION_META_CACHE).exists()
         # Check requested URL
@@ -170,14 +170,14 @@ def test_upload_callable_function(cf: Artifact):
 )
 def test_upload_callable_function_to_project(cf: Artifact):
     artifact_url_pattern = re.compile(
-        "http://giskard-host:12345/api/v2/artifacts/test-project/"
+        "http://giskard-host:12345/api/v2/artifacts/"
         + cf._get_name()
         + "/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/.*"
     )
     with MockedClient() as (client, mr):
         cf.upload(client=client, project_key="test-project")
         # Check local cache
-        cache_dir = get_local_cache_callable_artifact(project_key="test-project", artifact=cf)
+        cache_dir = get_local_cache_callable_artifact(artifact=cf)
         assert (cache_dir / CALLABLE_FUNCTION_PKL_CACHE).exists()
         assert (cache_dir / CALLABLE_FUNCTION_META_CACHE).exists()
         # Check requested URL

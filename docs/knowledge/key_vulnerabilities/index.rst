@@ -15,4 +15,4 @@ Before testing Machine Learning models, it's crucial to have a comprehensive und
    stochasticity/index
    spurious/index
 
-By conducting a `Giskard scan <../../open_source/scan/index.md>`_, you can proactively identify and address these vulnerabilities to ensure the reliability, fairness, and robustness of your Machine Learning models.
+By conducting a `Giskard Scan <../../open_source/scan/index.md>`_, you can proactively identify and address these vulnerabilities to ensure the reliability, fairness, and robustness of your Machine Learning models.

@@ -37,9 +37,9 @@ def test_websocket_actor_get_push_do_nothing(model, data, request):
     dataset: Dataset = request.getfixturevalue(data)
 
     project_key = str(uuid.uuid4())
-    with utils.MockedClient(mock_all=False) as (client, mr), utils.MockedProjectCacheDir(project_key):
-        utils.local_save_model_under_giskard_home_cache(model, project_key)
-        utils.local_save_dataset_under_giskard_home_cache(dataset, project_key)
+    with utils.MockedClient(mock_all=False) as (client, mr), utils.MockedProjectCacheDir():
+        utils.local_save_model_under_giskard_home_cache(model)
+        utils.local_save_dataset_under_giskard_home_cache(dataset)
 
         utils.register_uri_for_model_meta_info(mr, model, project_key)
         utils.register_uri_for_dataset_meta_info(mr, dataset, project_key)
@@ -74,9 +74,9 @@ def test_websocket_actor_get_push_no_push_kind(cta_kind, request):
     dataset: Dataset = request.getfixturevalue("enron_data")
 
     project_key = str(uuid.uuid4())
-    with utils.MockedClient(mock_all=False) as (client, mr), utils.MockedProjectCacheDir(project_key):
-        utils.local_save_model_under_giskard_home_cache(model, project_key)
-        utils.local_save_dataset_under_giskard_home_cache(dataset, project_key)
+    with utils.MockedClient(mock_all=False) as (client, mr), utils.MockedProjectCacheDir():
+        utils.local_save_model_under_giskard_home_cache(model)
+        utils.local_save_dataset_under_giskard_home_cache(dataset)
 
         utils.register_uri_for_model_meta_info(mr, model, project_key)
         utils.register_uri_for_dataset_meta_info(mr, dataset, project_key)
@@ -111,9 +111,9 @@ def test_websocket_actor_get_push_no_cta_kind(push_kind, request):
     dataset: Dataset = request.getfixturevalue("enron_data")
 
     project_key = str(uuid.uuid4())
-    with utils.MockedClient(mock_all=False) as (client, mr), utils.MockedProjectCacheDir(project_key):
-        utils.local_save_model_under_giskard_home_cache(model, project_key)
-        utils.local_save_dataset_under_giskard_home_cache(dataset, project_key)
+    with utils.MockedClient(mock_all=False) as (client, mr), utils.MockedProjectCacheDir():
+        utils.local_save_model_under_giskard_home_cache(model)
+        utils.local_save_dataset_under_giskard_home_cache(dataset)
 
         utils.register_uri_for_model_meta_info(mr, model, project_key)
         utils.register_uri_for_dataset_meta_info(mr, dataset, project_key)
@@ -151,9 +151,9 @@ def test_websocket_actor_get_push_no_action(kind, row, german_credit_model, germ
     dataset = german_credit_data
 
     project_key = str(uuid.uuid4())
-    with utils.MockedClient(mock_all=False) as (client, mr), utils.MockedProjectCacheDir(project_key):
-        utils.local_save_model_under_giskard_home_cache(model, project_key)
-        utils.local_save_dataset_under_giskard_home_cache(dataset, project_key)
+    with utils.MockedClient(mock_all=False) as (client, mr), utils.MockedProjectCacheDir():
+        utils.local_save_model_under_giskard_home_cache(model)
+        utils.local_save_dataset_under_giskard_home_cache(dataset)
 
         utils.register_uri_for_model_meta_info(mr, model, project_key)
         utils.register_uri_for_dataset_meta_info(mr, dataset, project_key)
@@ -197,9 +197,9 @@ def test_websocket_actor_get_push_contribution(kind, row, cta_kind, german_credi
     dataset = german_credit_data
 
     project_key = str(uuid.uuid4())
-    with utils.MockedClient(mock_all=False) as (client, mr), utils.MockedProjectCacheDir(project_key):
-        utils.local_save_model_under_giskard_home_cache(model, project_key)
-        utils.local_save_dataset_under_giskard_home_cache(dataset, project_key)
+    with utils.MockedClient(mock_all=False) as (client, mr), utils.MockedProjectCacheDir():
+        utils.local_save_model_under_giskard_home_cache(model)
+        utils.local_save_dataset_under_giskard_home_cache(dataset)
 
         utils.register_uri_for_model_meta_info(mr, model, project_key)
         utils.register_uri_for_dataset_meta_info(mr, dataset, project_key)
@@ -251,9 +251,9 @@ def test_websocket_actor_get_push_contribution_wrong_cta(kind, row, cta_kind, ge
     dataset = german_credit_data
 
     project_key = str(uuid.uuid4())
-    with utils.MockedClient(mock_all=False) as (client, mr), utils.MockedProjectCacheDir(project_key):
-        utils.local_save_model_under_giskard_home_cache(model, project_key)
-        utils.local_save_dataset_under_giskard_home_cache(dataset, project_key)
+    with utils.MockedClient(mock_all=False) as (client, mr), utils.MockedProjectCacheDir():
+        utils.local_save_model_under_giskard_home_cache(model)
+        utils.local_save_dataset_under_giskard_home_cache(dataset)
 
         utils.register_uri_for_model_meta_info(mr, model, project_key)
         utils.register_uri_for_dataset_meta_info(mr, dataset, project_key)
@@ -299,9 +299,9 @@ def test_websocket_actor_get_push_perturbation(kind, row, cta_kind, german_credi
     dataset = german_credit_data
 
     project_key = str(uuid.uuid4())
-    with utils.MockedClient(mock_all=False) as (client, mr), utils.MockedProjectCacheDir(project_key):
-        utils.local_save_model_under_giskard_home_cache(model, project_key)
-        utils.local_save_dataset_under_giskard_home_cache(dataset, project_key)
+    with utils.MockedClient(mock_all=False) as (client, mr), utils.MockedProjectCacheDir():
+        utils.local_save_model_under_giskard_home_cache(model)
+        utils.local_save_dataset_under_giskard_home_cache(dataset)
 
         utils.register_uri_for_model_meta_info(mr, model, project_key)
         utils.register_uri_for_dataset_meta_info(mr, dataset, project_key)
@@ -356,9 +356,9 @@ def test_websocket_actor_get_push_perturbation_wrong_cta(kind, row, cta_kind, ge
     dataset = german_credit_data
 
     project_key = str(uuid.uuid4())
-    with utils.MockedClient(mock_all=False) as (client, mr), utils.MockedProjectCacheDir(project_key):
-        utils.local_save_model_under_giskard_home_cache(model, project_key)
-        utils.local_save_dataset_under_giskard_home_cache(dataset, project_key)
+    with utils.MockedClient(mock_all=False) as (client, mr), utils.MockedProjectCacheDir():
+        utils.local_save_model_under_giskard_home_cache(model)
+        utils.local_save_dataset_under_giskard_home_cache(dataset)
 
         utils.register_uri_for_model_meta_info(mr, model, project_key)
         utils.register_uri_for_dataset_meta_info(mr, dataset, project_key)
@@ -410,9 +410,9 @@ def test_websocket_actor_get_push_overconfidence_borderline_cta_save_example(
     dataset = german_credit_data
 
     project_key = str(uuid.uuid4())
-    with utils.MockedClient(mock_all=False) as (client, mr), utils.MockedProjectCacheDir(project_key):
-        utils.local_save_model_under_giskard_home_cache(model, project_key)
-        utils.local_save_dataset_under_giskard_home_cache(dataset, project_key)
+    with utils.MockedClient(mock_all=False) as (client, mr), utils.MockedProjectCacheDir():
+        utils.local_save_model_under_giskard_home_cache(model)
+        utils.local_save_dataset_under_giskard_home_cache(dataset)
 
         utils.register_uri_for_model_meta_info(mr, model, project_key)
         utils.register_uri_for_dataset_meta_info(mr, dataset, project_key)
@@ -469,9 +469,9 @@ def test_websocket_actor_get_push_overconfidence_wrong_cta(
     dataset = german_credit_data
 
     project_key = str(uuid.uuid4())
-    with utils.MockedClient(mock_all=False) as (client, mr), utils.MockedProjectCacheDir(project_key):
-        utils.local_save_model_under_giskard_home_cache(model, project_key)
-        utils.local_save_dataset_under_giskard_home_cache(dataset, project_key)
+    with utils.MockedClient(mock_all=False) as (client, mr), utils.MockedProjectCacheDir():
+        utils.local_save_model_under_giskard_home_cache(model)
+        utils.local_save_dataset_under_giskard_home_cache(dataset)
 
         utils.register_uri_for_model_meta_info(mr, model, project_key)
         utils.register_uri_for_dataset_meta_info(mr, dataset, project_key)
@@ -518,9 +518,9 @@ def test_websocket_actor_get_push_underconfidence(kind, row, cta_kind, german_cr
     dataset = german_credit_data
 
     project_key = str(uuid.uuid4())
-    with utils.MockedClient(mock_all=False) as (client, mr), utils.MockedProjectCacheDir(project_key):
-        utils.local_save_model_under_giskard_home_cache(model, project_key)
-        utils.local_save_dataset_under_giskard_home_cache(dataset, project_key)
+    with utils.MockedClient(mock_all=False) as (client, mr), utils.MockedProjectCacheDir():
+        utils.local_save_model_under_giskard_home_cache(model)
+        utils.local_save_dataset_under_giskard_home_cache(dataset)
 
         utils.register_uri_for_model_meta_info(mr, model, project_key)
         utils.register_uri_for_dataset_meta_info(mr, dataset, project_key)
@@ -581,9 +581,9 @@ def test_websocket_actor_get_push_non_underconfidence_test_cta(
     dataset = german_credit_data
 
     project_key = str(uuid.uuid4())
-    with utils.MockedClient(mock_all=False) as (client, mr), utils.MockedProjectCacheDir(project_key):
-        utils.local_save_model_under_giskard_home_cache(model, project_key)
-        utils.local_save_dataset_under_giskard_home_cache(dataset, project_key)
+    with utils.MockedClient(mock_all=False) as (client, mr), utils.MockedProjectCacheDir():
+        utils.local_save_model_under_giskard_home_cache(model)
+        utils.local_save_dataset_under_giskard_home_cache(dataset)
 
         utils.register_uri_for_model_meta_info(mr, model, project_key)
         utils.register_uri_for_dataset_meta_info(mr, dataset, project_key)
