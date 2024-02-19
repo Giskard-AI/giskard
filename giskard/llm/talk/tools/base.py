@@ -47,41 +47,7 @@ class BaseTool(ABC):
         ...
 
 
-class BasePredictTool(BaseTool, ABC):
-    def _get_feature_json_type(self) -> dict[any, str]:
-        number_columns = {column: "number" for column in self._dataset.df.select_dtypes(include=(int, float)).columns}
-        string_columns = {column: "string" for column in self._dataset.df.select_dtypes(exclude=(int, float)).columns}
-        return number_columns | string_columns
-
-    @property
-    def specification(self) -> str:
-        feature_json_type = self._get_feature_json_type()
-
-        return {
-            "type": "function",
-            "function": {
-                "name": self.name,
-                "description": self.description,
-                "parameters": {
-                    "type": "object",
-                    "properties": {
-                        "features_dict": {
-                            "type": "object",
-                            "properties": {
-                                feature: {"type": dtype} for feature, dtype in list(feature_json_type.items())
-                            },
-                        }
-                    },
-                    "required": ["features_dict"],
-                },
-            },
-        }
-
-    @abstractmethod
-    def _prepare_input(self, *args, **kwargs) -> Dataset:
-        ...
-
-    def __call__(self, features_dict: dict) -> str:
-        model_input = self._prepare_input(features_dict)
-        prediction = self._model.predict(model_input).prediction
-        return ", ".join(map(str, prediction))
+def get_feature_json_type(dataset: Dataset) -> dict[any, str]:
+    number_columns = {column: "number" for column in dataset.df.select_dtypes(include=(int, float)).columns}
+    string_columns = {column: "string" for column in dataset.df.select_dtypes(exclude=(int, float)).columns}
+    return number_columns | string_columns
