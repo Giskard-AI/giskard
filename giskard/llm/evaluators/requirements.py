@@ -58,7 +58,7 @@ class BaseRequirementEvaluator(LLMBasedEvaluator):
             model_description=model.description,
             input_vars=input_vars,
             model_output=model_output,
-            requirements=self.format_requirements(self.requirements(row_idx)),
+            requirements=self.requirements(row_idx),
         )
 
 
