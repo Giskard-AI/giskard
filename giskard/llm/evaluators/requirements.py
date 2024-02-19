@@ -47,13 +47,18 @@ class BaseRequirementEvaluator(LLMBasedEvaluator):
         """Define the evaluation requirements for a given input."""
         ...
 
+    @staticmethod
+    def format_requirements(requirements: Sequence[str], prefix: str = "") -> str:
+        list_prefix = "- " if len(requirements) > 1 else ""
+        return "\n".join([f"{list_prefix}{prefix}{r}" for r in requirements])
+
     def _make_evaluate_prompt(self, model: BaseModel, input_vars, model_output, row_idx):
         return self.eval_prompt.format(
             model_name=model.name,
             model_description=model.description,
             input_vars=input_vars,
             model_output=model_output,
-            requirements=self.requirements(row_idx),
+            requirements=self.format_requirements(self.requirements(row_idx)),
         )
 
 
@@ -65,7 +70,7 @@ class RequirementEvaluator(BaseRequirementEvaluator):
         self.requirements_list = requirements
 
     def requirements(self, row_idx):
-        return "\n".join([f"- {r}" for r in self.requirements_list])
+        return BaseRequirementEvaluator.format_requirements(self.requirements_list)
 
 
 class PerRowRequirementEvaluator(BaseRequirementEvaluator):
@@ -77,7 +82,7 @@ class PerRowRequirementEvaluator(BaseRequirementEvaluator):
         self.prefix = prefix
 
     def requirements(self, row_idx):
-        return "\n".join([f"- {self.prefix}{r}" for r in self.requirements_df.iloc[row_idx]])
+        return BaseRequirementEvaluator.format_requirements(self.requirements_df.iloc[row_idx], self.prefix)
 
     def _get_metadata(self, row_idx, *args, **kwargs) -> Dict[str, Any]:
         return {"Requirement": self.requirements(row_idx)}
