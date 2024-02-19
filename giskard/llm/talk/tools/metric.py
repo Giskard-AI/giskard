@@ -2,21 +2,16 @@ from thefuzz import fuzz
 
 from giskard.datasets.base import Dataset
 from giskard.llm.talk.config import AVAILABLE_METRICS, ToolDescription
-from giskard.llm.talk.tools.base import BaseTool
+from giskard.llm.talk.tools.base import BaseTool, get_feature_json_type
 
 
 class MetricTool(BaseTool):
     default_name: str = "calculate_metric"
     default_description: str = ToolDescription.CALCULATE_METRIC.value
 
-    def _get_feature_json_type(self) -> dict[any, str]:
-        number_columns = {column: "number" for column in self._dataset.df.select_dtypes(include=(int, float)).columns}
-        string_columns = {column: "string" for column in self._dataset.df.select_dtypes(exclude=(int, float)).columns}
-        return number_columns | string_columns
-
     @property
     def specification(self) -> str:
-        feature_json_type = self._get_feature_json_type()
+        feature_json_type = get_feature_json_type(self._dataset)
 
         return {
             "type": "function",
@@ -39,7 +34,7 @@ class MetricTool(BaseTool):
             },
         }
 
-    def _filter_from_dataset(self, row_filter: dict) -> Dataset:
+    def _get_input_from_dataset(self, row_filter: dict) -> Dataset:
         threshold = 85
 
         filtered_df = self._dataset.df.copy()
@@ -57,7 +52,7 @@ class MetricTool(BaseTool):
 
     def __call__(self, metric_type: str, features_dict: dict) -> str:
         # Get the predicted labels.
-        model_input = self._filter_from_dataset(features_dict)
+        model_input = self._get_input_from_dataset(features_dict)
         prediction = self._model.predict(model_input).prediction
 
         # Get the ground-truth labels.
@@ -65,5 +60,5 @@ class MetricTool(BaseTool):
 
         # Calculate the metric value.
         metric = AVAILABLE_METRICS[metric_type]
-        metric_score = metric(ground_truth, prediction)
-        return str(metric_score)
+        metric_value = metric(ground_truth, prediction)
+        return str(metric_value)
