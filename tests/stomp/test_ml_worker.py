@@ -245,13 +245,13 @@ def remote_titanic_dataset(patch_settings: Settings, titanic_dataset: Dataset, r
         parsed_meta_dataset["createdDate"] = "toto"
         # Mock artifact info
         requests_mock.get(
-            f"http://{patch_settings.host}:{patch_settings.ws_port}/api/v2/artifact-info/test-ml-worker-key/datasets/{titanic_dataset.id.hex}",
+            f"http://{patch_settings.host}:{patch_settings.ws_port}/api/v2/artifact-info/datasets/{titanic_dataset.id.hex}",
             json=filenames_dataset,
         )
         # Mock artifacts
         for filename in filenames_dataset:
             requests_mock.get(
-                f"http://{patch_settings.host}:{patch_settings.ws_port}/api/v2/artifacts/test-ml-worker-key/datasets/{titanic_dataset.id.hex}/{filename}",
+                f"http://{patch_settings.host}:{patch_settings.ws_port}/api/v2/artifacts/datasets/{titanic_dataset.id.hex}/{filename}",
                 content=(dataset_dir / filename).read_bytes(),
             )
 
@@ -277,12 +277,12 @@ def remote_titanic_model(
         artifacts = list(temp_dir.glob("*"))
         filenames = [f.name for f in artifacts]
         requests_mock.get(
-            f"http://{patch_settings.host}:{patch_settings.ws_port}/api/v2/artifact-info/test-ml-worker-key/models/{model_id}",
+            f"http://{patch_settings.host}:{patch_settings.ws_port}/api/v2/artifact-info/models/{model_id}",
             json=filenames,
         )
         for filename in filenames:
             requests_mock.get(
-                f"http://{patch_settings.host}:{patch_settings.ws_port}/api/v2/artifacts/test-ml-worker-key/models/{model_id}/{filename}",
+                f"http://{patch_settings.host}:{patch_settings.ws_port}/api/v2/artifacts/models/{model_id}/{filename}",
                 content=(temp_dir / filename).read_bytes(),
             )
         with (temp_dir / META_FILENAME).open() as meta:
@@ -340,11 +340,11 @@ async def test_ml_worker_model_run(
     worker = ensure_config_worker(requests_mock)
 
     mock_pred = requests_mock.post(
-        "http://127.0.0.1:6789/api/v2/artifacts/test-ml-worker-key/models/inspections/2/predictions.csv",
+        "http://127.0.0.1:6789/api/v2/artifacts/models/inspections/2/predictions.csv",
         json={},
     )
     mock_calculated = requests_mock.post(
-        "http://127.0.0.1:6789/api/v2/artifacts/test-ml-worker-key/models/inspections/2/calculated.csv",
+        "http://127.0.0.1:6789/api/v2/artifacts/models/inspections/2/calculated.csv",
         json={},
     )
 
