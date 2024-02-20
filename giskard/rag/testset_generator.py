@@ -228,7 +228,6 @@ class TestsetGenerator:
             difficulty = [difficulty]
 
         generated_questions = []
-        metadata = {}
         for level in difficulty:
             for idx in range(num_questions):
                 logger.info(f"Generating question {idx + 1}/{num_questions} for difficulty level {str(level)}.")
@@ -249,8 +248,8 @@ class TestsetGenerator:
                         "reference_answer": generated_qa["answer"],
                         "reference_context": context,
                         "id": str(uuid.uuid4()),
+                        "metadata": question_metadata,
                     }
                 )
-                metadata[generated_questions[-1]["id"]] = question_metadata
 
-        return QATestset(pd.DataFrame(generated_questions).set_index("id"), metadata=metadata)
+        return QATestset(pd.DataFrame(generated_questions).set_index("id"))

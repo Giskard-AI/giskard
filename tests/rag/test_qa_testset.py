@@ -1,5 +1,4 @@
 import pandas as pd
-import pytest
 
 from giskard.datasets.base import Dataset
 from giskard.rag import QATestset
@@ -13,43 +12,38 @@ def make_testset_df():
                 "question": "Which milk is used to make Camembert?",
                 "reference_answer": "Cow's milk is used to make Camembert.",
                 "reference_context": "Camembert is a moist, soft, creamy, surface-ripened cow's milk cheese.",
+                "metadata": {"difficulty": 1, "color": "blue"},
             },
             {
                 "id": "2",
                 "question": "Where is Scarmorza from?",
                 "reference_answer": "Scarmorza is from Southern Italy.",
                 "reference_context": "Scamorza is a Southern Italian cow's milk cheese.",
+                "metadata": {"difficulty": 1, "color": "red"},
             },
             {
                 "id": "3",
                 "question": "Where is Scarmorza from?",
                 "reference_answer": "Scarmorza is from Southern Italy.",
                 "reference_context": "Scamorza is a Southern Italian cow's milk cheese.",
+                "metadata": {"difficulty": 1, "color": "blue"},
             },
             {
                 "id": "4",
                 "question": "Where is Scarmorza from?",
                 "reference_answer": "Scarmorza is from Southern Italy.",
                 "reference_context": "Scamorza is a Southern Italian cow's milk cheese.",
+                "metadata": {"difficulty": 2, "color": "red"},
             },
             {
                 "id": "5",
                 "question": "Where is Scarmorza from?",
                 "reference_answer": "Scarmorza is from Southern Italy.",
                 "reference_context": "Scamorza is a Southern Italian cow's milk cheese.",
+                "metadata": {"difficulty": 3, "color": "blue", "distracting_context": "This is a distracting context"},
             },
         ]
     ).set_index("id")
-
-
-def make_metadata():
-    return {
-        "1": {"difficulty": 1, "color": "blue"},
-        "2": {"difficulty": 1, "color": "red"},
-        "3": {"difficulty": 1, "color": "blue"},
-        "4": {"difficulty": 2, "color": "red"},
-        "5": {"difficulty": 3, "color": "blue", "distracting_context": "This is a distracting context"},
-    }
 
 
 def test_qa_testset_creation():
@@ -57,21 +51,11 @@ def test_qa_testset_creation():
     testset = QATestset(df)
 
     assert testset._dataframe.equals(df)
-
-    metadata = make_metadata()
-    testset = QATestset(df, metadata)
-    assert testset._metadata == metadata
-
-    with pytest.raises(ValueError, match="At least one metadata id is not in the dataframe index."):
-        testset = QATestset(df.drop("3"), metadata)
-
-    with pytest.raises(ValueError, match="At least one dataframe id is not in the metadata."):
-        del metadata["1"]
-        testset = QATestset(df, metadata)
+    assert testset._dataframe["metadata"].iloc[2] == {"difficulty": 1, "color": "blue"}
 
 
 def test_testset_to_pandas_conversion():
-    testset = QATestset(make_testset_df(), make_metadata())
+    testset = QATestset(make_testset_df())
 
     df = testset.to_pandas()
 
@@ -79,12 +63,12 @@ def test_testset_to_pandas_conversion():
 
     df = testset.to_pandas(filters={"difficulty": [1]})
     assert len(df) == 3
-    assert all(testset._metadata[idx]["difficulty"] == 1 for idx in df.index)
+    assert all(testset._dataframe["metadata"][idx]["difficulty"] == 1 for idx in df.index)
 
     df = testset.to_pandas(filters={"difficulty": [3]})
     assert len(df) == 1
-    assert testset._metadata[df.index[0]]["difficulty"] == 3
-    assert testset._metadata[df.index[0]]["distracting_context"] == "This is a distracting context"
+    assert testset._dataframe["metadata"][df.index[0]]["difficulty"] == 3
+    assert testset._dataframe["metadata"][df.index[0]]["distracting_context"] == "This is a distracting context"
 
 
 def test_testset_to_dataset_conversion():
@@ -96,24 +80,24 @@ def test_testset_to_dataset_conversion():
     assert dataset._target is False
     assert isinstance(dataset, Dataset)
 
-    testset = QATestset(make_testset_df(), make_metadata())
+    testset = QATestset(make_testset_df())
 
     dataset = testset.to_dataset(filters={"difficulty": [1]})
     assert len(dataset) == 3
 
 
 def test_qa_testset_saving_loading(tmp_path):
-    testset = QATestset(make_testset_df(), make_metadata())
+    testset = QATestset(make_testset_df())
     path = tmp_path / "testset.jsonl"
     testset.save(path)
     loaded_testset = QATestset.load(path)
 
     assert len(testset._dataframe) == len(loaded_testset._dataframe)
-    assert testset._metadata == loaded_testset._metadata
+    assert testset._dataframe["metadata"].equals(loaded_testset._dataframe["metadata"])
 
 
 def test_metadata_value_retrieval():
-    testset = QATestset(make_testset_df(), make_metadata())
+    testset = QATestset(make_testset_df())
 
     assert testset.get_metadata_values("difficulty") == [1, 2, 3]
     assert testset.get_metadata_values("color") == ["blue", "red"]

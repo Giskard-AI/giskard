@@ -1,5 +1,5 @@
 from giskard.rag import QATestset
-from tests.rag.test_qa_testset import make_metadata, make_testset_df
+from tests.rag.test_qa_testset import make_testset_df
 
 
 def test_testset_suite_conversion():
@@ -18,7 +18,7 @@ def test_testset_suite_conversion():
 
 
 def test_testset_suite_conversion_with_metadata():
-    testset = QATestset(make_testset_df(), make_metadata())
+    testset = QATestset(make_testset_df())
     suite = testset.to_test_suite(slicing_metadata=["difficulty"])
 
     assert len(suite.tests) == 3

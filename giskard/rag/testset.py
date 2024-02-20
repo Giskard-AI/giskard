@@ -1,5 +1,6 @@
 from typing import Optional, Sequence
 
+import json
 from copy import deepcopy
 
 import pandas as pd
@@ -12,13 +13,8 @@ from ..testing.tests.llm import test_llm_correctness
 class QATestset:
     """A class to represent a testset for QA models."""
 
-    def __init__(self, dataframe: pd.DataFrame, metadata: Optional[dict] = None):
+    def __init__(self, dataframe: pd.DataFrame):
         self._dataframe = dataframe
-        self._metadata = metadata or {id: {} for id in dataframe.index}
-        if any(metadata_id not in dataframe.index for metadata_id in self._metadata):
-            raise ValueError("At least one metadata id is not in the dataframe index.")
-        if any(dataframe_id not in self._metadata for dataframe_id in dataframe.index):
-            raise ValueError("At least one dataframe id is not in the metadata.")
 
     def __len__(self):
         return len(self._dataframe)
@@ -33,21 +29,22 @@ class QATestset:
             If multiple metadata are provided, the filters are combined with an AND operator.
 
         """
-        kept_indices = []
+
         if filters is not None:
-            for idx in self._dataframe.index:
-                if all(self._metadata[idx][meta] in values for meta, values in filters.items()):
-                    kept_indices.append(idx)
-            return self._dataframe.loc[kept_indices]
+            return self._dataframe[
+                self._dataframe["metadata"].apply(lambda x: all(x.get(k) in v for k, v in filters.items()))
+            ]
         return self._dataframe
 
     def to_dataset(self, filters: Optional[dict] = None):
-        return Dataset(self.to_pandas(filters=filters), name="QA Testset", target=False, validation=False)
+        dataframe = self.to_pandas(filters=filters).copy()
+        dataframe["metadata"] = dataframe["metadata"].apply(lambda x: json.dumps(x))
+        return Dataset(dataframe, name="QA Testset", target=False, validation=False)
 
     def get_metadata_values(self, metadata_name: str):
         """Return the unique values of a metadata field."""
         metadata_values = list(
-            set([metadata[metadata_name] for _, metadata in self._metadata.items() if metadata_name in metadata])
+            set([metadata[metadata_name] for metadata in self._dataframe["metadata"] if metadata_name in metadata])
         )
         metadata_values.sort()
         return metadata_values
@@ -60,9 +57,7 @@ class QATestset:
         path : str
             The path to the output JSONL file.
         """
-        df_with_metadata = self._dataframe.copy()
-        df_with_metadata["metadata"] = self._metadata
-        df_with_metadata.reset_index().to_json(path, orient="records", lines=True)
+        self._dataframe.reset_index().to_json(path, orient="records", lines=True)
 
     @classmethod
     def load(cls, path):
@@ -75,9 +70,7 @@ class QATestset:
         """
         dataframe = pd.read_json(path, orient="records", lines=True).set_index("id")
         dataframe.index = dataframe.index.astype(str)
-        metadata = dataframe.to_dict().get("metadata", {})
-        del dataframe["metadata"]
-        return cls(dataframe, metadata=metadata)
+        return cls(dataframe)
 
     def to_test_suite(self, name=None, slicing_metadata: Optional[Sequence[str]] = None):
         """

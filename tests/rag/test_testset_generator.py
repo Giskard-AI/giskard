@@ -101,8 +101,8 @@ def test_testset_generation():
 def test_testset_difficulty_levels():
     testset_generator = make_testset_generator()
     testset = testset_generator.generate_testset(num_questions=1, difficulty=[1, 2, 3])
-    assert len(testset._metadata) == 3
+    assert len(testset._dataframe["metadata"]) == 3
     for row_id in testset.to_pandas().index:
-        assert testset._metadata[row_id]["difficulty"] in [1, 2, 3]
-        if testset._metadata[row_id]["difficulty"] == 3:
-            assert testset._metadata[row_id]["distracting_context"] == "Distracting content"
+        assert testset._dataframe["metadata"][row_id]["difficulty"] in [1, 2, 3]
+        if testset._dataframe["metadata"][row_id]["difficulty"] == 3:
+            assert testset._dataframe["metadata"][row_id]["distracting_context"] == "Distracting content"
