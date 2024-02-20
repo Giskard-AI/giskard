@@ -38,6 +38,9 @@ jobs:
       - name: Edit pyproject.toml
         run:  sed -i 's/^\(version *= *\).*$/\1"${{ inputs.version }}"/' pyproject.toml
 
+      - name: Remove dark theme logo from README
+        run:  sed -i 's/.*#gh-dark-mode-only.*//' -- README.md
+
       - name: Setup PDM
         uses: pdm-project/setup-pdm@v4
         with:
