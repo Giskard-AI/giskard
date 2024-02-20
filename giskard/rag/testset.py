@@ -1,7 +1,6 @@
 from typing import Optional, Sequence
 
 import json
-from copy import deepcopy
 
 import pandas as pd
 
@@ -107,4 +106,4 @@ class QATestset:
 
     def copy(self):
         """Return a copy of the testset."""
-        return QATestset(self._dataframe.copy(), metadata=deepcopy(self._metadata))
+        return QATestset(self._dataframe.copy())
