@@ -128,7 +128,7 @@ def _limit_str_size(json, field, limit=255):
 class GiskardClient:
     def __init__(self, url: str, key: str = None, hf_token: str = None):
         self.host_url = url
-        self.key = key or os.getenv('GSK_API_KEY')
+        self.key = key or os.getenv("GSK_API_KEY")
         self.hf_token = hf_token
         base_url = urljoin(url, "/api/v2/")
 
@@ -139,7 +139,7 @@ class GiskardClient:
         self._session.mount(url, adapter)
 
         if self.key is None:
-            raise RuntimeError('You must provide an API key to connect to the Giskard Hub.')
+            raise RuntimeError("You must provide an API key to connect to the Giskard Hub.")
 
         self._session.auth = BearerAuth(key)
 
