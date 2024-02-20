@@ -139,7 +139,7 @@ class GiskardClient:
         self._session.mount(url, adapter)
 
         if self.key is None:
-            raise RuntimeError("You must provide an API key to connect to the Giskard Hub.")
+            raise RuntimeError("You must provide an API key for the client to connect to the hub")
 
         self._session.auth = BearerAuth(key)
 
