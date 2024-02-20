@@ -179,7 +179,7 @@ test_suite.upload(giskard_client, project_id)  # project_id should be the id of 
 giskard_model.upload(giskard_client, project_id)
 ```
 
-> ⚠️ To upload your model to the hub, it must be pickable. If your model is not, you must extend the `giskard.Model` class and override the `save_model` and `load_model` methods to properly save and load the non-pickable parts of your model (e.g. the vector store). You can find an [example here](../scan/scan_llm/index.md#step-1-wrap-your-model) inside the "Wrap a custom RAG" tab.
+> ⚠️ To upload your model to the hub, it must be pickleable. If your model is not, you must extend the `giskard.Model` class and override the `save_model` and `load_model` methods to properly save and load the non-pickleable parts of your model (e.g. the vector store). You can find an [example here](../scan/scan_llm/index.md#step-1-wrap-your-model) inside the "Wrap a custom RAG" tab.
 
 [Here's a demo](https://huggingface.co/spaces/giskardai/giskard) of the Giskard Hub in action.
 
