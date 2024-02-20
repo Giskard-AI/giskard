@@ -12,23 +12,25 @@ from tests.llm.evaluators.utils import make_eval_dataset, make_mock_model
 
 
 @pytest.mark.parametrize(
-    "Evaluator,args,kwargs",
+    "Evaluator,args,kwargs,additional_metadata",
     [
         (
             LLMBasedEvaluator,
             [],
             {"eval_prompt": "Test this: {model_name} {model_description} {input_vars} {model_output}"},
+            {},
         ),
-        (RequirementEvaluator, [["Requirement to fulfill"]], {}),
+        (RequirementEvaluator, [["Requirement to fulfill"]], {}, {}),
         (
             PerRowRequirementEvaluator,
             [pd.DataFrame({"req": ["This is the first test requirement", "This is the second test requirement"]})],
             {},
+            {"Requirement": ["This is the first test requirement", "This is the second test requirement"]},
         ),
-        (PlausibilityEvaluator, [], {}),
+        (PlausibilityEvaluator, [], {}, {}),
     ],
 )
-def test_evaluator_correctly_flags_examples(Evaluator, args, kwargs):
+def test_evaluator_correctly_flags_examples(Evaluator, args, kwargs, additional_metadata):
     eval_dataset = make_eval_dataset()
     model = make_mock_model()
 
@@ -86,7 +88,11 @@ def test_evaluator_correctly_flags_examples(Evaluator, args, kwargs):
     assert result.details.inputs == eval_dataset.df.loc[:, model.feature_names].to_dict("list")
     assert result.details.outputs == model.predict(eval_dataset).prediction
     assert result.details.results == [TestResultStatus.PASSED, TestResultStatus.FAILED]
-    assert result.details.metadata == {"reason": [None, "For some reason"]}
+
+    expected_metadata = {"Reason": [None, "For some reason"]}
+    expected_metadata.update(additional_metadata)
+
+    assert result.details.metadata == expected_metadata
 
 
 @pytest.mark.parametrize(
@@ -147,4 +153,4 @@ def test_evaluator_handles_generation_errors(Evaluator, args, kwargs):
     assert result.details.inputs == eval_dataset.df.loc[:, model.feature_names].to_dict("list")
     assert result.details.outputs == model.predict(eval_dataset).prediction
     assert result.details.results == [TestResultStatus.PASSED, TestResultStatus.ERROR]
-    assert result.details.metadata == {"reason": [None, "Invalid function call arguments received"]}
+    assert result.details.metadata == {"Reason": [None, "Invalid function call arguments received"]}
