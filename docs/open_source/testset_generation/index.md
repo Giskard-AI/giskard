@@ -171,12 +171,15 @@ Uploading a test suite to the hub allows you to:
 * Create more tests relevant to your use case, combining input prompts that make your model fail and custome evaluation criteria
 * Share results, and collaborate with your team to integrate business feedback
 
-To upload your test suite, you must have created a project on Giskard Hub and instantiated a Giskard Python client. If you haven't done this yet, follow the first steps of [upload your object](https://docs.giskard.ai/en/latest/giskard_hub/upload/index.html#upload-your-object) guide.
+To upload your test suite, you must have created a project on Giskard Hub and instantiated a Giskard Python client. If you haven't done this yet, follow the first steps of [upload your object](https://docs.giskard.ai/en/latest/giskard_hub/upload/index.html#upload-your-object) guide. 
 
-Then, upload your test suite like this:
+Then, upload your test suite and model like this:
 ```python
-test_suite.upload(giskard_client, project_id)  # project_id should be the id of the Giskard project in which you want to upload the suite
+test_suite.upload(giskard_client, project_id)  # project_id should be the id of the Giskard project in which you want to upload your suite
+giskard_model.upload(giskard_client, project_id)
 ```
+
+> ⚠️ To upload your model to the hub, it must be pickable. If your model is not, you must extend the `giskard.Model` class and override the `save_model` and `load_model` methods to properly save and load the non-pickable parts of your model (e.g. the vector store). You can find an [example here](../scan/scan_llm/index.md#step-1-wrap-your-model) inside the "Wrap a custom RAG" tab.
 
 [Here's a demo](https://huggingface.co/spaces/giskardai/giskard) of the Giskard Hub in action.
 
