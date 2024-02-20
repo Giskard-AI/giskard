@@ -80,3 +80,23 @@ def timer(message=None):
         return wrap
 
     return timing_decorator
+
+
+class TemporaryRootLogLevel:
+    def __init__(self, log_level=logging.NOTSET):
+        """Temporarily update the root log level
+
+        Parameters
+        ----------
+        log_level : int
+            The log level to be set, nothing happens if the level is 0 (NOTSET).
+        """
+        self.previous_log_level = logging.root.level
+        self.log_level = log_level
+
+    def __enter__(self):
+        if self.log_level != logging.NOTSET:
+            logging.root.setLevel(self.log_level)
+
+    def __exit__(self, exc_type, exc_val, exc_tb):
+        logging.root.setLevel(self.previous_log_level)
