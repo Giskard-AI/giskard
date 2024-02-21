@@ -72,6 +72,10 @@ set_llm_model('my-gpt-4-model')
 
 We are now ready to start.
 
+>  #### 💡 Customize your scan
+>
+> It’s possible to use another LLM provider than Open AI to run the scan. For that, please contact us on [Discord](https://discord.gg/ABvfpbu69R).
+
 (model-wrapping)=
 ## Step 1: Wrap your model
 
@@ -230,6 +234,11 @@ If you are not working in a notebook or want to save the results for later, you 
 scan_results.to_html("model_scan_results.html")
 ```
 
+>  #### 💡 Customize your scan
+>
+> Check our [Advanced scan usage page](https://docs.giskard.ai/en/latest/open_source/scan/advanced_scan/index.html), if you want to:
+>   - Scan with only some **specific detectors**
+>   - Make the scan **faster**
 
 ## What's next?
 
