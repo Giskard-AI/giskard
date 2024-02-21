@@ -1,6 +1,7 @@
 import inspect
 import pickle
 import sys
+import warnings
 
 import cloudpickle
 
@@ -29,7 +30,22 @@ def dump_by_value(obj, f, should_register_by_reference=False):
     if not should_register_by_reference:
         registered_module = _register_root_module_by_value(inspect.getmodule(obj))
 
-    cloudpickle.dump(obj, f, protocol=pickle.DEFAULT_PROTOCOL)
+    try:
+        cloudpickle.dump(obj, f, protocol=pickle.DEFAULT_PROTOCOL)
+    except Exception as e:
+        # When saving by value fails, fallback with saving reference
+        if not should_register_by_reference and registered_module:
+            # Unregister module
+            cloudpickle.unregister_pickle_by_value(registered_module)
+            registered_module = None
+
+            # Dump by reference
+            dump_by_value(obj, f, True)
+            warnings.warn(
+                f"Saving {obj} by reference mode was initiated due to an error. To load the model successfully, please ensure that the object is accessible in the Python module where you intend to load it. If the object is not accessible, loading by reference may fail, resulting in errors during the model loading process."
+            )
+        else:
+            raise e
 
     if registered_module:
         cloudpickle.unregister_pickle_by_value(registered_module)
