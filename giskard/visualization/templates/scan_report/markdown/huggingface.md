@@ -1,5 +1,5 @@
 {% for view in groups -%}
-
+<!-- issue start -->
 <details>
 <summary>👉{{ view.group.name }} issues ({{ view.issues|length }})</summary>
 
@@ -20,6 +20,7 @@
 <br />
 {% endif %}
 
+<!-- examples start -->
 <details>
 <summary> 🔍✨Examples</summary>
 
@@ -29,11 +30,12 @@ index=not issue.meta.hide_index if "hide_index" in issue.meta
 else True)|replace("\\n", "<br>")|safe }}
 {% endif %}
 </details>
+<!-- examples end -->
 
 {% endfor %}
 
 </details>
-<!-- line breaker -->
+<!-- issue end -->
 {% endfor -%}
 <br />
 
