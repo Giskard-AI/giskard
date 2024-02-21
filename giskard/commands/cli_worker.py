@@ -91,7 +91,21 @@ def start_stop_options(func):
     default=None,
     help="Number of processes to use for parallelism (None for number of cpu)",
 )
-def start_command(url: AnyHttpUrl, is_server, api_key, is_daemon, hf_token, nb_workers):
+@click.option(
+    "--log-level",
+    "log_level",
+    default=logging.getLevelName(logging.INFO),
+    type=click.Choice(
+        [
+            logging.getLevelName(logging.DEBUG),
+            logging.getLevelName(logging.INFO),
+            logging.getLevelName(logging.WARNING),
+            logging.getLevelName(logging.ERROR),
+        ]
+    ),
+    help="Global log level",
+)
+def start_command(url: AnyHttpUrl, is_server, api_key, is_daemon, hf_token, nb_workers, log_level):
     """\b
     Start ML Worker.
 
@@ -104,8 +118,11 @@ def start_command(url: AnyHttpUrl, is_server, api_key, is_daemon, hf_token, nb_w
     """
     analytics.track(
         "giskard-worker:start",
-        {"is_server": is_server, "url": anonymize(url), "is_daemon": is_daemon},
+        {"is_server": is_server, "url": anonymize(url), "is_daemon": is_daemon, "log_level": log_level},
     )
+
+    logging.root.setLevel(logging.getLevelName(log_level))
+
     api_key = initialize_api_key(api_key, is_server)
     hf_token = initialize_hf_token(hf_token, is_server)
     _start_command(is_server, url, api_key, is_daemon, hf_token, int(nb_workers) if nb_workers is not None else None)
