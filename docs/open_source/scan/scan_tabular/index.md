@@ -251,6 +251,14 @@ If you are not working in a notebook or want to save the results for later, you 
 scan_results.to_html("model_scan_results.html")
 ```
 
+>  #### 💡 Customize your scan
+>
+> Check our [Advanced scan usage page](https://docs.giskard.ai/en/latest/open_source/scan/advanced_scan/index.html), if you want to:
+>   - **Remove some feature** variable from the scan detection
+>   - Scan with only some **specific detectors**
+>   - **Customize the thresholds** of the scan
+
+
 ## What's next? 
 
 Your scan results may have highlighted important vulnerabilities. There are 2 important actions you can take next:
