@@ -1,6 +1,7 @@
 from typing import Optional, Sequence
 
 import datetime
+import logging
 import uuid
 import warnings
 from collections import Counter
@@ -22,6 +23,7 @@ from ..utils.analytics_collector import (
     get_dataset_properties,
     get_model_properties,
 )
+from ..utils.logging_utils import TemporaryRootLogLevel
 from .issues import DataLeakage, Issue, Stochasticity
 from .logger import logger
 from .registry import DetectorRegistry
@@ -97,44 +99,44 @@ class Scanner:
         ScanReport
             A report object containing the detected issues and other information.
         """
+        with TemporaryRootLogLevel(logging.INFO if verbose else logging.NOTSET):
+            # Check that the model and dataset were appropriately wrapped with Giskard
+            model, dataset, model_validation_time = self._validate_model_and_dataset(model, dataset)
 
-        # Check that the model and dataset were appropriately wrapped with Giskard
-        model, dataset, model_validation_time = self._validate_model_and_dataset(model, dataset)
+            # Check that provided features are valid
+            features = self._validate_features(features, model, dataset)
 
-        # Check that provided features are valid
-        features = self._validate_features(features, model, dataset)
+            # Initialize LLM logger if needed
+            if model.is_text_generation:
+                get_default_client().logger.reset()
 
-        # Initialize LLM logger if needed
-        if model.is_text_generation:
-            get_default_client().logger.reset()
+            # Good, we can start
+            maybe_print("🔎 Running scan…", verbose=verbose)
+            time_start = perf_counter()
 
-        # Good, we can start
-        maybe_print("🔎 Running scan…", verbose=verbose)
-        time_start = perf_counter()
+            # Collect the detectors
+            detectors = self.get_detectors(tags=[model.meta.model_type.value])
 
-        # Collect the detectors
-        detectors = self.get_detectors(tags=[model.meta.model_type.value])
+            # Print cost estimate
+            if verbose:
+                self._print_cost_estimate(model, dataset, detectors)
 
-        # Print cost estimate
-        if verbose:
-            self._print_cost_estimate(model, dataset, detectors)
+            # @TODO: this should be selective to specific warnings
+            with warnings.catch_warnings():
+                warnings.simplefilter("ignore")
+                issues, errors = self._run_detectors(
+                    detectors, model, dataset, features, verbose=verbose, raise_exceptions=raise_exceptions
+                )
 
-        # @TODO: this should be selective to specific warnings
-        with warnings.catch_warnings():
-            warnings.simplefilter("ignore")
-            issues, errors = self._run_detectors(
-                detectors, model, dataset, features, verbose=verbose, raise_exceptions=raise_exceptions
-            )
+            issues = self._postprocess(issues)
 
-        issues = self._postprocess(issues)
+            # Scan completed
+            elapsed = perf_counter() - time_start
 
-        # Scan completed
-        elapsed = perf_counter() - time_start
+            if verbose:
+                self._print_execution_summary(model, issues, errors, elapsed)
 
-        if verbose:
-            self._print_execution_summary(model, issues, errors, elapsed)
-
-        self._collect_analytics(model, dataset, issues, elapsed, model_validation_time, detectors)
+            self._collect_analytics(model, dataset, issues, elapsed, model_validation_time, detectors)
 
         return ScanReport(issues, model=model, dataset=dataset)
 

@@ -25,7 +25,13 @@ from ...datasets.base import Dataset
 from ...exceptions.giskard_exception import GiskardException, python_env_exception_helper
 from ...llm import get_default_client, set_llm_model
 from ...llm.client.openai import BaseOpenAIClient
-from ...llm.talk.config import ERROR_RESPONSE, LLM_MODEL, MODEL_INSTRUCTION, SUMMARY_PROMPT
+from ...llm.talk.config import (
+    ERROR_RESPONSE,
+    LLM_MODEL,
+    MAX_COMPLETION_TOKENS,
+    MODEL_INSTRUCTION,
+    SUMMARY_PROMPT,
+)
 from ...llm.talk.tools import (
     BaseTool,
     IssuesScannerTool,
@@ -656,6 +662,7 @@ class BaseModel(ABC):
             tools=[tool.specification for tool in list(available_tools.values())],
             tool_choice="auto",
             temperature=0.1,
+            max_tokens=MAX_COMPLETION_TOKENS,
         )
 
         if content := response.content:
@@ -689,12 +696,14 @@ class BaseModel(ABC):
                 )
 
             # Get the final model's response, based on the tool's output.
-            response = client.complete(messages=messages, temperature=0.1)
+            response = client.complete(messages=messages, temperature=0.1, max_tokens=MAX_COMPLETION_TOKENS)
             messages.append({"role": "assistant", "content": response.content})
 
         # Summarise the conversation.
         context = self._gather_context(messages)
         summary = client.complete(
-            messages=[{"role": "user", "content": SUMMARY_PROMPT.format(context=context)}], temperature=0.1
+            messages=[{"role": "user", "content": SUMMARY_PROMPT.format(context=context)}],
+            temperature=0.1,
+            max_tokens=MAX_COMPLETION_TOKENS,
         )
         return TalkResult(response, summary)
