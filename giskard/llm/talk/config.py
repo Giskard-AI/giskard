@@ -10,6 +10,8 @@ from sklearn.metrics import (  # Regression metrics.
 
 LLM_MODEL = "gpt-4-1106-preview"
 
+MAX_COMPLETION_TOKENS = 4096
+
 MODEL_INSTRUCTION = """You are an agent designed to help a user obtain information about the model and/or it's 
 predictions.
 
@@ -35,7 +37,10 @@ unethical, harmful or impolite context, or implies such an answer. For example, 
 religion, ethnicity, sex, race, disability, social status or similar points (you must remember them). So, as an 
 answer, you only need to say, that you won't fulfill this request, because it has an unethical context.
 Please, say "I do not know, how to answer this question" if you cannot justify your response with the provided tools. 
-You are not allowed to provide a generic answer. 
+You are not allowed to provide a generic answer.
+Please, if you understand, that you can get an answer to the user's query, using the tools available to you, use them, 
+instead of saying, that you can do it.
+Please, make sure, that the generated response do not exceed 4096 tokens.
 
 
 Your will interact with the following model:
