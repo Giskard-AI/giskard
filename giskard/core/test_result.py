@@ -8,15 +8,15 @@ from ..datasets.base import Dataset
 from ..models.base import BaseModel
 
 
-class TestResultStatus(Enum):
+class TestResultStatus(str, Enum):
     ERROR = "ERROR"
     PASSED = "PASSED"
     FAILED = "FAILED"
 
 
-class TestMessageLevel(Enum):
-    ERROR = (1,)
-    INFO = 2
+class TestMessageLevel(str, Enum):
+    ERROR = "ERROR"
+    INFO = "INFP"
 
 
 @dataclass

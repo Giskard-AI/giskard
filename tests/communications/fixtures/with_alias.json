@@ -1436,8 +1436,8 @@
       "column_dtypes": {
         "ElUxRTOGbkfDUEzWuAaF": "uoiSQDhwnftCVRBNBdcg"
       },
-      "push_kind": 3,
-      "cta_kind": 1,
+      "push_kind": "OVERCONFIDENCE",
+      "cta_kind": "CREATE_SLICE",
       "rowIdx": 2728
     },
     {
@@ -1461,8 +1461,8 @@
       "column_dtypes": {
         "JxwnwBaRizPWYaJEEhZo": "DiezjqUVWHlqJXLrFLHY"
       },
-      "push_kind": 4,
-      "cta_kind": 10,
+      "push_kind": "UNDERCONFIDENCE",
+      "cta_kind": "SAVE_EXAMPLE",
       "rowIdx": 3595
     },
     {
@@ -1486,15 +1486,15 @@
       "column_dtypes": {
         "vGGWOSNQFsnKTChRzycA": "MvsIbAXJuJFkkUndRBtA"
       },
-      "push_kind": 1,
-      "cta_kind": 7,
+      "push_kind": "CONTRIBUTION",
+      "cta_kind": "CREATE_SLICE_OPEN_DEBUGGER",
       "rowIdx": 814
     }
   ],
   "GetPushResponse": [
     {
       "contribution": {
-        "kind": 3,
+        "kind": "CONTRIBUTION",
         "key": "gSNnzxHPebRwNaxLlXUb",
         "value": "bCWtlvblwzmmlxpbRCHj",
         "push_title": "ZSgrLKWvRIpETSAEbmPv",
@@ -1503,12 +1503,12 @@
             "action": "iCKJtwAOBuzbcKZEuiAZ",
             "explanation": "OCSmAXExoCXaOQUMQADw",
             "button": "cTDkAzsrCGFxbljESPPQ",
-            "cta": 6
+            "cta": "CREATE_ROBUSTNESS_TEST"
           }
         ]
       },
       "perturbation": {
-        "kind": 2,
+        "kind": "PERTURBATION",
         "key": "nRJeaaNmfGrdiBioLxqy",
         "value": "buvjfUAkFQbahLiKJClY",
         "push_title": "PAlHuDqGdpYTpSqWMvna",
@@ -1517,12 +1517,12 @@
             "action": "TbQYDiTYKAtskJwkfIpz",
             "explanation": "qTUakrZOrlJRWrTJzZmL",
             "button": "eiVlNFRtrpTFXUhCfcdT",
-            "cta": 3
+            "cta": "CREATE_TEST"
           }
         ]
       },
       "overconfidence": {
-        "kind": 1,
+        "kind": "OVERCONFIDENCE",
         "key": "ORrFOtDlenUDWxoORaIe",
         "value": "fUcmZvgimMfVtYVpnyfH",
         "push_title": "caZpFxqdVYYflGYCJInC",
@@ -1531,12 +1531,12 @@
             "action": "pmeoZxHHWuprqSUprCEE",
             "explanation": "mbmdCddHpPzSiAPeXjOZ",
             "button": "QqfAVpUhVbqUPVRMJjwi",
-            "cta": 2
+            "cta": "CREATE_SLICE"
           }
         ]
       },
       "underconfidence": {
-        "kind": 2,
+        "kind": "UNDERCONFIDENCE",
         "key": "LIndYQCCSxurnbHvDdsh",
         "value": "gnRuuFmaBAHwJMmzylvD",
         "push_title": "VVoHcdATiNTqKStKMESU",
@@ -1673,21 +1673,21 @@
     },
     {
       "contribution": {
-        "kind": 1,
+        "kind": "CONTRIBUTION",
         "key": "igWQfwEMAuVZlXIAQELL",
         "value": "QZDIClbiICmvoIuzIRja",
         "push_title": "NzuLQrmeMSRjjASusmIE",
         "push_details": []
       },
       "perturbation": {
-        "kind": 3,
+        "kind": "PERTURBATION",
         "key": "NZrccFUSWyEdTDeuADpn",
         "value": "sXcXTapMPECZdFPsuBbE",
         "push_title": "bBfrWNbtdUeCrVCVVshE",
         "push_details": []
       },
       "overconfidence": {
-        "kind": 2,
+        "kind": "OVERCONFIDENCE",
         "key": "EvTvsrntKNmPNuoOeKVX",
         "value": "vgCHmfLcAOQkCCrpAbQP",
         "push_title": "bZviCKKGBjUmEYALxOsx",
@@ -1696,12 +1696,12 @@
             "action": "WFsWHaziUclUBjXkxmAq",
             "explanation": "XdEjGXEFszWIEGRRErHk",
             "button": "AzRFIWSFMVNFinQpNuCn",
-            "cta": 0
+            "cta": "NONE"
           }
         ]
       },
       "underconfidence": {
-        "kind": 1,
+        "kind": "UNDERCONFIDENCE",
         "key": "aNOxsAkyrZhScfTVnCct",
         "value": "qqTQcLrIQdOpvrbHJNNM",
         "push_title": "HptWYQSWvmcmlLtGLpLs",
@@ -1710,7 +1710,7 @@
             "action": "LJxihZwrPzWfHQIwRNHf",
             "explanation": "lFHYWwOcFAipcTlIvLbc",
             "button": "brOFDynEBUjudYKbqgDA",
-            "cta": 2
+            "cta": "CREATE_TEST"
           }
         ]
       },
@@ -1752,14 +1752,14 @@
     },
     {
       "contribution": {
-        "kind": 1,
+        "kind": "CONTRIBUTION",
         "key": "rjVGqCwxCiGXEOoiaZgt",
         "value": "IMGwQxRcLfuxjxSbkYxu",
         "push_title": "VOjFjOCPdWlSwUfcyWyA",
         "push_details": []
       },
       "perturbation": {
-        "kind": 4,
+        "kind": "PERTURBATION",
         "key": "iCwUMyhhYFlQlxTffcht",
         "value": "qoazxMpEqNjzxxBBqQXD",
         "push_title": "HLqEyzuBlmkEmOVNrXrs",
@@ -1768,12 +1768,12 @@
             "action": "EIvOSpluKIjuUXFORldF",
             "explanation": "uKpwQevhBMZNhwCHKYWk",
             "button": "iYiYgEggrPKqhsjmzzVe",
-            "cta": 8
+            "cta": "OPEN_DEBUGGER_UNDERCONFIDENCE"
           }
         ]
       },
       "overconfidence": {
-        "kind": 1,
+        "kind": "OVERCONFIDENCE",
         "key": "BDhshUsdyBULkVaKcQjP",
         "value": "QOfufLZBHIhtsNvtCkdm",
         "push_title": "bIxGDcQQawOvSKIVOEcx",
@@ -1782,12 +1782,12 @@
             "action": "JBEsRmHwhagoybdPYwyF",
             "explanation": "fCJXHCvVByMwdETtffVf",
             "button": "IeAVmpFDDucEoGwnZqYy",
-            "cta": 5
+            "cta": "SAVE_PERTURBATION"
           }
         ]
       },
       "underconfidence": {
-        "kind": 3,
+        "kind": "UNDERCONFIDENCE",
         "key": "BnjKxEjAINIvJFyGpdhY",
         "value": "URnRPCpfZZSxLVCgYBOG",
         "push_title": "dyanXJDfJFHJWxFBEJjc",
@@ -1796,7 +1796,7 @@
             "action": "gcCpOihTesJDnhEmSnWb",
             "explanation": "FoywQjNbHQwSssVZPlXt",
             "button": "TqlnJYBfJUOaqOKZUPJt",
-            "cta": 2
+            "cta": "CREATE_TEST"
           }
         ]
       },
@@ -1872,7 +1872,7 @@
         "is_error": true,
         "messages": [
           {
-            "type": 1,
+            "type": "INFO",
             "text": "kfDUEzWuAaFuoiSQDhwn"
           }
         ],
@@ -1942,7 +1942,7 @@
         "is_error": true,
         "messages": [
           {
-            "type": 0,
+            "type": "ERROR",
             "text": "cdATiNTqKStKMESUXDjn"
           }
         ],
@@ -2113,7 +2113,7 @@
         "is_error": true,
         "messages": [
           {
-            "type": 0,
+            "type": "ERROR",
             "text": "fmXOLzEOqvtZhgfEWdCD"
           }
         ],
@@ -2281,21 +2281,21 @@
   ],
   "Push": [
     {
-      "kind": 2,
+      "kind": "OVERCONFIDENCE",
       "key": "gSNnzxHPebRwNaxLlXUb",
       "value": "bCWtlvblwzmmlxpbRCHj",
       "push_title": "ZSgrLKWvRIpETSAEbmPv",
       "push_details": []
     },
     {
-      "kind": 3,
+      "kind": "UNDERCONFIDENCE",
       "key": "iCKJtwAOBuzbcKZEuiAZ",
       "value": "OCSmAXExoCXaOQUMQADw",
       "push_title": "cTDkAzsrCGFxbljESPPQ",
       "push_details": []
     },
     {
-      "kind": 4,
+      "kind": "CONTRIBUTION",
       "key": "nRJeaaNmfGrdiBioLxqy",
       "value": "buvjfUAkFQbahLiKJClY",
       "push_title": "PAlHuDqGdpYTpSqWMvna",
@@ -2304,7 +2304,7 @@
           "action": "TbQYDiTYKAtskJwkfIpz",
           "explanation": "qTUakrZOrlJRWrTJzZmL",
           "button": "eiVlNFRtrpTFXUhCfcdT",
-          "cta": 6
+          "cta": "CREATE_ROBUSTNESS_TEST"
         }
       ]
     }
@@ -2359,19 +2359,19 @@
       "action": "gSNnzxHPebRwNaxLlXUb",
       "explanation": "bCWtlvblwzmmlxpbRCHj",
       "button": "ZSgrLKWvRIpETSAEbmPv",
-      "cta": 2
+      "cta": "CREATE_TEST"
     },
     {
       "action": "iCKJtwAOBuzbcKZEuiAZ",
       "explanation": "OCSmAXExoCXaOQUMQADw",
       "button": "cTDkAzsrCGFxbljESPPQ",
-      "cta": 9
+      "cta": "SAVE_EXAMPLE"
     },
     {
       "action": "nRJeaaNmfGrdiBioLxqy",
       "explanation": "buvjfUAkFQbahLiKJClY",
       "button": "PAlHuDqGdpYTpSqWMvna",
-      "cta": 1
+      "cta": "CREATE_SLICE"
     }
   ],
   "RunAdHocTest": [
@@ -2390,7 +2390,7 @@
             "is_error": false,
             "messages": [
               {
-                "type": 1,
+                "type": "INFO",
                 "text": "CWtlvblwzmmlxpbRCHjZ"
               }
             ],
@@ -3064,15 +3064,15 @@
   ],
   "TestMessage": [
     {
-      "type": 0,
+      "type": "INFO",
       "text": "gSNnzxHPebRwNaxLlXUb"
     },
     {
-      "type": 0,
+      "type": "INFO",
       "text": "bCWtlvblwzmmlxpbRCHj"
     },
     {
-      "type": 1,
+      "type": "ERROR",
       "text": "ZSgrLKWvRIpETSAEbmPv"
     }
   ],
