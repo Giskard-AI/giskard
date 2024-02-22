@@ -165,18 +165,18 @@ def configure_job_logging(f):
     logging.getLogger().addHandler(handler)
 
 
-class PoolState(Enum):
-    STARTING = 0
-    STARTED = 1
-    BROKEN = 2
-    STOPPING = 3
-    STOPPED = 4
+class PoolState(str, Enum):
+    STARTING = "STARTING"
+    STARTED = "STARTED"
+    BROKEN = "BROKEN"
+    STOPPING = "STOPPING"
+    STOPPED = "STOPPED"
 
 
-class KillReason(Enum):
-    TIMEOUT = 0
-    CANCELLED = 1
-    SHUTDOWN = 2
+class KillReason(str, Enum):
+    TIMEOUT = "TIMEOUT"
+    CANCELLED = "CANCELLED"
+    SHUTDOWN = "SHUTDOWN"
 
 
 FINAL_STATES = [PoolState.STOPPING, PoolState.STOPPED, PoolState.BROKEN]

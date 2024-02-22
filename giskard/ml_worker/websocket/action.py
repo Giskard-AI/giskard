@@ -12,25 +12,25 @@ IS_PYDANTIC_V2 = version.parse(pydantic.version.VERSION) >= version.parse("2.0")
 
 
 # Make it so we can use enum in pydantic to parse object
-class MLWorkerAction(Enum):
-    getInfo = 0
-    runAdHocTest = 1
-    datasetProcessing = 2
-    runTestSuite = 3
-    runModel = 4
-    runModelForDataFrame = 5
-    explain = 6
-    explainText = 7
-    echo = 8
-    generateTestSuite = 9
-    stopWorker = 10
-    getCatalog = 11
-    generateQueryBasedSlicingFunction = 12
-    getPush = 13
-    createSubDataset = 14
-    abort = 15
-    getLogs = 16
-    createDataset = 17
+class MLWorkerAction(str, Enum):
+    getInfo = "getInfo"
+    runAdHocTest = "runAdHocTest"
+    datasetProcessing = "datasetProcessing"
+    runTestSuite = "runTestSuite"
+    runModel = "runModel"
+    runModelForDataFrame = "runModelForDataFrame"
+    explain = "explain"
+    explainText = "explainText"
+    echo = "echo"
+    generateTestSuite = "generateTestSuite"
+    stopWorker = "stopWorker"
+    getCatalog = "getCatalog"
+    generateQueryBasedSlicingFunction = "generateQueryBasedSlicingFunction"
+    getPush = "getPush"
+    createSubDataset = "createSubDataset"
+    abort = "abort"
+    getLogs = "getLogs"
+    createDataset = "createDataset"
 
     @classmethod
     def __get_validators__(cls):

@@ -1,5 +1,6 @@
 import typing
 
+import functools
 import inspect
 import logging
 from abc import ABC
@@ -85,7 +86,7 @@ def create_test_function_id(func):
     return full_name
 
 
-class SupportedModelTypes(Enum):
+class SupportedModelTypes(str, Enum):
     CLASSIFICATION = "classification"
     REGRESSION = "regression"
     TEXT_GENERATION = "text_generation"
@@ -94,7 +95,7 @@ class SupportedModelTypes(Enum):
 ModelType = Union[SupportedModelTypes, Literal["classification", "regression", "text_generation"]]
 
 
-class SupportedColumnTypes(Enum):
+class SupportedColumnTypes(str, Enum):
     NUMERIC = "numeric"
     CATEGORY = "category"
     TEXT = "text"
@@ -169,11 +170,12 @@ class CallableDocumentation:
 
 
 class CallableMeta(SavableMeta, ABC):
+    callable_obj: Union[Callable, Type]
     code: str
     name: str
     display_name: str
     module: str
-    doc: CallableDocumentation
+
     module_doc: str
     tags: List[str]
     version: Optional[int]
@@ -189,6 +191,7 @@ class CallableMeta(SavableMeta, ABC):
         version: Optional[int] = None,
         type: str = None,
     ):
+        self.callable_obj = callable_obj
         self.version = version
         self.type = type
         self.name = name
@@ -196,7 +199,6 @@ class CallableMeta(SavableMeta, ABC):
         self.code = None
         self.display_name = None
         self.module = None
-        self.doc = None
         self.module_doc = None
         self.full_name = None
         self.args = None
@@ -209,13 +211,11 @@ class CallableMeta(SavableMeta, ABC):
             super(CallableMeta, self).__init__(func_uuid)
 
             callable_obj.__module__.rpartition(".")
-            func_doc = self.extract_doc(callable_obj)
 
             self.code = self.extract_code(callable_obj)
             self.name = callable_obj.__name__
             self.display_name = name or callable_obj.__name__
             self.module = callable_obj.__module__
-            self.doc = func_doc
             self.module_doc = self.extract_module_doc(callable_obj)
             self.tags = self.populate_tags(tags)
 
@@ -224,6 +224,10 @@ class CallableMeta(SavableMeta, ABC):
                 param.default = serialize_parameter(param.default)
 
             self.args = {param.name: param for param in parameters}
+
+    @functools.cached_property
+    def doc(self) -> Optional[CallableDocumentation]:
+        return self.extract_doc(self.callable_obj) if self.callable_obj else None
 
     def extract_parameters(self, callable_obj) -> List[FunctionArgument]:
         if inspect.isclass(callable_obj):
@@ -422,7 +426,7 @@ class TestFunctionMeta(CallableMeta):
         self.debug_description = json["debug_description"] if "debug_description" in json.keys() else None
 
 
-class DatasetProcessFunctionType(Enum):
+class DatasetProcessFunctionType(str, Enum):
     CLAUSES = "CLAUSES"
     CODE = "CODE"
 
@@ -525,7 +529,7 @@ def extract_optional(field):
         return field
 
 
-class ComparisonType(Enum):
+class ComparisonType(str, Enum):
     IS = "IS"
     IS_NOT = "IS_NOT"
     CONTAINS = "CONTAINS"
