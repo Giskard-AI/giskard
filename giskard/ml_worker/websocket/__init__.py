@@ -271,7 +271,7 @@ class PartialUnexpectedCounts(ConfiguredBaseModel):
 class SingleTestResultDetails(ConfiguredBaseModel):
     inputs: Dict[str, List[Any]]
     outputs: List[Any]
-    results: List[str]
+    results: List[Any]
     metadata: Dict[str, List[Any]]
 
 
