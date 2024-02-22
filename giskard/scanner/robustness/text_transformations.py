@@ -285,6 +285,13 @@ class TextNumberToWordTransformation(TextLanguageBasedTransformation):
         if pd.isna(value):
             return value
         lang = row["language__gsk__meta"] if not pd.isna(row["language__gsk__meta"]) else "en"
+
+        if lang == "fa" or lang == "id":
+            # In num2words, the convertor of "fa" and "id" are buggy,
+            # see https://github.com/savoirfairelinux/num2words/issues/476
+            # Give up doing this now, wait for merging https://github.com/savoirfairelinux/num2words/pull/524
+            return value
+
         return self._regex.sub(lambda x: num2words(x.group(), lang=lang), value)
 
 
