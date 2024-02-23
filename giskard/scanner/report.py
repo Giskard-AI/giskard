@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 from typing import TYPE_CHECKING, Optional
 
 import random
@@ -12,7 +14,7 @@ from giskard.core.errors import GiskardImportError
 from giskard.utils.analytics_collector import analytics, anonymize
 
 if TYPE_CHECKING:
-    import mlflow
+    from mlflow import MlflowClient
 
 
 class ScanReport:
@@ -215,7 +217,7 @@ class ScanReport:
 
     def to_mlflow(
         self,
-        mlflow_client: mlflow.MlflowClient = None,
+        mlflow_client: MlflowClient = None,
         mlflow_run_id: str = None,
         summary: bool = True,
         model_artifact_path: str = "",

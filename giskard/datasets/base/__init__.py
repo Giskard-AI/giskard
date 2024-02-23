@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 from typing import TYPE_CHECKING, Dict, Hashable, List, Optional, Union
 
 import inspect
@@ -34,7 +36,7 @@ from ...utils.file_utils import get_file_name
 from ..metadata.indexing import ColumnMetadataMixin
 
 if TYPE_CHECKING:
-    import mlflow
+    from mlflow import MlflowClient
 
 SAMPLE_SIZE = 1000
 
@@ -695,7 +697,7 @@ class Dataset(ColumnMetadataMixin):
 
         return dataset
 
-    def to_mlflow(self, mlflow_client: mlflow.MlflowClient = None, mlflow_run_id: str = None):
+    def to_mlflow(self, mlflow_client: MlflowClient = None, mlflow_run_id: str = None):
         import mlflow
 
         # To avoid file being open in write mode and read at the same time,

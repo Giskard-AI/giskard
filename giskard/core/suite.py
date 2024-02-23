@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 from typing import TYPE_CHECKING, Any, Callable, Dict, List, Optional, Union
 
 import inspect
@@ -29,7 +31,7 @@ from ..utils.artifacts import serialize_parameter
 from .kwargs_utils import get_imports_code
 
 if TYPE_CHECKING:
-    import mlflow
+    from mlflow import MlflowClient
 
 logger = logging.getLogger(__name__)
 
@@ -126,7 +128,7 @@ class TestSuiteResult:
         widget = TestSuiteResultWidget(self)
         return widget.render_html()
 
-    def to_mlflow(self, mlflow_client: mlflow.MlflowClient = None, mlflow_run_id: str = None):
+    def to_mlflow(self, mlflow_client: MlflowClient = None, mlflow_run_id: str = None):
         import mlflow
 
         from giskard.integrations.mlflow.giskard_evaluator_utils import process_text
