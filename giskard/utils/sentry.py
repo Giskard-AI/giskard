@@ -4,7 +4,7 @@ from sentry_sdk.scrubber import DEFAULT_DENYLIST, EventScrubber
 
 from giskard.utils.analytics_collector import anonymize
 
-denylist = DEFAULT_DENYLIST + ["AZURE_OPENAI_API_KEY", "OPENAI_API_KEY", "GSK_API_KEY"]
+denylist = DEFAULT_DENYLIST + ["AZURE_OPENAI_API_KEY", "OPENAI_API_KEY", "GSK_API_KEY", "df", "batch"]
 WHITELISTED_MODULES = ["giskard"]
 
 
