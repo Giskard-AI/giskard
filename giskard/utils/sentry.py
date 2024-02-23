@@ -36,8 +36,6 @@ def _anonymize_stacktrace(stacktrace):
 
 
 def _strip_sensitive_module(event):
-    print("_____ EVENT ______")
-
     # If execution info are available, only keep information from whitelisted modules
     if "exception" not in event:
         return event
