@@ -1,4 +1,7 @@
+import json
+
 import pytest
+import requests_mock
 
 from giskard import scan, test
 from giskard.core.suite import Suite, SuiteInput
@@ -7,6 +10,7 @@ from giskard.datasets.base import Dataset
 from giskard.models.base import BaseModel
 from giskard.registry.slicing_function import SlicingFunction, slicing_function
 from giskard.testing.tests.performance import test_auc, test_diff_f1, test_f1
+from tests.utils import MockedClient, register_uri_for_artifact_meta_info
 
 
 def _assert_html_generation_does_no_fail(test_suite_result):
@@ -405,3 +409,53 @@ def test_upgrade_test_not_matching():
     assert suite.tests[0].test_id == "True"
     assert suite.tests[0].giskard_test.meta.uuid == my_named_test.meta.uuid
     assert suite.tests[0].provided_inputs == {"is_pass": True}
+
+
+def test_download_suite_run_and_upload_results():
+    DOWNALOAD_SUITE_URL = "http://giskard-host:12345/api/v2/testing/project/1/suite/2"
+    UPLOAD_RESULTS_URL = "http://localhost:12345/api/v2/testing/project/test_project/suite/2/executions"
+
+    with MockedClient() as (client, mr):
+        mr.register_uri(
+            requests_mock.GET,
+            DOWNALOAD_SUITE_URL,
+            json={
+                "name": "Mocked Test Suite",
+                "tests": [
+                    {
+                        "testUuid": str(test_auc.meta.uuid),
+                        "functionInputs": {},
+                        "id": 3,
+                        "displayName": "Test AUC",
+                        "test": None,
+                    }
+                ],
+                "id": 2,
+                "functionInputs": [],
+                "projectKey": "test_project",
+            },
+        )
+        register_uri_for_artifact_meta_info(mr, test_auc)
+
+        mr.register_uri(requests_mock.GET, UPLOAD_RESULTS_URL, json={})
+
+        suite = Suite.download(client, "test_project", 2)
+        results = suite.run()
+        results.upload(client)
+
+        upload_requests = [
+            request
+            for request in mr.request_history
+            if request.url.endswith("/testing/project/test_project/suite/2/executions")
+        ]
+
+        assert len(upload_requests) == 1, f"Uploaded result request count should be 1 but got {len(upload_requests)}"
+
+        upload_body = json.loads(upload_requests[0].body)
+        assert upload_body["suiteId"] == 2
+        assert upload_body["result"] == "FAILED"
+        assert len(upload_body["results"]) == 1
+        upload_test_result = upload_body["results"][0]
+        assert upload_test_result["testUuid"] == str(test_auc.meta.uuid)
+        assert upload_test_result["suiteTestId"] == 3
+        assert upload_test_result["status"] == "ERROR"

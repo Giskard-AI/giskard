@@ -78,7 +78,7 @@ class SaveSuiteTestExecutionDTO(ConfiguredBaseModel):
     unexpectedPercent: float
     unexpectedPercentTotal: float
     unexpectedPercentNonmissing: float
-    metric: float
+    metric: Optional[float]
     metricName: str
     failedIndexes: Dict[str, List[int]]
     details: Optional[SaveSuiteTestExecutionDetailsDTO]
