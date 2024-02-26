@@ -49,7 +49,7 @@ def test_websocket_actor_get_info():
         params=without_package_params,
     )
     assert isinstance(remote_ml_worker_info, websocket.GetInfo)
-    assert remote_ml_worker_info.mlWorkerId == ml_worker._worker_name
+    assert remote_ml_worker_info.kernelName == ml_worker._worker_name
     assert 0 == len(remote_ml_worker_info.installedPackages.values())
 
     # External worker, with packages
@@ -58,7 +58,7 @@ def test_websocket_actor_get_info():
         params=with_package_params,
     )
     assert isinstance(remote_ml_worker_info, websocket.GetInfo)
-    assert remote_ml_worker_info.mlWorkerId == ml_worker._worker_name
+    assert remote_ml_worker_info.kernelName == ml_worker._worker_name
     assert 0 != len(remote_ml_worker_info.installedPackages.values())
 
 
