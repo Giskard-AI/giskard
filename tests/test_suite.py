@@ -89,7 +89,7 @@ def test_export_for_unittest_with_export_args(german_credit_data, german_credit_
 
 def test_suite_result_backward_compatibility():
     """This allow backward compatibility by going moving Suiteresult from a tuple to a dataclass"""
-    test_name, result, params = SuiteResult("name", TestResult(), {})
+    test_name, result, params = SuiteResult("name", TestResult(), {}, test_accuracy, 1)
     assert test_name == "name"
     assert result == TestResult()
     assert params == {}
