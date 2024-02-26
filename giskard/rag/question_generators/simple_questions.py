@@ -115,7 +115,7 @@ class SimpleQuestionGenerator:
         # https://help.openai.com/en/articles/4936856-what-are-tokens-and-how-to-count-them
         return prompt[: self._context_window_length * 4]
 
-    def _llm_complete(self, messages: Sequence[dict]) -> dict:
+    def _llm_complete(self, messages: Sequence[LLMMessage]) -> dict:
         try:
             out = self._llm_client.complete(
                 messages=messages,

@@ -9,6 +9,7 @@ from ..llm.client import LLMClient
 from .question_generators import (
     ComplexQuestionsGenerator,
     DistractingQuestionsGenerator,
+    DoubleQuestionsGenerator,
     QuestionTypes,
     SimpleQuestionGenerator,
     SituationalQuestionsGenerator,
@@ -88,6 +89,7 @@ class TestsetGenerator:
             QuestionTypes.COMPLEX: ComplexQuestionsGenerator(self.base_generator),
             QuestionTypes.DISTRACTING_ELEMENT: DistractingQuestionsGenerator(self.base_generator),
             QuestionTypes.SITUATIONAL: SituationalQuestionsGenerator(self.base_generator),
+            QuestionTypes.DOUBLE_QUESTION: DoubleQuestionsGenerator(self.base_generator),
         }
 
     def generate_testset(
