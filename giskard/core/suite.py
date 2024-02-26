@@ -564,6 +564,8 @@ class Suite:
                             messages=[TestMessage(type=TestMessageLevel.ERROR, text=error)],
                         ),
                         test_params,
+                        test_partial.giskard_test,
+                        test_partial.suite_test_id,
                     )
                 )
 
