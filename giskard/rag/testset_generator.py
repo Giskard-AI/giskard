@@ -115,7 +115,9 @@ class TestsetGenerator:
         generated_questions = []
         for q_type in question_types:
             for idx in range(num_questions):
-                logger.info(f"Generating question {idx + 1}/{num_questions} for question type {q_type.name}.")
+                logger.info(
+                    f"Generating question {idx + 1}/{num_questions} for question type {QuestionTypes(q_type).name}."
+                )
                 context_docs = self.base_generator._get_random_document_group()
                 try:
                     generated_qa, question_metadata = self.generators[q_type]._generate_question(context_docs)
