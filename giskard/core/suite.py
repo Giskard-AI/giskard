@@ -201,7 +201,7 @@ class TestSuiteResult:
             unexpectedPercentNonmissing=result.result.unexpected_percent_nonmissing,
             metric=result.result.metric,
             metricName=result.result.metric_name,
-            failed_indexes={
+            failedIndexes={
                 str(dataset.original_id): list(datasets[dataset.original_id].df.index.get_indexer_for(dataset.df.index))
                 for dataset in result.result.output_ds
             },
