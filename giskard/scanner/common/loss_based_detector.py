@@ -24,8 +24,9 @@ class LossBasedDetector(Detector):
 
     _needs_target = True
 
-    def __init__(self, max_dataset_size: Optional[int] = None):
+    def __init__(self, max_dataset_size: Optional[int] = None, min_slice_size: Optional[float] = None):
         self.max_dataset_size = max_dataset_size
+        self.min_slice_size = min_slice_size
 
     def run(self, model: BaseModel, dataset: Dataset, features: Sequence[str]):
         if self._needs_target and dataset.target is None:
@@ -96,7 +97,7 @@ class LossBasedDetector(Detector):
 
         # Find slices
         sf = SliceFinder(numerical_slicer=self._numerical_slicer_method)
-        sliced = sf.run(dataset_with_meta, features, target=self.LOSS_COLUMN_NAME)
+        sliced = sf.run(dataset_with_meta, features, target=self.LOSS_COLUMN_NAME, min_slice_size=self.min_slice_size)
         slices = sum(sliced.values(), start=[])
 
         # Keep only slices of size at least 5% of the dataset or 20 samples (whatever is larger) and conversely exclude

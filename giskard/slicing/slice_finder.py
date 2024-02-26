@@ -10,7 +10,16 @@ class SliceFinder:
     def __init__(self, numerical_slicer="tree"):
         self.numerical_slicer = numerical_slicer
 
-    def run(self, dataset: Dataset, features: Sequence[str], target: Optional[str] = None):
+    def run(
+        self,
+        dataset: Dataset,
+        features: Sequence[str],
+        target: Optional[str] = None,
+        min_slice_size: Optional[float] = None,
+    ):
+        if min_slice_size and len(dataset) < min_slice_size:
+            return {}
+
         target = target or dataset.target
 
         if target is None:
@@ -29,7 +38,7 @@ class SliceFinder:
         # Numerical features
         slicer = get_slicer(self.numerical_slicer, dataset, target)
         for col in cols_by_type["numeric"]:
-            sliced_features[col] = slicer.find_slices([col])
+            sliced_features[col] = slicer.find_slices([col], min_samples=min_slice_size)
 
         # Categorical features
         slicer = CategorySlicer(dataset, target=target)
@@ -39,6 +48,6 @@ class SliceFinder:
         # Text features (currently, only if target is numeric)
         slicer = TextSlicer(dataset, target=target, slicer=self.numerical_slicer)
         for col in cols_by_type["text"]:
-            sliced_features[col] = slicer.find_slices([col])
+            sliced_features[col] = slicer.find_slices([col], min_samples=min_slice_size)
 
         return sliced_features

@@ -10,6 +10,8 @@ from giskard import Dataset, GiskardClient, Model
 from giskard.core.core import ModelMeta, SupportedModelTypes
 from giskard.core.suite import Suite
 from giskard.scanner import Scanner
+from giskard.scanner.correlation.spurious_correlation_detector import SpuriousCorrelationDetector
+from giskard.scanner.performance import PerformanceBiasDetector
 from giskard.scanner.report import ScanReport
 
 
@@ -267,3 +269,23 @@ def test_can_limit_features_to_subset():
 
     with pytest.raises(ValueError, match=r"No features to scan"):
         scanner.analyze(model, dataset, features=[])
+
+
+@pytest.mark.memory_expensive
+def test_min_slice_size(titanic_model, titanic_dataset):
+    # By default, it uses a 0.01 min slice size
+    detector = PerformanceBiasDetector()
+    issues = detector.run(titanic_model, titanic_dataset, features=titanic_model.feature_names)
+    assert len(issues) == 10
+
+    detector = PerformanceBiasDetector(min_slice_size=2000)
+    issues = detector.run(titanic_model, titanic_dataset, features=titanic_model.feature_names)
+    assert len(issues) == 0
+
+    detector = SpuriousCorrelationDetector()
+    issues = detector.run(titanic_model, titanic_dataset, features=titanic_model.feature_names)
+    assert len(issues) == 3
+
+    detector = SpuriousCorrelationDetector(min_slice_size=2000)
+    issues = detector.run(titanic_model, titanic_dataset, features=titanic_model.feature_names)
+    assert len(issues) == 0
