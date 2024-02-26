@@ -229,7 +229,8 @@ class Dataset(ColumnMetadataMixin):
         }
 
         self.data_processor = DataProcessor()
-        logger.info("Your 'pandas.DataFrame' is successfully wrapped by Giskard's 'Dataset' wrapper class.")
+        if validation:
+            logger.info("Your 'pandas.DataFrame' is successfully wrapped by Giskard's 'Dataset' wrapper class.")
 
     @property
     def is_target_given(self) -> bool:
