@@ -11,6 +11,7 @@ from .question_generators import (
     DistractingQuestionsGenerator,
     QuestionTypes,
     SimpleQuestionGenerator,
+    SituationalQuestionsGenerator,
 )
 from .testset import QATestset
 
@@ -86,6 +87,7 @@ class TestsetGenerator:
             QuestionTypes.EASY: self.base_generator,
             QuestionTypes.COMPLEX: ComplexQuestionsGenerator(self.base_generator),
             QuestionTypes.DISTRACTING_ELEMENT: DistractingQuestionsGenerator(self.base_generator),
+            QuestionTypes.SITUATIONAL: SituationalQuestionsGenerator(self.base_generator),
         }
 
     def generate_testset(
@@ -123,6 +125,7 @@ class TestsetGenerator:
                     generated_qa, question_metadata = self.generators[q_type]._generate_question(context_docs)
                 except Exception as e:
                     logger.error(f"Encountered error in question generation: {e}. Skipping.")
+                    logger.exception(e)
                     continue
 
                 reference_context = question_metadata["reference_context"]
