@@ -114,6 +114,37 @@ def test_punctuation_strip_transformation():
     assert transformed_text[5] == "comma separated list"
 
 
+def test_number_to_words_transformation_exception():
+    datasets = [
+        _dataset_from_dict(
+            {
+                "text": [
+                    "Negara seperti Italia, yang diikuti tanda baca",
+                ],
+                "language__gsk__meta": "id",
+            }
+        ),
+        _dataset_from_dict(
+            {
+                "text": [
+                    "کشورهایی مانند ایتالیا که با علائم نگارشی دنبال می شوند",
+                ],
+                "language__gsk__meta": "fa",
+            }
+        ),
+    ]
+
+    from giskard.scanner.robustness.text_transformations import TextNumberToWordTransformation
+
+    t = TextNumberToWordTransformation(column="text")
+
+    for dataset in datasets:
+        # No more exception here now
+        transformed = dataset.transform(t)
+        # Nothing should have been changed
+        assert transformed.df.text.values[0] == dataset.df.text.values[0]
+
+
 def test_number_to_words_transformation():
     dataset = _dataset_from_dict(
         {

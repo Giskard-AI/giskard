@@ -15,7 +15,7 @@ from ..slicing.slice import QueryBasedSliceFunction
 from ..slicing.text_slicer import MetadataSliceFunction
 
 
-class IssueLevel(Enum):
+class IssueLevel(str, Enum):
     MAJOR = "major"
     MEDIUM = "medium"
     MINOR = "minor"

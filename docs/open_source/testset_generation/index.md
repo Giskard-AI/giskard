@@ -3,27 +3,29 @@
 > ⚠️ **The RAG toolset is currently in early version and is subject to change**. Feel free to reach out on our [Discord server](https://discord.gg/fkv7CAr3FE) if you have any trouble with test set generation or to provide feedback.
 
 
-The Giskard python library provides a toolset dedicated to Retrieval Augmented Generative models (RAGs) that generates question & answer pairs from the knowledge base of the model. The generated test set is then used to evaluate your model. 
+The Giskard python library provides a toolset dedicated to Retrieval Augmented Generative models (RAGs) that generates a list of `question`, `reference_answer` and `reference_context` from the knowledge base of the model. The generated test set is then used to evaluate your RAG model. All questions are asked to your model and its answers are compared against the reference answers to create a score. 
 
 (difficulty_levels)=
 ## Generate questions with difficulty levels
 
-You can currently generate questions with three difficulty levels:
+You can currently generate questions with three difficulty levels. These three difficulty levels allow you to evaluate different components of your model.
 
 ```{list-table}
 :header-rows: 1
-:widths: 35, 65
+:widths: 28, 42, 30
 * - Difficulty Level
   - Description
+  - Targeted RAG component
 * - **1: Easy questions**
   - Simple questions generated from an excerpt of the knowledge base
+  - Basic retrieval and LLM generation
 * - **2: Complex questions**
   - Questions made more complex by paraphrasing
+  - LLM understanding and generation 
 * - **3: Distracting questions**
   - Questions made even more difficult by adding a distracting element which is related to the knowledge base but irrelevant to the question
+  - Robustness of retrieval
 ```
-
-These three difficulty levels allow you to evaluate different components of your model. Easy questions are directly generated from your knowledge base. They assess the quality of the answer generation from the context, i.e. the quality of the LLM answer. Complex and distracting questions are more challenging as they can perturb the retrieval component of the RAG. These questions are more realistic of a user seeking precise information with your model.
 
 ## Before starting
 
@@ -169,12 +171,15 @@ Uploading a test suite to the hub allows you to:
 * Create more tests relevant to your use case, combining input prompts that make your model fail and custome evaluation criteria
 * Share results, and collaborate with your team to integrate business feedback
 
-To upload your test suite, you must have created a project on Giskard Hub and instantiated a Giskard Python client. If you haven't done this yet, follow the first steps of [upload your object](https://docs.giskard.ai/en/latest/giskard_hub/upload/index.html#upload-your-object) guide.
+To upload your test suite, you must have created a project on Giskard Hub and instantiated a Giskard Python client. If you haven't done this yet, follow the first steps of [upload your object](https://docs.giskard.ai/en/latest/giskard_hub/upload/index.html#upload-your-object) guide. 
 
-Then, upload your test suite like this:
+Then, upload your test suite and model like this:
 ```python
-test_suite.upload(giskard_client, project_id)  # project_id should be the id of the Giskard project in which you want to upload the suite
+test_suite.upload(giskard_client, project_id)  # project_id should be the id of the Giskard project in which you want to upload your suite
+giskard_model.upload(giskard_client, project_id)
 ```
+
+> ⚠️ To upload your model to the hub, it must be pickleable. If your model is not, you must extend the `giskard.Model` class and override the `save_model` and `load_model` methods to properly save and load the non-pickleable parts of your model (e.g. the vector store). You can find an [example here](../scan/scan_llm/index.md#step-1-wrap-your-model) inside the "Wrap a custom RAG" tab.
 
 [Here's a demo](https://huggingface.co/spaces/giskardai/giskard) of the Giskard Hub in action.
 
