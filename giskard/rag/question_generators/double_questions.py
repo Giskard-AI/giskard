@@ -53,7 +53,7 @@ class DoubleQuestionsGenerator:
     def __init__(self, base_generator: SimpleQuestionGenerator):
         self.base_generator = base_generator
 
-        self.linked_question_generation = QAGenerationPrompt(
+        self.linked_question_generation_prompt = QAGenerationPrompt(
             system_prompt=LINKED_QUESTION_SYSTEM_PROMPT,
         )
 
@@ -65,7 +65,7 @@ class DoubleQuestionsGenerator:
     def _generate_question(self, context_documents: Sequence[Document]) -> dict:
         reference_context = "\n------\n".join(["", *[doc.content for doc in context_documents], ""])
         linked_questions = self.base_generator._llm_complete(
-            self.linked_question_generation.to_messages(
+            self.linked_question_generation_prompt.to_messages(
                 system_prompt_input={
                     "assistant_description": self.base_generator._assistant_description,
                     "language": self.base_generator._language,
