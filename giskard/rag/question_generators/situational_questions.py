@@ -103,8 +103,11 @@ class SituationalQuestionsGenerator:
                 "situation": situational_context,
             },
         )
-        question_metadata["question_type"] = QuestionTypes.SITUATIONAL.value
-        question_metadata["situational_context"] = situational_context
+
         out = self.base_generator._llm_complete(messages=messages)
         generated_qa["question"] = out["question"]
+
+        question_metadata["question_type"] = QuestionTypes.SITUATIONAL.value
+        question_metadata["situational_context"] = situational_context
+
         return generated_qa, question_metadata
