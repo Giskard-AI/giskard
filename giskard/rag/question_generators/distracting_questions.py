@@ -59,8 +59,10 @@ class DistractingQuestionsGenerator:
 
         distracting_context = self.base_generator._rng.choice(self.base_generator._vector_store.documents).content
         messages = self.prompt.to_messages(
-            assistant_description=self.base_generator._assistant_description,
-            language=self.base_generator._language,
+            system_prompt_input={
+                "assistant_description": self.base_generator._assistant_description,
+                "language": self.base_generator._language,
+            },
             user_input={
                 "question": generated_qa["question"],
                 "answer": generated_qa["answer"],

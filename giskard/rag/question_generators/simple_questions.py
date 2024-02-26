@@ -145,12 +145,11 @@ class SimpleQuestionGenerator:
     def _generate_question(self, context_documents: Sequence[Document]) -> dict:
         context = "\n------\n".join(["", *[doc.content for doc in context_documents], ""])
         messages = self.prompt.to_messages(
-            assistant_description=self._assistant_description,
-            language=self._language,
+            system_prompt_input={"assistant_description": self._assistant_description, "language": self._language},
             user_input=context,
         )
 
         generated_qa = self._llm_complete(messages=messages)
-        question_metadata = {"question_type": QuestionTypes.EASY, "reference_context": context}
+        question_metadata = {"question_type": QuestionTypes.EASY.value, "reference_context": context}
 
         return generated_qa, question_metadata

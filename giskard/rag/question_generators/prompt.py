@@ -26,16 +26,15 @@ class QAGenerationPrompt:
 
     def to_messages(
         self,
+        system_prompt_input,
         user_input,
-        assistant_description,
-        language,
         add_examples=False,
         examples=None,
     ):
         messages = [
             LLMMessage(
                 role="system",
-                content=self.system_prompt.format(assistant_description=assistant_description, language=language),
+                content=self.system_prompt.format(**system_prompt_input),
             )
         ]
         if add_examples:

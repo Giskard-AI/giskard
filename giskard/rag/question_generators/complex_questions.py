@@ -69,11 +69,13 @@ class ComplexQuestionsGenerator:
         generated_qa, question_metadata = self.base_generator._generate_question(context_documents)
 
         messages = self.prompt.to_messages(
-            assistant_description=self.base_generator._assistant_description,
-            language=self.base_generator._language,
+            system_prompt_input={
+                "assistant_description": self.base_generator._assistant_description,
+                "language": self.base_generator._language,
+            },
             user_input={"question": generated_qa["question"], "context": question_metadata["reference_context"]},
         )
-        question_metadata["question_type"] = QuestionTypes.COMPLEX
+        question_metadata["question_type"] = QuestionTypes.COMPLEX.value
         out = self.base_generator._llm_complete(messages=messages)
         generated_qa["question"] = out["question"]
         return generated_qa, question_metadata
