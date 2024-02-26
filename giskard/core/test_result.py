@@ -6,12 +6,10 @@ from enum import Enum
 
 from ..datasets.base import Dataset
 from ..models.base import BaseModel
+from .core import TestResultStatusEnum
 
-
-class TestResultStatus(str, Enum):
-    ERROR = "ERROR"
-    PASSED = "PASSED"
-    FAILED = "FAILED"
+# Ensure backward compatibility of "from giskard.core.test_result import TestResultStatus"
+TestResultStatus = TestResultStatusEnum
 
 
 class TestMessageLevel(str, Enum):

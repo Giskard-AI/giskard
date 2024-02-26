@@ -5,16 +5,27 @@ import logging
 import traceback
 import warnings
 from dataclasses import dataclass
+from datetime import datetime
 from functools import singledispatchmethod
 from xml.dom import minidom
 from xml.etree.ElementTree import Element, SubElement, tostring
 
-from giskard.client.dtos import SuiteInfo, SuiteTestDTO, TestInputDTO, TestSuiteDTO
+from giskard.client.dtos import (
+    SaveSuiteExecutionDTO,
+    SaveSuiteTestExecutionDetailsDTO,
+    SaveSuiteTestExecutionDTO,
+    SuiteInfo,
+    SuiteTestDTO,
+    TestInputDTO,
+    TestResultMessageDTO,
+    TestSuiteDTO,
+    TestSuiteExecutionResult,
+)
 from giskard.client.giskard_client import GiskardClient
 from giskard.core.core import TestFunctionMeta
 from giskard.core.errors import GiskardImportError
 from giskard.core.savable import Artifact
-from giskard.core.test_result import TestMessage, TestMessageLevel, TestResult
+from giskard.core.test_result import TestMessage, TestMessageLevel, TestResult, TestResultStatus
 from giskard.datasets.base import Dataset
 from giskard.exceptions.IllegalArgumentError import IllegalArgumentError
 from giskard.models.base import BaseModel
@@ -86,6 +97,8 @@ class SuiteResult:
     test_name: TestName
     result: TestResult
     params: TestParams
+    test: GiskardTest
+    suite_test_id: int
 
     @property
     def _tuple(self):
@@ -110,9 +123,28 @@ class SuiteResult:
 class TestSuiteResult:
     """Represents the result of a test suite."""
 
-    def __init__(self, passed: bool, results: List[SuiteResult]):
+    suite: "Suite"
+    inputs: Dict[str, Any]
+    passed: bool
+    results: List[SuiteResult]
+    execution_date: datetime
+    completion_date: datetime
+
+    def __init__(
+        self,
+        suite: "Suite",
+        inputs: Dict[str, Any],
+        passed: bool,
+        results: List[SuiteResult],
+        execution_date: datetime,
+        completion_date: datetime,
+    ):
+        self.suite = suite
+        self.inputs = inputs
         self.passed = passed
         self.results = results
+        self.execution_date = execution_date
+        self.completion_date = completion_date
 
     def __repr__(self):
         return f"<TestSuiteResult ({'passed' if self.passed else 'failed'})>"
@@ -122,6 +154,70 @@ class TestSuiteResult:
 
         widget = TestSuiteResultWidget(self)
         return widget.render_html()
+
+    def upload(self, client: GiskardClient, label: Optional[str] = None):
+        if self.suite.id is None:
+            raise ValueError("Cannot save suite execution result of unsaved suite")
+
+        client.save_test_suite_execution_result(self.suite.id, self.suite.project_key, self._to_dto(label))
+
+    def _to_dto(self, label: Optional[str]) -> SaveSuiteExecutionDTO:
+        return SaveSuiteExecutionDTO(
+            label=label or self.execution_date.isoformat(),
+            suiteId=self.suite.id,
+            inputs=TestInputDTO.from_inputs_dict(self.inputs),
+            result=TestSuiteExecutionResult.PASSED if self.passed else TestSuiteExecutionResult.FAILED,
+            message="",
+            results=[
+                SaveSuiteTestExecutionDTO(
+                    testUuid=result.test.meta.uuid,
+                    suiteTestId=result.suite_test_id,
+                    displayName=result.test_name,
+                    inputs={name: str(value) for name, value in result.params.items()},
+                    arguments={
+                        test_input.name: test_input for test_input in TestInputDTO.from_inputs_dict(result.params)
+                    },
+                    messages=[
+                        TestResultMessageDTO(type=message.type, text=message.text) for message in result.result.messages
+                    ],
+                    actualSlicesSize=result.result.actual_slices_size,
+                    referenceSlicesSize=result.result.reference_slices_size,
+                    status=TestResultStatus.PASSED
+                    if result.result.passed
+                    else TestResultStatus.ERROR
+                    if result.result.is_error
+                    else TestResultStatus.FAILED,
+                    partialUnexpectedIndexList=result.result.partial_unexpected_index_list,
+                    unexpectedIndexList=result.result.unexpected_index_list,
+                    missingCount=result.result.missing_count,
+                    missingPercent=result.result.missing_percent,
+                    unexpectedCount=result.result.unexpected_count,
+                    unexpectedPercent=result.result.unexpected_percent,
+                    unexpectedPercentTotal=result.result.unexpected_percent_total,
+                    unexpectedPercentNonmissing=result.result.unexpected_percent_nonmissing,
+                    metric=result.result.metric,
+                    metricName=result.result.metric_name,
+                    failedIndexes=dict(),
+                    details=SaveSuiteTestExecutionDetailsDTO(
+                        inputs={
+                            key: [str(value) for value in values]
+                            for key, values in result.result.details.inputs.items()
+                        },
+                        outputs=[str(output) for output in result.result.details.outputs],
+                        results=result.result.details.results,
+                        metadata={
+                            key: [str(value) for value in values]
+                            for key, values in result.result.details.metadata.items()
+                        },
+                    )
+                    if result.result.details
+                    else None,
+                )
+                for result in self.results
+            ],
+            executionDate=self.execution_date.isoformat(),
+            completionDate=self.completion_date.isoformat(),
+        )
 
     def to_mlflow(self, mlflow_client=None, mlflow_run_id: str = None):
         import mlflow
@@ -308,7 +404,7 @@ class TestPartial:
     provided_inputs: Dict[str, Any]
     test_id: Union[int, str]
     display_name: Optional[str] = None
-    suite_test_id: int = 0
+    suite_test_id: Optional[int] = None
 
 
 def single_binary_result(test_results: List):
@@ -362,7 +458,7 @@ def generate_test_partial(
     test_fn: Test,
     test_id: Optional[Union[int, str]] = None,
     display_name: Optional[str] = None,
-    suite_test_id: int = 0,
+    suite_test_id: Optional[int] = None,
     **params,
 ) -> TestPartial:
     if isinstance(test_fn, GiskardTestMethod):
@@ -393,6 +489,7 @@ class Suite:
     """
 
     id: Optional[int]
+    project_key: Optional[str]
     tests: List[TestPartial]
     name: str
     default_params: Dict[str, Any]
@@ -412,6 +509,7 @@ class Suite:
         self.name = name
         self.default_params = default_params if default_params else dict()
         self.id = None
+        self.project_key = None
 
     def run(self, verbose: bool = True, **suite_run_args):
         """Execute all the tests that have been added to the test suite through the `add_test` method.
@@ -431,6 +529,7 @@ class Suite:
             containing test execution information
 
         """
+        execution_date = datetime.now()
         run_args = self.default_params.copy()
         run_args.update(suite_run_args)
         self.verify_required_params(run_args)
@@ -446,7 +545,11 @@ class Suite:
                 if isinstance(result, bool):
                     result = TestResult(passed=result)
 
-                results.append(SuiteResult(test_partial.test_id, result, test_params))
+                results.append(
+                    SuiteResult(
+                        test_partial.test_id, result, test_params, test_partial.giskard_test, test_partial.suite_test_id
+                    )
+                )
                 if verbose:
                     print(
                         """Executed '{0}' with arguments {1}: {2}""".format(test_partial.test_id, test_params, result)
@@ -473,7 +576,7 @@ class Suite:
         for test_name, r, params in results:
             logger.info(f"{test_name} ({params}): {format_test_result(r)}")
 
-        return TestSuiteResult(passed, results)
+        return TestSuiteResult(self, run_args, passed, results, execution_date, datetime.now())
 
     def to_unittest(self, **suite_gen_args) -> List[TestPartial]:
         """Create a list of tests that can be easily passed for unittest execution using the `assert_` method
@@ -535,7 +638,7 @@ class Suite:
                 test_params[pname] = kwargs[pname]
         return test_params
 
-    def upload(self, client: GiskardClient, project_key: str):
+    def upload(self, client: GiskardClient, project_key: Optional[str] = None):
         """Saves the test suite to the Giskard backend and sets its ID.
 
         Parameters
@@ -551,6 +654,9 @@ class Suite:
             The current instance of the test Suite to allow chained call.
 
         """
+        if project_key is None and self.project_key is None:
+            raise ValueError("Please provide the `project_key` to upload the Suite")
+
         if self.name is None:
             self.name = "Unnamed test suite"
 
@@ -568,6 +674,7 @@ class Suite:
             self.id = client.save_test_suite(self.to_dto(client, project_key, uploaded_uuid_status))
             analytics.track("hub:test_suite:uploaded")
 
+        self.project_key = project_key
         print(f"Test suite has been saved: {client.host_url}/main/projects/{project_key}/testing/suite/{self.id}")
 
         return self
@@ -619,7 +726,6 @@ class Suite:
         test_fn: Test,
         test_id: Optional[Union[int, str]] = None,
         display_name: Optional[str] = None,
-        suite_test_id: int = 0,
         **params,
     ) -> "Suite":
         """Add a test to the suite.
@@ -644,7 +750,7 @@ class Suite:
             The current instance of the test suite to allow chained calls.
 
         """
-        self.tests.append(generate_test_partial(test_fn, test_id, display_name, suite_test_id, **params))
+        self.tests.append(generate_test_partial(test_fn, test_id, display_name, **params))
 
         return self
 
@@ -828,6 +934,7 @@ class Suite:
 
         suite = Suite(name=suite_dto.name)
         suite.id = suite_id
+        suite.project_key = project_key
 
         for test_json in suite_dto.tests:
             test = GiskardTest.download(test_json.testUuid, client, None)

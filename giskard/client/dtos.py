@@ -1,7 +1,10 @@
 from typing import Any, Dict, List, Optional
 
+from enum import Enum
+
 from pydantic import Field
 
+from giskard.core.core import TestResultStatusEnum
 from giskard.core.validation import ConfiguredBaseModel
 
 
@@ -12,6 +15,10 @@ class TestInputDTO(ConfiguredBaseModel):
     params: List["TestInputDTO"] = Field(default_factory=list)
     is_alias: bool = False
     is_default_value: bool = False
+
+    @classmethod
+    def from_inputs_dict(cls, inputs: Dict[str, Any]) -> List["TestInputDTO"]:
+        return [cls(name=name, value=str(value), type=type(value).__qualname__) for name, value in inputs.items()]
 
 
 class SuiteTestDTO(ConfiguredBaseModel):
@@ -26,6 +33,66 @@ class TestSuiteDTO(ConfiguredBaseModel):
     project_key: str
     tests: List[SuiteTestDTO]
     function_inputs: List[TestInputDTO]
+
+
+class TestSuiteExecutionResult(str, Enum):
+    IN_PROGRESS = ("IN_PROGRESS",)
+    CANCELLED = ("CANCELLED",)
+    PASSED = ("PASSED",)
+    FAILED = ("FAILED",)
+    ERROR = "ERROR"
+
+
+class MLWorkerWSTestMessageType(str, Enum):
+    ERROR = ("ERROR",)
+    INFO = "INFO"
+
+
+class TestResultMessageDTO(ConfiguredBaseModel):
+    type: MLWorkerWSTestMessageType
+    text: str
+
+
+class SaveSuiteTestExecutionDetailsDTO(ConfiguredBaseModel):
+    inputs: Dict[str, List[str]]
+    outputs: List[str]
+    results: List[TestResultStatusEnum]
+    metadata: Dict[str, List[str]]
+
+
+class SaveSuiteTestExecutionDTO(ConfiguredBaseModel):
+    testUuid: str
+    suiteTestId: int
+    displayName: str
+    inputs: Dict[str, str]
+    arguments: Dict[str, TestInputDTO]
+    messages: List[TestResultMessageDTO]
+    actualSlicesSize: List[int]
+    referenceSlicesSize: List[int]
+    status: TestResultStatusEnum
+    partialUnexpectedIndexList: List[int]
+    unexpectedIndexList: List[int]
+    missingCount: int
+    missingPercent: float
+    unexpectedCount: int
+    unexpectedPercent: float
+    unexpectedPercentTotal: float
+    unexpectedPercentNonmissing: float
+    metric: float
+    metricName: str
+    failedIndexes: Dict[str, List[int]]
+    details: SaveSuiteTestExecutionDetailsDTO
+
+
+class SaveSuiteExecutionDTO(ConfiguredBaseModel):
+    label: str
+    suiteId: int
+    inputs: List[TestInputDTO]
+    result: TestSuiteExecutionResult
+    message: str
+    results: List[SaveSuiteTestExecutionDTO]
+    executionDate: str
+    completionDate: str
 
 
 class ServerInfo(ConfiguredBaseModel):
