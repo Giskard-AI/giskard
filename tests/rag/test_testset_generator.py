@@ -51,14 +51,15 @@ def make_testset_generator():
 
     testset_generator = TestsetGenerator(
         knowledge_base_df,
-        model_name="Test model",
-        model_description="This is a model for testing purpose.",
+        assistant_description="This is a model for testing purpose.",
         llm_client=llm_client,
         context_neighbors=3,
     )
-    testset_generator._rng = Mock()
-    testset_generator._rng.choice = Mock()
-    testset_generator._rng.choice.side_effect = list(query_embeddings) + [Document({"content": "Distracting content"})]
+    testset_generator.base_generator._rng = Mock()
+    testset_generator.base_generator._rng.choice = Mock()
+    testset_generator.base_generator._rng.choice.side_effect = list(query_embeddings) + [
+        Document({"content": "Distracting content"})
+    ]
 
     return testset_generator
 
@@ -77,10 +78,10 @@ Freeriding is a style of snowboarding or skiing performed on natural, un-groomed
 def test_testset_generation():
     testset_generator = make_testset_generator()
 
-    assert testset_generator._vector_store.index.d == 8
-    assert testset_generator._vector_store.embeddings.shape == (4, 8)
-    assert len(testset_generator._vector_store.documents) == 4
-    assert testset_generator._vector_store.documents[2].content.startswith(
+    assert testset_generator.base_generator._vector_store.index.d == 8
+    assert testset_generator.base_generator._vector_store.embeddings.shape == (4, 8)
+    assert len(testset_generator.base_generator._vector_store.documents) == 4
+    assert testset_generator.base_generator._vector_store.documents[2].content.startswith(
         "Scamorza is a Southern Italian cow's milk cheese."
     )
 
