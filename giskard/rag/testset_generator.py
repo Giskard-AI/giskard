@@ -1,31 +1,20 @@
 from typing import Optional, Sequence, Union
 
-import json
 import logging
 import uuid
-from enum import Enum
 
-import numpy as np
 import pandas as pd
 
-from ..llm.client import get_default_client
-from ..llm.client.base import LLMClient
-from .prompts import (
-    FIX_JSON_FORMAT_PROMPT,
-    DistractingQuestionPrompt,
-    QAGenerationPrompt,
-    QuestionComplexificationPrompt,
+from ..llm.client import LLMClient
+from .question_generators import (
+    ComplexQuestionsGenerator,
+    DifficultyLevel,
+    DistractingQuestionsGenerator,
+    QuestionsGeneratorBase,
 )
 from .testset import QATestset
-from .vector_store import VectorStore
 
 logger = logging.getLogger(__name__)
-
-
-class DifficultyLevel(int, Enum):
-    EASY = 1
-    COMPLEX = 2
-    DISTRACTING_ELEMENT = 3
 
 
 class TestsetGenerator:
@@ -50,10 +39,8 @@ class TestsetGenerator:
         single document "Q: [question]\\nA: [answer]" to generate questions.
     language: str = "en"
         The language used to generate questions (e.g. "fr", "de", ...)
-    model_name: str, optional
-        Name of the model to be tested, to get more fitting questions.
-    model_description: str, optional
-        Description of the model to be tested.
+    assistant_description: str, optional
+        Description of the assistant to be tested.
     context_neighbors: int
         The maximum number of extracted element from the knowledge base to get a relevant context for question generation
     context_similarity_threshold: float = 0.2
@@ -70,8 +57,7 @@ class TestsetGenerator:
         knowledge_base: pd.DataFrame,
         knowledge_base_columns: Sequence[str] = None,
         language: str = "en",
-        model_name: str = None,
-        model_description: str = None,
+        assistant_description: str = None,
         context_neighbors: int = 4,
         context_similarity_threshold: float = 0.2,
         context_window_length: int = 8192,
@@ -80,128 +66,27 @@ class TestsetGenerator:
         embedding_model: str = "text-embedding-ada-002",
         llm_client: Optional[LLMClient] = None,
         llm_temperature: float = 0.5,
-    ):
-        self._knowledge_base = knowledge_base
-        self._knowledge_base_columns = knowledge_base_columns
-        self._language = language
-        self._model_name = model_name
-        self._model_description = model_description
-        self._context_neighbors = context_neighbors
-        self._context_similarity_threshold = context_similarity_threshold
-        self._embedding_model = embedding_model
-        self._context_window_length = context_window_length
-        self._rng = np.random.default_rng(seed=seed)
-        self._include_examples = include_examples
-        self._vector_store_inst = None
-        self._llm_client = llm_client or get_default_client()
-        self._llm_temperature = llm_temperature
+    ) -> None:
+        self.base_generator = QuestionsGeneratorBase(
+            knowledge_base,
+            knowledge_base_columns,
+            language,
+            assistant_description,
+            context_neighbors,
+            context_similarity_threshold,
+            context_window_length,
+            seed,
+            include_examples,
+            embedding_model,
+            llm_client,
+            llm_temperature,
+        )
 
-    @property
-    def _vector_store(self):
-        if self._vector_store_inst is None:
-            logger.debug("Initializing vector store from knowledge base.")
-            self._vector_store_inst = VectorStore.from_df(
-                self._knowledge_base,
-                lambda query: self._llm_client.embeddings(query, model=self._embedding_model),
-                features=self._knowledge_base_columns,
-            )
-        return self._vector_store_inst
-
-    def _get_generator_method(self, level: DifficultyLevel):
-        mapping = {
-            DifficultyLevel.EASY: self._generate_question_easy,
-            DifficultyLevel.COMPLEX: self._generate_question_complex,
-            DifficultyLevel.DISTRACTING_ELEMENT: self._generate_question_distracting_element,
+        self.generators = {
+            DifficultyLevel.EASY: self.base_generator,
+            DifficultyLevel.COMPLEX: ComplexQuestionsGenerator(self.base_generator),
+            DifficultyLevel.DISTRACTING_ELEMENT: DistractingQuestionsGenerator(self.base_generator),
         }
-
-        try:
-            return mapping[level]
-        except KeyError:
-            raise ValueError(f"Invalid difficulty level: {level}.")
-
-    def _generate_question_easy(self, context: str) -> dict:
-        messages = QAGenerationPrompt.create_messages(
-            model_name=self._model_name,
-            model_description=self._model_description,
-            language=self._language,
-            user_content=context,
-        )
-
-        generated_qa = self._llm_complete(messages=messages)
-        question_metadata = {"difficulty": DifficultyLevel.EASY}
-        return generated_qa, question_metadata
-
-    def _generate_question_complex(self, context: str) -> dict:
-        generated_qa, question_metadata = self._generate_question_easy(context)
-
-        messages = QuestionComplexificationPrompt.create_messages(
-            model_name=self._model_name,
-            model_description=self._model_description,
-            language=self._language,
-            user_content=(generated_qa["question"], context),
-        )
-        question_metadata["difficulty"] = DifficultyLevel.COMPLEX
-        out = self._llm_complete(messages=messages)
-        generated_qa["question"] = out["question"]
-        return generated_qa, question_metadata
-
-    def _generate_question_distracting_element(self, context: str) -> dict:
-        generated_qa, question_metadata = self._generate_question_easy(context)
-
-        distracting_context = self._rng.choice(self._vector_store.documents).content
-        messages = DistractingQuestionPrompt.create_messages(
-            model_name=self._model_name,
-            model_description=self._model_description,
-            language=self._language,
-            user_content=(generated_qa["question"], generated_qa["answer"], distracting_context),
-        )
-        question_metadata["difficulty"] = DifficultyLevel.DISTRACTING_ELEMENT
-        question_metadata["distracting_context"] = distracting_context
-        out = self._llm_complete(messages=messages)
-        generated_qa["question"] = out["question"]
-        return generated_qa, question_metadata
-
-    def _get_random_document_group(self):
-        seed_embedding = self._rng.choice(self._vector_store.embeddings)
-        relevant_contexts = [
-            context
-            for (context, score) in self._vector_store.vector_similarity_search_with_score(
-                seed_embedding, k=self._context_neighbors
-            )
-            if score < self._context_similarity_threshold
-        ]
-
-        return relevant_contexts
-
-    def _prevent_context_window_overflow(self, prompt: str):
-        # Prevent context overflow
-        # general rule of thumbs to count tokens: 1 token ~ 4 characters
-        # https://help.openai.com/en/articles/4936856-what-are-tokens-and-how-to-count-them
-        return prompt[: self._context_window_length * 4]
-
-    def _llm_complete(self, messages: Sequence[dict]) -> dict:
-        try:
-            out = self._llm_client.complete(
-                messages=messages,
-                temperature=self._llm_temperature,
-                caller_id=self.__class__.__name__,
-            )
-
-            return json.loads(out.content, strict=False)
-        except json.decoder.JSONDecodeError:
-            logger.warning("JSON decoding error, trying to fix the JSON string.")
-            return self._try_fix_json_message(out.content)
-
-    def _try_fix_json_message(self, incorrect_json: str):
-        out = self._llm_client.complete(
-            messages=[
-                {"role": "system", "content": FIX_JSON_FORMAT_PROMPT},
-                {"role": "user", "content": incorrect_json},
-            ],
-            temperature=0,
-            caller_id=self.__class__.__name__,
-        )
-        return json.loads(out.content)
 
     def generate_testset(
         self,
@@ -231,25 +116,48 @@ class TestsetGenerator:
         for level in difficulty:
             for idx in range(num_questions):
                 logger.info(f"Generating question {idx + 1}/{num_questions} for difficulty level {str(level)}.")
-                context_docs = self._get_random_document_group()
-                context = QAGenerationPrompt.format_context(context_docs)
-
-                generation_fn = self._get_generator_method(level)
-
+                context_docs = self.base_generator._get_random_document_group()
                 try:
-                    generated_qa, question_metadata = generation_fn(context)
+                    generated_qa, question_metadata = self.generators[level]._generate_question(context_docs)
                 except Exception as e:
                     logger.error(f"Encountered error in question generation: {e}. Skipping.")
                     continue
+
+                reference_context = question_metadata["reference_context"]
+                del question_metadata["reference_context"]
 
                 generated_questions.append(
                     {
                         "question": generated_qa["question"],
                         "reference_answer": generated_qa["answer"],
-                        "reference_context": context,
+                        "reference_context": reference_context,
                         "id": str(uuid.uuid4()),
                         "metadata": question_metadata,
                     }
                 )
 
         return QATestset(pd.DataFrame(generated_questions).set_index("id"))
+
+
+def generate_testset(
+    knowledge_base: pd.DataFrame, num_questions: int = 30, conversational: bool = False, **kwargs
+) -> QATestset:
+    """Generate a testset from a knowledge base.
+
+    Parameters
+    ----------
+    knowledge_base : pd.DataFrame
+        The knowledge base to generate questions from.
+    num_questions : int
+        The number of questions to generate. By default 30.
+    conversational : bool
+        Whether to generate conversational questions or not. By default False.
+
+    Returns
+    -------
+    QATestset
+        The generated test set.
+    """
+    return TestsetGenerator(knowledge_base, **kwargs).generate_testset(
+        num_questions=num_questions, difficulty=[1, 2, 3]
+    )

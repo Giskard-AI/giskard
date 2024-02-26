@@ -1,4 +1,4 @@
 from .testset import QATestset
-from .testset_generator import DifficultyLevel, TestsetGenerator
+from .testset_generator import DifficultyLevel, TestsetGenerator, generate_testset
 
-__all__ = ["TestsetGenerator", "QATestset", "DifficultyLevel"]
+__all__ = ["TestsetGenerator", "QATestset", "DifficultyLevel", "generate_testset"]
