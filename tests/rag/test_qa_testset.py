@@ -12,35 +12,39 @@ def make_testset_df():
                 "question": "Which milk is used to make Camembert?",
                 "reference_answer": "Cow's milk is used to make Camembert.",
                 "reference_context": "Camembert is a moist, soft, creamy, surface-ripened cow's milk cheese.",
-                "metadata": {"difficulty": 1, "color": "blue"},
+                "metadata": {"question_type": 1, "color": "blue"},
             },
             {
                 "id": "2",
                 "question": "Where is Scarmorza from?",
                 "reference_answer": "Scarmorza is from Southern Italy.",
                 "reference_context": "Scamorza is a Southern Italian cow's milk cheese.",
-                "metadata": {"difficulty": 1, "color": "red"},
+                "metadata": {"question_type": 1, "color": "red"},
             },
             {
                 "id": "3",
                 "question": "Where is Scarmorza from?",
                 "reference_answer": "Scarmorza is from Southern Italy.",
                 "reference_context": "Scamorza is a Southern Italian cow's milk cheese.",
-                "metadata": {"difficulty": 1, "color": "blue"},
+                "metadata": {"question_type": 1, "color": "blue"},
             },
             {
                 "id": "4",
                 "question": "Where is Scarmorza from?",
                 "reference_answer": "Scarmorza is from Southern Italy.",
                 "reference_context": "Scamorza is a Southern Italian cow's milk cheese.",
-                "metadata": {"difficulty": 2, "color": "red"},
+                "metadata": {"question_type": 2, "color": "red"},
             },
             {
                 "id": "5",
                 "question": "Where is Scarmorza from?",
                 "reference_answer": "Scarmorza is from Southern Italy.",
                 "reference_context": "Scamorza is a Southern Italian cow's milk cheese.",
-                "metadata": {"difficulty": 3, "color": "blue", "distracting_context": "This is a distracting context"},
+                "metadata": {
+                    "question_type": 3,
+                    "color": "blue",
+                    "distracting_context": "This is a distracting context",
+                },
             },
         ]
     ).set_index("id")
@@ -51,7 +55,7 @@ def test_qa_testset_creation():
     testset = QATestset(df)
 
     assert testset._dataframe.equals(df)
-    assert testset._dataframe["metadata"].iloc[2] == {"difficulty": 1, "color": "blue"}
+    assert testset._dataframe["metadata"].iloc[2] == {"question_type": 1, "color": "blue"}
 
 
 def test_testset_to_pandas_conversion():
@@ -61,13 +65,13 @@ def test_testset_to_pandas_conversion():
 
     assert len(df) == 5
 
-    df = testset.to_pandas(filters={"difficulty": [1]})
+    df = testset.to_pandas(filters={"question_type": [1]})
     assert len(df) == 3
-    assert all(testset._dataframe["metadata"][idx]["difficulty"] == 1 for idx in df.index)
+    assert all(testset._dataframe["metadata"][idx]["question_type"] == 1 for idx in df.index)
 
-    df = testset.to_pandas(filters={"difficulty": [3]})
+    df = testset.to_pandas(filters={"question_type": [3]})
     assert len(df) == 1
-    assert testset._dataframe["metadata"][df.index[0]]["difficulty"] == 3
+    assert testset._dataframe["metadata"][df.index[0]]["question_type"] == 3
     assert testset._dataframe["metadata"][df.index[0]]["distracting_context"] == "This is a distracting context"
 
 
@@ -82,7 +86,7 @@ def test_testset_to_dataset_conversion():
 
     testset = QATestset(make_testset_df())
 
-    dataset = testset.to_dataset(filters={"difficulty": [1]})
+    dataset = testset.to_dataset(filters={"question_type": [1]})
     assert len(dataset) == 3
 
 
@@ -99,6 +103,6 @@ def test_qa_testset_saving_loading(tmp_path):
 def test_metadata_value_retrieval():
     testset = QATestset(make_testset_df())
 
-    assert testset.get_metadata_values("difficulty") == [1, 2, 3]
+    assert testset.get_metadata_values("question_type") == [1, 2, 3]
     assert testset.get_metadata_values("color") == ["blue", "red"]
     assert testset.get_metadata_values("distracting_context") == ["This is a distracting context"]

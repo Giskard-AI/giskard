@@ -8,8 +8,8 @@ import pandas as pd
 from ..llm.client import LLMClient
 from .question_generators import (
     ComplexQuestionsGenerator,
-    DifficultyLevel,
     DistractingQuestionsGenerator,
+    QuestionTypes,
     SimpleQuestionGenerator,
 )
 from .testset import QATestset
@@ -26,7 +26,7 @@ class TestsetGenerator:
     - question: a question about a part of the knowledge base
     - reference_answer: the expected answer according to the knowledge base
     - reference_context: relevant elements directly extracted from the knowledge base
-    - difficulty_level: an indicator of how difficult the question is
+    - question_type: an indicator of how difficult the question is
 
     Parameters
     ----------
@@ -83,25 +83,25 @@ class TestsetGenerator:
         )
 
         self.generators = {
-            DifficultyLevel.EASY: self.base_generator,
-            DifficultyLevel.COMPLEX: ComplexQuestionsGenerator(self.base_generator),
-            DifficultyLevel.DISTRACTING_ELEMENT: DistractingQuestionsGenerator(self.base_generator),
+            QuestionTypes.EASY: self.base_generator,
+            QuestionTypes.COMPLEX: ComplexQuestionsGenerator(self.base_generator),
+            QuestionTypes.DISTRACTING_ELEMENT: DistractingQuestionsGenerator(self.base_generator),
         }
 
     def generate_testset(
         self,
         num_questions: int = 10,
-        difficulty: Union[DifficultyLevel, Sequence[DifficultyLevel]] = DifficultyLevel.EASY,
+        question_types: Union[QuestionTypes, Sequence[QuestionTypes]] = QuestionTypes.EASY,
     ) -> QATestset:
         """Generates a testset from the knowledge base.
 
         Parameters
         ----------
         num_questions : int
-            The number of question to generate for each difficulty level. By default 10.
-        difficulty : Union[DifficultyLevel, Sequence[DifficultyLevel]]
-            The difficulty level of the questions to generate. Can be 1 (:attr:`DifficultyLevel.EASY`), 2 (:attr:`DifficultyLevel.COMPLEX`),
-            3 (:attr:`DifficultyLevel.DISTRACTING_ELEMENT`) or a list of these values. By default will use the easy level.
+            The number of question to generate for each question type. By default 10.
+        question_types : Union[QuestionTypes, Sequence[QuestionTypes]]
+            The types of the questions to generate. Can be 1 (:attr:`QuestionTypes.EASY`), 2 (:attr:`QuestionTypes.COMPLEX`),
+            3 (:attr:`QuestionTypes.DISTRACTING_ELEMENT`) or a list of these values. By default will use the easy level.
 
         Returns
         -------
@@ -109,16 +109,16 @@ class TestsetGenerator:
             The generated test set.
 
         """
-        if not isinstance(difficulty, Sequence):
-            difficulty = [difficulty]
+        if not isinstance(question_types, Sequence):
+            question_types = [question_types]
 
         generated_questions = []
-        for level in difficulty:
+        for q_type in question_types:
             for idx in range(num_questions):
-                logger.info(f"Generating question {idx + 1}/{num_questions} for difficulty level {str(level)}.")
+                logger.info(f"Generating question {idx + 1}/{num_questions} for question type {q_type.name}.")
                 context_docs = self.base_generator._get_random_document_group()
                 try:
-                    generated_qa, question_metadata = self.generators[level]._generate_question(context_docs)
+                    generated_qa, question_metadata = self.generators[q_type]._generate_question(context_docs)
                 except Exception as e:
                     logger.error(f"Encountered error in question generation: {e}. Skipping.")
                     continue
@@ -159,5 +159,5 @@ def generate_testset(
         The generated test set.
     """
     return TestsetGenerator(knowledge_base, **kwargs).generate_testset(
-        num_questions=num_questions, difficulty=[1, 2, 3]
+        num_questions=num_questions, question_types=[1, 2, 3]
     )

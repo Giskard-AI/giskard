@@ -2,8 +2,8 @@ from typing import Sequence
 
 from ..vector_store import Document
 from .prompt import QAGenerationPrompt
+from .question_types import QuestionTypes
 from .simple_questions import SimpleQuestionGenerator
-from .utils import DifficultyLevel
 
 COMPLEXIFICATION_SYSTEM_PROMPT = """You are an expert at writing questions. 
 Your task is to re-write questions that will be used to evaluate the following assistant:
@@ -73,7 +73,7 @@ class ComplexQuestionsGenerator:
             language=self.base_generator._language,
             user_input={"question": generated_qa["question"], "context": question_metadata["reference_context"]},
         )
-        question_metadata["difficulty"] = DifficultyLevel.COMPLEX
+        question_metadata["question_type"] = QuestionTypes.COMPLEX
         out = self.base_generator._llm_complete(messages=messages)
         generated_qa["question"] = out["question"]
         return generated_qa, question_metadata

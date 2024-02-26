@@ -10,7 +10,7 @@ from ...llm.client import get_default_client
 from ...llm.client.base import LLMClient, LLMMessage
 from ..vector_store import Document, VectorStore
 from .prompt import QAGenerationPrompt
-from .utils import DifficultyLevel
+from .question_types import QuestionTypes
 
 logger = logging.getLogger(__name__)
 
@@ -151,6 +151,6 @@ class SimpleQuestionGenerator:
         )
 
         generated_qa = self._llm_complete(messages=messages)
-        question_metadata = {"difficulty": DifficultyLevel.EASY, "reference_context": context}
+        question_metadata = {"question_type": QuestionTypes.EASY, "reference_context": context}
 
         return generated_qa, question_metadata

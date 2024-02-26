@@ -99,11 +99,11 @@ def test_testset_generation():
     assert df.iloc[1]["reference_context"] == "\n------\n"
 
 
-def test_testset_difficulty_levels():
+def test_testset_question_types():
     testset_generator = make_testset_generator()
-    testset = testset_generator.generate_testset(num_questions=1, difficulty=[1, 2, 3])
+    testset = testset_generator.generate_testset(num_questions=1, question_types=[1, 2, 3])
     assert len(testset._dataframe["metadata"]) == 3
     for row_id in testset.to_pandas().index:
-        assert testset._dataframe["metadata"][row_id]["difficulty"] in [1, 2, 3]
-        if testset._dataframe["metadata"][row_id]["difficulty"] == 3:
+        assert testset._dataframe["metadata"][row_id]["question_type"] in [1, 2, 3]
+        if testset._dataframe["metadata"][row_id]["question_type"] == 3:
             assert testset._dataframe["metadata"][row_id]["distracting_context"] == "Distracting content"

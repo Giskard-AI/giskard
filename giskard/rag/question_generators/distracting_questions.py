@@ -2,8 +2,8 @@ from typing import Sequence
 
 from ..vector_store import Document
 from .prompt import QAGenerationPrompt
+from .question_types import QuestionTypes
 from .simple_questions import SimpleQuestionGenerator
-from .utils import DifficultyLevel
 
 DISTRACTING_SYSTEM_PROMPT = """You are an expert at rewriting questions.
 Your task is to re-write questions that will be used to evaluate the following assistant:
@@ -67,7 +67,7 @@ class DistractingQuestionsGenerator:
                 "context": distracting_context,
             },
         )
-        question_metadata["difficulty"] = DifficultyLevel.DISTRACTING_ELEMENT
+        question_metadata["question_type"] = QuestionTypes.DISTRACTING_ELEMENT
         question_metadata["distracting_context"] = distracting_context
         out = self.base_generator._llm_complete(messages=messages)
         generated_qa["question"] = out["question"]
