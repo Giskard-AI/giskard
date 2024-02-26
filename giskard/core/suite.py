@@ -163,7 +163,7 @@ class TestSuiteResult:
 
     def _to_dto(self, label: Optional[str]) -> SaveSuiteExecutionDTO:
         return SaveSuiteExecutionDTO(
-            label=label or self.execution_date.isoformat(),
+            label=label or self.execution_date.isoformat().replace("T", " ").split(".")[0],
             suiteId=self.suite.id,
             inputs=TestInputDTO.from_inputs_dict(self.inputs),
             result=TestSuiteExecutionResult.PASSED if self.passed else TestSuiteExecutionResult.FAILED,
