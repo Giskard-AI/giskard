@@ -1,6 +1,6 @@
 from typing import Sequence
 
-from ..vector_store import Document
+from ..knowledge_base import Document
 from .prompt import QAGenerationPrompt
 from .question_types import QuestionTypes
 from .simple_questions import SimpleQuestionGenerator
@@ -45,9 +45,9 @@ DISTRACTING_EXAMPLE_OUTPUT = """{
 
 class DistractingQuestionsGenerator:
     def __init__(self, base_generator: SimpleQuestionGenerator):
-        self.base_generator = base_generator
+        self._base_generator = base_generator
 
-        self.prompt = QAGenerationPrompt(
+        self._prompt = QAGenerationPrompt(
             system_prompt=DISTRACTING_SYSTEM_PROMPT,
             example_input=DISTRACTING_EXAMPLE_INPUT,
             example_output=DISTRACTING_EXAMPLE_OUTPUT,
@@ -55,13 +55,13 @@ class DistractingQuestionsGenerator:
         )
 
     def _generate_question(self, context_documents: Sequence[Document]) -> dict:
-        generated_qa, question_metadata = self.base_generator._generate_question(context_documents)
+        generated_qa, question_metadata = self._base_generator._generate_question(context_documents)
 
-        distracting_context = self.base_generator._rng.choice(self.base_generator._vector_store.documents).content
-        messages = self.prompt.to_messages(
+        distracting_context = self._base_generator._knowledge_base._get_random_document().content
+        messages = self._prompt.to_messages(
             system_prompt_input={
-                "assistant_description": self.base_generator._assistant_description,
-                "language": self.base_generator._language,
+                "assistant_description": self._base_generator._assistant_description,
+                "language": self._base_generator._language,
             },
             user_input={
                 "question": generated_qa["question"],
@@ -71,6 +71,6 @@ class DistractingQuestionsGenerator:
         )
         question_metadata["question_type"] = QuestionTypes.DISTRACTING_ELEMENT
         question_metadata["distracting_context"] = distracting_context
-        out = self.base_generator._llm_complete(messages=messages)
+        out = self._base_generator._llm_complete(messages=messages)
         generated_qa["question"] = out["question"]
         return generated_qa, question_metadata

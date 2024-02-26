@@ -6,8 +6,10 @@ import uuid
 import pandas as pd
 
 from ..llm.client import LLMClient
+from .knowledge_base import KnowledgeBase
 from .question_generators import (
     ComplexQuestionsGenerator,
+    ConversationalQuestionsGenerator,
     DistractingQuestionsGenerator,
     DoubleQuestionsGenerator,
     QuestionTypes,
@@ -56,33 +58,26 @@ class TestsetGenerator:
 
     def __init__(
         self,
-        knowledge_base: pd.DataFrame,
-        knowledge_base_columns: Sequence[str] = None,
+        knowledge_base: KnowledgeBase,
         language: str = "en",
         assistant_description: str = None,
-        context_neighbors: int = 4,
-        context_similarity_threshold: float = 0.2,
         context_window_length: int = 8192,
         seed: int = None,
         include_examples: bool = True,
-        embedding_model: str = "text-embedding-ada-002",
         llm_client: Optional[LLMClient] = None,
         llm_temperature: float = 0.5,
     ) -> None:
         self.base_generator = SimpleQuestionGenerator(
             knowledge_base,
-            knowledge_base_columns,
             language,
             assistant_description,
-            context_neighbors,
-            context_similarity_threshold,
             context_window_length,
             seed,
             include_examples,
-            embedding_model,
             llm_client,
             llm_temperature,
         )
+        self.knowledge_base = knowledge_base
 
         self.generators = {
             QuestionTypes.EASY: self.base_generator,
@@ -90,6 +85,7 @@ class TestsetGenerator:
             QuestionTypes.DISTRACTING_ELEMENT: DistractingQuestionsGenerator(self.base_generator),
             QuestionTypes.SITUATIONAL: SituationalQuestionsGenerator(self.base_generator),
             QuestionTypes.DOUBLE_QUESTION: DoubleQuestionsGenerator(self.base_generator),
+            QuestionTypes.CONVERSATIONAL: ConversationalQuestionsGenerator(self.base_generator),
         }
 
     def generate_testset(
@@ -122,7 +118,7 @@ class TestsetGenerator:
                 logger.info(
                     f"Generating question {idx + 1}/{num_questions} for question type {QuestionTypes(q_type).name}."
                 )
-                context_docs = self.base_generator._get_random_document_group()
+                context_docs = self.knowledge_base._get_random_document_group()
                 try:
                     generated_qa, question_metadata = self.generators[q_type]._generate_question(context_docs)
                 except Exception as e:
@@ -130,14 +126,12 @@ class TestsetGenerator:
                     logger.exception(e)
                     continue
 
-                reference_context = question_metadata["reference_context"]
-                del question_metadata["reference_context"]
-
                 generated_questions.append(
                     {
                         "question": generated_qa["question"],
                         "reference_answer": generated_qa["answer"],
-                        "reference_context": reference_context,
+                        "reference_context": question_metadata.pop("reference_context"),
+                        "conversation_history": question_metadata.pop("conversation_history", []),
                         "id": str(uuid.uuid4()),
                         "metadata": question_metadata,
                     }

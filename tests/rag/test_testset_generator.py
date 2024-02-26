@@ -5,10 +5,10 @@ import pandas as pd
 
 from giskard.llm.client import LLMMessage
 from giskard.rag import TestsetGenerator
-from giskard.rag.vector_store import Document
+from giskard.rag.knowledge_base import Document, KnowledgeBase
 
 
-def make_knowledge_base_df():
+def make_knowledge_base(**kwargs):
     knowledge_base_df = pd.DataFrame(
         [
             {"context": "Camembert is a moist, soft, creamy, surface-ripened cow's milk cheese."},
@@ -21,7 +21,8 @@ def make_knowledge_base_df():
             },
         ]
     )
-    return knowledge_base_df
+
+    return KnowledgeBase.from_df(knowledge_base_df, **kwargs)
 
 
 def make_testset_generator():
@@ -47,17 +48,16 @@ def make_testset_generator():
 
     llm_client.embeddings.side_effect = [kb_embeddings]
 
-    knowledge_base_df = make_knowledge_base_df()
+    knowledge_base_df = make_knowledge_base(llm_client=llm_client, context_neighbors=3)
 
     testset_generator = TestsetGenerator(
         knowledge_base_df,
         assistant_description="This is a model for testing purpose.",
         llm_client=llm_client,
-        context_neighbors=3,
     )
-    testset_generator.base_generator._rng = Mock()
-    testset_generator.base_generator._rng.choice = Mock()
-    testset_generator.base_generator._rng.choice.side_effect = list(query_embeddings) + [
+    testset_generator.knowledge_base._rng = Mock()
+    testset_generator.knowledge_base._rng.choice = Mock()
+    testset_generator.knowledge_base._rng.choice.side_effect = list(query_embeddings) + [
         Document({"content": "Distracting content"})
     ]
 
@@ -78,10 +78,10 @@ Freeriding is a style of snowboarding or skiing performed on natural, un-groomed
 def test_testset_generation():
     testset_generator = make_testset_generator()
 
-    assert testset_generator.base_generator._vector_store.index.d == 8
-    assert testset_generator.base_generator._vector_store.embeddings.shape == (4, 8)
-    assert len(testset_generator.base_generator._vector_store.documents) == 4
-    assert testset_generator.base_generator._vector_store.documents[2].content.startswith(
+    assert testset_generator.base_generator._knowledge_base._index.d == 8
+    assert testset_generator.base_generator._knowledge_base._embeddings.shape == (4, 8)
+    assert len(testset_generator.base_generator._knowledge_base._documents) == 4
+    assert testset_generator.base_generator._knowledge_base._documents[2].content.startswith(
         "Scamorza is a Southern Italian cow's milk cheese."
     )
 

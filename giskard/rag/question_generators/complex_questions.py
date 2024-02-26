@@ -1,6 +1,6 @@
 from typing import Sequence
 
-from ..vector_store import Document
+from ..knowledge_base import Document
 from .prompt import QAGenerationPrompt
 from .question_types import QuestionTypes
 from .simple_questions import SimpleQuestionGenerator
@@ -56,9 +56,9 @@ COMPLEXIFICATION_EXAMPLE_OUTPUT = """{
 
 class ComplexQuestionsGenerator:
     def __init__(self, base_generator: SimpleQuestionGenerator):
-        self.base_generator = base_generator
+        self._base_generator = base_generator
 
-        self.prompt = QAGenerationPrompt(
+        self._prompt = QAGenerationPrompt(
             system_prompt=COMPLEXIFICATION_SYSTEM_PROMPT,
             example_input=COMPLEXIFICATION_EXAMPLE_INPUT,
             example_output=COMPLEXIFICATION_EXAMPLE_OUTPUT,
@@ -66,16 +66,16 @@ class ComplexQuestionsGenerator:
         )
 
     def _generate_question(self, context_documents: Sequence[Document]) -> dict:
-        generated_qa, question_metadata = self.base_generator._generate_question(context_documents)
+        generated_qa, question_metadata = self._base_generator._generate_question(context_documents)
 
-        messages = self.prompt.to_messages(
+        messages = self._prompt.to_messages(
             system_prompt_input={
-                "assistant_description": self.base_generator._assistant_description,
-                "language": self.base_generator._language,
+                "assistant_description": self._base_generator._assistant_description,
+                "language": self._base_generator._language,
             },
             user_input={"question": generated_qa["question"], "context": question_metadata["reference_context"]},
         )
         question_metadata["question_type"] = QuestionTypes.COMPLEX.value
-        out = self.base_generator._llm_complete(messages=messages)
+        out = self._base_generator._llm_complete(messages=messages)
         generated_qa["question"] = out["question"]
         return generated_qa, question_metadata

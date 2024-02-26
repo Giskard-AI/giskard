@@ -2,7 +2,7 @@ from typing import Sequence
 
 import logging
 
-from ..vector_store import Document
+from ..knowledge_base import Document
 from .prompt import QAGenerationPrompt
 from .question_types import QuestionTypes
 from .simple_questions import SimpleQuestionGenerator
@@ -51,24 +51,24 @@ DOUBLE_QUESTION_USER_TEMPLATE = """<question1>{question_1}</question1>
 
 class DoubleQuestionsGenerator:
     def __init__(self, base_generator: SimpleQuestionGenerator):
-        self.base_generator = base_generator
+        self._base_generator = base_generator
 
-        self.linked_question_generation_prompt = QAGenerationPrompt(
+        self._linked_question_generation_prompt = QAGenerationPrompt(
             system_prompt=LINKED_QUESTION_SYSTEM_PROMPT,
         )
 
-        self.prompt = QAGenerationPrompt(
+        self._prompt = QAGenerationPrompt(
             system_prompt=DOUBLE_QUESTION_SYSTEM_PROMPT,
             user_input_template=DOUBLE_QUESTION_USER_TEMPLATE,
         )
 
     def _generate_question(self, context_documents: Sequence[Document]) -> dict:
         reference_context = "\n------\n".join(["", *[doc.content for doc in context_documents], ""])
-        linked_questions = self.base_generator._llm_complete(
-            self.linked_question_generation_prompt.to_messages(
+        linked_questions = self._base_generator._llm_complete(
+            self._linked_question_generation_prompt.to_messages(
                 system_prompt_input={
-                    "assistant_description": self.base_generator._assistant_description,
-                    "language": self.base_generator._language,
+                    "assistant_description": self._base_generator._assistant_description,
+                    "language": self._base_generator._language,
                 },
                 user_input=reference_context,
             )
@@ -79,9 +79,9 @@ class DoubleQuestionsGenerator:
             "original_questions": linked_questions,
         }
 
-        messages = self.prompt.to_messages(
+        messages = self._prompt.to_messages(
             system_prompt_input={
-                "language": self.base_generator._language,
+                "language": self._base_generator._language,
             },
             user_input={
                 "question_1": linked_questions[0]["question"],
@@ -90,6 +90,6 @@ class DoubleQuestionsGenerator:
                 "answer_2": linked_questions[1]["answer"],
             },
         )
-        out = self.base_generator._llm_complete(messages=messages)
+        out = self._base_generator._llm_complete(messages=messages)
 
         return out, question_metadata

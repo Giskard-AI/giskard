@@ -2,7 +2,7 @@ from typing import Sequence
 
 import logging
 
-from ..vector_store import Document
+from ..knowledge_base import Document
 from .prompt import QAGenerationPrompt
 from .question_types import QuestionTypes
 from .simple_questions import SimpleQuestionGenerator
@@ -59,32 +59,32 @@ SITUATIONAL_QUESTION_USER_TEMPLATE = """<question>
 
 class SituationalQuestionsGenerator:
     def __init__(self, base_generator: SimpleQuestionGenerator):
-        self.base_generator = base_generator
+        self._base_generator = base_generator
 
-        self.situation_generation_prompt = QAGenerationPrompt(
+        self._situation_generation_prompt = QAGenerationPrompt(
             system_prompt=SITUATIONAL_CONTEXT_SYSTEM_PROMPT,
             user_input_template=SITUATIONAL_CONTEXT_INPUT,
         )
 
-        self.prompt = QAGenerationPrompt(
+        self._prompt = QAGenerationPrompt(
             system_prompt=SITUATIONAL_QUESTION_SYSTEM_PROMPT,
             user_input_template=SITUATIONAL_QUESTION_USER_TEMPLATE,
         )
 
     def _generate_question(self, context_documents: Sequence[Document]) -> dict:
-        generated_qa, question_metadata = self.base_generator._generate_question(context_documents)
+        generated_qa, question_metadata = self._base_generator._generate_question(context_documents)
 
-        situation_generation_messages = self.situation_generation_prompt.to_messages(
+        situation_generation_messages = self._situation_generation_prompt.to_messages(
             system_prompt_input={},
             user_input={
-                "assistant_description": self.base_generator._assistant_description,
+                "assistant_description": self._base_generator._assistant_description,
                 "context": question_metadata["reference_context"],
             },
         )
 
         situational_context = "A user of the chatbot asks a general question."
         try:
-            situational_context = self.base_generator._llm_client.complete(
+            situational_context = self._base_generator._llm_client.complete(
                 messages=situation_generation_messages
             ).content
         except Exception as e:
@@ -92,10 +92,10 @@ class SituationalQuestionsGenerator:
                 f"Encountered error in situational context generation: {e}. Using default situational context instead."
             )
 
-        messages = self.prompt.to_messages(
+        messages = self._prompt.to_messages(
             system_prompt_input={
-                "assistant_description": self.base_generator._assistant_description,
-                "language": self.base_generator._language,
+                "assistant_description": self._base_generator._assistant_description,
+                "language": self._base_generator._language,
             },
             user_input={
                 "question": generated_qa["question"],
@@ -104,7 +104,7 @@ class SituationalQuestionsGenerator:
             },
         )
 
-        out = self.base_generator._llm_complete(messages=messages)
+        out = self._base_generator._llm_complete(messages=messages)
         generated_qa["question"] = out["question"]
 
         question_metadata["question_type"] = QuestionTypes.SITUATIONAL.value

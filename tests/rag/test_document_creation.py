@@ -1,6 +1,6 @@
 import pytest
 
-from giskard.rag.vector_store import Document
+from giskard.rag.knowledge_base import Document
 
 
 def test_single_feature_document_creation():

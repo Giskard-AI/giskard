@@ -4,11 +4,10 @@ import json
 import logging
 
 import numpy as np
-import pandas as pd
 
 from ...llm.client import get_default_client
 from ...llm.client.base import LLMClient, LLMMessage
-from ..vector_store import Document, VectorStore
+from ..knowledge_base import Document, KnowledgeBase
 from .prompt import QAGenerationPrompt
 from .question_types import QuestionTypes
 
@@ -53,26 +52,18 @@ QA_GENERATION_EXAMPLE_OUTPUT = """{
 class SimpleQuestionGenerator:
     def __init__(
         self,
-        knowledge_base: pd.DataFrame,
-        knowledge_base_columns: Sequence[str] = None,
+        knowledge_base: KnowledgeBase,
         language: str = "en",
         assistant_description: str = "This assistant is a chatbot that answers question from users.",
-        context_neighbors: int = 4,
-        context_similarity_threshold: float = 0.2,
         context_window_length: int = 8192,
         seed: int = None,
         include_examples: bool = True,
-        embedding_model: str = "text-embedding-ada-002",
         llm_client: Optional[LLMClient] = None,
         llm_temperature: float = 0.5,
     ):
         self._knowledge_base = knowledge_base
-        self._knowledge_base_columns = knowledge_base_columns
         self._language = language
         self._assistant_description = assistant_description
-        self._context_neighbors = context_neighbors
-        self._context_similarity_threshold = context_similarity_threshold
-        self._embedding_model = embedding_model
         self._context_window_length = context_window_length
         self._rng = np.random.default_rng(seed=seed)
         self._include_examples = include_examples
@@ -80,40 +71,11 @@ class SimpleQuestionGenerator:
         self._llm_client = llm_client or get_default_client()
         self._llm_temperature = llm_temperature
 
-        self.prompt = QAGenerationPrompt(
+        self._prompt = QAGenerationPrompt(
             system_prompt=QA_GENERATION_SYSTEM_PROMPT,
             example_input=QA_GENERATION_EXAMPLE_INPUT,
             example_output=QA_GENERATION_EXAMPLE_OUTPUT,
         )
-
-    @property
-    def _vector_store(self):
-        if self._vector_store_inst is None:
-            logger.debug("Initializing vector store from knowledge base.")
-            self._vector_store_inst = VectorStore.from_df(
-                self._knowledge_base,
-                lambda query: self._llm_client.embeddings(query, model=self._embedding_model),
-                features=self._knowledge_base_columns,
-            )
-        return self._vector_store_inst
-
-    def _get_random_document_group(self):
-        seed_embedding = self._rng.choice(self._vector_store.embeddings)
-        relevant_contexts = [
-            context
-            for (context, score) in self._vector_store.vector_similarity_search_with_score(
-                seed_embedding, k=self._context_neighbors
-            )
-            if score < self._context_similarity_threshold
-        ]
-
-        return relevant_contexts
-
-    def _prevent_context_window_overflow(self, prompt: str):
-        # Prevent context overflow
-        # general rule of thumbs to count tokens: 1 token ~ 4 characters
-        # https://help.openai.com/en/articles/4936856-what-are-tokens-and-how-to-count-them
-        return prompt[: self._context_window_length * 4]
 
     def _llm_complete(self, messages: Sequence[LLMMessage]) -> dict:
         try:
@@ -144,7 +106,7 @@ class SimpleQuestionGenerator:
 
     def _generate_question(self, context_documents: Sequence[Document]) -> dict:
         context = "\n------\n".join(["", *[doc.content for doc in context_documents], ""])
-        messages = self.prompt.to_messages(
+        messages = self._prompt.to_messages(
             system_prompt_input={"assistant_description": self._assistant_description, "language": self._language},
             user_input=context,
         )

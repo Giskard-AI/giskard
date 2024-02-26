@@ -8,6 +8,5 @@ class QuestionTypes(int, Enum):
     SITUATIONAL = 4
     DOUBLE_QUESTION = 5
     CONVERSATIONAL = 6
-    REASONING = 7
-    MULTI_CONTEXT = 8
-    OUT_OF_SCOPE = 9
+    MULTI_CONTEXT = 7
+    OUT_OF_SCOPE = 8
