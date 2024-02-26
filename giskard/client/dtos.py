@@ -22,7 +22,7 @@ class TestInputDTO(ConfiguredBaseModel):
 
 
 class SuiteTestDTO(ConfiguredBaseModel):
-    id: int
+    id: Optional[int]
     testUuid: str
     functionInputs: Dict[str, TestInputDTO]
     displayName: Optional[str] = None
@@ -81,7 +81,7 @@ class SaveSuiteTestExecutionDTO(ConfiguredBaseModel):
     metric: float
     metricName: str
     failedIndexes: Dict[str, List[int]]
-    details: SaveSuiteTestExecutionDetailsDTO
+    details: Optional[SaveSuiteTestExecutionDetailsDTO]
 
 
 class SaveSuiteExecutionDTO(ConfiguredBaseModel):
