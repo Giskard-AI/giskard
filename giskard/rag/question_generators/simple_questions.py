@@ -50,7 +50,7 @@ QA_GENERATION_EXAMPLE_OUTPUT = """{
 }"""
 
 
-class QuestionsGeneratorBase:
+class SimpleQuestionGenerator:
     def __init__(
         self,
         knowledge_base: pd.DataFrame,

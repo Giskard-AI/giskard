@@ -10,7 +10,7 @@ from .question_generators import (
     ComplexQuestionsGenerator,
     DifficultyLevel,
     DistractingQuestionsGenerator,
-    QuestionsGeneratorBase,
+    SimpleQuestionGenerator,
 )
 from .testset import QATestset
 
@@ -67,7 +67,7 @@ class TestsetGenerator:
         llm_client: Optional[LLMClient] = None,
         llm_temperature: float = 0.5,
     ) -> None:
-        self.base_generator = QuestionsGeneratorBase(
+        self.base_generator = SimpleQuestionGenerator(
             knowledge_base,
             knowledge_base_columns,
             language,

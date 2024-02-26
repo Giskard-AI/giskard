@@ -1,8 +1,8 @@
 from typing import Sequence
 
 from ..vector_store import Document
-from .base import QuestionsGeneratorBase
 from .prompt import QAGenerationPrompt
+from .simple_questions import SimpleQuestionGenerator
 from .utils import DifficultyLevel
 
 DISTRACTING_SYSTEM_PROMPT = """You are an expert at rewriting questions.
@@ -44,7 +44,7 @@ DISTRACTING_EXAMPLE_OUTPUT = """{
 
 
 class DistractingQuestionsGenerator:
-    def __init__(self, base_generator: QuestionsGeneratorBase):
+    def __init__(self, base_generator: SimpleQuestionGenerator):
         self.base_generator = base_generator
 
         self.prompt = QAGenerationPrompt(
