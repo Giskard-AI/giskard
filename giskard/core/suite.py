@@ -184,21 +184,11 @@ class TestSuiteResult:
             inputs={name: str(value) for name, value in result.params.items()},
             arguments={test_input.name: test_input for test_input in TestInputDTO.from_inputs_dict(result.params)},
             messages=[TestResultMessageDTO(type=message.type, text=message.text) for message in result.result.messages],
-            actualSlicesSize=result.result.actual_slices_size,
-            referenceSlicesSize=result.result.reference_slices_size,
             status=TestResultStatus.PASSED
             if result.result.passed
             else TestResultStatus.ERROR
             if result.result.is_error
             else TestResultStatus.FAILED,
-            partialUnexpectedIndexList=result.result.partial_unexpected_index_list,
-            unexpectedIndexList=result.result.unexpected_index_list,
-            missingCount=result.result.missing_count,
-            missingPercent=result.result.missing_percent,
-            unexpectedCount=result.result.unexpected_count,
-            unexpectedPercent=result.result.unexpected_percent,
-            unexpectedPercentTotal=result.result.unexpected_percent_total,
-            unexpectedPercentNonmissing=result.result.unexpected_percent_nonmissing,
             metric=result.result.metric,
             metricName=result.result.metric_name,
             failedIndexes={

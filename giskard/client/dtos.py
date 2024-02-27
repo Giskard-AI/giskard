@@ -68,17 +68,7 @@ class SaveSuiteTestExecutionDTO(ConfiguredBaseModel):
     inputs: Dict[str, str]
     arguments: Dict[str, TestInputDTO]
     messages: List[TestResultMessageDTO]
-    actualSlicesSize: List[int]
-    referenceSlicesSize: List[int]
     status: TestResultStatusEnum
-    partialUnexpectedIndexList: List[int]
-    unexpectedIndexList: List[int]
-    missingCount: int
-    missingPercent: float
-    unexpectedCount: int
-    unexpectedPercent: float
-    unexpectedPercentTotal: float
-    unexpectedPercentNonmissing: float
     metric: Optional[float]
     metricName: str
     failedIndexes: Dict[str, List[int]]
