@@ -2,6 +2,7 @@ from typing import Optional, Sequence
 
 import logging
 
+import langdetect
 import matplotlib
 import matplotlib.pyplot as plt
 import numpy as np
@@ -46,17 +47,42 @@ class Document:
 
 
 class KnowledgeBase:
+    """
+    A class to handle the knowledge base and the associated vector store.
+
+    Parameters
+    ----------
+    knowledge_base: pd.DataFrame
+        A dataframe containing the whole knowledge base.
+    knowledge_base_columns: Sequence[str], optional
+        The list of columns from the `knowledge_base` to consider. If not specified, all columns of the knowledge base
+        dataframe will be concatenated to produce a single document.
+        Example: if your knowledge base consists in FAQ data with columns "Q" and "A", we will format each row into a
+        single document "Q: [question]\\nA: [answer]" to generate questions.
+    context_neighbors: int = 4
+        The maximum number of extracted element from the knowledge base to get a relevant context for question generation
+    context_similarity_threshold: float = 0.2
+        A similarity threshold to filter irrelevant element from the knowledge base during context creation
+    seed: int, optional
+        The seed to use for random number generation.
+    llm_client:
+        The LLM client to use for question generation. If not specified, a default openai client will be used.
+    embedding_model: str = "text-embedding-ada-002"
+        The name of the embedding model to use for the knowledge base. It should match the llm_client available embedding models.
+    topic_size: int = 2
+        The minimum number of document to form a topic inside the knowledge base.
+    """
+
     def __init__(
         self,
         knowledge_base_df: pd.DataFrame,
         knowledge_base_columns: Sequence[str] = None,
-        language: str = "en",
         context_neighbors: int = 4,
         context_similarity_threshold: float = 0.2,
-        seed: int = 1729,
+        seed: int = None,
         llm_client: Optional[LLMClient] = None,
         embedding_model: Optional[str] = "text-embedding-ada-002",
-        cluster_size: int = 2,
+        min_topic_size: int = 2,
     ) -> None:
         if len(knowledge_base_df) > 0:
             self._documents = [
@@ -68,11 +94,15 @@ class KnowledgeBase:
 
         self._context_similarity_threshold = context_similarity_threshold
         self._context_neighbors = context_neighbors
-        self._language = language
+
+        languages, occurences = np.unique(
+            [langdetect.detect(doc.content) for doc in self._documents], return_counts=True
+        )
+        self._language = languages[np.argmax(occurences)]
         self._rng = np.random.default_rng(seed=seed)
         self._llm_client = llm_client or get_default_client()
         self._embedding_model = embedding_model
-        self._cluster_size = cluster_size
+        self._min_topic_size = min_topic_size
 
         self._embeddings_inst = None
         self._topics_inst = None
@@ -109,7 +139,7 @@ class KnowledgeBase:
         return self._topics_inst
 
     def _find_topics(self):
-        dbscan = HDBSCAN(min_cluster_size=self._cluster_size, metric="euclidean", cluster_selection_epsilon=0.1)
+        dbscan = HDBSCAN(min_cluster_size=self._min_topic_size, metric="euclidean", cluster_selection_epsilon=0.1)
         clustering = dbscan.fit(self._embeddings)
         for i, doc in enumerate(self._documents):
             doc.topic_id = clustering.labels_[i]
