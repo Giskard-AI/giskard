@@ -5,6 +5,7 @@ RAG Toolset
    :maxdepth: 2
 
    testset_generation
-   vector_store
+   knowledge_base
    correctness_evaluator
+   question_generators
 

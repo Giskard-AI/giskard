@@ -1,4 +1,4 @@
-Vector Store
+Knowledge Base
 ======
 
 .. autoclass:: giskard.rag.knowledge_base.KnowledgeBase
