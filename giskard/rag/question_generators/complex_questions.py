@@ -3,7 +3,7 @@ from typing import Sequence
 from ..knowledge_base import Document
 from .prompt import QAGenerationPrompt
 from .question_types import QuestionTypes
-from .simple_questions import SimpleQuestionGenerator
+from .simple_questions import SimpleQuestionsGenerator
 
 COMPLEXIFICATION_SYSTEM_PROMPT = """You are an expert at writing questions. 
 Your task is to re-write questions that will be used to evaluate the following assistant:
@@ -55,7 +55,7 @@ COMPLEXIFICATION_EXAMPLE_OUTPUT = """{
 
 
 class ComplexQuestionsGenerator:
-    def __init__(self, base_generator: SimpleQuestionGenerator):
+    def __init__(self, base_generator: SimpleQuestionsGenerator):
         self._base_generator = base_generator
 
         self._prompt = QAGenerationPrompt(
@@ -65,8 +65,8 @@ class ComplexQuestionsGenerator:
             user_input_template=COMPLEXIFICATION_INPUT_TEMPLATE,
         )
 
-    def _generate_question(self, context_documents: Sequence[Document]) -> dict:
-        generated_qa, question_metadata = self._base_generator._generate_question(context_documents)
+    def generate_question(self, context_documents: Sequence[Document]) -> dict:
+        generated_qa, question_metadata = self._base_generator.generate_question(context_documents)
 
         messages = self._prompt.to_messages(
             system_prompt_input={

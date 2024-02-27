@@ -13,7 +13,7 @@ from .question_generators import (
     DistractingQuestionsGenerator,
     DoubleQuestionsGenerator,
     QuestionTypes,
-    SimpleQuestionGenerator,
+    SimpleQuestionsGenerator,
     SituationalQuestionsGenerator,
 )
 from .testset import QATestset
@@ -41,41 +41,34 @@ class TestsetGenerator:
         dataframe will be concatenated to produce a single document.
         Example: if your knowledge base consists in FAQ data with columns "Q" and "A", we will format each row into a
         single document "Q: [question]\\nA: [answer]" to generate questions.
-    language: str = "en"
-        The language used to generate questions (e.g. "fr", "de", ...)
+    language: str = 'en'
+        The language to use for question generation. The default is "en" to generate questions in english.
     assistant_description: str, optional
         Description of the assistant to be tested.
-    context_neighbors: int
-        The maximum number of extracted element from the knowledge base to get a relevant context for question generation
-    context_similarity_threshold: float = 0.2
-        A similarity threshold to filter irrelevant element from the knowledge base during context creation
     context_window_length: int = 8192
         Context window length of the llm used in the `llm_client` of the generator
-    embedding_fn: Callable = None
-        Embedding function to build the knowledge base index.
-    seed: int = None
+    llm_client: LLMClient, optional
+        The LLM client to use for question generation. If not specified, a default openai client will be used.
+    seed: int, optional
+        The seed to use for random number generation.
     """
 
     def __init__(
         self,
         knowledge_base: KnowledgeBase,
         language: str = "en",
-        assistant_description: str = None,
+        assistant_description: Optional[str] = None,
         context_window_length: int = 8192,
-        seed: int = None,
-        include_examples: bool = True,
         llm_client: Optional[LLMClient] = None,
-        llm_temperature: float = 0.5,
+        seed: int = None,
     ) -> None:
-        self.base_generator = SimpleQuestionGenerator(
+        self.base_generator = SimpleQuestionsGenerator(
             knowledge_base,
             language,
             assistant_description,
             context_window_length,
             seed,
-            include_examples,
             llm_client,
-            llm_temperature,
         )
         self.knowledge_base = knowledge_base
 
@@ -120,7 +113,7 @@ class TestsetGenerator:
                 )
                 context_docs = self.knowledge_base._get_random_document_group()
                 try:
-                    generated_qa, question_metadata = self.generators[q_type]._generate_question(context_docs)
+                    generated_qa, question_metadata = self.generators[q_type].generate_question(context_docs)
                 except Exception as e:
                     logger.error(f"Encountered error in question generation: {e}. Skipping.")
                     logger.exception(e)
@@ -141,16 +134,23 @@ class TestsetGenerator:
 
 
 def generate_testset(
-    knowledge_base: pd.DataFrame, num_questions: int = 30, conversational: bool = False, **kwargs
+    knowledge_base: KnowledgeBase,
+    num_questions: int = 30,
+    question_types: Union[QuestionTypes, Sequence[QuestionTypes]] = QuestionTypes.EASY,
+    conversational: bool = False,
+    **kwargs,
 ) -> QATestset:
     """Generate a testset from a knowledge base.
 
     Parameters
     ----------
-    knowledge_base : pd.DataFrame
+    knowledge_base : KnowledgeBase
         The knowledge base to generate questions from.
     num_questions : int
         The number of questions to generate. By default 30.
+    question_types : Union[QuestionTypes, Sequence[QuestionTypes]]
+        The types of the questions to generate. Can be 1 (:attr:`QuestionTypes.EASY`), 2 (:attr:`QuestionTypes.COMPLEX`),
+         or a list of these values. See :class:`QuestionTypes` for more question types.
     conversational : bool
         Whether to generate conversational questions or not. By default False.
 
@@ -160,5 +160,5 @@ def generate_testset(
         The generated test set.
     """
     return TestsetGenerator(knowledge_base, **kwargs).generate_testset(
-        num_questions=num_questions, question_types=[1, 2, 3]
+        num_questions=num_questions, question_types=question_types
     )

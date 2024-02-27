@@ -5,7 +5,7 @@ import logging
 from ..knowledge_base import Document
 from .prompt import QAGenerationPrompt
 from .question_types import QuestionTypes
-from .simple_questions import SimpleQuestionGenerator
+from .simple_questions import SimpleQuestionsGenerator
 
 logger = logging.getLogger(__name__)
 
@@ -50,7 +50,7 @@ DOUBLE_QUESTION_USER_TEMPLATE = """<question1>{question_1}</question1>
 
 
 class DoubleQuestionsGenerator:
-    def __init__(self, base_generator: SimpleQuestionGenerator):
+    def __init__(self, base_generator: SimpleQuestionsGenerator):
         self._base_generator = base_generator
 
         self._linked_question_generation_prompt = QAGenerationPrompt(
@@ -62,7 +62,7 @@ class DoubleQuestionsGenerator:
             user_input_template=DOUBLE_QUESTION_USER_TEMPLATE,
         )
 
-    def _generate_question(self, context_documents: Sequence[Document]) -> dict:
+    def generate_question(self, context_documents: Sequence[Document]) -> dict:
         reference_context = "\n------\n".join(["", *[doc.content for doc in context_documents], ""])
         linked_questions = self._base_generator._llm_complete(
             self._linked_question_generation_prompt.to_messages(

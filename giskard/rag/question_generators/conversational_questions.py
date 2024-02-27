@@ -5,7 +5,7 @@ import logging
 from ..knowledge_base import Document
 from .prompt import QAGenerationPrompt
 from .question_types import QuestionTypes
-from .simple_questions import SimpleQuestionGenerator
+from .simple_questions import SimpleQuestionsGenerator
 
 logger = logging.getLogger(__name__)
 
@@ -37,7 +37,7 @@ CONVERSATIONAL_ASSISTANT_EXAMPLE = (
 
 
 class ConversationalQuestionsGenerator:
-    def __init__(self, base_generator: SimpleQuestionGenerator):
+    def __init__(self, base_generator: SimpleQuestionsGenerator):
         self._base_generator = base_generator
 
         self._prompt = QAGenerationPrompt(
@@ -47,8 +47,8 @@ class ConversationalQuestionsGenerator:
             user_input_template=CONVERSATIONAL_USER_TEMPLATE,
         )
 
-    def _generate_question(self, context_documents: Sequence[Document]) -> dict:
-        generated_qa, question_metadata = self._base_generator._generate_question(context_documents)
+    def generate_question(self, context_documents: Sequence[Document]) -> dict:
+        generated_qa, question_metadata = self._base_generator.generate_question(context_documents)
 
         messages = self._prompt.to_messages(
             system_prompt_input={
@@ -62,7 +62,7 @@ class ConversationalQuestionsGenerator:
         out = self._base_generator._llm_complete(messages=messages)
         generated_qa["question"] = out["question"]
 
-        question_metadata["question_type"] = QuestionTypes.SITUATIONAL.value
+        question_metadata["question_type"] = QuestionTypes.CONVERSATIONAL.value
         question_metadata["conversation_history"] = [out["introduction"]]
 
         return generated_qa, question_metadata

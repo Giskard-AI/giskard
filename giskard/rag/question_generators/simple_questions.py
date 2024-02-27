@@ -49,7 +49,7 @@ QA_GENERATION_EXAMPLE_OUTPUT = """{
 }"""
 
 
-class SimpleQuestionGenerator:
+class SimpleQuestionsGenerator:
     def __init__(
         self,
         knowledge_base: KnowledgeBase,
@@ -57,7 +57,6 @@ class SimpleQuestionGenerator:
         assistant_description: str = "This assistant is a chatbot that answers question from users.",
         context_window_length: int = 8192,
         seed: int = None,
-        include_examples: bool = True,
         llm_client: Optional[LLMClient] = None,
         llm_temperature: float = 0.5,
     ):
@@ -66,7 +65,6 @@ class SimpleQuestionGenerator:
         self._assistant_description = assistant_description
         self._context_window_length = context_window_length
         self._rng = np.random.default_rng(seed=seed)
-        self._include_examples = include_examples
         self._vector_store_inst = None
         self._llm_client = llm_client or get_default_client()
         self._llm_temperature = llm_temperature
@@ -81,7 +79,7 @@ class SimpleQuestionGenerator:
         try:
             out = self._llm_client.complete(
                 messages=messages,
-                temperature=self._llm_temperature,
+                temperature=0.5,
                 caller_id=self.__class__.__name__,
             )
 
@@ -104,7 +102,7 @@ class SimpleQuestionGenerator:
         )
         return json.loads(out.content)
 
-    def _generate_question(self, context_documents: Sequence[Document]) -> dict:
+    def generate_question(self, context_documents: Sequence[Document]) -> dict:
         context = "\n------\n".join(["", *[doc.content for doc in context_documents], ""])
         messages = self._prompt.to_messages(
             system_prompt_input={"assistant_description": self._assistant_description, "language": self._language},
