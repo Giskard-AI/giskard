@@ -1,4 +1,4 @@
-from typing import Callable, Optional, Sequence
+from typing import Optional, Sequence
 
 import logging
 
@@ -48,42 +48,59 @@ class Document:
 class KnowledgeBase:
     def __init__(
         self,
-        documents: Sequence[Document],
-        embeddings: np.array,
-        embedding_fn: Callable,
+        knowledge_base_df: pd.DataFrame,
+        knowledge_base_columns: Sequence[str] = None,
         language: str = "en",
         context_neighbors: int = 4,
         context_similarity_threshold: float = 0.2,
         seed: int = 1729,
         llm_client: Optional[LLMClient] = None,
+        embedding_model: Optional[str] = "text-embedding-ada-002",
         cluster_size: int = 2,
     ) -> None:
-        if len(embeddings) == 0 or len(documents) == 0:
-            raise ValueError("Documents and embeddings must contains at least one element.")
-        if len(embeddings) != len(documents):
-            raise ValueError("Documents and embeddings must have the same length.")
+        if len(knowledge_base_df) > 0:
+            self._documents = [
+                Document(knowledge_chunk, features=knowledge_base_columns)
+                for knowledge_chunk in knowledge_base_df.to_dict("records")
+            ]
+        else:
+            raise ValueError("Cannot generate a vector store from empty DataFrame.")
 
-        try:
-            from faiss import IndexFlatL2
-        except ImportError as err:
-            raise GiskardInstallationError(flavor="llm") from err
-
-        self._documents = documents
-        self._embeddings = embeddings
         self._context_similarity_threshold = context_similarity_threshold
         self._context_neighbors = context_neighbors
         self._language = language
-
-        self._llm_client = llm_client or get_default_client()
-        self._topics_inst = None
-        self._vector_store_inst = None
-        self._embedding_fn = embedding_fn
         self._rng = np.random.default_rng(seed=seed)
+        self._llm_client = llm_client or get_default_client()
+        self._embedding_model = embedding_model
         self._cluster_size = cluster_size
 
-        self._dimension = self._embeddings[0].shape[0]
-        self._index = IndexFlatL2(self._dimension)
-        self._index.add(self._embeddings)
+        self._embeddings_inst = None
+        self._topics_inst = None
+        self._index_inst = None
+
+    @property
+    def _embeddings(self):
+        if self._embeddings_inst is None:
+            self._embeddings_inst = self._llm_client.embeddings(
+                [doc.content for doc in self._documents], model=self._embedding_model
+            )
+        return self._embeddings_inst
+
+    @property
+    def _dimension(self):
+        return self._embeddings[0].shape[0]
+
+    @property
+    def _index(self):
+        if self._index_inst is None:
+            try:
+                from faiss import IndexFlatL2
+            except ImportError as err:
+                raise GiskardInstallationError(flavor="llm") from err
+
+            self._index_inst = IndexFlatL2(self._dimension)
+            self._index_inst.add(self._embeddings)
+        return self._index_inst
 
     @property
     def topics(self):
@@ -177,32 +194,8 @@ class KnowledgeBase:
 
         return relevant_documents
 
-    @classmethod
-    def from_df(
-        cls,
-        df: pd.DataFrame,
-        embedding_model: Optional[str] = "text-embedding-ada-002",
-        knowledge_base_columns: Sequence[str] = None,
-        llm_client: Optional[LLMClient] = None,
-        **kwargs,
-    ):
-        llm_client = llm_client or get_default_client()
-
-        def embedding_fn(query):
-            return llm_client.embeddings(query, model=embedding_model)
-
-        if len(df) > 0:
-            documents = [
-                Document(knowledge_chunk, features=knowledge_base_columns) for knowledge_chunk in df.to_dict("records")
-            ]
-            raw_texts = [d.content for d in documents]
-            embeddings = embedding_fn(raw_texts).astype("float32")
-            return cls(documents, embeddings, embedding_fn, llm_client=llm_client, **kwargs)
-        else:
-            raise ValueError("Cannot generate a vector store from empty DataFrame.")
-
     def similarity_search_with_score(self, query: Sequence[str], k: int) -> Sequence:
-        query_emb = self._embedding_fn(query).astype("float32")
+        query_emb = self._llm_client.embeddings(query, model=self._embedding_model).astype("float32")
         return self.vector_similarity_search_with_score(query_emb, k)
 
     def vector_similarity_search_with_score(self, query_emb: np.ndarray, k: int) -> Sequence:

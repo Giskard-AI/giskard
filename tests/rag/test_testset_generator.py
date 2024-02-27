@@ -22,7 +22,7 @@ def make_knowledge_base(**kwargs):
         ]
     )
 
-    return KnowledgeBase.from_df(knowledge_base_df, **kwargs)
+    return KnowledgeBase(knowledge_base_df, **kwargs)
 
 
 def make_testset_generator():
