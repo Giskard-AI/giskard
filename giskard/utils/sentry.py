@@ -76,6 +76,7 @@ def scrub_event(event, _hint) -> Dict[str, ABC]:
 
 def configure_sentry():
     sentry_sdk.init(
+        # DSN is safe to be publicly available: https://docs.sentry.io/product/sentry-basics/concepts/dsn-explainer/
         dsn="https://a5d33bfa91bc3da9af2e7d32e19ff89d@o4505952637943808.ingest.sentry.io/4506789759025152",
         enable_tracing=True,
         integrations=[ExcepthookIntegration(always_run=True)],
