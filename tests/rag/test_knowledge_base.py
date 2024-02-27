@@ -13,8 +13,9 @@ def test_knowledge_base_creation():
     documents = [Document({"feature": "This is a test string"})] * 5
 
     embedding_fn = Mock()
+    llm_client = Mock()
 
-    knowledge_base = KnowledgeBase(documents, embeddings, embedding_fn)
+    knowledge_base = KnowledgeBase(documents, embeddings, embedding_fn, llm_client=llm_client)
     assert knowledge_base._embeddings.shape == (5, 8)
     assert len(knowledge_base._documents) == 5
     assert knowledge_base._index.d == dimension
@@ -55,8 +56,9 @@ def test_knowledge_base_similarity_search_with_score():
 
     embedding_fn = Mock()
     embedding_fn.side_effect = [np.ones((1, dimension)) * 49]
+    llm_client = Mock()
 
-    knowledge_base = KnowledgeBase(documents, embeddings, embedding_fn)
+    knowledge_base = KnowledgeBase(documents, embeddings, embedding_fn, llm_client=llm_client)
 
     query = ["This is test string 50"]
     retrieved_elements = knowledge_base.similarity_search_with_score(query, k=3)
