@@ -63,6 +63,6 @@ class ConversationalQuestionsGenerator:
         generated_qa["question"] = out["question"]
 
         question_metadata["question_type"] = QuestionTypes.CONVERSATIONAL.value
-        question_metadata["conversation_history"] = [out["introduction"]]
+        question_metadata["conversation_history"] = [{"role": "user", "content": out["introduction"]}]
 
         return generated_qa, question_metadata

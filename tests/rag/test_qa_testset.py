@@ -12,6 +12,7 @@ def make_testset_df():
                 "question": "Which milk is used to make Camembert?",
                 "reference_answer": "Cow's milk is used to make Camembert.",
                 "reference_context": "Camembert is a moist, soft, creamy, surface-ripened cow's milk cheese.",
+                "conversation_history": [],
                 "metadata": {"question_type": 1, "color": "blue"},
             },
             {
@@ -19,6 +20,7 @@ def make_testset_df():
                 "question": "Where is Scarmorza from?",
                 "reference_answer": "Scarmorza is from Southern Italy.",
                 "reference_context": "Scamorza is a Southern Italian cow's milk cheese.",
+                "conversation_history": [],
                 "metadata": {"question_type": 1, "color": "red"},
             },
             {
@@ -26,6 +28,7 @@ def make_testset_df():
                 "question": "Where is Scarmorza from?",
                 "reference_answer": "Scarmorza is from Southern Italy.",
                 "reference_context": "Scamorza is a Southern Italian cow's milk cheese.",
+                "conversation_history": [],
                 "metadata": {"question_type": 1, "color": "blue"},
             },
             {
@@ -33,6 +36,7 @@ def make_testset_df():
                 "question": "Where is Scarmorza from?",
                 "reference_answer": "Scarmorza is from Southern Italy.",
                 "reference_context": "Scamorza is a Southern Italian cow's milk cheese.",
+                "conversation_history": [],
                 "metadata": {"question_type": 2, "color": "red"},
             },
             {
@@ -40,8 +44,21 @@ def make_testset_df():
                 "question": "Where is Scarmorza from?",
                 "reference_answer": "Scarmorza is from Southern Italy.",
                 "reference_context": "Scamorza is a Southern Italian cow's milk cheese.",
+                "conversation_history": [],
                 "metadata": {
                     "question_type": 3,
+                    "color": "blue",
+                    "distracting_context": "This is a distracting context",
+                },
+            },
+            {
+                "id": "6",
+                "question": "Where is it from?",
+                "reference_answer": "Scarmorza is from Southern Italy.",
+                "reference_context": "Scamorza is a Southern Italian cow's milk cheese.",
+                "conversation_history": ["Scamorza"],
+                "metadata": {
+                    "question_type": 6,
                     "color": "blue",
                     "distracting_context": "This is a distracting context",
                 },

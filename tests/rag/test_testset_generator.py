@@ -183,7 +183,9 @@ def test_testset_question_types():
         if testset._dataframe["metadata"][row_id]["question_type"] != 6:
             assert testset._dataframe["conversation_history"][row_id] == []
         else:
-            assert testset._dataframe["conversation_history"][row_id] == ["Camembert is a cheese."]
+            assert testset._dataframe["conversation_history"][row_id] == [
+                {"role": "user", "content": "Camembert is a cheese."}
+            ]
 
     assert "distracting_context" in testset._dataframe["metadata"][2]
     assert testset._dataframe["metadata"][2]["distracting_context"] == "Distracting content"

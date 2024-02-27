@@ -37,6 +37,7 @@ class QATestset:
 
     def to_dataset(self, filters: Optional[dict] = None):
         dataframe = self.to_pandas(filters=filters).copy()
+        dataframe["conversation_history"] = dataframe["conversation_history"].apply(lambda x: json.dumps(x))
         dataframe["metadata"] = dataframe["metadata"].apply(lambda x: json.dumps(x))
         return Dataset(dataframe, name="QA Testset", target=False, validation=False)
 
