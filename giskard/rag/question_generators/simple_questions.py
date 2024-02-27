@@ -3,8 +3,6 @@ from typing import Optional, Sequence
 import json
 import logging
 
-import numpy as np
-
 from ...llm.client import get_default_client
 from ...llm.client.base import LLMClient, LLMMessage
 from ..knowledge_base import Document, KnowledgeBase
@@ -56,7 +54,6 @@ class SimpleQuestionsGenerator:
         language: str = "en",
         assistant_description: str = "This assistant is a chatbot that answers question from users.",
         context_window_length: int = 8192,
-        seed: int = None,
         llm_client: Optional[LLMClient] = None,
         llm_temperature: float = 0.5,
     ):
@@ -64,7 +61,6 @@ class SimpleQuestionsGenerator:
         self._language = language
         self._assistant_description = assistant_description
         self._context_window_length = context_window_length
-        self._rng = np.random.default_rng(seed=seed)
         self._vector_store_inst = None
         self._llm_client = llm_client or get_default_client()
         self._llm_temperature = llm_temperature

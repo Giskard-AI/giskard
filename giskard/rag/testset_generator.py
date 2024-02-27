@@ -49,8 +49,6 @@ class TestsetGenerator:
         Context window length of the llm used in the `llm_client` of the generator
     llm_client: LLMClient, optional
         The LLM client to use for question generation. If not specified, a default openai client will be used.
-    seed: int, optional
-        The seed to use for random number generation.
     """
 
     def __init__(
@@ -60,14 +58,12 @@ class TestsetGenerator:
         assistant_description: Optional[str] = None,
         context_window_length: int = 8192,
         llm_client: Optional[LLMClient] = None,
-        seed: int = None,
     ) -> None:
         self.base_generator = SimpleQuestionsGenerator(
             knowledge_base,
             language,
             assistant_description,
             context_window_length,
-            seed,
             llm_client,
         )
         self.knowledge_base = knowledge_base

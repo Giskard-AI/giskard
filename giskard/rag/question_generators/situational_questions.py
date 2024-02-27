@@ -91,7 +91,6 @@ class SituationalQuestionsGenerator:
             logger.warning(
                 f"Encountered error in situational context generation: {e}. Using default situational context instead."
             )
-
         messages = self._prompt.to_messages(
             system_prompt_input={
                 "assistant_description": self._base_generator._assistant_description,
