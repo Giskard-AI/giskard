@@ -36,15 +36,15 @@ class TestSuiteDTO(ConfiguredBaseModel):
 
 
 class TestSuiteExecutionResult(str, Enum):
-    IN_PROGRESS = ("IN_PROGRESS",)
-    CANCELLED = ("CANCELLED",)
-    PASSED = ("PASSED",)
-    FAILED = ("FAILED",)
+    IN_PROGRESS = "IN_PROGRESS"
+    CANCELLED = "CANCELLED"
+    PASSED = "PASSED"
+    FAILED = "FAILED"
     ERROR = "ERROR"
 
 
 class MLWorkerWSTestMessageType(str, Enum):
-    ERROR = ("ERROR",)
+    ERROR = "ERROR"
     INFO = "INFO"
 
 
@@ -60,6 +60,7 @@ class SaveSuiteTestExecutionDetailsDTO(ConfiguredBaseModel):
     metadata: Dict[str, List[str]]
 
 
+# TODO: Cleanup unnecessary information
 class SaveSuiteTestExecutionDTO(ConfiguredBaseModel):
     testUuid: str
     suiteTestId: int
