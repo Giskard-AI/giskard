@@ -80,7 +80,7 @@ def test_testset_to_pandas_conversion():
 
     df = testset.to_pandas()
 
-    assert len(df) == 5
+    assert len(df) == 6
 
     df = testset.to_pandas(filters={"question_type": [1]})
     assert len(df) == 3
@@ -120,6 +120,6 @@ def test_qa_testset_saving_loading(tmp_path):
 def test_metadata_value_retrieval():
     testset = QATestset(make_testset_df())
 
-    assert testset.get_metadata_values("question_type") == [1, 2, 3]
+    assert testset.get_metadata_values("question_type") == [1, 2, 3, 6]
     assert testset.get_metadata_values("color") == ["blue", "red"]
     assert testset.get_metadata_values("distracting_context") == ["This is a distracting context"]

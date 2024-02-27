@@ -21,7 +21,7 @@ def test_testset_suite_conversion_with_metadata():
     testset = QATestset(make_testset_df())
     suite = testset.to_test_suite(slicing_metadata=["question_type"])
 
-    assert len(suite.tests) == 3
+    assert len(suite.tests) == 4
     assert suite.tests[0].display_name == "TestsetCorrectnessTest_question_type_1"
 
     assert len(suite.tests[0].provided_inputs["dataset"].df) == 3
@@ -29,9 +29,9 @@ def test_testset_suite_conversion_with_metadata():
     assert len(suite.tests[2].provided_inputs["dataset"].df) == 1
 
     suite = testset.to_test_suite(slicing_metadata=["question_type", "color"])
-    assert len(suite.tests) == 5
+    assert len(suite.tests) == 6
 
-    assert suite.tests[3].display_name == "TestsetCorrectnessTest_color_blue"
-    assert len(suite.tests[3].provided_inputs["dataset"].df) == 3
-    assert suite.tests[4].display_name == "TestsetCorrectnessTest_color_red"
-    assert len(suite.tests[4].provided_inputs["dataset"].df) == 2
+    assert suite.tests[4].display_name == "TestsetCorrectnessTest_color_blue"
+    assert len(suite.tests[4].provided_inputs["dataset"].df) == 4
+    assert suite.tests[5].display_name == "TestsetCorrectnessTest_color_red"
+    assert len(suite.tests[5].provided_inputs["dataset"].df) == 2
