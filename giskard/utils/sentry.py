@@ -1,42 +1,65 @@
+from typing import Dict
+
+import re
+from abc import ABC
+
 import sentry_sdk
 from sentry_sdk.integrations.excepthook import ExcepthookIntegration
-from sentry_sdk.scrubber import DEFAULT_DENYLIST, EventScrubber
+from sentry_sdk.scrubber import DEFAULT_DENYLIST
 
-from giskard.utils.analytics_collector import anonymize
-
-denylist = DEFAULT_DENYLIST + ["AZURE_OPENAI_API_KEY", "OPENAI_API_KEY", "GSK_API_KEY", "df", "batch"]
-WHITELISTED_MODULES = ["giskard"]
+WHITELISTED_MODULES = ["giskard", "pandas", "numpy"]
 
 
-def _anonymize_value(data, key, prefix="", suffix=""):
-    if key in data:
-        data[key] = prefix + anonymize(data[key]) + suffix
+def _lower_text_only_var_name(var_name: str):
+    # Remove underscore and digits and put to lower case
+    return re.sub(r"[0-9_]+", "", var_name.lower())
 
 
-def _replace_value(data, key, replacement):
-    if key in data:
-        data[key] = replacement
+SENSITIVE_VAR_NAME = [
+    _lower_text_only_var_name(var_name) for var_name in DEFAULT_DENYLIST + ["df", "batch", "requirement"]
+]
 
 
-def _anonymize_stacktrace(stacktrace):
+def _scrub_nonsensitive_frame(frame):
+    if "vars" in frame:
+        frame["vars"] = {
+            var_name: "[Filtered]" if _lower_text_only_var_name(var_name) in SENSITIVE_VAR_NAME else value
+            for var_name, value in frame["vars"].items()
+        }
+
+    return frame
+
+
+def _scrub_sensitive_frame(frame):
+    if "vars" in frame:
+        frame["vars"] = {var_name: "[Filtered]" for var_name in frame["vars"].keys()}
+
+    # Anonymize code
+    frame["pre_context"] = ["[filtered_pre_context]"]
+    frame["context_line"] = ["[filtered_context_line]"]
+    frame["post_context"] = ["[filtered_pre_context]"]
+
+    return frame
+
+
+def scrub_frame(frame):
+    is_nonsensitive = (
+        "module" in frame and frame["module"] is not None and frame["module"].split(".")[0] in WHITELISTED_MODULES
+    )
+
+    return _scrub_nonsensitive_frame(frame) if is_nonsensitive else _scrub_sensitive_frame(frame)
+
+
+def scrub_stacktrace(stacktrace):
     if "frames" not in stacktrace:
-        return
+        return stacktrace
 
-    for frame in stacktrace["frames"]:
-        if "module" in frame and frame["module"] is not None and frame["module"].split(".")[0] in WHITELISTED_MODULES:
-            continue
+    stacktrace["frames"] = [scrub_frame(frame) for frame in stacktrace["frames"]]
 
-        _anonymize_value(frame, "filename", suffix=".py")
-        _anonymize_value(frame, "abs_path", prefix="/anonymized/path/", suffix=".py")
-        _anonymize_value(frame, "module", prefix="anonymized.module.")
-        _replace_value(frame, "pre_context", ["pre_context=anonymized"])
-        _anonymize_value(frame, "context_line")
-        _replace_value(frame, "post_context", ["post_context=anonymized"])
-        _replace_value(frame, "vars", {"vars": "anonymized"})
+    return stacktrace
 
 
-def _strip_sensitive_module(event):
-    # If execution info are available, only keep information from whitelisted modules
+def scrub_event(event, _hint) -> Dict[str, ABC]:
     if "exception" not in event:
         return event
 
@@ -46,13 +69,9 @@ def _strip_sensitive_module(event):
 
     for value in exception["values"]:
         if "stacktrace" in value:
-            _anonymize_stacktrace(value["stacktrace"])
+            value["stacktrace"] = scrub_stacktrace(value["stacktrace"])
 
     return event
-
-
-def strip_sensitive_data(event, hint):
-    return _strip_sensitive_module(event)
 
 
 def configure_sentry():
@@ -60,6 +79,5 @@ def configure_sentry():
         dsn="https://a5d33bfa91bc3da9af2e7d32e19ff89d@o4505952637943808.ingest.sentry.io/4506789759025152",
         enable_tracing=True,
         integrations=[ExcepthookIntegration(always_run=True)],
-        event_scrubber=EventScrubber(denylist=denylist),
-        before_send=strip_sensitive_data,
+        before_send=scrub_event,
     )
