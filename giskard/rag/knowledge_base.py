@@ -3,10 +3,11 @@ from typing import Optional, Sequence
 import logging
 
 import langdetect
-import matplotlib
-import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
+from bokeh.models import ColumnDataSource
+from bokeh.palettes import Category20b
+from bokeh.plotting import figure, show
 from sklearn.cluster import HDBSCAN
 from sklearn.manifold import TSNE
 
@@ -169,47 +170,60 @@ class KnowledgeBase:
         tsne = TSNE(perplexity=5)
         embeddings_tsne = tsne.fit_transform(self._embeddings)
 
-        fig, ax = plt.subplots()
+        TITLE = "TSNE of FAQ embeddings (colored by topic)"
+        TOOLS = "hover,pan,wheel_zoom,box_zoom,reset,save"
 
-        legend_handles = []
-        legend_labels = []
+        topics_ids = [doc.topic_id for doc in self._documents]
+        palette = Category20b[20]
+        colors = [palette[topic] if topic >= 0 else "#090909" for topic in topics_ids]
+        x_min = embeddings_tsne[:, 0].min()
+        x_max = embeddings_tsne[:, 0].max()
+        y_min = embeddings_tsne[:, 1].min()
+        y_max = embeddings_tsne[:, 1].max()
 
-        edge_cmap = {
-            topic_id: (*plt.cm.tab20b(topic_id)[:3], 1.0) if topic_id >= 0 else (0.4, 0.4, 0.4, 1.0)
-            for topic_id in self.topics
-        }
-        face_cmap = {
-            topic_id: (*plt.cm.tab20b(topic_id)[:3], 0.7) if topic_id >= 0 else (0.4, 0.4, 0.4, 0.7)
-            for topic_id in self.topics
-        }
+        x_range = (x_min - (x_max - x_min) * 0.05, x_max + (x_max - x_min) * 0.6)
+        y_range = (y_min - (y_max - y_min) * 0.25, y_max + (y_max - y_min) * 0.25)
 
-        for topic_id, topic in self.topics.items():
-            legend_handles.append(
-                matplotlib.lines.Line2D(
-                    [],
-                    [],
-                    color="white",
-                    marker="o",
-                    markeredgecolor=edge_cmap[topic_id],
-                    markerfacecolor=face_cmap[topic_id],
-                    markeredgewidth=1.5,
-                    markersize=10,
-                )
-            )
-            legend_labels.append(topic)
-
-        ax.scatter(
-            embeddings_tsne[:, 0],
-            embeddings_tsne[:, 1],
-            color=[face_cmap[doc.topic_id] for doc in self._documents],
-            edgecolor=[edge_cmap[doc.topic_id] for doc in self._documents],
-            linewidth=1.5,
-            s=75,
+        source = ColumnDataSource(
+            data={
+                "x": embeddings_tsne[:, 0],
+                "y": embeddings_tsne[:, 1],
+                "topic": [self.topics[topic_id] for topic_id in topics_ids],
+                "id": list(range(len(topics_ids))),
+                "content": [doc.content for doc in self._documents],
+                "color": colors,
+            }
         )
-        for i in range(embeddings_tsne.shape[0]):
-            ax.annotate(i, (embeddings_tsne[:, 0][i] - 1, embeddings_tsne[:, 1][i] - 1))
-        legend = ax.legend(legend_handles, legend_labels, loc=(1.1, 0), title="Topics")
-        legend.get_title().set_fontsize("14")
+
+        p = figure(tools=TOOLS, toolbar_location="above", width=800, title=TITLE, x_range=x_range, y_range=y_range)
+        p.toolbar.logo = "grey"
+        p.background_fill_color = "#efefef"
+        p.grid.grid_line_color = "white"
+
+        p.hover.tooltips = """
+        <div style="width:400px;">
+        <b>Document id:</b> @id <br>
+        <b>Topic:</b> @topic <br>
+        <b>Content:</b> @content
+        </div>
+        """
+
+        p.scatter(
+            x="x",
+            y="y",
+            source=source,
+            color="color",
+            line_color="color",
+            line_alpha=1.0,
+            line_width=2,
+            alpha=0.7,
+            size=12,
+            legend_group="topic",
+        )
+        p.legend.location = "top_right"
+        p.legend.title = "Knowledge Base Topics"
+        p.legend.title_text_font_style = "bold"
+        show(p)
 
     def _get_random_document(self):
         return self._rng.choice(self._documents)
