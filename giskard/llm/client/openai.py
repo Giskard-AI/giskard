@@ -44,6 +44,7 @@ class BaseOpenAIClient(LLMClient, ABC):
         caller_id: Optional[str] = None,
         tools=None,
         tool_choice=None,
+        seed: Optional[int] = None,
     ) -> dict:
         ...
 
@@ -125,6 +126,7 @@ class BaseOpenAIClient(LLMClient, ABC):
         caller_id: Optional[str] = None,
         tools=None,
         tool_choice=None,
+        seed: Optional[int] = None,
     ):
         llm_message = self._completion(
             messages=[
@@ -138,6 +140,7 @@ class BaseOpenAIClient(LLMClient, ABC):
             caller_id=caller_id,
             tools=tools,
             tool_choice=tool_choice,
+            seed=seed,
         )
 
         return BaseOpenAIClient._parse_message(llm_message)
@@ -174,6 +177,7 @@ class LegacyOpenAIClient(BaseOpenAIClient):
         caller_id: Optional[str] = None,
         tools=None,
         tool_choice=None,
+        seed: Optional[int] = None,
     ):
         extra_params = dict()
         if function_call is not None:
@@ -184,6 +188,8 @@ class LegacyOpenAIClient(BaseOpenAIClient):
             extra_params["tools"] = tools
         if tool_choice is not None:
             extra_params["tool_choice"] = tool_choice
+        if seed is not None:
+            extra_params["seed"] = seed
 
         try:
             completion = openai.ChatCompletion.create(
@@ -242,6 +248,7 @@ class OpenAIClient(BaseOpenAIClient):
         caller_id: Optional[str] = None,
         tools=None,
         tool_choice=None,
+        seed=None,
     ):
         extra_params = dict()
         if function_call is not None:
@@ -252,6 +259,8 @@ class OpenAIClient(BaseOpenAIClient):
             extra_params["tools"] = tools
         if tool_choice is not None:
             extra_params["tool_choice"] = tool_choice
+        if seed is not None:
+            extra_params["seed"] = seed
 
         try:
             completion = self._client.chat.completions.create(

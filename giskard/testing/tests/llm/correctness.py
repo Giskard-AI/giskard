@@ -11,7 +11,7 @@ from .. import debug_description_prefix
     tags=["llm", "llm-as-a-judge"],
     debug_description=debug_description_prefix + "that are <b>failing the evaluation criteria</b>.",
 )
-def test_llm_correctness(model: BaseModel, dataset: Dataset, threshold: float = 0.5):
+def test_llm_correctness(model: BaseModel, dataset: Dataset, threshold: float = 0.5, rng_seed: int = 1729):
     """Tests if LLM answers are correct with respect to a known reference answers.
 
     The test is passed when the ratio of correct answers is higher than the
@@ -31,7 +31,7 @@ def test_llm_correctness(model: BaseModel, dataset: Dataset, threshold: float = 
     TestResult
         A TestResult object containing the test result.
     """
-    correctness_evaluator = CorrectnessEvaluator()
+    correctness_evaluator = CorrectnessEvaluator(rng_seed=rng_seed)
     eval_result = correctness_evaluator.evaluate(model, dataset)
     output_ds = list()
     if not eval_result.passed:

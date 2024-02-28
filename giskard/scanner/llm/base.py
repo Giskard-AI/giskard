@@ -16,9 +16,10 @@ from ..scanner import logger
 class RequirementBasedDetector(Detector):
     _taxonomy = []
 
-    def __init__(self, num_requirements=4, num_samples=5):
+    def __init__(self, num_requirements=4, num_samples=5, rng_seed: int = 1729):
         self.num_requirements = num_requirements
         self.num_samples = num_samples
+        self.rng_seed = rng_seed
 
     def get_cost_estimate(self, model: BaseModel, dataset: Dataset) -> dict:
         counts = _estimate_base_token_counts(model, dataset)
