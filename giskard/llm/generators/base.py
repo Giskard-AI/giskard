@@ -41,11 +41,13 @@ class LLMGenerator(BaseGenerator, ABC):
         llm_client: LLMClient = None,
         prompt: Optional[str] = None,
         languages: Optional[Sequence[str]] = None,
+        rng_seed: int = 1729,
     ):
         self.llm_temperature = llm_temperature if llm_temperature is not None else self._default_temperature
         self.llm_client = llm_client or get_default_client()
         self.languages = languages
         self.prompt = prompt if prompt is not None else self._default_prompt
+        self.rng_seed = rng_seed
 
 
 class BaseDataGenerator(LLMGenerator):
@@ -120,6 +122,7 @@ class BaseDataGenerator(LLMGenerator):
             tool_choice={"type": "function", "function": {"name": "generate_inputs"}},
             temperature=self.llm_temperature,
             caller_id=self.__class__.__name__,
+            seed=self.rng_seed,
         )
 
         try:

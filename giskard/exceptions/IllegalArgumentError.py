@@ -1,10 +1,10 @@
 from enum import Enum
 
 
-class StatusCode(Enum):
-    NO_ERROR = 0
-    INTERNAL = 1
-    INVALID_ARGUMENT = 2
+class StatusCode(str, Enum):
+    NO_ERROR = "NO_ERROR"
+    INTERNAL = "INTERNAL"
+    INVALID_ARGUMENT = "INVALID_ARGUMENT"
 
 
 class CodedError(Exception):

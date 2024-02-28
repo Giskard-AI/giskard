@@ -79,6 +79,20 @@ def start_options(func):
         default=None,
         help="Number of processes to use for parallelism (None for number of cpu)",
     )
+    @click.option(
+        "--log-level",
+        "log_level",
+        default=logging.getLevelName(logging.INFO),
+        type=click.Choice(
+            [
+                logging.getLevelName(logging.DEBUG),
+                logging.getLevelName(logging.INFO),
+                logging.getLevelName(logging.WARNING),
+                logging.getLevelName(logging.ERROR),
+            ]
+        ),
+        help="Global log level",
+    )
     @functools.wraps(func)
     def wrapper(*args, **kwargs):
         return func(*args, **kwargs)
@@ -90,7 +104,7 @@ def start_options(func):
 @common_options
 @start_stop_options
 @start_options
-def start_command(url: AnyHttpUrl, api_key, hf_token, nb_workers, worker_name):
+def start_command(url: AnyHttpUrl, api_key, hf_token, nb_workers, worker_name, log_level):
     """\b
     Start ML Worker.
 
@@ -103,8 +117,11 @@ def start_command(url: AnyHttpUrl, api_key, hf_token, nb_workers, worker_name):
     """
     analytics.track(
         "giskard-worker:start",
-        {"url": anonymize(url)},
+        {"url": anonymize(url), "log_level": log_level},
     )
+
+    logging.root.setLevel(logging.getLevelName(log_level))
+
     api_key = initialize_api_key(api_key)
     hf_token = initialize_hf_token(hf_token)
     _start_command(worker_name, url, api_key, hf_token, int(nb_workers) if nb_workers is not None else None)
@@ -205,11 +222,12 @@ def stop_command(worker_name, url, stop_all):
 @common_options
 @start_stop_options
 @start_options
-def restart_command(url: AnyHttpUrl, api_key, hf_token, nb_workers, worker_name):
+def restart_command(url: AnyHttpUrl, api_key, hf_token, nb_workers, worker_name, log_level):
     analytics.track(
         "giskard-worker:restart",
         {"url": anonymize(url)},
     )
+    logging.root.setLevel(logging.getLevelName(log_level))
     _find_and_stop(worker_name, url)
     _start_command(worker_name, url, api_key, hf_token=hf_token, nb_workers=nb_workers)
 

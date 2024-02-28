@@ -13,7 +13,6 @@ from pydantic import AnyHttpUrl, parse_obj_as
 from giskard.path_utils import run_dir
 
 logger = logging.getLogger(__name__)
-logging.getLogger().setLevel(logging.INFO)
 logging.getLogger("giskard").setLevel(logging.INFO)
 
 

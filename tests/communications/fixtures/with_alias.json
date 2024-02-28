@@ -1369,8 +1369,8 @@
       "column_dtypes": {
         "ElUxRTOGbkfDUEzWuAaF": "uoiSQDhwnftCVRBNBdcg"
       },
-      "push_kind": 4,
-      "cta_kind": 0,
+      "push_kind": "UNDERCONFIDENCE",
+      "cta_kind": "NONE",
       "rowIdx": 2728
     },
     {
@@ -1394,8 +1394,8 @@
       "column_dtypes": {
         "JxwnwBaRizPWYaJEEhZo": "DiezjqUVWHlqJXLrFLHY"
       },
-      "push_kind": 1,
-      "cta_kind": 0,
+      "push_kind": "PERTURBATION",
+      "cta_kind": "NONE",
       "rowIdx": 3595
     },
     {
@@ -1419,15 +1419,15 @@
       "column_dtypes": {
         "vGGWOSNQFsnKTChRzycA": "MvsIbAXJuJFkkUndRBtA"
       },
-      "push_kind": 3,
-      "cta_kind": 3,
+      "push_kind": "OVERCONFIDENCE",
+      "cta_kind": "CREATE_PERTURBATION",
       "rowIdx": 814
     }
   ],
   "GetPushResponse": [
     {
       "contribution": {
-        "kind": 1,
+        "kind": "PERTURBATION",
         "key": "gSNnzxHPebRwNaxLlXUb",
         "value": "bCWtlvblwzmmlxpbRCHj",
         "push_title": "ZSgrLKWvRIpETSAEbmPv",
@@ -1436,12 +1436,12 @@
             "action": "iCKJtwAOBuzbcKZEuiAZ",
             "explanation": "OCSmAXExoCXaOQUMQADw",
             "button": "cTDkAzsrCGFxbljESPPQ",
-            "cta": 7
+            "cta": "OPEN_DEBUGGER_UNDERCONFIDENCE"
           }
         ]
       },
       "perturbation": {
-        "kind": 4,
+        "kind": "UNDERCONFIDENCE",
         "key": "nRJeaaNmfGrdiBioLxqy",
         "value": "buvjfUAkFQbahLiKJClY",
         "push_title": "PAlHuDqGdpYTpSqWMvna",
@@ -1450,12 +1450,12 @@
             "action": "TbQYDiTYKAtskJwkfIpz",
             "explanation": "qTUakrZOrlJRWrTJzZmL",
             "button": "eiVlNFRtrpTFXUhCfcdT",
-            "cta": 0
+            "cta": "NONE"
           }
         ]
       },
       "overconfidence": {
-        "kind": 4,
+        "kind": "UNDERCONFIDENCE",
         "key": "ORrFOtDlenUDWxoORaIe",
         "value": "fUcmZvgimMfVtYVpnyfH",
         "push_title": "caZpFxqdVYYflGYCJInC",
@@ -1464,12 +1464,12 @@
             "action": "pmeoZxHHWuprqSUprCEE",
             "explanation": "mbmdCddHpPzSiAPeXjOZ",
             "button": "QqfAVpUhVbqUPVRMJjwi",
-            "cta": 11
+            "cta": "CREATE_UNIT_TEST"
           }
         ]
       },
       "underconfidence": {
-        "kind": 1,
+        "kind": "PERTURBATION",
         "key": "LIndYQCCSxurnbHvDdsh",
         "value": "gnRuuFmaBAHwJMmzylvD",
         "push_title": "VVoHcdATiNTqKStKMESU",
@@ -1513,7 +1513,7 @@
     },
     {
       "contribution": {
-        "kind": 4,
+        "kind": "UNDERCONFIDENCE",
         "key": "TNhVahIctgyRVbdRcoge",
         "value": "bHMJRIuGYHmdWEsFDBds",
         "push_title": "vkTwILMLNnYhVSSceQyt",
@@ -1522,19 +1522,19 @@
             "action": "ZcBxguKTbBePebtMqgPP",
             "explanation": "SpwmCrrOXEfHxZLRKBUR",
             "button": "pitBfrDcQHqpsqMABhVq",
-            "cta": 9
+            "cta": "SAVE_EXAMPLE"
           }
         ]
       },
       "perturbation": {
-        "kind": 4,
+        "kind": "UNDERCONFIDENCE",
         "key": "rdYyVWYQWVPgBDZOKMsX",
         "value": "HuyYBihJDVjvLcfCnfnG",
         "push_title": "BedSHjSbtSKoUFTUwJCX",
         "push_details": []
       },
       "overconfidence": {
-        "kind": 4,
+        "kind": "UNDERCONFIDENCE",
         "key": "PLQZnkMOAzuTPEcSxjpJ",
         "value": "agpUMYCDCBCQXvGqpAEC",
         "push_title": "YiHZMDtuWUIUWStyPtMz",
@@ -1543,12 +1543,12 @@
             "action": "rxgsvainSEoZnAMJwOzL",
             "explanation": "zYLegYlbnyXuLReFZCBs",
             "button": "XYfCvIgnoyPSOJeuIpAV",
-            "cta": 1
+            "cta": "CREATE_SLICE"
           }
         ]
       },
       "underconfidence": {
-        "kind": 1,
+        "kind": "PERTURBATION",
         "key": "gSfuVkBvUZpzUClNrzaZ",
         "value": "IWYnCwNRloKvgkDFXBFh",
         "push_title": "voKnltyrFjTKBdqJHQUq",
@@ -1557,7 +1557,7 @@
             "action": "zrghneCKDJlkDTvabpFe",
             "explanation": "lJZrFAbrhnOJceLfqocb",
             "button": "huWHmJoAqXsPHRFTvJGB",
-            "cta": 7
+            "cta": "OPEN_DEBUGGER_UNDERCONFIDENCE"
           }
         ]
       },
@@ -1568,14 +1568,14 @@
     },
     {
       "contribution": {
-        "kind": 4,
+        "kind": "UNDERCONFIDENCE",
         "key": "CCRLJbqJiVhTlRSrUiSt",
         "value": "wgFoIPFaXVHtDTxOFvWv",
         "push_title": "FcybKacfhAsoZVIPQmQm",
         "push_details": []
       },
       "perturbation": {
-        "kind": 2,
+        "kind": "CONTRIBUTION",
         "key": "DsiOVqTsIZOcwtpQwKHA",
         "value": "cIUiHzrKYbUtRjLfrYIO",
         "push_title": "xyzOLkwCDWRhtfbdjNIP",
@@ -1584,12 +1584,12 @@
             "action": "piYQXauGMVBuaPZVIrmO",
             "explanation": "WXjEAwPWLKJHBmOgHuDH",
             "button": "yYmaXqovEZKqBxAviuuk",
-            "cta": 9
+            "cta": "SAVE_EXAMPLE"
           }
         ]
       },
       "overconfidence": {
-        "kind": 4,
+        "kind": "UNDERCONFIDENCE",
         "key": "QshDROGMrhnsoyhgnkPB",
         "value": "kwTECukGeOcMtJEgCdmt",
         "push_title": "oIZsRlKsBeRkypQEFNnd",
@@ -1598,12 +1598,12 @@
             "action": "RqQXGfSGmkAgVKQtWgLn",
             "explanation": "agkNtzFnHIVASYNvofRg",
             "button": "DxclQCWVeJcvwXEjABks",
-            "cta": 11
+            "cta": "CREATE_UNIT_TEST"
           }
         ]
       },
       "underconfidence": {
-        "kind": 2,
+        "kind": "CONTRIBUTION",
         "key": "TZOdVxRjhVocAZRuZPRH",
         "value": "uVyWCVywEqhESoSOOvZP",
         "push_title": "DfDaUrtCHEzGSxAQaiql",
@@ -1612,7 +1612,7 @@
             "action": "UhfqAQZSFbdGQnYCDGdi",
             "explanation": "WneoLnkoyMpTYQdqWSgw",
             "button": "sMbqMUcEITwYkfgEgnkc",
-            "cta": 5
+            "cta": "CREATE_ROBUSTNESS_TEST"
           }
         ]
       },
@@ -1661,7 +1661,7 @@
         "is_error": false,
         "messages": [
           {
-            "type": 0,
+            "type": "ERROR",
             "text": "dgNytkzUuFNKnPEfqbHa"
           }
         ],
@@ -1706,107 +1706,11 @@
             "d9892fed05"
           ],
           "results": [
-            "ddVpiDgDSElUxRTOGbkf"
+            "b48"
           ],
           "metadata": {
-            "DUEzWuAaFuoiSQDhwnft": [
-              "f0a4f21ebe"
-            ]
-          }
-        }
-      },
-      "arguments": [
-        {
-          "name": "CVRBNBdcgiBnrAnrfmXO",
-          "model": {
-            "project_key": "LzEOqvtZhgfEWdCDXspB",
-            "id": "fUfcpFavQPjOEixJiRwY",
-            "sample": false
-          },
-          "dataset": {
-            "project_key": "VpnyfHcaZpFxqdVYYflG",
-            "id": "YCJInCpmeoZxHHWuprqS",
-            "sample": true
-          },
-          "float": -73448010755.9486,
-          "int": 9764,
-          "str": "elQunTLbaNsySfOrAIjh",
-          "bool": true,
-          "slicingFunction": {
-            "project_key": "QqfAVpUhVbqUPVRMJjwi",
-            "id": "LIndYQCCSxurnbHvDdsh",
-            "sample": true
-          },
-          "transformationFunction": {
-            "project_key": "hZoDiezjqUVWHlqJXLrF",
-            "id": "LHYlVNHtAPkppCiKyegF",
-            "sample": false
-          },
-          "kwargs": "DjnlDNcJLsAiLcZQGnVX",
-          "args": [],
-          "none": true
-        }
-      ]
-    },
-    {
-      "id": 1343,
-      "result": {
-        "passed": false,
-        "is_error": true,
-        "messages": [],
-        "props": {
-          "YtPwiqgVXgFvgpmMajwb": "GFRkoCoEnJPQYCzSNDto"
-        },
-        "metric": 235137713733.69,
-        "metric_name": "pJLHdtPwJNqgLsCrMDfV",
-        "missing_count": 6265,
-        "missing_percent": 38632504301.98,
-        "unexpected_count": 8371,
-        "unexpected_percent": -58054696998.5002,
-        "unexpected_percent_total": 460.737102432117,
-        "unexpected_percent_nonmissing": 376881.56499296,
-        "partial_unexpected_index_list": [
-          57
-        ],
-        "partial_unexpected_counts": [
-          {
-            "value": [
-              6376
-            ],
-            "count": 9492
-          }
-        ],
-        "unexpected_index_list": [
-          6977
-        ],
-        "number_of_perturbed_rows": 6639,
-        "actual_slices_size": [
-          5505
-        ],
-        "reference_slices_size": [
-          9575
-        ],
-        "output_df_id": "YKYdZmYpbLiOuojdOaVP",
-        "failed_indexes": {
-          "vJpyniAofEddxiKieHop": [
-            8652
-          ]
-        },
-        "details": {
-          "inputs": {
-            "kUndRBtAMiHLQoFmDiPT": [
-              "be9e448a29"
-            ]
-          },
-          "outputs": [
-            "041c"
-          ],
-          "results": [
-            "rlYKRbUGqwNOjGiYxVLF"
-          ],
-          "metadata": {
-            "nBhhLsNmLLpfuzfjcFUl": [
-              "ee950"
+            "ddVpiDgDSElUxRTOGbkf": [
+              "d46d44e5b"
             ]
           }
         }
@@ -1814,105 +1718,175 @@
       "arguments": []
     },
     {
-      "id": 568,
+      "id": 9394,
       "result": {
         "passed": false,
         "is_error": false,
         "messages": [
           {
-            "type": 0,
-            "text": "BLUwIoFilmxNYmoCuxnz"
+            "type": "INFO",
+            "text": "EzWuAaFuoiSQDhwnftCV"
           }
         ],
         "props": {
-          "fleaayUSokiQHPbuTCDn": "eHpaBBgWOwjzgoQjxrnn"
+          "RBNBdcgiBnrAnrfmXOLz": "EOqvtZhgfEWdCDXspBfU"
         },
-        "metric": 4021.77567900037,
-        "metric_name": "WEsFDBdsvkTwILMLNnYh",
-        "missing_count": 3331,
-        "missing_percent": -0.89666259061211,
-        "unexpected_count": 1494,
-        "unexpected_percent": -8.13973118839255,
-        "unexpected_percent_total": 135964182.557281,
-        "unexpected_percent_nonmissing": -18041715603189.6,
+        "metric": 5204760632626.1,
+        "metric_name": "FavQPjOEixJiRwYPCQCL",
+        "missing_count": 5152,
+        "missing_percent": 5586258019103.5,
+        "unexpected_count": 446,
+        "unexpected_percent": -83961140926078.5,
+        "unexpected_percent_total": -5255980.53493168,
+        "unexpected_percent_nonmissing": 5583085506347.76,
         "partial_unexpected_index_list": [
-          7308
+          7468
         ],
         "partial_unexpected_counts": [
           {
             "value": [
-              403
+              1824
             ],
-            "count": 8593
+            "count": 4097
           }
         ],
         "unexpected_index_list": [
-          4423
+          3525
         ],
-        "number_of_perturbed_rows": 1480,
+        "number_of_perturbed_rows": 8895,
         "actual_slices_size": [
-          4096
+          7682
         ],
         "reference_slices_size": [
-          5331
+          5829
         ],
-        "output_df_id": "ebtMqgPPSpwmCrrOXEfH",
+        "output_df_id": "nCpmeoZxHHWuprqSUprC",
         "failed_indexes": {
-          "xZLRKBURpitBfrDcQHqp": [
-            5777
+          "EEmbmdCddHpPzSiAPeXj": [
+            2450
           ]
         },
         "details": {
           "inputs": {
-            "oMBagqLODxoxsMtUeEcc": [
-              "39"
+            "ZQqfAVpUhVbqUPVRMJjw": [
+              "424dc2a88c"
             ]
           },
           "outputs": [
-            "548"
+            "1ba19dc80"
           ],
           "results": [
-            "zSnmDrZPtpFrAbnlgfNW"
+            "698003c"
           ],
           "metadata": {
-            "GQYJLkdDHSPlRAwEUzPl": [
-              "7"
+            "iLIndYQCCSxurnbHvDds": [
+              "fa79"
             ]
           }
         }
       },
       "arguments": [
         {
-          "name": "kzUmxtVjzdRYvaBtTdGA",
+          "name": "hgnRuuFmaBAHwJMmzylv",
           "model": {
-            "project_key": "EwsZaXKHCQAZqOHZovWW",
-            "id": "AFExgxhOYnawIbvoINae",
+            "project_key": "DVVoHcdATiNTqKStKMES",
+            "id": "UXDjnlDNcJLsAiLcZQGn",
             "sample": true
           },
           "dataset": {
-            "project_key": "StyPtMzrxgsvainSEoZn",
-            "id": "AMJwOzLzYLegYlbnyXuL",
+            "project_key": "XhORIKxWYtPwiqgVXgFv",
+            "id": "gpmMajwbGFRkoCoEnJPQ",
             "sample": true
           },
-          "float": -897630058824.7,
-          "int": 3576,
-          "str": "BsXYfCvIgnoyPSOJeuIp",
+          "float": -514650.450935639,
+          "int": 1995,
+          "str": "NDtofPgMCYNYhADqAsBa",
           "bool": false,
           "slicingFunction": {
-            "project_key": "zuFyhFKinMWBTGQVPGSf",
-            "id": "NLsUKcGpVfAomhnvGUdR",
-            "sample": false
-          },
-          "transformationFunction": {
-            "project_key": "hvoKnltyrFjTKBdqJHQU",
-            "id": "qzrghneCKDJlkDTvabpF",
+            "project_key": "LsCrMDfVtCZHLMLkWFAW",
+            "id": "LZKxIkBJEYrGYKYdZmYp",
             "sample": true
           },
-          "kwargs": "MoGSnLtgsfUhDseZpmBs",
+          "transformationFunction": {
+            "project_key": "vGGWOSNQFsnKTChRzycA",
+            "id": "MvsIbAXJuJFkkUndRBtA",
+            "sample": false
+          },
+          "kwargs": "cpMZCsMuuznFLnFmISTu",
           "args": [],
-          "none": true
+          "none": false
         }
       ]
+    },
+    {
+      "id": 4070,
+      "result": {
+        "passed": true,
+        "is_error": true,
+        "messages": [
+          {
+            "type": "ERROR",
+            "text": "dMTEEWhXxiOUwqugkJdl"
+          }
+        ],
+        "props": {
+          "qWXcQbNJzBLUwIoFilmx": "NYmoCuxnzfleaayUSoki"
+        },
+        "metric": 0.54503200188356,
+        "metric_name": "hIctgyRVbdRcogebHMJR",
+        "missing_count": 7332,
+        "missing_percent": -84699845.4495843,
+        "unexpected_count": 4257,
+        "unexpected_percent": 4021.77567900037,
+        "unexpected_percent_total": 44.985565310621,
+        "unexpected_percent_nonmissing": 5787.5818360339,
+        "partial_unexpected_index_list": [
+          8816
+        ],
+        "partial_unexpected_counts": [
+          {
+            "value": [
+              3266
+            ],
+            "count": 8788
+          }
+        ],
+        "unexpected_index_list": [
+          6948
+        ],
+        "number_of_perturbed_rows": 1148,
+        "actual_slices_size": [
+          4376
+        ],
+        "reference_slices_size": [
+          1184
+        ],
+        "output_df_id": "nYhVSSceQytZcBxguKTb",
+        "failed_indexes": {
+          "BePebtMqgPPSpwmCrrOX": [
+            9570
+          ]
+        },
+        "details": {
+          "inputs": {
+            "zgQBDREBbYZMkuqvgdpP": [
+              "200b09"
+            ]
+          },
+          "outputs": [
+            "cc0861b"
+          ],
+          "results": [
+            "7"
+          ],
+          "metadata": {
+            "BvqoMBagqLODxoxsMtUe": [
+              "898a0"
+            ]
+          }
+        }
+      },
+      "arguments": []
     }
   ],
   "ModelMeta": [
@@ -1934,7 +1908,7 @@
         "is_error": false,
         "messages": [
           {
-            "type": 0,
+            "type": "ERROR",
             "text": "CWtlvblwzmmlxpbRCHjZ"
           }
         ],
@@ -1979,22 +1953,27 @@
             "d9892fed05"
           ],
           "results": [
-            "TOGbkfDUEzWuAaFuoiSQ"
+            "b48"
           ],
           "metadata": {
-            "DhwnftCVRBNBdcgiBnrA": [
-              "f0a4f21ebe"
+            "TOGbkfDUEzWuAaFuoiSQ": [
+              "d46d44e5b"
             ]
           }
         }
       }
     },
     {
-      "testUuid": "nrfmXOLzEOqvtZhgfEWd",
+      "testUuid": "DhwnftCVRBNBdcgiBnrA",
       "result": {
-        "passed": false,
+        "passed": true,
         "is_error": true,
-        "messages": [],
+        "messages": [
+          {
+            "type": "INFO",
+            "text": "rfmXOLzEOqvtZhgfEWdC"
+          }
+        ],
         "props": {
           "DXspBfUfcpFavQPjOEix": "JiRwYPCQCLqkqbOWLquu"
         },
@@ -2009,33 +1988,26 @@
         "partial_unexpected_index_list": [
           352
         ],
-        "partial_unexpected_counts": [
-          {
-            "value": [
-              162
-            ],
-            "count": 4764
-          }
-        ],
+        "partial_unexpected_counts": [],
         "unexpected_index_list": [
+          162
+        ],
+        "number_of_perturbed_rows": 4764,
+        "actual_slices_size": [
           5884
         ],
-        "number_of_perturbed_rows": 8081,
-        "actual_slices_size": [
-          7681
-        ],
         "reference_slices_size": [
-          2526
+          8081
         ],
-        "output_df_id": "fOrAIjhhTpKRFgkCLOQG",
+        "output_df_id": "ySfOrAIjhhTpKRFgkCLO",
         "failed_indexes": {
-          "ICXZkpBcSmOJxwnwBaRi": [
-            7959
+          "QGICXZkpBcSmOJxwnwBa": [
+            5548
           ]
         },
         "details": {
           "inputs": {
-            "bHvDdshgnRuuFmaBAHwJ": [
+            "izPWYaJEEhZoDiezjqUV": [
               "298a8683f9"
             ]
           },
@@ -2043,68 +2015,61 @@
             "61b4e5e8e"
           ],
           "results": [
-            "MmzylvDVVoHcdATiNTqK"
+            "1ba19dc80"
           ],
           "metadata": {
-            "StKMESUXDjnlDNcJLsAi": [
-              "698003c"
+            "WHlqJXLrFLHYlVNHtAPk": [
+              "57cd20f3"
             ]
           }
         }
       }
     },
     {
-      "testUuid": "LcZQGnVXhORIKxWYtPwi",
+      "testUuid": "ppCiKyegFAtiwWLOzuHt",
       "result": {
         "passed": true,
         "is_error": false,
         "messages": [
           {
-            "type": 0,
-            "text": "gVXgFvgpmMajwbGFRkoC"
+            "type": "INFO",
+            "text": "LcZQGnVXhORIKxWYtPwi"
           }
         ],
         "props": {
-          "oEnJPQYCzSNDtofPgMCY": "NYhADqAsBaxxpuOJzHtk"
+          "qgVXgFvgpmMajwbGFRko": "CoEnJPQYCzSNDtofPgMC"
         },
-        "metric": -84184088594859.8,
-        "metric_name": "kWFAWLZKxIkBJEYrGYKY",
-        "missing_count": 1109,
-        "missing_percent": 4880257.84513596,
-        "unexpected_count": 340,
-        "unexpected_percent": 85058137.6665881,
-        "unexpected_percent_total": -22.1291786575305,
-        "unexpected_percent_nonmissing": 5.37236991333322,
+        "metric": 1231.49393719364,
+        "metric_name": "DqAsBaxxpuOJzHtkaoFT",
+        "missing_count": 8371,
+        "missing_percent": -58054696998.5002,
+        "unexpected_count": 2790,
+        "unexpected_percent": 6030101.7062412,
+        "unexpected_percent_total": -59934461921371.6,
+        "unexpected_percent_nonmissing": 529034794.781994,
         "partial_unexpected_index_list": [
-          6736
+          4057
         ],
-        "partial_unexpected_counts": [
-          {
-            "value": [
-              8916
-            ],
-            "count": 4975
-          }
-        ],
+        "partial_unexpected_counts": [],
         "unexpected_index_list": [
-          2491
+          4765
         ],
-        "number_of_perturbed_rows": 7570,
+        "number_of_perturbed_rows": 340,
         "actual_slices_size": [
-          4249
+          6668
         ],
         "reference_slices_size": [
-          7938
+          2557
         ],
-        "output_df_id": "iAofEddxiKieHopBmrdK",
+        "output_df_id": "GWOSNQFsnKTChRzycAMv",
         "failed_indexes": {
-          "VIyCcpMZCsMuuznFLnFm": [
-            500
+          "sIbAXJuJFkkUndRBtAMi": [
+            9113
           ]
         },
         "details": {
           "inputs": {
-            "STuWWmndMTEEWhXxiOUw": [
+            "oFmDiPTrlYKRbUGqwNOj": [
               "c4660287f3"
             ]
           },
@@ -2112,11 +2077,11 @@
             "639ef0a5b6"
           ],
           "results": [
-            "qugkJdlqWXcQbNJzBLUw"
+            "a444dfb3"
           ],
           "metadata": {
-            "IoFilmxNYmoCuxnzflea": [
-              "a"
+            "GiYxVLFnBhhLsNmLLpfu": [
+              "4f"
             ]
           }
         }
@@ -2171,14 +2136,14 @@
   ],
   "Push": [
     {
-      "kind": 2,
+      "kind": "CONTRIBUTION",
       "key": "gSNnzxHPebRwNaxLlXUb",
       "value": "bCWtlvblwzmmlxpbRCHj",
       "push_title": "ZSgrLKWvRIpETSAEbmPv",
       "push_details": []
     },
     {
-      "kind": 4,
+      "kind": "UNDERCONFIDENCE",
       "key": "iCKJtwAOBuzbcKZEuiAZ",
       "value": "OCSmAXExoCXaOQUMQADw",
       "push_title": "cTDkAzsrCGFxbljESPPQ",
@@ -2187,12 +2152,12 @@
           "action": "nRJeaaNmfGrdiBioLxqy",
           "explanation": "buvjfUAkFQbahLiKJClY",
           "button": "PAlHuDqGdpYTpSqWMvna",
-          "cta": 3
+          "cta": "CREATE_PERTURBATION"
         }
       ]
     },
     {
-      "kind": 1,
+      "kind": "PERTURBATION",
       "key": "TbQYDiTYKAtskJwkfIpz",
       "value": "qTUakrZOrlJRWrTJzZmL",
       "push_title": "eiVlNFRtrpTFXUhCfcdT",
@@ -2201,7 +2166,7 @@
           "action": "ORrFOtDlenUDWxoORaIe",
           "explanation": "fUcmZvgimMfVtYVpnyfH",
           "button": "caZpFxqdVYYflGYCJInC",
-          "cta": 6
+          "cta": "CREATE_SLICE_OPEN_DEBUGGER"
         }
       ]
     }
@@ -2256,19 +2221,19 @@
       "action": "gSNnzxHPebRwNaxLlXUb",
       "explanation": "bCWtlvblwzmmlxpbRCHj",
       "button": "ZSgrLKWvRIpETSAEbmPv",
-      "cta": 2
+      "cta": "CREATE_TEST"
     },
     {
       "action": "iCKJtwAOBuzbcKZEuiAZ",
       "explanation": "OCSmAXExoCXaOQUMQADw",
       "button": "cTDkAzsrCGFxbljESPPQ",
-      "cta": 9
+      "cta": "SAVE_EXAMPLE"
     },
     {
       "action": "nRJeaaNmfGrdiBioLxqy",
       "explanation": "buvjfUAkFQbahLiKJClY",
       "button": "PAlHuDqGdpYTpSqWMvna",
-      "cta": 1
+      "cta": "CREATE_SLICE"
     }
   ],
   "RunAdHocTest": [
@@ -2327,11 +2292,11 @@
                 "451da1"
               ],
               "results": [
-                "wMglcddVpiDgDSElUxRT"
+                "3ebe"
               ],
               "metadata": {
-                "OGbkfDUEzWuAaFuoiSQD": [
-                  "fc91baefa"
+                "wMglcddVpiDgDSElUxRT": [
+                  "0d38"
                 ]
               }
             }
@@ -2550,7 +2515,7 @@
       "is_error": false,
       "messages": [
         {
-          "type": 0,
+          "type": "ERROR",
           "text": "SNnzxHPebRwNaxLlXUbb"
         }
       ],
@@ -2595,19 +2560,24 @@
           "d9892fed05"
         ],
         "results": [
-          "wMglcddVpiDgDSElUxRT"
+          "b48"
         ],
         "metadata": {
-          "OGbkfDUEzWuAaFuoiSQD": [
-            "f0a4f21ebe"
+          "wMglcddVpiDgDSElUxRT": [
+            "d46d44e5b"
           ]
         }
       }
     },
     {
-      "passed": true,
-      "is_error": true,
-      "messages": [],
+      "passed": false,
+      "is_error": false,
+      "messages": [
+        {
+          "type": "INFO",
+          "text": "GbkfDUEzWuAaFuoiSQDh"
+        }
+      ],
       "props": {
         "wnftCVRBNBdcgiBnrAnr": "fmXOLzEOqvtZhgfEWdCD"
       },
@@ -2622,27 +2592,20 @@
       "partial_unexpected_index_list": [
         1031
       ],
-      "partial_unexpected_counts": [
-        {
-          "value": [
-            1051
-          ],
-          "count": 5199
-        }
-      ],
+      "partial_unexpected_counts": [],
       "unexpected_index_list": [
+        1051
+      ],
+      "number_of_perturbed_rows": 5199,
+      "actual_slices_size": [
         9854
       ],
-      "number_of_perturbed_rows": 7468,
-      "actual_slices_size": [
-        1824
-      ],
       "reference_slices_size": [
-        4097
+        7468
       ],
-      "output_df_id": "lGYCJInCpmeoZxHHWupr",
+      "output_df_id": "flGYCJInCpmeoZxHHWup",
       "failed_indexes": {
-        "qSUprCEEmbmdCddHpPzS": [
+        "rqSUprCEEmbmdCddHpPz": [
           2526
         ]
       },
@@ -2656,65 +2619,58 @@
           "61b4e5e8e"
         ],
         "results": [
-          "ICXZkpBcSmOJxwnwBaRi"
+          "1ba19dc80"
         ],
         "metadata": {
-          "zPWYaJEEhZoDiezjqUVW": [
-            "698003c"
+          "ICXZkpBcSmOJxwnwBaRi": [
+            "57cd20f3"
           ]
         }
       }
     },
     {
       "passed": false,
-      "is_error": false,
+      "is_error": true,
       "messages": [
         {
-          "type": 0,
-          "text": "lqJXLrFLHYlVNHtAPkpp"
+          "type": "INFO",
+          "text": "PWYaJEEhZoDiezjqUVWH"
         }
       ],
       "props": {
-        "CiKyegFAtiwWLOzuHtRC": "ZBenfMeYYGYJeSmSWUuV"
+        "lqJXLrFLHYlVNHtAPkpp": "CiKyegFAtiwWLOzuHtRC"
       },
-      "metric": 8186719.28456189,
-      "metric_name": "gFvgpmMajwbGFRkoCoEn",
-      "missing_count": 7313,
-      "missing_percent": 69.8634417376834,
-      "unexpected_count": 6880,
-      "unexpected_percent": 3.28825171597107,
-      "unexpected_percent_total": 103726226.7462,
-      "unexpected_percent_nonmissing": 558.836118093711,
+      "metric": 35913691653791.1,
+      "metric_name": "nVXhORIKxWYtPwiqgVXg",
+      "missing_count": 9841,
+      "missing_percent": -953466.126798201,
+      "unexpected_count": 4841,
+      "unexpected_percent": 2402493571.24882,
+      "unexpected_percent_total": -607212.2258581,
+      "unexpected_percent_nonmissing": 36648248694621.3,
       "partial_unexpected_index_list": [
-        2237
+        2832
       ],
-      "partial_unexpected_counts": [
-        {
-          "value": [
-            1231
-          ],
-          "count": 8198
-        }
-      ],
+      "partial_unexpected_counts": [],
       "unexpected_index_list": [
-        6123
+        4665
       ],
-      "number_of_perturbed_rows": 9381,
+      "number_of_perturbed_rows": 2431,
       "actual_slices_size": [
-        5099
+        8885
       ],
       "reference_slices_size": [
-        7162
+        3284
       ],
-      "output_df_id": "AsBaxxpuOJzHtkaoFTRA",
+      "output_df_id": "oEnJPQYCzSNDtofPgMCY",
       "failed_indexes": {
-        "ZyRvMZpiGBsauwvSEMUM": [
-          8072
+        "NYhADqAsBaxxpuOJzHtk": [
+          63
         ]
       },
       "details": {
         "inputs": {
-          "ZmYpbLiOuojdOaVPvJpy": [
+          "ZHLMLkWFAWLZKxIkBJEY": [
             "c4660287f3"
           ]
         },
@@ -2722,11 +2678,11 @@
           "639ef0a5b6"
         ],
         "results": [
-          "niAofEddxiKieHopBmrd"
+          "a444dfb3"
         ],
         "metadata": {
-          "KVIyCcpMZCsMuuznFLnF": [
-            "a"
+          "rGYKYdZmYpbLiOuojdOa": [
+            "4f"
           ]
         }
       }
@@ -2743,47 +2699,47 @@
         "1bcc"
       ],
       "results": [
-        "bCWtlvblwzmmlxpbRCHj"
+        "a8c7410"
       ],
       "metadata": {
-        "ZSgrLKWvRIpETSAEbmPv": [
-          "8"
+        "bCWtlvblwzmmlxpbRCHj": [
+          "433d"
         ]
       }
     },
     {
       "inputs": {
-        "iCKJtwAOBuzbcKZEuiAZ": [
-          "c1d45597"
+        "ZSgrLKWvRIpETSAEbmPv": [
+          "05"
         ]
       },
       "outputs": [
-        "d"
+        "3f415b0"
       ],
       "results": [
-        "OCSmAXExoCXaOQUMQADw"
+        "e079d1b93"
+      ],
+      "metadata": {
+        "iCKJtwAOBuzbcKZEuiAZ": [
+          "8a3488"
+        ]
+      }
+    },
+    {
+      "inputs": {
+        "OCSmAXExoCXaOQUMQADw": [
+          "f"
+        ]
+      },
+      "outputs": [
+        "b48"
+      ],
+      "results": [
+        "3ebe"
       ],
       "metadata": {
         "cTDkAzsrCGFxbljESPPQ": [
-          "e079d1b93"
-        ]
-      }
-    },
-    {
-      "inputs": {
-        "nRJeaaNmfGrdiBioLxqy": [
-          "8a3488"
-        ]
-      },
-      "outputs": [
-        "9a78cdc2"
-      ],
-      "results": [
-        "buvjfUAkFQbahLiKJClY"
-      ],
-      "metadata": {
-        "PAlHuDqGdpYTpSqWMvna": [
-          "9e826bd6a"
+          "0d38"
         ]
       }
     }
@@ -2893,15 +2849,15 @@
   ],
   "TestMessage": [
     {
-      "type": 0,
+      "type": "ERROR",
       "text": "gSNnzxHPebRwNaxLlXUb"
     },
     {
-      "type": 0,
+      "type": "ERROR",
       "text": "bCWtlvblwzmmlxpbRCHj"
     },
     {
-      "type": 1,
+      "type": "INFO",
       "text": "ZSgrLKWvRIpETSAEbmPv"
     }
   ],
@@ -2967,45 +2923,45 @@
                 "451da1"
               ],
               "results": [
-                "nLYYwYlubXxAwRYGKxBb"
+                "3ebe"
               ],
               "metadata": {
-                "JPIwMglcddVpiDgDSElU": [
-                  "fc91baefa"
+                "nLYYwYlubXxAwRYGKxBb": [
+                  "0d38"
                 ]
               }
             }
           },
           "arguments": [
             {
-              "name": "xRTOGbkfDUEzWuAaFuoi",
+              "name": "JPIwMglcddVpiDgDSElU",
               "model": {
-                "project_key": "SQDhwnftCVRBNBdcgiBn",
-                "id": "rAnrfmXOLzEOqvtZhgfE",
+                "project_key": "xRTOGbkfDUEzWuAaFuoi",
+                "id": "SQDhwnftCVRBNBdcgiBn",
                 "sample": true
               },
               "dataset": {
-                "project_key": "dCDXspBfUfcpFavQPjOE",
-                "id": "ixJiRwYPCQCLqkqbOWLq",
+                "project_key": "FRtrpTFXUhCfcdTORrFO",
+                "id": "tDlenUDWxoORaIefUcmZ",
                 "sample": false
               },
-              "float": -67607930.6731,
-              "int": 5199,
-              "str": "YYflGYCJInCpmeoZxHHW",
+              "float": 182325264209.697,
+              "int": 3955,
+              "str": "iRwYPCQCLqkqbOWLquud",
               "bool": true,
               "slicingFunction": {
-                "project_key": "YcjPEVmfFPelQunTLbaN",
-                "id": "sySfOrAIjhhTpKRFgkCL",
-                "sample": false
+                "project_key": "YYflGYCJInCpmeoZxHHW",
+                "id": "uprqSUprCEEmbmdCddHp",
+                "sample": true
               },
               "transformationFunction": {
-                "project_key": "qUPVRMJjwiLIndYQCCSx",
-                "id": "urnbHvDdshgnRuuFmaBA",
+                "project_key": "zSiAPeXjOZQqfAVpUhVb",
+                "id": "qUPVRMJjwiLIndYQCCSx",
                 "sample": false
               },
-              "kwargs": "VWHlqJXLrFLHYlVNHtAP",
+              "kwargs": "RizPWYaJEEhZoDiezjqU",
               "args": [],
-              "none": true
+              "none": false
             }
           ]
         }

@@ -8,6 +8,7 @@ from uuid import uuid4
 
 import pytest
 
+import giskard
 from giskard.utils.worker_pool import GiskardMLWorkerException, PoolState, WorkerPoolExecutor
 
 
@@ -66,7 +67,7 @@ def sleep_add_one(timer, value):
 def print_stuff():
     print("stuff stdout")
     print("other stuff", file=sys.stderr)
-    logging.getLogger().info("info log")
+    logging.getLogger(giskard.__name__).info("info log")
     logging.getLogger("truc").error("toto")
     logging.getLogger(__name__).warning("Warning")
     return

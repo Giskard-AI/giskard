@@ -1,5 +1,6 @@
 from typing import Any, Dict, List, Optional
 
+from collections import defaultdict
 from dataclasses import dataclass, field
 from enum import Enum
 
@@ -7,15 +8,15 @@ from ..datasets.base import Dataset
 from ..models.base import BaseModel
 
 
-class TestResultStatus(Enum):
+class TestResultStatus(str, Enum):
     ERROR = "ERROR"
     PASSED = "PASSED"
     FAILED = "FAILED"
 
 
-class TestMessageLevel(Enum):
-    ERROR = (1,)
-    INFO = 2
+class TestMessageLevel(str, Enum):
+    ERROR = "ERROR"
+    INFO = "INFP"
 
 
 @dataclass
@@ -46,6 +47,20 @@ class TestResultDetails:
     outputs: List[Any]
     results: List[TestResultStatus]
     metadata: Dict[str, List[Any]] = field(default_factory=dict)
+
+    @classmethod
+    def empty(cls):
+        return TestResultDetails(defaultdict(list), list(), list(), defaultdict(list))
+
+    def append(self, row_result: TestResultStatus, row_input: Dict[str, Any], row_output: Any, row_metadata):
+        for input_col, input_val in row_input.items():
+            self.inputs[input_col].append(input_val)
+
+        self.outputs.append(row_output)
+        self.results.append(row_result)
+
+        for metadata_col, metadata_val in row_metadata.items():
+            self.metadata[metadata_col].append(metadata_val)
 
 
 def create_test_result_details(

@@ -11,7 +11,7 @@ import sys
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#project-information
 
 project = "Giskard"
-copyright = "2023, Giskard AI"
+copyright = "2024, Giskard AI"
 author = "Giskard AI"
 release = "2.0.0"
 
@@ -110,7 +110,7 @@ html_theme_options = {
 add_function_parentheses = False
 # Do not execute the notebooks when building the docs
 docs_version = os.getenv("READTHEDOCS_VERSION", "latest")
-if docs_version == "latest":
+if docs_version == "latest" or docs_version == "stable":
     branch = "main"
 else:
     branch = docs_version.replace("-", "/")

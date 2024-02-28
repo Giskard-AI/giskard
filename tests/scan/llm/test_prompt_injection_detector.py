@@ -15,7 +15,7 @@ def test_prompt_injection_data_loader_properties():
 
     loader = PromptInjectionDataLoader()
 
-    assert len(loader.df) == 156
+    assert len(loader.df) == 35
     assert len(loader.df.columns) == 15
     assert len(loader.groups) == 10
     group = loader.groups[0]
