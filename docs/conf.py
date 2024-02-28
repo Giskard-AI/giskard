@@ -11,7 +11,7 @@ import sys
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#project-information
 
 project = "Giskard"
-copyright = "2023, Giskard AI"
+copyright = "2024, Giskard AI"
 author = "Giskard AI"
 release = "2.0.0"
 
