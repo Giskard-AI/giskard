@@ -173,43 +173,47 @@ class TestSuiteResult:
             inputs=TestInputDTO.from_inputs_dict(self.inputs),
             result=TestSuiteExecutionResult.PASSED if self.passed else TestSuiteExecutionResult.FAILED,
             message="",
-            results=[self._test_result_to_dto(result) for result in self.results],
+            results=[self._test_result_to_dto(result, suite_id=self.suite.id) for result in self.results],
             executionDate=self.execution_date.isoformat(),
             completionDate=self.completion_date.isoformat(),
         )
 
     @staticmethod
-    def _test_result_to_dto(result: SuiteResult):
+    def _test_result_to_dto(result: SuiteResult, suite_id: Optional[int] = None):
         datasets = {dataset.id: dataset for dataset in result.params.values() if isinstance(dataset, Dataset)}
-
+        suite_id = suite_id if suite_id is not None else result.suite_test_id
         return SaveSuiteTestExecutionDTO(
             testUuid=result.test.meta.uuid,
-            suiteTestId=result.suite_test_id,
+            suiteTestId=suite_id,
             displayName=result.test_name,
             inputs={name: str(value) for name, value in result.params.items()},
             arguments={test_input.name: test_input for test_input in TestInputDTO.from_inputs_dict(result.params)},
             messages=[TestResultMessageDTO(type=message.type, text=message.text) for message in result.result.messages],
-            status=TestResultStatus.PASSED
-            if result.result.passed
-            else TestResultStatus.ERROR
-            if result.result.is_error
-            else TestResultStatus.FAILED,
+            status=(
+                TestResultStatus.PASSED
+                if result.result.passed
+                else TestResultStatus.ERROR if result.result.is_error else TestResultStatus.FAILED
+            ),
             metric=result.result.metric,
             metricName=result.result.metric_name,
             failedIndexes={
                 str(dataset.original_id): list(datasets[dataset.original_id].df.index.get_indexer_for(dataset.df.index))
                 for dataset in result.result.output_ds
             },
-            details=SaveSuiteTestExecutionDetailsDTO(
-                inputs={key: [str(value) for value in values] for key, values in result.result.details.inputs.items()},
-                outputs=[str(output) for output in result.result.details.outputs],
-                results=result.result.details.results,
-                metadata={
-                    key: [str(value) for value in values] for key, values in result.result.details.metadata.items()
-                },
-            )
-            if result.result.details
-            else None,
+            details=(
+                SaveSuiteTestExecutionDetailsDTO(
+                    inputs={
+                        key: [str(value) for value in values] for key, values in result.result.details.inputs.items()
+                    },
+                    outputs=[str(output) for output in result.result.details.outputs],
+                    results=result.result.details.results,
+                    metadata={
+                        key: [str(value) for value in values] for key, values in result.result.details.metadata.items()
+                    },
+                )
+                if result.result.details
+                else None
+            ),
         )
 
     def to_mlflow(self, mlflow_client: MlflowClient = None, mlflow_run_id: str = None):
