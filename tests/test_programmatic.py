@@ -455,6 +455,7 @@ def test_download_suite_run_and_upload_results():
         assert upload_body["suiteId"] == 2
         assert upload_body["result"] == "FAILED"
         assert len(upload_body["results"]) == 1
+
         upload_test_result = upload_body["results"][0]
         assert upload_test_result["testUuid"] == str(test_auc.meta.uuid)
         assert upload_test_result["suiteTestId"] == 3

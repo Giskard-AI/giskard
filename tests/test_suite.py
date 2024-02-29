@@ -1,8 +1,12 @@
+import uuid
+from datetime import datetime
+
 import numpy as np
+import pandas as pd
 import pytest
 
-from giskard import Model, Suite
-from giskard.core.suite import SuiteResult, single_binary_result
+from giskard import Dataset, Model, Suite
+from giskard.core.suite import SuiteResult, TestSuiteResult, single_binary_result
 from giskard.core.test_result import TestResult
 from giskard.testing import test_accuracy
 
@@ -93,3 +97,27 @@ def test_suite_result_backward_compatibility():
     assert test_name == "name"
     assert result == TestResult()
     assert params == {}
+
+
+def test_suite_result_to_dto():
+    dataset = Dataset(pd.DataFrame({"test": [1, 2, 3]}))
+    dataset.id = uuid.uuid4()
+
+    suite = Suite()
+    suite.id = 2
+
+    result = TestSuiteResult(
+        suite,
+        {"dataset": dataset, "threshold": 0.5},
+        True,
+        [SuiteResult("name", TestResult(), {"dataset": dataset, "threshold": 0.5}, test_accuracy, 2)],
+        datetime.now(),
+        datetime.now(),
+    )
+    dto = result._to_dto("label")
+
+    assert dto.inputs[0].value == str(dataset.id)
+    assert dto.inputs[1].value == str(0.5)
+
+    assert dto.results[0].inputs["dataset"] == str(dataset.id)
+    assert dto.results[0].inputs["threshold"] == str(0.5)

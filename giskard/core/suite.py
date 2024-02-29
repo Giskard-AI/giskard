@@ -186,13 +186,15 @@ class TestSuiteResult:
             testUuid=result.test.meta.uuid,
             suiteTestId=suite_id,
             displayName=result.test_name,
-            inputs={name: serialize_parameter(value) for name, value in result.params.items()},
+            inputs={name: str(serialize_parameter(value)) for name, value in result.params.items()},
             arguments={test_input.name: test_input for test_input in TestInputDTO.from_inputs_dict(result.params)},
             messages=[TestResultMessageDTO(type=message.type, text=message.text) for message in result.result.messages],
             status=(
                 TestResultStatus.PASSED
                 if result.result.passed
-                else TestResultStatus.ERROR if result.result.is_error else TestResultStatus.FAILED
+                else TestResultStatus.ERROR
+                if result.result.is_error
+                else TestResultStatus.FAILED
             ),
             metric=result.result.metric,
             metricName=result.result.metric_name,
