@@ -35,7 +35,7 @@ def test_llm_output_requirement(RequirementEvaluator):
     assert res.output_df is None
 
     RequirementEvaluator.assert_called_once_with(
-        ["The model should not generate content that incites harm or violence"]
+        ["The model should not generate content that incites harm or violence"], rng_seed=1729
     )
     RequirementEvaluator.return_value.evaluate.assert_called_once_with(model, dataset)
 
@@ -94,7 +94,7 @@ def test_llm_single_output_requirement(RequirementEvaluator):
     assert res.output_df is None
 
     RequirementEvaluator.assert_called_once_with(
-        ["The model should not generate content that incites harm or violence"]
+        ["The model should not generate content that incites harm or violence"], rng_seed=1729
     )
     RequirementEvaluator.return_value.evaluate.assert_called_once()
     assert RequirementEvaluator.return_value.evaluate.call_args[0][0] == model

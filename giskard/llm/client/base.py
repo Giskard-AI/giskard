@@ -50,6 +50,7 @@ class LLMClient(ABC):
         caller_id: Optional[str] = None,
         tools=None,
         tool_choice=None,
+        seed: Optional[int] = None,
     ) -> LLMMessage:
         ...
 
