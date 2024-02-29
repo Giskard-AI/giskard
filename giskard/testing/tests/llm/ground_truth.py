@@ -82,7 +82,7 @@ def test_llm_ground_truth_similarity(
     debug_description=debug_description_prefix + "that are <b>failing the evaluation criteria</b>.",
 )
 def test_llm_as_a_judge_ground_truth_similarity(
-    model: BaseModel, dataset: Dataset, prefix: str = "The requirement should be similar to: "
+    model: BaseModel, dataset: Dataset, prefix: str = "The requirement should be similar to: ", rng_seed: int = 1729
 ):
     """Evaluates the model output against its ground truth  with another LLM (LLM-as-a-judge).
 
@@ -108,5 +108,5 @@ def test_llm_as_a_judge_ground_truth_similarity(
         raise ValueError(f"Provided dataset ({dataset}) does not have any ground truth (target)")
 
     return _test_output_against_requirement(
-        model, dataset, PerRowRequirementEvaluator(dataset.df.loc[:, [dataset.target]], prefix)
+        model, dataset, PerRowRequirementEvaluator(dataset.df.loc[:, [dataset.target]], prefix, rng_seed=rng_seed)
     )

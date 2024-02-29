@@ -66,6 +66,7 @@ class LLMOutputFormattingDetector(RequirementBasedDetector):
             temperature=0.1,
             max_tokens=1,
             caller_id=self.__class__.__name__,
+            seed=self.rng_seed,
         )
 
         if out.content.strip().upper() != "Y":

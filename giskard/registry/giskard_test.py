@@ -131,6 +131,7 @@ class GiskardTestMethod(GiskardTest):
         self.test_fn = test_fn
         test_uuid = get_object_uuid(self.test_fn)
         meta = tests_registry.get_test(test_uuid)
+
         if meta is None:
             # equivalent to adding @test decorator
             from giskard.registry.decorators import test
@@ -139,6 +140,21 @@ class GiskardTestMethod(GiskardTest):
             meta = tests_registry.get_test(test_uuid)
 
         super(GiskardTest, self).__init__(meta)
+
+    def __deepcopy__(self, memo):
+        # This is necessary, to avoid deepcopy model, which can have thread lock, or some unpickable object
+        # https://stackoverflow.com/questions/53601999/getting-typeerror-cant-pickle-thread-lock-objects-when-an-object-is-deepcopi
+        # https://stackoverflow.com/questions/1500718/how-to-override-the-copy-deepcopy-operations-for-a-python-object
+
+        cls = self.__class__
+        result = cls.__new__(cls)
+        memo[id(self)] = result
+        filtered_items = [(k, v) for k, v in self.__dict__.items() if k not in ["args", "kwargs"]]
+        for k, v in filtered_items:
+            setattr(result, k, copy.deepcopy(v, memo))
+        result.args = list()
+        result.kwargs = dict()
+        return result
 
     def __call__(self, *args, **kwargs) -> "GiskardTestMethod":
         instance = copy.deepcopy(self)
