@@ -43,7 +43,7 @@ class MetricTool(BaseTool):
                 filtered_df = filtered_df[
                     filtered_df[col_name].apply(lambda x: fuzz.ratio(x.lower(), col_value.lower()) >= threshold)
                 ]
-                if not len(filtered_df):
+                if not filtered_df:
                     break
             else:
                 filtered_df = filtered_df[filtered_df[col_name] == col_value]
@@ -53,10 +53,13 @@ class MetricTool(BaseTool):
     def __call__(self, metric_type: str, features_dict: dict) -> str:
         # Get the predicted labels.
         model_input = self._get_input_from_dataset(features_dict)
+        if len(model_input) == 0:
+            raise ValueError("No records in the dataset given feature values combination.")
+
         prediction = self._model.predict(model_input).prediction
 
         # Get the ground-truth labels.
-        ground_truth = self._dataset.df[self._dataset.target]
+        ground_truth = model_input.df[self._dataset.target]
 
         # Calculate the metric value.
         metric = AVAILABLE_METRICS[metric_type]
