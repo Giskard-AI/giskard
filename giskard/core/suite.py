@@ -186,7 +186,7 @@ class TestSuiteResult:
             testUuid=result.test.meta.uuid,
             suiteTestId=suite_id,
             displayName=result.test_name,
-            inputs={name: str(value) for name, value in result.params.items()},
+            inputs={name: serialize_parameter(value) for name, value in result.params.items()},
             arguments={test_input.name: test_input for test_input in TestInputDTO.from_inputs_dict(result.params)},
             messages=[TestResultMessageDTO(type=message.type, text=message.text) for message in result.result.messages],
             status=(

@@ -6,6 +6,7 @@ from pydantic import Field
 
 from giskard.core.core import TestResultStatusEnum
 from giskard.core.validation import ConfiguredBaseModel
+from giskard.utils.artifacts import serialize_parameter
 
 
 class TestInputDTO(ConfiguredBaseModel):
@@ -18,7 +19,10 @@ class TestInputDTO(ConfiguredBaseModel):
 
     @classmethod
     def from_inputs_dict(cls, inputs: Dict[str, Any]) -> List["TestInputDTO"]:
-        return [cls(name=name, value=str(value), type=type(value).__qualname__) for name, value in inputs.items()]
+        return [
+            cls(name=name, value=serialize_parameter(value), type=type(value).__qualname__)
+            for name, value in inputs.items()
+        ]
 
 
 class SuiteTestDTO(ConfiguredBaseModel):
