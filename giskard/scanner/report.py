@@ -1,4 +1,6 @@
-from typing import Optional
+from __future__ import annotations
+
+from typing import TYPE_CHECKING, Optional
 
 import random
 import string
@@ -10,6 +12,9 @@ import pandas as pd
 
 from giskard.core.errors import GiskardImportError
 from giskard.utils.analytics_collector import analytics, anonymize
+
+if TYPE_CHECKING:
+    from mlflow import MlflowClient
 
 
 class ScanReport:
@@ -212,7 +217,7 @@ class ScanReport:
 
     def to_mlflow(
         self,
-        mlflow_client=None,
+        mlflow_client: MlflowClient = None,
         mlflow_run_id: str = None,
         summary: bool = True,
         model_artifact_path: str = "",
@@ -223,7 +228,6 @@ class ScanReport:
         """
         import mlflow
 
-        mlflow_client: mlflow.MlflowClient = mlflow_client
         results_df = self.get_scan_summary_for_mlflow(self)
         if model_artifact_path != "":
             model_artifact_path = "-for-" + model_artifact_path
