@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+{% block head %}
+
+<style>
+    {% include "rag_report/static/style.css" %}
+</style>
+<script src="https://cdn.bokeh.org/bokeh/release/bokeh-3.3.4.min.js"></script>
+<script src="https://cdn.bokeh.org/bokeh/release/bokeh-gl-3.3.4.min.js"></script>
+
+
+{% endblock %}
+
+{% block content %}
+<div class="dark">
+    <div id="gsk-rag" class="dark:text-white dark:bg-zinc-800 rounded border border-gray-500">
+        <h1>RAG Evaluation</h1>
+        <div id="gsk-overview" class="flex-row">
+            <div id="gsk-knowledge-base">
+                <h3>Knowledge base overview:</h3>
+                {{knowledge_script | safe}}
+                {{knowledge_div | safe}}
+            </div>
+            <div id="gsk-components">
+                <h3>Components Analysis:</h3>
+                <table style="width:80%" class="dark">
+                {% for component, score in components.items() %}
+                    <tr>
+                        <td>{{component}}</td>
+                        <td><progress max="100" value={{score*100}}>{{score*100}}%</progress></td>
+                        <td>{{score*100}}%</td>
+                    </tr>
+                {% endfor %}
+                </table>
+            </div>
+        </div>
+        <div id="gsk-advice">
+            <h3>Recommendation:</h3>
+            {{recommendation}}
+        </div>
+        <div id="" gsk-correctness">
+            <h3>Correctness:</h3>
+            <h4>Overall: {{correctness*100}}%</h4>
+            <div class="flex-row">
+                <div>
+                    {{q_type_correctness_script | safe}}
+                    {{q_type_correctness_div | safe}}
+                </div>
+                <div>
+                    {{topic_correctness_script | safe}}
+                    {{topic_correctness_div | safe}}
+                </div>
+            </div>
+        </div>
+        <div id="gsk-ragas">
+            <h3>RAGAS metrics:</h3>
+            <!-- Tab links -->
+            <div class="tab">
+                {% for category, details in ragas_metrics.items() %}
+                <button class="tablinks" onclick="opentab(event, '{{category}}')">{{category}}</button>
+                {% endfor %} 
+            </div>
+            <!-- Tab content -->
+            {% for category, details in ragas_metrics.items() %}
+            <div id={{category}} class="tabcontent">
+                <h3>{{category}}</h3>
+                <div class="flex-row">
+                    {% for metric, components in details.items() %}
+                    <div>
+                        <h5>{{metric}}</h4>
+                            {{components.script | safe}}
+                            {{components.div | safe}}
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+            {% endfor %}
+            
+            
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block javascript %}
+<script type="text/javascript">
+    {% include "rag_report/static/internal.js" %}
+</script>
+{% endblock %}

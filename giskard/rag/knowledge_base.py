@@ -7,7 +7,7 @@ import numpy as np
 import pandas as pd
 from bokeh.models import ColumnDataSource
 from bokeh.palettes import Category20b
-from bokeh.plotting import figure, show
+from bokeh.plotting import figure
 from sklearn.cluster import HDBSCAN
 from sklearn.manifold import TSNE
 
@@ -195,7 +195,14 @@ class KnowledgeBase:
             }
         )
 
-        p = figure(tools=TOOLS, toolbar_location="above", width=800, title=TITLE, x_range=x_range, y_range=y_range)
+        p = figure(
+            tools=TOOLS,
+            toolbar_location="above",
+            sizing_mode="stretch_width",
+            title=TITLE,
+            x_range=x_range,
+            y_range=y_range,
+        )
         p.toolbar.logo = "grey"
         p.background_fill_color = "#efefef"
         p.grid.grid_line_color = "white"
@@ -223,7 +230,8 @@ class KnowledgeBase:
         p.legend.location = "top_right"
         p.legend.title = "Knowledge Base Topics"
         p.legend.title_text_font_style = "bold"
-        show(p)
+        # show(p)
+        return p
 
     def _get_random_document(self):
         return self._rng.choice(self._documents)
