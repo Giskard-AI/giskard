@@ -41,9 +41,9 @@ class MetricTool(BaseTool):
         for col_name, col_value in list(row_filter.items()):
             if filtered_df[col_name].dtype == "object":
                 filtered_df = filtered_df[
-                    filtered_df[col_name].apply(lambda x: fuzz.ratio(x.lower(), col_value.lower()) >= threshold)
+                    filtered_df[col_name].apply(lambda x: fuzz.ratio(str(x).lower(), col_value.lower()) >= threshold)
                 ]
-                if not filtered_df:
+                if not len(filtered_df):
                     break
             else:
                 filtered_df = filtered_df[filtered_df[col_name] == col_value]
