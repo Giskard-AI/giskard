@@ -1,4 +1,4 @@
-from typing import Sequence
+from typing import Optional, Sequence, Union
 
 import matplotlib
 import numpy as np
@@ -21,7 +21,12 @@ def get_colors(values, cmap_name="RdYlGn"):
 
 
 class RAGReport:
-    ragas_metrics_names = ["context_precision", "faithfulness", "answer_relevancy", "context_recall"]
+    ragas_metrics_names = {
+        "context_precision": "Context Precision",
+        "faithfulness": "Faithfulness",
+        "answer_relevancy": "Answer Relevancy",
+        "context_recall": "Context Recall",
+    }
 
     def __init__(
         self,
@@ -41,14 +46,14 @@ class RAGReport:
 
         if ragas_metrics is not None:
             self._dataframe = pd.concat(
-                [self._dataframe, ragas_metrics.set_index("id")[self.ragas_metrics_names]], axis=1
+                [self._dataframe, ragas_metrics.set_index("id")[self.ragas_metrics_names.keys()]], axis=1
             )
 
     def _repr_html_(self):
         tpl = get_template("rag_report/rag_report.html")
         kb_script, kb_div = components(self._knowledge_base.plot_topics())
         q_type_script, q_type_div = components(self.plot_correctness_by_metadata("question_type"))
-        topic_script, topic_div = components(self.plot_correctness_by_metadata("question_type"))
+        topic_script, topic_div = components(self.plot_correctness_by_metadata("topic"))
         return tpl.render(
             knowledge_script=kb_script,
             knowledge_div=kb_div,
@@ -59,26 +64,7 @@ class RAGReport:
             q_type_correctness_div=q_type_div,
             topic_correctness_script=topic_script,
             topic_correctness_div=topic_div,
-            ragas_metrics={
-                "Overall": {
-                    "Faithfulness": 0.5,
-                    "Answer Relevancy": 0.5,
-                    "Context Precision": 0.5,
-                    "Context Recall": 0.5,
-                },
-                "Topics": {
-                    "Faithfulness": 0.5,
-                    "Answer Relevancy": 0.5,
-                    "Context Precision": 0.5,
-                    "Context Recall": 0.5,
-                },
-                "Question": {
-                    "Faithfulness": 0.5,
-                    "Answer Relevancy": 0.5,
-                    "Context Precision": 0.5,
-                    "Context Recall": 0.5,
-                },
-            },
+            ragas_metrics=self.get_ragas_histograms(),
         )
 
     def save(self, path):
@@ -89,10 +75,29 @@ class RAGReport:
     def failures(self):
         return self._dataframe[self._dataframe["evaluation_result"] is False]
 
+    def get_failures(
+        self,
+        topic: Optional[Union[str, Sequence[str]]] = None,
+        question_type: Optional[Union[str, Sequence[str]]] = None,
+    ):
+        failures = self.failures
+
+        if topic and not isinstance(topic, Sequence):
+            topic = [topic]
+            failures = failures[failures["metadata"].apply(lambda x: x.get("topic") in topic)]
+        if question_type and not isinstance(question_type, Sequence):
+            question_type = [question_type]
+            failures = failures[failures["metadata"].apply(lambda x: x.get("topic") in topic)]
+
+        return failures
+
     def correctness_by_question_type(self):
-        correctness = self.correctness_by_metadata("question_type")
+        correctness = self._correctness_by_metadata("question_type")
         correctness.index = correctness.index.map(lambda x: QuestionTypes(x).name)
         return correctness
+
+    def correctness_by_topic(self):
+        return self._correctness_by_metadata("topic")
 
     def component_scores(self):
         correctness = self.correctness_by_question_type()
@@ -114,7 +119,7 @@ class RAGReport:
         score_df.index = score_df.index.map(lambda x: RAGComponents(x).name)
         return score_df
 
-    def correctness_by_metadata(self, metadata_name: str):
+    def _correctness_by_metadata(self, metadata_name: str):
         correctness = (
             self._dataframe.groupby(lambda idx: self._dataframe.loc[idx, "metadata"][metadata_name])[
                 "evaluation_result"
@@ -127,14 +132,21 @@ class RAGReport:
         return correctness
 
     def plot_correctness_by_metadata(self, metadata_name: str):
-        data = self.correctness_by_metadata(metadata_name)
+        data = self._correctness_by_metadata(metadata_name)
         metadata_values = data.index.tolist()
-        metadata_values = [QuestionTypes(v).name for v in metadata_values]
+        if metadata_name == "question_type":
+            metadata_values = [QuestionTypes(v).name for v in metadata_values]
         overall_correctness = self._dataframe["evaluation_result"].mean()
-        correctness = (data["correctness"].tolist() - overall_correctness) / overall_correctness * 100
+        correctness = data["correctness"].to_numpy()
+        shift = (data["correctness"].to_numpy() - overall_correctness) / overall_correctness * 100
 
         source = ColumnDataSource(
-            data={"correctness": correctness, "metadata_values": metadata_values, "colors": get_colors(correctness)}
+            data={
+                "correctness_shift": shift,
+                "correctness": correctness,
+                "metadata_values": metadata_values,
+                "colors": get_colors(correctness),
+            }
         )
 
         p = figure(
@@ -142,10 +154,74 @@ class RAGReport:
             height=350,
             title=f"Correctness by {metadata_name}",
             toolbar_location=None,
-            tools="",
+            tools="hover",
         )
 
-        p.hbar(y="metadata_values", right="correctness", source=source, height=0.9, fill_color="colors")
+        p.hbar(y="metadata_values", right="correctness_shift", source=source, height=0.9, fill_color="colors")
         p.xaxis.axis_label = "Correctness shift (%) against the overall correctness on the testset"
+        p.title.text_font_size = "14pt"
+        p.hover.tooltips = [
+            (metadata_name, "@metadata_values"),
+            ("Correctness", "@correctness{0.00}"),
+            ("Correctness shift", "@correctness_shift{0.00}%"),
+        ]
 
         return p
+
+    def plot_ragas_metrics_hist(self, metric_name: str, filter_metadata: dict = None):
+        if filter_metadata is not None:
+            data = self._dataframe[
+                self._dataframe["metadata"].apply(lambda x: all(x.get(k) in v for k, v in filter_metadata.items()))
+            ][metric_name]
+        else:
+            data = self._dataframe[metric_name]
+
+        p = figure(
+            width=300, height=200, toolbar_location=None, title=self.ragas_metrics_names[metric_name], tools="hover"
+        )
+
+        bins = np.linspace(0, 1, 21)
+        hist, edges = np.histogram(data, bins=bins)
+        p.quad(
+            top=hist,
+            bottom=0,
+            left=edges[:-1],
+            right=edges[1:],
+            fill_color="skyblue",
+            line_color="white",
+        )
+        p.title.text_font_size = "12pt"
+        p.hover.tooltips = [
+            ("Range", "@left{0.00} to @right{0.00}"),
+            ("# questions", "@top"),
+        ]
+
+        return p
+
+    def get_plot_components(self, p):
+        script, div = components(p)
+        return {"script": script, "div": div}
+
+    def get_ragas_histograms(self):
+        histograms_dict = {}
+        histograms_dict["Overall"] = {
+            "Overall": {
+                metric: self.get_plot_components(self.plot_ragas_metrics_hist(metric))
+                for metric in self.ragas_metrics_names
+            }
+        }
+        histograms_dict["Topics"] = {
+            topic: {
+                metric: self.get_plot_components(self.plot_ragas_metrics_hist(metric, {"topic": [topic]}))
+                for metric in self.ragas_metrics_names
+            }
+            for topic in self._testset.get_metadata_values("topic")
+        }
+        histograms_dict["Question"] = {
+            QuestionTypes(q_type).name: {
+                metric: self.get_plot_components(self.plot_ragas_metrics_hist(metric, {"question_type": [q_type]}))
+                for metric in self.ragas_metrics_names
+            }
+            for q_type in self._testset.get_metadata_values("question_type")
+        }
+        return histograms_dict

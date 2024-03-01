@@ -230,6 +230,8 @@ class KnowledgeBase:
         p.legend.location = "top_right"
         p.legend.title = "Knowledge Base Topics"
         p.legend.title_text_font_style = "bold"
+        p.title.text_font_size = "14pt"
+
         # show(p)
         return p
 
