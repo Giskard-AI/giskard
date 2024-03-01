@@ -95,5 +95,5 @@ def evaluate(
             logger.error(f"Encountered error during RAGAS metric computation: {err}. Skipping.")
             logger.exception(err)
             ragas_results = None
-    # return RAGReport(results, testset, knowledge_base, ragas_metrics))
-    return results, ragas_results
+
+    return RAGReport(results, testset, knowledge_base, ragas_results)
