@@ -73,21 +73,21 @@ class RAGReport:
 
     @property
     def failures(self):
-        return self._dataframe[self._dataframe["evaluation_result"] is False]
+        return self._dataframe[~self._dataframe["evaluation_result"]]
 
     def get_failures(
         self,
         topic: Optional[Union[str, Sequence[str]]] = None,
-        question_type: Optional[Union[str, Sequence[str]]] = None,
+        question_type: Optional[Union[QuestionTypes, Sequence[QuestionTypes]]] = None,
     ):
         failures = self.failures
 
-        if topic and not isinstance(topic, Sequence):
-            topic = [topic]
+        if topic:
+            topic = [topic] if not isinstance(topic, Sequence) else topic
             failures = failures[failures["metadata"].apply(lambda x: x.get("topic") in topic)]
-        if question_type and not isinstance(question_type, Sequence):
-            question_type = [question_type]
-            failures = failures[failures["metadata"].apply(lambda x: x.get("topic") in topic)]
+        if question_type:
+            question_type = [question_type] if not isinstance(question_type, Sequence) else question_type
+            failures = failures[failures["metadata"].apply(lambda x: x.get("question_type") in question_type)]
 
         return failures
 
