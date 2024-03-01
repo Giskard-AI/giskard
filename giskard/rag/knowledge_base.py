@@ -237,14 +237,17 @@ class KnowledgeBase:
         return self._rng.choice(self._documents)
 
     def _get_random_document_group(self):
-        seed_embedding = self._rng.choice(self._embeddings)
+        seed_document_idx = self._rng.choice(len(self._embeddings))
+        seed_embedding = self._embeddings[seed_document_idx]
+        topic = self._documents[seed_document_idx].topic_id
+
         relevant_documents = [
             document
             for (document, score) in self.vector_similarity_search_with_score(seed_embedding, k=self._context_neighbors)
             if score < self._context_similarity_threshold
         ]
 
-        return relevant_documents
+        return relevant_documents, topic
 
     def similarity_search_with_score(self, query: Sequence[str], k: int) -> Sequence:
         query_emb = self._llm_client.embeddings(query, model=self._embedding_model).astype("float32")

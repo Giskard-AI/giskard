@@ -101,30 +101,32 @@ class TestsetGenerator:
         if not isinstance(question_types, Sequence):
             question_types = [question_types]
 
+        topics = self.knowledge_base.topics
+
         generated_questions = []
         for q_type in question_types:
             for idx in range(num_questions):
                 logger.info(
                     f"Generating question {idx + 1}/{num_questions} for question type {QuestionTypes(q_type).name}."
                 )
-                context_docs = self.knowledge_base._get_random_document_group()
+                context_docs, topic_id = self.knowledge_base._get_random_document_group()
                 try:
                     generated_qa, question_metadata = self.generators[q_type].generate_question(context_docs)
+                    question_metadata["topic"] = topics[topic_id]
+                    generated_questions.append(
+                        {
+                            "question": generated_qa["question"],
+                            "reference_answer": generated_qa["answer"],
+                            "reference_context": question_metadata.pop("reference_context"),
+                            "conversation_history": question_metadata.pop("conversation_history", []),
+                            "id": str(uuid.uuid4()),
+                            "metadata": question_metadata,
+                        }
+                    )
                 except Exception as e:
                     logger.error(f"Encountered error in question generation: {e}. Skipping.")
                     logger.exception(e)
                     continue
-
-                generated_questions.append(
-                    {
-                        "question": generated_qa["question"],
-                        "reference_answer": generated_qa["answer"],
-                        "reference_context": question_metadata.pop("reference_context"),
-                        "conversation_history": question_metadata.pop("conversation_history", []),
-                        "id": str(uuid.uuid4()),
-                        "metadata": question_metadata,
-                    }
-                )
 
         return QATestset(pd.DataFrame(generated_questions).set_index("id"))
 
