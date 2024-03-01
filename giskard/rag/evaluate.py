@@ -43,6 +43,8 @@ def evaluate(
     llm_client: Optional[LLMClient] = None,
     assistant_description: str = "This assistant is a chatbot that answers question from users.",
     ragas_metrics: bool = False,
+    conversation_support: bool = False,
+    conversation_side: str = "client",
 ) -> RAGReport:
     if testset is None and knowledge_base is None:
         raise ValueError("At least one of testset or knowledge base must be provided.")
@@ -50,10 +52,13 @@ def evaluate(
     if testset is None:
         testset = generate_testset(knowledge_base)
 
-    def make_predictions(answers_fn, testset):
-        return [answers_fn(question) for question in testset.to_pandas()["question"]]
-
-    answers = answers_fn if isinstance(answers_fn, Sequence) else make_predictions(answers_fn, testset)
+    answers = (
+        answers_fn
+        if isinstance(answers_fn, Sequence)
+        else make_predictions(
+            answers_fn, testset, conversation_support=conversation_support, conversation_side=conversation_side
+        )
+    )
 
     llm_client = llm_client or get_default_client()
 
@@ -97,3 +102,23 @@ def evaluate(
             ragas_results = None
 
     return RAGReport(results, testset, knowledge_base, ragas_results)
+
+
+def make_predictions(answers_fn, testset, conversation_support=False, conversation_side="client"):
+    answers = []
+    for sample in testset.to_pandas().itertuples():
+        if conversation_support and len(sample.conversation_history) > 0:
+            conversation = []
+            for message in sample.conversation_history + [dict(role="client", content=sample.question)]:
+                conversation.append(message)
+                if conversation_side == "client":
+                    assistant_answer = answers_fn(conversation)
+                elif conversation_side == "server":
+                    assistant_answer = answers_fn(message["content"])
+
+                conversation.append(dict(role="assistant", content=assistant_answer))
+                return conversation[-1]["content"]
+        else:
+            answers.append(answers_fn(sample.question))
+
+    return answers
