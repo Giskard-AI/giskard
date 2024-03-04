@@ -47,7 +47,7 @@ def evaluate(
     conversation_side: str = "client",
 ) -> RAGReport:
     if testset is None and knowledge_base is None:
-        raise ValueError("At least one of testset or knowledge base must be provided.")
+        raise ValueError("At least one of testset or knowledge base must be provided to the evaluate function.")
 
     if testset is None:
         testset = generate_testset(knowledge_base)
@@ -83,23 +83,25 @@ def evaluate(
             evaluation["assistant_answer"] = answer
             results.append(evaluation)
         except Exception as err:
+            print(out.content)
             raise LLMGenerationError(f"Error while evaluating the assistant: {err}")
 
+    ragas_results = None
     if ragas_metrics:
         try:
             from .ragas_metrics import compute_ragas_metrics
 
             ragas_results = compute_ragas_metrics(testset, answers, llm_client)
+
         except ImportError as err:
             logger.error(
                 f"Package {err.name} is missing, it is required for the computation of RAGAS metrics. You can install it with `pip install {err.name}`."
             )
             logger.error("Skipping RAGAS metrics computation.")
-            ragas_results = None
+
         except Exception as err:
             logger.error(f"Encountered error during RAGAS metric computation: {err}. Skipping.")
             logger.exception(err)
-            ragas_results = None
 
     return RAGReport(results, testset, knowledge_base, ragas_results)
 
@@ -117,7 +119,7 @@ def make_predictions(answers_fn, testset, conversation_support=False, conversati
                     assistant_answer = answers_fn(message["content"])
 
                 conversation.append(dict(role="assistant", content=assistant_answer))
-                return conversation[-1]["content"]
+            answers.append(conversation[-1]["content"])
         else:
             answers.append(answers_fn(sample.question))
 

@@ -169,34 +169,35 @@ class RAGReport:
         return p
 
     def plot_ragas_metrics_hist(self, metric_name: str, filter_metadata: dict = None):
-        if filter_metadata is not None:
-            data = self._dataframe[
-                self._dataframe["metadata"].apply(lambda x: all(x.get(k) in v for k, v in filter_metadata.items()))
-            ][metric_name]
-        else:
-            data = self._dataframe[metric_name]
+        if metric_name in self._dataframe:
+            if filter_metadata is not None:
+                data = self._dataframe[
+                    self._dataframe["metadata"].apply(lambda x: all(x.get(k) in v for k, v in filter_metadata.items()))
+                ][metric_name]
+            else:
+                data = self._dataframe[metric_name]
 
-        p = figure(
-            width=300, height=200, toolbar_location=None, title=self.ragas_metrics_names[metric_name], tools="hover"
-        )
+            p = figure(
+                width=300, height=200, toolbar_location=None, title=self.ragas_metrics_names[metric_name], tools="hover"
+            )
 
-        bins = np.linspace(0, 1, 21)
-        hist, edges = np.histogram(data, bins=bins)
-        p.quad(
-            top=hist,
-            bottom=0,
-            left=edges[:-1],
-            right=edges[1:],
-            fill_color="skyblue",
-            line_color="white",
-        )
-        p.title.text_font_size = "12pt"
-        p.hover.tooltips = [
-            ("Range", "@left{0.00} to @right{0.00}"),
-            ("# questions", "@top"),
-        ]
+            bins = np.linspace(0, 1, 21)
+            hist, edges = np.histogram(data, bins=bins)
+            p.quad(
+                top=hist,
+                bottom=0,
+                left=edges[:-1],
+                right=edges[1:],
+                fill_color="skyblue",
+                line_color="white",
+            )
+            p.title.text_font_size = "12pt"
+            p.hover.tooltips = [
+                ("Range", "@left{0.00} to @right{0.00}"),
+                ("# questions", "@top"),
+            ]
 
-        return p
+            return p
 
     def get_plot_components(self, p):
         script, div = components(p)

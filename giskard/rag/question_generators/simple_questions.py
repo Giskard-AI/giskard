@@ -61,7 +61,6 @@ class SimpleQuestionsGenerator:
         self._language = language
         self._assistant_description = assistant_description
         self._context_window_length = context_window_length
-        self._vector_store_inst = None
         self._llm_client = llm_client or get_default_client()
         self._llm_temperature = llm_temperature
 
