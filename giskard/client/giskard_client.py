@@ -195,7 +195,7 @@ class GiskardClient:
         matching_kernels = [
             kernel
             for kernel in kernels
-            if kernel["name"].startsWith(base_kernel_name)
+            if kernel["name"].startswith(base_kernel_name)
             and kernel["pythonVersion"] == python_version
             and set(frozen_dependencies).issubset(set(kernel["frozenDependencies"].split("\n")))
         ]
@@ -205,7 +205,7 @@ class GiskardClient:
 
         self._session.post(
             "kernels",
-            {
+            json={
                 "name": kernel_name,
                 "pythonVersion": python_version,
                 "requestedDependencies": "",
