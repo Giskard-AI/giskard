@@ -6,12 +6,38 @@ from giskard.llm.talk.utils.shap import explain_with_shap
 
 
 class SHAPExplanationTool(PredictTool):
+    """SHAP explanation Tool.
+
+    Attributes
+    ----------
+    default_name : str
+        The default name of the Tool. Can be re-defined with constructor.
+    default_description: str
+        The default description of the Tool's functioning. Can be re-defined with constructor.
+    """
+
     default_name: str = "shap_explanation"
     default_description: str = ToolDescription.SHAP_EXPLANATION.value
     _output_template: str = "'{feature_name}' | {attributions_values}"
 
     @staticmethod
     def _finalise_output(prediction_result: str, shap_result: np.ndarray) -> str:
+        """Define the output format.
+
+        Create Tool's output string, using predictions and related SHAP explanations.
+
+        Parameters
+        ----------
+        prediction_result : str
+            The prediction result.
+        shap_result : np.ndarray
+            The SHAP explanations.
+
+        Returns
+        -------
+        str
+            The formatted Tool's output.
+        """
         shap_result = "\n".join(shap_result)
         return (
             f"Prediction result:\n"
@@ -23,6 +49,20 @@ class SHAPExplanationTool(PredictTool):
         )
 
     def __call__(self, features_dict: dict) -> str:
+        """Execute the Tool's functionality.
+
+        Calculate the SHAP explanations.
+
+        Parameters
+        ----------
+        features_dict : dict
+            The dictionary with features and related values extracted from the query.
+
+        Returns
+        -------
+        str
+            SHAP explanation of the predictions.
+        """
         # Get prediction result from the parent tool, to add more context to the result.
         prediction_result = super().__call__(features_dict)
 

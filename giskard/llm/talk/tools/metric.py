@@ -82,7 +82,7 @@ class MetricTool(BaseTool):
         return Dataset(filtered_df, target=None)
 
     def __call__(self, metric_type: str, features_dict: dict) -> str:
-        """Execute the MetricTool's functionality.
+        """Execute the Tool's functionality.
 
         Calculate the given performance metric on rows from the dataset.
 
