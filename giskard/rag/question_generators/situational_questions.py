@@ -1,4 +1,4 @@
-from typing import Sequence
+from typing import Sequence, Tuple
 
 import logging
 
@@ -71,7 +71,7 @@ class SituationalQuestionsGenerator:
             user_input_template=SITUATIONAL_QUESTION_USER_TEMPLATE,
         )
 
-    def generate_question(self, context_documents: Sequence[Document]) -> dict:
+    def generate_question(self, context_documents: Sequence[Document]) -> Tuple[dict, dict]:
         generated_qa, question_metadata = self._base_generator.generate_question(context_documents)
 
         situation_generation_messages = self._situation_generation_prompt.to_messages(

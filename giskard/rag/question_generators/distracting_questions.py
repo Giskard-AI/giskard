@@ -1,4 +1,4 @@
-from typing import Sequence
+from typing import Sequence, Tuple
 
 from ..knowledge_base import Document
 from .prompt import QAGenerationPrompt
@@ -54,7 +54,7 @@ class DistractingQuestionsGenerator:
             user_input_template=DISTRACTING_INPUT_TEMPLATE,
         )
 
-    def generate_question(self, context_documents: Sequence[Document]) -> dict:
+    def generate_question(self, context_documents: Sequence[Document]) -> Tuple[dict, dict]:
         generated_qa, question_metadata = self._base_generator.generate_question(context_documents)
 
         distracting_context = self._base_generator._knowledge_base._get_random_document().content

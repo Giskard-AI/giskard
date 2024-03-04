@@ -1,4 +1,4 @@
-from typing import Sequence
+from typing import Sequence, Tuple
 
 import logging
 
@@ -62,7 +62,7 @@ class DoubleQuestionsGenerator:
             user_input_template=DOUBLE_QUESTION_USER_TEMPLATE,
         )
 
-    def generate_question(self, context_documents: Sequence[Document]) -> dict:
+    def generate_question(self, context_documents: Sequence[Document]) -> Tuple[dict, dict]:
         reference_context = "\n------\n".join(["", *[doc.content for doc in context_documents], ""])
         linked_questions = self._base_generator._llm_complete(
             self._linked_question_generation_prompt.to_messages(

@@ -1,4 +1,4 @@
-from typing import Optional, Sequence
+from typing import Optional, Sequence, Tuple
 
 import json
 import logging
@@ -97,7 +97,7 @@ class SimpleQuestionsGenerator:
         )
         return json.loads(out.content)
 
-    def generate_question(self, context_documents: Sequence[Document]) -> dict:
+    def generate_question(self, context_documents: Sequence[Document]) -> Tuple[dict, dict]:
         context = "\n------\n".join(["", *[doc.content for doc in context_documents], ""])
         messages = self._prompt.to_messages(
             system_prompt_input={"assistant_description": self._assistant_description, "language": self._language},

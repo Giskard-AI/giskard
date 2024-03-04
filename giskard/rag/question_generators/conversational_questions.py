@@ -1,4 +1,4 @@
-from typing import Sequence
+from typing import Sequence, Tuple
 
 import logging
 
@@ -47,7 +47,7 @@ class ConversationalQuestionsGenerator:
             user_input_template=CONVERSATIONAL_USER_TEMPLATE,
         )
 
-    def generate_question(self, context_documents: Sequence[Document]) -> dict:
+    def generate_question(self, context_documents: Sequence[Document]) -> Tuple[dict, dict]:
         generated_qa, question_metadata = self._base_generator.generate_question(context_documents)
 
         messages = self._prompt.to_messages(
