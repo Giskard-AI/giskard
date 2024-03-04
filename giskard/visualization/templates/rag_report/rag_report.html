@@ -29,12 +29,12 @@
         
         <div id="gsk-overview">
             <div class="overview-side">
-                <h3 class="extended-title">Knowledge base overview:</h3>
+                <h3 class="extended-title">Knowledge base overview</h3>
                 {{knowledge_script | safe}}
                 {{knowledge_div | safe}}
             </div>
             <div class="overview-side">
-                <h3 class="extended-title">Components Analysis:</h3>
+                <h3 class="extended-title">Components Analysis</h3>
                 <table style="width:50%" id="component-table">
                 {% for component, score in components.items() %}
                     <tr>
@@ -48,14 +48,14 @@
         </div>
         <div id="gsk-advice">
             <div id="recommendation">
-                <h2>⚠️ Recommendation:</h2>
+                <h2>⚠️ Recommendation</h2>
                 {{recommendation}}
             </div>
             
         </div>
         <div class="separator"></div>
         <div id="" gsk-correctness">
-            <h3>Correctness:</h3>
+            <h3>Correctness</h3>
 
             <div class="flex-row">
                 <div>
@@ -76,7 +76,7 @@
         <div id="gsk-ragas">
             <!-- Tab links -->
             <div class="tab">
-                <div class="tab-title">RAGAS metrics:</div>
+                <div class="tab-title">RAGAS metrics</div>
                 {% for tab, _ in ragas_metrics.items() %}
                 <button class="tablinks" onclick="opentab(event, '{{tab}}')">{% if tab == "Question" %} Question types {% else %} {{tab}} {% endif %}</button>
                 {% endfor %} 
