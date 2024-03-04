@@ -90,7 +90,7 @@ def test_qa_testset_creation():
     testset = QATestset(df)
 
     assert testset._dataframe.equals(df)
-    assert testset._dataframe["metadata"].iloc[2] == {"question_type": 1, "color": "blue"}
+    assert testset._dataframe["metadata"].iloc[2] == {"question_type": 1, "color": "blue", "topic": "Cheese_1"}
 
 
 def test_testset_to_pandas_conversion():
