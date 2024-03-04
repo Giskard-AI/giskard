@@ -1,5 +1,8 @@
 from typing import Optional, Sequence, Union
 
+import json
+from pathlib import Path
+
 import matplotlib
 import numpy as np
 import pandas as pd
@@ -37,6 +40,7 @@ class RAGReport:
     ):
         self._results = results
         self._testset = testset
+        self._ragas_metrics = ragas_metrics
         self._knowledge_base = knowledge_base
 
         self._dataframe = testset.to_pandas().copy()
@@ -67,9 +71,47 @@ class RAGReport:
             ragas_metrics=self.get_ragas_histograms(),
         )
 
-    def save(self, path):
+    def save_html(self, path):
         with open(path, "w") as f:
             f.write(self._repr_html_())
+
+    def save(self, folder_path):
+        path = Path(folder_path)
+        path.mkdir(exist_ok=True, parents=True)
+        self.save_html(path / "report.html")
+        self._testset.save(path / "testset.json")
+        self._knowledge_base._knowledge_base_df.to_json(path / "knowledge_base.jsonl", orient="records", lines=True)
+        with open(path / "knowledge_base_meta.json", "w") as f:
+            json.dump(self._knowledge_base.get_savable_data(), f)
+        with open(path / "eval_results.json", "w") as f:
+            json.dump(self._results, f)
+
+        if self._ragas_metrics is not None:
+            self._ragas_metrics.to_json(path / "ragas_metrics.jsonl", orient="records", lines=True)
+
+    @classmethod
+    def load(cls, folder_path, llm_client=None):
+        path = Path(folder_path)
+        knowledge_base_meta = json.load(open(path / "knowledge_base_meta.json", "r"))
+        knowledge_base_data = pd.read_json(path / "knowledge_base.jsonl", orient="records", lines=True)
+        results = json.load(open(path / "eval_results.json", "r"))
+        testset = QATestset.load(path / "testset.json")
+
+        topics = {int(k): topic for k, topic in knowledge_base_meta.pop("topics", None).items()}
+        documents_topics = [int(topic_id) for topic_id in knowledge_base_meta.pop("documents_topics", None)]
+
+        knowledge_base = KnowledgeBase(knowledge_base_data, llm_client=llm_client, **knowledge_base_meta)
+        knowledge_base._topics_inst = topics
+
+        if documents_topics is not None:
+            for doc_idx, doc in enumerate(knowledge_base._documents):
+                doc.topic_id = documents_topics[doc_idx]
+
+        ragas_metrics = None
+        if (path / "ragas_metrics.jsonl").exists():
+            ragas_metrics = pd.read_json(path / "ragas_metrics.jsonl", orient="records", lines=True)
+
+        return cls(results, testset, knowledge_base, ragas_metrics)
 
     @property
     def failures(self):

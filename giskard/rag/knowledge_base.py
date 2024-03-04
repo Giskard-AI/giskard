@@ -93,6 +93,8 @@ class KnowledgeBase:
         else:
             raise ValueError("Cannot generate a vector store from empty DataFrame.")
 
+        self._knowledge_base_df = knowledge_base_df
+        self._knowledge_base_columns = knowledge_base_columns
         self._context_similarity_threshold = context_similarity_threshold
         self._context_neighbors = context_neighbors
 
@@ -120,6 +122,17 @@ class KnowledgeBase:
     @property
     def _dimension(self):
         return self._embeddings[0].shape[0]
+
+    def get_savable_data(self):
+        return {
+            "knowledge_base_columns": self._knowledge_base_columns,
+            "context_neighbors": self._context_neighbors,
+            "context_similarity_threshold": self._context_similarity_threshold,
+            "embedding_model": self._embedding_model,
+            "min_topic_size": self._min_topic_size,
+            "topics": {int(k): topic for k, topic in self.topics.items()},
+            "documents_topics": [int(doc.topic_id) for doc in self._documents],
+        }
 
     @property
     def _index(self):
