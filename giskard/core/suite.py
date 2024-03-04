@@ -667,11 +667,15 @@ class Suite:
                 _try_upload_artifact(arg, client, project_key, uploaded_uuid_status)
 
         if self.id:
-            client.update_test_suite(self.id, self.to_dto(client, project_key, uploaded_uuid_status))
+            saved = client.update_test_suite(self.id, self.to_dto(client, project_key, uploaded_uuid_status))
             analytics.track("hub:test_suite:updated")
         else:
-            self.id = client.save_test_suite(self.to_dto(client, project_key, uploaded_uuid_status))
+            saved = client.save_test_suite(self.to_dto(client, project_key, uploaded_uuid_status))
             analytics.track("hub:test_suite:uploaded")
+
+        self.id = saved["id"]
+        for i in range(len(saved["tests"])):
+            self.tests[i].suite_test_id = saved["tests"][i]["id"]
 
         self.project_key = project_key
         print(f"Test suite has been saved: {client.host_url}/main/projects/{project_key}/testing/suite/{self.id}")
