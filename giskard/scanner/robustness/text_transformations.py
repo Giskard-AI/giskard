@@ -292,7 +292,11 @@ class TextNumberToWordTransformation(TextLanguageBasedTransformation):
             # Give up doing this now, wait for merging https://github.com/savoirfairelinux/num2words/pull/524
             return value
 
-        return self._regex.sub(lambda x: num2words(x.group(), lang=lang), value)
+        try:
+            return self._regex.sub(lambda x: num2words(x.group(), lang=lang), value)
+        except NotImplementedError:
+            # Fallback to english in case of unimplemented
+            return self._regex.sub(lambda x: num2words(x.group(), lang="en"), value)
 
 
 class TextReligionTransformation(TextLanguageBasedTransformation):
