@@ -173,18 +173,17 @@ class TestSuiteResult:
             inputs=TestInputDTO.from_inputs_dict(self.inputs),
             result=TestSuiteExecutionResult.PASSED if self.passed else TestSuiteExecutionResult.FAILED,
             message="",
-            results=[self._test_result_to_dto(result, suite_id=self.suite.id) for result in self.results],
+            results=[self._test_result_to_dto(result) for result in self.results],
             executionDate=self.execution_date.isoformat(),
             completionDate=self.completion_date.isoformat(),
         )
 
     @staticmethod
-    def _test_result_to_dto(result: SuiteResult, suite_id: Optional[int] = None):
+    def _test_result_to_dto(result: SuiteResult):
         datasets = {dataset.id: dataset for dataset in result.params.values() if isinstance(dataset, Dataset)}
-        suite_id = suite_id if suite_id is not None else result.suite_test_id
         return SaveSuiteTestExecutionDTO(
             testUuid=result.test.meta.uuid,
-            suiteTestId=suite_id,
+            suiteTestId=result.suite_test_id,
             displayName=result.test_name,
             inputs={name: str(serialize_parameter(value)) for name, value in result.params.items()},
             arguments={test_input.name: test_input for test_input in TestInputDTO.from_inputs_dict(result.params)},

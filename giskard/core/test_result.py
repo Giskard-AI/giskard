@@ -14,7 +14,7 @@ TestResultStatus = TestResultStatusEnum
 
 class TestMessageLevel(str, Enum):
     ERROR = "ERROR"
-    INFO = "INFP"
+    INFO = "INFO"
 
 
 @dataclass
