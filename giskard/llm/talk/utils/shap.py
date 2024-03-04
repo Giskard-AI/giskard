@@ -10,6 +10,25 @@ from giskard.core.errors import GiskardImportError
 
 
 def _calculate_shap_values(data_to_explain: "Dataset", model: "BaseModel", dataset: "Dataset") -> np.ndarray:
+    """Perform Kernel SHAP explanation.
+
+    Returns the feature importance in terms of SHAP values. Kernel SHAP is used
+    to calculate feature contributions.
+
+    Parameters
+    ----------
+    data_to_explain : Dataset
+        The data for the prediction to explain.
+    model : giskard.Model
+        The model used for the SHAP explanation.
+    dataset : giskard.Dataset
+        The dataset used for the SHAP explanation.
+
+    Returns
+    -------
+    shap_values : np.ndarray
+        The model's SHAP values as a numpy array
+    """
     from giskard.models.model_explanation import _get_background_example, _prepare_for_explanation
 
     try:
@@ -37,6 +56,25 @@ def _calculate_shap_values(data_to_explain: "Dataset", model: "BaseModel", datas
 def explain_with_shap(
     data_to_explain: "Dataset", model: "BaseModel", dataset: "Dataset", only_highest_proba: bool = True
 ):
+    """Explain prediction with SHAP.
+
+    Parameters
+    ----------
+    data_to_explain : Dataset
+        The data for the prediction to explain.
+    model : giskard.Model
+        The model used for the SHAP explanation
+    dataset : giskard.Dataset
+        The dataset used for the SHAP explanation.
+    only_highest_proba : bool (optional, default=True)
+        A flag indicating whether to provide SHAP explanations only for the
+        predictions with the highest probability or not.
+
+    Returns
+    -------
+    ShapResult
+        The model's SHAP values.
+    """
     from giskard.models.model_explanation import _get_highest_proba_shap
 
     try:

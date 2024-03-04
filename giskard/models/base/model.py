@@ -621,7 +621,20 @@ class BaseModel(ABC):
         return super().__str__()  # default to `<giskard.models.base.Model object at ...>`
 
     def _get_available_tools(self, dataset: Dataset, scan_report: "ScanReport") -> dict[str, BaseTool]:
-        """Get the dictionary with available tools"""
+        """Get the dictionary with available tools.
+
+        Parameters
+        ----------
+        dataset : Dataset
+            Giskard Dataset to be analysed by Tools.
+        scan_report : ScanReport
+            Giskard Scan Report to be analysed by Tools.
+
+        Returns
+        -------
+        dict[str, BaseTool]
+            The dictionary with Tools' names and related instances.
+        """
         return {
             PredictTool.default_name: PredictTool(model=self, dataset=dataset),
             MetricTool.default_name: MetricTool(model=self, dataset=dataset),
@@ -631,6 +644,20 @@ class BaseModel(ABC):
 
     @staticmethod
     def _gather_context(message_list: list) -> str:
+        """Gather context into a single string.
+
+        Given the list of OpenAI's messages, extracts and joins their contents into a single string.
+
+        Parameters
+        ----------
+        message_list : list
+            The list of OpenAI's messages.
+
+        Returns
+        -------
+        str
+            The string with the joined messages' contents.
+        """
         context = list()
 
         for msg in message_list:
@@ -642,6 +669,21 @@ class BaseModel(ABC):
     def talk(
         self, question: str, context: str = "", dataset: Dataset = None, scan_report: "ScanReport" = None
     ) -> TalkResult:
+        """Perform the 'talk' to the model.
+
+        Given `question`, allows to ask the model about prediction result, explanation, model performance, issues, etc.
+
+        Parameters
+        ----------
+        question : str
+            User input query.
+        context : str
+            Context of the previous 'talk' results. Necessary to keep context between sequential 'talk' calls.
+        dataset : Dataset
+            Giskard Dataset to be analysed by the 'talk'.
+        scan_report : ScanReport
+            Giskard Scan Report to be analysed by the 'talk'.
+        """
         set_llm_model(LLM_MODEL)
         client = get_default_client()
 
