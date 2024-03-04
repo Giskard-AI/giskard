@@ -82,4 +82,4 @@ Get access to insights on your LLM app performance in 2 lines of code, giving yo
   ![](../assets/llm_monitoring_dashboard.gif)
 
 
-Get started **now** by [signing up for our beta](https://www.giskard.ai/llmon)! 🍋
+Get started **now** by [signing up for our beta](https://www.giskard.ai/products/llmon)! 🍋
