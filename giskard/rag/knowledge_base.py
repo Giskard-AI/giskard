@@ -53,7 +53,7 @@ class KnowledgeBase:
 
     Parameters
     ----------
-    knowledge_base: pd.DataFrame
+    knowledge_base_df: pd.DataFrame
         A dataframe containing the whole knowledge base.
     knowledge_base_columns: Sequence[str], optional
         The list of columns from the `knowledge_base` to consider. If not specified, all columns of the knowledge base
@@ -70,7 +70,7 @@ class KnowledgeBase:
         The LLM client to use for question generation. If not specified, a default openai client will be used.
     embedding_model: str = "text-embedding-ada-002"
         The name of the embedding model to use for the knowledge base. It should match the llm_client available embedding models.
-    topic_size: int = 2
+    min_topic_size: int = 2
         The minimum number of document to form a topic inside the knowledge base.
     """
 

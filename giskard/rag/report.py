@@ -10,6 +10,8 @@ from bokeh.embed import components
 from bokeh.models import ColumnDataSource
 from bokeh.plotting import figure
 
+from giskard.llm.client.base import LLMClient
+
 from ..visualization.widget import get_template
 from .knowledge_base import KnowledgeBase
 from .question_generators import QUESTION_ATTRIBUTION, QuestionTypes, RAGComponents
@@ -24,6 +26,21 @@ def get_colors(values, cmap_name="RdYlGn"):
 
 
 class RAGReport:
+    """
+    Report class for the RAG model evaluation.
+
+    Parameters
+    ----------
+    results : Sequence[dict]
+        The evaluation results of the assistant's answers. Should be a list of dictionaries with the following keys: "evaluation", "reason", "assistant_answer".
+    testset : QATestset
+        The testset used to evaluate the assistant.
+    knowledge_base : KnowledgeBase
+        The knowledge base used to create the testset.
+    ragas_metrics : pd.DataFrame, optional
+        The ragas metrics computed for the evaluation. If provided, the ragas metrics will be included in the report.
+    """
+
     ragas_metrics_names = {
         "context_precision": "Context Precision",
         "faithfulness": "Faithfulness",
@@ -71,11 +88,28 @@ class RAGReport:
             ragas_metrics=self.get_ragas_histograms(),
         )
 
-    def save_html(self, path):
+    def save_html(self, path: str):
+        """
+        Save the report as an HTML file.
+
+        Parameters
+        ----------
+        path : str or Path
+            The path to save the report.
+        """
+
         with open(path, "w") as f:
             f.write(self._repr_html_())
 
-    def save(self, folder_path):
+    def save(self, folder_path: str):
+        """
+        Save all the report data to a folder. This includes the HTML report, the testset, the knowledge base, the evaluation results and the ragas metrics if provided.
+
+        Parameters
+        ----------
+        folder_path : str or Path
+            The folder path to save the report data.
+        """
         path = Path(folder_path)
         path.mkdir(exist_ok=True, parents=True)
         self.save_html(path / "report.html")
@@ -90,7 +124,17 @@ class RAGReport:
             self._ragas_metrics.to_json(path / "ragas_metrics.jsonl", orient="records", lines=True)
 
     @classmethod
-    def load(cls, folder_path, llm_client=None):
+    def load(cls, folder_path: str, llm_client: LLMClient = None):
+        """
+        Load a report from a folder. It reconstructs the objects inside the report including the testset and the knowledge base.
+
+        Parameters
+        ----------
+        folder_path : str or Path
+            The folder path to load the report data from.
+        llm_client : LLMClient, optional
+            The LLMClient to use inside the knowledge base. If not provided, the default client will be used.
+        """
         path = Path(folder_path)
         knowledge_base_meta = json.load(open(path / "knowledge_base_meta.json", "r"))
         knowledge_base_data = pd.read_json(path / "knowledge_base.jsonl", orient="records", lines=True)
@@ -110,18 +154,29 @@ class RAGReport:
         ragas_metrics = None
         if (path / "ragas_metrics.jsonl").exists():
             ragas_metrics = pd.read_json(path / "ragas_metrics.jsonl", orient="records", lines=True)
+            ragas_metrics["id"] = ragas_metrics["id"].astype(str)
 
         return cls(results, testset, knowledge_base, ragas_metrics)
 
     @property
-    def failures(self):
+    def failures(self) -> pd.DataFrame:
         return self._dataframe[~self._dataframe["evaluation_result"]]
 
     def get_failures(
         self,
         topic: Optional[Union[str, Sequence[str]]] = None,
         question_type: Optional[Union[QuestionTypes, Sequence[QuestionTypes]]] = None,
-    ):
+    ) -> pd.DataFrame:
+        """
+        Retrieves the failures from the results, optionally filtering by topic and question type.
+
+        Parameters
+        ----------
+        topic : str or Sequence[str], optional
+            The topic(s) to filter the failures by.
+        question_type : QuestionTypes or Sequence[QuestionTypes], optional
+            The question type(s) to filter the failures by.
+        """
         failures = self.failures
 
         if topic:
@@ -133,15 +188,24 @@ class RAGReport:
 
         return failures
 
-    def correctness_by_question_type(self):
+    def correctness_by_question_type(self) -> pd.DataFrame:
+        """
+        Compute the correctness by question type.
+        """
         correctness = self._correctness_by_metadata("question_type")
         correctness.index = correctness.index.map(lambda x: QuestionTypes(x).name)
         return correctness
 
-    def correctness_by_topic(self):
+    def correctness_by_topic(self) -> pd.DataFrame:
+        """
+        Compute the correctness by topic.
+        """
         return self._correctness_by_metadata("topic")
 
-    def component_scores(self):
+    def component_scores(self) -> pd.DataFrame:
+        """
+        Compute the scores for each RAG component.
+        """
         correctness = self.correctness_by_question_type()
         available_question_types = {
             component: list(set([a.name for a in attribution]).intersection(correctness.index))
@@ -162,6 +226,9 @@ class RAGReport:
         return score_df
 
     def _correctness_by_metadata(self, metadata_name: str):
+        """
+        Compute the correctness by a metadata field.
+        """
         correctness = (
             self._dataframe.groupby(lambda idx: self._dataframe.loc[idx, "metadata"][metadata_name])[
                 "evaluation_result"
@@ -174,6 +241,9 @@ class RAGReport:
         return correctness
 
     def plot_correctness_by_metadata(self, metadata_name: str):
+        """
+        Create a bokeh plot showing the correctness by a metadata field.
+        """
         data = self._correctness_by_metadata(metadata_name)
         metadata_values = data.index.tolist()
         if metadata_name == "question_type":
@@ -211,6 +281,16 @@ class RAGReport:
         return p
 
     def plot_ragas_metrics_hist(self, metric_name: str, filter_metadata: dict = None):
+        """
+        Create a bokeh histogram plot for a RAGAS metric.
+
+        Parameters
+        ----------
+        metric_name : str
+            The name of the RAGAS metric to plot.
+        filter_metadata : dict, optional
+            Aggregate the question that have the specified metadata values. The keys of the dictionary should be the metadata names and the values should be the metadata values to filter by.
+        """
         if metric_name in self._dataframe:
             if filter_metadata is not None:
                 data = self._dataframe[
@@ -241,7 +321,7 @@ class RAGReport:
 
             return p
 
-    def get_plot_components(self, p):
+    def _get_plot_components(self, p):
         script, div = components(p)
         return {"script": script, "div": div}
 
@@ -249,20 +329,20 @@ class RAGReport:
         histograms_dict = {}
         histograms_dict["Overall"] = {
             "Overall": {
-                metric: self.get_plot_components(self.plot_ragas_metrics_hist(metric))
+                metric: self._get_plot_components(self.plot_ragas_metrics_hist(metric))
                 for metric in self.ragas_metrics_names
             }
         }
         histograms_dict["Topics"] = {
             topic: {
-                metric: self.get_plot_components(self.plot_ragas_metrics_hist(metric, {"topic": [topic]}))
+                metric: self._get_plot_components(self.plot_ragas_metrics_hist(metric, {"topic": [topic]}))
                 for metric in self.ragas_metrics_names
             }
             for topic in self._testset.get_metadata_values("topic")
         }
         histograms_dict["Question"] = {
             QuestionTypes(q_type).name: {
-                metric: self.get_plot_components(self.plot_ragas_metrics_hist(metric, {"question_type": [q_type]}))
+                metric: self._get_plot_components(self.plot_ragas_metrics_hist(metric, {"question_type": [q_type]}))
                 for metric in self.ragas_metrics_names
             }
             for q_type in self._testset.get_metadata_values("question_type")
