@@ -6,10 +6,14 @@ import json
 import logging
 import os
 import posixpath
+import sys
+import uuid
 from pathlib import Path
+from socket import gethostname
 from urllib.parse import urljoin
 from uuid import UUID
 
+import importlib_metadata
 from requests import Response
 from requests.adapters import HTTPAdapter
 from requests.auth import AuthBase
@@ -180,7 +184,40 @@ class GiskardClient:
         response = self._session.get("project", params={"key": project_key}).json()
         return Project(self._session, response["key"], response["id"])
 
-    def create_project(self, project_key: str, name: str, kernel_name: str, description: str = None) -> Project:
+    def initialize_kernel(self):
+        python_version = f"{sys.version_info[0]}.{sys.version_info[1]}"
+        base_kernel_name = f"{gethostname()}-{python_version}"
+        kernel_name = f"{base_kernel_name}-{uuid.uuid4()}"
+
+        kernels = self._session.get("kernels").json()
+        frozen_dependencies = [f"{dist.name}=={dist.version}" for dist in importlib_metadata.distributions()]
+
+        matching_kernels = [
+            kernel
+            for kernel in kernels
+            if kernel["name"].startsWith(base_kernel_name)
+            and kernel["pythonVersion"] == python_version
+            and set(frozen_dependencies).issubset(set(kernel["frozenDependencies"].split("\n")))
+        ]
+
+        if len(matching_kernels) > 0:
+            return matching_kernels[0]["name"]
+
+        self._session.post(
+            "kernels",
+            {
+                "name": kernel_name,
+                "pythonVersion": python_version,
+                "requestedDependencies": "",
+                "frozenDependencies": "\n".join(frozen_dependencies),
+                "type": "PROCESS",
+                "version": 0,
+            },
+        )
+
+        return kernel_name
+
+    def create_project(self, project_key: str, name: str, kernel_name: str = None, description: str = None) -> Project:
         """Function to create a project in Giskard
 
         Parameters
@@ -200,7 +237,6 @@ class GiskardClient:
             The project created in giskard
 
         """
-        # TODO(Bazire): handle properly the "auto" detection/creation of kernel
         analytics.track(
             "Create Project",
             {
@@ -209,6 +245,10 @@ class GiskardClient:
                 "name": anonymize(name),
             },
         )
+
+        if kernel_name is None:
+            kernel_name = self.initialize_kernel()
+
         try:
             # TODO(Bazire) : use typed object for validation here
             response = self._session.post(
