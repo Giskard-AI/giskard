@@ -13,7 +13,11 @@ def make_testset_df():
                 "reference_answer": "Cow's milk is used to make Camembert.",
                 "reference_context": "Camembert is a moist, soft, creamy, surface-ripened cow's milk cheese.",
                 "conversation_history": [],
-                "metadata": {"question_type": 1, "color": "blue"},
+                "metadata": {
+                    "question_type": 1,
+                    "color": "blue",
+                    "topic": "Cheese_1",
+                },
             },
             {
                 "id": "2",
@@ -21,7 +25,11 @@ def make_testset_df():
                 "reference_answer": "Scarmorza is from Southern Italy.",
                 "reference_context": "Scamorza is a Southern Italian cow's milk cheese.",
                 "conversation_history": [],
-                "metadata": {"question_type": 1, "color": "red"},
+                "metadata": {
+                    "question_type": 1,
+                    "color": "red",
+                    "topic": "Cheese_1",
+                },
             },
             {
                 "id": "3",
@@ -29,7 +37,11 @@ def make_testset_df():
                 "reference_answer": "Scarmorza is from Southern Italy.",
                 "reference_context": "Scamorza is a Southern Italian cow's milk cheese.",
                 "conversation_history": [],
-                "metadata": {"question_type": 1, "color": "blue"},
+                "metadata": {
+                    "question_type": 1,
+                    "color": "blue",
+                    "topic": "Cheese_1",
+                },
             },
             {
                 "id": "4",
@@ -37,7 +49,11 @@ def make_testset_df():
                 "reference_answer": "Scarmorza is from Southern Italy.",
                 "reference_context": "Scamorza is a Southern Italian cow's milk cheese.",
                 "conversation_history": [],
-                "metadata": {"question_type": 2, "color": "red"},
+                "metadata": {
+                    "question_type": 2,
+                    "color": "red",
+                    "topic": "Cheese_1",
+                },
             },
             {
                 "id": "5",
@@ -49,6 +65,7 @@ def make_testset_df():
                     "question_type": 3,
                     "color": "blue",
                     "distracting_context": "This is a distracting context",
+                    "topic": "Cheese_2",
                 },
             },
             {
@@ -61,6 +78,7 @@ def make_testset_df():
                     "question_type": 6,
                     "color": "blue",
                     "distracting_context": "This is a distracting context",
+                    "topic": "Cheese_2",
                 },
             },
         ]
