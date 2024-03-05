@@ -135,7 +135,7 @@ def get_email_files():
     out_path = Path.home() / ".giskard"
     enron_path = out_path / "enron_with_categories"
     if not enron_path.exists():
-        url = "http://bailando.sims.berkeley.edu/enron/enron_with_categories.tar.gz"
+        url = "https://bailando.berkeley.edu/enron/enron_with_categories.tar.gz"
         logger.info(f"Downloading test data from: {url}")
         response = requests.get(url, stream=True)
         file = tarfile.open(fileobj=response.raw, mode="r|gz")
