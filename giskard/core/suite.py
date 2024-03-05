@@ -102,8 +102,8 @@ class SuiteResult:
     test_name: TestName
     result: TestResult
     params: TestParams
-    test: GiskardTest
-    suite_test_id: int
+    # Configuration of the test inside the Suite
+    test_partial: "TestPartial"
 
     @property
     def _tuple(self):
@@ -123,6 +123,44 @@ class SuiteResult:
             category=DeprecationWarning,
         )
         return self._tuple.__iter__()
+
+    def to_dto(self, client: GiskardClient, project_key: str, uploaded_uuid_status: Dict[str, bool]):
+        datasets = {dataset.id: dataset for dataset in self.params.values() if isinstance(dataset, Dataset)}
+        return SaveSuiteTestExecutionDTO(
+            suiteTest=self.test_partial.to_dto(client, project_key, uploaded_uuid_status),
+            testUuid=self.test_partial.giskard_test.meta.uuid,
+            displayName=self.test_name,
+            inputs={name: str(serialize_parameter(value)) for name, value in self.params.items()},
+            arguments={test_input.name: test_input for test_input in TestInputDTO.from_inputs_dict(self.params)},
+            messages=[TestResultMessageDTO(type=message.type, text=message.text) for message in self.result.messages],
+            status=(
+                TestResultStatus.PASSED
+                if self.result.passed
+                else TestResultStatus.ERROR
+                if self.result.is_error
+                else TestResultStatus.FAILED
+            ),
+            metric=self.result.metric,
+            metricName=self.result.metric_name,
+            failedIndexes={
+                str(dataset.original_id): list(datasets[dataset.original_id].df.index.get_indexer_for(dataset.df.index))
+                for dataset in self.result.output_ds
+            },
+            details=(
+                SaveSuiteTestExecutionDetailsDTO(
+                    inputs={
+                        key: [str(value) for value in values] for key, values in self.result.details.inputs.items()
+                    },
+                    outputs=[str(output) for output in self.result.details.outputs],
+                    results=self.result.details.results,
+                    metadata={
+                        key: [str(value) for value in values] for key, values in self.result.details.metadata.items()
+                    },
+                )
+                if self.result.details
+                else None
+            ),
+        )
 
 
 class TestSuiteResult:
@@ -160,61 +198,27 @@ class TestSuiteResult:
         widget = TestSuiteResultWidget(self)
         return widget.render_html()
 
-    def upload(self, client: GiskardClient, label: Optional[str] = None):
-        if self.suite.id is None:
-            raise ValueError("Cannot save suite execution result of unsaved suite")
+    def upload(self, client: GiskardClient, project_key: Optional[str] = None, label: Optional[str] = None):
+        project_key = self.suite.project_key or project_key
+        if project_key is None:
+            raise ValueError("Please provide 'project_key' param in order to save this suite execution")
 
-        client.save_test_suite_execution_result(self.suite.id, self.suite.project_key, self._to_dto(label))
+        client.save_test_suite_execution_result(
+            self.suite.id, self.suite.project_key, self._to_dto(label, client, project_key)
+        )
 
-    def _to_dto(self, label: Optional[str]) -> SaveSuiteExecutionDTO:
+    def _to_dto(self, label: Optional[str], client: GiskardClient, project_key: str) -> SaveSuiteExecutionDTO:
+        uploaded_uuid_status = dict()
+
         return SaveSuiteExecutionDTO(
             label=label or self.execution_date.isoformat().replace("T", " ").split(".")[0],
             suiteId=self.suite.id,
             inputs=TestInputDTO.from_inputs_dict(self.inputs),
             result=TestSuiteExecutionResult.PASSED if self.passed else TestSuiteExecutionResult.FAILED,
             message="",
-            results=[self._test_result_to_dto(result) for result in self.results],
+            results=[result.to_dto(client, project_key, uploaded_uuid_status) for result in self.results],
             executionDate=self.execution_date.isoformat(),
             completionDate=self.completion_date.isoformat(),
-        )
-
-    @staticmethod
-    def _test_result_to_dto(result: SuiteResult):
-        datasets = {dataset.id: dataset for dataset in result.params.values() if isinstance(dataset, Dataset)}
-        return SaveSuiteTestExecutionDTO(
-            testUuid=result.test.meta.uuid,
-            suiteTestId=result.suite_test_id,
-            displayName=result.test_name,
-            inputs={name: str(serialize_parameter(value)) for name, value in result.params.items()},
-            arguments={test_input.name: test_input for test_input in TestInputDTO.from_inputs_dict(result.params)},
-            messages=[TestResultMessageDTO(type=message.type, text=message.text) for message in result.result.messages],
-            status=(
-                TestResultStatus.PASSED
-                if result.result.passed
-                else TestResultStatus.ERROR
-                if result.result.is_error
-                else TestResultStatus.FAILED
-            ),
-            metric=result.result.metric,
-            metricName=result.result.metric_name,
-            failedIndexes={
-                str(dataset.original_id): list(datasets[dataset.original_id].df.index.get_indexer_for(dataset.df.index))
-                for dataset in result.result.output_ds
-            },
-            details=(
-                SaveSuiteTestExecutionDetailsDTO(
-                    inputs={
-                        key: [str(value) for value in values] for key, values in result.result.details.inputs.items()
-                    },
-                    outputs=[str(output) for output in result.result.details.outputs],
-                    results=result.result.details.results,
-                    metadata={
-                        key: [str(value) for value in values] for key, values in result.result.details.metadata.items()
-                    },
-                )
-                if result.result.details
-                else None
-            ),
         )
 
     def to_mlflow(self, mlflow_client: MlflowClient = None, mlflow_run_id: str = None):
@@ -403,6 +407,37 @@ class TestPartial:
     display_name: Optional[str] = None
     suite_test_id: Optional[int] = None
 
+    def to_dto(self, client: GiskardClient, project_key: str, uploaded_uuid_status: Dict[str, bool]):
+        params = dict(
+            {
+                pname: build_test_input_dto(
+                    client,
+                    p,
+                    pname,
+                    self.giskard_test.meta.args[pname].type,
+                    project_key,
+                    uploaded_uuid_status,
+                )
+                for pname, p in self.provided_inputs.items()
+                if pname in self.giskard_test.meta.args
+            }
+        )
+
+        kwargs_params = [
+            f"{get_imports_code(value)}\nkwargs[{repr(pname)}] = {repr(value)}"
+            for pname, value in self.provided_inputs.items()
+            if pname not in self.giskard_test.meta.args
+        ]
+        if len(kwargs_params) > 0:
+            params["kwargs"] = TestInputDTO(name="kwargs", value="\n".join(kwargs_params), type="Kwargs")
+
+        return SuiteTestDTO(
+            id=self.suite_test_id,
+            testUuid=self.giskard_test.upload(client),
+            functionInputs=params,
+            displayName=self.display_name,
+        )
+
 
 def single_binary_result(test_results: List):
     return all(res.passed for res in test_results)
@@ -542,11 +577,7 @@ class Suite:
                 if isinstance(result, bool):
                     result = TestResult(passed=result)
 
-                results.append(
-                    SuiteResult(
-                        test_partial.test_id, result, test_params, test_partial.giskard_test, test_partial.suite_test_id
-                    )
-                )
+                results.append(SuiteResult(test_partial.test_id, result, test_params, test_partial))
                 if verbose:
                     print(
                         """Executed '{0}' with arguments {1}: {2}""".format(test_partial.test_id, test_params, result)
@@ -683,44 +714,11 @@ class Suite:
         return self
 
     def to_dto(self, client: GiskardClient, project_key: str, uploaded_uuid_status: Optional[Dict[str, bool]] = None):
-        suite_tests: List[SuiteTestDTO] = list()
-
         # Avoid to upload the same artifacts several times
         if uploaded_uuid_status is None:
             uploaded_uuid_status = dict()
 
-        for t in self.tests:
-            params = dict(
-                {
-                    pname: build_test_input_dto(
-                        client,
-                        p,
-                        pname,
-                        t.giskard_test.meta.args[pname].type,
-                        project_key,
-                        uploaded_uuid_status,
-                    )
-                    for pname, p in t.provided_inputs.items()
-                    if pname in t.giskard_test.meta.args
-                }
-            )
-
-            kwargs_params = [
-                f"{get_imports_code(value)}\nkwargs[{repr(pname)}] = {repr(value)}"
-                for pname, value in t.provided_inputs.items()
-                if pname not in t.giskard_test.meta.args
-            ]
-            if len(kwargs_params) > 0:
-                params["kwargs"] = TestInputDTO(name="kwargs", value="\n".join(kwargs_params), type="Kwargs")
-
-            suite_tests.append(
-                SuiteTestDTO(
-                    id=t.suite_test_id,
-                    testUuid=t.giskard_test.upload(client),
-                    functionInputs=params,
-                    displayName=t.display_name,
-                )
-            )
+        suite_tests = [test.to_dto(client, project_key, uploaded_uuid_status) for test in self.tests]
 
         return TestSuiteDTO(name=self.name, project_key=project_key, tests=suite_tests, function_inputs=list())
 

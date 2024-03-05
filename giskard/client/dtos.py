@@ -64,10 +64,9 @@ class SaveSuiteTestExecutionDetailsDTO(ConfiguredBaseModel):
     metadata: Dict[str, List[str]]
 
 
-# TODO: Cleanup unnecessary information
 class SaveSuiteTestExecutionDTO(ConfiguredBaseModel):
+    suiteTest: SuiteTestDTO
     testUuid: str
-    suiteTestId: int
     displayName: str
     inputs: Dict[str, str]
     arguments: Dict[str, TestInputDTO]
@@ -80,8 +79,8 @@ class SaveSuiteTestExecutionDTO(ConfiguredBaseModel):
 
 
 class SaveSuiteExecutionDTO(ConfiguredBaseModel):
+    suiteId: Optional[int]
     label: str
-    suiteId: int
     inputs: List[TestInputDTO]
     result: TestSuiteExecutionResult
     message: str
