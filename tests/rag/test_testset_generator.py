@@ -218,3 +218,11 @@ def test_testset_question_types():
         },
         {"question": "Where is Scamorza from?", "answer": "Scamorza is a cheese from southern Italy."},
     ]
+
+
+def test_question_generation_fail(caplog):
+    testset_generator = make_testset_generator()
+    testset = testset_generator.generate_testset(num_questions=1, question_types=[1, 2, 3, 4, 5, 7])
+
+    assert "Encountered error in question generation" in caplog.text
+    assert len(testset.to_pandas()) == 5
