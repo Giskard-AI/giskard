@@ -210,9 +210,10 @@ label {
   border-radius: 50px;
   font-size: 16pt;
   box-shadow: 0 4px 8px 0 #000000, 0 6px 20px 0 #000000;
+  text-align: center;
 }
 
-.ragas-title{
+.metric-title{
   margin: -2px;
   border-bottom: none;
 }
@@ -232,6 +233,8 @@ label {
   flex-direction: column;
   justify-content: center;
   align-items: center;
+  padding-left: 1%;
+  padding-right: 1%;
 }
 
 .tab-row{
@@ -267,4 +270,9 @@ label {
 
 .progress-red {
   --color: #ba0e0e;
+}
+
+.corr-plot{
+  flex: 1;
+  padding-left: 2%;
 }

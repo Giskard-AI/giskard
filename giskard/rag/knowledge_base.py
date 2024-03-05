@@ -1,6 +1,7 @@
 from typing import Optional, Sequence
 
 import logging
+import textwrap
 
 import numpy as np
 import pandas as pd
@@ -202,7 +203,7 @@ class KnowledgeBase:
             data={
                 "x": embeddings_tsne[:, 0],
                 "y": embeddings_tsne[:, 1],
-                "topic": [self.topics[topic_id] for topic_id in topics_ids],
+                "topic": [textwrap.fill(self.topics[topic_id], 40) for topic_id in topics_ids],
                 "id": list(range(len(topics_ids))),
                 "content": [doc.content for doc in self._documents],
                 "color": colors,
@@ -211,7 +212,7 @@ class KnowledgeBase:
 
         p = figure(
             tools=TOOLS,
-            toolbar_location="above",
+            toolbar_location="right",
             sizing_mode="stretch_width",
             title=TITLE,
             x_range=x_range,

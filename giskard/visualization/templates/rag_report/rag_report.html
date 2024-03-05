@@ -4,8 +4,8 @@
 <style>
     {% include "rag_report/static/style.css" %}
 </style>
-<script src="https://cdn.bokeh.org/bokeh/release/bokeh-3.3.4.min.js" integrity="sha384-5QIrjQuyo4I/x6DK/Sau33lcA3hT2TCZGr9vbk+2ebd7Da6FnR1amdM+9B5xOrSf"></script>
-<script src="https://cdn.bokeh.org/bokeh/release/bokeh-gl-3.3.4.min.js" integrity="sha384-tXTWPp/bAKa+K9RPuXh7DNvye0Mv+P+6y4rAMVy+pWapsnXg9UG7g20WZ0N4i28A"></script>
+<script src="https://cdn.bokeh.org/bokeh/release/bokeh-3.3.4.min.js" integrity="sha384-5QIrjQuyo4I/x6DK/Sau33lcA3hT2TCZGr9vbk+2ebd7Da6FnR1amdM+9B5xOrSf" crossorigin="anonymous"></script>
+<script src="https://cdn.bokeh.org/bokeh/release/bokeh-gl-3.3.4.min.js" integrity="sha384-tXTWPp/bAKa+K9RPuXh7DNvye0Mv+P+6y4rAMVy+pWapsnXg9UG7g20WZ0N4i28A" crossorigin="anonymous"></script>
 
 
 {% endblock %}
@@ -33,7 +33,7 @@
                 {{knowledge_script | safe}}
                 {{knowledge_div | safe}}
             </div>
-            <div class="overview-side">
+            <div class="overview-side" style="flex:1">
                 <h3 class="extended-title">Components Analysis</h3>
                 <table style="width:50%" id="component-table">
                 {% for component, score in components.items() %}
@@ -58,31 +58,31 @@
             <h3>Correctness</h3>
 
             <div class="flex-row">
-                <div>
+                <div style="flex:0.7">
                     <div class="correctness-indicator {% if correctness >= 0.7 %} green {% elif correctness >= 0.3 %} orange {% else %} red {% endif %}">Overall score: {{(correctness*100)|round(2)}}% </div>
                 </div>
                 
-                <div>
+                <div class="corr-plot">
                     {{q_type_correctness_script | safe}}
                     {{q_type_correctness_div | safe}}
                 </div>
-                <div>
+                <div class="corr-plot">
                     {{topic_correctness_script | safe}}
                     {{topic_correctness_div | safe}}
                 </div>
             </div>
         </div>
         <div class="separator"></div>
-        <div id="gsk-ragas">
+        <div id="gsk-metrics">
             <!-- Tab links -->
             <div class="tab">
-                <div class="tab-title">RAGAS metrics</div>
-                {% for tab, _ in ragas_metrics.items() %}
+                <div class="tab-title">Selected metrics</div>
+                {% for tab, _ in metric_histograms.items() %}
                 <button class="tablinks" onclick="opentab(event, '{{tab}}')">{% if tab == "Question" %} Question types {% else %} {{tab}} {% endif %}</button>
                 {% endfor %} 
             </div>
             <!-- Tab content -->
-            {% for tab, content in ragas_metrics.items() %}
+            {% for tab, content in metric_histograms.items() %}
             <div id={{tab}} class="tabcontent">
                 {% for split_value, metrics in content.items()%}
                 <div class="tab-row">

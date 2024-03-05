@@ -23,24 +23,27 @@ def test_report_plots():
         {"evaluation": False, "reason": "The assistant answer is incorrect.", "assistant_answer": "Default answer"},
     ]
 
-    ragas_metrics = pd.DataFrame.from_dict(
-        {
-            "id": ["1", "2", "3", "4", "5", "6"],
-            "context_precision": [0.1] * 6,
-            "faithfulness": [0.2] * 6,
-            "answer_relevancy": [0.3] * 6,
-            "context_recall": [0.4] * 6,
-        }
-    )
-    report = RAGReport(eval_results, testset, knowledge_base, ragas_metrics=ragas_metrics)
+    metrics_results = {
+        "context_precision": pd.DataFrame.from_dict(
+            {"id": ["1", "2", "3", "4", "5", "6"], "context_precision": [0.1] * 6}
+        ),
+        "faithfulness": pd.DataFrame.from_dict({"id": ["1", "2", "3", "4", "5", "6"], "faithfulness": [0.2] * 6}),
+        "answer_relevancy": pd.DataFrame.from_dict(
+            {"id": ["1", "2", "3", "4", "5", "6"], "answer_relevancy": [0.3] * 6}
+        ),
+        "context_recall": pd.DataFrame.from_dict({"id": ["1", "2", "3", "4", "5", "6"], "context_recall": [0.4] * 6}),
+    }
 
+    report = RAGReport(eval_results, testset, knowledge_base, metrics_results=metrics_results)
+    print(report._dataframe)
+    print(report._dataframe.columns)
     plot = report.plot_correctness_by_metadata(metadata_name="question_type")
     assert isinstance(plot, figure)
 
-    plot = report.plot_ragas_metrics_hist("context_precision", filter_metadata={"question_type": ["EASY"]})
+    plot = report.plot_metrics_hist("context_precision", filter_metadata={"question_type": ["EASY"]})
     assert isinstance(plot, figure)
 
-    histograms = report.get_ragas_histograms()
+    histograms = report.get_metrics_histograms()
     assert "Overall" in histograms
     assert "Question" in histograms
     assert "Topics" in histograms
@@ -79,17 +82,18 @@ def test_report_save_load(tmp_path):
         {"evaluation": False, "reason": "The assistant answer is incorrect.", "assistant_answer": "Default answer"},
     ]
 
-    ragas_metrics = pd.DataFrame.from_dict(
-        {
-            "id": ["1", "2", "3", "4", "5", "6"],
-            "context_precision": [0.1] * 6,
-            "faithfulness": [0.2] * 6,
-            "answer_relevancy": [0.3] * 6,
-            "context_recall": [0.4] * 6,
-        }
-    )
+    metrics_results = {
+        "context_precision": pd.DataFrame.from_dict(
+            {"id": ["1", "2", "3", "4", "5", "6"], "context_precision": [0.1] * 6}
+        ),
+        "faithfulness": pd.DataFrame.from_dict({"id": ["1", "2", "3", "4", "5", "6"], "faithfulness": [0.2] * 6}),
+        "answer_relevancy": pd.DataFrame.from_dict(
+            {"id": ["1", "2", "3", "4", "5", "6"], "answer_relevancy": [0.3] * 6}
+        ),
+        "context_recall": pd.DataFrame.from_dict({"id": ["1", "2", "3", "4", "5", "6"], "context_recall": [0.4] * 6}),
+    }
 
-    report = RAGReport(eval_results, testset, knowledge_base, ragas_metrics=ragas_metrics)
+    report = RAGReport(eval_results, testset, knowledge_base, metrics_results=metrics_results)
 
     report.save(tmp_path)
     loaded_report = RAGReport.load(tmp_path, llm_client=llm_client)
@@ -103,8 +107,11 @@ def test_report_save_load(tmp_path):
     assert report._knowledge_base.topics == loaded_report._knowledge_base.topics
 
     assert len(report._testset._dataframe) == len(loaded_report._testset._dataframe)
-    assert len(report._ragas_metrics) == len(loaded_report._ragas_metrics)
-    assert report._ragas_metrics.loc[1, "context_precision"] == loaded_report._ragas_metrics.loc[1, "context_precision"]
+    assert len(report._metrics_results) == len(loaded_report._metrics_results)
+    assert (
+        report._metrics_results["context_precision"].loc[0, "context_precision"]
+        == loaded_report._metrics_results["context_precision"].loc[0, "context_precision"]
+    )
     assert report._results[0]["evaluation"] == loaded_report._results[0]["evaluation"]
     assert report._results[0]["reason"] == loaded_report._results[0]["reason"]
     assert report._results[0]["assistant_answer"] == loaded_report._results[0]["assistant_answer"]

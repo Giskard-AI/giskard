@@ -37,27 +37,20 @@ class RAGReport:
         The testset used to evaluate the assistant.
     knowledge_base : KnowledgeBase
         The knowledge base used to create the testset.
-    ragas_metrics : pd.DataFrame, optional
-        The ragas metrics computed for the evaluation. If provided, the ragas metrics will be included in the report.
+    metrics_results : pd.DataFrame, optional
+        The additional metrics computed during the evaluation. If provided, these metrics will be included in the report.
     """
-
-    ragas_metrics_names = {
-        "context_precision": "Context Precision",
-        "faithfulness": "Faithfulness",
-        "answer_relevancy": "Answer Relevancy",
-        "context_recall": "Context Recall",
-    }
 
     def __init__(
         self,
         results: Sequence[dict],
         testset: QATestset,
         knowledge_base: KnowledgeBase,
-        ragas_metrics: pd.DataFrame = None,
+        metrics_results: dict = None,
     ):
         self._results = results
         self._testset = testset
-        self._ragas_metrics = ragas_metrics
+        self._metrics_results = metrics_results
         self._knowledge_base = knowledge_base
 
         self._dataframe = testset.to_pandas().copy()
@@ -65,9 +58,9 @@ class RAGReport:
         self._dataframe["evaluation_reason"] = [r["reason"] for r in results]
         self._dataframe["assistant_answer"] = [r["assistant_answer"] for r in results]
 
-        if ragas_metrics is not None:
+        if metrics_results is not None:
             self._dataframe = pd.concat(
-                [self._dataframe, ragas_metrics.set_index("id")[self.ragas_metrics_names.keys()]], axis=1
+                [self._dataframe] + [values.set_index("id") for metric, values in metrics_results.items()], axis=1
             )
 
     def _repr_html_(self):
@@ -85,7 +78,7 @@ class RAGReport:
             q_type_correctness_div=q_type_div,
             topic_correctness_script=topic_script,
             topic_correctness_div=topic_div,
-            ragas_metrics=self.get_ragas_histograms(),
+            metric_histograms=self.get_metrics_histograms(),
         )
 
     def save_html(self, path: str):
@@ -103,7 +96,7 @@ class RAGReport:
 
     def save(self, folder_path: str):
         """
-        Save all the report data to a folder. This includes the HTML report, the testset, the knowledge base, the evaluation results and the ragas metrics if provided.
+        Save all the report data to a folder. This includes the HTML report, the testset, the knowledge base, the evaluation results and the metrics if provided.
 
         Parameters
         ----------
@@ -120,8 +113,10 @@ class RAGReport:
         with open(path / "eval_results.json", "w", encoding="utf-8") as f:
             json.dump(self._results, f)
 
-        if self._ragas_metrics is not None:
-            self._ragas_metrics.to_json(path / "ragas_metrics.jsonl", orient="records", lines=True)
+        if self._metrics_results is not None:
+            self._dataframe[self._metrics_results.keys()].reset_index().to_json(
+                path / "metrics.jsonl", orient="records", lines=True
+            )
 
     @classmethod
     def load(cls, folder_path: str, llm_client: LLMClient = None):
@@ -151,12 +146,13 @@ class RAGReport:
             for doc_idx, doc in enumerate(knowledge_base._documents):
                 doc.topic_id = documents_topics[doc_idx]
 
-        ragas_metrics = None
-        if (path / "ragas_metrics.jsonl").exists():
-            ragas_metrics = pd.read_json(path / "ragas_metrics.jsonl", orient="records", lines=True)
-            ragas_metrics["id"] = ragas_metrics["id"].astype(str)
+        metrics = None
+        if (path / "metrics.jsonl").exists():
+            metrics = pd.read_json(path / "metrics.jsonl", orient="records", lines=True)
+            metrics["id"] = metrics["id"].astype(str)
+            metrics_results = {col: metrics[["id", col]] for col in metrics.columns if col != "id"}
 
-        return cls(results, testset, knowledge_base, ragas_metrics)
+        return cls(results, testset, knowledge_base, metrics_results)
 
     @property
     def failures(self) -> pd.DataFrame:
@@ -229,6 +225,7 @@ class RAGReport:
         """
         Compute the correctness by a metadata field.
         """
+
         correctness = (
             self._dataframe.groupby(lambda idx: self._dataframe.loc[idx, "metadata"][metadata_name])[
                 "evaluation_result"
@@ -267,6 +264,7 @@ class RAGReport:
             title=f"Correctness by {metadata_name}",
             toolbar_location=None,
             tools="hover",
+            width_policy="max",
         )
 
         p.hbar(y="metadata_values", right="correctness_shift", source=source, height=0.9, fill_color="colors")
@@ -280,7 +278,7 @@ class RAGReport:
 
         return p
 
-    def plot_ragas_metrics_hist(self, metric_name: str, filter_metadata: dict = None):
+    def plot_metrics_hist(self, metric_name: str, filter_metadata: dict = None):
         """
         Create a bokeh histogram plot for a RAGAS metric.
 
@@ -300,7 +298,12 @@ class RAGReport:
                 data = self._dataframe[metric_name]
 
             p = figure(
-                width=300, height=200, toolbar_location=None, title=self.ragas_metrics_names[metric_name], tools="hover"
+                width=300,
+                height=200,
+                toolbar_location=None,
+                title=metric_name.replace("_", " "),
+                tools="hover",
+                width_policy="max",
             )
 
             bins = np.linspace(0, 1, 21)
@@ -325,25 +328,24 @@ class RAGReport:
         script, div = components(p)
         return {"script": script, "div": div}
 
-    def get_ragas_histograms(self):
+    def get_metrics_histograms(self):
         histograms_dict = {}
         histograms_dict["Overall"] = {
             "Overall": {
-                metric: self._get_plot_components(self.plot_ragas_metrics_hist(metric))
-                for metric in self.ragas_metrics_names
+                metric: self._get_plot_components(self.plot_metrics_hist(metric)) for metric in self._metrics_results
             }
         }
         histograms_dict["Topics"] = {
             topic: {
-                metric: self._get_plot_components(self.plot_ragas_metrics_hist(metric, {"topic": [topic]}))
-                for metric in self.ragas_metrics_names
+                metric: self._get_plot_components(self.plot_metrics_hist(metric, {"topic": [topic]}))
+                for metric in self._metrics_results
             }
             for topic in self._testset.get_metadata_values("topic")
         }
         histograms_dict["Question"] = {
             QuestionTypes(q_type).name: {
-                metric: self._get_plot_components(self.plot_ragas_metrics_hist(metric, {"question_type": [q_type]}))
-                for metric in self.ragas_metrics_names
+                metric: self._get_plot_components(self.plot_metrics_hist(metric, {"question_type": [q_type]}))
+                for metric in self._metrics_results
             }
             for q_type in self._testset.get_metadata_values("question_type")
         }

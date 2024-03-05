@@ -6,6 +6,7 @@ import logging
 from ..llm.client import LLMClient, LLMMessage, get_default_client
 from ..llm.errors import LLMGenerationError
 from .knowledge_base import KnowledgeBase
+from .metrics import Metric
 from .report import RAGReport
 from .testset import QATestset
 from .testset_generator import generate_testset
@@ -42,7 +43,7 @@ def evaluate(
     testset: Optional[QATestset] = None,
     llm_client: Optional[LLMClient] = None,
     assistant_description: str = "This assistant is a chatbot that answers question from users.",
-    ragas_metrics: bool = False,
+    metrics: Optional[Sequence[Metric]] = None,
     conversation_support: bool = False,
     conversation_side: str = "client",
 ) -> RAGReport:
@@ -86,24 +87,13 @@ def evaluate(
             print(out.content)
             raise LLMGenerationError(f"Error while evaluating the assistant: {err}")
 
-    ragas_results = None
-    if ragas_metrics:
-        try:
-            from .ragas_metrics import compute_ragas_metrics
+    metrics_results = None
+    if metrics is not None:
+        metrics_results = {}
+        for metric in metrics:
+            metrics_results.update(metric(testset, answers, llm_client))
 
-            ragas_results = compute_ragas_metrics(testset, answers, llm_client)
-
-        except ImportError as err:
-            logger.error(
-                f"Package {err.name} is missing, it is required for the computation of RAGAS metrics. You can install it with `pip install {err.name}`."
-            )
-            logger.error("Skipping RAGAS metrics computation.")
-
-        except Exception as err:
-            logger.error(f"Encountered error during RAGAS metric computation: {err}. Skipping.")
-            logger.exception(err)
-
-    return RAGReport(results, testset, knowledge_base, ragas_results)
+    return RAGReport(results, testset, knowledge_base, metrics_results)
 
 
 def make_predictions(answers_fn, testset, conversation_support=False, conversation_side="client"):
