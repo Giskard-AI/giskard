@@ -446,7 +446,7 @@ def test_download_suite_run_and_upload_results():
         upload_requests = [
             request
             for request in mr.request_history
-            if request.url.endswith("/testing/project/test_project/suite/2/executions")
+            if request.url.endswith("/testing/project/test_project/executions")
         ]
 
         assert len(upload_requests) == 1, f"Uploaded result request count should be 1 but got {len(upload_requests)}"
@@ -458,5 +458,5 @@ def test_download_suite_run_and_upload_results():
 
         upload_test_result = upload_body["results"][0]
         assert upload_test_result["testUuid"] == str(test_auc.meta.uuid)
-        assert upload_test_result["suiteTestId"] == 3
+        assert upload_test_result["suiteTest"]["id"] == 3
         assert upload_test_result["status"] == "ERROR"

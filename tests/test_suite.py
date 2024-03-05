@@ -6,9 +6,10 @@ import pandas as pd
 import pytest
 
 from giskard import Dataset, Model, Suite
-from giskard.core.suite import SuiteResult, TestSuiteResult, single_binary_result
+from giskard.core.suite import SuiteResult, TestPartial, TestSuiteResult, single_binary_result
 from giskard.core.test_result import TestResult
 from giskard.testing import test_accuracy
+from tests.utils import MockedClient
 
 
 @pytest.mark.parametrize(
@@ -93,7 +94,7 @@ def test_export_for_unittest_with_export_args(german_credit_data, german_credit_
 
 def test_suite_result_backward_compatibility():
     """This allow backward compatibility by going moving Suiteresult from a tuple to a dataclass"""
-    test_name, result, params = SuiteResult("name", TestResult(), {}, test_accuracy, 1)
+    test_name, result, params = SuiteResult("name", TestResult(), {}, TestPartial(test_accuracy, dict(), 1))
     assert test_name == "name"
     assert result == TestResult()
     assert params == {}
@@ -110,14 +111,20 @@ def test_suite_result_to_dto():
         suite,
         {"dataset": dataset, "threshold": 0.5},
         True,
-        [SuiteResult("name", TestResult(), {"dataset": dataset, "threshold": 0.5}, test_accuracy, 2)],
+        [
+            SuiteResult(
+                "name", TestResult(), {"dataset": dataset, "threshold": 0.5}, TestPartial(test_accuracy, dict(), 1)
+            )
+        ],
         datetime.now(),
         datetime.now(),
     )
-    dto = result._to_dto("label")
 
-    assert dto.inputs[0].value == str(dataset.id)
-    assert dto.inputs[1].value == str(0.5)
+    with MockedClient() as (client, mr):
+        dto = result._to_dto("label", client, "project_key")
 
-    assert dto.results[0].inputs["dataset"] == str(dataset.id)
-    assert dto.results[0].inputs["threshold"] == str(0.5)
+        assert dto.inputs[0].value == str(dataset.id)
+        assert dto.inputs[1].value == str(0.5)
+
+        assert dto.results[0].inputs["dataset"] == str(dataset.id)
+        assert dto.results[0].inputs["threshold"] == str(0.5)
