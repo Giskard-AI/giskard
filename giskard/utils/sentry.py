@@ -1,5 +1,6 @@
 from typing import Dict
 
+import os
 import re
 from abc import ABC
 
@@ -8,6 +9,7 @@ from sentry_sdk.integrations.excepthook import ExcepthookIntegration
 from sentry_sdk.scrubber import DEFAULT_DENYLIST
 
 WHITELISTED_MODULES = ["giskard", "pandas", "numpy"]
+DISABLE_SENTRY_ENV_VARIABLE_NAME = "GSK_DISABLE_SENTRY"
 
 
 def _lower_text_only_var_name(var_name: str):
@@ -75,6 +77,9 @@ def scrub_event(event, _hint) -> Dict[str, ABC]:
 
 
 def configure_sentry():
+    if os.getenv(DISABLE_SENTRY_ENV_VARIABLE_NAME, "False").lower() in ("true", "1", "yes", "t", "y"):
+        return None
+
     sentry_sdk.init(
         # DSN is safe to be publicly available: https://docs.sentry.io/product/sentry-basics/concepts/dsn-explainer/
         dsn="https://a5d33bfa91bc3da9af2e7d32e19ff89d@o4505952637943808.ingest.sentry.io/4506789759025152",

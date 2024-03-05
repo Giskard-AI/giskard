@@ -43,6 +43,7 @@ concurrency:
   cancel-in-progress: true
 env:
   GSK_DISABLE_ANALYTICS: true
+  GSK_DISABLE_SENTRY: true
 defaults:
   run:
     shell: bash
