@@ -15,14 +15,13 @@ class QAGenerationPrompt:
     def _format_example_prompt(self, examples):
         if examples is not None:
             return examples
-        elif self.example_prompt is not None:
-            examples = []
-            if self.example_input is not None:
-                examples.append(LLMMessage(role="user", content=self.example_input))
-            if self.example_prompt is not None:
-                examples.append(LLMMessage(role="assistant", content=self.example_answer))
-            return examples
-        return []
+
+        examples = []
+        if self.example_input is not None:
+            examples.append(LLMMessage(role="user", content=self.example_input))
+        if self.example_output is not None:
+            examples.append(LLMMessage(role="assistant", content=self.example_output))
+        return examples
 
     def to_messages(
         self,
