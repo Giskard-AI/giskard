@@ -9,7 +9,7 @@ from giskard.rag.testset import QATestset
 from tests.rag.test_qa_testset import make_testset_df
 
 try:
-    from giskard.rag.ragas_metrics import (
+    from giskard.rag.metrics.ragas_metrics import (
         RagasEmbeddingsWrapper,
         RagasLLMWrapper,
         compute_ragas_metrics,
@@ -65,7 +65,7 @@ try:
 
             return results
 
-        with patch("giskard.rag.ragas_metrics.evaluate", new=mock_evaluate):
+        with patch("giskard.rag.metrics.ragas_metrics.evaluate", new=mock_evaluate):
             ragas_metrics = compute_ragas_metrics(testset, answers, llm_client)
 
         assert "context_precision" in ragas_metrics.columns

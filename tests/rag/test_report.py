@@ -1,5 +1,6 @@
 from unittest.mock import Mock
 
+import numpy as np
 import pandas as pd
 from bokeh.plotting import figure
 
@@ -52,7 +53,20 @@ def test_report_plots():
 
 
 def test_report_save_load(tmp_path):
-    knowledge_base = KnowledgeBase(make_testset_df())
+    df = make_testset_df()
+    llm_client = Mock()
+    llm_client.embeddings = Mock()
+    llm_client.embeddings.return_value = np.random.randn(len(df), 8)
+
+    knowledge_base = KnowledgeBase(df, llm_client=llm_client)
+    knowledge_base._topics_inst = {0: "Cheese_1", 1: "Cheese_2"}
+    for doc_idx, doc in enumerate(knowledge_base._documents):
+        if doc_idx < 3:
+            doc.topic_id = 0
+        else:
+            doc.topic_id = 1
+
+    knowledge_base._documents
 
     testset = QATestset(make_testset_df())
 
@@ -78,7 +92,7 @@ def test_report_save_load(tmp_path):
     report = RAGReport(eval_results, testset, knowledge_base, ragas_metrics=ragas_metrics)
 
     report.save(tmp_path)
-    loaded_report = RAGReport.load(tmp_path, llm_client=Mock())
+    loaded_report = RAGReport.load(tmp_path, llm_client=llm_client)
 
     assert all(
         [

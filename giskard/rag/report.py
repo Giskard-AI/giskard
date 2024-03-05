@@ -19,7 +19,7 @@ from .testset import QATestset
 
 
 def get_colors(values, cmap_name="RdYlGn"):
-    cmap = matplotlib.cm.get_cmap(cmap_name)
+    cmap = matplotlib.colormaps[cmap_name]
     normalizer = matplotlib.colors.Normalize()
     colors = ["#%02x%02x%02x" % (int(r), int(g), int(b)) for r, g, b, _ in 255 * cmap(normalizer(values))]
     return colors
