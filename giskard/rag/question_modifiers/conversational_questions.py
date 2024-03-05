@@ -1,11 +1,12 @@
-from typing import Sequence, Tuple
+from typing import Optional, Sequence, Tuple
 
 import logging
 
+from ..base_question_generator import BaseQuestionsGenerator
 from ..knowledge_base import Document
+from .base import BaseQuestionModifier
 from .prompt import QAGenerationPrompt
 from .question_types import QuestionTypes
-from .simple_questions import SimpleQuestionsGenerator
 
 logger = logging.getLogger(__name__)
 
@@ -36,8 +37,8 @@ CONVERSATIONAL_ASSISTANT_EXAMPLE = (
 )
 
 
-class ConversationalQuestionsGenerator:
-    def __init__(self, base_generator: SimpleQuestionsGenerator):
+class ConversationalQuestionsModifier(BaseQuestionModifier):
+    def __init__(self, base_generator: Optional[BaseQuestionsGenerator] = None):
         self._base_generator = base_generator
 
         self._prompt = QAGenerationPrompt(
@@ -46,6 +47,7 @@ class ConversationalQuestionsGenerator:
             example_output=CONVERSATIONAL_ASSISTANT_EXAMPLE,
             user_input_template=CONVERSATIONAL_USER_TEMPLATE,
         )
+        self.question_type = QuestionTypes.CONVERSATIONAL
 
     def generate_question(self, context_documents: Sequence[Document]) -> Tuple[dict, dict]:
         generated_qa, question_metadata = self._base_generator.generate_question(context_documents)
@@ -62,7 +64,7 @@ class ConversationalQuestionsGenerator:
         out = self._base_generator._llm_complete(messages=messages)
         generated_qa["question"] = out["question"]
 
-        question_metadata["question_type"] = QuestionTypes.CONVERSATIONAL.value
+        question_metadata["question_type"] = self.question_type.value
         question_metadata["conversation_history"] = [{"role": "user", "content": out["introduction"]}]
 
         return generated_qa, question_metadata

@@ -1,11 +1,12 @@
-from typing import Sequence, Tuple
+from typing import Optional, Sequence, Tuple
 
 import logging
 
+from ..base_question_generator import BaseQuestionsGenerator
 from ..knowledge_base import Document
+from .base import BaseQuestionModifier
 from .prompt import QAGenerationPrompt
 from .question_types import QuestionTypes
-from .simple_questions import SimpleQuestionsGenerator
 
 logger = logging.getLogger(__name__)
 
@@ -49,8 +50,8 @@ DOUBLE_QUESTION_USER_TEMPLATE = """<question1>{question_1}</question1>
 """
 
 
-class DoubleQuestionsGenerator:
-    def __init__(self, base_generator: SimpleQuestionsGenerator):
+class DoubleQuestionsModifier(BaseQuestionModifier):
+    def __init__(self, base_generator: Optional[BaseQuestionsGenerator] = None):
         self._base_generator = base_generator
 
         self._linked_question_generation_prompt = QAGenerationPrompt(
@@ -61,6 +62,7 @@ class DoubleQuestionsGenerator:
             system_prompt=DOUBLE_QUESTION_SYSTEM_PROMPT,
             user_input_template=DOUBLE_QUESTION_USER_TEMPLATE,
         )
+        self.question_type = QuestionTypes.DOUBLE_QUESTION
 
     def generate_question(self, context_documents: Sequence[Document]) -> Tuple[dict, dict]:
         reference_context = "\n------\n".join(["", *[doc.content for doc in context_documents], ""])
@@ -75,7 +77,7 @@ class DoubleQuestionsGenerator:
         )
         question_metadata = {
             "reference_context": reference_context,
-            "question_type": QuestionTypes.DOUBLE_QUESTION.value,
+            "question_type": self.question_type.value,
             "original_questions": linked_questions,
         }
 

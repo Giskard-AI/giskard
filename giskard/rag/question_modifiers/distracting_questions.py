@@ -1,9 +1,10 @@
-from typing import Sequence, Tuple
+from typing import Optional, Sequence, Tuple
 
+from ..base_question_generator import BaseQuestionsGenerator
 from ..knowledge_base import Document
+from .base import BaseQuestionModifier
 from .prompt import QAGenerationPrompt
 from .question_types import QuestionTypes
-from .simple_questions import SimpleQuestionsGenerator
 
 DISTRACTING_SYSTEM_PROMPT = """You are an expert at rewriting questions.
 Your task is to re-write questions that will be used to evaluate the following assistant:
@@ -43,8 +44,8 @@ DISTRACTING_EXAMPLE_OUTPUT = """{
 }"""
 
 
-class DistractingQuestionsGenerator:
-    def __init__(self, base_generator: SimpleQuestionsGenerator):
+class DistractingQuestionsModifier(BaseQuestionModifier):
+    def __init__(self, base_generator: Optional[BaseQuestionsGenerator] = None):
         self._base_generator = base_generator
 
         self._prompt = QAGenerationPrompt(
@@ -53,6 +54,8 @@ class DistractingQuestionsGenerator:
             example_output=DISTRACTING_EXAMPLE_OUTPUT,
             user_input_template=DISTRACTING_INPUT_TEMPLATE,
         )
+
+        self.question_type = QuestionTypes.DISTRACTING_ELEMENT
 
     def generate_question(self, context_documents: Sequence[Document]) -> Tuple[dict, dict]:
         generated_qa, question_metadata = self._base_generator.generate_question(context_documents)
@@ -69,7 +72,7 @@ class DistractingQuestionsGenerator:
                 "context": distracting_context,
             },
         )
-        question_metadata["question_type"] = QuestionTypes.DISTRACTING_ELEMENT
+        question_metadata["question_type"] = self.question_type.value
         question_metadata["distracting_context"] = distracting_context
         out = self._base_generator._llm_complete(messages=messages)
         generated_qa["question"] = out["question"]

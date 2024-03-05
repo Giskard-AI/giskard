@@ -14,7 +14,7 @@ from giskard.llm.client.base import LLMClient
 
 from ..visualization.widget import get_template
 from .knowledge_base import KnowledgeBase
-from .question_generators import QUESTION_ATTRIBUTION, QuestionTypes, RAGComponents
+from .question_modifiers import QUESTION_ATTRIBUTION, QuestionTypes, RAGComponents
 from .testset import QATestset
 
 

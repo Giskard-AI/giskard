@@ -3,11 +3,11 @@ from typing import Optional, Sequence, Tuple
 import json
 import logging
 
-from ...llm.client import get_default_client
-from ...llm.client.base import LLMClient, LLMMessage
-from ..knowledge_base import Document, KnowledgeBase
-from .prompt import QAGenerationPrompt
-from .question_types import QuestionTypes
+from ..llm.client import get_default_client
+from ..llm.client.base import LLMClient, LLMMessage
+from .knowledge_base import Document, KnowledgeBase
+from .question_modifiers.prompt import QAGenerationPrompt
+from .question_modifiers.question_types import QuestionTypes
 
 logger = logging.getLogger(__name__)
 
@@ -47,7 +47,7 @@ QA_GENERATION_EXAMPLE_OUTPUT = """{
 }"""
 
 
-class SimpleQuestionsGenerator:
+class BaseQuestionsGenerator:
     def __init__(
         self,
         knowledge_base: KnowledgeBase,
@@ -69,6 +69,8 @@ class SimpleQuestionsGenerator:
             example_input=QA_GENERATION_EXAMPLE_INPUT,
             example_output=QA_GENERATION_EXAMPLE_OUTPUT,
         )
+
+        self.question_type = QuestionTypes.EASY
 
     def _llm_complete(self, messages: Sequence[LLMMessage]) -> dict:
         try:
@@ -105,6 +107,6 @@ class SimpleQuestionsGenerator:
         )
 
         generated_qa = self._llm_complete(messages=messages)
-        question_metadata = {"question_type": QuestionTypes.EASY.value, "reference_context": context}
+        question_metadata = {"question_type": self.question_type.value, "reference_context": context}
 
         return generated_qa, question_metadata

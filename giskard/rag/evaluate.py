@@ -9,7 +9,7 @@ from .knowledge_base import KnowledgeBase
 from .metrics import Metric
 from .report import RAGReport
 from .testset import QATestset
-from .testset_generator import generate_testset
+from .testset_generation import generate_testset
 
 logger = logging.getLogger(__name__)
 

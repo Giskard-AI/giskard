@@ -1,11 +1,12 @@
-from typing import Sequence, Tuple
+from typing import Optional, Sequence, Tuple
 
 import logging
 
+from ..base_question_generator import BaseQuestionsGenerator
 from ..knowledge_base import Document
+from .base import BaseQuestionModifier
 from .prompt import QAGenerationPrompt
 from .question_types import QuestionTypes
-from .simple_questions import SimpleQuestionsGenerator
 
 logger = logging.getLogger(__name__)
 
@@ -57,8 +58,8 @@ SITUATIONAL_QUESTION_USER_TEMPLATE = """<question>
 </situation>"""
 
 
-class SituationalQuestionsGenerator:
-    def __init__(self, base_generator: SimpleQuestionsGenerator):
+class SituationalQuestionsModifier(BaseQuestionModifier):
+    def __init__(self, base_generator: Optional[BaseQuestionsGenerator] = None):
         self._base_generator = base_generator
 
         self._situation_generation_prompt = QAGenerationPrompt(
@@ -70,6 +71,8 @@ class SituationalQuestionsGenerator:
             system_prompt=SITUATIONAL_QUESTION_SYSTEM_PROMPT,
             user_input_template=SITUATIONAL_QUESTION_USER_TEMPLATE,
         )
+
+        self.question_type = QuestionTypes.SITUATIONAL
 
     def generate_question(self, context_documents: Sequence[Document]) -> Tuple[dict, dict]:
         generated_qa, question_metadata = self._base_generator.generate_question(context_documents)
@@ -106,7 +109,7 @@ class SituationalQuestionsGenerator:
         out = self._base_generator._llm_complete(messages=messages)
         generated_qa["question"] = out["question"]
 
-        question_metadata["question_type"] = QuestionTypes.SITUATIONAL.value
+        question_metadata["question_type"] = self.question_type.value
         question_metadata["situational_context"] = situational_context
 
         return generated_qa, question_metadata
