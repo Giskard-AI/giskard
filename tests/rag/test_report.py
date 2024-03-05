@@ -78,7 +78,7 @@ def test_report_save_load(tmp_path):
     report = RAGReport(eval_results, testset, knowledge_base, ragas_metrics=ragas_metrics)
 
     report.save(tmp_path)
-    loaded_report = RAGReport.load(tmp_path)
+    loaded_report = RAGReport.load(tmp_path, llm_client=Mock())
 
     assert all(
         [
