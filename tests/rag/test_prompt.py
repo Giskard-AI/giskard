@@ -1,5 +1,5 @@
 from giskard.llm.client.base import LLMMessage
-from giskard.rag.question_generators.prompt import QAGenerationPrompt
+from giskard.rag.question_modifiers.prompt import QAGenerationPrompt
 
 
 def test_qa_generation_prompt():

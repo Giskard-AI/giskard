@@ -4,8 +4,15 @@ import numpy as np
 import pandas as pd
 
 from giskard.llm.client import LLMMessage
-from giskard.rag import TestsetGenerator
 from giskard.rag.knowledge_base import Document, KnowledgeBase
+from giskard.rag.question_modifiers import (
+    complex_questions_modifier,
+    conversational_questions_modifier,
+    distracting_questions_modifier,
+    double_questions_modifier,
+    situational_questions_modifier,
+)
+from giskard.rag.testset_generation import generate_testset
 
 
 def make_knowledge_base(**kwargs):
@@ -26,7 +33,7 @@ def make_knowledge_base(**kwargs):
     return knowledge
 
 
-def make_testset_generator():
+def make_testset_generation_inputs():
     llm_client = Mock()
 
     mock_llm_complete_simple = [
@@ -123,18 +130,13 @@ def make_testset_generator():
 
     llm_client.embeddings.side_effect = [kb_embeddings]
 
-    knowledge_base_df = make_knowledge_base(llm_client=llm_client, context_neighbors=3)
-    for doc, topic_id in zip(knowledge_base_df._documents, [0, 0, 0, 1]):
+    knowledge_base = make_knowledge_base(llm_client=llm_client, context_neighbors=3)
+    for doc, topic_id in zip(knowledge_base._documents, [0, 0, 0, 1]):
         doc.topic_id = topic_id
 
-    testset_generator = TestsetGenerator(
-        knowledge_base_df,
-        assistant_description="This is a model for testing purpose.",
-        llm_client=llm_client,
-    )
-    testset_generator.knowledge_base._rng = Mock()
-    testset_generator.knowledge_base._rng.choice = Mock()
-    testset_generator.knowledge_base._rng.choice.side_effect = [
+    knowledge_base._rng = Mock()
+    knowledge_base._rng.choice = Mock()
+    knowledge_base._rng.choice.side_effect = [
         2,
         3,
         3,
@@ -144,7 +146,7 @@ def make_testset_generator():
         3,
     ]
 
-    return testset_generator
+    return llm_client, knowledge_base
 
 
 CONTEXT_STRING = """
@@ -159,16 +161,9 @@ Camembert is a moist, soft, creamy, surface-ripened cow's milk cheese.
 
 
 def test_testset_generation():
-    testset_generator = make_testset_generator()
+    llm_client, knowledge_base = make_testset_generation_inputs()
 
-    assert testset_generator.base_generator._knowledge_base._index.d == 8
-    assert testset_generator.base_generator._knowledge_base._embeddings.shape == (4, 8)
-    assert len(testset_generator.base_generator._knowledge_base._documents) == 4
-    assert testset_generator.base_generator._knowledge_base._documents[2].content.startswith(
-        "Scamorza is a Southern Italian cow's milk cheese."
-    )
-
-    test_set = testset_generator.generate_testset(num_questions=2)
+    test_set = generate_testset(knowledge_base=knowledge_base, num_questions=2, llm_client=llm_client)
 
     assert len(test_set) == 2
 
@@ -189,8 +184,19 @@ def test_testset_generation():
 
 
 def test_testset_question_types():
-    testset_generator = make_testset_generator()
-    testset = testset_generator.generate_testset(num_questions=1, question_types=[1, 2, 3, 4, 5, 6])
+    llm_client, knowledge_base = make_testset_generation_inputs()
+    testset = generate_testset(
+        knowledge_base=knowledge_base,
+        llm_client=llm_client,
+        num_questions=1,
+        question_modifiers=[
+            complex_questions_modifier,
+            distracting_questions_modifier,
+            situational_questions_modifier,
+            double_questions_modifier,
+            conversational_questions_modifier,
+        ],
+    )
     assert len(testset._dataframe["metadata"]) == 6
     for idx, row_id in enumerate(testset.to_pandas().index):
         assert testset._dataframe["metadata"][row_id]["question_type"] == idx + 1
@@ -221,8 +227,13 @@ def test_testset_question_types():
 
 
 def test_question_generation_fail(caplog):
-    testset_generator = make_testset_generator()
-    testset = testset_generator.generate_testset(num_questions=1, question_types=[1, 2, 3, 4, 5, 7])
+    llm_client, knowledge_base = make_testset_generation_inputs()
+    testset = generate_testset(
+        knowledge_base=knowledge_base,
+        llm_client=llm_client,
+        num_questions=1,
+        question_modifiers=[complex_questions_modifier, distracting_questions_modifier, Mock()],
+    )
 
     assert "Encountered error in question generation" in caplog.text
-    assert len(testset.to_pandas()) == 5
+    assert len(testset.to_pandas()) == 3
