@@ -203,9 +203,7 @@ class TestSuiteResult:
         if project_key is None:
             raise ValueError("Please provide 'project_key' param in order to save this suite execution")
 
-        client.save_test_suite_execution_result(
-            self.suite.id, self.suite.project_key, self._to_dto(label, client, project_key)
-        )
+        client.save_test_suite_execution_result(project_key, self._to_dto(label, client, project_key))
 
     def _to_dto(self, label: Optional[str], client: GiskardClient, project_key: str) -> SaveSuiteExecutionDTO:
         uploaded_uuid_status = dict()
@@ -594,8 +592,7 @@ class Suite:
                             messages=[TestMessage(type=TestMessageLevel.ERROR, text=error)],
                         ),
                         test_params,
-                        test_partial.giskard_test,
-                        test_partial.suite_test_id,
+                        test_partial,
                     )
                 )
 

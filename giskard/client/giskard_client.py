@@ -426,5 +426,5 @@ class GiskardClient:
     def update_test_suite(self, suite_id: int, dto: TestSuiteDTO):
         return self._session.put(f"testing/project/{dto.project_key}/suite/{suite_id}", json=dto.dict()).json()
 
-    def save_test_suite_execution_result(self, suite_id: int, project_key: str, dto: SaveSuiteExecutionDTO):
-        return self._session.post(f"testing/project/{project_key}/suite/{suite_id}/executions", json=dto.dict()).json()
+    def save_test_suite_execution_result(self, project_key: str, dto: SaveSuiteExecutionDTO):
+        return self._session.post(f"testing/project/{project_key}/executions", json=dto.dict()).json()
