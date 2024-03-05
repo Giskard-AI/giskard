@@ -98,7 +98,7 @@ class RAGReport:
             The path to save the report.
         """
 
-        with open(path, "w") as f:
+        with open(path, "w", encoding="utf-8") as f:
             f.write(self._repr_html_())
 
     def save(self, folder_path: str):
@@ -115,9 +115,9 @@ class RAGReport:
         self.save_html(path / "report.html")
         self._testset.save(path / "testset.json")
         self._knowledge_base._knowledge_base_df.to_json(path / "knowledge_base.jsonl", orient="records", lines=True)
-        with open(path / "knowledge_base_meta.json", "w") as f:
+        with open(path / "knowledge_base_meta.json", "w", encoding="utf-8") as f:
             json.dump(self._knowledge_base.get_savable_data(), f)
-        with open(path / "eval_results.json", "w") as f:
+        with open(path / "eval_results.json", "w", encoding="utf-8") as f:
             json.dump(self._results, f)
 
         if self._ragas_metrics is not None:
