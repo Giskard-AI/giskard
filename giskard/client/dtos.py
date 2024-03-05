@@ -112,7 +112,6 @@ class SuiteInfo(ConfiguredBaseModel):
     # The following inputs are never used and are here only for
     # coherence with backend
     id: int
-    functionInputs: List
     projectKey: str
 
 

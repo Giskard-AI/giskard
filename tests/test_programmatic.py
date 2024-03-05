@@ -431,7 +431,6 @@ def test_download_suite_run_and_upload_results():
                     }
                 ],
                 "id": 2,
-                "functionInputs": [],
                 "projectKey": "test_project",
             },
         )
