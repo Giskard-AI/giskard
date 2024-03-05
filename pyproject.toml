@@ -175,6 +175,7 @@ dependencies = [
     "colorama",                 # needed for the scan
     "num2words>=0.5.13",
     "griffe>=0.36.9",
+    "sentry-sdk>=1.40.5",
 ]
 
 [project.optional-dependencies]
