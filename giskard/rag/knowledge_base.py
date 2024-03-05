@@ -2,7 +2,6 @@ from typing import Optional, Sequence
 
 import logging
 
-import langdetect
 import numpy as np
 import pandas as pd
 from bokeh.models import ColumnDataSource
@@ -12,6 +11,7 @@ from sklearn.cluster import HDBSCAN
 from sklearn.manifold import TSNE
 
 from ..core.errors import GiskardInstallationError
+from ..datasets.metadata.text_metadata_provider import _detect_lang
 from ..llm.client import LLMClient, LLMMessage, get_default_client
 
 logger = logging.getLogger(__name__)
@@ -98,8 +98,9 @@ class KnowledgeBase:
         self._context_similarity_threshold = context_similarity_threshold
         self._context_neighbors = context_neighbors
 
+        document_languages = [_detect_lang(doc.content) for doc in self._documents]
         languages, occurences = np.unique(
-            [langdetect.detect(doc.content) for doc in self._documents], return_counts=True
+            ["en" if (pd.isna(lang) or lang == "unknown") else lang for lang in document_languages], return_counts=True
         )
         self._language = languages[np.argmax(occurences)]
         self._rng = np.random.default_rng(seed=seed)
