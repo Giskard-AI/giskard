@@ -21,4 +21,6 @@ Test suite
 
 .. autoclass:: giskard.core.suite.TestSuiteResult
 
+   .. automethod:: upload
+
 .. autoclass:: giskard.core.test_result.TestResult
