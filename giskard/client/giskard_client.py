@@ -427,3 +427,9 @@ class GiskardClient:
 
     def update_test_suite(self, suite_id: int, dto: TestSuiteDTO):
         return self._session.put(f"testing/project/{dto.project_key}/suite/{suite_id}", json=dto.dict()).json()
+
+    def start_kernel(self, worker_name: str):
+        return self._session.post(f"kernels/start/{worker_name}").status_code == 200
+
+    def stop_kernel(self, worker_name: str):
+        return self._session.post(f"kernels/stop/{worker_name}").status_code == 200
