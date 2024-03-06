@@ -23,6 +23,7 @@ from giskard.cli_utils import (
     tail,
     validate_url,
 )
+from giskard.client.giskard_client import GiskardClient
 from giskard.path_utils import run_dir
 from giskard.settings import settings
 from giskard.utils.analytics_collector import analytics, anonymize
@@ -52,14 +53,6 @@ def start_stop_options(func):
         default="external_worker",
         help="Name/id of the worker starting",
     )
-    @functools.wraps(func)
-    def wrapper(*args, **kwargs):
-        return func(*args, **kwargs)
-
-    return wrapper
-
-
-def start_options(func):
     @click.option(
         "--key",
         "-k",
@@ -73,6 +66,22 @@ def start_options(func):
         envvar="GSK_HF_TOKEN",
         help="Access token for Giskard hosted in a private Hugging Face Spaces",
     )
+    @click.option(
+        "--server",
+        "-s",
+        "is_server",
+        is_flag=True,
+        default=False,
+        help="Server mode. Used to control Giskard managed ML Worker",
+    )
+    @functools.wraps(func)
+    def wrapper(*args, **kwargs):
+        return func(*args, **kwargs)
+
+    return wrapper
+
+
+def start_options(func):
     @click.option(
         "--parallelism",
         "nb_workers",
@@ -104,13 +113,13 @@ def start_options(func):
 @common_options
 @start_stop_options
 @start_options
-def start_command(url: AnyHttpUrl, api_key, hf_token, nb_workers, worker_name, log_level):
+def start_command(url: AnyHttpUrl, is_server, api_key, hf_token, nb_workers, worker_name, log_level):
     """\b
     Start ML Worker.
 
     ML Worker can be started in 2 modes:
 
-    - server: used by default by an ML Worker shipped by Giskard. ML Worker acts as a server that Giskard connects to.
+    - server: Giskard starts an ML Worker managed by itself on the server.
 
     - client: ML Worker acts as a client and should connect to a running Giskard instance
         by specifying this instance's host and port.
@@ -124,7 +133,11 @@ def start_command(url: AnyHttpUrl, api_key, hf_token, nb_workers, worker_name, l
 
     api_key = initialize_api_key(api_key)
     hf_token = initialize_hf_token(hf_token)
-    _start_command(worker_name, url, api_key, hf_token, int(nb_workers) if nb_workers is not None else None)
+    if is_server:
+        # Create a Giskard client and request to start an ML worker with given name
+        _start_server_command(worker_name, url, api_key, hf_token)
+    else:
+        _start_command(worker_name, url, api_key, hf_token, int(nb_workers) if nb_workers is not None else None)
 
 
 def initialize_api_key(api_key):
@@ -142,6 +155,11 @@ def initialize_hf_token(hf_token):
         # delete HF token environment variable so that it doesn't get leaked when the test code is executed
         del os.environ["GSK_HF_TOKEN"]
     return hf_token
+
+
+def _start_server_command(worker_name, url: AnyHttpUrl, api_key, hf_token=None):
+    client: GiskardClient = GiskardClient(str(url), api_key, hf_token)
+    client.start_kernel(worker_name)
 
 
 def _start_command(worker_name, url: AnyHttpUrl, api_key, hf_token=None, nb_workers=None):
@@ -198,11 +216,16 @@ async def _start_worker(worker_name, url, api_key, hf_token, nb_workers):
     await ml_worker.start(restart=True, nb_workers=nb_workers)
 
 
+def _stop_server_command(worker_name, url: AnyHttpUrl, api_key, hf_token=None):
+    client: GiskardClient = GiskardClient(str(url), api_key, hf_token)
+    return client.stop_kernel(worker_name)
+
+
 @worker.command("stop", help="Stop running ML Workers")
 @common_options
 @start_stop_options
 @click.option("--all", "-a", "stop_all", is_flag=True, default=False, help="Stop all running ML Workers")
-def stop_command(worker_name, url, stop_all):
+def stop_command(worker_name, stop_all, is_server, url: AnyHttpUrl, api_key, hf_token=None):
     import re
 
     analytics.track(
@@ -210,24 +233,44 @@ def stop_command(worker_name, url, stop_all):
         {"url": anonymize(url), "stop_all": stop_all},
     )
     if stop_all:
+        if is_server:
+            logger.fatal("Stopping all workers on the server is not yet supported.")
+            return
         for pid_path in run_dir.iterdir():
             if not re.match(r"^ml-worker-.*\.pid$", pid_path.name):
                 continue
             _stop_pid_fname(pid_path)
     else:
-        _find_and_stop(worker_name, url)
+        if is_server:
+            api_key = initialize_api_key(api_key)
+            hf_token = initialize_hf_token(hf_token)
+            _stop_server_command(worker_name, url, api_key, hf_token)
+        else:
+            _find_and_stop(worker_name, url)
+
+
+def _restart_server_command(worker_name, url: AnyHttpUrl, api_key, hf_token=None):
+    client: GiskardClient = GiskardClient(url, api_key, hf_token)
+    client.stop_kernel(worker_name)
+    client.start_kernel(worker_name)
 
 
 @worker.command("restart", help="Restart ML Worker")
 @common_options
 @start_stop_options
 @start_options
-def restart_command(url: AnyHttpUrl, api_key, hf_token, nb_workers, worker_name, log_level):
+def restart_command(url: AnyHttpUrl, is_server, api_key, hf_token, nb_workers, worker_name, log_level):
     analytics.track(
         "giskard-worker:restart",
         {"url": anonymize(url)},
     )
     logging.root.setLevel(logging.getLevelName(log_level))
+
+    if is_server:
+        _restart_server_command(worker_name, url, api_key, hf_token)
+        return
+
+    # Restart the local worker
     _find_and_stop(worker_name, url)
     _start_command(worker_name, url, api_key, hf_token=hf_token, nb_workers=nb_workers)
 
