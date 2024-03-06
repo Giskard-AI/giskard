@@ -271,20 +271,6 @@ def map_result_to_single_test_result_ws(
             props=result.props,
             metric=result.metric,
             metric_name=result.metric_name,
-            missing_count=result.missing_count,
-            missing_percent=result.missing_percent,
-            unexpected_count=result.unexpected_count,
-            unexpected_percent=result.unexpected_percent,
-            unexpected_percent_total=result.unexpected_percent_total,
-            unexpected_percent_nonmissing=result.unexpected_percent_nonmissing,
-            partial_unexpected_index_list=[
-                websocket.PartialUnexpectedCounts(value=puc.value, count=puc.count)
-                for puc in result.partial_unexpected_index_list
-            ],
-            unexpected_index_list=result.unexpected_index_list,
-            number_of_perturbed_rows=result.number_of_perturbed_rows,
-            actual_slices_size=result.actual_slices_size,
-            reference_slices_size=result.reference_slices_size,
             failed_indexes={
                 str(dataset.original_id): list(datasets[dataset.original_id].df.index.get_indexer_for(dataset.df.index))
                 for dataset in result.output_ds
