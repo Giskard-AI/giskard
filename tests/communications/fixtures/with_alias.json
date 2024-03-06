@@ -1670,27 +1670,6 @@
         },
         "metric": -11.1900559219989,
         "metric_name": "OBuzbcKZEuiAZOCSmAXE",
-        "missing_count": 7522,
-        "missing_percent": 9145056655.73578,
-        "unexpected_count": 3366,
-        "unexpected_percent": 64572392.6119255,
-        "unexpected_percent_total": 66154.6070506973,
-        "unexpected_percent_nonmissing": -6.220529725448,
-        "partial_unexpected_index_list": [
-          8822
-        ],
-        "partial_unexpected_counts": [],
-        "unexpected_index_list": [
-          8849
-        ],
-        "number_of_perturbed_rows": 5425,
-        "actual_slices_size": [
-          7506
-        ],
-        "reference_slices_size": [
-          9828
-        ],
-        "output_df_id": "bljESPPQnRJeaaNmfGrd",
         "failed_indexes": {
           "iBioLxqybuvjfUAkFQba": [
             2399
@@ -1733,34 +1712,6 @@
         },
         "metric": 5204760632626.1,
         "metric_name": "FavQPjOEixJiRwYPCQCL",
-        "missing_count": 5152,
-        "missing_percent": 5586258019103.5,
-        "unexpected_count": 446,
-        "unexpected_percent": -83961140926078.5,
-        "unexpected_percent_total": -5255980.53493168,
-        "unexpected_percent_nonmissing": 5583085506347.76,
-        "partial_unexpected_index_list": [
-          7468
-        ],
-        "partial_unexpected_counts": [
-          {
-            "value": [
-              1824
-            ],
-            "count": 4097
-          }
-        ],
-        "unexpected_index_list": [
-          3525
-        ],
-        "number_of_perturbed_rows": 8895,
-        "actual_slices_size": [
-          7682
-        ],
-        "reference_slices_size": [
-          5829
-        ],
-        "output_df_id": "nCpmeoZxHHWuprqSUprC",
         "failed_indexes": {
           "EEmbmdCddHpPzSiAPeXj": [
             2450
@@ -1834,34 +1785,6 @@
         },
         "metric": 0.54503200188356,
         "metric_name": "hIctgyRVbdRcogebHMJR",
-        "missing_count": 7332,
-        "missing_percent": -84699845.4495843,
-        "unexpected_count": 4257,
-        "unexpected_percent": 4021.77567900037,
-        "unexpected_percent_total": 44.985565310621,
-        "unexpected_percent_nonmissing": 5787.5818360339,
-        "partial_unexpected_index_list": [
-          8816
-        ],
-        "partial_unexpected_counts": [
-          {
-            "value": [
-              3266
-            ],
-            "count": 8788
-          }
-        ],
-        "unexpected_index_list": [
-          6948
-        ],
-        "number_of_perturbed_rows": 1148,
-        "actual_slices_size": [
-          4376
-        ],
-        "reference_slices_size": [
-          1184
-        ],
-        "output_df_id": "nYhVSSceQytZcBxguKTb",
         "failed_indexes": {
           "BePebtMqgPPSpwmCrrOX": [
             9570
@@ -1917,27 +1840,6 @@
         },
         "metric": 424101.551658122,
         "metric_name": "rSsVIFLtSXWAgOkXzsCW",
-        "missing_count": 6773,
-        "missing_percent": -6952889.46449792,
-        "unexpected_count": 25,
-        "unexpected_percent": -480401.644089601,
-        "unexpected_percent_total": 24939309018655.8,
-        "unexpected_percent_nonmissing": 12006.1096479553,
-        "partial_unexpected_index_list": [
-          1154
-        ],
-        "partial_unexpected_counts": [],
-        "unexpected_index_list": [
-          1363
-        ],
-        "number_of_perturbed_rows": 273,
-        "actual_slices_size": [
-          7421
-        ],
-        "reference_slices_size": [
-          238
-        ],
-        "output_df_id": "NonPjpinXIHpKzfqrPnn",
         "failed_indexes": {
           "LYYwYlubXxAwRYGKxBbJ": [
             5263
@@ -1979,27 +1881,6 @@
         },
         "metric": -8022869185888.14,
         "metric_name": "nOOUTysjkksQeNeDrlYc",
-        "missing_count": 3060,
-        "missing_percent": -263977421.350573,
-        "unexpected_count": 1653,
-        "unexpected_percent": 257003.236390092,
-        "unexpected_percent_total": 10180798096229.4,
-        "unexpected_percent_nonmissing": 764589.8067,
-        "partial_unexpected_index_list": [
-          352
-        ],
-        "partial_unexpected_counts": [],
-        "unexpected_index_list": [
-          162
-        ],
-        "number_of_perturbed_rows": 4764,
-        "actual_slices_size": [
-          5884
-        ],
-        "reference_slices_size": [
-          8081
-        ],
-        "output_df_id": "ySfOrAIjhhTpKRFgkCLO",
         "failed_indexes": {
           "QGICXZkpBcSmOJxwnwBa": [
             5548
@@ -2041,27 +1922,6 @@
         },
         "metric": 1231.49393719364,
         "metric_name": "DqAsBaxxpuOJzHtkaoFT",
-        "missing_count": 8371,
-        "missing_percent": -58054696998.5002,
-        "unexpected_count": 2790,
-        "unexpected_percent": 6030101.7062412,
-        "unexpected_percent_total": -59934461921371.6,
-        "unexpected_percent_nonmissing": 529034794.781994,
-        "partial_unexpected_index_list": [
-          4057
-        ],
-        "partial_unexpected_counts": [],
-        "unexpected_index_list": [
-          4765
-        ],
-        "number_of_perturbed_rows": 340,
-        "actual_slices_size": [
-          6668
-        ],
-        "reference_slices_size": [
-          2557
-        ],
-        "output_df_id": "GWOSNQFsnKTChRzycAMv",
         "failed_indexes": {
           "sIbAXJuJFkkUndRBtAMi": [
             9113
@@ -2256,27 +2116,6 @@
             },
             "metric": -90667.471331461,
             "metric_name": "IfiRtMyqSFEHilakVCvr",
-            "missing_count": 9466,
-            "missing_percent": -976842008.282359,
-            "unexpected_count": 8978,
-            "unexpected_percent": 50290.3475229416,
-            "unexpected_percent_total": 446788.60261934,
-            "unexpected_percent_nonmissing": -9563001.74410468,
-            "partial_unexpected_index_list": [
-              3274
-            ],
-            "partial_unexpected_counts": [],
-            "unexpected_index_list": [
-              8269
-            ],
-            "number_of_perturbed_rows": 6773,
-            "actual_slices_size": [
-              7945
-            ],
-            "reference_slices_size": [
-              5845
-            ],
-            "output_df_id": "vaCOrFPHCjeCSWbXdTxN",
             "failed_indexes": {
               "onPjpinXIHpKzfqrPnnL": [
                 3425
@@ -2524,27 +2363,6 @@
       },
       "metric": -90667.471331461,
       "metric_name": "IfiRtMyqSFEHilakVCvr",
-      "missing_count": 9466,
-      "missing_percent": -976842008.282359,
-      "unexpected_count": 8978,
-      "unexpected_percent": 50290.3475229416,
-      "unexpected_percent_total": 446788.60261934,
-      "unexpected_percent_nonmissing": -9563001.74410468,
-      "partial_unexpected_index_list": [
-        3274
-      ],
-      "partial_unexpected_counts": [],
-      "unexpected_index_list": [
-        8269
-      ],
-      "number_of_perturbed_rows": 6773,
-      "actual_slices_size": [
-        7945
-      ],
-      "reference_slices_size": [
-        5845
-      ],
-      "output_df_id": "vaCOrFPHCjeCSWbXdTxN",
       "failed_indexes": {
         "onPjpinXIHpKzfqrPnnL": [
           3425
@@ -2583,27 +2401,6 @@
       },
       "metric": -8120787280.73983,
       "metric_name": "BfUfcpFavQPjOEixJiRw",
-      "missing_count": 6197,
-      "missing_percent": -70.5533966620012,
-      "unexpected_count": 1640,
-      "unexpected_percent": -170167551.172,
-      "unexpected_percent_total": -92.5633264376479,
-      "unexpected_percent_nonmissing": -5255980.53493168,
-      "partial_unexpected_index_list": [
-        1031
-      ],
-      "partial_unexpected_counts": [],
-      "unexpected_index_list": [
-        1051
-      ],
-      "number_of_perturbed_rows": 5199,
-      "actual_slices_size": [
-        9854
-      ],
-      "reference_slices_size": [
-        7468
-      ],
-      "output_df_id": "flGYCJInCpmeoZxHHWup",
       "failed_indexes": {
         "rqSUprCEEmbmdCddHpPz": [
           2526
@@ -2642,27 +2439,6 @@
       },
       "metric": 35913691653791.1,
       "metric_name": "nVXhORIKxWYtPwiqgVXg",
-      "missing_count": 9841,
-      "missing_percent": -953466.126798201,
-      "unexpected_count": 4841,
-      "unexpected_percent": 2402493571.24882,
-      "unexpected_percent_total": -607212.2258581,
-      "unexpected_percent_nonmissing": 36648248694621.3,
-      "partial_unexpected_index_list": [
-        2832
-      ],
-      "partial_unexpected_counts": [],
-      "unexpected_index_list": [
-        4665
-      ],
-      "number_of_perturbed_rows": 2431,
-      "actual_slices_size": [
-        8885
-      ],
-      "reference_slices_size": [
-        3284
-      ],
-      "output_df_id": "oEnJPQYCzSNDtofPgMCY",
       "failed_indexes": {
         "NYhADqAsBaxxpuOJzHtk": [
           63
@@ -2887,27 +2663,6 @@
             },
             "metric": -532380.891244035,
             "metric_name": "VjoYzWuSyMvItTOMeIfi",
-            "missing_count": 6443,
-            "missing_percent": -786801296.31011,
-            "unexpected_count": 7689,
-            "unexpected_percent": -86530633904315.9,
-            "unexpected_percent_total": -84824.731644238,
-            "unexpected_percent_nonmissing": 12899.827342927,
-            "partial_unexpected_index_list": [
-              3268
-            ],
-            "partial_unexpected_counts": [],
-            "unexpected_index_list": [
-              8841
-            ],
-            "number_of_perturbed_rows": 8983,
-            "actual_slices_size": [
-              3803
-            ],
-            "reference_slices_size": [
-              6626
-            ],
-            "output_df_id": "AXExoCXaOQUMQADwcTDk",
             "failed_indexes": {
               "AzsrCGFxbljESPPQnRJe": [
                 273
