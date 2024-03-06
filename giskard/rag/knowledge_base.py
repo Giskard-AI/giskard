@@ -67,7 +67,7 @@ class KnowledgeBase:
         A similarity threshold to filter irrelevant element from the knowledge base during context creation
     seed: int, optional
         The seed to use for random number generation.
-    llm_client:
+    llm_client: LLMClient, optional:
         The LLM client to use for question generation. If not specified, a default openai client will be used.
     embedding_model: str = "text-embedding-ada-002"
         The name of the embedding model to use for the knowledge base. It should match the llm_client available embedding models.

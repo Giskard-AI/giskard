@@ -17,8 +17,8 @@ logger = logging.getLogger(__name__)
 def generate_testset(
     knowledge_base: KnowledgeBase,
     num_questions: int = 30,
-    base_generator: Optional[BaseQuestionsGenerator] = None,
     question_modifiers: Optional[Union[BaseQuestionModifier, Sequence[BaseQuestionModifier]]] = None,
+    base_generator: Optional[BaseQuestionsGenerator] = None,
     language: str = "en",
     assistant_description: Optional[str] = None,
     context_window_length: int = 8192,
@@ -26,6 +26,8 @@ def generate_testset(
     conversational: bool = False,
 ) -> QATestset:
     """Generate a testset from a knowledge base.
+    By default it generates `num_questions` questions using the `BaseQuestionsGenerator`. If question modifiers are provided,
+    it will generate `num_questions` questions using each of the modifiers as well.
 
     Parameters
     ----------
@@ -33,9 +35,9 @@ def generate_testset(
         The knowledge base to generate questions from.
     num_questions : int
         The number of questions to generate. By default 30.
-    question_types : Union[QuestionTypes, Sequence[QuestionTypes]]
-        The types of the questions to generate. Can be 1 (:attr:`QuestionTypes.EASY`), 2 (:attr:`QuestionTypes.COMPLEX`),
-         or a list of these values. See :class:`QuestionTypes` for more question types.
+    question_modifiers : Union[BaseQuestionModifier, Sequence[BaseQuestionModifier]], optional
+        Question modifiers to use for question generation. If not specified, only the base generator will be used.
+        If specified it will generate questions using the base generator and each of the modifiers.
     language: str = 'en'
         The language to use for question generation. The default is "en" to generate questions in english.
     assistant_description: str, optional

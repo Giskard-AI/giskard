@@ -48,6 +48,25 @@ QA_GENERATION_EXAMPLE_OUTPUT = """{
 
 
 class BaseQuestionsGenerator:
+    """
+    Base question generator that generates questions from a KnowledgeBase.
+
+    Parameters
+    ----------
+    knowledge_base : KnowledgeBase
+        The knowledge base to generate questions from.
+    language: str, optional
+        The language to use for question generation. The default is "en" to generate questions in english.
+    assistant_description: str, optional
+        Description of the assistant to be evaluated. This will be used in the prompt for question generation to get more fitting questions.
+    context_window_length: int, optional
+        Context window length of the llm used in the `llm_client` of the generator.
+    llm_client: LLMClient, optional
+        The LLM client to use for question generation. If not specified, a default openai client will be used.
+    llm_temperature: float, optional
+        The temperature to use in the LLM for question generation. The default is 0.5.
+    """
+
     def __init__(
         self,
         knowledge_base: KnowledgeBase,
@@ -100,6 +119,19 @@ class BaseQuestionsGenerator:
         return json.loads(out.content)
 
     def generate_question(self, context_documents: Sequence[Document]) -> Tuple[dict, dict]:
+        """
+        Generate a question from a list of context documents.
+
+        Parameters
+        ----------
+        context_documents : Sequence[Document]
+            The context documents to generate the question from.
+
+        Returns
+        -------
+        Tuple[dict, dict]
+            The generated question and the metadata of the question.
+        """
         context = "\n------\n".join(["", *[doc.content for doc in context_documents], ""])
         messages = self._prompt.to_messages(
             system_prompt_input={"assistant_description": self._assistant_description, "language": self._language},
