@@ -9,7 +9,6 @@ import posixpath
 import sys
 import uuid
 from pathlib import Path
-from socket import gethostname
 from urllib.parse import urljoin
 from uuid import UUID
 
@@ -184,24 +183,25 @@ class GiskardClient:
         response = self._session.get("project", params={"key": project_key}).json()
         return Project(self._session, response["key"], response["id"])
 
-    def initialize_kernel(self):
+    def initialize_kernel(self, project_key: str):
         python_version = f"{sys.version_info[0]}.{sys.version_info[1]}"
-        base_kernel_name = f"{gethostname()}-{python_version}"
-        kernel_name = f"{base_kernel_name}-{uuid.uuid4()}"
+        kernel_name = f"{project_key}_kernel"
 
         kernels = self._session.get("kernels").json()
         frozen_dependencies = [f"{dist.name}=={dist.version}" for dist in importlib_metadata.distributions()]
 
-        matching_kernels = [
-            kernel
-            for kernel in kernels
-            if kernel["name"].startswith(base_kernel_name)
-            and kernel["pythonVersion"] == python_version
-            and set(frozen_dependencies).issubset(set(kernel["frozenDependencies"].split("\n")))
-        ]
+        existing_kernel = next((kernel for kernel in kernels if kernel["name"] == kernel_name), None)
 
-        if len(matching_kernels) > 0:
-            return matching_kernels[0]["name"]
+        if (
+            existing_kernel
+            and existing_kernel["pythonVersion"] == python_version
+            and set(frozen_dependencies).issubset(set(existing_kernel["frozenDependencies"].split("\n")))
+        ):
+            # A similar kernel already exists
+            return existing_kernel["name"]
+        elif existing_kernel:
+            # A different kernel exists that uses the same name
+            kernel_name = f"{kernel_name}_{uuid.uuid4()}"
 
         self._session.post(
             "kernels",
@@ -247,7 +247,7 @@ class GiskardClient:
         )
 
         if kernel_name is None:
-            kernel_name = self.initialize_kernel()
+            kernel_name = self.initialize_kernel(project_key)
 
         try:
             # TODO(Bazire) : use typed object for validation here
