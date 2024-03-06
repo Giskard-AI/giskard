@@ -1,3 +1,4 @@
+from .base_question_generator import BaseQuestionsGenerator
 from .evaluate import evaluate
 from .knowledge_base import KnowledgeBase
 from .question_modifiers.question_types import QuestionTypes
@@ -12,4 +13,5 @@ __all__ = [
     "KnowledgeBase",
     "evaluate",
     "RAGReport",
+    "BaseQuestionsGenerator",
 ]

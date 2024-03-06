@@ -18,7 +18,7 @@ try:
     from ragas.llms import BaseRagasLLM
     from ragas.llms.prompt import PromptValue
     from ragas.metrics import answer_relevancy, context_precision, context_recall, faithfulness
-    from ragas.metrics.base import Metric as RagasMetric
+    from ragas.metrics.base import Metric as BaseRagasMetric
 
 except ImportError as err:
     logger.error(
@@ -57,7 +57,18 @@ class RagasEmbeddingsWrapper(BaseRagasEmbeddings):
 
 
 class RagasMetric(Metric):
-    def __init__(self, name: str, metrics: Union[RagasMetric, Sequence[RagasMetric]]) -> None:
+    """
+    A wrapper for RAGAS metrics, so they can be used inside the `~giskard.rag.evaluate` function.
+
+    Parameters
+    ----------
+    name : str
+        The name of the metric.
+    metrics : Union[BaseRagasMetric, Sequence[BaseRagasMetric]]
+        The list of RAGAS metrics to use.
+    """
+
+    def __init__(self, name: str, metrics: Union[BaseRagasMetric, Sequence[BaseRagasMetric]]) -> None:
         self.name = name
         self.metrics = metrics if isinstance(metrics, Sequence) else [metrics]
 

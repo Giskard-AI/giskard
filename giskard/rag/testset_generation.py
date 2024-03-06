@@ -26,7 +26,7 @@ def generate_testset(
     conversational: bool = False,
 ) -> QATestset:
     """Generate a testset from a knowledge base.
-    By default it generates `num_questions` questions using the `BaseQuestionsGenerator`. If question modifiers are provided,
+    By default it generates `num_questions` questions using the `giskard.rag.base_question_generator.BaseQuestionsGenerator`. If question modifiers are provided,
     it will generate `num_questions` questions using each of the modifiers as well.
 
     Parameters
@@ -38,6 +38,8 @@ def generate_testset(
     question_modifiers : Union[BaseQuestionModifier, Sequence[BaseQuestionModifier]], optional
         Question modifiers to use for question generation. If not specified, only the base generator will be used.
         If specified it will generate questions using the base generator and each of the modifiers.
+    base_generator : BaseQuestionsGenerator, optional
+        The base question generator to use for question generation. If not specified, a default generator will be created.
     language: str = 'en'
         The language to use for question generation. The default is "en" to generate questions in english.
     assistant_description: str, optional
