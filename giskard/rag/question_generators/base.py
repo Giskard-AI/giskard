@@ -2,8 +2,8 @@ from typing import Optional, Sequence, Tuple
 
 from abc import ABC, abstractmethod
 
-from ..base_question_generator import BaseQuestionsGenerator
 from ..knowledge_base import Document
+from .base_question_generator import BaseQuestionsGenerator
 
 
 class BaseQuestionModifier(ABC):

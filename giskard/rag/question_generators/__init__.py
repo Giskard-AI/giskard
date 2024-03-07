@@ -1,4 +1,5 @@
 from .base import BaseQuestionModifier
+from .base_question_generator import BaseQuestionsGenerator
 from .complex_questions import ComplexQuestionsModifier
 from .conversational_questions import ConversationalQuestionsModifier
 from .distracting_questions import DistractingQuestionsModifier
@@ -16,6 +17,7 @@ __all__ = [
     "QuestionTypes",
     "RAGComponents",
     "QUESTION_ATTRIBUTION",
+    "BaseQuestionsGenerator",
     "BaseQuestionModifier",
     "ComplexQuestionsModifier",
     "DistractingQuestionsModifier",

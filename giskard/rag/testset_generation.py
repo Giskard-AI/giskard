@@ -6,9 +6,9 @@ import uuid
 import pandas as pd
 
 from ..llm.client import LLMClient
-from .base_question_generator import BaseQuestionsGenerator
 from .knowledge_base import KnowledgeBase
-from .question_modifiers import BaseQuestionModifier
+from .question_generators import BaseQuestionModifier
+from .question_generators.base_question_generator import BaseQuestionsGenerator
 from .testset import QATestset
 
 logger = logging.getLogger(__name__)

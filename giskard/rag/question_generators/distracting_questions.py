@@ -1,8 +1,8 @@
 from typing import Optional, Sequence, Tuple
 
-from ..base_question_generator import BaseQuestionsGenerator
 from ..knowledge_base import Document
 from .base import BaseQuestionModifier
+from .base_question_generator import BaseQuestionsGenerator
 from .prompt import QAGenerationPrompt
 from .question_types import QuestionTypes
 

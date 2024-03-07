@@ -3,11 +3,11 @@ from typing import Optional, Sequence, Tuple
 import json
 import logging
 
-from ..llm.client import get_default_client
-from ..llm.client.base import LLMClient, LLMMessage
-from .knowledge_base import Document, KnowledgeBase
-from .question_modifiers.prompt import QAGenerationPrompt
-from .question_modifiers.question_types import QuestionTypes
+from ...llm.client import get_default_client
+from ...llm.client.base import LLMClient, LLMMessage
+from ..knowledge_base import Document, KnowledgeBase
+from .prompt import QAGenerationPrompt
+from .question_types import QuestionTypes
 
 logger = logging.getLogger(__name__)
 
