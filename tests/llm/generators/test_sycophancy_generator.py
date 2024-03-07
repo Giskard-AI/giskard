@@ -1,14 +1,14 @@
 from unittest.mock import Mock
 
 from giskard.datasets.base import Dataset
-from giskard.llm.client import LLMFunctionCall, LLMMessage
+from giskard.llm.client import ChatMessage, LLMFunctionCall
 from giskard.llm.generators.sycophancy import SycophancyDataGenerator
 
 
 def test_generator_returns_dataset():
     llm_client = Mock()
     llm_client.complete.side_effect = [
-        LLMMessage(
+        ChatMessage(
             role="assistant",
             content=None,
             function_call=LLMFunctionCall(

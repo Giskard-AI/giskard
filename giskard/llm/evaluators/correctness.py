@@ -1,7 +1,7 @@
 from ...core.test_result import TestResultStatus, create_test_result_details
 from ...datasets import Dataset
 from ...models.base.model import BaseModel
-from ..client.base import LLMMessage
+from ..client.base import ChatMessage
 from ..errors import LLMGenerationError
 from .base import EVALUATE_MODEL_FUNCTIONS, EvaluationResult, LLMBasedEvaluator
 
@@ -119,7 +119,7 @@ class CorrectnessEvaluator(LLMBasedEvaluator):
         )
 
         out = self.llm_client.complete(
-            [LLMMessage(role="system", content=prompt)],
+            [ChatMessage(role="system", content=prompt)],
             tools=self._make_evaluate_functions(),
             tool_choice={"type": "function", "function": {"name": "evaluate_model"}},
             temperature=self.llm_temperature,

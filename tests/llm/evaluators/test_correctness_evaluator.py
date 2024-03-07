@@ -4,7 +4,7 @@ import pandas as pd
 import pytest
 
 from giskard.datasets.base import Dataset
-from giskard.llm.client import LLMFunctionCall, LLMMessage
+from giskard.llm.client import ChatMessage, LLMFunctionCall
 from giskard.llm.client.base import LLMToolCall
 from giskard.llm.evaluators.correctness import CorrectnessEvaluator
 from giskard.models.base.model_prediction import ModelPredictionResults
@@ -45,7 +45,7 @@ def test_correctness_evaluator_correctly_flags_examples():
 
     client = Mock()
     client.complete.side_effect = [
-        LLMMessage(
+        ChatMessage(
             role="assistant",
             tool_calls=[
                 LLMToolCall(
@@ -58,7 +58,7 @@ def test_correctness_evaluator_correctly_flags_examples():
                 )
             ],
         ),
-        LLMMessage(
+        ChatMessage(
             role="assistant",
             tool_calls=[
                 LLMToolCall(
@@ -108,7 +108,7 @@ def test_correctness_evaluator_handles_generation_errors():
 
     client = Mock()
     client.complete.side_effect = [
-        LLMMessage(
+        ChatMessage(
             role="assistant",
             tool_calls=[
                 LLMToolCall(
@@ -118,7 +118,7 @@ def test_correctness_evaluator_handles_generation_errors():
                 )
             ],
         ),
-        LLMMessage(
+        ChatMessage(
             role="assistant",
             tool_calls=[
                 LLMToolCall(

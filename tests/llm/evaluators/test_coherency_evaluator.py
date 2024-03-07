@@ -4,7 +4,7 @@ import pandas as pd
 import pytest
 
 from giskard.datasets.base import Dataset
-from giskard.llm.client import LLMFunctionCall, LLMMessage, LLMToolCall
+from giskard.llm.client import ChatMessage, LLMFunctionCall, LLMToolCall
 from giskard.llm.evaluators.coherency import CoherencyEvaluator
 from giskard.models.base.model_prediction import ModelPredictionResults
 
@@ -39,7 +39,7 @@ def test_requirements_evaluator_correctly_flags_examples():
 
     client = Mock()
     client.complete.side_effect = [
-        LLMMessage(
+        ChatMessage(
             role="assistant",
             content=None,
             function_call=None,
@@ -54,7 +54,7 @@ def test_requirements_evaluator_correctly_flags_examples():
                 )
             ],
         ),
-        LLMMessage(
+        ChatMessage(
             role="assistant",
             content=None,
             function_call=None,
@@ -100,7 +100,7 @@ def test_requirements_evaluator_handles_generation_errors():
 
     client = Mock()
     client.complete.side_effect = [
-        LLMMessage(
+        ChatMessage(
             role="assistant",
             content=None,
             function_call=None,
@@ -117,7 +117,7 @@ def test_requirements_evaluator_handles_generation_errors():
                 )
             ],
         ),
-        LLMMessage(
+        ChatMessage(
             role="assistant",
             content=None,
             function_call=None,

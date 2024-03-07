@@ -1,13 +1,13 @@
 from unittest.mock import Mock
 
-from giskard.llm.client import LLMFunctionCall, LLMMessage, LLMToolCall
+from giskard.llm.client import ChatMessage, LLMFunctionCall, LLMToolCall
 from giskard.llm.generators.adversarial import AdversarialDataGenerator
 
 
 def test_generator_formats_prompt_with_issue_desc_and_requirement():
     llm_client = Mock()
     llm_client.complete.side_effect = [
-        LLMMessage(
+        ChatMessage(
             role="assistant",
             content=None,
             function_call=None,
