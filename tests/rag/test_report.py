@@ -48,7 +48,8 @@ def test_report_plots():
     plot = report.plot_metrics_hist("context_precision", filter_metadata={"question_type": ["EASY"]})
     assert isinstance(plot, figure)
 
-    histograms = report.get_metrics_histograms()
+    additional_metrics, histograms = report.get_metrics_histograms()
+    assert additional_metrics
     assert "Overall" in histograms
     assert "Question" in histograms
     assert "Topics" in histograms
