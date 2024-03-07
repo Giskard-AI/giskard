@@ -21,6 +21,7 @@ def generate_testset(
     base_generator: Optional[BaseQuestionsGenerator] = None,
     language: str = "en",
     assistant_description: Optional[str] = None,
+    generate_simple_question: bool = True,
     context_window_length: int = 8192,
     llm_client: Optional[LLMClient] = None,
     conversational: bool = False,
@@ -44,6 +45,8 @@ def generate_testset(
         The language to use for question generation. The default is "en" to generate questions in english.
     assistant_description: str, optional
         Description of the assistant to be tested.
+    generate_simple_question: bool = True
+        Whether to generate simple questions with the base_generator or not. By default True.
     context_window_length: int = 8192
         Context window length of the llm used in the `llm_client` of the generator
     llm_client: LLMClient, optional
@@ -66,7 +69,8 @@ def generate_testset(
     if not isinstance(question_modifiers, Sequence):
         question_modifiers = [question_modifiers]
 
-    question_generators = [base_generator] + [modifier.initialize(base_generator) for modifier in question_modifiers]
+    question_generators = [base_generator] if generate_simple_question else []
+    question_generators.extend([modifier.initialize(base_generator) for modifier in question_modifiers])
 
     topics = knowledge_base.topics
 

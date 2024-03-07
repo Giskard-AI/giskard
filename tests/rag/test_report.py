@@ -14,29 +14,34 @@ def test_report_plots():
 
     testset = QATestset(make_testset_df())
 
+    answers = ["Default answer"] * 6
+
     eval_results = [
-        {"evaluation": True, "reason": "The assistant answer is correct.", "assistant_answer": "Default answer"},
-        {"evaluation": True, "reason": "The assistant answer is correct.", "assistant_answer": "Default answer"},
-        {"evaluation": False, "reason": "The assistant answer is incorrect.", "assistant_answer": "Default answer"},
-        {"evaluation": True, "reason": "The assistant answer is correct.", "assistant_answer": "Default answer"},
-        {"evaluation": False, "reason": "The assistant answer is incorrect.", "assistant_answer": "Default answer"},
-        {"evaluation": False, "reason": "The assistant answer is incorrect.", "assistant_answer": "Default answer"},
+        {"id": "1", "correctness": True, "reason": "The assistant answer is correct."},
+        {"id": "2", "correctness": True, "reason": "The assistant answer is correct."},
+        {"id": "3", "correctness": False, "reason": "The assistant answer is incorrect."},
+        {"id": "4", "correctness": True, "reason": "The assistant answer is correct."},
+        {"id": "5", "correctness": False, "reason": "The assistant answer is incorrect."},
+        {"id": "6", "correctness": False, "reason": "The assistant answer is incorrect."},
     ]
 
     metrics_results = {
+        "correctness": pd.DataFrame(eval_results).set_index("id"),
         "context_precision": pd.DataFrame.from_dict(
             {"id": ["1", "2", "3", "4", "5", "6"], "context_precision": [0.1] * 6}
-        ),
-        "faithfulness": pd.DataFrame.from_dict({"id": ["1", "2", "3", "4", "5", "6"], "faithfulness": [0.2] * 6}),
+        ).set_index("id"),
+        "faithfulness": pd.DataFrame.from_dict(
+            {"id": ["1", "2", "3", "4", "5", "6"], "faithfulness": [0.2] * 6}
+        ).set_index("id"),
         "answer_relevancy": pd.DataFrame.from_dict(
             {"id": ["1", "2", "3", "4", "5", "6"], "answer_relevancy": [0.3] * 6}
-        ),
-        "context_recall": pd.DataFrame.from_dict({"id": ["1", "2", "3", "4", "5", "6"], "context_recall": [0.4] * 6}),
+        ).set_index("id"),
+        "context_recall": pd.DataFrame.from_dict(
+            {"id": ["1", "2", "3", "4", "5", "6"], "context_recall": [0.4] * 6}
+        ).set_index("id"),
     }
 
-    report = RAGReport(eval_results, testset, knowledge_base, metrics_results=metrics_results)
-    print(report._dataframe)
-    print(report._dataframe.columns)
+    report = RAGReport(testset, answers, metrics_results, knowledge_base)
     plot = report.plot_correctness_by_metadata(metadata_name="question_type")
     assert isinstance(plot, figure)
 
@@ -73,27 +78,36 @@ def test_report_save_load(tmp_path):
 
     testset = QATestset(make_testset_df())
 
+    answers = ["Default answer"] * 6
+
+    answers = ["Default answer"] * 6
+
     eval_results = [
-        {"evaluation": True, "reason": "The assistant answer is correct.", "assistant_answer": "Default answer"},
-        {"evaluation": True, "reason": "The assistant answer is correct.", "assistant_answer": "Default answer"},
-        {"evaluation": False, "reason": "The assistant answer is incorrect.", "assistant_answer": "Default answer"},
-        {"evaluation": True, "reason": "The assistant answer is correct.", "assistant_answer": "Default answer"},
-        {"evaluation": False, "reason": "The assistant answer is incorrect.", "assistant_answer": "Default answer"},
-        {"evaluation": False, "reason": "The assistant answer is incorrect.", "assistant_answer": "Default answer"},
+        {"id": "1", "correctness": True, "reason": "The assistant answer is correct."},
+        {"id": "2", "correctness": True, "reason": "The assistant answer is correct."},
+        {"id": "3", "correctness": False, "reason": "The assistant answer is incorrect."},
+        {"id": "4", "correctness": True, "reason": "The assistant answer is correct."},
+        {"id": "5", "correctness": False, "reason": "The assistant answer is incorrect."},
+        {"id": "6", "correctness": False, "reason": "The assistant answer is incorrect."},
     ]
 
     metrics_results = {
+        "correctness": pd.DataFrame(eval_results).set_index("id"),
         "context_precision": pd.DataFrame.from_dict(
             {"id": ["1", "2", "3", "4", "5", "6"], "context_precision": [0.1] * 6}
-        ),
-        "faithfulness": pd.DataFrame.from_dict({"id": ["1", "2", "3", "4", "5", "6"], "faithfulness": [0.2] * 6}),
+        ).set_index("id"),
+        "faithfulness": pd.DataFrame.from_dict(
+            {"id": ["1", "2", "3", "4", "5", "6"], "faithfulness": [0.2] * 6}
+        ).set_index("id"),
         "answer_relevancy": pd.DataFrame.from_dict(
             {"id": ["1", "2", "3", "4", "5", "6"], "answer_relevancy": [0.3] * 6}
-        ),
-        "context_recall": pd.DataFrame.from_dict({"id": ["1", "2", "3", "4", "5", "6"], "context_recall": [0.4] * 6}),
+        ).set_index("id"),
+        "context_recall": pd.DataFrame.from_dict(
+            {"id": ["1", "2", "3", "4", "5", "6"], "context_recall": [0.4] * 6}
+        ).set_index("id"),
     }
 
-    report = RAGReport(eval_results, testset, knowledge_base, metrics_results=metrics_results)
+    report = RAGReport(testset, answers, metrics_results, knowledge_base)
 
     report.save(tmp_path)
     loaded_report = RAGReport.load(tmp_path, llm_client=llm_client)
@@ -109,9 +123,8 @@ def test_report_save_load(tmp_path):
     assert len(report._testset._dataframe) == len(loaded_report._testset._dataframe)
     assert len(report._metrics_results) == len(loaded_report._metrics_results)
     assert (
-        report._metrics_results["context_precision"].loc[0, "context_precision"]
-        == loaded_report._metrics_results["context_precision"].loc[0, "context_precision"]
+        report._metrics_results["context_precision"].loc["1", "context_precision"]
+        == loaded_report._metrics_results["context_precision"].loc["1", "context_precision"]
     )
-    assert report._results[0]["evaluation"] == loaded_report._results[0]["evaluation"]
-    assert report._results[0]["reason"] == loaded_report._results[0]["reason"]
-    assert report._results[0]["assistant_answer"] == loaded_report._results[0]["assistant_answer"]
+    assert all(report._metrics_results["correctness"] == loaded_report._metrics_results["correctness"])
+    assert all(report._dataframe["assistant_answer"] == loaded_report._dataframe["assistant_answer"])

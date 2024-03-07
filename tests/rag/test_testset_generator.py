@@ -5,7 +5,7 @@ import pandas as pd
 
 from giskard.llm.client import LLMMessage
 from giskard.rag.knowledge_base import Document, KnowledgeBase
-from giskard.rag.question_modifiers import (
+from giskard.rag.question_generators import (
     complex_questions_modifier,
     conversational_questions_modifier,
     distracting_questions_modifier,

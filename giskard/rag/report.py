@@ -43,25 +43,29 @@ class RAGReport:
 
     def __init__(
         self,
-        results: Sequence[dict],
         testset: QATestset,
-        knowledge_base: KnowledgeBase,
-        metrics_results: dict = None,
+        answers: Sequence[str],
+        metrics_results: dict,
+        knowledge_base: Optional[KnowledgeBase] = None,
     ):
-        self._results = results
         self._testset = testset
+        self._answers = answers
         self._metrics_results = metrics_results
         self._knowledge_base = knowledge_base
 
         self._dataframe = testset.to_pandas().copy()
-        self._dataframe["evaluation_result"] = [r["evaluation"] for r in results]
-        self._dataframe["evaluation_reason"] = [r["reason"] for r in results]
-        self._dataframe["assistant_answer"] = [r["assistant_answer"] for r in results]
+        self._dataframe["assistant_answer"] = answers
+        for metric, df in metrics_results.items():
+            print(df)
+            # if metric == "correctness":
+            #     correctness = df["correctness"].apply(lambda x: x["evaluation"])
+            #     correctness_reason = df["correctness"].apply(lambda x: x["reason"])
+            #     df["correctness"] = correctness
+            #     df["correctness_reason"] = correctness_reason
 
-        if metrics_results is not None:
-            self._dataframe = pd.concat(
-                [self._dataframe] + [values.set_index("id") for metric, values in metrics_results.items()], axis=1
-            )
+            self._dataframe = self._dataframe.join(df, on="id")
+        print(self._dataframe)
+        print(self._dataframe.columns)
 
     def _repr_html_(self):
         tpl = get_template("rag_report/rag_report.html")
@@ -73,7 +77,7 @@ class RAGReport:
             knowledge_div=kb_div,
             recommendation="Placeholder for the recommmendation.... ",
             components=self.component_scores().to_dict()["score"],
-            correctness=self._dataframe["evaluation_result"].mean(),
+            correctness=self.correctness,
             q_type_correctness_script=q_type_script,
             q_type_correctness_div=q_type_div,
             topic_correctness_script=topic_script,
@@ -107,16 +111,17 @@ class RAGReport:
         path.mkdir(exist_ok=True, parents=True)
         self.save_html(path / "report.html")
         self._testset.save(path / "testset.json")
+
         self._knowledge_base._knowledge_base_df.to_json(path / "knowledge_base.jsonl", orient="records", lines=True)
         with open(path / "knowledge_base_meta.json", "w", encoding="utf-8") as f:
             json.dump(self._knowledge_base.get_savable_data(), f)
-        with open(path / "eval_results.json", "w", encoding="utf-8") as f:
-            json.dump(self._results, f)
+
+        with open(path / "assistant_answer.json", "w", encoding="utf-8") as f:
+            json.dump(self._answers, f)
 
         if self._metrics_results is not None:
-            self._dataframe[self._metrics_results.keys()].reset_index().to_json(
-                path / "metrics.jsonl", orient="records", lines=True
-            )
+            for metric, df in self._metrics_results.items():
+                df.reset_index().to_json(path / f"metric_{metric}.jsonl", orient="records", lines=True)
 
     @classmethod
     def load(cls, folder_path: str, llm_client: LLMClient = None):
@@ -133,8 +138,9 @@ class RAGReport:
         path = Path(folder_path)
         knowledge_base_meta = json.load(open(path / "knowledge_base_meta.json", "r"))
         knowledge_base_data = pd.read_json(path / "knowledge_base.jsonl", orient="records", lines=True)
-        results = json.load(open(path / "eval_results.json", "r"))
         testset = QATestset.load(path / "testset.json")
+
+        answers = json.load(open(path / "assistant_answer.json", "r"))
 
         topics = {int(k): topic for k, topic in knowledge_base_meta.pop("topics", None).items()}
         documents_topics = [int(topic_id) for topic_id in knowledge_base_meta.pop("documents_topics", None)]
@@ -146,17 +152,19 @@ class RAGReport:
             for doc_idx, doc in enumerate(knowledge_base._documents):
                 doc.topic_id = documents_topics[doc_idx]
 
-        metrics = None
-        if (path / "metrics.jsonl").exists():
-            metrics = pd.read_json(path / "metrics.jsonl", orient="records", lines=True)
-            metrics["id"] = metrics["id"].astype(str)
-            metrics_results = {col: metrics[["id", col]] for col in metrics.columns if col != "id"}
+        metrics_results = {}
+        for file in path.iterdir():
+            if file.suffix == ".jsonl" and file.name.startswith("metric_"):
+                metric_name = file.name.replace("metric_", "").replace(".jsonl", "")
+                metrics_results[metric_name] = pd.read_json(file, orient="records", lines=True)
+                metrics_results[metric_name]["id"] = metrics_results[metric_name]["id"].astype(str)
+                metrics_results[metric_name].set_index("id", inplace=True)
 
-        return cls(results, testset, knowledge_base, metrics_results)
+        return cls(testset, answers, metrics_results, knowledge_base)
 
     @property
     def failures(self) -> pd.DataFrame:
-        return self._dataframe[~self._dataframe["evaluation_result"]]
+        return self._dataframe[~self._dataframe["correctness"]]
 
     def get_failures(
         self,
@@ -183,6 +191,13 @@ class RAGReport:
             failures = failures[failures["metadata"].apply(lambda x: x.get("question_type") in question_type)]
 
         return failures
+
+    @property
+    def correctness(self) -> float:
+        """
+        Compute the overall correctness of the assistant's answers.
+        """
+        return self._dataframe["correctness"].mean()
 
     def correctness_by_question_type(self) -> pd.DataFrame:
         """
@@ -225,15 +240,13 @@ class RAGReport:
         """
         Compute the correctness by a metadata field.
         """
-
         correctness = (
-            self._dataframe.groupby(lambda idx: self._dataframe.loc[idx, "metadata"][metadata_name])[
-                "evaluation_result"
-            ]
+            self._dataframe["correctness"]
+            .groupby(lambda idx: self._dataframe.loc[idx, "metadata"][metadata_name])
             .mean()
             .to_frame()
         )
-        correctness.columns = ["correctness"]
+
         correctness.index.rename(metadata_name, inplace=True)
         return correctness
 
@@ -245,7 +258,7 @@ class RAGReport:
         metadata_values = data.index.tolist()
         if metadata_name == "question_type":
             metadata_values = [QuestionTypes(v).name for v in metadata_values]
-        overall_correctness = self._dataframe["evaluation_result"].mean()
+        overall_correctness = self.correctness
         correctness = data["correctness"].to_numpy()
         shift = (data["correctness"].to_numpy() - overall_correctness) / overall_correctness * 100
 
@@ -289,13 +302,13 @@ class RAGReport:
         filter_metadata : dict, optional
             Aggregate the question that have the specified metadata values. The keys of the dictionary should be the metadata names and the values should be the metadata values to filter by.
         """
-        if metric_name in self._dataframe:
+        if metric_name in self._metrics_results:
             if filter_metadata is not None:
-                data = self._dataframe[
+                data = self._metrics_results[metric_name][
                     self._dataframe["metadata"].apply(lambda x: all(x.get(k) in v for k, v in filter_metadata.items()))
                 ][metric_name]
             else:
-                data = self._dataframe[metric_name]
+                data = self._metrics_results[metric_name]
 
             p = figure(
                 width=300,
@@ -332,13 +345,16 @@ class RAGReport:
         histograms_dict = {}
         histograms_dict["Overall"] = {
             "Overall": {
-                metric: self._get_plot_components(self.plot_metrics_hist(metric)) for metric in self._metrics_results
+                metric: self._get_plot_components(self.plot_metrics_hist(metric))
+                for metric in self._metrics_results
+                if metric != "correctness"
             }
         }
         histograms_dict["Topics"] = {
             topic: {
                 metric: self._get_plot_components(self.plot_metrics_hist(metric, {"topic": [topic]}))
                 for metric in self._metrics_results
+                if metric != "correctness"
             }
             for topic in self._testset.get_metadata_values("topic")
         }
@@ -346,6 +362,7 @@ class RAGReport:
             QuestionTypes(q_type).name: {
                 metric: self._get_plot_components(self.plot_metrics_hist(metric, {"question_type": [q_type]}))
                 for metric in self._metrics_results
+                if metric != "correctness"
             }
             for q_type in self._testset.get_metadata_values("question_type")
         }

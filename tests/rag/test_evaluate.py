@@ -20,17 +20,29 @@ def test_evaluate_from_answers():
     llm_client = Mock()
     llm_client.complete = Mock()
     llm_client.complete.side_effect = [
-        LLMMessage(role="assistant", content="""{"evaluation": true, "reason": "The assistant answer is correct."}"""),
-        LLMMessage(role="assistant", content="""{"evaluation": true, "reason": "The assistant answer is correct."}"""),
         LLMMessage(
-            role="assistant", content="""{"evaluation": false, "reason": "The assistant answer is incorrect."}"""
-        ),
-        LLMMessage(role="assistant", content="""{"evaluation": true, "reason": "The assistant answer is correct."}"""),
-        LLMMessage(
-            role="assistant", content="""{"evaluation": false, "reason": "The assistant answer is incorrect."}"""
+            role="assistant",
+            content="""{"correctness": true, "correctness_reason": "The assistant answer is correct."}""",
         ),
         LLMMessage(
-            role="assistant", content="""{"evaluation": false, "reason": "The assistant answer is incorrect."}"""
+            role="assistant",
+            content="""{"correctness": true, "correctness_reason": "The assistant answer is correct."}""",
+        ),
+        LLMMessage(
+            role="assistant",
+            content="""{"correctness": false, "correctness_reason": "The assistant answer is incorrect."}""",
+        ),
+        LLMMessage(
+            role="assistant",
+            content="""{"correctness": true, "correctness_reason": "The assistant answer is correct."}""",
+        ),
+        LLMMessage(
+            role="assistant",
+            content="""{"correctness": false, "correctness_reason": "The assistant answer is incorrect."}""",
+        ),
+        LLMMessage(
+            role="assistant",
+            content="""{"correctness": false, "correctness_reason": "The assistant answer is incorrect."}""",
         ),
     ]
 
@@ -66,17 +78,29 @@ def test_evaluate_from_answer_fn():
     llm_client = Mock()
     llm_client.complete = Mock()
     llm_client.complete.side_effect = [
-        LLMMessage(role="assistant", content="""{"evaluation": true, "reason": "The assistant answer is correct."}"""),
-        LLMMessage(role="assistant", content="""{"evaluation": true, "reason": "The assistant answer is correct."}"""),
         LLMMessage(
-            role="assistant", content="""{"evaluation": false, "reason": "The assistant answer is incorrect."}"""
-        ),
-        LLMMessage(role="assistant", content="""{"evaluation": true, "reason": "The assistant answer is correct."}"""),
-        LLMMessage(
-            role="assistant", content="""{"evaluation": false, "reason": "The assistant answer is incorrect."}"""
+            role="assistant",
+            content="""{"correctness": true, "correctness_reason": "The assistant answer is correct."}""",
         ),
         LLMMessage(
-            role="assistant", content="""{"evaluation": false, "reason": "The assistant answer is incorrect."}"""
+            role="assistant",
+            content="""{"correctness": true, "correctness_reason": "The assistant answer is correct."}""",
+        ),
+        LLMMessage(
+            role="assistant",
+            content="""{"correctness": false, "correctness_reason": "The assistant answer is incorrect."}""",
+        ),
+        LLMMessage(
+            role="assistant",
+            content="""{"correctness": true, "correctness_reason": "The assistant answer is correct."}""",
+        ),
+        LLMMessage(
+            role="assistant",
+            content="""{"correctness": false, "correctness_reason": "The assistant answer is incorrect."}""",
+        ),
+        LLMMessage(
+            role="assistant",
+            content="""{"correctness": false, "correctness_reason": "The assistant answer is incorrect."}""",
         ),
     ]
 
@@ -143,10 +167,17 @@ def test_evaluate_conversational_question():
     llm_client = Mock()
     llm_client.complete = Mock()
     llm_client.complete.side_effect = [
-        LLMMessage(role="assistant", content="""{"evaluation": true, "reason": "The assistant answer is correct."}"""),
-        LLMMessage(role="assistant", content="""{"evaluation": true, "reason": "The assistant answer is correct."}"""),
         LLMMessage(
-            role="assistant", content="""{"evaluation": false, "reason": "The assistant answer is incorrect."}"""
+            role="assistant",
+            content="""{"correctness": true, "correctness_reason": "The assistant answer is correct."}""",
+        ),
+        LLMMessage(
+            role="assistant",
+            content="""{"correctness": true, "correctness_reason": "The assistant answer is correct."}""",
+        ),
+        LLMMessage(
+            role="assistant",
+            content="""{"correctness": false, "correctness_reason": "The assistant answer is incorrect."}""",
         ),
     ]
 

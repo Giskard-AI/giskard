@@ -1,8 +1,8 @@
 from unittest.mock import Mock
 
 from giskard.llm.client import LLMMessage
-from giskard.rag.base_question_generator import BaseQuestionsGenerator
 from giskard.rag.knowledge_base import Document
+from giskard.rag.question_generators.base_question_generator import BaseQuestionsGenerator
 
 
 def test_simple_question_generation():

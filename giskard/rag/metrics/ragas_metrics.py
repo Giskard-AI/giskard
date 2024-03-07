@@ -72,9 +72,9 @@ class RagasMetric(Metric):
         self.name = name
         self.metrics = metrics if isinstance(metrics, Sequence) else [metrics]
 
-    def __call__(self, testset: QATestset, answers: Sequence[str], gsk_llm_client: LLMClient) -> dict:
-        ragas_llm = RagasLLMWrapper(gsk_llm_client)
-        ragas_embedddings = RagasEmbeddingsWrapper(gsk_llm_client)
+    def __call__(self, testset: QATestset, answers: Sequence[str], llm_client: LLMClient) -> dict:
+        ragas_llm = RagasLLMWrapper(llm_client)
+        ragas_embedddings = RagasEmbeddingsWrapper(llm_client)
 
         testset_df = testset.to_pandas().copy()
         testset_df["answer"] = answers
@@ -93,7 +93,7 @@ class RagasMetric(Metric):
             columns={metric.name: f"{self.name}_{metric.name}" for metric in self.metrics}
         )
         ragas_metrics_result = {
-            f"{self.name}_{metric.name}": ragas_metrics_df[["id", f"{self.name}_{metric.name}"]]
+            f"{self.name}_{metric.name}": ragas_metrics_df[["id", f"{self.name}_{metric.name}"]].set_index("id")
             for metric in self.metrics
         }
         return ragas_metrics_result
