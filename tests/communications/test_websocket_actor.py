@@ -430,12 +430,10 @@ def head_slice(df: pd.DataFrame) -> pd.DataFrame:
 
 
 # FIXME: Internal worker cannot yet load callable due to yaml deserialization issue
-@pytest.mark.parametrize("callable_under_project", [False, True])
-def test_websocket_actor_dataset_processing_head_slicing_with_cache(callable_under_project, request):
+def test_websocket_actor_dataset_processing_head_slicing_with_cache(request):
     dataset: Dataset = request.getfixturevalue("enron_data")
 
     project_key = str(uuid.uuid4())  # Use a UUID to separate the resources used by the tests
-    callable_function_project_key = project_key if callable_under_project else None
 
     with utils.MockedProjectCacheDir():
         # Prepare dataset
@@ -448,7 +446,7 @@ def test_websocket_actor_dataset_processing_head_slicing_with_cache(callable_und
             functions=[
                 websocket.DatasetProcessingFunction(
                     slicingFunction=websocket.ArtifactRef(
-                        project_key=callable_function_project_key,
+                        project_key=project_key,
                         id=head_slice.meta.uuid,
                     )
                 )
@@ -458,8 +456,8 @@ def test_websocket_actor_dataset_processing_head_slicing_with_cache(callable_und
             # Prepare URL for meta info
             cf = head_slice
             # The slicing function will be loaded from the current module, without further requests
-            utils.register_uri_for_artifact_meta_info(mr, cf, project_key=callable_function_project_key)
-            utils.register_uri_for_artifact_info(mr, cf, project_key=callable_function_project_key)
+            utils.register_uri_for_artifact_meta_info(mr, cf, project_key=project_key)
+            utils.register_uri_for_artifact_info(mr, cf, project_key=project_key)
 
             # The dataset can be then loaded from the cache, without further requests
             utils.register_uri_for_dataset_meta_info(mr, dataset, project_key)
@@ -481,8 +479,7 @@ def do_nothing(row):
 
 
 # FIXME: Internal worker cannot yet load callable due to yaml deserialization issue
-@pytest.mark.parametrize("callable_under_project", [False, True])
-def test_websocket_actor_dataset_processing_do_nothing_transform_with_cache(callable_under_project, request):
+def test_websocket_actor_dataset_processing_do_nothing_transform_with_cache(request):
     dataset: Dataset = request.getfixturevalue("enron_data")
 
     project_key = str(uuid.uuid4())  # Use a UUID to separate the resources used by the tests
@@ -490,7 +487,6 @@ def test_websocket_actor_dataset_processing_do_nothing_transform_with_cache(call
     with utils.MockedProjectCacheDir():
         # Prepare dataset
         utils.local_save_dataset_under_giskard_home_cache(dataset)
-        callable_function_project_key = project_key if callable_under_project else None
 
         do_nothing.meta.uuid = str(uuid.uuid4())
 
@@ -499,7 +495,7 @@ def test_websocket_actor_dataset_processing_do_nothing_transform_with_cache(call
             functions=[
                 websocket.DatasetProcessingFunction(
                     transformationFunction=websocket.ArtifactRef(
-                        project_key=callable_function_project_key,
+                        project_key=project_key,
                         id=do_nothing.meta.uuid,
                     )
                 )
@@ -509,8 +505,8 @@ def test_websocket_actor_dataset_processing_do_nothing_transform_with_cache(call
             # Prepare URL for meta info
             cf = do_nothing
             # The slicing function will be loaded from the current module, without further requests
-            utils.register_uri_for_artifact_meta_info(mr, cf, project_key=callable_function_project_key)
-            utils.register_uri_for_artifact_info(mr, cf, project_key=callable_function_project_key)
+            utils.register_uri_for_artifact_meta_info(mr, cf, project_key=project_key)
+            utils.register_uri_for_artifact_info(mr, cf, project_key=project_key)
 
             # The dataset can be then loaded from the cache, without further requests
             utils.register_uri_for_dataset_meta_info(mr, dataset, project_key)
