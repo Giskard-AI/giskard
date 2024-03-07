@@ -210,19 +210,24 @@ class GiskardClient:
             # A different kernel exists that uses the same name
             kernel_name = f"{kernel_name}_{uuid.uuid4()}"
 
+        self.create_kernel(kernel_name, python_version, frozen_dependencies="\n".join(frozen_dependencies))
+
+        return kernel_name
+
+    def create_kernel(
+        self, kernel_name: str, python_version: str, requestedDependencies: str = "", frozen_dependencies: str = ""
+    ):
         self._session.post(
             "kernels",
             json={
                 "name": kernel_name,
                 "pythonVersion": python_version,
-                "requestedDependencies": "",
-                "frozenDependencies": "\n".join(frozen_dependencies),
+                "requestedDependencies": requestedDependencies,
+                "frozenDependencies": frozen_dependencies,
                 "type": "PROCESS",
                 "version": 0,
             },
         )
-
-        return kernel_name
 
     def create_project(self, project_key: str, name: str, kernel_name: str = None, description: str = None) -> Project:
         """Function to create a project in Giskard
