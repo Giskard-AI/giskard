@@ -49,6 +49,10 @@ class QATestset:
         metadata_values.sort()
         return metadata_values
 
+    def count_sample_by_metadata(self, metadata_name: str):
+        """Count the number of samples for each value of a metadata field."""
+        return self._dataframe["metadata"].apply(lambda x: x.get(metadata_name)).value_counts()
+
     def save(self, path):
         """Save the testset as a JSONL file.
 

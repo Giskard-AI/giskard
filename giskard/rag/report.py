@@ -56,22 +56,17 @@ class RAGReport:
         self._dataframe = testset.to_pandas().copy()
         self._dataframe["assistant_answer"] = answers
         for metric, df in metrics_results.items():
-            print(df)
-            # if metric == "correctness":
-            #     correctness = df["correctness"].apply(lambda x: x["evaluation"])
-            #     correctness_reason = df["correctness"].apply(lambda x: x["reason"])
-            #     df["correctness"] = correctness
-            #     df["correctness_reason"] = correctness_reason
-
             self._dataframe = self._dataframe.join(df, on="id")
-        print(self._dataframe)
-        print(self._dataframe.columns)
 
     def _repr_html_(self):
         tpl = get_template("rag_report/rag_report.html")
-        kb_script, kb_div = components(self._knowledge_base.plot_topics())
+
+        kb_script, kb_div = components(self._knowledge_base.plot_topics()) if self._knowledge_base else (None, None)
         q_type_script, q_type_div = components(self.plot_correctness_by_metadata("question_type"))
         topic_script, topic_div = components(self.plot_correctness_by_metadata("topic"))
+
+        additional_metrics, metric_histograms = self.get_metrics_histograms()
+
         return tpl.render(
             knowledge_script=kb_script,
             knowledge_div=kb_div,
@@ -82,7 +77,8 @@ class RAGReport:
             q_type_correctness_div=q_type_div,
             topic_correctness_script=topic_script,
             topic_correctness_div=topic_div,
-            metric_histograms=self.get_metrics_histograms(),
+            additional_metrics=additional_metrics,
+            metric_histograms=metric_histograms,
         )
 
     def save_html(self, path: str):
@@ -229,12 +225,23 @@ class RAGReport:
             else [np.nan]
             for component, attribution in available_question_types.items()
         }
+        scores[RAGComponents.KNOWLEDGE_BASE] = [self.knowledge_base_score]
 
         score_df = pd.DataFrame.from_dict(scores, orient="index")
         score_df.columns = ["score"]
         score_df.index.rename("RAG Components", inplace=True)
         score_df.index = score_df.index.map(lambda x: RAGComponents(x).name)
         return score_df
+
+    @property
+    def knowledge_base_score(self):
+        kb_correctness = self.correctness
+        return 1 + 1 / len(self._testset) * sum(
+            [
+                self._testset.count_sample_by_metadata("topic").loc[topic] * min(0, topic_score - kb_correctness)
+                for topic, topic_score in self.correctness_by_topic().itertuples()
+            ]
+        )
 
     def _correctness_by_metadata(self, metadata_name: str):
         """
@@ -342,6 +349,8 @@ class RAGReport:
         return {"script": script, "div": div}
 
     def get_metrics_histograms(self):
+        if len(self._metrics_results) == 1:
+            return False, {}
         histograms_dict = {}
         histograms_dict["Overall"] = {
             "Overall": {
@@ -366,4 +375,4 @@ class RAGReport:
             }
             for q_type in self._testset.get_metadata_values("question_type")
         }
-        return histograms_dict
+        return True, histograms_dict
