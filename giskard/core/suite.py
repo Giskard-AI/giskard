@@ -610,7 +610,7 @@ class Suite:
             suite_tests.append(
                 SuiteTestDTO(
                     id=t.suite_test_id,
-                    testUuid=t.giskard_test.upload(client),
+                    testUuid=t.giskard_test.upload(client, project_key),
                     functionInputs=params,
                     displayName=t.display_name,
                 )

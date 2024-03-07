@@ -53,11 +53,8 @@ class Artifact(Generic[SMT], ABC):
         return f"{cls.__class__.__name__.lower()}s"
 
     @classmethod
-    def _get_meta_endpoint(cls, uuid: str, project_key: Optional[str]) -> str:
-        if project_key is None:
-            return posixpath.join(cls._get_name(), uuid)
-        else:
-            return posixpath.join("project", project_key, cls._get_name(), uuid)
+    def _get_meta_endpoint(cls, uuid: str, project_key: str) -> str:
+        return posixpath.join("project", project_key, cls._get_name(), uuid)
 
     def _save_meta_locally(self, local_dir):
         with open(Path(local_dir) / "meta.yaml", "w") as f:
@@ -77,7 +74,7 @@ class Artifact(Generic[SMT], ABC):
     def upload(
         self,
         client: GiskardClient,
-        project_key: Optional[str] = None,
+        project_key: str,
         uploaded_dependencies: Optional[Set["Artifact"]] = None,
     ) -> str:
         """
