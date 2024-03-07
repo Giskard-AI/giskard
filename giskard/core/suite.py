@@ -834,7 +834,7 @@ class Suite:
         suite.id = suite_id
 
         for test_json in suite_dto.tests:
-            test = GiskardTest.download(test_json.testUuid, client, None)
+            test = GiskardTest.download(test_json.testUuid, client, project_key)
             test_arguments = parse_function_arguments(client, project_key, test_json.functionInputs.values())
             suite.add_test(test(**test_arguments), suite_test_id=test_json.id)
 

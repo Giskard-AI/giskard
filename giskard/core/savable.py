@@ -111,7 +111,7 @@ class Artifact(Generic[SMT], ABC):
         return self.meta.uuid
 
     @classmethod
-    def download(cls, uuid: str, client: Optional[GiskardClient], project_key: Optional[str]) -> "Artifact":
+    def download(cls, uuid: str, client: Optional[GiskardClient], project_key: str) -> "Artifact":
         """
         Downloads the artifact from the Giskard hub or retrieves it from the local cache.
 
