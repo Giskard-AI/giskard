@@ -3,7 +3,7 @@ from unittest.mock import Mock
 import pytest
 
 from giskard.datasets.base import Dataset
-from giskard.llm.client import LLMFunctionCall, LLMMessage, LLMToolCall
+from giskard.llm.client import ChatMessage, LLMFunctionCall, LLMToolCall
 from giskard.llm.errors import LLMGenerationError
 from giskard.llm.generators.adversarial import AdversarialDataGenerator
 from giskard.llm.generators.base import BaseDataGenerator
@@ -22,7 +22,7 @@ from giskard.llm.generators.sycophancy import SycophancyDataGenerator
 def test_generator_returns_dataset(Generator, args, kwargs):
     llm_client = Mock()
     llm_client.complete.side_effect = [
-        LLMMessage(
+        ChatMessage(
             role="assistant",
             content=None,
             function_call=None,
@@ -94,7 +94,7 @@ def test_generator_returns_dataset(Generator, args, kwargs):
 def test_generator_raises_generation_error_if_tool_call_fails(Generator, args, kwargs):
     # Missing tool call
     llm_client = Mock()
-    llm_client.complete.side_effect = [LLMMessage.create_message("assistant", "Sorry, I can't.")]
+    llm_client.complete.side_effect = [ChatMessage.create_message("assistant", "Sorry, I can't.")]
 
     model = Mock()
     model.feature_names = ["question", "other_feature"]
@@ -109,7 +109,7 @@ def test_generator_raises_generation_error_if_tool_call_fails(Generator, args, k
     # Wrong tool call
     llm_client = Mock()
     llm_client.complete.side_effect = [
-        LLMMessage(
+        ChatMessage(
             role="assistant",
             tool_calls=[
                 LLMToolCall(
@@ -144,7 +144,7 @@ def test_generator_raises_generation_error_if_tool_call_fails(Generator, args, k
 def test_generator_casts_based_on_column_types(Generator, args, kwargs):
     llm_client = Mock()
     llm_client.complete.side_effect = [
-        LLMMessage(
+        ChatMessage(
             role="assistant",
             content=None,
             function_call=None,
@@ -197,7 +197,7 @@ def test_generator_casts_based_on_column_types(Generator, args, kwargs):
 def test_generator_adds_languages_requirements_in_prompts(Generator, args, kwargs):
     llm_client = Mock()
     llm_client.complete.side_effect = [
-        LLMMessage(
+        ChatMessage(
             role="assistant",
             content=None,
             function_call=None,
@@ -258,7 +258,7 @@ def test_generator_adds_languages_requirements_in_prompts(Generator, args, kwarg
 def test_generator_empty_languages_requirements(Generator, args, kwargs):
     llm_client = Mock()
     llm_client.complete.side_effect = [
-        LLMMessage(
+        ChatMessage(
             role="assistant",
             content=None,
             function_call=None,

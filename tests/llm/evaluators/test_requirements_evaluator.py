@@ -2,7 +2,7 @@ from unittest.mock import Mock
 
 import pandas as pd
 
-from giskard.llm.client import LLMFunctionCall, LLMMessage, LLMToolCall
+from giskard.llm.client import ChatMessage, LLMFunctionCall, LLMToolCall
 from giskard.llm.evaluators import PerRowRequirementEvaluator, RequirementEvaluator
 from tests.llm.evaluators.utils import make_eval_dataset, make_mock_model
 
@@ -13,7 +13,7 @@ def test_evaluator_prompt_contains_requirements():
 
     client = Mock()
     client.complete.side_effect = [
-        LLMMessage(
+        ChatMessage(
             role="assistant",
             content=None,
             function_call=None,
@@ -28,7 +28,7 @@ def test_evaluator_prompt_contains_requirements():
                 )
             ],
         ),
-        LLMMessage(
+        ChatMessage(
             role="assistant",
             content=None,
             function_call=None,
@@ -58,7 +58,7 @@ def test_evaluator_prompt_contains_row_requirements():
 
     client = Mock()
     client.complete.side_effect = [
-        LLMMessage(
+        ChatMessage(
             role="assistant",
             content=None,
             function_call=None,
@@ -73,7 +73,7 @@ def test_evaluator_prompt_contains_row_requirements():
                 )
             ],
         ),
-        LLMMessage(
+        ChatMessage(
             role="assistant",
             content=None,
             function_call=None,

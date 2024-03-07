@@ -12,8 +12,8 @@ from openai.types.chat.chat_completion_message_tool_call import (
 )
 
 from giskard.llm.client import (
+    ChatMessage,
     LLMFunctionCall,
-    LLMMessage,
     get_default_client,
     set_llm_api,
     set_llm_model,
@@ -180,7 +180,7 @@ def test_llm_complete_message():
     assert client.chat.completions.create.call_args[1]["temperature"] == 0.11
     assert client.chat.completions.create.call_args[1]["max_tokens"] == 1
 
-    assert isinstance(res, LLMMessage)
+    assert isinstance(res, ChatMessage)
     assert res.content == "This is a test!"
     assert res.function_call is None
 
@@ -200,7 +200,7 @@ def test_llm_function_call(openai):
     assert client.chat.completions.create.call_args[1]["temperature"] == 0.11
     assert client.chat.completions.create.call_args[1]["max_tokens"] == 1
 
-    assert isinstance(res, LLMMessage)
+    assert isinstance(res, ChatMessage)
     assert res.content == "This is a test!"
     assert isinstance(res.function_call, LLMFunctionCall)
     assert res.function_call.name == "my_test_function"
@@ -222,7 +222,7 @@ def test_llm_tool_calls(openai):
     assert client.chat.completions.create.call_args[1]["temperature"] == 0.11
     assert client.chat.completions.create.call_args[1]["max_tokens"] == 1
 
-    assert isinstance(res, LLMMessage)
+    assert isinstance(res, ChatMessage)
     assert res.content == "This is a test!"
     assert len(res.tool_calls) == 2
     assert res.tool_calls[0].function.name == "my_test_function"
@@ -241,7 +241,7 @@ def test_legacy_llm_complete_message(openai):
     assert openai.ChatCompletion.create.call_args[1]["temperature"] == 0.11
     assert openai.ChatCompletion.create.call_args[1]["max_tokens"] == 1
 
-    assert isinstance(res, LLMMessage)
+    assert isinstance(res, ChatMessage)
     assert res.content == "This is a test!"
     assert res.function_call is None
 
@@ -260,7 +260,7 @@ def test_legacy_llm_function_call(openai):
     assert openai.ChatCompletion.create.call_args[1]["temperature"] == 0.11
     assert openai.ChatCompletion.create.call_args[1]["max_tokens"] == 1
 
-    assert isinstance(res, LLMMessage)
+    assert isinstance(res, ChatMessage)
     assert res.content == "This is a test!"
     assert isinstance(res.function_call, LLMFunctionCall)
     assert res.function_call.name == "my_test_function"
@@ -281,7 +281,7 @@ def test_legacy_llm_tool_calls(openai):
     assert openai.ChatCompletion.create.call_args[1]["temperature"] == 0.11
     assert openai.ChatCompletion.create.call_args[1]["max_tokens"] == 1
 
-    assert isinstance(res, LLMMessage)
+    assert isinstance(res, ChatMessage)
     assert res.content == "This is a test!"
     assert len(res.tool_calls) == 2
     assert res.tool_calls[0].function.name == "my_test_function"
