@@ -40,12 +40,10 @@ def my_simple_test_error():
 def test_websocket_actor_run_ad_hoc_test_no_debug(debug):
     with utils.MockedProjectCacheDir():
         params = websocket.RunAdHocTestParam(
-            testUuid=my_simple_test.meta.uuid,
-            arguments=[],
-            debug=debug,
+            testUuid=my_simple_test.meta.uuid, arguments=[], debug=debug, projectKey="project_key"
         )
         with utils.MockedClient(mock_all=False) as (client, mr):
-            utils.register_uri_for_artifact_meta_info(mr, my_simple_test, None)
+            utils.register_uri_for_artifact_meta_info(mr, my_simple_test, "project_key")
 
             reply = listener.run_ad_hoc_test(client=client, params=params)
             assert isinstance(reply, websocket.RunAdHocTest)
@@ -131,34 +129,6 @@ def test_websocket_actor_run_ad_hoc_test_legacy_no_client(enron_data: Dataset):
             listener.run_ad_hoc_test(client=None, params=params)
 
 
-def test_websocket_actor_run_ad_hoc_test_legacy_no_project_key(enron_data: Dataset):
-    project_key = str(uuid.uuid4())
-
-    with utils.MockedProjectCacheDir():
-        utils.local_save_dataset_under_giskard_home_cache(enron_data)
-
-        params = websocket.RunAdHocTestParam(
-            testUuid=my_simple_test_legacy_debug.meta.uuid,
-            arguments=[
-                websocket.FuncArgument(
-                    name="dataset",
-                    none=False,
-                    dataset=websocket.ArtifactRef(
-                        project_key=project_key,
-                        id=str(enron_data.id),
-                    ),
-                ),
-            ],
-            debug=True,
-        )
-
-        with utils.MockedClient(mock_all=False) as (client, mr), pytest.raises(ValueError):
-            utils.register_uri_for_artifact_meta_info(mr, my_simple_test_legacy_debug, None)
-            utils.register_uri_for_dataset_meta_info(mr, enron_data, project_key)
-
-            listener.run_ad_hoc_test(client=client, params=params)
-
-
 @test
 def my_simple_test_debug(dataset: Dataset, debug: bool = False):
     return GiskardTestResult(passed=False, output_ds=[dataset.slice(lambda df: df.head(1), row_level=False)])
@@ -183,9 +153,10 @@ def test_websocket_actor_run_ad_hoc_test_debug(enron_data: Dataset):
                 ),
             ],
             debug=True,
+            projectKey=project_key,
         )
         with utils.MockedClient(mock_all=False) as (client, mr):
-            utils.register_uri_for_artifact_meta_info(mr, my_simple_test_debug, None)
+            utils.register_uri_for_artifact_meta_info(mr, my_simple_test_debug, project_key)
             utils.register_uri_for_dataset_meta_info(mr, enron_data, project_key)
             utils.register_uri_for_any_dataset_artifact_info_upload(mr, register_files=True)
 
@@ -246,9 +217,10 @@ def test_websocket_actor_run_ad_hoc_test_debug_multiple_datasets(enron_data: Dat
                 ),
             ],
             debug=True,
+            projectKey=project_key,
         )
         with utils.MockedClient(mock_all=False) as (client, mr):
-            utils.register_uri_for_artifact_meta_info(mr, my_simple_test_debug_multiple_datasets, None)
+            utils.register_uri_for_artifact_meta_info(mr, my_simple_test_debug_multiple_datasets, project_key)
             utils.register_uri_for_dataset_meta_info(mr, enron_data, project_key)
             utils.register_uri_for_dataset_meta_info(mr, dataset2, project_key)
             utils.register_uri_for_any_dataset_artifact_info_upload(mr, register_files=True)
