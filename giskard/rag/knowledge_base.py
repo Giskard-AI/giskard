@@ -85,6 +85,7 @@ class KnowledgeBase:
         llm_client: Optional[LLMClient] = None,
         embedding_model: Optional[str] = "text-embedding-ada-002",
         min_topic_size: int = 2,
+        chunk_size: int = 2048,
     ) -> None:
         if len(knowledge_base_df) > 0:
             self._documents = [
@@ -108,6 +109,7 @@ class KnowledgeBase:
         self._llm_client = llm_client or get_default_client()
         self._embedding_model = embedding_model
         self._min_topic_size = min_topic_size
+        self.chunk_size = chunk_size
 
         self._embeddings_inst = None
         self._topics_inst = None
@@ -117,7 +119,7 @@ class KnowledgeBase:
     def _embeddings(self):
         if self._embeddings_inst is None:
             self._embeddings_inst = self._llm_client.embeddings(
-                [doc.content for doc in self._documents], model=self._embedding_model
+                [doc.content for doc in self._documents], model=self._embedding_model, chunk_size=self.chunk_size
             )
         return self._embeddings_inst
 
@@ -177,7 +179,7 @@ class KnowledgeBase:
         topics_str = topics_str[: 3 * 8192]
         prompt = TOPIC_SUMMARIZATION_PROMPT.format(language=self._language, topics_elements=topics_str)
 
-        return self._llm_client.complete([LLMMessage(role="user", content=prompt)]).content[1:-1]
+        return self._llm_client.complete([LLMMessage(role="user", content=prompt)], temperature=0.0).content[1:-1]
 
     def plot_topics(self):
         if self.topics is None:
