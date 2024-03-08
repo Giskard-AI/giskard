@@ -5,6 +5,7 @@ import logging
 from ..llm.client import LLMClient, get_default_client
 from .knowledge_base import KnowledgeBase
 from .metrics import CorrectnessMetric, Metric
+from .recommendation import get_rag_recommendation
 from .report import RAGReport
 from .testset import QATestset
 from .testset_generation import generate_testset
@@ -81,7 +82,16 @@ def evaluate(
     metrics_results = {}
     for metric in metrics:
         metrics_results.update(metric(testset, answers, llm_client))
-    return RAGReport(testset, answers, metrics_results, knowledge_base)
+
+    report = RAGReport(testset, answers, metrics_results, knowledge_base)
+    recommendation = get_rag_recommendation(
+        report.topics,
+        report.correctness_by_question_type().to_dict()["correctness"],
+        report.correctness_by_topic().to_dict()["correctness"],
+        llm_client,
+    )
+    report._recommendation = recommendation
+    return report
 
 
 def make_predictions(answers_fn, testset, conversation_support=False, conversation_side="client"):

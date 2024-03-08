@@ -53,6 +53,8 @@ class RAGReport:
         self._metrics_results = metrics_results
         self._knowledge_base = knowledge_base
 
+        self._recommendation = "Placeholder for the recommmendation."
+
         self._dataframe = testset.to_pandas().copy()
         self._dataframe["assistant_answer"] = answers
         for metric, df in metrics_results.items():
@@ -70,7 +72,7 @@ class RAGReport:
         return tpl.render(
             knowledge_script=kb_script,
             knowledge_div=kb_div,
-            recommendation="Placeholder for the recommmendation.... ",
+            recommendation=self._recommendation,
             components=self.component_scores().to_dict()["score"],
             correctness=self.correctness,
             q_type_correctness_script=q_type_script,
@@ -157,6 +159,10 @@ class RAGReport:
                 metrics_results[metric_name].set_index("id", inplace=True)
 
         return cls(testset, answers, metrics_results, knowledge_base)
+
+    @property
+    def topics(self):
+        return self._testset.get_metadata_values("topic")
 
     @property
     def failures(self) -> pd.DataFrame:
