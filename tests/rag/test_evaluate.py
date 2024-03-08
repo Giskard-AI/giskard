@@ -44,6 +44,10 @@ def test_evaluate_from_answers():
             role="assistant",
             content="""{"correctness": false, "correctness_reason": "The assistant answer is incorrect."}""",
         ),
+        LLMMessage(
+            role="assistant",
+            content="""This is a recommendation test.""",
+        ),
     ]
 
     report = evaluate(answers, knowledge_base, testset, llm_client=llm_client)
@@ -66,6 +70,8 @@ def test_evaluate_from_answers():
     assert len(report.component_scores()) == 5
     assert np.isclose(report.component_scores().loc["GENERATOR"], 1 / 3 + 2 / 9)
     assert np.isclose(report.component_scores().loc["RETRIEVER"], 1 / 3)
+
+    assert report._recommendation == "This is a recommendation test."
 
 
 def test_evaluate_from_answer_fn():
@@ -101,6 +107,10 @@ def test_evaluate_from_answer_fn():
         LLMMessage(
             role="assistant",
             content="""{"correctness": false, "correctness_reason": "The assistant answer is incorrect."}""",
+        ),
+        LLMMessage(
+            role="assistant",
+            content="""This is a recommendation test.""",
         ),
     ]
 
@@ -178,6 +188,10 @@ def test_evaluate_conversational_question():
         LLMMessage(
             role="assistant",
             content="""{"correctness": false, "correctness_reason": "The assistant answer is incorrect."}""",
+        ),
+        LLMMessage(
+            role="assistant",
+            content="""This is a recommendation test.""",
         ),
     ]
 
