@@ -27,11 +27,15 @@ except ImportError as err:
 
 
 class RagasLLMWrapper(BaseRagasLLM):
-    def __init__(self, llm_client):
+    def __init__(self, llm_client, context_window_length: int):
         self.llm_client = llm_client
+        self.context_window_length = context_window_length
+
+    def trim_prompt(self, prompt: str) -> str:
+        return prompt[: int(self.context_window_length * 3.5)]
 
     def generate_text(self, prompt: PromptValue, n: int = 1, temperature: float = 1e-8, stop=None, callbacks=[]):
-        out = self.llm_client.complete([LLMMessage(role="user", content=prompt.to_string())])
+        out = self.llm_client.complete([LLMMessage(role="user", content=self.trim_prompt(prompt.to_string()))])
         return LLMResult(generations=[[Generation(text=out.content)]])
 
     async def agenerate_text(
@@ -68,12 +72,15 @@ class RagasMetric(Metric):
         The list of RAGAS metrics to use.
     """
 
-    def __init__(self, name: str, metrics: Union[BaseRagasMetric, Sequence[BaseRagasMetric]]) -> None:
+    def __init__(
+        self, name: str, metrics: Union[BaseRagasMetric, Sequence[BaseRagasMetric]], context_window_length: int = 8192
+    ) -> None:
         self.name = name
         self.metrics = metrics if isinstance(metrics, Sequence) else [metrics]
+        self.context_window_length = context_window_length
 
     def __call__(self, testset: QATestset, answers: Sequence[str], llm_client: LLMClient) -> dict:
-        ragas_llm = RagasLLMWrapper(llm_client)
+        ragas_llm = RagasLLMWrapper(llm_client, self.context_window_length)
         ragas_embedddings = RagasEmbeddingsWrapper(llm_client)
 
         testset_df = testset.to_pandas().copy()

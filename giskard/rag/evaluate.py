@@ -81,13 +81,16 @@ def evaluate(
     metrics_results = {}
     for metric in metrics:
         metrics_results.update(metric(testset, answers, llm_client))
-    print(metrics_results)
     return RAGReport(testset, answers, metrics_results, knowledge_base)
 
 
 def make_predictions(answers_fn, testset, conversation_support=False, conversation_side="client"):
     answers = []
+    logger.info("Starting to make predictions on the test set.")
     for sample in testset.to_pandas().itertuples():
+        logger.info(f"Predicting on question: {sample.metadata['question_type']}")
+        logger.info(f"Predicting on question: {sample.question}")
+
         if conversation_support and len(sample.conversation_history) > 0:
             conversation = []
             for message in sample.conversation_history + [dict(role="client", content=sample.question)]:
@@ -101,5 +104,5 @@ def make_predictions(answers_fn, testset, conversation_support=False, conversati
             answers.append(conversation[-1]["content"])
         else:
             answers.append(answers_fn(sample.question))
-
+    logger.info("Predictions finished. Starting evaluation.")
     return answers
