@@ -93,7 +93,7 @@ def make_predictions(answers_fn, testset, conversation_support=False, conversati
 
         if conversation_support and len(sample.conversation_history) > 0:
             conversation = []
-            for message in sample.conversation_history + [dict(role="client", content=sample.question)]:
+            for message in sample.conversation_history + [dict(role="user", content=sample.question)]:
                 conversation.append(message)
                 if conversation_side == "client":
                     assistant_answer = answers_fn(conversation)
