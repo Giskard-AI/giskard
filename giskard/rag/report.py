@@ -235,13 +235,15 @@ class RAGReport:
 
     @property
     def knowledge_base_score(self):
-        kb_correctness = self.correctness
-        return 1 + 1 / len(self._testset) * sum(
-            [
-                self._testset.count_sample_by_metadata("topic").loc[topic] * min(0, topic_score - kb_correctness)
-                for topic, topic_score in self.correctness_by_topic().itertuples()
-            ]
-        )
+        # kb_correctness = self.correctness
+        correctness_by_topic = [topic_score for topic, topic_score in self.correctness_by_topic().itertuples()]
+        return 1 - (max(correctness_by_topic) - min(correctness_by_topic))
+        # return 1 + 1 / len(self._testset) * sum(
+        #     [
+        #         self._testset.count_sample_by_metadata("topic").loc[topic] * min(0, topic_score - kb_correctness)
+        #         for topic, topic_score in self.correctness_by_topic().itertuples()
+        #     ]
+        # )
 
     def _correctness_by_metadata(self, metadata_name: str):
         """
