@@ -282,19 +282,6 @@ class SingleTestResult(ConfiguredBaseModel):
     props: Optional[Dict[str, str]] = None
     metric: Optional[float] = None
     metric_name: Optional[str] = None
-    missing_count: Optional[int] = None
-    missing_percent: Optional[float] = None
-    unexpected_count: Optional[int] = None
-    unexpected_percent: Optional[float] = None
-    unexpected_percent_total: Optional[float] = None
-    unexpected_percent_nonmissing: Optional[float] = None
-    partial_unexpected_index_list: Optional[List[int]] = None
-    partial_unexpected_counts: Optional[List[PartialUnexpectedCounts]] = None
-    unexpected_index_list: Optional[List[int]] = None
-    number_of_perturbed_rows: Optional[int] = None
-    actual_slices_size: Optional[List[int]] = None
-    reference_slices_size: Optional[List[int]] = None
-    output_df_id: Optional[str] = None
     failed_indexes: Optional[Dict[str, List[int]]] = None
     details: Optional[SingleTestResultDetails] = None
 

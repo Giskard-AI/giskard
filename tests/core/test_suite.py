@@ -1,4 +1,5 @@
 import pytest
+import requests_mock
 
 from giskard import Suite, test
 from giskard.models.base import BaseModel
@@ -28,6 +29,11 @@ def test_save_suite_with_artifact_error():
         match=f"Failed to upload {regex_model_name} used in the test suite. The test suite will be partially uploaded.",
     ):
         utils.register_uri_for_artifact_meta_info(mr, my_test, None)
+        mr.register_uri(
+            method=requests_mock.POST,
+            url="http://giskard-host:12345/api/v2/testing/project/titanic/suites",
+            json={"id": 1, "tests": [{"id": 2}]},
+        )
 
         test_suite = Suite().add_test(my_test, model=model)
 

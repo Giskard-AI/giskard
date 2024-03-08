@@ -132,7 +132,7 @@ giskard = "giskard.integrations.mlflow.giskard_evaluator:GiskardEvaluator"
 name = "giskard"
 readme = "README.md"
 license = { text = "Apache Software License 2.0" }
-version = "2.7.4"
+version = "2.7.5"
 description = "The testing framework dedicated to ML models, from tabular to LLMs"
 authors = [{ name = "Giskard AI", email = "hello@giskard.ai" }]
 keywords = ["Artificial Intelligence", "Machine Learning", "Quality", "MLOps"]
@@ -175,6 +175,7 @@ dependencies = [
     "colorama",                 # needed for the scan
     "num2words>=0.5.13",
     "griffe>=0.36.9",
+    "sentry-sdk>=1.40.5",
 ]
 
 [project.optional-dependencies]
