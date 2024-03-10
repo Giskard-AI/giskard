@@ -665,9 +665,7 @@ class BaseModel(ABC):
 
         return "\n".join(context)
 
-    def talk(
-        self, question: str, context: str = "", dataset: Dataset = None, scan_report: "ScanReport" = None
-    ) -> TalkResult:
+    def talk(self, question: str, dataset: Dataset, scan_report: "ScanReport" = None, context: str = "") -> TalkResult:
         """Perform the 'talk' to the model.
 
         Given `question`, allows to ask the model about prediction result, explanation, model performance, issues, etc.
@@ -676,12 +674,12 @@ class BaseModel(ABC):
         ----------
         question : str
             User input query.
-        context : str
-            Context of the previous 'talk' results. Necessary to keep context between sequential 'talk' calls.
         dataset : Dataset
             Giskard Dataset to be analysed by the 'talk'.
         scan_report : ScanReport
             Giskard Scan Report to be analysed by the 'talk'.
+        context : str
+            Context of the previous 'talk' results. Necessary to keep context between sequential 'talk' calls.
         """
         set_llm_model(LLM_MODEL)
         client = get_default_client()

@@ -44,5 +44,11 @@ class IssuesScannerTool(BaseTool):
         str
             The Giskard Scan's result.
         """
-        scan_result = self._scan_result.to_markdown()
+        try:
+            scan_result = self._scan_result.to_markdown()
+        except AttributeError as e:
+            raise AttributeError(
+                "To get the information about model's issues, detected by the Giskard Scan,"
+                "you need to provide the 'scan_report' argument."
+            ) from e
         return self._output_template.format(scan_result=scan_result)
