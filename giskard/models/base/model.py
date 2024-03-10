@@ -24,8 +24,6 @@ from ...core.validation import configured_validate_arguments
 from ...datasets.base import Dataset
 from ...exceptions.giskard_exception import GiskardException, python_env_exception_helper
 from ...llm import get_default_client, set_llm_model
-
-# from ...llm.client.openai import BaseOpenAIClient
 from ...llm.talk.config import (
     ERROR_RESPONSE,
     LLM_MODEL,
