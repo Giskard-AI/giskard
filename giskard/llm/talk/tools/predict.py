@@ -42,9 +42,7 @@ class PredictTool(BaseTool):
                     "properties": {
                         "features_dict": {
                             "type": "object",
-                            "properties": {
-                                feature: {"type": dtype} for feature, dtype in list(feature_json_type.items())
-                            },
+                            "properties": {feature: {"type": dtype} for feature, dtype in feature_json_type.items()},
                         }
                     },
                     "required": ["features_dict"],
@@ -112,7 +110,7 @@ class PredictTool(BaseTool):
         background_sample = _get_background_example(background_df, self._dataset.column_types)
 
         # Fill background sample with known values.
-        for col_name, col_value in list(feature_values.items()):
+        for col_name, col_value in feature_values.items():
             background_sample.loc[0, col_name] = col_value
 
         return background_sample

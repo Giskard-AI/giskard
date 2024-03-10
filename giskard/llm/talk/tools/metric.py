@@ -41,9 +41,7 @@ class MetricTool(BaseTool):
                         "metric_type": {"type": "string", "enum": list(AVAILABLE_METRICS.keys())},
                         "features_dict": {
                             "type": "object",
-                            "properties": {
-                                feature: {"type": dtype} for feature, dtype in list(feature_json_type.items())
-                            },
+                            "properties": {feature: {"type": dtype} for feature, dtype in feature_json_type.items()},
                         },
                     },
                     "required": ["metric_type", "features_dict"],
