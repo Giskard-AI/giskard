@@ -1,7 +1,7 @@
 from enum import Enum
 
-from sklearn.metrics import classification_report  # Classification metrics.
-from sklearn.metrics import (  # Regression metrics.
+from sklearn.metrics import (
+    classification_report,
     explained_variance_score,
     mean_absolute_error,
     mean_squared_error,
