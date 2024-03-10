@@ -1,7 +1,7 @@
 from difflib import SequenceMatcher as SeqM
 
 from giskard.datasets.base import Dataset
-from giskard.llm.talk.config import AVAILABLE_METRICS, ToolDescription
+from giskard.llm.talk.config import AVAILABLE_METRICS, FUZZY_SIMILARITY_THRESHOLD, ToolDescription
 from giskard.llm.talk.tools.base import BaseTool, get_feature_json_type
 
 
@@ -64,13 +64,12 @@ class MetricTool(BaseTool):
         Dataset
             The Giskard Dataset with filtered rows.
         """
-        threshold = 0.85
         filtered_df = self._dataset.df
         for col_name, col_value in row_filter.items():
             # Use fuzzy comparison to filter string features.
             if filtered_df[col_name].dtype == "object":
                 index = filtered_df[col_name].apply(
-                    lambda x: SeqM(None, x.lower(), col_value.lower()).ratio() >= threshold
+                    lambda x: SeqM(None, x.lower(), col_value.lower()).ratio() >= FUZZY_SIMILARITY_THRESHOLD
                 )
             else:
                 # Otherwise, filter by the exact value.

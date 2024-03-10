@@ -152,3 +152,5 @@ AVAILABLE_METRICS = {
     "mse": mean_squared_error,
     "mae": mean_absolute_error,
 }
+
+FUZZY_SIMILARITY_THRESHOLD = 0.85
