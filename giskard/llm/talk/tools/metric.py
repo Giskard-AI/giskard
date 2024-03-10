@@ -69,7 +69,7 @@ class MetricTool(BaseTool):
         threshold = 0.85
 
         filtered_df = self._dataset.df.copy()
-        for col_name, col_value in list(row_filter.items()):
+        for col_name, col_value in row_filter.items():
             if filtered_df[col_name].dtype == "object":
                 filtered_df = filtered_df[
                     filtered_df[col_name].apply(lambda x: SeqM(None, x.lower(), col_value.lower()).ratio() >= threshold)
