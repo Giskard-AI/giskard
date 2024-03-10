@@ -1,4 +1,4 @@
-from thefuzz import fuzz
+from difflib import SequenceMatcher as SeqM
 
 from giskard.datasets.base import Dataset
 from giskard.llm.talk.config import AVAILABLE_METRICS, ToolDescription
@@ -66,13 +66,13 @@ class MetricTool(BaseTool):
         Dataset
             The Giskard Dataset with filtered rows.
         """
-        threshold = 85
+        threshold = 0.85
 
         filtered_df = self._dataset.df.copy()
         for col_name, col_value in list(row_filter.items()):
             if filtered_df[col_name].dtype == "object":
                 filtered_df = filtered_df[
-                    filtered_df[col_name].apply(lambda x: fuzz.ratio(str(x).lower(), col_value.lower()) >= threshold)
+                    filtered_df[col_name].apply(lambda x: SeqM(None, x.lower(), col_value.lower()).ratio() >= threshold)
                 ]
                 if not len(filtered_df):
                     break
