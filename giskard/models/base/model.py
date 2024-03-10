@@ -24,7 +24,8 @@ from ...core.validation import configured_validate_arguments
 from ...datasets.base import Dataset
 from ...exceptions.giskard_exception import GiskardException, python_env_exception_helper
 from ...llm import get_default_client, set_llm_model
-from ...llm.client.openai import BaseOpenAIClient
+
+# from ...llm.client.openai import BaseOpenAIClient
 from ...llm.talk.config import (
     ERROR_RESPONSE,
     LLM_MODEL,
@@ -711,7 +712,7 @@ class BaseModel(ABC):
             messages.append({"role": "assistant", "content": content})
 
         if tool_calls := response.tool_calls:
-            messages.append(BaseOpenAIClient._serialize_message(response))
+            messages.append(client._serialize_message(response))
 
             for tool_call in tool_calls:
                 tool_name = tool_call.function.name
