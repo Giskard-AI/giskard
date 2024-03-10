@@ -132,7 +132,7 @@ class PredictTool(BaseTool):
         """
         final_input = self._get_input_from_dataset(feature_values)
 
-        # If no data were filtered from the dataset, build vector from the user input.
+        # If no data were selected from the dataset, build vector from the user input.
         if len(final_input) == 0:
             final_input = self._get_input_from_user(feature_values)
 
