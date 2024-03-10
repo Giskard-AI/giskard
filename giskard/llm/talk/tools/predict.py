@@ -68,17 +68,23 @@ class PredictTool(BaseTool):
             The DataFrame with filtered rows.
         """
         threshold = 0.85
-        filtered_df = self._dataset.df.copy()
-
+        filtered_df = self._dataset.df
         for col_name, col_value in row_filter.items():
+            # Use fuzzy comparison to filter string features.
             if filtered_df[col_name].dtype == "object":
-                filtered_df = filtered_df[
-                    filtered_df[col_name].apply(lambda x: SeqM(None, x.lower(), col_value.lower()).ratio() >= threshold)
-                ]
-                if not len(filtered_df):
-                    break
+                index = filtered_df[col_name].apply(
+                    lambda x: SeqM(None, x.lower(), col_value.lower()).ratio() >= threshold
+                )
             else:
-                filtered_df = filtered_df[filtered_df[col_name] == col_value]
+                # Otherwise, filter by the exact value.
+                index = filtered_df[col_name] == col_value
+
+            # Apply selection.
+            filtered_df = filtered_df[index]
+
+            # Break, if dataframe is empty.
+            if not len(filtered_df):
+                break
 
         return filtered_df
 
