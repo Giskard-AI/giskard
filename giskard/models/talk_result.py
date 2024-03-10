@@ -18,7 +18,7 @@ class TalkResult:
     response: LLMMessage
     summary: LLMMessage
 
-    def __str__(self) -> str:
+    def __repr__(self) -> str:
         """Return the 'talk' result.
 
         Returns
