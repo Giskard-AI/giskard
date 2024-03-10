@@ -111,7 +111,7 @@ class PredictTool(BaseTool):
 
         # Fill background sample with known values.
         for col_name, col_value in feature_values.items():
-            background_sample.loc[0, col_name] = col_value
+            background_sample[col_name] = col_value
 
         return background_sample
 
