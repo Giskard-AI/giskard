@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 from typing import TYPE_CHECKING, Iterable, List, Optional, Tuple, Type, Union
 
 import builtins
@@ -24,7 +26,6 @@ from ...core.validation import configured_validate_arguments
 from ...datasets.base import Dataset
 from ...exceptions.giskard_exception import GiskardException, python_env_exception_helper
 from ...llm import get_default_client, set_llm_model
-from ...llm.client.openai import BaseOpenAIClient
 from ...llm.talk.config import (
     ERROR_RESPONSE,
     MAX_COMPLETION_TOKENS,
@@ -666,9 +667,7 @@ class BaseModel(ABC):
 
         return "\n".join(context)
 
-    def talk(
-        self, question: str, context: str = "", dataset: Dataset = None, scan_report: "ScanReport" = None
-    ) -> TalkResult:
+    def talk(self, question: str, dataset: Dataset, scan_report: ScanReport = None, context: str = "") -> TalkResult:
         """Perform the 'talk' to the model.
 
         Given `question`, allows to ask the model about prediction result, explanation, model performance, issues, etc.
@@ -677,10 +676,10 @@ class BaseModel(ABC):
         ----------
         question : str
             User input query.
-        context : str
-            Context of the previous 'talk' results. Necessary to keep context between sequential 'talk' calls.
         dataset : Dataset
             Giskard Dataset to be analysed by the 'talk'.
+        context : str
+            Context of the previous 'talk' results. Necessary to keep context between sequential 'talk' calls.
         scan_report : ScanReport
             Giskard Scan Report to be analysed by the 'talk'.
         """
@@ -711,7 +710,7 @@ class BaseModel(ABC):
             messages.append({"role": "assistant", "content": content})
 
         if tool_calls := response.tool_calls:
-            messages.append(BaseOpenAIClient._serialize_message(response))
+            messages.append(client._serialize_message(response))
 
             for tool_call in tool_calls:
                 tool_name = tool_call.function.name
