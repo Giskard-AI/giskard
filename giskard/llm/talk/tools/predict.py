@@ -100,15 +100,16 @@ class PredictTool(BaseTool):
         pd.DataFrame
             The DataFrame with the formed input.
         """
-        # Prepare background sample.
+        # Import the private function from the 'model_explanation' module to avoid code duplication.
         from giskard.models.model_explanation import _get_background_example
 
+        # Prepare the background sample (the median and the mode of dataset's features).
         background_df = self._model.prepare_dataframe(
             self._dataset.df, self._dataset.column_dtypes, self._dataset.target
         )
         background_sample = _get_background_example(background_df, self._dataset.column_types)
 
-        # Fill background sample with known values.
+        # Fill the background sample with known values (provided by the user query).
         for col_name, col_value in feature_values.items():
             background_sample[col_name] = col_value
 
