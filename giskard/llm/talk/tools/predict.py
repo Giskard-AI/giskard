@@ -50,14 +50,14 @@ class PredictTool(BaseTool):
             },
         }
 
-    def _get_input_from_dataset(self, row_filter: dict) -> pd.DataFrame:
+    def _get_input_from_dataset(self, row_filter: dict[str, any]) -> pd.DataFrame:
         """Get input from dataset.
 
         Filter rows from the dataset, using the `row_filter`.
 
         Parameters
         ----------
-        row_filter : dict
+        row_filter : dict[str, any]
             The dictionary with features and related values to filter the dataset.
 
         Returns
@@ -85,14 +85,14 @@ class PredictTool(BaseTool):
 
         return filtered_df
 
-    def _get_input_from_user(self, feature_values: dict) -> pd.DataFrame:
+    def _get_input_from_user(self, feature_values: dict[str, any]) -> pd.DataFrame:
         """Form input based on the user's query.
 
         Take input feature values from user query. For the missed values, take the feature mean from the Dataset.
 
         Parameters
         ----------
-        feature_values : dict
+        feature_values : dict[str, any]
             The dictionary with features and related values extracted from the query.
 
         Returns
@@ -117,14 +117,14 @@ class PredictTool(BaseTool):
 
         return background_sample
 
-    def _prepare_input(self, feature_values: dict) -> Dataset:
+    def _prepare_input(self, feature_values: dict[str, any]) -> Dataset:
         """Prepare model input.
 
         Either extract rows form the dataset, or create input from the user's query.
 
         Parameters
         ----------
-        feature_values : dict
+        feature_values : dict[str, any]
             The dictionary with features and related values extracted from the query.
 
         Returns
@@ -140,14 +140,14 @@ class PredictTool(BaseTool):
 
         return Dataset(final_input, target=None)
 
-    def __call__(self, features_dict: dict) -> str:
+    def __call__(self, features_dict: dict[str, any]) -> str:
         """Execute the Tool's functionality.
 
         Predict an outcome based on rows from the dataset or on input formed from the user query.
 
         Parameters
         ----------
-        features_dict : dict
+        features_dict : dict[str, any]
             The dictionary with features and related values extracted from the query.
 
         Returns

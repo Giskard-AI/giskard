@@ -48,14 +48,14 @@ class SHAPExplanationTool(PredictTool):
             f"{shap_result}\n\n"
         )
 
-    def __call__(self, features_dict: dict) -> str:
+    def __call__(self, features_dict: dict[str, any]) -> str:
         """Execute the Tool's functionality.
 
         Calculate the SHAP explanations.
 
         Parameters
         ----------
-        features_dict : dict
+        features_dict : dict[str, any]
             The dictionary with features and related values extracted from the query.
 
         Returns

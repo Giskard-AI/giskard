@@ -49,14 +49,14 @@ class MetricTool(BaseTool):
             },
         }
 
-    def _get_input_from_dataset(self, row_filter: dict) -> Dataset:
+    def _get_input_from_dataset(self, row_filter: dict[str, any]) -> Dataset:
         """Get input from dataset.
 
         Filter rows from the dataset, using the `row_filter`.
 
         Parameters
         ----------
-        row_filter : dict
+        row_filter : dict[str, any]
             The dictionary with features and related values to filter the dataset.
 
         Returns
@@ -84,7 +84,7 @@ class MetricTool(BaseTool):
 
         return Dataset(filtered_df, target=None)
 
-    def __call__(self, metric_type: str, features_dict: dict) -> str:
+    def __call__(self, metric_type: str, features_dict: dict[str, any]) -> str:
         """Execute the Tool's functionality.
 
         Calculate the given performance metric on rows from the dataset.
@@ -93,7 +93,7 @@ class MetricTool(BaseTool):
         ----------
         metric_type : str
             The type of the performance metric to calculate.
-        features_dict : dict
+        features_dict : dict[str, any]
             The dictionary with features and related values to filter the dataset.
 
         Returns

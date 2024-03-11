@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Optional
 
 from abc import ABC, abstractmethod
 
@@ -26,30 +26,31 @@ class BaseTool(ABC):
 
     def __init__(
         self,
-        model: BaseModel = None,
-        dataset: Dataset = None,
-        scan_result: ScanReport = None,
-        name: str = None,
-        description: str = None,
+        model: Optional[BaseModel] = None,
+        dataset: Optional[Dataset] = None,
+        scan_report: Optional[ScanReport] = None,
+        name: Optional[str] = None,
+        description: Optional[str] = None,
     ):
         """Constructor of the class.
 
         Parameters
         ----------
-        model : BaseModel
+        model : BaseModel, optional
             The Giskard Model.
-        dataset : Dataset
+        dataset : Dataset, optional
             The Giskard Dataset.
-        scan_result : ScanReport
+        scan_report : ScanReport, optional
             The Giskard ScanReport object.
-        name : str
+        name : str, optional
             The name of the Tool. If not set, the `default_name` is used.
-        description : str
+        description : str, optional
             The description of the Tool. If not set, the `default_description` is used.
         """
         self._model = model
         self._dataset = dataset
-        self._scan_result = scan_result
+        self._scan_report = scan_report
+
         self._name = name if name is not None else self.default_name
         self._description = description if description is not None else self.default_description
 

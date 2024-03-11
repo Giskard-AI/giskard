@@ -15,7 +15,7 @@ class IssuesScannerTool(BaseTool):
 
     default_name: str = "issues_scanner"
     default_description: str = ToolDescription.ISSUES_SCANNER.value
-    _output_template: str = "ML model performance issues scanner result:\n {scan_result}"
+    _output_template: str = "ML model performance issues scanner result:\n {scan_report}"
 
     @property
     def specification(self) -> str:
@@ -43,12 +43,17 @@ class IssuesScannerTool(BaseTool):
         -------
         str
             The Giskard Scan's result.
+
+        Raises
+        ------
+        AttributeError
+            If the 'scan_report' was not provided.
         """
         try:
-            scan_result = self._scan_result.to_markdown()
+            scan_report = self._scan_report.to_markdown()
         except AttributeError as e:
             raise AttributeError(
                 "To get the information about model's issues, detected by the Giskard Scan,"
                 "you need to provide the 'scan_report' argument."
             ) from e
-        return self._output_template.format(scan_result=scan_result)
+        return self._output_template.format(scan_report=scan_report)
