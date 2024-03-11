@@ -28,5 +28,6 @@ class LLMClient(ABC):
         max_tokens: Optional[int] = None,
         caller_id: Optional[str] = None,
         seed: Optional[int] = None,
+        format=None,
     ) -> ChatMessage:
         ...

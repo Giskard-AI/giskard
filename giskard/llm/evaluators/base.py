@@ -54,10 +54,17 @@ class BaseEvaluator(ABC):
 
 
 class _BaseLLMEvaluator(BaseEvaluator):
-    def __init__(self, llm_client: Optional[LLMClient] = None, llm_temperature: float = 0.1, llm_seed: int = 42):
+    def __init__(
+        self,
+        llm_client: Optional[LLMClient] = None,
+        llm_temperature: float = 0.1,
+        llm_seed: int = 42,
+        llm_output_format="json",
+    ):
         self.llm_client = llm_client if llm_client is not None else get_default_client()
         self.llm_temperature = llm_temperature
         self.llm_seed = llm_seed
+        self.llm_output_format = llm_output_format
 
     @abstractmethod
     def _format_messages(self, model: BaseModel, conversation: Sequence[Dict]) -> Sequence[ChatMessage]:
@@ -81,6 +88,7 @@ class _BaseLLMEvaluator(BaseEvaluator):
                     temperature=self.llm_temperature,
                     caller_id=self.__class__.__name__,
                     seed=self.llm_seed,
+                    format=self.llm_output_format,
                 )
                 eval_passed, reason = self._parse_evaluation_output(raw_eval)
             except LLMGenerationError as err:
@@ -95,7 +103,7 @@ class _BaseLLMEvaluator(BaseEvaluator):
         try:
             eval_result = json.loads(raw_eval.content)
             return eval_result["eval_passed"], eval_result.get("reason")
-        except (AttributeError, KeyError) as err:
+        except (AttributeError, KeyError, json.JSONDecodeError) as err:
             raise LLMGenerationError("Could not parse evaluator output") from err
 
 
