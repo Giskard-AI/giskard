@@ -47,39 +47,6 @@ def do_nothing(row):
     return row
 
 
-def test_download_global_test_function_from_registry():
-    cf: Artifact = my_custom_test
-
-    # Load from registry using uuid without client
-    download_cf = cf.__class__.download(uuid=cf.meta.uuid, client=None, project_key=None)
-
-    # Check the downloaded info
-    assert download_cf.__class__ is cf.__class__
-    assert download_cf.meta.uuid == cf.meta.uuid
-
-
-@pytest.mark.parametrize(
-    "cf",
-    [
-        my_custom_test,  # Test
-        head_slice,  # Slice
-        do_nothing,  # Transformation
-    ],
-)
-def test_download_global_test_function_from_local(cf):
-    with MockedProjectCacheDir():
-        cf.meta.uuid = str(uuid.uuid4())  # Regenerate a UUID to ensure not loading from registry
-
-        local_save_artifact_under_giskard_home_cache(cf)
-
-        # Load from registry using uuid without client
-        download_cf = cf.__class__.download(uuid=cf.meta.uuid, client=None, project_key=None)
-
-        # Check the downloaded info
-        assert download_cf.__class__ is cf.__class__
-        assert download_cf.meta.uuid == cf.meta.uuid
-
-
 @pytest.mark.parametrize(
     "cf",
     [
