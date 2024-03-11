@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 from typing import TYPE_CHECKING, Iterable, List, Optional, Tuple, Type, Union
 
 import builtins
@@ -619,7 +621,7 @@ class BaseModel(ABC):
             return f"{self.name}({self.id})"
         return super().__str__()  # default to `<giskard.models.base.Model object at ...>`
 
-    def _get_available_tools(self, dataset: Dataset, scan_report: "ScanReport") -> dict[str, BaseTool]:
+    def _get_available_tools(self, dataset: Dataset, scan_report: ScanReport) -> dict[str, BaseTool]:
         """Get the dictionary with available tools.
 
         Parameters
@@ -665,7 +667,7 @@ class BaseModel(ABC):
 
         return "\n".join(context)
 
-    def talk(self, question: str, dataset: Dataset, scan_report: "ScanReport" = None, context: str = "") -> TalkResult:
+    def talk(self, question: str, dataset: Dataset, scan_report: ScanReport = None, context: str = "") -> TalkResult:
         """Perform the 'talk' to the model.
 
         Given `question`, allows to ask the model about prediction result, explanation, model performance, issues, etc.

@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 from typing import TYPE_CHECKING
 
 from abc import ABC, abstractmethod
@@ -24,9 +26,9 @@ class BaseTool(ABC):
 
     def __init__(
         self,
-        model: "BaseModel" = None,
-        dataset: "Dataset" = None,
-        scan_result: "ScanReport" = None,
+        model: BaseModel = None,
+        dataset: Dataset = None,
+        scan_result: ScanReport = None,
         name: str = None,
         description: str = None,
     ):
@@ -97,7 +99,7 @@ class BaseTool(ABC):
         ...
 
 
-def get_feature_json_type(dataset: "Dataset") -> dict[str, str]:
+def get_feature_json_type(dataset: Dataset) -> dict[str, str]:
     """Get features' JSON type.
 
     Determine the JSON type of features from the given `dataset`.
