@@ -31,7 +31,9 @@ def _calculate_shap_values(data_to_explain: Dataset, model: BaseModel, dataset: 
     shap_values : np.ndarray
         The model's SHAP values as a numpy array
     """
-    # Import the private functions from the 'model_explanation' module to avoid code duplication.
+    # Import the private function from the 'model_explanation' module to avoid code duplication.
+    # Also, if import from the top-level, we get the next error: "ImportError: cannot import name 'BaseModel'
+    # from partially initialized module 'giskard.models.base' (most likely due to a circular import)"
     from giskard.models.model_explanation import _get_background_example, _prepare_for_explanation
 
     try:
@@ -77,6 +79,8 @@ def explain_with_shap(data_to_explain: Dataset, model: BaseModel, dataset: Datas
         The model's SHAP values.
     """
     # Import the private function from the 'model_explanation' module to avoid code duplication.
+    # Also, if import from the top-level, we get the next error: "ImportError: cannot import name 'BaseModel'
+    # from partially initialized module 'giskard.models.base' (most likely due to a circular import)"
     from giskard.models.model_explanation import _get_highest_proba_shap
 
     try:

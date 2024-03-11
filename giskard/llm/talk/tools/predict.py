@@ -101,6 +101,8 @@ class PredictTool(BaseTool):
             The DataFrame with the formed input.
         """
         # Import the private function from the 'model_explanation' module to avoid code duplication.
+        # Also, if import from the top-level, we get the next error: "ImportError: cannot import name 'BaseModel'
+        # from partially initialized module 'giskard.models.base' (most likely due to a circular import)"
         from giskard.models.model_explanation import _get_background_example
 
         # Prepare the background sample (the median and the mode of dataset's features).
