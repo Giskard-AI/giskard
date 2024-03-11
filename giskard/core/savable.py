@@ -60,17 +60,6 @@ class Artifact(Generic[SMT], ABC):
         with open(Path(local_dir) / "meta.yaml", "w") as f:
             yaml.dump(self.meta, f)
 
-    @classmethod
-    def _load_meta_locally(cls, local_dir, uuid: str) -> Optional[SMT]:
-        file = Path(local_dir) / "meta.yaml"
-        if not file.exists():
-            return None
-
-        with open(file, "r") as f:
-            # PyYAML prohibits the arbitary execution so our class cannot be loaded safely,
-            # see: https://github.com/yaml/pyyaml/wiki/PyYAML-yaml.load(input)-Deprecation
-            return yaml.load(f, Loader=yaml.UnsafeLoader)
-
     def upload(
         self,
         client: GiskardClient,
@@ -111,14 +100,13 @@ class Artifact(Generic[SMT], ABC):
         return self.meta.uuid
 
     @classmethod
-    def download(cls, uuid: str, client: Optional[GiskardClient], project_key: str) -> "Artifact":
+    def download(cls, uuid: str, client: GiskardClient, project_key: str) -> "Artifact":
         """
         Downloads the artifact from the Giskard hub or retrieves it from the local cache.
 
         Args:
             uuid (str): The UUID of the artifact to download.
-            client (Optional[GiskardClient]): The Giskard client instance used for communication with the hub. If None,
-                the artifact will be retrieved from the local cache if available. Defaults to None.
+            client (GiskardClient): The Giskard client instance used for communication with the hub.
             project_key (Optional[str]): The project key where the artifact is located. If None, the artifact will be
                 retrieved from the global scope. Defaults to None.
 
@@ -132,11 +120,7 @@ class Artifact(Generic[SMT], ABC):
         name = cls._get_name()
 
         local_dir = settings.home_dir / settings.cache_dir / name / uuid
-
-        if client is None:
-            meta = cls._load_meta_locally(local_dir, uuid)
-        else:
-            meta = client.load_meta(cls._get_meta_endpoint(uuid, project_key), cls._get_meta_class())
+        meta = client.load_meta(cls._get_meta_endpoint(uuid, project_key), cls._get_meta_class())
 
         assert meta is not None, "Could not retrieve test meta"
 

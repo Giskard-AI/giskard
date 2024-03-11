@@ -104,31 +104,6 @@ def test_websocket_actor_run_ad_hoc_test_legacy_debug(enron_data: Dataset):
             assert reply.results[0].result.failed_indexes
 
 
-def test_websocket_actor_run_ad_hoc_test_legacy_no_client(enron_data: Dataset):
-    project_key = str(uuid.uuid4())
-
-    with utils.MockedProjectCacheDir():
-        utils.local_save_dataset_under_giskard_home_cache(enron_data)
-
-        params = websocket.RunAdHocTestParam(
-            testUuid=my_simple_test_legacy_debug.meta.uuid,
-            arguments=[
-                websocket.FuncArgument(
-                    name="dataset",
-                    none=False,
-                    dataset=websocket.ArtifactRef(
-                        project_key=project_key,
-                        id=str(enron_data.id),
-                    ),
-                ),
-            ],
-            debug=True,
-        )
-
-        with pytest.raises(RuntimeError):
-            listener.run_ad_hoc_test(client=None, params=params)
-
-
 @test
 def my_simple_test_debug(dataset: Dataset, debug: bool = False):
     return GiskardTestResult(passed=False, output_ds=[dataset.slice(lambda df: df.head(1), row_level=False)])
