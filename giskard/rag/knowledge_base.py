@@ -86,7 +86,7 @@ class KnowledgeBase:
         seed: int = None,
         llm_client: Optional[LLMClient] = None,
         embedding_model: Optional[str] = "text-embedding-ada-002",
-        min_topic_size: int = 3,
+        min_topic_size: Optional[int] = None,
         chunk_size: int = 2048,
     ) -> None:
         if len(knowledge_base_df) > 0:
@@ -105,7 +105,7 @@ class KnowledgeBase:
         self._rng = np.random.default_rng(seed=seed)
         self._llm_client = llm_client or get_default_client()
         self._embedding_model = embedding_model
-        self._min_topic_size = min_topic_size
+        self._min_topic_size = min_topic_size or round(2 + np.log10(len(self._documents)))
         self.chunk_size = chunk_size
 
         self._embeddings_inst = None
@@ -165,8 +165,8 @@ class KnowledgeBase:
         return self._documents_index[doc_id]
 
     def _find_topics(self):
-        dbscan = HDBSCAN(min_cluster_size=self._min_topic_size, metric="euclidean", cluster_selection_epsilon=0.0)
-        clustering = dbscan.fit(self._embeddings)
+        hdbscan = HDBSCAN(min_cluster_size=self._min_topic_size, metric="euclidean", cluster_selection_epsilon=0.0)
+        clustering = hdbscan.fit(self._embeddings)
         for i, doc in enumerate(self._documents):
             doc.topic_id = clustering.labels_[i]
 
