@@ -429,7 +429,6 @@ def head_slice(df: pd.DataFrame) -> pd.DataFrame:
     return df.head(1)
 
 
-# FIXME: Internal worker cannot yet load callable due to yaml deserialization issue
 def test_websocket_actor_dataset_processing_head_slicing_with_cache(request):
     dataset: Dataset = request.getfixturevalue("enron_data")
 
@@ -478,7 +477,6 @@ def do_nothing(row):
     return row
 
 
-# FIXME: Internal worker cannot yet load callable due to yaml deserialization issue
 def test_websocket_actor_dataset_processing_do_nothing_transform_with_cache(request):
     dataset: Dataset = request.getfixturevalue("enron_data")
 

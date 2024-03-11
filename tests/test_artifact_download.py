@@ -156,7 +156,7 @@ def test_download_callable_function_from_module(cf: Artifact):
         cache_dir = get_local_cache_callable_artifact(artifact=cf)
 
         requested_urls = []
-        # Prepare global URL
+        # Prepare URL
         requested_urls.extend(register_uri_for_artifact_meta_info(mr, cf, project_key=PROJECT_KEY))
 
         # Download: should not call load_artifact to request and download
@@ -282,7 +282,7 @@ def test_download_callable_function_from_module_in_project(cf: Artifact):
         cache_dir = get_local_cache_callable_artifact(artifact=cf)
 
         requested_urls = []
-        # Prepare global URL
+        # Prepare URL
         requested_urls.extend(register_uri_for_artifact_meta_info(mr, cf, project_key))
 
         # Download: should not call load_artifact to request and download
