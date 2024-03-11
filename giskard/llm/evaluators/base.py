@@ -1,37 +1,16 @@
-from typing import Any, Dict, Optional, Sequence
+from typing import Dict, Optional, Sequence, Tuple
 
+import json
 from abc import ABC, abstractmethod
 from dataclasses import dataclass
 
-from ...core.test_result import TestResultDetails, TestResultStatus
+from ...core.test_result import TestResultDetails
 from ...datasets.base import Dataset
 from ...models.base.model import BaseModel
 from ..client import LLMClient, get_default_client
+from ..client.base import ChatMessage
 from ..errors import LLMGenerationError
-
-EVALUATE_MODEL_FUNCTIONS = [
-    {
-        "type": "function",
-        "function": {
-            "name": "evaluate_model",
-            "description": "Evaluates if the model passes the test",
-            "parameters": {
-                "type": "object",
-                "properties": {
-                    "passed_test": {
-                        "type": "boolean",
-                        "description": "true if the model successfully passes the test",
-                    },
-                    "reason": {
-                        "type": "string",
-                        "description": "optional short description of why the model does not pass the test, in 1 or 2 short sentences",
-                    },
-                },
-                "required": ["passed_test"],
-            },
-        },
-    },
-]
+from .utils import format_conversation
 
 
 @dataclass
@@ -57,92 +36,81 @@ class EvaluationResult:
     def passed_ratio(self):
         return len(self.success_examples) / (len(self.success_examples) + len(self.failure_examples))
 
-    @classmethod
-    def empty(cls):
-        return EvaluationResult(list(), list(), list(), TestResultDetails.empty())
+    def add_error(self, error: str, conversation: Sequence[Dict]):
+        self.errors.append({"error": error, "conversation": conversation})
 
-    def append(self, status: TestResultStatus, inputs, output, metadata, example: dict):
-        self.details = self.details or TestResultDetails.empty()
-        self.details.append(status, inputs, output, metadata)
-
-        if status == TestResultStatus.PASSED:
-            self.success_examples.append(example)
-        elif status == TestResultStatus.FAILED:
-            self.failure_examples.append(example)
-        elif status == TestResultStatus.ERROR:
-            self.errors.append(example)
+    def add_sample(self, eval_passed: bool, reason: str, conversation: Sequence[Dict]):
+        # @TODO: improve this
+        if eval_passed:
+            self.success_examples.append({"conversation": conversation, "reason": reason})
+        else:
+            self.failure_examples.append({"conversation": conversation, "reason": reason})
 
 
 class BaseEvaluator(ABC):
-    """Base class for evaluators that define a way of detecting a LLM failure"""
+    """Base interface for evaluators."""
 
     @abstractmethod
     def evaluate(self, model: BaseModel, dataset: Dataset):
         ...
 
 
-class LLMBasedEvaluator(BaseEvaluator):
-    _default_eval_prompt: str
-
-    def __init__(self, eval_prompt=None, llm_temperature=0.1, llm_client: LLMClient = None, rng_seed: int = 1729):
-        self.eval_prompt = eval_prompt or self._default_eval_prompt
-        self.llm_temperature = llm_temperature
-        self.llm_client = llm_client if llm_client is not None else get_default_client()
-        self.rng_seed = rng_seed
-
-    def _make_evaluate_prompt(self, model: BaseModel, input_vars, model_output, row_idx):
-        return self.eval_prompt.format(
-            model_name=model.name,
-            model_description=model.description,
-            input_vars=input_vars,
-            model_output=model_output,
-        )
-
-    def _make_evaluate_functions(self, model: BaseModel, input_vars, model_output):
-        return EVALUATE_MODEL_FUNCTIONS
-
-    def _get_metadata(self, row_idx, *args, **kwargs) -> Dict[str, Any]:
-        return dict()
+class _BaseLLMEvaluator(BaseEvaluator):
+    @abstractmethod
+    def _format_messages(self, model: BaseModel, conversation: Sequence[Dict]) -> Sequence[ChatMessage]:
+        ...
 
     def evaluate(self, model: BaseModel, dataset: Dataset):
         model_outputs = model.predict(dataset).prediction
 
-        evaluation_result = EvaluationResult.empty()
-        for row_index, input_vars, model_output in zip(
+        result = EvaluationResult()
+        for _, input_vars, model_output in zip(
             dataset.df.index,
             dataset.df.loc[:, model.feature_names].to_dict("records"),
             model_outputs,
         ):
-            sample = {"input_vars": input_vars, "model_output": model_output}
-            prompt = self._make_evaluate_prompt(model, input_vars, model_output, row_index)
-            funcs = self._make_evaluate_functions(model, input_vars, model_output)
-            metadata = self._get_metadata(row_index)
+            conversation = [{"role": "user", "content": input_vars}, {"role": "agent", "content": model_output}]
+
+            messages = self._format_messages(model, conversation)
             try:
-                out = self.llm_client.complete(
-                    [{"role": "system", "content": prompt}],
-                    tools=funcs,
-                    tool_choice={"type": "function", "function": {"name": "evaluate_model"}},
+                raw_eval = self.llm_client.complete(
+                    messages,
                     temperature=self.llm_temperature,
                     caller_id=self.__class__.__name__,
-                    seed=self.rng_seed,
+                    seed=self.llm_seed,
                 )
-                if len(out.tool_calls) != 1 or "passed_test" not in out.tool_calls[0].function.arguments:
-                    raise LLMGenerationError("Invalid function call arguments received")
+                eval_passed, reason = self._parse_evaluation(raw_eval)
             except LLMGenerationError as err:
-                metadata["Reason"] = str(err)
-                evaluation_result.append(
-                    TestResultStatus.ERROR, input_vars, model_output, metadata, {"message": str(err), "sample": sample}
-                )
+                result.add_error(str(err), conversation)
                 continue
 
-            args = out.tool_calls[0].function.arguments
-            metadata["Reason"] = args.get("reason")
-            evaluation_result.append(
-                TestResultStatus.PASSED if args["passed_test"] else TestResultStatus.FAILED,
-                input_vars,
-                model_output,
-                metadata,
-                {"input_vars": input_vars, "model_output": model_output, "reason": args.get("reason")},
-            )
+            result.add_eval(eval_passed, reason, conversation)
 
-        return evaluation_result
+        return result
+
+    def _parse_evaluation_output(self, raw_eval: ChatMessage) -> Tuple[bool, str]:
+        try:
+            eval_result = json.loads(raw_eval.content)
+            return eval_result["eval_passed"], eval_result.get("reason")
+        except (AttributeError, KeyError) as err:
+            raise LLMGenerationError("Could not parse evaluator output") from err
+
+
+class LLMBasedEvaluator(_BaseLLMEvaluator):
+    def __init__(
+        self,
+        prompt: str,
+        prefix_messages: Optional[Sequence[ChatMessage]] = None,
+        llm_temperature=0.1,
+        llm_client: LLMClient = None,
+        llm_seed: int = 1729,
+    ):
+        self.prompt = prompt
+        self.prefix_messages = prefix_messages or []
+        self.llm_temperature = llm_temperature
+        self.llm_client = llm_client if llm_client is not None else get_default_client()
+        self.llm_seed = llm_seed
+
+    def _format_messages(self, model: BaseModel, conversation: Sequence[Dict]) -> Sequence[ChatMessage]:
+        prompt = self._prompt.format(model=model, conversation=format_conversation(conversation))
+        return self._messages + [ChatMessage(role="user", content=prompt)]
