@@ -84,7 +84,7 @@ class KnowledgeBase:
         seed: int = None,
         llm_client: Optional[LLMClient] = None,
         embedding_model: Optional[str] = "text-embedding-ada-002",
-        min_topic_size: int = 2,
+        min_topic_size: int = 3,
         chunk_size: int = 2048,
     ) -> None:
         if len(knowledge_base_df) > 0:
@@ -157,7 +157,7 @@ class KnowledgeBase:
         return self._topics_inst
 
     def _find_topics(self):
-        dbscan = HDBSCAN(min_cluster_size=self._min_topic_size, metric="euclidean", cluster_selection_epsilon=0.1)
+        dbscan = HDBSCAN(min_cluster_size=self._min_topic_size, metric="euclidean", cluster_selection_epsilon=0.0)
         clustering = dbscan.fit(self._embeddings)
         for i, doc in enumerate(self._documents):
             doc.topic_id = clustering.labels_[i]

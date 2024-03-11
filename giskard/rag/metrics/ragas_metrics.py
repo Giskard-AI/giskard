@@ -87,10 +87,10 @@ class RagasMetric(Metric):
         testset_df["answer"] = answers
         testset_df.rename(columns={"reference_context": "contexts", "reference_answer": "ground_truth"}, inplace=True)
         testset_df["contexts"] = testset_df["contexts"].apply(lambda x: x.split("\n------\n"))
-        ragas_dataset = Dataset.from_pandas(testset_df[["question", "ground_truth", "contexts", "answer"]])
+        dataset = Dataset.from_pandas(testset_df[["question", "ground_truth", "contexts", "answer"]])
 
         ragas_metrics_df = evaluate(
-            ragas_dataset,
+            dataset,
             metrics=self.metrics,
             llm=ragas_llm,
             embeddings=ragas_embedddings,
@@ -106,4 +106,7 @@ class RagasMetric(Metric):
         return ragas_metrics_result
 
 
-ragas_metrics = RagasMetric(name="RAGAS", metrics=[context_precision, faithfulness, answer_relevancy, context_recall])
+ragas_context_precision = RagasMetric(name="RAGAS Context Precision", metrics=context_precision)
+ragas_faithfulness = RagasMetric(name="RAGAS Faithfulness", metrics=faithfulness)
+ragas_answer_relevancy = RagasMetric(name="RAGAS Answer Relevancy", metrics=answer_relevancy)
+ragas_context_recall = RagasMetric(name="RAGAS Context Recall", metrics=context_recall)
