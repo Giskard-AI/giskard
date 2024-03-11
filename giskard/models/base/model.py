@@ -26,10 +26,10 @@ from ...exceptions.giskard_exception import GiskardException, python_env_excepti
 from ...llm import get_default_client, set_llm_model
 from ...llm.talk.config import (
     ERROR_RESPONSE,
-    LLM_MODEL,
     MAX_COMPLETION_TOKENS,
     MODEL_INSTRUCTION,
     SUMMARY_PROMPT,
+    get_talk_llm_model,
 )
 from ...llm.talk.tools import (
     BaseTool,
@@ -681,7 +681,7 @@ class BaseModel(ABC):
         context : str
             Context of the previous 'talk' results. Necessary to keep context between sequential 'talk' calls.
         """
-        set_llm_model(LLM_MODEL)
+        set_llm_model(get_talk_llm_model())
         client = get_default_client()
 
         available_tools = self._get_available_tools(dataset, scan_report)

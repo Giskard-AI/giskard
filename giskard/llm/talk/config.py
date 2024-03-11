@@ -1,3 +1,4 @@
+import os
 from enum import Enum
 
 from sklearn.metrics import (
@@ -8,7 +9,10 @@ from sklearn.metrics import (
     r2_score,
 )
 
-LLM_MODEL = "gpt-4-turbo-preview"
+
+def get_talk_llm_model() -> str:
+    return os.getenv("GSK_TALK_LLM_MODEL", "gpt-4-0125-preview")
+
 
 MAX_COMPLETION_TOKENS = 4096
 
