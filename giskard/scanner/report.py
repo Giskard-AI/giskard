@@ -327,3 +327,37 @@ class ScanReport:
             return
 
         return reports
+
+    def generate_rails(self, filename=None):
+        """Generates Rails from the scan report.
+
+        Saves or returns the Rails representation of the scan report.
+
+        Parameters
+        ----------
+        filename : Optional[str]
+            If provided, the Rails will be written to the file.
+        """
+        from ..integrations.nemoguardrails import generate_rails_from_scan_report
+
+        if not hasattr(self, "_rails") or self._rails is None:
+            self._rails = generate_rails_from_scan_report(self)
+
+        if filename:
+            with open(filename, "a") as f:
+                f.write(self._rails)
+            return
+
+        return self._rails
+
+    def update_rails_config(self, filename):
+        """Updates the Rails configuration file.
+
+        Parameters
+        ----------
+        filename : str
+            The path to the Rails configuration file.
+        """
+        from ..integrations.nemoguardrails import generate_rails_config
+
+        generate_rails_config(self, Path(filename))
