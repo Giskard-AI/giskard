@@ -6,6 +6,7 @@ import uuid
 
 import numpy as np
 import pandas as pd
+from bokeh.io import output_notebook, reset_output, show
 from bokeh.models import ColumnDataSource
 from bokeh.palettes import Category20b
 from bokeh.plotting import figure
@@ -189,7 +190,14 @@ class KnowledgeBase:
 
         return self._llm_client.complete([LLMMessage(role="user", content=prompt)], temperature=0.0).content[1:-1]
 
-    def plot_topics(self):
+    def plot_topics(self, notebook: bool = True):
+        if notebook:
+            output_notebook()
+        else:
+            reset_output()
+        show(self._get_knowledge_plot())
+
+    def _get_knowledge_plot(self):
         if self.topics is None:
             raise ValueError("No topics found.")
         tsne = TSNE(perplexity=5)
@@ -200,7 +208,7 @@ class KnowledgeBase:
 
         topics_ids = [doc.topic_id for doc in self._documents]
         palette = Category20b[20]
-        colors = [palette[topic] if topic >= 0 else "#090909" for topic in topics_ids]
+        colors = [palette[topic % 20] if topic >= 0 else "#090909" for topic in topics_ids]
         x_min = embeddings_tsne[:, 0].min()
         x_max = embeddings_tsne[:, 0].max()
         y_min = embeddings_tsne[:, 1].min()

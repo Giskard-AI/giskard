@@ -88,6 +88,6 @@ def test_knowledge_base_topic_plot():
     llm_client.complete.side_effect = [LLMMessage(role="assistant", content=f"'Topic {idx+1}'") for idx in range(n)]
 
     knowledge_base = KnowledgeBase(df, llm_client=llm_client)
-    plot = knowledge_base.plot_topics()
+    plot = knowledge_base._get_knowledge_plot()
     assert plot is not None
     assert isinstance(plot, figure)

@@ -63,7 +63,9 @@ class RAGReport:
     def _repr_html_(self):
         tpl = get_template("rag_report/rag_report.html")
 
-        kb_script, kb_div = components(self._knowledge_base.plot_topics()) if self._knowledge_base else (None, None)
+        kb_script, kb_div = (
+            components(self._knowledge_base._get_knowledge_plot()) if self._knowledge_base else (None, None)
+        )
         q_type_script, q_type_div = components(self.plot_correctness_by_metadata("question_type"))
         topic_script, topic_div = components(self.plot_correctness_by_metadata("topic"))
 
