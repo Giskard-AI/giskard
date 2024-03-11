@@ -4,7 +4,7 @@ import logging
 import uuid
 
 import pandas as pd
-from tqdm.autonotebook import tqdm
+from tqdm.auto import tqdm
 
 from ..llm.client import LLMClient
 from .knowledge_base import KnowledgeBase
