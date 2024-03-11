@@ -164,7 +164,7 @@ class KnowledgeBase:
 
         topics_ids = set(clustering.labels_)
         topics = {
-            idx: self._get_topic_name([self._documents[doc_id] for doc_id in np.where(clustering.labels_ == idx)[0]])
+            idx: self._get_topic_name([self._documents[doc_id] for doc_id in np.nonzero(clustering.labels_ == idx)[0]])
             for idx in topics_ids
             if idx != -1
         }

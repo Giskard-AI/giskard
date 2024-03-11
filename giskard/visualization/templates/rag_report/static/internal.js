@@ -1,6 +1,6 @@
 function opentab(evt, name) {
     // Declare all variables
-    var i, tabcontent, tablinks;
+    let i, tabcontent, tablinks;
 
     // Get all elements with class="tabcontent" and hide them
     tabcontent = document.getElementsByClassName("tabcontent");
@@ -19,7 +19,7 @@ function opentab(evt, name) {
     evt.currentTarget.className += " active";
 }
 
-tabcontent = document.getElementsByClassName("tabcontent");
+let tabcontent = document.getElementsByClassName("tabcontent");
 tabcontent[0].style.display = "block";
-tablinks = document.getElementsByClassName("tablinks");
+let tablinks = document.getElementsByClassName("tablinks");
 tablinks[0].className += " active";

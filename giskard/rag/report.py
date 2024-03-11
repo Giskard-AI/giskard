@@ -146,9 +146,8 @@ class RAGReport:
         knowledge_base = KnowledgeBase(knowledge_base_data, llm_client=llm_client, **knowledge_base_meta)
         knowledge_base._topics_inst = topics
 
-        if documents_topics is not None:
-            for doc_idx, doc in enumerate(knowledge_base._documents):
-                doc.topic_id = documents_topics[doc_idx]
+        for doc_idx, doc in enumerate(knowledge_base._documents):
+            doc.topic_id = documents_topics[doc_idx]
 
         metrics_results = {}
         for file in path.iterdir():
@@ -241,15 +240,8 @@ class RAGReport:
 
     @property
     def knowledge_base_score(self):
-        # kb_correctness = self.correctness
         correctness_by_topic = [topic_score for topic, topic_score in self.correctness_by_topic().itertuples()]
         return 1 - (max(correctness_by_topic) - min(correctness_by_topic))
-        # return 1 + 1 / len(self._testset) * sum(
-        #     [
-        #         self._testset.count_sample_by_metadata("topic").loc[topic] * min(0, topic_score - kb_correctness)
-        #         for topic, topic_score in self.correctness_by_topic().itertuples()
-        #     ]
-        # )
 
     def _correctness_by_metadata(self, metadata_name: str):
         """
