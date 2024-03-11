@@ -229,7 +229,7 @@ class GiskardClient:
             },
         )
 
-    def create_project(self, project_key: str, name: str, kernel_name: str = None, description: str = None) -> Project:
+    def create_project(self, project_key: str, name: str, description: str = None, kernel_name: str = None) -> Project:
         """Function to create a project in Giskard
 
         Parameters
@@ -238,10 +238,10 @@ class GiskardClient:
             The unique value of the project which will be used to identify  and fetch the project in future
         name : str
             The name of the project
-        kernel_name : str
-            The name of the kernel to run on
         description : str, optional
             Describe your project, by default None
+        kernel_name : str
+            The name of the kernel to run on
 
         Returns
         -------
