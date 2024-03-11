@@ -4,6 +4,7 @@ import logging
 import uuid
 
 import pandas as pd
+from tqdm.autonotebook import tqdm
 
 from ..llm.client import LLMClient
 from .knowledge_base import KnowledgeBase
@@ -75,15 +76,13 @@ def generate_testset(
     topics = knowledge_base.topics
 
     generated_questions = []
-    for generator in question_generators:
-        for idx in range(num_questions):
-            logger.info(
-                f"Generating question {idx + 1}/{num_questions} for question type {generator.question_type.name}."
-            )
+    for generator in tqdm(question_generators, desc="Testset generation"):
+        for idx in tqdm(range(num_questions), desc=f"Generating {generator.question_type.name} questions"):
             context_docs, topic_id = knowledge_base._get_random_document_group()
             try:
                 generated_qa, question_metadata = generator.generate_question(context_docs)
                 question_metadata["topic"] = topics[topic_id]
+                question_metadata["seed_document_id"] = context_docs[0].id
                 generated_questions.append(
                     {
                         "question": generated_qa["question"],

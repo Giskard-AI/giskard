@@ -2,6 +2,7 @@ from typing import Optional, Sequence
 
 import logging
 import textwrap
+import uuid
 
 import numpy as np
 import pandas as pd
@@ -46,6 +47,7 @@ class Document:
             self.content = "\n".join(f"{feat}: {document[feat]}" for feat in features)
 
         self.metadata = document
+        self.id = document.get("id", str(uuid.uuid4()))
 
 
 class KnowledgeBase:
@@ -100,11 +102,6 @@ class KnowledgeBase:
         self._context_similarity_threshold = context_similarity_threshold
         self._context_neighbors = context_neighbors
 
-        document_languages = [_detect_lang(doc.content) for doc in self._documents]
-        languages, occurences = np.unique(
-            ["en" if (pd.isna(lang) or lang == "unknown") else lang for lang in document_languages], return_counts=True
-        )
-        self._language = languages[np.argmax(occurences)]
         self._rng = np.random.default_rng(seed=seed)
         self._llm_client = llm_client or get_default_client()
         self._embedding_model = embedding_model
@@ -114,6 +111,14 @@ class KnowledgeBase:
         self._embeddings_inst = None
         self._topics_inst = None
         self._index_inst = None
+
+        document_languages = [_detect_lang(doc.content) for doc in self._documents]
+        languages, occurences = np.unique(
+            ["en" if (pd.isna(lang) or lang == "unknown") else lang for lang in document_languages], return_counts=True
+        )
+        self._language = languages[np.argmax(occurences)]
+
+        self._documents_index = {doc.id: doc for doc in self._documents}
 
     @property
     def _embeddings(self):
@@ -155,6 +160,9 @@ class KnowledgeBase:
         if self._topics_inst is None:
             self._topics_inst = self._find_topics()
         return self._topics_inst
+
+    def get_document_by_id(self, doc_id):
+        return self._documents_index[doc_id]
 
     def _find_topics(self):
         dbscan = HDBSCAN(min_cluster_size=self._min_topic_size, metric="euclidean", cluster_selection_epsilon=0.0)
