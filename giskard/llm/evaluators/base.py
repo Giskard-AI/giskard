@@ -2,9 +2,8 @@ from typing import Dict, Optional, Sequence, Tuple
 
 import json
 from abc import ABC, abstractmethod
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 
-from ...core.test_result import TestResultDetails
 from ...datasets.base import Dataset
 from ...models.base.model import BaseModel
 from ..client import LLMClient, get_default_client
@@ -15,10 +14,9 @@ from .utils import format_conversation
 
 @dataclass
 class EvaluationResult:
-    failure_examples: Sequence[dict]
-    success_examples: Sequence[dict]
-    errors: Sequence[dict]
-    details: Optional[TestResultDetails] = None
+    failure_examples: Sequence[dict] = field(default_factory=list)
+    success_examples: Sequence[dict] = field(default_factory=list)
+    errors: Sequence[dict] = field(default_factory=list)
 
     @property
     def passed(self):
@@ -56,6 +54,11 @@ class BaseEvaluator(ABC):
 
 
 class _BaseLLMEvaluator(BaseEvaluator):
+    def __init__(self, llm_client: Optional[LLMClient] = None, llm_temperature: float = 0.1, llm_seed: int = 42):
+        self.llm_client = llm_client if llm_client is not None else get_default_client()
+        self.llm_temperature = llm_temperature
+        self.llm_seed = llm_seed
+
     @abstractmethod
     def _format_messages(self, model: BaseModel, conversation: Sequence[Dict]) -> Sequence[ChatMessage]:
         ...
@@ -79,12 +82,12 @@ class _BaseLLMEvaluator(BaseEvaluator):
                     caller_id=self.__class__.__name__,
                     seed=self.llm_seed,
                 )
-                eval_passed, reason = self._parse_evaluation(raw_eval)
+                eval_passed, reason = self._parse_evaluation_output(raw_eval)
             except LLMGenerationError as err:
                 result.add_error(str(err), conversation)
                 continue
 
-            result.add_eval(eval_passed, reason, conversation)
+            result.add_sample(eval_passed, reason, conversation)
 
         return result
 
@@ -101,15 +104,12 @@ class LLMBasedEvaluator(_BaseLLMEvaluator):
         self,
         prompt: str,
         prefix_messages: Optional[Sequence[ChatMessage]] = None,
-        llm_temperature=0.1,
-        llm_client: LLMClient = None,
-        llm_seed: int = 1729,
+        *args,
+        **kwargs,
     ):
+        super().__init__(*args, **kwargs)
         self.prompt = prompt
         self.prefix_messages = prefix_messages or []
-        self.llm_temperature = llm_temperature
-        self.llm_client = llm_client if llm_client is not None else get_default_client()
-        self.llm_seed = llm_seed
 
     def _format_messages(self, model: BaseModel, conversation: Sequence[Dict]) -> Sequence[ChatMessage]:
         prompt = self._prompt.format(model=model, conversation=format_conversation(conversation))
