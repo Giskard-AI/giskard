@@ -111,7 +111,7 @@ class KnowledgeBase:
         self._llm_client = llm_client or get_default_client()
         self._embedding_model = embedding_model
 
-        self._min_topic_size = min_topic_size or round(2 + np.log10(len(self._documents)))
+        self._min_topic_size = min_topic_size or round(2 + np.log(len(self._documents)))
         self.chunk_size = chunk_size
 
         self._embeddings_inst = None
@@ -141,7 +141,7 @@ class KnowledgeBase:
     def _reduced_embeddings(self):
         if self._reduced_embeddings_inst is None:
             reducer = umap.UMAP(
-                n_neighbors=10,
+                n_neighbors=50,
                 min_dist=0.5,
                 n_components=2,
             )
