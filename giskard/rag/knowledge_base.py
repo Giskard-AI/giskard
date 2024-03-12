@@ -6,12 +6,12 @@ import uuid
 
 import numpy as np
 import pandas as pd
+import umap
 from bokeh.io import output_notebook, reset_output, show
 from bokeh.models import ColumnDataSource
-from bokeh.palettes import Category20b
+from bokeh.palettes import Category20
 from bokeh.plotting import figure
 from sklearn.cluster import HDBSCAN
-from sklearn.manifold import TSNE
 
 from ..core.errors import GiskardInstallationError
 from ..datasets.metadata.text_metadata_provider import _detect_lang
@@ -113,7 +113,7 @@ class KnowledgeBase:
         self._topics_inst = None
         self._index_inst = None
 
-        document_languages = [_detect_lang(doc.content) for doc in self._documents]
+        document_languages = [_detect_lang(doc.content[:300]) for doc in self._rng.choice(self._documents, size=10)]
         languages, occurences = np.unique(
             ["en" if (pd.isna(lang) or lang == "unknown") else lang for lang in document_languages], return_counts=True
         )
@@ -200,14 +200,21 @@ class KnowledgeBase:
     def _get_knowledge_plot(self):
         if self.topics is None:
             raise ValueError("No topics found.")
-        tsne = TSNE(perplexity=5)
-        embeddings_tsne = tsne.fit_transform(self._embeddings)
+        # tsne = TSNE(perplexity=5)
+        # embeddings_tsne = tsne.fit_transform(self._embeddings)
 
-        TITLE = "TSNE of FAQ embeddings (colored by topic)"
+        reducer = umap.UMAP(
+            n_neighbors=50,
+            min_dist=0.5,
+            n_components=2,
+        )
+        embeddings_tsne = reducer.fit_transform(self._embeddings)
+
+        TITLE = "Knowledge Base UMAP representation (colored by topic)"
         TOOLS = "hover,pan,wheel_zoom,box_zoom,reset,save"
 
         topics_ids = [doc.topic_id for doc in self._documents]
-        palette = Category20b[20]
+        palette = Category20[20]
         colors = [palette[topic % 20] if topic >= 0 else "#090909" for topic in topics_ids]
         x_min = embeddings_tsne[:, 0].min()
         x_max = embeddings_tsne[:, 0].max()
