@@ -8,7 +8,7 @@ import numpy as np
 import pandas as pd
 import umap
 from bokeh.io import output_notebook, reset_output, show
-from bokeh.models import ColumnDataSource
+from bokeh.models import ColumnDataSource, HoverTool, LabelSet
 from bokeh.palettes import Category20
 from bokeh.plotting import figure
 from sklearn.cluster import HDBSCAN
@@ -145,7 +145,6 @@ class KnowledgeBase:
                 min_dist=0.5,
                 n_components=2,
             )
-
             self._reduced_embeddings_inst = reducer.fit_transform(self._embeddings)
         return self._reduced_embeddings_inst
 
@@ -200,6 +199,7 @@ class KnowledgeBase:
             if idx != -1
         }
         topics[-1] = "Others"
+
         return topics
 
     def _get_topic_name(self, topic_documents):
@@ -223,8 +223,7 @@ class KnowledgeBase:
         document_ids = [question["metadata"]["seed_document_id"] for question in question_evaluation]
         reduced_embeddings = self._reduced_embeddings[document_ids]
 
-        TITLE = "Knowledge Base UMAP representation (colored by correctness)"
-        TOOLS = "hover,pan,wheel_zoom,box_zoom,reset,save"
+        TITLE = "Knowledge Base UMAP representation"
 
         topics = [question["metadata"]["topic"] for question in question_evaluation]
         failure_palette = ["#ba0e0e", "#0a980a"]
@@ -256,19 +255,10 @@ class KnowledgeBase:
                 "color": colors,
             }
         )
-        p = figure(
-            tools=TOOLS,
-            toolbar_location="right",
-            title=TITLE,
-            x_range=x_range,
-            y_range=y_range,
-            sizing_mode="stretch_width",
-        )
-        p.toolbar.logo = "grey"
-        p.background_fill_color = "#efefef"
-        p.grid.grid_line_color = "white"
 
-        p.hover.tooltips = """
+        hover = HoverTool(
+            mode="mouse",
+            tooltips="""
         <div style="width:400px;">
         <b>Document id:</b> @id <br>
         <b>Topic:</b> @topic <br>
@@ -278,9 +268,23 @@ class KnowledgeBase:
         <b>Correctness:</b> @correctness <br>
         <b>Content:</b> @content
         </div>
-        """
+        """,
+        )
 
-        p.scatter(
+        p = figure(
+            tools=["pan", "wheel_zoom", "box_zoom", "reset", "save"],
+            toolbar_location="right",
+            title=TITLE,
+            x_range=x_range,
+            y_range=y_range,
+            sizing_mode="stretch_width",
+        )
+        p.add_tools(hover)
+        p.toolbar.logo = "grey"
+        p.background_fill_color = "#efefef"
+        p.grid.grid_line_color = "white"
+
+        foreground_scatter = p.scatter(
             x="x",
             y="y",
             source=source,
@@ -292,10 +296,58 @@ class KnowledgeBase:
             size=12,
             legend_group="correctness",
         )
+
+        hover.renderers = [foreground_scatter]
+
         p.legend.location = "top_right"
         p.legend.title = "Knowledge Base Correctness"
         p.legend.title_text_font_style = "bold"
         p.title.text_font_size = "14pt"
+
+        background_source = ColumnDataSource(
+            data={
+                "x": self._reduced_embeddings[:, 0],
+                "y": self._reduced_embeddings[:, 1],
+            }
+        )
+
+        p.scatter(
+            x="x",
+            y="y",
+            source=background_source,
+            color="grey",
+            alpha=0.2,
+            size=12,
+        )
+
+        topic_centers = np.array(
+            [
+                np.mean(
+                    [self._reduced_embeddings[doc.id] for doc in self._documents if doc.topic_id == topic_id], axis=0
+                )
+                for topic_id in range(len(self.topics) - 1)
+            ]
+        )
+        topics = [self.topics[topic_id] for topic_id in range(len(self.topics) - 1)]
+        label_source = ColumnDataSource(
+            data={
+                "x": topic_centers[:, 0],
+                "y": topic_centers[:, 1],
+                "topic": topics,
+            }
+        )
+
+        labels = LabelSet(
+            x="x",
+            y="y",
+            text="topic",
+            level="glyph",
+            text_align="center",
+            text_font_size="12pt",
+            text_font_style="bold",
+            source=label_source,
+        )
+        p.add_layout(labels)
 
         return p
 
@@ -303,7 +355,7 @@ class KnowledgeBase:
         if self.topics is None:
             raise ValueError("No topics found.")
 
-        TITLE = "Knowledge Base UMAP representation (colored by topic)"
+        TITLE = "Knowledge Base UMAP representation"
         TOOLS = "hover,pan,wheel_zoom,box_zoom,reset,save"
 
         topics_ids = [doc.topic_id for doc in self._documents]
@@ -345,7 +397,7 @@ class KnowledgeBase:
         <div style="width:400px;">
         <b>Document id:</b> @id <br>
         <b>Topic:</b> @topic <br>
-        <b>Content:</b> @content
+        <b>Document Content:</b> @content
         </div>
         """
 
