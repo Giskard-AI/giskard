@@ -7,7 +7,7 @@ import matplotlib
 import numpy as np
 import pandas as pd
 from bokeh.embed import components
-from bokeh.models import ColumnDataSource
+from bokeh.models import ColumnDataSource, Span, TabPanel, Tabs
 from bokeh.plotting import figure
 
 from giskard.llm.client.base import LLMClient
@@ -63,9 +63,7 @@ class RAGReport:
     def _repr_html_(self):
         tpl = get_template("rag_report/rag_report.html")
 
-        kb_script, kb_div = (
-            components(self._knowledge_base._get_knowledge_plot()) if self._knowledge_base else (None, None)
-        )
+        kb_script, kb_div = components(self._get_knowledge_plot()) if self._knowledge_base else (None, None)
         q_type_script, q_type_div = components(self.plot_correctness_by_metadata("question_type"))
         topic_script, topic_div = components(self.plot_correctness_by_metadata("topic"))
 
@@ -267,6 +265,22 @@ class RAGReport:
         correctness.index.rename(metadata_name, inplace=True)
         return correctness
 
+    def _get_knowledge_plot(self):
+        tabs = [
+            TabPanel(
+                child=self._knowledge_base._get_failure_plot(
+                    self._dataframe[
+                        ["question", "reference_answer", "assistant_answer", "correctness", "metadata"]
+                    ].to_dict(orient="records")
+                ),
+                title="Failures",
+            ),
+            TabPanel(child=self._knowledge_base._get_knowledge_plot(), title="Topic exploration"),
+        ]
+
+        tabs = Tabs(tabs=tabs, sizing_mode="stretch_width", tabs_location="below")
+        return tabs
+
     def plot_correctness_by_metadata(self, metadata_name: str):
         """
         Create a bokeh plot showing the correctness by a metadata field.
@@ -277,12 +291,10 @@ class RAGReport:
             metadata_values = [QuestionTypes(v).name for v in metadata_values]
         overall_correctness = self.correctness
         correctness = data["correctness"].to_numpy()
-        shift = (data["correctness"].to_numpy() - overall_correctness) / overall_correctness * 100
 
         source = ColumnDataSource(
             data={
-                "correctness_shift": shift,
-                "correctness": correctness,
+                "correctness": correctness * 100,
                 "metadata_values": metadata_values,
                 "colors": get_colors(correctness),
             }
@@ -297,13 +309,27 @@ class RAGReport:
             width_policy="max",
         )
 
-        p.hbar(y="metadata_values", right="correctness_shift", source=source, height=0.9, fill_color="colors")
-        p.xaxis.axis_label = "Correctness shift (%) against the overall correctness on the testset"
+        p.hbar(y="metadata_values", right="correctness", source=source, height=0.9, fill_color="colors")
+        vline = Span(
+            location=overall_correctness * 100, dimension="height", line_color="red", line_width=2, line_dash="dashed"
+        )
+        p.add_layout(vline)
+
+        r_line = p.line(
+            [0],
+            [0],
+            legend_label="Correctness on the entire Testset",
+            line_dash="dashed",
+            line_color="red",
+            line_width=2,
+        )
+        r_line.visible = False  # Set this fake line to invisible
+
+        p.xaxis.axis_label = "Correctness (%)"
         p.title.text_font_size = "14pt"
         p.hover.tooltips = [
             (metadata_name, "@metadata_values"),
             ("Correctness", "@correctness{0.00}"),
-            ("Correctness shift", "@correctness_shift{0.00}%"),
         ]
 
         return p

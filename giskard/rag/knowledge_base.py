@@ -1,4 +1,4 @@
-from typing import Optional, Sequence
+from typing import Optional, Sequence, Union
 
 import logging
 import textwrap
@@ -39,7 +39,7 @@ Make sure to only return the summary as a valid string, starting and ending with
 class Document:
     """A class to wrap the elements of the knowledge base into a unified format."""
 
-    def __init__(self, document: dict, features: Optional[Sequence] = None):
+    def __init__(self, document: dict, features: Optional[Sequence] = None, idx: Optional[Union[int, str]] = None):
         features = features if features is not None else list(document.keys())
 
         if len(features) == 1:
@@ -48,7 +48,8 @@ class Document:
             self.content = "\n".join(f"{feat}: {document[feat]}" for feat in features)
 
         self.metadata = document
-        self.id = document.get("id", str(uuid.uuid4()))
+        self.id = idx or str(uuid.uuid4())
+        self.embeddings = None
 
 
 class KnowledgeBase:
@@ -92,8 +93,12 @@ class KnowledgeBase:
     ) -> None:
         if len(knowledge_base_df) > 0:
             self._documents = [
-                Document(knowledge_chunk, features=knowledge_base_columns)
-                for knowledge_chunk in knowledge_base_df.to_dict("records")
+                Document(
+                    knowledge_chunk,
+                    features=knowledge_base_columns,
+                    idx=idx if "id" not in knowledge_chunk else knowledge_chunk.pop("id"),
+                )
+                for idx, knowledge_chunk in enumerate(knowledge_base_df.to_dict("records"))
             ]
         else:
             raise ValueError("Cannot generate a vector store from empty DataFrame.")
@@ -112,6 +117,7 @@ class KnowledgeBase:
         self._embeddings_inst = None
         self._topics_inst = None
         self._index_inst = None
+        self._reduced_embeddings_inst = None
 
         document_languages = [_detect_lang(doc.content[:300]) for doc in self._rng.choice(self._documents, size=10)]
         languages, occurences = np.unique(
@@ -127,7 +133,21 @@ class KnowledgeBase:
             self._embeddings_inst = self._llm_client.embeddings(
                 [doc.content for doc in self._documents], model=self._embedding_model, chunk_size=self.chunk_size
             )
+            for doc, emb in zip(self._documents, self._embeddings_inst):
+                doc.embeddings = emb
         return self._embeddings_inst
+
+    @property
+    def _reduced_embeddings(self):
+        if self._reduced_embeddings_inst is None:
+            reducer = umap.UMAP(
+                n_neighbors=10,
+                min_dist=0.5,
+                n_components=2,
+            )
+
+            self._reduced_embeddings_inst = reducer.fit_transform(self._embeddings)
+        return self._reduced_embeddings_inst
 
     @property
     def _dimension(self):
@@ -162,7 +182,9 @@ class KnowledgeBase:
             self._topics_inst = self._find_topics()
         return self._topics_inst
 
-    def get_document_by_id(self, doc_id):
+    def get_document_by_id(self, doc_id: Union[Sequence[str], str]):
+        if isinstance(doc_id, Sequence):
+            return [self._documents_index[doc] for doc in doc_id]
         return self._documents_index[doc_id]
 
     def _find_topics(self):
@@ -197,51 +219,123 @@ class KnowledgeBase:
             reset_output()
         show(self._get_knowledge_plot())
 
-    def _get_knowledge_plot(self):
-        if self.topics is None:
-            raise ValueError("No topics found.")
-        # tsne = TSNE(perplexity=5)
-        # embeddings_tsne = tsne.fit_transform(self._embeddings)
+    def _get_failure_plot(self, question_evaluation: Sequence[dict] = None):
+        document_ids = [question["metadata"]["seed_document_id"] for question in question_evaluation]
+        reduced_embeddings = self._reduced_embeddings[document_ids]
 
-        reducer = umap.UMAP(
-            n_neighbors=50,
-            min_dist=0.5,
-            n_components=2,
-        )
-        embeddings_tsne = reducer.fit_transform(self._embeddings)
-
-        TITLE = "Knowledge Base UMAP representation (colored by topic)"
+        TITLE = "Knowledge Base UMAP representation (colored by correctness)"
         TOOLS = "hover,pan,wheel_zoom,box_zoom,reset,save"
 
-        topics_ids = [doc.topic_id for doc in self._documents]
-        palette = Category20[20]
-        colors = [palette[topic % 20] if topic >= 0 else "#090909" for topic in topics_ids]
-        x_min = embeddings_tsne[:, 0].min()
-        x_max = embeddings_tsne[:, 0].max()
-        y_min = embeddings_tsne[:, 1].min()
-        y_max = embeddings_tsne[:, 1].max()
+        topics = [question["metadata"]["topic"] for question in question_evaluation]
+        failure_palette = ["#ba0e0e", "#0a980a"]
+        questions = [question["question"] for question in question_evaluation]
+        assistant_answer = [question["assistant_answer"] for question in question_evaluation]
+        reference_answer = [question["reference_answer"] for question in question_evaluation]
+        correctness = [question["correctness"] for question in question_evaluation]
+        colors = [failure_palette[question["correctness"]] for question in question_evaluation]
+
+        x_min = self._reduced_embeddings[:, 0].min()
+        x_max = self._reduced_embeddings[:, 0].max()
+        y_min = self._reduced_embeddings[:, 1].min()
+        y_max = self._reduced_embeddings[:, 1].max()
 
         x_range = (x_min - (x_max - x_min) * 0.05, x_max + (x_max - x_min) * 0.6)
         y_range = (y_min - (y_max - y_min) * 0.25, y_max + (y_max - y_min) * 0.25)
 
         source = ColumnDataSource(
             data={
-                "x": embeddings_tsne[:, 0],
-                "y": embeddings_tsne[:, 1],
-                "topic": [textwrap.fill(self.topics[topic_id], 40) for topic_id in topics_ids],
-                "id": list(range(len(topics_ids))),
-                "content": [doc.content for doc in self._documents],
+                "x": reduced_embeddings[:, 0],
+                "y": reduced_embeddings[:, 1],
+                "topic": [textwrap.fill(t) for t in topics],
+                "correctness": correctness,
+                "questions": questions,
+                "assistant_answer": assistant_answer,
+                "reference_answer": reference_answer,
+                "id": document_ids,
+                "content": [self._documents[doc_id].content[:500] for doc_id in document_ids],
                 "color": colors,
             }
         )
-
         p = figure(
             tools=TOOLS,
             toolbar_location="right",
-            sizing_mode="stretch_width",
             title=TITLE,
             x_range=x_range,
             y_range=y_range,
+            sizing_mode="stretch_width",
+        )
+        p.toolbar.logo = "grey"
+        p.background_fill_color = "#efefef"
+        p.grid.grid_line_color = "white"
+
+        p.hover.tooltips = """
+        <div style="width:400px;">
+        <b>Document id:</b> @id <br>
+        <b>Topic:</b> @topic <br>
+        <b>Question:</b> @questions <br>
+        <b>Assistant Answer:</b> @assistant_answer <br>
+        <b>Reference Answer:</b> @reference_answer <br>
+        <b>Correctness:</b> @correctness <br>
+        <b>Content:</b> @content
+        </div>
+        """
+
+        p.scatter(
+            x="x",
+            y="y",
+            source=source,
+            color="color",
+            line_color="color",
+            line_alpha=1.0,
+            line_width=2,
+            alpha=0.7,
+            size=12,
+            legend_group="correctness",
+        )
+        p.legend.location = "top_right"
+        p.legend.title = "Knowledge Base Correctness"
+        p.legend.title_text_font_style = "bold"
+        p.title.text_font_size = "14pt"
+
+        return p
+
+    def _get_knowledge_plot(self):
+        if self.topics is None:
+            raise ValueError("No topics found.")
+
+        TITLE = "Knowledge Base UMAP representation (colored by topic)"
+        TOOLS = "hover,pan,wheel_zoom,box_zoom,reset,save"
+
+        topics_ids = [doc.topic_id for doc in self._documents]
+        palette = Category20[20]
+
+        colors = np.array([palette[topic % 20] if topic >= 0 else "#090909" for topic in topics_ids])
+
+        x_min = self._reduced_embeddings[:, 0].min()
+        x_max = self._reduced_embeddings[:, 0].max()
+        y_min = self._reduced_embeddings[:, 1].min()
+        y_max = self._reduced_embeddings[:, 1].max()
+
+        x_range = (x_min - (x_max - x_min) * 0.05, x_max + (x_max - x_min) * 0.6)
+        y_range = (y_min - (y_max - y_min) * 0.25, y_max + (y_max - y_min) * 0.25)
+
+        source = ColumnDataSource(
+            data={
+                "x": self._reduced_embeddings[:, 0],
+                "y": self._reduced_embeddings[:, 1],
+                "topic": [textwrap.fill(self.topics[topic_id], 40) for topic_id in topics_ids],
+                "id": [doc.id for doc in self._documents],
+                "content": [doc.content[:500] for doc in self._documents],
+                "color": colors,
+            }
+        )
+        p = figure(
+            tools=TOOLS,
+            toolbar_location="right",
+            title=TITLE,
+            x_range=x_range,
+            y_range=y_range,
+            sizing_mode="stretch_width",
         )
         p.toolbar.logo = "grey"
         p.background_fill_color = "#efefef"
@@ -272,7 +366,6 @@ class KnowledgeBase:
         p.legend.title_text_font_style = "bold"
         p.title.text_font_size = "14pt"
 
-        # show(p)
         return p
 
     def _get_random_document(self):
