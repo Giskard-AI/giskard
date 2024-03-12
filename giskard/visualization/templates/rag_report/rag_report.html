@@ -61,13 +61,13 @@
 
             <div class="flex-row">
                 <div style="flex:0.7">
-                    <div class="correctness-indicator {% if correctness >= 0.7 %} green {% elif correctness >= 0.3 %} orange {% else %} red {% endif %}">Overall score: {{(correctness*100)|round(2)}}% </div>
+                    <div class="correctness-indicator {% if correctness >= 0.7 %} green {% elif correctness >= 0.3 %} orange {% else %} red {% endif %}">Overall Correctness Score: {{(correctness*100)|round(2)}}% </div>
                 </div>
                 
-                <div class="corr-plot">
+                <!-- <div class="corr-plot">
                     {{q_type_correctness_script | safe}}
                     {{q_type_correctness_div | safe}}
-                </div>
+                </div> -->
                 <div class="corr-plot">
                     {{topic_correctness_script | safe}}
                     {{topic_correctness_div | safe}}
