@@ -112,6 +112,10 @@ class RAGReport:
         self.save_html(path / "report.html")
         self._testset.save(path / "testset.json")
 
+        report_details = {"recommendation": self._recommendation}
+        with open(path / "report_details.json", "w", encoding="utf-8") as f:
+            json.dump(report_details, f)
+
         self._knowledge_base._knowledge_base_df.to_json(path / "knowledge_base.jsonl", orient="records", lines=True)
         with open(path / "knowledge_base_meta.json", "w", encoding="utf-8") as f:
             json.dump(self._knowledge_base.get_savable_data(), f)
@@ -159,7 +163,11 @@ class RAGReport:
                 metrics_results[metric_name]["id"] = metrics_results[metric_name]["id"].astype(str)
                 metrics_results[metric_name].set_index("id", inplace=True)
 
-        return cls(testset, answers, metrics_results, knowledge_base)
+        report_details = json.load(open(path / "report_details.json", "r"))
+
+        report = cls(testset, answers, metrics_results, knowledge_base)
+        report._recommendation = report_details["recommendation"]
+        return report
 
     @property
     def topics(self):
