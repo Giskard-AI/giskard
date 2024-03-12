@@ -186,6 +186,7 @@ llm = [
     "tenacity>=4.11.0",
     "faiss-cpu>=1.7.4",
     "bokeh>=3.3.4",
+    "umap-learn>=0.5.5",
 ]
 
 hub = [
