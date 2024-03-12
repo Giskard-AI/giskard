@@ -17,15 +17,14 @@ logger = logging.getLogger(__name__)
 
 def generate_testset(
     knowledge_base: KnowledgeBase,
-    num_questions: int = 30,
+    num_questions: int,
     question_modifiers: Optional[Union[BaseQuestionModifier, Sequence[BaseQuestionModifier]]] = None,
     base_generator: Optional[BaseQuestionsGenerator] = None,
-    language: str = "en",
+    language: Optional[str] = None,
     assistant_description: Optional[str] = None,
-    generate_simple_question: bool = True,
-    context_window_length: int = 8192,
+    generate_simple_question: Optional[bool] = True,
+    context_window_length: Optional[int] = 8192,
     llm_client: Optional[LLMClient] = None,
-    conversational: bool = False,
 ) -> QATestset:
     """Generate a testset from a knowledge base.
     By default it generates `num_questions` questions using the `giskard.rag.base_question_generator.BaseQuestionsGenerator`. If question modifiers are provided,
@@ -52,8 +51,6 @@ def generate_testset(
         Context window length of the llm used in the `llm_client` of the generator
     llm_client: LLMClient, optional
         The LLM client to use for question generation. If not specified, a default openai client will be used.
-    conversational : bool
-        Whether to generate conversational questions or not. By default False.
 
     Returns
     -------

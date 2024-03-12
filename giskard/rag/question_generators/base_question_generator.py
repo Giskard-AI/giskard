@@ -70,11 +70,11 @@ class BaseQuestionsGenerator:
     def __init__(
         self,
         knowledge_base: KnowledgeBase,
-        language: str = "en",
-        assistant_description: str = "This assistant is a chatbot that answers question from users.",
-        context_window_length: int = 8192,
+        language: Optional[str] = "en",
+        assistant_description: Optional[str] = "This assistant is a chatbot that answers question from users.",
+        context_window_length: Optional[int] = 8192,
         llm_client: Optional[LLMClient] = None,
-        llm_temperature: float = 0.5,
+        llm_temperature: Optional[float] = 0.5,
     ):
         self._knowledge_base = knowledge_base
         self._language = language
