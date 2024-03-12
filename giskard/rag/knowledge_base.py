@@ -2,7 +2,6 @@ from typing import Optional, Sequence, Union
 
 import logging
 import textwrap
-import uuid
 
 import numpy as np
 import pandas as pd
@@ -39,7 +38,7 @@ Make sure to only return the summary as a valid string, starting and ending with
 class Document:
     """A class to wrap the elements of the knowledge base into a unified format."""
 
-    def __init__(self, document: dict, features: Optional[Sequence] = None, idx: Optional[Union[int, str]] = None):
+    def __init__(self, document: dict, idx: int, features: Optional[Sequence] = None):
         features = features if features is not None else list(document.keys())
 
         if len(features) == 1:
@@ -48,7 +47,7 @@ class Document:
             self.content = "\n".join(f"{feat}: {document[feat]}" for feat in features)
 
         self.metadata = document
-        self.id = idx or str(uuid.uuid4())
+        self.id = idx
         self.embeddings = None
 
 
@@ -111,6 +110,7 @@ class KnowledgeBase:
         self._rng = np.random.default_rng(seed=seed)
         self._llm_client = llm_client or get_default_client()
         self._embedding_model = embedding_model
+
         self._min_topic_size = min_topic_size or round(2 + np.log10(len(self._documents)))
         self.chunk_size = chunk_size
 

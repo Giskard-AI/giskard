@@ -17,6 +17,7 @@ def make_testset_df():
                     "question_type": 1,
                     "color": "blue",
                     "topic": "Cheese_1",
+                    "seed_document_id": 1,
                 },
             },
             {
@@ -29,6 +30,7 @@ def make_testset_df():
                     "question_type": 1,
                     "color": "red",
                     "topic": "Cheese_1",
+                    "seed_document_id": 2,
                 },
             },
             {
@@ -41,6 +43,7 @@ def make_testset_df():
                     "question_type": 1,
                     "color": "blue",
                     "topic": "Cheese_1",
+                    "seed_document_id": 2,
                 },
             },
             {
@@ -53,6 +56,7 @@ def make_testset_df():
                     "question_type": 2,
                     "color": "red",
                     "topic": "Cheese_1",
+                    "seed_document_id": 2,
                 },
             },
             {
@@ -66,6 +70,7 @@ def make_testset_df():
                     "color": "blue",
                     "distracting_context": "This is a distracting context",
                     "topic": "Cheese_2",
+                    "seed_document_id": 2,
                 },
             },
             {
@@ -79,6 +84,7 @@ def make_testset_df():
                     "color": "blue",
                     "distracting_context": "This is a distracting context",
                     "topic": "Cheese_2",
+                    "seed_document_id": 2,
                 },
             },
         ]
