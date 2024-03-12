@@ -51,15 +51,12 @@ set_llm_model('my-gpt-4-model')
 We are now ready to start.
 
 
-## Step 1: Automatically generate a Q&A test set
+## Prepare your Knowledge Base
 
 To start, you only need your data or knowledge base in a pandas `DataFrame`. Then, you can initialize the {class}`~giskard.rag.knowledge_base.KnowledgeBase` by passing your dataframe. 
 
 If some columns in your dataframe are not relevant for the generation of questions (e.g. they contain metadata), make sure you specify
 column names to the `knowledge_base_columns` argument (see {class}`~giskard.rag.knowledge_base.KnowledgeBase`).
-
-To make the question generation more accurate, you can also provide a description of your assistant. This will help the generator to generate questions that are more relevant to your assistant's task. 
-
 
 ```python
 
@@ -71,7 +68,10 @@ knowledge_base = KnowledgeBase(knowledge_base_df,
                                knowledge_base_columns=["column_1", "column_2"])
 ```
 
+
+## Generate a basic test set
 We are ready to generate the test set. We can start with a small test set of 10 questions and answers for each question type.
+To make the question generation more accurate, you can also provide a description of your assistant. This will help the generator to generate questions that are more relevant to your assistant's task. 
 
 ```python
 # Generate a testset with 10 questions & answers for each question types (this will take a while)
@@ -82,7 +82,11 @@ testset = generate_testset(
     # Optionally, you can provide a description of your RAG assistant to improve the questions quality.
     assistant_description="An assistant that answers common questions about our products",
 )
+```
 
+You can save the testset and load it back for future use.
+
+```python
 # Save the generated testset
 testset.save("my_testset.jsonl")
 
@@ -105,17 +109,17 @@ Let's have a look at the generated questions:
 
 | question | reference_context | reference_answer |  metadata |
 |----------|-------------------|------------------|-----------|
-| For which countries can I track my shipping? | What is your shipping policy? We offer free shipping on all orders over \$50. For orders below \$50, we charge a flat rate of \$5.99. We offer shipping services to customers residing in all 50 states of the US, in addition to providing delivery options to Canada and Mexico. ------  How can I track my order? Once your purchase has been successfully confirmed and shipped, you will receive a confirmation email containing your tracking number. You can simply click on the link provided in the email or visit our website's order tracking page. | We ship to all 50 states in the US, as well as to Canada and Mexico. We offer tracking for all our shippings. | {"question_type": 1} |
+| For which countries can I track my shipping? | What is your shipping policy? We offer free shipping on all orders over \$50. For orders below \$50, we charge a flat rate of \$5.99. We offer shipping services to customers residing in all 50 states of the US, in addition to providing delivery options to Canada and Mexico. ------  How can I track my order? Once your purchase has been successfully confirmed and shipped, you will receive a confirmation email containing your tracking number. You can simply click on the link provided in the email or visit our website's order tracking page. | We ship to all 50 states in the US, as well as to Canada and Mexico. We offer tracking for all our shippings. | {"question_type": 1, "seed_document_id": 0, "topic": "Shipping policy"} |
 
 As you can see, the data contains 4 columns:
 - `question`: the generated question
 - `reference_context`: the context that can be used to answer the question
 - `reference_answer`: the answer to the question (generated with GPT-4)
 - `conversation_history`: not shown in the table above, contain the history of the conversation with the assistant as a list, only relevant for conversational question, otherwise it contains an empty list.
-- `metadata`: a dictionnary with various metadata about the question, this includes the `question_type` (an integer between 1 and 6)
+- `metadata`: a dictionnary with various metadata about the question, this includes the `question_type` (an integer between 1 and 6), `seed_document_id` the id of the document used to generate the question and the `topic` of the question
 
 (difficulty_levels)=
-## Generate different questions types
+## Generate more elaborated questions
 
 By default, the testset contains only simple questions. You can change this by providing question modifiers to the `generate_testset` function. 
 

@@ -13,8 +13,7 @@ def answer_fn(question):
 
     return your_assistant.predict(question)
 
-report = evaluate(answers_fn, testset=testset)
-report
+evaluate(answers_fn, testset=testset)
 ```
 
 The evaluate function generates a `giskard.rag.RAGReport` object. The report takes the form an HTML widget presenting all the results of the evaluation. It displays automatically in a notebook, but you can save it and view it in any browser: `report.save_html("report.html")`.
@@ -48,10 +47,10 @@ Your metrics should inherit from the `giskard.rag.metric.Metric` class and imple
 Then you can pass it to the `evaluate` function as follows: 
 
 ```python
-report = evaluate(answers_fn, testset=testset, metrics=your_custom_metrics)
+report = evaluate(answers_fn, testset=testset, metrics=[your_custom_metric])
 ```
 
-The results of your metrics will be automatically added to the report object. 
+The results of your metrics will be displayed in the report object. 
 
 ## Giskard Hub Evaluation 
 ### Step 1: Convert the test set into a test suite
