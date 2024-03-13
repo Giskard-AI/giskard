@@ -1,4 +1,4 @@
-from typing import Optional, Sequence, Union
+from typing import Optional, Sequence
 
 import logging
 import textwrap
@@ -140,6 +140,7 @@ class KnowledgeBase:
     @property
     def _reduced_embeddings(self):
         if self._reduced_embeddings_inst is None:
+            logger.debug("Calculating UMAP projection")
             reducer = umap.UMAP(
                 n_neighbors=50,
                 min_dist=0.5,
@@ -181,14 +182,15 @@ class KnowledgeBase:
             self._topics_inst = self._find_topics()
         return self._topics_inst
 
-    def get_document_by_id(self, doc_id: Union[Sequence[str], str]):
-        if isinstance(doc_id, Sequence):
-            return [self._documents_index[doc] for doc in doc_id]
-        return self._documents_index[doc_id]
-
     def _find_topics(self):
-        hdbscan = HDBSCAN(min_cluster_size=self._min_topic_size, metric="euclidean", cluster_selection_epsilon=0.0)
-        clustering = hdbscan.fit(self._embeddings)
+        logger.debug("Running HDBSCAN to cluster topics")
+        hdbscan = HDBSCAN(
+            min_cluster_size=self._min_topic_size,
+            min_samples=3,
+            metric="euclidean",
+            cluster_selection_epsilon=0.0,
+        )
+        clustering = hdbscan.fit(self._reduced_embeddings)
         for i, doc in enumerate(self._documents):
             doc.topic_id = clustering.labels_[i]
 
@@ -203,6 +205,8 @@ class KnowledgeBase:
         return topics
 
     def _get_topic_name(self, topic_documents):
+        logger.debug("Create topic name from topic documents")
+
         self._rng.shuffle(topic_documents)
         topics_str = "\n\n".join(["----------" + doc.content for doc in topic_documents])
 
@@ -362,7 +366,7 @@ class KnowledgeBase:
         topics_ids = [doc.topic_id for doc in self._documents]
         palette = Category20[20]
 
-        colors = np.array([palette[topic % 20] if topic >= 0 else "#090909" for topic in topics_ids])
+        colors = np.array([palette[topic % 20] if topic >= 0 else "#999" for topic in topics_ids])
 
         x_min = self._reduced_embeddings[:, 0].min()
         x_max = self._reduced_embeddings[:, 0].max()
@@ -411,7 +415,7 @@ class KnowledgeBase:
             line_alpha=1.0,
             line_width=2,
             alpha=0.7,
-            size=12,
+            size=5,
             legend_group="topic",
         )
         p.legend.location = "top_right"
