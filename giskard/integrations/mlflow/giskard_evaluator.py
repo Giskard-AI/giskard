@@ -107,6 +107,7 @@ class GiskardEvaluator(ModelEvaluator):
                 "Please submit the traceback as a GitHub issue in the following "
                 "repository for further assistance: https://github.com/Giskard-AI/giskard."
             )
+            return None, None
 
     def evaluate(
         self, *, model, model_type, dataset, run_id, evaluator_config, baseline_model=None, **kwargs
