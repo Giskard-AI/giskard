@@ -77,9 +77,9 @@ def setup_model(model, model_type, feature_names, evaluator_config):
         model_to_be_wrapped = model
     else:
         raise ValueError(
-            "The model types supported by the giskard evaluators are: "
+            "The model types supported by the giskard evaluator are: "
             "(1) a model that has 'predict' bound method or (2) a callable function. "
-            "In both cases, the model should take a pandas.DataFrame as input and a list as output."
+            "In both cases, the model should have a pandas.DataFrame as input and a list as output."
         )
 
     if model_config is None:
