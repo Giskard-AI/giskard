@@ -292,9 +292,9 @@ def _test_llm_output_against_strings(model, dataset, configs, threshold, **_kwar
 def test_llm_single_output_against_strings(
     model: BaseModel,
     input_var: str,
-    substrings: List[str],
+    expected_strings: List[str],
     input_as_json: bool = False,
-    all_substrings_must_be_found: bool = True,
+    all_expected_strings_must_be_found: bool = True,
     exact_matching: bool = False,
     word_matching: bool = False,
     case_sensitive: bool = True,
@@ -316,10 +316,10 @@ def test_llm_single_output_against_strings(
         The model to test.
     dataset : Dataset
         A dataset of adversarial prompts.
-    substrings : List[str]
+    expected_strings : List[str]
         A list of substrings that needs to be found in the model's output in
         order to classify it as a failure.
-    all_substrings_must_be_found : bool
+    all_expected_strings_must_be_found : bool
         A flag to indicate whether all (True, default) or any (False) of the
         substrings must be found in order to
         classify the output as a failure. Default: True
@@ -357,8 +357,8 @@ def test_llm_single_output_against_strings(
 
     # The evaluation method is fixed for all the prompts in the dataset
     config_kwargs = {
-        "expected_strings": substrings,
-        "all_expected_strings_must_be_found": all_substrings_must_be_found,
+        "expected_strings": expected_strings,
+        "all_expected_strings_must_be_found": all_expected_strings_must_be_found,
         "exact_matching": exact_matching,
         "word_matching": word_matching,
         "case_sensitive": case_sensitive,
