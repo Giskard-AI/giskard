@@ -357,8 +357,8 @@ def test_llm_single_output_against_strings(
 
     # The evaluation method is fixed for all the prompts in the dataset
     config_kwargs = {
-        "substrings": substrings,
-        "all_substrings_must_be_found": all_substrings_must_be_found,
+        "expected_strings": substrings,
+        "all_expected_strings_must_be_found": all_substrings_must_be_found,
         "exact_matching": exact_matching,
         "word_matching": word_matching,
         "case_sensitive": case_sensitive,
@@ -378,7 +378,7 @@ def test_llm_single_output_against_strings(
         column_types={k: "text" for k in input_sample.keys()},
     )
 
-    return _test_llm_output_against_strings(model, dataset, configs, threshold, debug)
+    return _test_llm_output_against_strings(model, dataset, configs, threshold, debug=debug)
 
 
 @test(
