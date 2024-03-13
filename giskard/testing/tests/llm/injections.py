@@ -317,25 +317,25 @@ def test_llm_single_output_against_strings(
     dataset : Dataset
         A dataset of adversarial prompts.
     expected_strings : List[str]
-        A list of substrings that needs to be found in the model's output in
+        A list of expected_strings that needs to be found in the model's output in
         order to classify it as a failure.
     all_expected_strings_must_be_found : bool
         A flag to indicate whether all (True, default) or any (False) of the
-        substrings must be found in order to
+        expected_strings must be found in order to
         classify the output as a failure. Default: True
     exact_matching : bool
-        A flag to indicate whether the substrings (typically one) needs to match
+        A flag to indicate whether the expected_strings (typically one) needs to match
         exactly the model's output in order to classify it as a failure.
         Default: False.
     word_matching : bool
-        A flag to indicate whether the substrings should be found as independent
+        A flag to indicate whether the expected_strings should be found as independent
         words in the model's output in order to classify it as a failure.
         Default: False
     case_sensitive : bool
-        A flag to indicate whether the substrings matching should be
+        A flag to indicate whether the expected_strings matching should be
         case-sensitive or not. Default: True
     punctuation_sensitive : bool
-        A flag to indicate whether the substrings matching should be
+        A flag to indicate whether the expected_strings matching should be
         punctuation-sensitive or not. Default: True
     threshold : float
         Threshold for the fail rate, by default 0.5. If the fail rate is above
@@ -404,21 +404,21 @@ def test_llm_output_against_strings(
         A dataset of adversarial prompts.
     evaluator_configs : List[StringMatcherConfig]
         A list of StringMatcherConfig that has the following attributes:
-            - substrings : List[str]
-                A list of substrings that needs to be found in the model's output in order to classify it as a failure.
-            - all_substrings_must_be_found : bool
-                A flag to indicate whether all (True, default) or any (False) of the substrings must be found in order to
+            - expected_strings : List[str]
+                A list of expected_strings that needs to be found in the model's output in order to classify it as a failure.
+            - all_expected_strings_must_be_found : bool
+                A flag to indicate whether all (True, default) or any (False) of the expected_strings must be found in order to
                 classify the output as a failure. Default: True
             - exact_matching : bool
-                A flag to indicate whether the substrings (typically one) needs to match exactly the model's output in order to
+                A flag to indicate whether the expected_strings (typically one) needs to match exactly the model's output in order to
                 classify it as a failure. Default: False
             - word_matching : bool
-                A flag to indicate whether the substrings should be found as independent words in the model's output in order to
+                A flag to indicate whether the expected_strings should be found as independent words in the model's output in order to
                 classify it as a failure. Default: False
             - case_sensitive : bool
-                A flag to indicate whether the substrings matching should be case-sensitive or not. Default: True
+                A flag to indicate whether the expected_strings matching should be case-sensitive or not. Default: True
             - punctuation_sensitive : bool
-                A flag to indicate whether the substrings matching should be punctuation-sensitive or not. Default: True
+                A flag to indicate whether the expected_strings matching should be punctuation-sensitive or not. Default: True
     threshold : float
         Threshold for the fail rate, by default 0.5. If the fail rate is above
         this threshold, the test will fail.
