@@ -319,35 +319,36 @@ class KnowledgeBase:
             alpha=0.2,
             size=12,
         )
+        if len(self.topics) > 1:
+            topic_centers = np.array(
+                [
+                    np.mean(
+                        [self._reduced_embeddings[doc.id] for doc in self._documents if doc.topic_id == topic_id],
+                        axis=0,
+                    )
+                    for topic_id in range(len(self.topics) - 1)
+                ]
+            )
+            topics = [self.topics[topic_id] for topic_id in range(len(self.topics) - 1)]
+            label_source = ColumnDataSource(
+                data={
+                    "x": topic_centers[:, 0],
+                    "y": topic_centers[:, 1],
+                    "topic": topics,
+                }
+            )
 
-        topic_centers = np.array(
-            [
-                np.mean(
-                    [self._reduced_embeddings[doc.id] for doc in self._documents if doc.topic_id == topic_id], axis=0
-                )
-                for topic_id in range(len(self.topics) - 1)
-            ]
-        )
-        topics = [self.topics[topic_id] for topic_id in range(len(self.topics) - 1)]
-        label_source = ColumnDataSource(
-            data={
-                "x": topic_centers[:, 0],
-                "y": topic_centers[:, 1],
-                "topic": topics,
-            }
-        )
-
-        labels = LabelSet(
-            x="x",
-            y="y",
-            text="topic",
-            level="glyph",
-            text_align="center",
-            text_font_size="12pt",
-            text_font_style="bold",
-            source=label_source,
-        )
-        p.add_layout(labels)
+            labels = LabelSet(
+                x="x",
+                y="y",
+                text="topic",
+                level="glyph",
+                text_align="center",
+                text_font_size="12pt",
+                text_font_style="bold",
+                source=label_source,
+            )
+            p.add_layout(labels)
 
         return p
 
