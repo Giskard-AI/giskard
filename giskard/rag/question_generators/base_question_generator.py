@@ -25,7 +25,7 @@ Please respect the following rules to generate the question:
 
 The user will provide the context, consisting in multiple paragraphs delimited by dashes "------".
 You will return the question and the precise answer to the question based exclusively on the provided context.
-You must output a single JSON object with keys 'question' and 'answer'. Make sure you return a valid JSON object."""
+You must output a single JSON object with keys 'question' and 'answer', without any other wrapping text or markdown. Make sure you only return valid JSON. """
 
 
 QA_GENERATION_EXAMPLE_INPUT = """What payment methods do you accept?
