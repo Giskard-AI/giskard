@@ -100,9 +100,16 @@ class GiskardEvaluator(ModelEvaluator):
                     "error": str(e),
                 },
             )
+            # TEMP - DEBUGGING
+            raise ValueError(
+                "An error occurred while generating the test suite. "
+                "Visualising the results of the scan is still possible in the mlflow ui, but not as metrics. "
+                "Please submit the traceback as a GitHub issue in the following "
+                "repository for further assistance: https://github.com/Giskard-AI/giskard."
+            ) from e
             logger.warning(
                 "An error occurred while generating the test suite. "
-                "Visualising the results of the scan is still possible in the mlflow ui, but not as metrics."
+                "Visualising the results of the scan is still possible in the mlflow ui, but not as metrics. "
                 "Please submit the traceback as a GitHub issue in the following "
                 "repository for further assistance: https://github.com/Giskard-AI/giskard."
             )
