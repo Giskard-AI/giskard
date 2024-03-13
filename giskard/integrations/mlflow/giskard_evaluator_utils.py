@@ -1,6 +1,7 @@
 import inspect
 import logging
 import re
+from inspect import isfunction
 
 from giskard.core.core import SupportedModelTypes
 from giskard.datasets import Dataset
@@ -13,6 +14,7 @@ gsk_model_types = {
     "classifier": SupportedModelTypes.CLASSIFICATION,
     "regressor": SupportedModelTypes.REGRESSION,
     "text": SupportedModelTypes.TEXT_GENERATION,
+    "question-answering": SupportedModelTypes.TEXT_GENERATION,
 }
 alphanumeric_map = {
     ">=": "greater than or equal to",
@@ -24,22 +26,6 @@ alphanumeric_map = {
     "!=": "different of",
 }
 control_chars_map = {"\\r": "carriage return", "\\b": "backspace"}
-
-
-def unwrap_python_model_from_pyfunc_if_langchain(pyfunc_model):
-    """
-    An alternative to https://mlflow.org/docs/latest/python_api/mlflow.pyfunc.html?highlight=pyfunc#mlflow.pyfunc.PyFuncModel.unwrap_python_model
-    :param pyfunc_model: the pyfunc model
-    :return: unwrapped model
-    """
-    import importlib
-
-    module = pyfunc_model.metadata.flavors["python_function"]["loader_module"]
-    if module == "mlflow.langchain":
-        flavor = importlib.import_module(module)
-        return flavor.load_model(pyfunc_model.metadata.get_model_info().model_uri)
-
-    return pyfunc_model.predict
 
 
 def process_text(some_string):
@@ -84,13 +70,17 @@ def setup_dataset(dataset, evaluator_config):
 def setup_model(model, model_type, feature_names, evaluator_config):
     model_config = evaluator_config.get("model_config", None)
 
-    # by default wrap the "predict" bound method of the pyfunc model
-    model_to_be_wrapped = model.predict
-
-    # Special case scenario since we're currently using `rewrite_prompt` that needs access to the unwrapped model iff
-    # the latter is a langchain model
-    if model_type == "text":
-        model_to_be_wrapped = unwrap_python_model_from_pyfunc_if_langchain(model)
+    # by default wrap the "predict" bound method of the pyfunc model (or any other type that has predict)
+    if hasattr(model, "predict"):
+        model_to_be_wrapped = model.predict
+    elif isfunction(model):
+        model_to_be_wrapped = model
+    else:
+        raise ValueError(
+            "The model types supported by the giskard evaluators are: "
+            "(1) a model that has 'predict' bound method or (2) a callable function. "
+            "In both cases, the model should take a pandas.DataFrame as input and a list as output."
+        )
 
     if model_config is None:
         return Model(model=model_to_be_wrapped, model_type=gsk_model_types[model_type], feature_names=feature_names)
