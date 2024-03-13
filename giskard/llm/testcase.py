@@ -54,10 +54,11 @@ GENERATE_REQUIREMENTS_FUNCTIONS = [
 
 
 class TestcaseRequirementsGenerator:
-    def __init__(self, issue_description: str, llm_temperature=0.1, llm_client: LLMClient = None):
+    def __init__(self, issue_description: str, llm_temperature=0.1, llm_client: LLMClient = None, rng_seed: int = 1729):
         self.issue_description = issue_description
         self.llm_temperature = llm_temperature
         self.llm_client = llm_client or get_default_client()
+        self.rng_seed = rng_seed
 
     def _make_generate_requirements_prompt(self, model: BaseModel, num_requirements: int):
         return GENERATE_REQUIREMENTS_PROMPT.format(
@@ -80,6 +81,7 @@ class TestcaseRequirementsGenerator:
             tool_choice={"type": "function", "function": {"name": "generate_requirements"}},
             temperature=self.llm_temperature,
             caller_id=self.__class__.__name__,
+            seed=self.rng_seed,
         )
 
         if out.tool_calls is None or "requirements" not in out.tool_calls[0].function.arguments:

@@ -84,10 +84,11 @@ class BaseEvaluator(ABC):
 class LLMBasedEvaluator(BaseEvaluator):
     _default_eval_prompt: str
 
-    def __init__(self, eval_prompt=None, llm_temperature=0.1, llm_client: LLMClient = None):
+    def __init__(self, eval_prompt=None, llm_temperature=0.1, llm_client: LLMClient = None, rng_seed: int = 1729):
         self.eval_prompt = eval_prompt or self._default_eval_prompt
         self.llm_temperature = llm_temperature
         self.llm_client = llm_client if llm_client is not None else get_default_client()
+        self.rng_seed = rng_seed
 
     def _make_evaluate_prompt(self, model: BaseModel, input_vars, model_output, row_idx):
         return self.eval_prompt.format(
@@ -123,6 +124,7 @@ class LLMBasedEvaluator(BaseEvaluator):
                     tool_choice={"type": "function", "function": {"name": "evaluate_model"}},
                     temperature=self.llm_temperature,
                     caller_id=self.__class__.__name__,
+                    seed=self.rng_seed,
                 )
                 if len(out.tool_calls) != 1 or "passed_test" not in out.tool_calls[0].function.arguments:
                     raise LLMGenerationError("Invalid function call arguments received")

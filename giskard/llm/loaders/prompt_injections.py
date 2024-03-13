@@ -7,8 +7,8 @@ import pandas as pd
 from ...datasets.base import Dataset
 from ..evaluators.string_matcher import StringMatcherConfig
 
-INJECTION_DATA_URL = "https://raw.githubusercontent.com/Giskard-AI/prompt-injections/v0.0.1/prompt_injections.csv"
-GISKARD_META_URL = "https://raw.githubusercontent.com/Giskard-AI/prompt-injections/v0.0.1/giskard_meta_data.csv"
+INJECTION_DATA_URL = "https://raw.githubusercontent.com/Giskard-AI/prompt-injections/v0.0.2/prompt_injections.csv"
+GISKARD_META_URL = "https://raw.githubusercontent.com/Giskard-AI/prompt-injections/v0.0.2/giskard_meta_data.csv"
 
 
 def from_records_to_configs(records):

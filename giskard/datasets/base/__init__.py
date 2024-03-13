@@ -1,4 +1,6 @@
-from typing import Dict, Hashable, List, Optional, Union
+from __future__ import annotations
+
+from typing import TYPE_CHECKING, Dict, Hashable, List, Optional, Union
 
 import inspect
 import logging
@@ -32,6 +34,9 @@ from giskard.settings import settings
 from ...utils.analytics_collector import analytics
 from ...utils.file_utils import get_file_name
 from ..metadata.indexing import ColumnMetadataMixin
+
+if TYPE_CHECKING:
+    from mlflow import MlflowClient
 
 SAMPLE_SIZE = 1000
 
@@ -138,8 +143,6 @@ class Dataset(ColumnMetadataMixin):
         column_types (Optional[Dict[str, str]]):
             A dictionary of column names and their types (numeric, category or text) for all columns of df. If not provided,
             the categorical columns will be automatically inferred.
-        data_processor (DataProcessor):
-            An instance of the `DataProcessor` class used for data processing.
     """
 
     name: Optional[str]
@@ -224,7 +227,8 @@ class Dataset(ColumnMetadataMixin):
         }
 
         self.data_processor = DataProcessor()
-        logger.info("Your 'pandas.DataFrame' is successfully wrapped by Giskard's 'Dataset' wrapper class.")
+        if validation:
+            logger.info("Your 'pandas.DataFrame' is successfully wrapped by Giskard's 'Dataset' wrapper class.")
 
     @property
     def is_target_given(self) -> bool:
@@ -692,10 +696,9 @@ class Dataset(ColumnMetadataMixin):
 
         return dataset
 
-    def to_mlflow(self, mlflow_client=None, mlflow_run_id: str = None):
+    def to_mlflow(self, mlflow_client: MlflowClient = None, mlflow_run_id: str = None):
         import mlflow
 
-        mlflow_client: mlflow.MlflowClient = mlflow_client  # Doing typing here, to avoid import from mlflow
         # To avoid file being open in write mode and read at the same time,
         # First, we'll write it, then make sure to remove it
         with tempfile.NamedTemporaryFile(prefix="dataset-", suffix=".csv", delete=False) as f:
