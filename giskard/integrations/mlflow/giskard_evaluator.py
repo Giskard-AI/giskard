@@ -20,7 +20,7 @@ logger = logging.getLogger(__name__)
 
 class GiskardEvaluator(ModelEvaluator):
     def can_evaluate(self, model_type, **kwargs):
-        return model_type in ["classifier", "regressor", "text"]
+        return model_type in ["classifier", "regressor", "text", "question-answering"]
 
     def _wrap_dataset(self, dataset):
         if not isinstance(dataset.features_data, pd.DataFrame):
