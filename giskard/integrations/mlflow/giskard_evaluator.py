@@ -102,7 +102,7 @@ class GiskardEvaluator(ModelEvaluator):
             )
             logger.warning(
                 "An error occurred while generating the test suite. "
-                "Visualising the results of the scan is still possible in the mlflow ui, but not as metrics."
+                "Visualising the results of the scan is still possible in the mlflow ui, but not as metrics. "
                 "Please submit the traceback as a GitHub issue in the following "
                 "repository for further assistance: https://github.com/Giskard-AI/giskard."
             )
