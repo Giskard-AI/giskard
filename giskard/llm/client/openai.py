@@ -43,7 +43,7 @@ class OpenAIClient(LLMClient):
             format = None
 
         if format == "json" or format == "json_object":
-            extra_params["request_format"] = {"type": "json_object"}
+            extra_params["response_format"] = {"type": "json_object"}
 
         try:
             completion = self._client.chat.completions.create(
