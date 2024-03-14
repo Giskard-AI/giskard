@@ -2,7 +2,7 @@ from unittest.mock import Mock
 
 from giskard.llm.client import LLMMessage
 from giskard.rag.knowledge_base import Document
-from giskard.rag.question_generators.base_question_generator import BaseQuestionsGenerator
+from giskard.rag.question_generators.simple_questions import SimpleQuestionGenerator
 
 
 def test_simple_question_generation():
@@ -16,7 +16,7 @@ def test_simple_question_generation():
         )
     ]
 
-    question_generator = BaseQuestionsGenerator(knowledge_base, llm_client=llm_client)
+    question_generator = SimpleQuestionGenerator(knowledge_base, llm_client=llm_client)
 
     documents = [
         Document(dict(content="Camembert is a cheese from Normandy, in the northwest of France.")),
@@ -47,7 +47,7 @@ def test_simple_question_json_fix(caplog):
         ),
     ]
 
-    question_generator = BaseQuestionsGenerator(knowledge_base, llm_client=llm_client)
+    question_generator = SimpleQuestionGenerator(knowledge_base, llm_client=llm_client)
     documents = [
         Document(dict(content="Camembert is a cheese from Normandy, in the northwest of France.")),
         Document(dict(content="Cheese is made of milk.")),

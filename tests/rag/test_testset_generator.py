@@ -189,7 +189,7 @@ def test_testset_question_types():
         knowledge_base=knowledge_base,
         llm_client=llm_client,
         num_questions=1,
-        question_modifiers=[
+        question_generators=[
             complex_questions_modifier,
             distracting_questions_modifier,
             situational_questions_modifier,
@@ -232,7 +232,7 @@ def test_question_generation_fail(caplog):
         knowledge_base=knowledge_base,
         llm_client=llm_client,
         num_questions=1,
-        question_modifiers=[complex_questions_modifier, distracting_questions_modifier, Mock()],
+        question_generators=[complex_questions_modifier, distracting_questions_modifier, Mock()],
     )
 
     assert "Encountered error in question generation" in caplog.text
