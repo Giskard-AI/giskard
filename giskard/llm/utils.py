@@ -1,7 +1,7 @@
 from typing import Optional
 
 from ..models.base.model import BaseModel
-from .generators.base import BaseDataGenerator
+from .generators.base import LLMBasedDataGenerator
 
 
 def generate_test_dataset(
@@ -10,7 +10,7 @@ def generate_test_dataset(
     prompt: Optional[str] = None,
     temperature=0.5,
     column_types=None,
-    rng_seed: int = 1729,
+    llm_seed: int = 1729,
 ):
     """Generates a synthetic test dataset using an LLM.
 
@@ -43,5 +43,5 @@ def generate_test_dataset(
     --------
     :class:`giskard.llm.generators.BaseDataGenerator`
     """
-    generator = BaseDataGenerator(prompt=prompt, llm_temperature=temperature, rng_seed=rng_seed)
+    generator = LLMBasedDataGenerator(prompt=prompt, llm_temperature=temperature, llm_seed=llm_seed)
     return generator.generate_dataset(model, num_samples, column_types)

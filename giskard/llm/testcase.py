@@ -36,11 +36,11 @@ BASE_MESSAGES = [
 
 
 class TestcaseRequirementsGenerator:
-    def __init__(self, issue_description: str, llm_temperature=0.1, llm_client: LLMClient = None, rng_seed: int = 1729):
+    def __init__(self, issue_description: str, llm_temperature=0.1, llm_client: LLMClient = None, llm_seed: int = 1729):
         self.issue_description = issue_description
         self.llm_temperature = llm_temperature
         self.llm_client = llm_client or get_default_client()
-        self.rng_seed = rng_seed
+        self.llm_seed = llm_seed
 
     def generate_requirements(self, model: BaseModel, max_requirements: int = 5):
         """Generates a set of requirements for a given a model."""
@@ -54,9 +54,10 @@ class TestcaseRequirementsGenerator:
 
         out = self.llm_client.complete(
             messages=messages,
+            format="json",
             temperature=self.llm_temperature,
             caller_id=self.__class__.__name__,
-            seed=self.rng_seed,
+            seed=self.llm_seed,
         )
 
         try:

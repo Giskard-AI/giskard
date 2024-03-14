@@ -4,7 +4,7 @@ import pandas as pd
 
 from ....core.test_result import TestMessage, TestMessageLevel, TestResult
 from ....datasets.base import Dataset
-from ....llm.evaluators import PerRowRequirementEvaluator, RequirementEvaluator
+from ....llm.evaluators import RequirementEvaluator
 from ....models.base import BaseModel
 from ....registry.decorators import test
 from ....utils.display import truncate
@@ -60,7 +60,7 @@ def test_llm_output_against_requirement_per_row(
         A TestResult object containing the test result.
     """
     return _test_output_against_requirement(
-        model, dataset, PerRowRequirementEvaluator(dataset.df.loc[:, [requirement_column]], rng_seed=rng_seed)
+        model, dataset, RequirementEvaluator(requirement_col=requirement_column, llm_seed=rng_seed)
     )
 
 

@@ -1,13 +1,12 @@
 from unittest.mock import Mock
 
-import pandas as pd
 import pytest
 
 from giskard.core.test_result import TestResultStatus
-from giskard.llm.client import ChatMessage, LLMFunctionCall, LLMToolCall
+from giskard.llm.client import ChatMessage
 from giskard.llm.evaluators.base import LLMBasedEvaluator
 from giskard.llm.evaluators.plausibility import PlausibilityEvaluator
-from giskard.llm.evaluators.requirements import PerRowRequirementEvaluator, RequirementEvaluator
+from giskard.llm.evaluators.requirements import RequirementEvaluator
 from tests.llm.evaluators.utils import make_eval_dataset, make_mock_model
 
 
@@ -22,10 +21,10 @@ from tests.llm.evaluators.utils import make_eval_dataset, make_mock_model
         ),
         (RequirementEvaluator, [["Requirement to fulfill"]], {}, {}),
         (
-            PerRowRequirementEvaluator,
-            [pd.DataFrame({"req": ["This is the first test requirement", "This is the second test requirement"]})],
-            {},
-            {"Requirement": ["This is the first test requirement", "This is the second test requirement"]},
+            RequirementEvaluator,
+            [],
+            {"requirement_col": "req"},
+            {"req": ["This is the first test requirement", "This is the second test requirement"]},
         ),
         (PlausibilityEvaluator, [], {}, {}),
     ],

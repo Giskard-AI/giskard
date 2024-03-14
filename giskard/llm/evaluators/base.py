@@ -37,7 +37,9 @@ class EvaluationResult:
     def add_error(self, error: str, conversation: Sequence[Dict]):
         self.errors.append({"error": error, "conversation": conversation})
 
-    def add_sample(self, eval_passed: bool, reason: str, conversation: Sequence[Dict]):
+    def add_sample(
+        self, eval_passed: bool, reason: Optional[str] = None, conversation: Optional[Sequence[Dict]] = None
+    ):
         # @TODO: improve this
         if eval_passed:
             self.success_examples.append({"conversation": conversation, "reason": reason})
@@ -67,21 +69,26 @@ class _BaseLLMEvaluator(BaseEvaluator):
         self.llm_output_format = llm_output_format
 
     @abstractmethod
-    def _format_messages(self, model: BaseModel, conversation: Sequence[Dict]) -> Sequence[ChatMessage]:
+    def _format_messages(
+        self, model: BaseModel, conversation: Sequence[Dict], meta: Optional[Dict] = None
+    ) -> Sequence[ChatMessage]:
         ...
 
     def evaluate(self, model: BaseModel, dataset: Dataset):
         model_outputs = model.predict(dataset).prediction
 
         result = EvaluationResult()
-        for _, input_vars, model_output in zip(
-            dataset.df.index,
-            dataset.df.loc[:, model.feature_names].to_dict("records"),
+        for (row_id, row), model_output in zip(
+            dataset.df.iterrows(),
             model_outputs,
         ):
+            input_vars = {k: v for k, v in row.items() if k in model.feature_names}
+            input_meta = {k: v for k, v in row.items() if k not in model.feature_names}
+            input_meta["__sample_id"] = row_id
+
             conversation = [{"role": "user", "content": input_vars}, {"role": "agent", "content": model_output}]
 
-            messages = self._format_messages(model, conversation)
+            messages = self._format_messages(model, conversation, meta=input_meta)
             try:
                 raw_eval = self.llm_client.complete(
                     messages,
@@ -119,6 +126,8 @@ class LLMBasedEvaluator(_BaseLLMEvaluator):
         self.prompt = prompt
         self.prefix_messages = prefix_messages or []
 
-    def _format_messages(self, model: BaseModel, conversation: Sequence[Dict]) -> Sequence[ChatMessage]:
+    def _format_messages(
+        self, model: BaseModel, conversation: Sequence[Dict], meta: Optional[Dict] = None
+    ) -> Sequence[ChatMessage]:
         prompt = self._prompt.format(model=model, conversation=format_conversation(conversation))
-        return self._messages + [ChatMessage(role="user", content=prompt)]
+        return self.prefix_messages + [ChatMessage(role="user", content=prompt)]

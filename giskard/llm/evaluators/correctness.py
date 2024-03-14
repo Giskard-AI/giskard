@@ -1,136 +1,67 @@
-from ...core.test_result import TestResultStatus, create_test_result_details
-from ...datasets import Dataset
+from typing import Dict, Sequence
+
 from ...models.base.model import BaseModel
 from ..client.base import ChatMessage
-from ..errors import LLMGenerationError
-from .base import EVALUATE_MODEL_FUNCTIONS, EvaluationResult, LLMBasedEvaluator
+from .base import _BaseLLMEvaluator
 
-CORRECTNESS_EVALUATION_PROMPT = """Your role is to test AI models. Your task consists in assessing whether a model output correctly answers a question. 
-You are provided with the ground truth answer to the question. Your task is then to evaluate if the model answer is close to the ground thruth answer. 
+SYS_PROMPT = """Your role is to test AI agents. Your task consists in assessing whether an Agent correctly answered a question.
 
-You are auditing the following model:
-
-Model name: {model_name}
-Model description: {model_description}
-
-Here is the question that was asked to the model and its output, followed by the expected ground truth answer:
-
-QUESTION:
-###
-{question}
-###
-
-MODEL OUTPUT:
-###
-{model_output}
-###
-
-GROUND TRUTH:
-###
-{ground_truth}
-###
-
-Think step by step and consider the model output in its entirety. Remember: you need to have a strong and sound reason to support your evaluation.
-Call the `evaluate_model` function with the result of your evaluation.
+The user will provide a description of the agent, the question, the agent answer and the reference (true) answer. You must tell if the Agent correctly answered the question, comparing it to the reference. If the Agent answer is correct, you will output a JSON object with "eval_passed" equal true, like this:
+{"eval_passed" : true}
+If the Agent answer is wrong, you will return "eval_passed" equal false and provide a reason:
+{"eval_passed": false, "reason": "The agent stated that X but should have said Y"}
 """
 
+PROMPT_TEMPLATE = """
+### AGENT DESCRIPTION
+{description}
 
-class CorrectnessEvaluator(LLMBasedEvaluator):
+### QUESTION
+{question}
+
+### AGENT ANSWER
+{answer}
+
+### REFERENCE ANSWER
+{reference_answer}
+"""
+
+EX_USER_PROMPT = PROMPT_TEMPLATE.format(
+    description="A chatbot for an ecommerce website, helping users to track their orders and solve issues",
+    question="Which countries do you ship to?",
+    answer="We ship our products across all United States.",
+    reference_answer="We ship our products to the United States, Canada, and Mexico.",
+)
+
+
+EX_ASSISTANT_PROMPT = """{"eval_passed": False, "reason": "The agent stated that they ship to United States, but should have included Canada and Mexico."}"""
+
+
+class CorrectnessEvaluator(_BaseLLMEvaluator):
     """Assess the correctness of a model answers given questions and associated reference answers."""
 
-    _default_eval_prompt = CORRECTNESS_EVALUATION_PROMPT
+    def __init__(self, answer_col="reference_answer", *args, **kwargs):
+        self._answer_col = answer_col
+        super().__init__(*args, **kwargs)
 
-    def _make_evaluate_functions(self):
-        return EVALUATE_MODEL_FUNCTIONS
-
-    def _make_evaluate_prompt(self, model_name, model_description, question, model_output, ground_truth):
-        return self.eval_prompt.format(
-            model_name=model_name,
-            model_description=model_description,
-            question=question,
-            model_output=model_output,
-            ground_truth=ground_truth,
-        )
-
-    def evaluate(
-        self,
-        model: BaseModel,
-        dataset: Dataset,
-        question_col: str = "question",
-        reference_answer_col: str = "reference_answer",
-    ):
-        if not (question_col in dataset.df and reference_answer_col in dataset.df):
-            raise ValueError(
-                f"Missing required columns in the evaluation dataset. Make sure the dataset has columns {question_col} and {reference_answer_col}."
-            )
-
-        if question_col not in model.feature_names:
-            raise ValueError(
-                f"Model has no feature '{question_col}'. Make sure your Model wrapper accepts '{question_col}'."
-            )
-
-        model_outputs = model.predict(dataset).prediction
-
-        succeeded = []
-        failed = []
-        errored = []
-        status = []
-        reasons = []
-        for evaluation_question, model_output in zip(dataset.df.to_dict("records"), model_outputs):
-            try:
-                passed, reason = self._evaluate_single(
-                    model,
-                    evaluation_question[question_col],
-                    evaluation_question[reference_answer_col],
-                    model_output,
-                )
-                reasons.append(reason)
-                sample = {
-                    **evaluation_question,
-                    "reason": reason,
-                    "model_output": model_output,
-                    "model_evaluation": passed,
-                }
-                if passed:
-                    succeeded.append(sample)
-                    status.append(TestResultStatus.PASSED)
-                else:
-                    failed.append(sample)
-                    status.append(TestResultStatus.FAILED)
-            except LLMGenerationError as err:
-                errored.append({"message": str(err), "sample": {**evaluation_question, "model_output": model_output}})
-                reasons.append(str(err))
-                status.append(TestResultStatus.ERROR)
-
-        return EvaluationResult(
-            failure_examples=failed,
-            success_examples=succeeded,
-            errors=errored,
-            details=create_test_result_details(dataset, model, model_outputs, status, {"reason": reasons}),
-        )
-
-    def _evaluate_single(self, model: BaseModel, question, reference_answer, model_output):
-        prompt = self._make_evaluate_prompt(
-            model.meta.name,
-            model.meta.description,
-            question,
-            model_output,
-            reference_answer,
-        )
-
-        out = self.llm_client.complete(
-            [ChatMessage(role="system", content=prompt)],
-            tools=self._make_evaluate_functions(),
-            tool_choice={"type": "function", "function": {"name": "evaluate_model"}},
-            temperature=self.llm_temperature,
-            caller_id=self.__class__.__name__,
-            seed=self.rng_seed,
-        )
-
+    def _format_messages(self, model: BaseModel, conversation: Sequence[Dict], meta: Dict) -> Sequence[ChatMessage]:
+        if len(conversation) < 2:
+            raise ValueError("Conversation must contain at least two messages: the question and the answer.")
         try:
-            passed_test = out.tool_calls[0].function.arguments["passed_test"]
-            reason = out.tool_calls[0].function.arguments.get("reason")
-        except (AttributeError, KeyError, IndexError):
-            raise LLMGenerationError("Invalid function call arguments received")
+            reference_answer = meta[self._answer_col]
+        except KeyError as err:
+            raise ValueError(f"Could not find reference answer column (`{self._answer_col}`) in metadata.") from err
 
-        return passed_test, reason
+        prompt = PROMPT_TEMPLATE.format(
+            description=model.description,
+            question=conversation[-2]["content"],
+            answer=conversation[-1]["content"],
+            reference_answer=reference_answer,
+        )
+
+        return [
+            ChatMessage(role="system", content=SYS_PROMPT),
+            ChatMessage(role="user", content=EX_USER_PROMPT),
+            ChatMessage(role="assistant", content=EX_ASSISTANT_PROMPT),
+            ChatMessage(role="user", content=prompt),
+        ]

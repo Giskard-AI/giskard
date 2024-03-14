@@ -3,7 +3,7 @@ import numpy as np
 from ....core.test_result import TestResult, TestResultDetails, TestResultStatus
 from ....datasets.base import Dataset
 from ....llm import LLMImportError
-from ....llm.evaluators import PerRowRequirementEvaluator
+from ....llm.evaluators.correctness import CorrectnessEvaluator
 from ....models.base import BaseModel
 from ....registry.decorators import test
 from .. import debug_description_prefix
@@ -108,5 +108,5 @@ def test_llm_as_a_judge_ground_truth_similarity(
         raise ValueError(f"Provided dataset ({dataset}) does not have any ground truth (target)")
 
     return _test_output_against_requirement(
-        model, dataset, PerRowRequirementEvaluator(dataset.df.loc[:, [dataset.target]], prefix, rng_seed=rng_seed)
+        model, dataset, CorrectnessEvaluator(answer_col=dataset.target, llm_seed=rng_seed)
     )
