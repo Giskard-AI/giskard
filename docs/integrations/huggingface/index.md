@@ -1,5 +1,13 @@
 # 🤗 HuggingFace
 **Leverage the Hugging Face (HF) Space to easily test & debug your own ML models.**
+```{toctree}
+:caption: Table of Contents
+:maxdepth: 1
+:hidden:
+
+./evaluator.md
+
+```
 
 ## Why Giskard?
 **Giskard** is an open-source testing framework dedicated for AI models, from tabular to LLMs. Giskard is composed of 
