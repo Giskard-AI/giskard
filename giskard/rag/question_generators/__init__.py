@@ -1,32 +1,33 @@
-from .base import BaseQuestionModifier
-from .base_question_generator import BaseQuestionsGenerator
-from .complex_questions import ComplexQuestionsModifier
-from .conversational_questions import ConversationalQuestionsModifier
-from .distracting_questions import DistractingQuestionsModifier
-from .double_questions import DoubleQuestionsModifier
+from .base_generator import BaseQuestionGenerator
+from .complex_questions import ComplexQuestionsGenerator, complex_questions
+from .conversational_questions import ConversationalQuestionsModifier, conversational_questions
+from .distracting_questions import DistractingQuestionsGenerator, distracting_questions
+from .double_questions import DoubleQuestionsModifier, double_questions
 from .question_types import QUESTION_ATTRIBUTION, QuestionTypes, RAGComponents
-from .situational_questions import SituationalQuestionsModifier
+from .simple_questions import SimpleQuestionGenerator, simple_questions
+from .situational_questions import SituationalQuestionsGenerator, situational_questions
 
-complex_questions_modifier = ComplexQuestionsModifier()
-conversational_questions_modifier = ConversationalQuestionsModifier()
-distracting_questions_modifier = DistractingQuestionsModifier()
-double_questions_modifier = DoubleQuestionsModifier()
-situational_questions_modifier = SituationalQuestionsModifier()
+# complex_questions_modifier = ComplexQuestionsModifier()
+# conversational_questions_modifier = ConversationalQuestionsModifier()
+# distracting_questions_modifier = DistractingQuestionsModifier()
+# double_questions_modifier = DoubleQuestionsModifier()
+# situational_questions_modifier = SituationalQuestionsModifier()
 
 __all__ = [
     "QuestionTypes",
     "RAGComponents",
     "QUESTION_ATTRIBUTION",
-    "BaseQuestionsGenerator",
-    "BaseQuestionModifier",
-    "ComplexQuestionsModifier",
-    "DistractingQuestionsModifier",
-    "SituationalQuestionsModifier",
-    "DoubleQuestionsModifier",
+    "BaseQuestionGenerator",
+    "SimpleQuestionGenerator",
+    "ComplexQuestionsGenerator",
     "ConversationalQuestionsModifier",
-    "complex_questions_modifier",
-    "conversational_questions_modifier",
-    "distracting_questions_modifier",
-    "double_questions_modifier",
-    "situational_questions_modifier",
+    "DistractingQuestionsGenerator",
+    "SituationalQuestionsGenerator",
+    "DoubleQuestionsModifier",
+    "simple_questions",
+    "complex_questions",
+    "conversational_questions",
+    "distracting_questions",
+    "situational_questions",
+    "double_questions",
 ]

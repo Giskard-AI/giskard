@@ -268,14 +268,14 @@ class RAGReport:
     def _get_knowledge_plot(self):
         tabs = [
             TabPanel(
-                child=self._knowledge_base._get_failure_plot(
+                child=self._knowledge_base.get_failure_plot(
                     self._dataframe[
                         ["question", "reference_answer", "assistant_answer", "correctness", "metadata"]
                     ].to_dict(orient="records")
                 ),
                 title="Failures",
             ),
-            TabPanel(child=self._knowledge_base._get_knowledge_plot(), title="Topic exploration"),
+            TabPanel(child=self._knowledge_base.get_knowledge_plot(), title="Topic exploration"),
         ]
 
         tabs = Tabs(tabs=tabs, sizing_mode="stretch_width", tabs_location="below")

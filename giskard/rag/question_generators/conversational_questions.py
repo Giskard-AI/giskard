@@ -1,10 +1,7 @@
-from typing import Optional, Sequence, Tuple
-
 import logging
 
-from ..knowledge_base import Document
-from .base import BaseQuestionModifier
-from .base_question_generator import BaseQuestionsGenerator
+from ..knowledge_base import KnowledgeBase
+from .base_modifier_generator import BaseModifierGenerator
 from .prompt import QAGenerationPrompt
 from .question_types import QuestionTypes
 
@@ -37,34 +34,35 @@ CONVERSATIONAL_ASSISTANT_EXAMPLE = (
 )
 
 
-class ConversationalQuestionsModifier(BaseQuestionModifier):
-    def __init__(self, base_generator: Optional[BaseQuestionsGenerator] = None):
-        self._base_generator = base_generator
+class ConversationalQuestionsModifier(BaseModifierGenerator):
+    _prompt = QAGenerationPrompt(
+        system_prompt=CONVERSATIONAL_SYSTEM_PROMPT,
+        example_input=CONVERSATIONAL_USER_EXAMPLE,
+        example_output=CONVERSATIONAL_ASSISTANT_EXAMPLE,
+        user_input_template=CONVERSATIONAL_USER_TEMPLATE,
+    )
 
-        self._prompt = QAGenerationPrompt(
-            system_prompt=CONVERSATIONAL_SYSTEM_PROMPT,
-            example_input=CONVERSATIONAL_USER_EXAMPLE,
-            example_output=CONVERSATIONAL_ASSISTANT_EXAMPLE,
-            user_input_template=CONVERSATIONAL_USER_TEMPLATE,
-        )
-        self.question_type = QuestionTypes.CONVERSATIONAL
+    _question_type = QuestionTypes.CONVERSATIONAL
 
-    def generate_question(self, context_documents: Sequence[Document]) -> Tuple[dict, dict]:
-        generated_qa, question_metadata = self._base_generator.generate_question(context_documents)
-
+    def _modify_question(
+        self, question: dict, knowledge_base: KnowledgeBase, assistant_description: str, language: str
+    ) -> dict:
         messages = self._prompt.to_messages(
             system_prompt_input={
-                "language": self._base_generator._language,
+                "language": language,
             },
             user_input={
-                "question": generated_qa["question"],
+                "question": question["question"],
             },
         )
 
-        out = self._base_generator._llm_complete(messages=messages)
-        generated_qa["question"] = out["question"]
+        out = self._llm_complete(messages=messages)
+        question["question"] = out["question"]
 
-        question_metadata["question_type"] = self.question_type.value
-        question_metadata["conversation_history"] = [{"role": "user", "content": out["introduction"]}]
+        question["metadata"]["question_type"] = self._question_type.value
+        question["conversation_history"] = [{"role": "user", "content": out["introduction"]}]
 
-        return generated_qa, question_metadata
+        return question
+
+
+conversational_questions = ConversationalQuestionsModifier()

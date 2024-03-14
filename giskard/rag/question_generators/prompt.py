@@ -27,7 +27,7 @@ class QAGenerationPrompt:
         self,
         system_prompt_input,
         user_input,
-        add_examples=False,
+        add_examples=True,
         examples=None,
     ):
         messages = [

@@ -1,10 +1,8 @@
-from typing import Optional, Sequence, Tuple
-
 import logging
+import uuid
 
-from ..knowledge_base import Document
-from .base import BaseQuestionModifier
-from .base_question_generator import BaseQuestionsGenerator
+from ..knowledge_base import KnowledgeBase
+from .base_generator import BaseQuestionGenerator
 from .prompt import QAGenerationPrompt
 from .question_types import QuestionTypes
 
@@ -26,6 +24,25 @@ Please respect the following rules to generate the question:
 
 The user will provide the context, consisting in multiple paragraphs delimited by dashes "------".
 You must output a list of exactly two JSON objects with keys 'question' and 'answer'. Make sure you return a valid JSON object."""
+
+LINKED_QUESTION_EXAMPLE_INPUT = """What payment methods do you accept?
+
+We accept a variety of payment methods to provide our customers with a convenient and secure shopping experience. You can make a purchase using major credit and debit cards, including Visa, Mastercard, American Express, and Discover. We also offer the option to pay with popular digital wallets such as PayPal and Google Pay. For added flexibility, you can choose to complete your order using bank transfers or wire transfers. Rest assured that we prioritize the security of your personal information and go the extra mile to ensure your transactions are processed safely.
+------
+\tWhat is your shipping policy?
+
+We offer free shipping on all orders over $50. For orders below $50, we charge a flat rate of $5.99. We offer shipping services to customers residing in all 50\n states of the US, in addition to providing delivery options to Canada and Mexico.
+------
+\tHow can I track my order?
+
+Tracking your order is a breeze! Once your purchase has been successfully confirmed and shipped, you will receive a confirmation email containing your tracking number. You can simply click on the link provided in the email or visit our website's order tracking page. Enter your tracking number, and you will be able to monitor the progress of your shipment in real-time. This way, you can stay updated on the estimated delivery date and ensure you're available to receive your package.
+"""
+
+LINKED_QUESTION_EXAMPLE_OUTPUT = """[
+    {"question": "What payment methods do you accept?", "answer": "We accept a variety of payment methods to provide our customers with a convenient and secure shopping experience."},
+    {"question": "What is your shipping policy?", "answer": "We offer free shipping on all orders over $50."}
+}]"""
+
 
 DOUBLE_QUESTION_SYSTEM_PROMPT = """You are an expert at rewriting questions.
 Your task is to combine two questions and answer pairs into a single one.
@@ -49,41 +66,63 @@ DOUBLE_QUESTION_USER_TEMPLATE = """<question1>{question_1}</question1>
 <answer2>{answer_2}</answer2>
 """
 
+DOUBLE_QUESTION_EXAMPLE_INPUT = DOUBLE_QUESTION_USER_TEMPLATE.format(
+    question_1="What is the capital of France?",
+    answer_1="The capital of France is Paris.",
+    question_2="What is the currency of France?",
+    answer_2="The currency of France is the Euro.",
+)
 
-class DoubleQuestionsModifier(BaseQuestionModifier):
-    def __init__(self, base_generator: Optional[BaseQuestionsGenerator] = None):
-        self._base_generator = base_generator
+DOUBLE_QUESTION_EXAMPLE_OUTPUT = """{
+    "question": "What is the capital and currency of France?",
+    "answer": "The capital of France is Paris and the currency is the Euro."
+}"""
 
-        self._linked_question_generation_prompt = QAGenerationPrompt(
-            system_prompt=LINKED_QUESTION_SYSTEM_PROMPT,
+
+class DoubleQuestionsModifier(BaseQuestionGenerator):
+    _linked_question_generation_prompt = QAGenerationPrompt(
+        system_prompt=LINKED_QUESTION_SYSTEM_PROMPT,
+        example_input=LINKED_QUESTION_EXAMPLE_INPUT,
+        example_output=LINKED_QUESTION_EXAMPLE_OUTPUT,
+    )
+
+    _prompt = QAGenerationPrompt(
+        system_prompt=DOUBLE_QUESTION_SYSTEM_PROMPT,
+        example_input=DOUBLE_QUESTION_EXAMPLE_INPUT,
+        example_output=DOUBLE_QUESTION_EXAMPLE_OUTPUT,
+        user_input_template=DOUBLE_QUESTION_USER_TEMPLATE,
+    )
+    _question_type = QuestionTypes.DOUBLE_QUESTION
+
+    def _generate_single_question(
+        self, knowledge_base: KnowledgeBase, assistant_description: str, language: str
+    ) -> dict:
+        seed_document = knowledge_base.get_random_document()
+        context_documents = knowledge_base.get_neighbors(
+            seed_document, self._context_neighbors, self._context_similarity_threshold
         )
+        context_str = "\n------\n".join(["", *[doc.content for doc in context_documents], ""])
 
-        self._prompt = QAGenerationPrompt(
-            system_prompt=DOUBLE_QUESTION_SYSTEM_PROMPT,
-            user_input_template=DOUBLE_QUESTION_USER_TEMPLATE,
-        )
-        self.question_type = QuestionTypes.DOUBLE_QUESTION
+        reference_context = "\n\n".join([f"Document {doc.id}: {doc.content}" for doc in context_documents])
 
-    def generate_question(self, context_documents: Sequence[Document]) -> Tuple[dict, dict]:
-        reference_context = "\n------\n".join(["", *[doc.content for doc in context_documents], ""])
-        linked_questions = self._base_generator._llm_complete(
+        linked_questions = self._llm_complete(
             self._linked_question_generation_prompt.to_messages(
                 system_prompt_input={
-                    "assistant_description": self._base_generator._assistant_description,
-                    "language": self._base_generator._language,
+                    "assistant_description": assistant_description,
+                    "language": language,
                 },
-                user_input=reference_context,
+                user_input=context_str,
             )
         )
         question_metadata = {
-            "reference_context": reference_context,
-            "question_type": self.question_type.value,
+            "question_type": self._question_type.value,
             "original_questions": linked_questions,
+            "seed_document_id": seed_document.id,
         }
 
         messages = self._prompt.to_messages(
             system_prompt_input={
-                "language": self._base_generator._language,
+                "language": language,
             },
             user_input={
                 "question_1": linked_questions[0]["question"],
@@ -92,6 +131,18 @@ class DoubleQuestionsModifier(BaseQuestionModifier):
                 "answer_2": linked_questions[1]["answer"],
             },
         )
-        out = self._base_generator._llm_complete(messages=messages)
+        out = self._llm_complete(messages=messages)
 
-        return out, question_metadata
+        question = {
+            "id": str(uuid.uuid4()),
+            "question": out["question"],
+            "reference_answer": out["answer"],
+            "reference_context": reference_context,
+            "conversation_history": [],
+            "metadata": question_metadata,
+        }
+
+        return question
+
+
+double_questions = DoubleQuestionsModifier()

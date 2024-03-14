@@ -1,10 +1,7 @@
-from typing import Optional, Sequence, Tuple
-
 import logging
 
-from ..knowledge_base import Document
-from .base import BaseQuestionModifier
-from .base_question_generator import BaseQuestionsGenerator
+from ..knowledge_base import KnowledgeBase
+from .base_modifier_generator import BaseModifierGenerator
 from .prompt import QAGenerationPrompt
 from .question_types import QuestionTypes
 
@@ -57,59 +54,69 @@ SITUATIONAL_QUESTION_USER_TEMPLATE = """<question>
 {situation}
 </situation>"""
 
+SITUATIONAL_QUESTION_EXAMPLE_INPUT = SITUATIONAL_QUESTION_USER_TEMPLATE.format(
+    question="How many people are in France?",
+    answer="There are nearly 70M people living in France",
+    situation="A student from Canada is going to study in Europe.",
+)
 
-class SituationalQuestionsModifier(BaseQuestionModifier):
-    def __init__(self, base_generator: Optional[BaseQuestionsGenerator] = None):
-        self._base_generator = base_generator
+SITUATIONAL_QUESTION_EXAMPLE_OUTPUT = (
+    """{"question": "I am a student from Canada and I am going to study in Europe. How many people are in France?"}"""
+)
 
-        self._situation_generation_prompt = QAGenerationPrompt(
-            system_prompt=SITUATIONAL_CONTEXT_SYSTEM_PROMPT,
-            user_input_template=SITUATIONAL_CONTEXT_INPUT,
-        )
 
-        self._prompt = QAGenerationPrompt(
-            system_prompt=SITUATIONAL_QUESTION_SYSTEM_PROMPT,
-            user_input_template=SITUATIONAL_QUESTION_USER_TEMPLATE,
-        )
+class SituationalQuestionsGenerator(BaseModifierGenerator):
+    _situation_generation_prompt = QAGenerationPrompt(
+        system_prompt=SITUATIONAL_CONTEXT_SYSTEM_PROMPT,
+        user_input_template=SITUATIONAL_CONTEXT_INPUT,
+        example_input=SITUATIONAL_QUESTION_EXAMPLE_INPUT,
+        example_output=SITUATIONAL_QUESTION_EXAMPLE_OUTPUT,
+    )
 
-        self.question_type = QuestionTypes.SITUATIONAL
+    _prompt = QAGenerationPrompt(
+        system_prompt=SITUATIONAL_QUESTION_SYSTEM_PROMPT,
+        user_input_template=SITUATIONAL_QUESTION_USER_TEMPLATE,
+    )
 
-    def generate_question(self, context_documents: Sequence[Document]) -> Tuple[dict, dict]:
-        generated_qa, question_metadata = self._base_generator.generate_question(context_documents)
+    _question_type = QuestionTypes.SITUATIONAL
 
+    def _modify_question(
+        self, question: dict, knowledge_base: KnowledgeBase, assistant_description: str, language: str
+    ) -> dict:
         situation_generation_messages = self._situation_generation_prompt.to_messages(
             system_prompt_input={},
             user_input={
-                "assistant_description": self._base_generator._assistant_description,
-                "context": question_metadata["reference_context"],
+                "assistant_description": assistant_description,
+                "context": question["reference_context"],
             },
         )
 
         situational_context = "A user of the chatbot asks a general question."
         try:
-            situational_context = self._base_generator._llm_client.complete(
-                messages=situation_generation_messages
-            ).content
+            situational_context = self._llm_client.complete(messages=situation_generation_messages).content
         except Exception as e:
             logger.warning(
                 f"Encountered error in situational context generation: {e}. Using default situational context instead."
             )
         messages = self._prompt.to_messages(
             system_prompt_input={
-                "assistant_description": self._base_generator._assistant_description,
-                "language": self._base_generator._language,
+                "assistant_description": assistant_description,
+                "language": language,
             },
             user_input={
-                "question": generated_qa["question"],
-                "answer": generated_qa["answer"],
+                "question": question["question"],
+                "answer": question["reference_answer"],
                 "situation": situational_context,
             },
         )
 
-        out = self._base_generator._llm_complete(messages=messages)
-        generated_qa["question"] = out["question"]
+        out = self._llm_complete(messages=messages)
+        question["question"] = out["question"]
 
-        question_metadata["question_type"] = self.question_type.value
-        question_metadata["situational_context"] = situational_context
+        question["metadata"]["question_type"] = self._question_type.value
+        question["metadata"]["situational_context"] = situational_context
 
-        return generated_qa, question_metadata
+        return question
+
+
+situational_questions = SituationalQuestionsGenerator()

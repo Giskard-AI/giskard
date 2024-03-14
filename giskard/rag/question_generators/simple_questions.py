@@ -1,11 +1,8 @@
-from typing import Optional, Sequence, Tuple
-
-import json
 import logging
+import uuid
 
-from ...llm.client import get_default_client
-from ...llm.client.base import LLMClient, LLMMessage
-from ..knowledge_base import Document, KnowledgeBase
+from ..knowledge_base import KnowledgeBase
+from .base_generator import BaseQuestionGenerator
 from .prompt import QAGenerationPrompt
 from .question_types import QuestionTypes
 
@@ -47,7 +44,7 @@ QA_GENERATION_EXAMPLE_OUTPUT = """{
 }"""
 
 
-class BaseQuestionsGenerator:
+class SimpleQuestionGenerator(BaseQuestionGenerator):
     """
     Base question generator that generates questions from a KnowledgeBase.
 
@@ -67,58 +64,17 @@ class BaseQuestionsGenerator:
         The temperature to use in the LLM for question generation. The default is 0.5.
     """
 
-    def __init__(
-        self,
-        knowledge_base: KnowledgeBase,
-        language: Optional[str] = "en",
-        assistant_description: Optional[str] = "This assistant is a chatbot that answers question from users.",
-        context_window_length: Optional[int] = 8192,
-        llm_client: Optional[LLMClient] = None,
-        llm_temperature: Optional[float] = 0.5,
-    ):
-        self._knowledge_base = knowledge_base
-        self._language = language
-        self._assistant_description = assistant_description
-        self._context_window_length = context_window_length
-        self._llm_client = llm_client or get_default_client()
-        self._llm_temperature = llm_temperature
+    _prompt = QAGenerationPrompt(
+        system_prompt=QA_GENERATION_SYSTEM_PROMPT,
+        example_input=QA_GENERATION_EXAMPLE_INPUT,
+        example_output=QA_GENERATION_EXAMPLE_OUTPUT,
+    )
 
-        self._prompt = QAGenerationPrompt(
-            system_prompt=QA_GENERATION_SYSTEM_PROMPT,
-            example_input=QA_GENERATION_EXAMPLE_INPUT,
-            example_output=QA_GENERATION_EXAMPLE_OUTPUT,
-        )
+    _question_type = QuestionTypes.EASY
 
-        self.question_type = QuestionTypes.EASY
-
-    def _llm_complete(self, messages: Sequence[LLMMessage]) -> dict:
-        try:
-            out = self._llm_client.complete(
-                messages=messages,
-                temperature=0.5,
-                caller_id=self.__class__.__name__,
-            )
-
-            return json.loads(out.content, strict=False)
-        except json.decoder.JSONDecodeError:
-            logger.warning("JSON decoding error, trying to fix the JSON string.")
-            return self._try_fix_json_message(out.content)
-
-    def _try_fix_json_message(self, incorrect_json: str):
-        out = self._llm_client.complete(
-            messages=[
-                LLMMessage(
-                    role="system",
-                    content="Fix the following json string so it contains a single valid json. Make sure to start and end with curly brackets.",
-                ),
-                LLMMessage(role="user", content=incorrect_json),
-            ],
-            temperature=0,
-            caller_id=self.__class__.__name__,
-        )
-        return json.loads(out.content)
-
-    def generate_question(self, context_documents: Sequence[Document]) -> Tuple[dict, dict]:
+    def _generate_single_question(
+        self, knowledge_base: KnowledgeBase, assistant_description: str, language: str
+    ) -> dict:
         """
         Generate a question from a list of context documents.
 
@@ -132,13 +88,32 @@ class BaseQuestionsGenerator:
         Tuple[dict, dict]
             The generated question and the metadata of the question.
         """
-        context = "\n------\n".join(["", *[doc.content for doc in context_documents], ""])
+        logger.debug("Generating simple question.")
+        seed_document = knowledge_base.get_random_document()
+        context_documents = knowledge_base.get_neighbors(
+            seed_document, self._context_neighbors, self._context_similarity_threshold
+        )
+        context_str = "\n------\n".join(["", *[doc.content for doc in context_documents], ""])
+
+        reference_context = "\n\n".join([f"Document {doc.id}: {doc.content}" for doc in context_documents])
+
         messages = self._prompt.to_messages(
-            system_prompt_input={"assistant_description": self._assistant_description, "language": self._language},
-            user_input=context,
+            system_prompt_input={"assistant_description": assistant_description, "language": language},
+            user_input=context_str,
         )
 
         generated_qa = self._llm_complete(messages=messages)
-        question_metadata = {"question_type": self.question_type.value, "reference_context": context}
+        question_metadata = {"question_type": self._question_type.value, "seed_document_id": seed_document.id}
 
-        return generated_qa, question_metadata
+        question = {
+            "id": str(uuid.uuid4()),
+            "question": generated_qa["question"],
+            "reference_answer": generated_qa["answer"],
+            "reference_context": reference_context,
+            "conversation_history": [],
+            "metadata": question_metadata,
+        }
+        return question
+
+
+simple_questions = SimpleQuestionGenerator()

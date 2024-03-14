@@ -1,8 +1,5 @@
-from typing import Optional, Sequence, Tuple
-
-from ..knowledge_base import Document
-from .base import BaseQuestionModifier
-from .base_question_generator import BaseQuestionsGenerator
+from ..knowledge_base import KnowledgeBase
+from .base_modifier_generator import BaseModifierGenerator
 from .prompt import QAGenerationPrompt
 from .question_types import QuestionTypes
 
@@ -55,30 +52,30 @@ COMPLEXIFICATION_EXAMPLE_OUTPUT = """{
 }"""
 
 
-class ComplexQuestionsModifier(BaseQuestionModifier):
-    def __init__(self, base_generator: Optional[BaseQuestionsGenerator] = None):
-        self._base_generator = base_generator
+class ComplexQuestionsGenerator(BaseModifierGenerator):
+    _prompt = QAGenerationPrompt(
+        system_prompt=COMPLEXIFICATION_SYSTEM_PROMPT,
+        example_input=COMPLEXIFICATION_EXAMPLE_INPUT,
+        example_output=COMPLEXIFICATION_EXAMPLE_OUTPUT,
+        user_input_template=COMPLEXIFICATION_INPUT_TEMPLATE,
+    )
 
-        self._prompt = QAGenerationPrompt(
-            system_prompt=COMPLEXIFICATION_SYSTEM_PROMPT,
-            example_input=COMPLEXIFICATION_EXAMPLE_INPUT,
-            example_output=COMPLEXIFICATION_EXAMPLE_OUTPUT,
-            user_input_template=COMPLEXIFICATION_INPUT_TEMPLATE,
-        )
+    _question_type = QuestionTypes.COMPLEX
 
-        self.question_type = QuestionTypes.COMPLEX
-
-    def generate_question(self, context_documents: Sequence[Document]) -> Tuple[dict, dict]:
-        generated_qa, question_metadata = self._base_generator.generate_question(context_documents)
-
+    def _modify_question(
+        self, question: dict, knowledge_base: KnowledgeBase, assistant_description: str, language: str
+    ) -> dict:
         messages = self._prompt.to_messages(
             system_prompt_input={
-                "assistant_description": self._base_generator._assistant_description,
-                "language": self._base_generator._language,
+                "assistant_description": assistant_description,
+                "language": language,
             },
-            user_input={"question": generated_qa["question"], "context": question_metadata["reference_context"]},
+            user_input={"question": question["question"], "context": question["reference_context"]},
         )
-        question_metadata["question_type"] = self.question_type.value
-        out = self._base_generator._llm_complete(messages=messages)
-        generated_qa["question"] = out["question"]
-        return generated_qa, question_metadata
+        question["metadata"]["question_type"] = self._question_type.value
+        out = self._llm_complete(messages=messages)
+        question["question"] = out["question"]
+        return question
+
+
+complex_questions = ComplexQuestionsGenerator()
