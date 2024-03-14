@@ -34,7 +34,7 @@ CONVERSATIONAL_ASSISTANT_EXAMPLE = (
 )
 
 
-class ConversationalQuestionsModifier(BaseModifierGenerator):
+class ConversationalQuestionsGenerator(BaseModifierGenerator):
     _prompt = QAGenerationPrompt(
         system_prompt=CONVERSATIONAL_SYSTEM_PROMPT,
         example_input=CONVERSATIONAL_USER_EXAMPLE,
@@ -65,4 +65,4 @@ class ConversationalQuestionsModifier(BaseModifierGenerator):
         return question
 
 
-conversational_questions = ConversationalQuestionsModifier()
+conversational_questions = ConversationalQuestionsGenerator()

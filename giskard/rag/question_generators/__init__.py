@@ -1,17 +1,11 @@
 from .base_generator import BaseQuestionGenerator
 from .complex_questions import ComplexQuestionsGenerator, complex_questions
-from .conversational_questions import ConversationalQuestionsModifier, conversational_questions
+from .conversational_questions import ConversationalQuestionsGenerator, conversational_questions
 from .distracting_questions import DistractingQuestionsGenerator, distracting_questions
-from .double_questions import DoubleQuestionsModifier, double_questions
+from .double_questions import DoubleQuestionsGenerator, double_questions
 from .question_types import QUESTION_ATTRIBUTION, QuestionTypes, RAGComponents
 from .simple_questions import SimpleQuestionGenerator, simple_questions
 from .situational_questions import SituationalQuestionsGenerator, situational_questions
-
-# complex_questions_modifier = ComplexQuestionsModifier()
-# conversational_questions_modifier = ConversationalQuestionsModifier()
-# distracting_questions_modifier = DistractingQuestionsModifier()
-# double_questions_modifier = DoubleQuestionsModifier()
-# situational_questions_modifier = SituationalQuestionsModifier()
 
 __all__ = [
     "QuestionTypes",
@@ -20,10 +14,10 @@ __all__ = [
     "BaseQuestionGenerator",
     "SimpleQuestionGenerator",
     "ComplexQuestionsGenerator",
-    "ConversationalQuestionsModifier",
+    "ConversationalQuestionsGenerator",
     "DistractingQuestionsGenerator",
     "SituationalQuestionsGenerator",
-    "DoubleQuestionsModifier",
+    "DoubleQuestionsGenerator",
     "simple_questions",
     "complex_questions",
     "conversational_questions",

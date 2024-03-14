@@ -79,7 +79,7 @@ DOUBLE_QUESTION_EXAMPLE_OUTPUT = """{
 }"""
 
 
-class DoubleQuestionsModifier(BaseQuestionGenerator):
+class DoubleQuestionsGenerator(BaseQuestionGenerator):
     _linked_question_generation_prompt = QAGenerationPrompt(
         system_prompt=LINKED_QUESTION_SYSTEM_PROMPT,
         example_input=LINKED_QUESTION_EXAMPLE_INPUT,
@@ -145,4 +145,4 @@ class DoubleQuestionsModifier(BaseQuestionGenerator):
         return question
 
 
-double_questions = DoubleQuestionsModifier()
+double_questions = DoubleQuestionsGenerator()
