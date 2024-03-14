@@ -31,9 +31,7 @@ from .report import ScanReport
 
 MAX_ISSUES_PER_DETECTOR = 15
 
-COST_ESTIMATE_TEMPLATE = """This automatic scan will use LLM-assisted detectors based on GPT-4 to identify vulnerabilities in your model.
-These are the total estimated costs:
-Estimated calls to your model: ~{num_model_calls}
+COST_ESTIMATE_TEMPLATE = """Estimated calls to your model: ~{num_model_calls}
 Estimated LLM calls for evaluation: {num_llm_calls}
 """
 
