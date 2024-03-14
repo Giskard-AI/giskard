@@ -20,7 +20,7 @@ logger = logging.getLogger(__name__)
 
 class GiskardEvaluator(ModelEvaluator):
     def can_evaluate(self, model_type, **kwargs):
-        return model_type in ["classifier", "regressor", "text"]
+        return model_type in ["classifier", "regressor", "text", "question-answering"]
 
     def _wrap_dataset(self, dataset):
         if not isinstance(dataset.features_data, pd.DataFrame):
@@ -85,14 +85,13 @@ class GiskardEvaluator(ModelEvaluator):
                 "repository for further assistance: https://github.com/Giskard-AI/giskard."
             ) from e
 
-    def _generate_test_suite(self, scan_results):
+    def _generate_metrics(self, scan_results):
         try:
             test_suite = scan_results.generate_test_suite("scan test suite")
             test_suite_results = test_suite.run()
 
             # log metrics resulting from scan
-            metrics = test_suite_results.to_mlflow(mlflow_client=self.client, mlflow_run_id=self.run_id)
-            return test_suite_results, metrics
+            return test_suite_results.to_mlflow(mlflow_client=self.client, mlflow_run_id=self.run_id)
         except Exception as e:
             analytics.track(
                 "mlflow_integration:test_suite_generation:error",
@@ -103,10 +102,11 @@ class GiskardEvaluator(ModelEvaluator):
             )
             logger.warning(
                 "An error occurred while generating the test suite. "
-                "Visualising the results of the scan is still possible in the mlflow ui, but not as metrics."
+                "Visualising the results of the scan is still possible in the mlflow ui, but not as metrics. "
                 "Please submit the traceback as a GitHub issue in the following "
                 "repository for further assistance: https://github.com/Giskard-AI/giskard."
             )
+            return {}
 
     def evaluate(
         self, *, model, model_type, dataset, run_id, evaluator_config, baseline_model=None, **kwargs
@@ -144,7 +144,7 @@ class GiskardEvaluator(ModelEvaluator):
             )
 
         # Generate test suite
-        _, metrics = self._generate_test_suite(scan_results)
+        metrics = self._generate_metrics(scan_results)
 
         print(
             "The evaluation with giskard ran successfully! You can now visualise the results by running 'mlflow ui' "
