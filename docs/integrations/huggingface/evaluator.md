@@ -3,6 +3,8 @@
 
 This is a guide to submit an evaluation job for a model on HF with a dataset on HF from Giskard Evaluator.
 
+We are currently only supporting [Text Classification](https://huggingface.co/models?pipeline_tag=text-classification) models. More models are coming...
+
 ## Obtain Model ID and Dataset ID
 
 First, find the model ID of the model you want to evaluate. For instance, locate the model **cardiffnlp/twitter-roberta-base-sentiment-latest** [here](https://huggingface.co/cardiffnlp/twitter-roberta-base-sentiment-latest) and click on the "Copy" icon next to the title to copy the model ID:
@@ -25,39 +27,45 @@ Please preview the features and double check your choices in the "Dataset Previe
 
 ## Validate: label and feature matching
 
-Once you have finished setting up the model ID and dataset with its configuration and split, just click the button below. We will run a quick validation to make sure the model and dataset match and are compatible with the Giskard open-srouce library.
+Once you have finished setting up the model ID and dataset with its configuration and split, you are able to click the validation button below.
 
-We try our best to match the labels in the model and the dataset, as well as the features. 
+We will run a quick prediction with the first row in the dataset to make sure:
 
-<!-- TODO(Inoki): Polish this part -->
-
-### Choose the feature
-
-Your dataset might not perfectly match your model, and we're here to help align it for you.
-
-However, the dataset might not perfectly match the model
-
-For instance, if your dataset has more than one feature column, you may need to manually guide us to the right one. In the example below, we could map "sentence" to "text" instead of "idx.”
-
-![Another example for unmatched labels or features](../../assets/integrations/hfs/eval_label_unmatched.png)
-
-This does not stop you from submission (you can still do that), but will significantly impact the accuracy of the scan.
-
-### Match the labels
-
-Keep in mind that even if the dataset has a subset that matches to your model, the configuration and split choices may not align correctly. For instance, if your model is sorting on sentiment data, but the configuration is set for emojis, the labels won't match up.
-
-![Label matching failed between model and dataset](../../assets/integrations/hfs/eval_label_matching.png)
-
-After changing to the correct selection, the validation should be green!
+- the dataset contains the features needed by the model;
+- the classification labels of the model can match the labels in the given dataset;
+- the model and the dataset are compatible with the Giskard open-srouce library.
 
 ![Label matched between model and dataset](../../assets/integrations/hfs/eval_label_matched.png)
 
-Double check everything and fill in your Hugging Face token. When the "Get Evaluation result" button lights up, you are ready to go!
+We try our best to match the labels in the model and the dataset, as well as the features. You can see the features chose by Giskard Evaluator and the prediction of the model.
 
-## Use your HF access token for your own evaluation
+However, the dataset might not perfectly match the model. You have to manually aligh the features or the labels sometimes.
+
+### Choose the feature
+
+For instance, if your dataset has more than one feature column, you may need to manually guide us to the right one. In the example below, we could map `sentence` to `text` instead of `idx`.
+
+![Another example for unmatched labels or features](../../assets/integrations/hfs/eval_label_unmatched.png)
+
+Although this does not stop you from the evaluation, but it will significantly impact the accuracy of the scan during the evaluation. Or sometime, the scan results does not make sense.
+
+### Match the labels
+
+For instance, if your model is sorting on sentiment data, but the configuration is a set of index for emojis, the labels will not match up.
+
+![Label matching failed between model and dataset](../../assets/integrations/hfs/eval_label_matching.png)
+
+You need to choose the classification label based on the semantic meanings. After changing to the correct selection in the label mapping, the validation should be green!
+
+## Use your HF access token for HF inference API
+
+Giskard evaluator leverages the free [HF inference API](https://huggingface.co/docs/api-inference/quicktour) to evaluate the models. To keep the availibility, HF comes up with a rate limit for each user.
+
+You need to fill in your Hugging Face token, to obtain the best speed by avoiding the rate limits.
 
 ![Input Hugging Face access token](../../assets/integrations/hfs/eval_input_hf_access_token.png)
+
+The token will be strictly used in your own evaluation. You can check [our code](https://github.com/Giskard-AI/cicd/blob/main/giskard_cicd/loaders/huggingface_inf_model.py) for any concerns.
 
 Finally, click on the "Get Evaluation Result" button, your job will be submitted to the waiting queue, and you will obtain the job ID of your evaluation.
 
