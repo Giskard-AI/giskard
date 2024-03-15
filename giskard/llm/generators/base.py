@@ -42,7 +42,7 @@ class _BaseLLMGenerator(BaseGenerator, ABC):
         llm_client: LLMClient = None,
         llm_seed: int = 1729,
     ):
-        self.languages = languages
+        self.languages = languages or ["en"]
         self.llm_temperature = llm_temperature if llm_temperature is not None else self._default_temperature
         self.llm_client = llm_client or get_default_client()
         self.llm_seed = llm_seed
@@ -119,8 +119,10 @@ class LLMBasedDataGenerator(_BaseLLMGenerator):
         super().__init__(*args, **kwargs)
         self.prompt = prompt
         self.prefix_messages = prefix_messages or []
-        self.languages = languages
+        self.languages = languages or ["en"]
 
-    def _format_messages(self, model: BaseModel, num_samples: int):
-        prompt = self.prompt.format(model=model, num_samples=num_samples)
+    def _format_messages(
+        self, model: BaseModel, num_samples: int, column_types: Optional[Dict] = None
+    ) -> Sequence[ChatMessage]:
+        prompt = self.prompt.format(model=model, num_samples=num_samples, languages=", ".join(self.languages))
         return self.prefix_messages + [ChatMessage(role="user", content=prompt)]
