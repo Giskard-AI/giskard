@@ -11,7 +11,9 @@ try:
     from mistralai.client import MistralClient as _MistralClient
     from mistralai.models.chat_completion import ChatMessage as MistralChatMessage
 except ImportError as err:
-    raise LLMImportError(flavor="llm") from err
+    raise LLMImportError(
+        flavor="llm", msg="To use Mistral models, please install the `mistralai` package with `pip install mistralai`"
+    ) from err
 
 
 class MistralClient(LLMClient):
