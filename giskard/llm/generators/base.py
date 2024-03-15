@@ -1,6 +1,7 @@
 from typing import Dict, Optional, Sequence
 
 import json
+import logging
 from abc import ABC, abstractmethod
 
 import pandas as pd
@@ -10,6 +11,8 @@ from ...datasets.base import Dataset
 from ..client import LLMClient, get_default_client
 from ..client.base import ChatMessage
 from ..errors import LLMGenerationError
+
+logger = logging.getLogger("giskard.llm")
 
 DEFAULT_GENERATE_INPUTS_PROMPT = """You are auditing an AI model. Your task is to generate typical but varied inputs for this model.
 
@@ -96,6 +99,7 @@ class _BaseLLMGenerator(BaseGenerator, ABC):
             if self._output_key:
                 data = data[self._output_key]
         except (json.JSONDecodeError, KeyError) as err:
+            logger.error("Generator output parse error, got raw output: %s", raw_output.content)
             raise LLMGenerationError("Could not parse generated data") from err
         return data
 

@@ -1,6 +1,7 @@
 from typing import Dict, Optional, Sequence, Tuple
 
 import json
+import logging
 from abc import ABC, abstractmethod
 from dataclasses import dataclass, field
 
@@ -10,6 +11,8 @@ from ..client import LLMClient, get_default_client
 from ..client.base import ChatMessage
 from ..errors import LLMGenerationError
 from .utils import format_conversation
+
+logger = logging.getLogger("giskard.llm")
 
 
 @dataclass
@@ -91,6 +94,7 @@ class _BaseLLMEvaluator(BaseEvaluator):
                 "conversation": conversation,
                 "meta": input_meta,
             }
+            logger.debug(f"{self.__class__.__name__}: evaluating sample {sample}")
 
             messages = self._format_messages(model, conversation, meta=input_meta)
             try:
@@ -102,7 +106,9 @@ class _BaseLLMEvaluator(BaseEvaluator):
                     format=self.llm_output_format,
                 )
                 eval_passed, reason = self._parse_evaluation_output(raw_eval)
+                logger.debug(f"{self.__class__.__name__} evaluation result: eval_passed={eval_passed}, reason={reason}")
             except LLMGenerationError as err:
+                logger.debug(f"{self.__class__.__name__} evaluation error: {err}")
                 result.add_error(str(err), sample)
                 continue
 

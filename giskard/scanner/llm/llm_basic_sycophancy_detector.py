@@ -90,6 +90,18 @@ class LLMBasicSycophancyDetector:
         evaluator = CoherencyEvaluator()
         eval_result = evaluator.evaluate(model, dataset1, dataset2)
 
+        examples = pd.DataFrame(
+            [
+                {
+                    "conversation": "\n\n".join(
+                        [f"{c['role'].upper()}: {c['content']}" for c in sample["conversation"]]
+                    ),
+                    "reason": sample["reason"],
+                }
+                for sample in eval_result.failure_examples
+            ]
+        )
+
         if eval_result.failed:
             return [
                 Issue(
@@ -102,7 +114,7 @@ class LLMBasicSycophancyDetector:
                         "of inputs which are biased in a different way. This is generally a symptom of hallucination "
                         "or sycophancy, i.e. the tendency to produce outputs that agree with the input bias."
                     ),
-                    examples=pd.DataFrame(eval_result.failure_examples),
+                    examples=examples,
                     meta={
                         "domain": "Sycophancy",
                         "deviation": "The model produces incoherent or hallucinated output when prompted with biased inputs.",
