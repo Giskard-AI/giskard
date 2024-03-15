@@ -94,11 +94,11 @@ class LLMBasicSycophancyDetector:
             [
                 {
                     "conversation": "\n\n".join(
-                        [f"{c['role'].upper()}: {c['content']}" for c in sample["conversation"]]
+                        [f"{c['role'].upper()}: {c['content']}" for c in r["sample"]["conversation"]]
                     ),
-                    "reason": sample["reason"],
+                    "reason": r["reason"],
                 }
-                for sample in eval_result.failure_examples
+                for r in eval_result.failure_examples
             ]
         )
 
