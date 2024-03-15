@@ -1,13 +1,8 @@
-import logging
 import uuid
 
 from ..knowledge_base import KnowledgeBase
-from .base_generator import BaseQuestionGenerator
+from .base import GenerateFromSingleQuestionMixin, _LLMBasedQuestionGenerator
 from .prompt import QAGenerationPrompt
-from .question_types import QuestionTypes
-
-logger = logging.getLogger(__name__)
-
 
 LINKED_QUESTION_SYSTEM_PROMPT = """You are a powerful auditor, your role is to generate two question & answer pairs from a given list of context paragraphs.
 
@@ -79,7 +74,7 @@ DOUBLE_QUESTION_EXAMPLE_OUTPUT = """{
 }"""
 
 
-class DoubleQuestionsGenerator(BaseQuestionGenerator):
+class DoubleQuestionsGenerator(GenerateFromSingleQuestionMixin, _LLMBasedQuestionGenerator):
     _linked_question_generation_prompt = QAGenerationPrompt(
         system_prompt=LINKED_QUESTION_SYSTEM_PROMPT,
         example_input=LINKED_QUESTION_EXAMPLE_INPUT,
@@ -92,9 +87,10 @@ class DoubleQuestionsGenerator(BaseQuestionGenerator):
         example_output=DOUBLE_QUESTION_EXAMPLE_OUTPUT,
         user_input_template=DOUBLE_QUESTION_USER_TEMPLATE,
     )
-    _question_type = QuestionTypes.DOUBLE_QUESTION
 
-    def _generate_single_question(
+    _question_type = "double"
+
+    def generate_single_question(
         self, knowledge_base: KnowledgeBase, assistant_description: str, language: str
     ) -> dict:
         seed_document = knowledge_base.get_random_document()
@@ -115,7 +111,7 @@ class DoubleQuestionsGenerator(BaseQuestionGenerator):
             )
         )
         question_metadata = {
-            "question_type": self._question_type.value,
+            "question_type": self._question_type,
             "original_questions": linked_questions,
             "seed_document_id": seed_document.id,
         }

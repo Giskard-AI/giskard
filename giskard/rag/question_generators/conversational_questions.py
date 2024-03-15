@@ -1,12 +1,7 @@
-import logging
-
 from ..knowledge_base import KnowledgeBase
-from .base_modifier_generator import BaseModifierGenerator
+from .base import _BaseModifierGenerator
 from .prompt import QAGenerationPrompt
-from .question_types import QuestionTypes
-
-logger = logging.getLogger(__name__)
-
+from .simple_questions import SimpleQuestionGenerator
 
 CONVERSATIONAL_SYSTEM_PROMPT = """You are an expert at re-writing questions.
 
@@ -34,7 +29,9 @@ CONVERSATIONAL_ASSISTANT_EXAMPLE = (
 )
 
 
-class ConversationalQuestionsGenerator(BaseModifierGenerator):
+class ConversationalQuestionsGenerator(_BaseModifierGenerator):
+    _base_generator = SimpleQuestionGenerator(show_progress=False)
+
     _prompt = QAGenerationPrompt(
         system_prompt=CONVERSATIONAL_SYSTEM_PROMPT,
         example_input=CONVERSATIONAL_USER_EXAMPLE,
@@ -42,7 +39,7 @@ class ConversationalQuestionsGenerator(BaseModifierGenerator):
         user_input_template=CONVERSATIONAL_USER_TEMPLATE,
     )
 
-    _question_type = QuestionTypes.CONVERSATIONAL
+    _question_type = "conversational"
 
     def _modify_question(
         self, question: dict, knowledge_base: KnowledgeBase, assistant_description: str, language: str
@@ -59,7 +56,7 @@ class ConversationalQuestionsGenerator(BaseModifierGenerator):
         out = self._llm_complete(messages=messages)
         question["question"] = out["question"]
 
-        question["metadata"]["question_type"] = self._question_type.value
+        question["metadata"]["question_type"] = self._question_type
         question["conversation_history"] = [{"role": "user", "content": out["introduction"]}]
 
         return question

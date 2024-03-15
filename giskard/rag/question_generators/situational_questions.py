@@ -1,9 +1,9 @@
 import logging
 
 from ..knowledge_base import KnowledgeBase
-from .base_modifier_generator import BaseModifierGenerator
+from .base import _BaseModifierGenerator
 from .prompt import QAGenerationPrompt
-from .question_types import QuestionTypes
+from .simple_questions import SimpleQuestionGenerator
 
 logger = logging.getLogger(__name__)
 
@@ -65,7 +65,9 @@ SITUATIONAL_QUESTION_EXAMPLE_OUTPUT = (
 )
 
 
-class SituationalQuestionsGenerator(BaseModifierGenerator):
+class SituationalQuestionsGenerator(_BaseModifierGenerator):
+    _base_generator = SimpleQuestionGenerator(show_progress=False)
+
     _situation_generation_prompt = QAGenerationPrompt(
         system_prompt=SITUATIONAL_CONTEXT_SYSTEM_PROMPT,
         user_input_template=SITUATIONAL_CONTEXT_INPUT,
@@ -78,7 +80,7 @@ class SituationalQuestionsGenerator(BaseModifierGenerator):
         user_input_template=SITUATIONAL_QUESTION_USER_TEMPLATE,
     )
 
-    _question_type = QuestionTypes.SITUATIONAL
+    _question_type = "situational"
 
     def _modify_question(
         self, question: dict, knowledge_base: KnowledgeBase, assistant_description: str, language: str
@@ -98,6 +100,7 @@ class SituationalQuestionsGenerator(BaseModifierGenerator):
             logger.warning(
                 f"Encountered error in situational context generation: {e}. Using default situational context instead."
             )
+
         messages = self._prompt.to_messages(
             system_prompt_input={
                 "assistant_description": assistant_description,
@@ -113,7 +116,7 @@ class SituationalQuestionsGenerator(BaseModifierGenerator):
         out = self._llm_complete(messages=messages)
         question["question"] = out["question"]
 
-        question["metadata"]["question_type"] = self._question_type.value
+        question["metadata"]["question_type"] = self._question_type
         question["metadata"]["situational_context"] = situational_context
 
         return question

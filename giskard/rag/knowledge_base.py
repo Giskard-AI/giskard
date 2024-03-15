@@ -18,29 +18,44 @@ except ImportError as err:
     raise LLMImportError(flavor="llm") from err
 
 
-logger = logging.getLogger(__name__)
+logger = logging.getLogger("giskard.rag")
 
 
-TOPIC_SUMMARIZATION_PROMPT = """You are a superpowerful summarization AI model. 
+TOPIC_SUMMARIZATION_PROMPT = """Your task is to define the topic which best represents a set of documents.
 
-Your task is to summarize a list of paragraphs and extract the topic in common to ALL paragraphs.
-- Your answer must be 3 to 5 words at most.
-- The summary must be written in {language}.
+Your are given below a list of documents and you must extract the topic best representing ALL contents.
+- The topic name should be between 1 to 5 words
+- Provide the topic in this language: {language}
 
-All the information about the topic is delimited with  <topic></topic> tags.
-The paragraphs will be separated with "----------".
-Here is the list of paragraphs:
-<topic>
+Make sure to only return the topic name between quotes, and nothing else.
+
+For example, given these documents:
+
+<documents>
+Camembert is a moist, soft, creamy, surface-ripened cow's milk cheese.
+----------
+Bleu d'Auvergne is a French blue cheese, named for its place of origin in the Auvergne region.
+----------
+Roquefort is a sheep milk cheese from the south of France.
+</documents>
+
+The topic is:
+"French Cheese"
+
+Now it's your turn. Here is the list of documents:
+
+<documents>
 {topics_elements}
-</topic>
+</documents>
 
-Make sure to only return the summary as a valid string, starting and ending with quotes."""
+The topic is:
+"""
 
 
 class Document:
     """A class to wrap the elements of the knowledge base into a unified format."""
 
-    def __init__(self, document: dict, idx: int, features: Optional[Sequence] = None):
+    def __init__(self, document: dict, idx: int, features: Optional[Sequence] = None, topic_id=None):
         features = features if features is not None else list(document.keys())
 
         if len(features) == 1:
@@ -51,6 +66,7 @@ class Document:
         self.metadata = document
         self.id = idx
         self.embeddings = None
+        self.topic_id = topic_id
 
 
 class KnowledgeBase:
@@ -94,6 +110,7 @@ class KnowledgeBase:
                     idx=idx if "id" not in knowledge_chunk else knowledge_chunk.pop("id"),
                 )
                 for idx, knowledge_chunk in enumerate(knowledge_base_df.to_dict("records"))
+                if len(knowledge_chunk) > 0  # remove empty documents
             ]
         else:
             raise ValueError("Cannot generate a vector store from empty DataFrame.")
@@ -183,6 +200,8 @@ class KnowledgeBase:
             cluster_selection_epsilon=0.0,
         )
         clustering = hdbscan.fit(self._reduced_embeddings)
+
+        logger.debug(f"Found {clustering.labels_.max() + 1} clusters.")
         for i, doc in enumerate(self._documents):
             doc.topic_id = clustering.labels_[i]
 
@@ -200,13 +219,15 @@ class KnowledgeBase:
         logger.debug("Create topic name from topic documents")
 
         self._rng.shuffle(topic_documents)
-        topics_str = "\n\n".join(["----------" + doc.content for doc in topic_documents])
+        topics_str = "\n\n".join(["----------" + doc.content[:500] for doc in topic_documents[:10]])
 
         # prevent context window overflow
         topics_str = topics_str[: 3 * 8192]
         prompt = TOPIC_SUMMARIZATION_PROMPT.format(language=self._language, topics_elements=topics_str)
 
-        return self._llm_client.complete([LLMMessage(role="user", content=prompt)], temperature=0.0).content[1:-1]
+        raw_output = self._llm_client.complete([LLMMessage(role="user", content=prompt)], temperature=0.0).content
+
+        return raw_output.strip().strip('"')
 
     def plot_topics(self, notebook: bool = True):
         if notebook:

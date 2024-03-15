@@ -1,7 +1,7 @@
 from ..knowledge_base import KnowledgeBase
-from .base_modifier_generator import BaseModifierGenerator
+from .base import _BaseModifierGenerator
 from .prompt import QAGenerationPrompt
-from .question_types import QuestionTypes
+from .simple_questions import SimpleQuestionGenerator
 
 COMPLEXIFICATION_SYSTEM_PROMPT = """You are an expert at writing questions. 
 Your task is to re-write questions that will be used to evaluate the following assistant:
@@ -52,7 +52,9 @@ COMPLEXIFICATION_EXAMPLE_OUTPUT = """{
 }"""
 
 
-class ComplexQuestionsGenerator(BaseModifierGenerator):
+class ComplexQuestionsGenerator(_BaseModifierGenerator):
+    _base_generator = SimpleQuestionGenerator(show_progress=False)
+
     _prompt = QAGenerationPrompt(
         system_prompt=COMPLEXIFICATION_SYSTEM_PROMPT,
         example_input=COMPLEXIFICATION_EXAMPLE_INPUT,
@@ -60,7 +62,7 @@ class ComplexQuestionsGenerator(BaseModifierGenerator):
         user_input_template=COMPLEXIFICATION_INPUT_TEMPLATE,
     )
 
-    _question_type = QuestionTypes.COMPLEX
+    _question_type = "complex"
 
     def _modify_question(
         self, question: dict, knowledge_base: KnowledgeBase, assistant_description: str, language: str
@@ -72,7 +74,7 @@ class ComplexQuestionsGenerator(BaseModifierGenerator):
             },
             user_input={"question": question["question"], "context": question["reference_context"]},
         )
-        question["metadata"]["question_type"] = self._question_type.value
+        question["metadata"]["question_type"] = self._question_type
         out = self._llm_complete(messages=messages)
         question["question"] = out["question"]
         return question

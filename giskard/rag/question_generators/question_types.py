@@ -22,18 +22,19 @@ class RAGComponents(int, Enum):
 
 QUESTION_ATTRIBUTION = {
     RAGComponents.GENERATOR: [
-        QuestionTypes.EASY,
-        QuestionTypes.COMPLEX,
-        QuestionTypes.DISTRACTING_ELEMENT,
-        QuestionTypes.SITUATIONAL,
+        "simple",
+        "complex",
+        "distracting element",
+        "situational",
+        "double",
     ],
-    RAGComponents.RETRIEVER: [QuestionTypes.EASY, QuestionTypes.DISTRACTING_ELEMENT, QuestionTypes.MULTI_CONTEXT],
+    RAGComponents.RETRIEVER: ["simple", "distracting element", "multi-context"],
     RAGComponents.REWRITER: [
-        QuestionTypes.DISTRACTING_ELEMENT,
-        QuestionTypes.DOUBLE_QUESTION,
-        QuestionTypes.CONVERSATIONAL,
-        QuestionTypes.MULTI_CONTEXT,
+        "distracting element",
+        "double",
+        "conversational",
+        "multi-context",
     ],
-    RAGComponents.ROUTING: [QuestionTypes.EASY, QuestionTypes.OUT_OF_SCOPE],
-    RAGComponents.KNOWLEDGE_BASE: [QuestionTypes.OUT_OF_SCOPE],
+    RAGComponents.ROUTING: ["simple", "out of scope"],
+    RAGComponents.KNOWLEDGE_BASE: ["out of scope"],
 }

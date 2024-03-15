@@ -1,13 +1,8 @@
-import logging
 import uuid
 
 from ..knowledge_base import KnowledgeBase
-from .base_generator import BaseQuestionGenerator
+from .base import GenerateFromSingleQuestionMixin, _LLMBasedQuestionGenerator
 from .prompt import QAGenerationPrompt
-from .question_types import QuestionTypes
-
-logger = logging.getLogger(__name__)
-
 
 QA_GENERATION_SYSTEM_PROMPT = """You are a powerful auditor, your role is to generate question & answer pair from a given list of context paragraphs.
 
@@ -44,7 +39,7 @@ QA_GENERATION_EXAMPLE_OUTPUT = """{
 }"""
 
 
-class SimpleQuestionGenerator(BaseQuestionGenerator):
+class SimpleQuestionGenerator(GenerateFromSingleQuestionMixin, _LLMBasedQuestionGenerator):
     """
     Base question generator that generates questions from a KnowledgeBase.
 
@@ -70,9 +65,9 @@ class SimpleQuestionGenerator(BaseQuestionGenerator):
         example_output=QA_GENERATION_EXAMPLE_OUTPUT,
     )
 
-    _question_type = QuestionTypes.EASY
+    _question_type = "simple"
 
-    def _generate_single_question(
+    def generate_single_question(
         self, knowledge_base: KnowledgeBase, assistant_description: str, language: str
     ) -> dict:
         """
@@ -88,7 +83,6 @@ class SimpleQuestionGenerator(BaseQuestionGenerator):
         Tuple[dict, dict]
             The generated question and the metadata of the question.
         """
-        logger.debug("Generating simple question.")
         seed_document = knowledge_base.get_random_document()
         context_documents = knowledge_base.get_neighbors(
             seed_document, self._context_neighbors, self._context_similarity_threshold
@@ -103,7 +97,7 @@ class SimpleQuestionGenerator(BaseQuestionGenerator):
         )
 
         generated_qa = self._llm_complete(messages=messages)
-        question_metadata = {"question_type": self._question_type.value, "seed_document_id": seed_document.id}
+        question_metadata = {"question_type": self._question_type, "seed_document_id": seed_document.id}
 
         question = {
             "id": str(uuid.uuid4()),

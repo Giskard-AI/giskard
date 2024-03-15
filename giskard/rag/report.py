@@ -213,7 +213,6 @@ class RAGReport:
         Compute the correctness by question type.
         """
         correctness = self._correctness_by_metadata("question_type")
-        correctness.index = correctness.index.map(lambda x: QuestionTypes(x).name)
         return correctness
 
     def correctness_by_topic(self) -> pd.DataFrame:
@@ -228,14 +227,16 @@ class RAGReport:
         """
         correctness = self.correctness_by_question_type()
         available_question_types = {
-            component: list(set([a.name for a in attribution]).intersection(correctness.index))
+            component: list(set([a for a in attribution]).intersection(correctness.index))
             for component, attribution in QUESTION_ATTRIBUTION.items()
         }
 
         scores = {
-            component: [sum(1 / len(attribution) * correctness.loc[q_type, "correctness"] for q_type in attribution)]
-            if len(attribution) > 0
-            else [np.nan]
+            component: (
+                [sum(1 / len(attribution) * correctness.loc[q_type, "correctness"] for q_type in attribution)]
+                if len(attribution) > 0
+                else [np.nan]
+            )
             for component, attribution in available_question_types.items()
         }
         scores[RAGComponents.KNOWLEDGE_BASE] = [self.knowledge_base_score]
@@ -248,7 +249,7 @@ class RAGReport:
 
     @property
     def knowledge_base_score(self):
-        correctness_by_topic = [topic_score for topic, topic_score in self.correctness_by_topic().itertuples()]
+        correctness_by_topic = [topic_score for _, topic_score in self.correctness_by_topic().itertuples()]
         return 1 - (max(correctness_by_topic) - min(correctness_by_topic))
 
     def _correctness_by_metadata(self, metadata_name: str):
@@ -287,8 +288,6 @@ class RAGReport:
         """
         data = self._correctness_by_metadata(metadata_name)
         metadata_values = data.index.tolist()
-        if metadata_name == "question_type":
-            metadata_values = [QuestionTypes(v).name for v in metadata_values]
         overall_correctness = self.correctness
         correctness = data["correctness"].to_numpy()
 
@@ -404,7 +403,7 @@ class RAGReport:
             for topic in self._testset.get_metadata_values("topic")
         }
         histograms_dict["Question"] = {
-            QuestionTypes(q_type).name: {
+            q_type: {
                 metric: self._get_plot_components(self.plot_metrics_hist(metric, {"question_type": [q_type]}))
                 for metric in self._metrics_results
                 if metric != "correctness"
