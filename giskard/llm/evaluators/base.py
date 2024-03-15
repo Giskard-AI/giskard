@@ -34,17 +34,15 @@ class EvaluationResult:
     def passed_ratio(self):
         return len(self.success_examples) / (len(self.success_examples) + len(self.failure_examples))
 
-    def add_error(self, error: str, conversation: Sequence[Dict]):
-        self.errors.append({"error": error, "conversation": conversation})
+    def add_error(self, error: str, sample: Sequence[Dict]):
+        self.errors.append({"error": error, "sample": sample})
 
-    def add_sample(
-        self, eval_passed: bool, reason: Optional[str] = None, conversation: Optional[Sequence[Dict]] = None
-    ):
+    def add_sample(self, eval_passed: bool, reason: Optional[str] = None, sample: Optional[Sequence[Dict]] = None):
         # @TODO: improve this
         if eval_passed:
-            self.success_examples.append({"conversation": conversation, "reason": reason})
+            self.success_examples.append({"sample": sample, "reason": reason})
         else:
-            self.failure_examples.append({"conversation": conversation, "reason": reason})
+            self.failure_examples.append({"sample": sample, "reason": reason})
 
 
 class BaseEvaluator(ABC):
@@ -87,6 +85,7 @@ class _BaseLLMEvaluator(BaseEvaluator):
             input_meta["__sample_id"] = row_id
 
             conversation = [{"role": "user", "content": input_vars}, {"role": "agent", "content": model_output}]
+            sample = {"conversation": conversation}
 
             messages = self._format_messages(model, conversation, meta=input_meta)
             try:
@@ -99,10 +98,10 @@ class _BaseLLMEvaluator(BaseEvaluator):
                 )
                 eval_passed, reason = self._parse_evaluation_output(raw_eval)
             except LLMGenerationError as err:
-                result.add_error(str(err), conversation)
+                result.add_error(str(err), sample)
                 continue
 
-            result.add_sample(eval_passed, reason, conversation)
+            result.add_sample(eval_passed, reason, sample)
 
         return result
 
