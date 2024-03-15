@@ -31,14 +31,14 @@ class RAGReport:
 
     Parameters
     ----------
-    results : Sequence[dict]
-        The evaluation results of the assistant's answers. Should be a list of dictionaries with the following keys: "evaluation", "reason", "assistant_answer".
     testset : QATestset
         The testset used to evaluate the assistant.
-    knowledge_base : KnowledgeBase
-        The knowledge base used to create the testset.
+    results : Sequence[dict]
+        The evaluation results of the assistant's answers. Should be a list of dictionaries with the following keys: "evaluation", "reason", "assistant_answer".
     metrics_results : pd.DataFrame, optional
         The additional metrics computed during the evaluation. If provided, these metrics will be included in the report.
+    knowledge_base : KnowledgeBase
+        The knowledge base used to create the testset.
     """
 
     def __init__(

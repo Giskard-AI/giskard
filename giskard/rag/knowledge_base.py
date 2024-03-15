@@ -90,6 +90,8 @@ class KnowledgeBase:
         The name of the embedding model to use for the knowledge base. It should match the llm_client available embedding models.
     min_topic_size: int = 2
         The minimum number of document to form a topic inside the knowledge base.
+    chunk_size: int = 2048
+        The number of document to embed in a single batch.
     """
 
     def __init__(
