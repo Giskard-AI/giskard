@@ -1,6 +1,7 @@
 from typing import Optional, Sequence
 
 from dataclasses import asdict
+from logging import warning
 
 from ..config import LLMConfigurationError
 from ..errors import LLMImportError
@@ -28,10 +29,18 @@ class MistralClient(LLMClient):
         max_tokens: Optional[int] = None,
         caller_id: Optional[str] = None,
         seed: Optional[int] = None,
+        format: str = None,
     ) -> ChatMessage:
         extra_params = dict()
         if seed is not None:
             extra_params["random_seed"] = seed
+
+        if format not in (None, "json", "json_object"):
+            warning(f"Unsupported format '{format}', ignoring.")
+            format = None
+
+        if format == "json" or format == "json_object":
+            extra_params["response_format"] = {"type": "json_object"}
 
         try:
             completion = self._client.chat(
