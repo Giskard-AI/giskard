@@ -50,7 +50,8 @@ class RequirementEvaluator(_BaseLLMEvaluator):
     def _format_messages(
         self, model: BaseModel, conversation: Sequence[Dict], meta: Optional[Dict] = None
     ) -> Sequence[ChatMessage]:
-        requirements = self.requirements or meta[self.requirement_col]
+        requirements = self.requirements or [meta[self.requirement_col]]
+
         prompt = PROMPT_TEMPLATE.format(
             description=model.description,
             conversation=format_conversation(conversation),
