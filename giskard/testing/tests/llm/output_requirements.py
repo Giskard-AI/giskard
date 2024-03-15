@@ -11,18 +11,18 @@ from ....utils.display import truncate
 from .. import debug_description_prefix
 
 
-def _test_output_against_requirement(model, dataset, evaluator):
+def _test_output_with_evaluator(model, dataset, evaluator):
     eval_result = evaluator.evaluate(model, dataset)
     messages = []
     if eval_result.has_errors:
-        messages = [TestMessage(TestMessageLevel.ERROR, err["message"]) for err in eval_result.errors]
+        messages = [TestMessage(TestMessageLevel.ERROR, err["error"]) for err in eval_result.errors]
     return TestResult(
         passed=eval_result.passed,
         metric=len(eval_result.failure_examples),
         metric_name="Failing examples",
         is_error=eval_result.has_errors,
         messages=messages,
-        details=eval_result.details,
+        details=None,  # TODO: @kevinmessiaen, please check this
     )
 
 
@@ -59,7 +59,7 @@ def test_llm_output_against_requirement_per_row(
     TestResult
         A TestResult object containing the test result.
     """
-    return _test_output_against_requirement(
+    return _test_output_with_evaluator(
         model, dataset, RequirementEvaluator(requirement_col=requirement_column, llm_seed=rng_seed)
     )
 
@@ -95,7 +95,7 @@ def test_llm_output_against_requirement(model: BaseModel, dataset: Dataset, requ
     TestResult
         A TestResult object containing the test result.
     """
-    return _test_output_against_requirement(model, dataset, RequirementEvaluator([requirement], rng_seed=rng_seed))
+    return _test_output_with_evaluator(model, dataset, RequirementEvaluator([requirement], llm_seed=rng_seed))
 
 
 @test(
@@ -154,4 +154,4 @@ def test_llm_single_output_against_requirement(
     )
 
     # Run normal output requirement test
-    return _test_output_against_requirement(model, dataset, RequirementEvaluator([requirement], rng_seed=rng_seed))
+    return _test_output_with_evaluator(model, dataset, RequirementEvaluator([requirement], llm_seed=rng_seed))
