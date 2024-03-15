@@ -36,7 +36,6 @@ from giskard.ml_worker.websocket.utils import (
     do_create_sub_dataset,
     do_run_adhoc_test,
     function_argument_to_ws,
-    log_artifact_local,
     map_dataset_process_function_meta_ws,
     map_function_meta_ws,
     map_result_to_single_test_result_ws,
@@ -134,12 +133,12 @@ def parse_and_execute(
     action: MLWorkerAction,
     params,
     ml_worker: MLWorkerInfo,
-    client_params: Optional[Dict[str, str]],
+    client_params: Dict[str, str],
 ) -> websocket.WorkerReply:
     action_params = parse_action_param(action, params)
     return callback(
         ml_worker=ml_worker,
-        client=GiskardClient(**client_params) if client_params is not None else None,
+        client=GiskardClient(**client_params),
         action=action.name,
         params=action_params,
     )
@@ -314,7 +313,7 @@ def run_other_model(dataset, prediction_results, is_text_generation):
 
 
 @websocket_actor(MLWorkerAction.runModel)
-def run_model(client: Optional[GiskardClient], params: websocket.RunModelParam, *args, **kwargs) -> websocket.Empty:
+def run_model(client: GiskardClient, params: websocket.RunModelParam, *args, **kwargs) -> websocket.Empty:
     try:
         model = BaseModel.download(client, params.model.project_key, params.model.id)
         dataset = Dataset.download(
@@ -349,35 +348,23 @@ def run_model(client: Optional[GiskardClient], params: websocket.RunModelParam, 
         tmp_dir = Path(f)
         predictions_csv = get_file_name("predictions", "csv", params.dataset.sample)
         results.to_csv(index=False, path_or_buf=tmp_dir / predictions_csv)
-        if client:
-            client.log_artifact(
-                tmp_dir / predictions_csv,
-                f"models/inspections/{params.inspectionId}",
-            )
-        else:
-            log_artifact_local(
-                tmp_dir / predictions_csv,
-                f"models/inspections/{params.inspectionId}",
-            )
+        client.log_artifact(
+            tmp_dir / predictions_csv,
+            f"models/inspections/{params.inspectionId}",
+        )
 
         calculated_csv = get_file_name("calculated", "csv", params.dataset.sample)
         calculated.to_csv(index=False, path_or_buf=tmp_dir / calculated_csv)
-        if client:
-            client.log_artifact(
-                tmp_dir / calculated_csv,
-                f"models/inspections/{params.inspectionId}",
-            )
-        else:
-            log_artifact_local(
-                tmp_dir / calculated_csv,
-                f"models/inspections/{params.inspectionId}",
-            )
+        client.log_artifact(
+            tmp_dir / calculated_csv,
+            f"models/inspections/{params.inspectionId}",
+        )
     return websocket.Empty()
 
 
 @websocket_actor(MLWorkerAction.runModelForDataFrame)
 def run_model_for_data_frame(
-    client: Optional[GiskardClient], params: websocket.RunModelForDataFrameParam, *args, **kwargs
+    client: GiskardClient, params: websocket.RunModelForDataFrameParam, *args, **kwargs
 ) -> websocket.RunModelForDataFrame:
     model = BaseModel.download(client, params.model.project_key, params.model.id)
     df = pd.DataFrame.from_records([r.columns for r in params.dataframe.rows])
@@ -407,7 +394,7 @@ def run_model_for_data_frame(
 
 
 @websocket_actor(MLWorkerAction.explain)
-def explain_ws(client: Optional[GiskardClient], params: websocket.ExplainParam, *args, **kwargs) -> websocket.Explain:
+def explain_ws(client: GiskardClient, params: websocket.ExplainParam, *args, **kwargs) -> websocket.Explain:
     model = BaseModel.download(client, params.model.project_key, params.model.id)
     dataset = Dataset.download(client, params.dataset.project_key, params.dataset.id, params.dataset.sample)
     explanations = explain(model, dataset, params.columns)
@@ -419,7 +406,7 @@ def explain_ws(client: Optional[GiskardClient], params: websocket.ExplainParam, 
 
 @websocket_actor(MLWorkerAction.explainText)
 def explain_text_ws(
-    client: Optional[GiskardClient], params: websocket.ExplainTextParam, *args, **kwargs
+    client: GiskardClient, params: websocket.ExplainTextParam, *args, **kwargs
 ) -> websocket.ExplainText:
     model = BaseModel.download(client, params.model.project_key, params.model.id)
     text_column = params.feature_name
@@ -460,7 +447,7 @@ def get_catalog(*args, **kwargs) -> websocket.Catalog:
 
 @websocket_actor(MLWorkerAction.datasetProcessing)
 def dataset_processing(
-    client: Optional[GiskardClient], params: websocket.DatasetProcessingParam, *args, **kwargs
+    client: GiskardClient, params: websocket.DatasetProcessingParam, *args, **kwargs
 ) -> websocket.DatasetProcessing:
     dataset = Dataset.download(client, params.dataset.project_key, params.dataset.id, params.dataset.sample)
 
@@ -500,7 +487,7 @@ def dataset_processing(
 
 @websocket_actor(MLWorkerAction.runAdHocTest)
 def run_ad_hoc_test(
-    client: Optional[GiskardClient], params: websocket.RunAdHocTestParam, *args, **kwargs
+    client: GiskardClient, params: websocket.RunAdHocTestParam, *args, **kwargs
 ) -> websocket.RunAdHocTest:
     test: GiskardTest = GiskardTest.download(params.testUuid, client, params.projectKey)
 
@@ -525,9 +512,7 @@ def run_ad_hoc_test(
 
 
 @websocket_actor(MLWorkerAction.runTestSuite)
-def run_test_suite(
-    client: Optional[GiskardClient], params: websocket.TestSuiteParam, *args, **kwargs
-) -> websocket.TestSuite:
+def run_test_suite(client: GiskardClient, params: websocket.TestSuiteParam, *args, **kwargs) -> websocket.TestSuite:
     loaded_artifacts = defaultdict(dict)
 
     try:
@@ -594,7 +579,7 @@ def echo(params: websocket.EchoMsg, *args, **kwargs) -> websocket.EchoResponse:
 
 
 def handle_cta(
-    client: Optional[GiskardClient],
+    client: GiskardClient,
     params: websocket.GetPushParam,
     push: Optional[Push],
     push_kind: PushKind,
@@ -635,9 +620,7 @@ def handle_cta(
 
 
 @websocket_actor(MLWorkerAction.getPush, timeout=30, ignore_timeout=True)
-def get_push(
-    client: Optional[GiskardClient], params: websocket.GetPushParam, *args, **kwargs
-) -> websocket.GetPushResponse:
+def get_push(client: GiskardClient, params: websocket.GetPushParam, *args, **kwargs) -> websocket.GetPushResponse:
     # Save cta_kind and push_kind and remove it from params
     cta_kind = params.cta_kind
     push_kind = params.push_kind
@@ -690,7 +673,7 @@ def push_to_ws(push: Push):
     return push.to_ws() if push is not None else None
 
 
-def get_push_objects(client: Optional[GiskardClient], params: websocket.GetPushParam):
+def get_push_objects(client: GiskardClient, params: websocket.GetPushParam):
     try:
         model = BaseModel.download(client, params.model.project_key, params.model.id)
         dataset = Dataset.download(client, params.dataset.project_key, params.dataset.id)
@@ -735,7 +718,7 @@ def get_push_objects(client: Optional[GiskardClient], params: websocket.GetPushP
 
 @websocket_actor(MLWorkerAction.createSubDataset)
 def create_sub_dataset(
-    client: Optional[GiskardClient], params: websocket.CreateSubDatasetParam, *arg, **kwargs
+    client: GiskardClient, params: websocket.CreateSubDatasetParam, *arg, **kwargs
 ) -> websocket.CreateSubDataset:
     datasets = {
         dateset_id: Dataset.download(
@@ -751,7 +734,7 @@ def create_sub_dataset(
 
 @websocket_actor(MLWorkerAction.createDataset)
 def create_dataset(
-    client: Optional[GiskardClient], params: websocket.CreateDatasetParam, *arg, **kwargs
+    client: GiskardClient, params: websocket.CreateDatasetParam, *arg, **kwargs
 ) -> websocket.CreateSubDataset:
     dataset = do_create_dataset(params.name, params.headers, params.rows)
 
