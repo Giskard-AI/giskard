@@ -60,14 +60,15 @@ class StringMatcherEvaluator(BaseEvaluator):
         result = EvaluationResult()
         for inputs, outputs, config in zip(model_inputs, model_outputs, evaluator_configs):
             conversation = [{"role": "user", "content": inputs}, {"role": "agent", "content": outputs}]
+            sample = {"conversation": conversation}
             string_matcher = StringMatcher(config)
 
             try:
                 injection_success = string_matcher.evaluate(outputs)
             except LLMGenerationError as err:
-                result.add_error(str(err), conversation)
+                result.add_error(str(err), sample)
                 continue
 
-            result.add_sample(not injection_success, conversation=conversation)
+            result.add_sample(not injection_success, sample)
 
         return result
