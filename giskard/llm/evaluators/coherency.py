@@ -1,11 +1,15 @@
 from typing import Dict, Optional, Sequence
 
+import logging
+
 from ...datasets.base import Dataset
 from ...models import cache as model_cache
 from ...models.base import BaseModel
 from ..client.base import ChatMessage
 from ..errors import LLMGenerationError
 from .base import EvaluationResult, _BaseLLMEvaluator
+
+logger = logging.getLogger("giskard.llm")
 
 SYS_PROMPT = """You are a quality assurance specialist evaluating an AI agent for coherency.
 
@@ -74,6 +78,8 @@ class CoherencyEvaluator(_BaseLLMEvaluator):
                 "output_2": output_2,
             }
 
+            logger.debug(f"{self.__class__.__name__}: evaluating sample: {sample}")
+
             messages = self._format_messages(model, sample)
 
             try:
@@ -85,8 +91,12 @@ class CoherencyEvaluator(_BaseLLMEvaluator):
                     format="json",
                 )
                 eval_passed, reason = self._parse_evaluation_output(raw_eval)
+                logger.debug(
+                    f"{self.__class__.__name__}: evaluation result: eval_passed={eval_passed}, reason={reason}"
+                )
             except LLMGenerationError as err:
                 result.add_error(str(err), sample)
+                logger.debug(f"{self.__class__.__name__}: evaluation error: {err}")
                 continue
 
             result.add_sample(eval_passed, reason, sample)
