@@ -143,8 +143,6 @@ class Dataset(ColumnMetadataMixin):
         column_types (Optional[Dict[str, str]]):
             A dictionary of column names and their types (numeric, category or text) for all columns of df. If not provided,
             the categorical columns will be automatically inferred.
-        data_processor (DataProcessor):
-            An instance of the `DataProcessor` class used for data processing.
     """
 
     name: Optional[str]
