@@ -7,7 +7,7 @@ from ....llm.evaluators.correctness import CorrectnessEvaluator
 from ....models.base import BaseModel
 from ....registry.decorators import test
 from .. import debug_description_prefix
-from .output_requirements import _test_output_against_requirement
+from .output_requirements import _test_output_with_evaluator
 
 
 @test(
@@ -84,7 +84,7 @@ def test_llm_ground_truth_similarity(
 def test_llm_as_a_judge_ground_truth_similarity(
     model: BaseModel, dataset: Dataset, prefix: str = "The requirement should be similar to: ", rng_seed: int = 1729
 ):
-    """Evaluates the model output against its ground truth  with another LLM (LLM-as-a-judge).
+    """Evaluates the correctness of the model output against a ground truth with an LLM (LLM-as-a-judge).
 
     The model outputs over a given dataset will be validated against the
     dataset target using GPT-4 (note that this requires you to set the
@@ -107,6 +107,6 @@ def test_llm_as_a_judge_ground_truth_similarity(
     if dataset.target is None:
         raise ValueError(f"Provided dataset ({dataset}) does not have any ground truth (target)")
 
-    return _test_output_against_requirement(
+    return _test_output_with_evaluator(
         model, dataset, CorrectnessEvaluator(answer_col=dataset.target, llm_seed=rng_seed)
     )
