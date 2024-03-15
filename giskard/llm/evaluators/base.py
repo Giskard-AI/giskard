@@ -81,11 +81,16 @@ class _BaseLLMEvaluator(BaseEvaluator):
             model_outputs,
         ):
             input_vars = {k: v for k, v in row.items() if k in model.feature_names}
+            if len(input_vars) == 1:
+                input_vars = list(input_vars.values())[0]
             input_meta = {k: v for k, v in row.items() if k not in model.feature_names}
             input_meta["__sample_id"] = row_id
 
             conversation = [{"role": "user", "content": input_vars}, {"role": "agent", "content": model_output}]
-            sample = {"conversation": conversation}
+            sample = {
+                "conversation": conversation,
+                "meta": input_meta,
+            }
 
             messages = self._format_messages(model, conversation, meta=input_meta)
             try:
@@ -128,5 +133,5 @@ class LLMBasedEvaluator(_BaseLLMEvaluator):
     def _format_messages(
         self, model: BaseModel, conversation: Sequence[Dict], meta: Optional[Dict] = None
     ) -> Sequence[ChatMessage]:
-        prompt = self._prompt.format(model=model, conversation=format_conversation(conversation))
+        prompt = self.prompt.format(model=model, conversation=format_conversation(conversation))
         return self.prefix_messages + [ChatMessage(role="user", content=prompt)]

@@ -4,8 +4,7 @@ import pandas as pd
 import pytest
 
 from giskard.datasets.base import Dataset
-from giskard.llm.client import ChatMessage, LLMFunctionCall
-from giskard.llm.client.base import LLMToolCall
+from giskard.llm.client import ChatMessage
 from giskard.llm.evaluators.correctness import CorrectnessEvaluator
 from giskard.models.base.model_prediction import ModelPredictionResults
 
@@ -33,7 +32,7 @@ def _make_mock_model(feature_names=None):
     model.predict.return_value = ModelPredictionResults(
         prediction=["The capital of France is Paris", "The capital of Italy is Paris"]
     )
-    model.feature_names = feature_names if feature_names else ["question", "reference_answer", "reference_context"]
+    model.feature_names = feature_names if feature_names else ["question"]
     model.name = "Mock model for test"
     model.description = "This is a model for testing purposes"
     return model
@@ -47,32 +46,11 @@ def test_correctness_evaluator_correctly_flags_examples():
     client.complete.side_effect = [
         ChatMessage(
             role="assistant",
-            tool_calls=[
-                LLMToolCall(
-                    id="1",
-                    type="function",
-                    function=LLMFunctionCall(
-                        name="evaluate_model",
-                        arguments={"passed_test": True, "reason": ""},
-                    ),
-                )
-            ],
+            content='{"eval_passed": true, "reason": ""}',
         ),
         ChatMessage(
             role="assistant",
-            tool_calls=[
-                LLMToolCall(
-                    id="2",
-                    type="function",
-                    function=LLMFunctionCall(
-                        name="evaluate_model",
-                        arguments={
-                            "passed_test": False,
-                            "reason": "The model output does not agree with the ground truth: Rome is the capital of Italy",
-                        },
-                    ),
-                )
-            ],
+            content='{"eval_passed": false, "reason": "The model output does not agree with the ground truth: Rome is the capital of Italy"}',
         ),
     ]
 
@@ -82,24 +60,20 @@ def test_correctness_evaluator_correctly_flags_examples():
 
     assert len(result.success_examples) == 1
     assert len(result.failure_examples) == 1
-
     assert (
         result.failure_examples[0]["reason"]
         == "The model output does not agree with the ground truth: Rome is the capital of Italy"
     )
-    assert result.failure_examples[0]["question"] == "What is the capital of Italy?"
-    assert result.failure_examples[0]["reference_answer"] == "Rome is the capital of Italy"
+
+    conv = result.failure_examples[0]["sample"]["conversation"]
+    assert conv[0]["content"] == "What is the capital of Italy?"
+    assert conv[1]["content"] == "The capital of Italy is Paris"
+
+    assert result.failure_examples[0]["sample"]["meta"]["reference_answer"] == "Rome is the capital of Italy"
     assert (
-        result.failure_examples[0]["reference_context"]
+        result.failure_examples[0]["sample"]["meta"]["reference_context"]
         == "Italy covers an area of 301,340 km2 is the third-most populous member state of the European Union. Its capital and largest city is Rome."
     )
-    assert result.failure_examples[0]["model_output"] == "The capital of Italy is Paris"
-    assert not result.failure_examples[0]["model_evaluation"]
-
-    # Check LLM client calls arguments
-    args = client.complete.call_args_list[0]
-    assert "Your role is to test AI models" in args[0][0][0].content
-    assert args[1]["tools"][0]["function"]["name"] == "evaluate_model"
 
 
 def test_correctness_evaluator_handles_generation_errors():
@@ -110,58 +84,30 @@ def test_correctness_evaluator_handles_generation_errors():
     client.complete.side_effect = [
         ChatMessage(
             role="assistant",
-            tool_calls=[
-                LLMToolCall(
-                    id="1",
-                    type="function",
-                    function=LLMFunctionCall(name="evaluate_model", arguments={"passed_test": True, "reason": ""}),
-                )
-            ],
+            content='{"eval_passed": true}',
         ),
         ChatMessage(
             role="assistant",
-            tool_calls=[
-                LLMToolCall(
-                    id="2",
-                    type="function",
-                    function=LLMFunctionCall(
-                        name="evaluate_model",
-                        arguments={
-                            "pass": False,
-                            "reason": "The model output does not agree with the ground truth: Rome is the capital of Italy",
-                        },
-                    ),
-                )
-            ],
+            content='BREAK JSON{"eval_passed": false, "reason": "The model output does not agree with the ground truth: Rome is the capital of Italy"}',
         ),
     ]
 
     evaluator = CorrectnessEvaluator(llm_client=client)
 
     result = evaluator.evaluate(model, dataset)
-
+    result.failure_examples
     assert len(result.success_examples) == 1
     assert len(result.errors) == 1
 
-    assert result.errors[0]["message"] == "Invalid function call arguments received"
+    assert result.errors[0]["error"] == "Could not parse evaluator output"
 
 
 def test_raises_error_if_missing_column_in_dataset():
     dataset = _make_eval_dataset()
-    dataset.df = dataset.df.drop("question", axis=1)
+    dataset.df = dataset.df.drop("reference_answer", axis=1)
 
     model = _make_mock_model()
 
     evaluator = CorrectnessEvaluator(llm_client=Mock())
-    with pytest.raises(ValueError, match="Missing required columns in the evaluation dataset."):
-        evaluator.evaluate(model, dataset)
-
-
-def test_raises_error_if_missing_feature_in_model():
-    dataset = _make_eval_dataset()
-
-    model = _make_mock_model(feature_names=["reference_answer"])
-
-    evaluator = CorrectnessEvaluator(llm_client=Mock())
-    with pytest.raises(ValueError, match="Model has no feature 'question'"):
+    with pytest.raises(ValueError, match="Could not find reference answer"):
         evaluator.evaluate(model, dataset)

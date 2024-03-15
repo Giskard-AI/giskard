@@ -3,7 +3,7 @@ from unittest.mock import Mock
 import numpy as np
 import pandas as pd
 
-from giskard.llm.client import LLMMessage
+from giskard.llm.client import ChatMessage
 from giskard.rag import TestsetGenerator
 
 
@@ -38,7 +38,7 @@ def test_testset_generation():
     llm_client = Mock()
     llm_client.complete.side_effect = (
         [
-            LLMMessage(
+            ChatMessage(
                 role="assistant",
                 content="""{"question": "Where is Camembert from?",
 "answer": "Camembert was created in Normandy, in the northwest of France."}""",
