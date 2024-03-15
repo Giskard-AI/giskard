@@ -204,6 +204,11 @@ hub = [
     "pycryptodome>=3.6.1",
     "pyngrok>=6.0.0",
 ]
+talk = [
+    "openai",
+    "tenacity>=4.11.0",
+    "shap<0.44.1,>=0.41.0",
+]
 
 [tool.ruff]
 line-length = 120
