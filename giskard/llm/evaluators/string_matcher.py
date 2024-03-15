@@ -16,7 +16,7 @@ logger.setLevel(logging.INFO)
 
 @dataclass(frozen=True)
 class StringMatcherConfig:
-    expected_strings: Tuple[str]
+    expected_strings: Tuple[str, ...]
     all_expected_strings_must_be_found: bool = True
     exact_matching: bool = False
     word_matching: bool = False
