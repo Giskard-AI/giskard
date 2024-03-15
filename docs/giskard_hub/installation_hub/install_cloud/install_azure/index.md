@@ -55,6 +55,8 @@ You can stop the instance and restart it when you need to save your Azure comput
 
 * The user id is `admin` and the password is `admin`
 
+<!-- TODO: Create an ML Worker on a hub -->
+
 ## 4. Start the ML worker
 
 Giskard executes your model using a worker that runs the model directly in **your Python environment**, with all the dependencies required by your model. You can either execute the ML worker:

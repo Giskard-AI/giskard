@@ -46,6 +46,7 @@ You'll then be able to open Giskard at `http://localhost:19000/`
 > giskard hub --help
 > ```
 
+<!-- TODO: Create an ML Worker on a hub -->
 
 ## 2. Start the ML worker
 

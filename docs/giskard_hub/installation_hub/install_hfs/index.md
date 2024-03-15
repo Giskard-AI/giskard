@@ -64,6 +64,8 @@ On your first access on a private HF Space, Giskard needs a HF access token to g
 
 Alternatively, provide your HF access token through the Giskard Settings.
 
+<!-- TODO: Create an ML Worker on a hub -->
+
 ### 4. Start the ML worker
 
 Giskard executes your model using a worker that runs the model directly in **your Python environment**, with all the dependencies required by your model. You can either execute the ML worker:

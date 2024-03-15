@@ -63,6 +63,7 @@ You can stop the instance and restart it when you need to save your GCP compute 
 :::
 
 
+<!-- TODO: Create an ML Worker on a hub -->
 
 ## 4. Start the ML worker
 
