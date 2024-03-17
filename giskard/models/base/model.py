@@ -697,7 +697,6 @@ class BaseModel(ABC):
         )
 
         messages = [{"role": "system", "content": system_prompt}, {"role": "user", "content": question}]
-
         response = client.complete(
             messages=messages,
             tools=[tool.specification for tool in list(available_tools.values())],
@@ -748,4 +747,5 @@ class BaseModel(ABC):
         summary = client.complete(
             messages=[{"role": "user", "content": SUMMARY_PROMPT.format(context=context)}], **TALK_CLIENT_CONFIG
         )
+
         return TalkResult(response, summary, tool_errors)
