@@ -13,10 +13,13 @@ class TalkResult:
         The response to the user's query.
     summary : LLMMessage
         The summary of the conversation between the user and the LLM agent.
+    tool_errors : list[Exception]
+        The list of errors raised during tools execution.
     """
 
     response: LLMMessage
     summary: LLMMessage
+    tool_errors: list[Exception]
 
     def __repr__(self) -> str:
         """Return the 'talk' result.
@@ -32,5 +35,6 @@ class TalkResult:
             f"{self.response.content}\n\n"
             f"Full Conversation Summary:\n"
             f"--------------------------\n"
-            f"{self.summary.content}"
+            f"{self.summary.content}\n\n"
+            f"Tool Errors Raised: {len(self.tool_errors)}"
         )

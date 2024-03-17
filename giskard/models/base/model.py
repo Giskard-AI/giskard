@@ -708,6 +708,9 @@ class BaseModel(ABC):
         if content := response.content:
             messages.append({"role": "assistant", "content": content})
 
+        # Store exceptions raised by tool execution.
+        tool_errors = list()
+
         if tool_calls := response.tool_calls:
             messages.append(client._serialize_message(response))
 
@@ -724,6 +727,7 @@ class BaseModel(ABC):
                     tool_response = ERROR_RESPONSE.format(
                         tool_name=tool_name, tool_args=tool_args, error_msg=error_msg.args[0]
                     )
+                    tool_errors.append(error_msg)
 
                 # Append the tool's response to the conversation.
                 messages.append(
@@ -744,4 +748,4 @@ class BaseModel(ABC):
         summary = client.complete(
             messages=[{"role": "user", "content": SUMMARY_PROMPT.format(context=context)}], **TALK_CLIENT_CONFIG
         )
-        return TalkResult(response, summary)
+        return TalkResult(response, summary, tool_errors)

@@ -108,7 +108,8 @@ _PREDICT_USER_INPUT_TOOL_DESCRIPTION = (
 _PREDICT_TOOL_DESCRIPTION = (
     "Your task is to return prediction of a feature vector either extracted from"
     "the dataset, or partially built from the user input. You expect a dictionary "
-    "with features and their values. First you try to filter rows from the dataset. "
+    "with features and their values. The dict could be empty, if user, for example,"
+    "asked for a prediction on a whole dataset. First you try to filter rows from the dataset. "
     "If it is not possible, you fill the values of features not mentioned in "
     "the user query to build an input vector. Then you run the model prediction on "
     "that vector and finally return the prediction result."
