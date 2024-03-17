@@ -14,8 +14,6 @@ def get_talk_llm_model() -> str:
     return os.getenv("GSK_TALK_LLM_MODEL", "gpt-4-0125-preview")
 
 
-MAX_COMPLETION_TOKENS = 4096
-
 MODEL_INSTRUCTION = """You are an agent designed to help a user obtain information about the model and/or it's 
 predictions.
 
@@ -53,7 +51,10 @@ instead of saying, that you can do it.
 * Make sure, that the generated response do not exceed 4096 tokens.
 * If you face an error or exception during the tool call, return the error's message to the user with no modifications. 
 It must be clear to him, what is the problem.
-
+* You need to understand the "Model performance" as model performance metrics, like Accuracy or R2 score, while "Model 
+performance issues" as model vulnerabilities, like overconfidence, spurious correlation, unethical behaviour, 
+hallucinations, etc. According to this, for the "Model performance" the "calculate_metric" tool must be called, while
+for the "Model performance issues" the "issues_scanner" tool must be called. 
 
 Your will interact with the following model:
 Model name: {model_name}
@@ -114,13 +115,13 @@ _PREDICT_TOOL_DESCRIPTION = (
 )
 
 _CALCULATE_METRIC_TOOL_DESCRIPTION = (
-    "Your task is to calculate a performance metric either for a classification or a "
-    "regression model on a provided dataset. You expect two parameters: a metric name, "
-    "and a dictionary with features and their values. First, you filter rows from the "
-    "dataset, if it is necessary. Then you run the model prediction on that rows or on "
-    "the whole dataset to get the prediction result. Finally, based on obtained "
-    "predictions and the ground truth labels of the dataset, you calculate the value of "
-    "a chosen performance metric and return it."
+    "Your task is to estimate model performance metrics either for a classification or a "
+    "regression model on a provided dataset. If user enquires for 'model performance', you are called."
+    "You expect two parameters: a metric name, and a dictionary with features and their values. "
+    "First, you filter rows from the dataset, if it is necessary. Then you run the model "
+    "prediction on that rows or on the whole dataset to get the prediction result. "
+    "Finally, based on obtained predictions and the ground truth labels of the dataset, "
+    "you calculate the value of a chosen performance metric and return it."
 )
 
 _SHAP_EXPLANATION_TOOL_DESCRIPTION = (
@@ -134,10 +135,11 @@ _SHAP_EXPLANATION_TOOL_DESCRIPTION = (
 
 _ISSUES_SCANNER_TOOL_DESCRIPTION = (
     "Your task is to give the user a summary of the 'giskard' scan result. For your "
-    "info, this feature is used to detect ML model's vulnerabilities such as "
-    "performance bias, hallucination, prompt injection, data leakage, spurious "
-    "correlation, overconfidence, etc. You return a table, where the important "
-    "columns are 'Description', 'Vulnerability', 'Level', 'Metric' and 'Deviation'"
+    "info, this feature is used to detect ML model's vulnerabilities. Those vulnerabilities are "
+    "unrobustness, underconfidence, unethical behaviour, data leakage, performance bias"
+    "stochasticity, harmful content generation, output formatting, information disclosure, "
+    "hallucination, prompt injection, data leakage, spurious correlation, overconfidence, "
+    "stereotypes and discrimination, etc. "
 )
 
 
@@ -160,3 +162,9 @@ AVAILABLE_METRICS = {
 }
 
 FUZZY_SIMILARITY_THRESHOLD = 0.85
+
+TALK_CLIENT_CONFIG = {
+    "max_tokens": 4096,
+    "seed": 0,
+    "temperature": 0,
+}

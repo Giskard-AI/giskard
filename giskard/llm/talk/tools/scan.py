@@ -50,7 +50,7 @@ class IssuesScannerTool(BaseTool):
             If the 'scan_report' was not provided.
         """
         try:
-            scan_report = self._scan_report.to_markdown()
+            scan_report = self._scan_report.to_markdown(template="huggingface")
         except AttributeError as e:
             raise AttributeError(
                 "To get the information about model's issues, detected by the Giskard Scan,"

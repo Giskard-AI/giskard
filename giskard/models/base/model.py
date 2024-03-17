@@ -28,9 +28,9 @@ from ...exceptions.giskard_exception import GiskardException, python_env_excepti
 from ...llm import get_default_client, set_llm_model
 from ...llm.talk.config import (
     ERROR_RESPONSE,
-    MAX_COMPLETION_TOKENS,
     MODEL_INSTRUCTION,
     SUMMARY_PROMPT,
+    TALK_CLIENT_CONFIG,
     get_talk_llm_model,
 )
 from ...llm.talk.tools import (
@@ -702,8 +702,7 @@ class BaseModel(ABC):
             messages=messages,
             tools=[tool.specification for tool in list(available_tools.values())],
             tool_choice="auto",
-            temperature=0.1,
-            max_tokens=MAX_COMPLETION_TOKENS,
+            **TALK_CLIENT_CONFIG,
         )
 
         if content := response.content:
@@ -737,14 +736,12 @@ class BaseModel(ABC):
                 )
 
             # Get the final model's response, based on the tool's output.
-            response = client.complete(messages=messages, temperature=0.1, max_tokens=MAX_COMPLETION_TOKENS)
+            response = client.complete(messages=messages, **TALK_CLIENT_CONFIG)
             messages.append({"role": "assistant", "content": response.content})
 
         # Summarise the conversation.
         context = self._gather_context(messages)
         summary = client.complete(
-            messages=[{"role": "user", "content": SUMMARY_PROMPT.format(context=context)}],
-            temperature=0.1,
-            max_tokens=MAX_COMPLETION_TOKENS,
+            messages=[{"role": "user", "content": SUMMARY_PROMPT.format(context=context)}], **TALK_CLIENT_CONFIG
         )
         return TalkResult(response, summary)
