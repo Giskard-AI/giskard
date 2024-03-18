@@ -20,7 +20,7 @@ except ImportError as err:
 from ..llm.client.base import LLMClient
 from ..visualization.widget import get_template
 from .knowledge_base import KnowledgeBase
-from .question_generators import QUESTION_ATTRIBUTION, QuestionTypes, RAGComponents
+from .question_generators import QUESTION_ATTRIBUTION, RAGComponents
 from .testset import QATestset
 
 
@@ -189,7 +189,7 @@ class RAGReport:
     def get_failures(
         self,
         topic: Optional[Union[str, Sequence[str]]] = None,
-        question_type: Optional[Union[QuestionTypes, Sequence[QuestionTypes]]] = None,
+        question_type: Optional[Union[str, Sequence[str]]] = None,
     ) -> pd.DataFrame:
         """
         Retrieves the failures from the results, optionally filtering by topic and question type.
@@ -198,7 +198,7 @@ class RAGReport:
         ----------
         topic : str or Sequence[str], optional
             The topic(s) to filter the failures by.
-        question_type : QuestionTypes or Sequence[QuestionTypes], optional
+        question_type : str or Sequence[str], optional
             The question type(s) to filter the failures by.
         """
         failures = self.failures

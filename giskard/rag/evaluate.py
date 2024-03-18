@@ -22,7 +22,6 @@ def evaluate(
     assistant_description: str = "This assistant is a chatbot that answers question from users.",
     additional_metrics: Optional[Sequence[Metric]] = None,
     conversation_support: bool = False,
-    conversation_side: str = "client",
 ) -> RAGReport:
     """
     Evaluate an assistant by comparing its answers on a QATestset
@@ -44,10 +43,7 @@ def evaluate(
         The metrics to compute on the test set. If not provided, only the correctness of the answers will be computed.
     conversation_support : bool, optional
         Whether the assistant supports conversational questions or not. By default False.
-    conversation_side : str, optional
-        If conversation_support is True, specify how the conversation is handled by the assistant, either "client" or "server".
-        When conversation is client sided, the assistant will receive the entire conversation history and the question at once.
-        When conversation is server sided, the assistant will be sent each message of the conversation history one by one and finally the question.
+
 
     Returns
     -------
@@ -69,9 +65,7 @@ def evaluate(
     answers = (
         answers_fn
         if isinstance(answers_fn, Sequence)
-        else make_predictions(
-            answers_fn, testset, conversation_support=conversation_support, conversation_side=conversation_side
-        )
+        else make_predictions(answers_fn, testset, conversation_support=conversation_support)
     )
 
     llm_client = llm_client or get_default_client()
@@ -95,23 +89,14 @@ def evaluate(
     return report
 
 
-def make_predictions(answers_fn, testset, conversation_support=False, conversation_side="client"):
+def make_predictions(answers_fn, testset, conversation_support=False):
     answers = []
     logger.info("Starting to make predictions on the test set.")
     for sample in maybe_tqdm(
         testset.to_pandas().itertuples(), desc="Asking questions to the assistant", total=len(testset)
     ):
         if conversation_support and len(sample.conversation_history) > 0:
-            conversation = []
-            for message in sample.conversation_history + [dict(role="user", content=sample.question)]:
-                conversation.append(message)
-                if conversation_side == "client":
-                    assistant_answer = answers_fn(conversation)
-                elif conversation_side == "server":
-                    assistant_answer = answers_fn(message["content"])
-
-                conversation.append(dict(role="assistant", content=assistant_answer))
-            answers.append(conversation[-1]["content"])
+            answers.append(answers_fn(sample.question, sample.conversation_history))
         else:
             answers.append(answers_fn(sample.question))
     logger.info("Predictions finished. Starting evaluation.")

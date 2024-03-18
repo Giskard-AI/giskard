@@ -57,7 +57,10 @@ class ConversationalQuestionsGenerator(_BaseModifierGenerator):
         question["question"] = out["question"]
 
         question["metadata"]["question_type"] = self._question_type
-        question["conversation_history"] = [{"role": "user", "content": out["introduction"]}]
+        question["conversation_history"] = [
+            {"role": "user", "content": out["introduction"]},
+            {"role": "assistant", "content": "How can I help you with that?"},
+        ]
 
         return question
 
