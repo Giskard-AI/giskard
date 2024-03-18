@@ -1,5 +1,7 @@
 from typing import Optional, Sequence, Union
 
+import itertools
+
 import pandas as pd
 
 from .knowledge_base import KnowledgeBase
@@ -69,21 +71,19 @@ def generate_testset(
         for i in range(len(question_generators))
     ]
 
-    questions = []
-    for generator, n in zip(question_generators, generator_num_questions):
-        _qq = list(
-            maybe_tqdm(
-                generator.generate_questions(
-                    knowledge_base,
-                    num_questions=n,
-                    assistant_description=assistant_description,
-                    language=language,
-                ),
-                total=n,
-                desc=f"Generating {generator._question_type} questions",
+    main_generator = itertools.chain.from_iterable(
+        [
+            generator.generate_questions(
+                knowledge_base,
+                num_questions=n,
+                assistant_description=assistant_description,
+                language=language,
             )
-        )
-        questions.extend(_qq)
+            for generator, n in zip(question_generators, generator_num_questions)
+        ]
+    )
+
+    questions = list(maybe_tqdm(main_generator, total=num_questions, desc="Generating questions"))
 
     for question in questions:
         topic_id = knowledge_base.get_document(question["metadata"]["seed_document_id"]).topic_id
