@@ -35,7 +35,7 @@ class MistralClient(LLMClient):
         if seed is not None:
             extra_params["random_seed"] = seed
 
-        if format not in (None, "json", "json_object"):
+        if format not in (None, "json", "json_object") and "large" not in self.model:
             warning(f"Unsupported format '{format}', ignoring.")
             format = None
 
