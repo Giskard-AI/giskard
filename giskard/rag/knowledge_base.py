@@ -109,13 +109,16 @@ class KnowledgeBase:
                 Document(
                     knowledge_chunk,
                     features=knowledge_base_columns,
-                    idx=idx if "id" not in knowledge_chunk else knowledge_chunk.pop("id"),
+                    idx=idx,
                 )
                 for idx, knowledge_chunk in enumerate(knowledge_base_df.to_dict("records"))
-                if len(knowledge_chunk) > 0  # remove empty documents
             ]
         else:
             raise ValueError("Cannot generate a vector store from empty DataFrame.")
+
+        self._documents = [doc for doc in self._documents if doc.content.strip() != ""]
+        for i, doc in enumerate(self._documents):
+            doc.id = i
 
         self._knowledge_base_df = knowledge_base_df
         self._knowledge_base_columns = knowledge_base_columns

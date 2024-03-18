@@ -5,6 +5,7 @@ import logging
 from ..llm.client import LLMClient, get_default_client
 from .knowledge_base import KnowledgeBase
 from .metrics import CorrectnessMetric, Metric
+from .question_generators.utils import maybe_tqdm
 from .recommendation import get_rag_recommendation
 from .report import RAGReport
 from .testset import QATestset
@@ -97,10 +98,9 @@ def evaluate(
 def make_predictions(answers_fn, testset, conversation_support=False, conversation_side="client"):
     answers = []
     logger.info("Starting to make predictions on the test set.")
-    for sample in testset.to_pandas().itertuples():
-        logger.info(f"Predicting on question: {sample.metadata['question_type']}")
-        logger.info(f"Predicting on question: {sample.question}")
-
+    for sample in maybe_tqdm(
+        testset.to_pandas().itertuples(), desc="Asking questions to the assistant", total=len(testset)
+    ):
         if conversation_support and len(sample.conversation_history) > 0:
             conversation = []
             for message in sample.conversation_history + [dict(role="user", content=sample.question)]:

@@ -36,6 +36,8 @@ def get_failure_plot(knowledge_base, question_evaluation: Sequence[dict] = None)
     x_range = (x_min - (x_max - x_min) * 0.05, x_max + (x_max - x_min) * 0.6)
     y_range = (y_min - (y_max - y_min) * 0.25, y_max + (y_max - y_min) * 0.25)
 
+    kb_docs = knowledge_base._documents
+
     source = ColumnDataSource(
         data={
             "x": reduced_embeddings[:, 0],
@@ -46,7 +48,10 @@ def get_failure_plot(knowledge_base, question_evaluation: Sequence[dict] = None)
             "assistant_answer": assistant_answer,
             "reference_answer": reference_answer,
             "id": document_ids,
-            "content": [knowledge_base._documents[doc_id].content[:500] for doc_id in document_ids],
+            "content": [
+                kb_docs[doc_id].content if len(kb_docs[doc_id].content) < 500 else kb_docs[doc_id].content[:500] + "..."
+                for doc_id in document_ids
+            ],
             "color": colors,
         }
     )
@@ -88,7 +93,7 @@ def get_failure_plot(knowledge_base, question_evaluation: Sequence[dict] = None)
         line_alpha=1.0,
         line_width=2,
         alpha=0.7,
-        size=12,
+        size=6,
         legend_group="correctness",
     )
 
@@ -112,7 +117,7 @@ def get_failure_plot(knowledge_base, question_evaluation: Sequence[dict] = None)
         source=background_source,
         color="grey",
         alpha=0.2,
-        size=12,
+        size=6,
     )
     if len(knowledge_base.topics) > 1:
         topic_centers = np.array(
@@ -178,7 +183,10 @@ def get_knowledge_plot(knowledge_base):
             "y": knowledge_base._reduced_embeddings[:, 1],
             "topic": [textwrap.fill(knowledge_base.topics[topic_id], 40) for topic_id in topics_ids],
             "id": [doc.id for doc in knowledge_base._documents],
-            "content": [doc.content[:500] for doc in knowledge_base._documents],
+            "content": [
+                doc.content if len(doc.content) < 500 else doc.content[:500] + "..."
+                for doc in knowledge_base._documents
+            ],
             "color": colors,
         }
     )
@@ -211,7 +219,7 @@ def get_knowledge_plot(knowledge_base):
         line_alpha=1.0,
         line_width=2,
         alpha=0.7,
-        size=5,
+        size=6,
         legend_group="topic",
     )
     p.legend.location = "top_right"

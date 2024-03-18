@@ -54,7 +54,7 @@ class _LLMBasedQuestionGenerator(QuestionGenerator):
         try:
             return json.loads(raw_json, strict=False)
         except json.JSONDecodeError:
-            logger.warning("JSON decoding error, trying to fix the JSON string.")
+            logger.debug("JSON decoding error, trying to fix the JSON string.")
 
         logger.debug("Raw output: %s", raw_json)
         # Let's see if it's just a matter of markdown format (```json ... ```)

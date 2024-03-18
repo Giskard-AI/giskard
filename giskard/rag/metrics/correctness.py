@@ -3,10 +3,10 @@ from typing import Optional, Sequence
 import json
 
 import pandas as pd
-from tqdm.auto import tqdm
 
 from ...llm.client.base import LLMClient, LLMMessage
 from ...llm.errors import LLMGenerationError
+from ..question_generators.utils import maybe_tqdm
 from ..testset import QATestset
 from .base import Metric
 
@@ -63,7 +63,7 @@ class CorrectnessMetric(Metric):
 
     def __call__(self, testset: QATestset, answers: Sequence[str], llm_client: LLMClient) -> dict:
         results = []
-        for sample, answer in tqdm(
+        for sample, answer in maybe_tqdm(
             zip(testset.to_pandas().reset_index().itertuples(), answers),
             desc=f"{self.name} evaluation",
             total=len(answers),

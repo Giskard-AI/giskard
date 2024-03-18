@@ -12,6 +12,7 @@ from .question_generators import (
     simple_questions,
     situational_questions,
 )
+from .question_generators.utils import maybe_tqdm
 from .testset import QATestset
 
 
@@ -71,11 +72,15 @@ def generate_testset(
     questions = []
     for generator, n in zip(question_generators, generator_num_questions):
         _qq = list(
-            generator.generate_questions(
-                knowledge_base,
-                num_questions=n,
-                assistant_description=assistant_description,
-                language=language,
+            maybe_tqdm(
+                generator.generate_questions(
+                    knowledge_base,
+                    num_questions=n,
+                    assistant_description=assistant_description,
+                    language=language,
+                ),
+                total=n,
+                desc=f"Generating questions with {generator.__class__.__name__}",
             )
         )
         questions.extend(_qq)

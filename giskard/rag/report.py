@@ -6,12 +6,18 @@ from pathlib import Path
 import matplotlib
 import numpy as np
 import pandas as pd
-from bokeh.embed import components
-from bokeh.models import ColumnDataSource, Span, TabPanel, Tabs
-from bokeh.plotting import figure
 
-from giskard.llm.client.base import LLMClient
+from ..llm.errors import LLMImportError
 
+try:
+    from bokeh.embed import components
+    from bokeh.io import output_notebook, reset_output
+    from bokeh.models import ColumnDataSource, Span, TabPanel, Tabs
+    from bokeh.plotting import figure
+except ImportError as err:
+    raise LLMImportError(flavor="llm") from err
+
+from ..llm.client.base import LLMClient
 from ..visualization.widget import get_template
 from .knowledge_base import KnowledgeBase
 from .question_generators import QUESTION_ATTRIBUTION, QuestionTypes, RAGComponents
@@ -60,7 +66,12 @@ class RAGReport:
         for metric, df in metrics_results.items():
             self._dataframe = self._dataframe.join(df, on="id")
 
-    def _repr_html_(self):
+    def _repr_html_(self, notebook=True):
+        if notebook:
+            output_notebook()
+        else:
+            reset_output()
+
         tpl = get_template("rag_report/rag_report.html")
 
         kb_script, kb_div = components(self._get_knowledge_plot()) if self._knowledge_base else (None, None)
@@ -94,7 +105,7 @@ class RAGReport:
         """
 
         with open(path, "w", encoding="utf-8") as f:
-            f.write(self._repr_html_())
+            f.write(self._repr_html_(notebook=False))
 
     def save(self, folder_path: str):
         """
