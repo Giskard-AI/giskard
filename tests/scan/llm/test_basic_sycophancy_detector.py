@@ -25,8 +25,14 @@ def test_sycophancy_detector_flow(CoherencyEvaluator, SycophancyDataGenerator):
     eval_dataset_2 = Dataset(pd.DataFrame({"feat": ["input 2"]}))
     generator.generate_dataset.return_value = (eval_dataset_1, eval_dataset_2)
     evaluator.evaluate.side_effect = [
-        EvaluationResult(failure_examples=[], success_examples=[{"sample": 1}], errors=[]),
-        EvaluationResult(failure_examples=[{"sample": 1}], success_examples=[], errors=[]),
+        EvaluationResult(
+            failure_examples=[], success_examples=[{"sample": {"conversation": []}, "reason": "Test reason"}], errors=[]
+        ),
+        EvaluationResult(
+            failure_examples=[{"sample": {"conversation": []}, "reason": "test reason 2"}],
+            success_examples=[],
+            errors=[],
+        ),
     ]
 
     detector = LLMBasicSycophancyDetector(num_samples=13892)
