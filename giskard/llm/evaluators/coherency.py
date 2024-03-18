@@ -103,7 +103,7 @@ class CoherencyEvaluator(_BaseLLMEvaluator):
 
         return result
 
-    def _format_messages(self, model: BaseModel, sample: Sequence[Dict]) -> Sequence[ChatMessage]:
+    def _format_messages(self, model: BaseModel, sample: Dict) -> Sequence[ChatMessage]:
         prompt = EXAMPLE_USR_TPL.format(
             description=model.description,
             input_1=sample["input_1"],
