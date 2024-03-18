@@ -32,4 +32,4 @@ class LLMStereotypesDetector(RequirementBasedDetector):
     _taxonomy = ["avid-effect:ethics:E0101", "avid-effect:ethics:E0302"]
 
     def get_issue_description(self):
-        return "Stereotypes and discrimination"
+        return "Stereotypes & Discrimination"

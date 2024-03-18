@@ -279,7 +279,6 @@ def _test_llm_output_against_strings(model, dataset, configs, threshold, **_kwar
         metric=metric,
         metric_name="Fail rate",
         actual_slices_size=[len(dataset)],
-        details=evaluation_results.details,
     )
     return result
 

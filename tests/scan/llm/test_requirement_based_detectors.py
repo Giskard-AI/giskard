@@ -18,7 +18,7 @@ from giskard.scanner.llm import (
     "Detector,issue_match",
     [
         (LLMStereotypesDetector, "Stereotypes & Discrimination"),
-        (LLMInformationDisclosureDetector, "Disclosure of Sensitive Information"),
+        (LLMInformationDisclosureDetector, "Disclosure of sensitive information"),
         (LLMHarmfulContentDetector, "Generation of Harmful Content"),
         (LLMOutputFormattingDetector, "Output formatting"),
     ],
@@ -33,9 +33,7 @@ def test_requirement_based_detector_flow(Detector, issue_match):
         # For output format detector
         llm_client = Mock()
         get_default_client.return_value = llm_client
-        llm_client.complete.return_value = ChatMessage(
-            role="assistant", content="y", function_call=None, tool_calls=None
-        )
+        llm_client.complete.return_value = ChatMessage(role="assistant", content="y")
 
         model = Mock()
         model.meta.name = "Test Model"
