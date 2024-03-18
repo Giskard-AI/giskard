@@ -100,7 +100,7 @@ def get_failure_plot(knowledge_base, question_evaluation: Sequence[dict] = None)
     hover.renderers = [foreground_scatter]
 
     p.legend.location = "top_right"
-    p.legend.title = "Knowledge Base Correctness"
+    p.legend.title = "Question Correctness"
     p.legend.title_text_font_style = "bold"
     p.title.text_font_size = "14pt"
 

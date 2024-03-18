@@ -91,7 +91,7 @@ def evaluate(
 
 def make_predictions(answers_fn, testset, conversation_support=False):
     answers = []
-    logger.info("Starting to make predictions on the test set.")
+    logger.debug("Starting to make predictions on the test set.")
     for sample in maybe_tqdm(
         testset.to_pandas().itertuples(), desc="Asking questions to the assistant", total=len(testset)
     ):
@@ -99,5 +99,5 @@ def make_predictions(answers_fn, testset, conversation_support=False):
             answers.append(answers_fn(sample.question, sample.conversation_history))
         else:
             answers.append(answers_fn(sample.question))
-    logger.info("Predictions finished. Starting evaluation.")
+    logger.debug("Predictions finished. Starting evaluation.")
     return answers
