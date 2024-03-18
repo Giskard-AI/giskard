@@ -45,7 +45,7 @@ def test_report_plots():
     plot = report.plot_correctness_by_metadata(metadata_name="question_type")
     assert isinstance(plot, figure)
 
-    plot = report.plot_metrics_hist("context_precision", filter_metadata={"question_type": ["EASY"]})
+    plot = report.plot_metrics_hist("context_precision", filter_metadata={"question_type": ["simple"]})
     assert isinstance(plot, figure)
 
     additional_metrics, histograms = report.get_metrics_histograms()
@@ -58,7 +58,7 @@ def test_report_plots():
     assert len(histograms["Question"]) == 4
     assert len(histograms["Topics"]) == 2
     assert len(histograms["Topics"]["Cheese_1"]) == 4
-    assert len(histograms["Question"]["EASY"]) == 4
+    assert len(histograms["Question"]["simple"]) == 4
 
 
 def test_report_save_load(tmp_path):

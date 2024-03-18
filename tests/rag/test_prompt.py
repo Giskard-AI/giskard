@@ -13,6 +13,7 @@ def test_qa_generation_prompt():
     messages = prompt.to_messages(
         system_prompt_input={"key": "value1"},
         user_input={"key": "value2"},
+        add_examples=False,
     )
 
     assert len(messages) == 2

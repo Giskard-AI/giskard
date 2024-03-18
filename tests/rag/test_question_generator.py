@@ -7,29 +7,38 @@ from giskard.rag.question_generators.simple_questions import SimpleQuestionGener
 
 def test_simple_question_generation():
     knowledge_base = Mock()
-    llm_client = Mock()
-    llm_client.complete = Mock()
-    llm_client.complete.side_effect = [
+    knowledge_base.llm_client = Mock()
+    knowledge_base.llm_client.complete = Mock()
+    knowledge_base.llm_client.complete.side_effect = [
         LLMMessage(
             role="assistant",
             content='{"question": "Where is Camembert from?", "answer": "Camembert was created in Normandy, in the northwest of France."}',
         )
     ]
 
-    question_generator = SimpleQuestionGenerator(knowledge_base, llm_client=llm_client)
-
     documents = [
-        Document(dict(content="Camembert is a cheese from Normandy, in the northwest of France.")),
-        Document(dict(content="Cheese is made of milk.")),
-        Document(dict(content="Milk is produced by cows, goats or sheep.")),
+        Document(dict(content="Camembert is a cheese from Normandy, in the northwest of France."), idx=1),
+        Document(dict(content="Cheese is made of milk."), idx=2),
+        Document(dict(content="Milk is produced by cows, goats or sheep."), idx=3),
     ]
+    knowledge_base.get_random_document = Mock(
+        return_value=Document(dict(content="Camembert is a cheese from Normandy, in the northwest of France."), idx=1)
+    )
+    knowledge_base.get_neighbors = Mock(return_value=documents)
 
-    qa, metadata = question_generator.generate_question(documents)
+    question_generator = SimpleQuestionGenerator()
 
-    assert qa["question"] == "Where is Camembert from?"
-    assert qa["answer"] == "Camembert was created in Normandy, in the northwest of France."
-    assert metadata["question_type"] == 1
-    assert metadata["reference_context"] == "\n------\n".join(["", *[doc.content for doc in documents], ""])
+    question = list(
+        question_generator.generate_questions(
+            knowledge_base=knowledge_base, num_questions=1, assistant_description="Test", language="en"
+        )
+    )
+    print(question)
+
+    assert question["question"] == "Where is Camembert from?"
+    assert question["answer"] == "Camembert was created in Normandy, in the northwest of France."
+    assert question["metadata"]["question_type"] == 1
+    assert question["metadata"]["reference_context"] == "\n------\n".join(["", *[doc.content for doc in documents], ""])
 
 
 def test_simple_question_json_fix(caplog):

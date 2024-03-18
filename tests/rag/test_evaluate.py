@@ -55,17 +55,17 @@ def test_evaluate_from_answers():
     assert len(report.get_failures(topic="Cheese_1")) == 1
     assert len(report.get_failures(topic="Cheese_2")) == 2
 
-    assert len(report.get_failures(question_type=1)) == 1
-    assert len(report.get_failures(question_type=2)) == 0
-    assert len(report.get_failures(question_type=100)) == 0
+    assert len(report.get_failures(question_type="simple")) == 1
+    assert len(report.get_failures(question_type="complex")) == 0
+    assert len(report.get_failures(question_type="cheese")) == 0
 
     assert len(report.correctness_by_topic()) == 2
     assert np.isclose(report.correctness_by_topic().loc["Cheese_1"], 0.75)
     assert np.isclose(report.correctness_by_topic().loc["Cheese_2"], 0)
 
     assert len(report.correctness_by_question_type()) == 4
-    assert np.isclose(report.correctness_by_question_type().loc["EASY"], 2 / 3)
-    assert np.isclose(report.correctness_by_question_type().loc["COMPLEX"], 1)
+    assert np.isclose(report.correctness_by_question_type().loc["simple"], 2 / 3)
+    assert np.isclose(report.correctness_by_question_type().loc["complex"], 1)
 
     assert len(report.component_scores()) == 5
     assert np.isclose(report.component_scores().loc["GENERATOR"], 1 / 3 + 2 / 9)
@@ -119,17 +119,17 @@ def test_evaluate_from_answer_fn():
     assert len(report.get_failures(topic="Cheese_1")) == 1
     assert len(report.get_failures(topic="Cheese_2")) == 2
 
-    assert len(report.get_failures(question_type=1)) == 1
-    assert len(report.get_failures(question_type=2)) == 0
-    assert len(report.get_failures(question_type=100)) == 0
+    assert len(report.get_failures(question_type="simple")) == 1
+    assert len(report.get_failures(question_type="complex")) == 0
+    assert len(report.get_failures(question_type="cheese")) == 0
 
     assert len(report.correctness_by_topic()) == 2
     assert np.isclose(report.correctness_by_topic().loc["Cheese_1"], 0.75)
     assert np.isclose(report.correctness_by_topic().loc["Cheese_2"], 0)
 
     assert len(report.correctness_by_question_type()) == 4
-    assert np.isclose(report.correctness_by_question_type().loc["EASY"], 2 / 3)
-    assert np.isclose(report.correctness_by_question_type().loc["COMPLEX"], 1)
+    assert np.isclose(report.correctness_by_question_type().loc["simple"], 2 / 3)
+    assert np.isclose(report.correctness_by_question_type().loc["complex"], 1)
 
     assert len(report.component_scores()) == 5
     assert np.isclose(report.component_scores().loc["GENERATOR"], 1 / 3 + 2 / 9)

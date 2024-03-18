@@ -14,7 +14,7 @@ def make_testset_df():
                 "reference_context": "Camembert is a moist, soft, creamy, surface-ripened cow's milk cheese.",
                 "conversation_history": [],
                 "metadata": {
-                    "question_type": 1,
+                    "question_type": "simple",
                     "color": "blue",
                     "topic": "Cheese_1",
                     "seed_document_id": 1,
@@ -27,7 +27,7 @@ def make_testset_df():
                 "reference_context": "Scamorza is a Southern Italian cow's milk cheese.",
                 "conversation_history": [],
                 "metadata": {
-                    "question_type": 1,
+                    "question_type": "simple",
                     "color": "red",
                     "topic": "Cheese_1",
                     "seed_document_id": 2,
@@ -40,7 +40,7 @@ def make_testset_df():
                 "reference_context": "Scamorza is a Southern Italian cow's milk cheese.",
                 "conversation_history": [],
                 "metadata": {
-                    "question_type": 1,
+                    "question_type": "simple",
                     "color": "blue",
                     "topic": "Cheese_1",
                     "seed_document_id": 2,
@@ -53,7 +53,7 @@ def make_testset_df():
                 "reference_context": "Scamorza is a Southern Italian cow's milk cheese.",
                 "conversation_history": [],
                 "metadata": {
-                    "question_type": 2,
+                    "question_type": "complex",
                     "color": "red",
                     "topic": "Cheese_1",
                     "seed_document_id": 2,
@@ -66,7 +66,7 @@ def make_testset_df():
                 "reference_context": "Scamorza is a Southern Italian cow's milk cheese.",
                 "conversation_history": [],
                 "metadata": {
-                    "question_type": 3,
+                    "question_type": "distracting element",
                     "color": "blue",
                     "distracting_context": "This is a distracting context",
                     "topic": "Cheese_2",
@@ -80,7 +80,7 @@ def make_testset_df():
                 "reference_context": "Scamorza is a Southern Italian cow's milk cheese.",
                 "conversation_history": ["Scamorza"],
                 "metadata": {
-                    "question_type": 6,
+                    "question_type": "conversational",
                     "color": "blue",
                     "distracting_context": "This is a distracting context",
                     "topic": "Cheese_2",
@@ -96,7 +96,12 @@ def test_qa_testset_creation():
     testset = QATestset(df)
 
     assert testset._dataframe.equals(df)
-    assert testset._dataframe["metadata"].iloc[2] == {"question_type": 1, "color": "blue", "topic": "Cheese_1"}
+    assert testset._dataframe["metadata"].iloc[2] == {
+        "question_type": 1,
+        "color": "blue",
+        "topic": "Cheese_1",
+        "seed_document_id": 2,
+    }
 
 
 def test_testset_to_pandas_conversion():

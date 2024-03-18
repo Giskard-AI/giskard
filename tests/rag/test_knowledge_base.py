@@ -64,7 +64,7 @@ def test_knowledge_base_topic_discovery():
     llm_client.complete = Mock()
     llm_client.complete.side_effect = [LLMMessage(role="assistant", content=f"'Topic {idx+1}'") for idx in range(n)]
 
-    topics = {idx: f"Topic {idx+1}" for idx in range(n)}
+    topics = {idx: f"'Topic {idx+1}'" for idx in range(n)}
     topics[-1] = "Others"
     knowledge_base = KnowledgeBase(df, llm_client=llm_client)
     assert len(knowledge_base.topics) == n + 1
@@ -88,6 +88,6 @@ def test_knowledge_base_topic_plot():
     llm_client.complete.side_effect = [LLMMessage(role="assistant", content=f"'Topic {idx+1}'") for idx in range(n)]
 
     knowledge_base = KnowledgeBase(df, llm_client=llm_client)
-    plot = knowledge_base._get_knowledge_plot()
+    plot = knowledge_base.get_knowledge_plot()
     assert plot is not None
     assert isinstance(plot, figure)
