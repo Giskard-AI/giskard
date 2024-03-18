@@ -37,10 +37,10 @@ class EvaluationResult:
     def passed_ratio(self):
         return len(self.success_examples) / (len(self.success_examples) + len(self.failure_examples))
 
-    def add_error(self, error: str, sample: Sequence[Dict]):
+    def add_error(self, error: str, sample: Dict):
         self.errors.append({"error": error, "sample": sample})
 
-    def add_sample(self, eval_passed: bool, reason: Optional[str] = None, sample: Optional[Sequence[Dict]] = None):
+    def add_sample(self, eval_passed: bool, reason: Optional[str] = None, sample: Optional[Dict] = None):
         # @TODO: improve this
         if eval_passed:
             self.success_examples.append({"sample": sample, "reason": reason})
