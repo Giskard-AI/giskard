@@ -9,7 +9,7 @@ from sklearn.cluster import HDBSCAN
 from ..datasets.metadata.text_metadata_provider import _detect_lang
 from ..llm.client import LLMClient, LLMMessage, get_default_client
 from ..llm.errors import LLMImportError
-from .plots import get_failure_plot, get_knowledge_plot
+from .knowledge_base_plots import get_failure_plot, get_knowledge_plot
 
 try:
     import umap
