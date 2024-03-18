@@ -187,6 +187,7 @@ llm = [
     "faiss-cpu>=1.7.4",
     "bokeh>=3.3.4",
     "umap-learn>=0.5.5",
+    "scikit-learn>=1.3.2",
 ]
 
 hub = [
