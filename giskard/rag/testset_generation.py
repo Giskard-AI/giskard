@@ -80,7 +80,7 @@ def generate_testset(
                     language=language,
                 ),
                 total=n,
-                desc=f"Generating questions with {generator.__class__.__name__}",
+                desc=f"Generating {generator._question_type} questions",
             )
         )
         questions.extend(_qq)
