@@ -19,7 +19,7 @@ function opentab(evt, name) {
     evt.currentTarget.className += " active";
 }
 
-let tabcontent = document.getElementsByClassName("tabcontent");
+tabcontent = document.getElementsByClassName("tabcontent");
 tabcontent[0].style.display = "block";
-let tablinks = document.getElementsByClassName("tablinks");
+tablinks = document.getElementsByClassName("tablinks");
 tablinks[0].className += " active";
