@@ -38,15 +38,15 @@ class EvaluationResult:
 
     @property
     def failure_examples(self):
-        return [failed.to_example() for failed in self.errors if failed.status == TestResultStatus.FAILED]
+        return [failed.to_example for failed in self.results if failed.status == TestResultStatus.FAILED]
 
     @property
     def success_examples(self):
-        return [passed.to_example() for passed in self.errors if passed.status == TestResultStatus.PASSED]
+        return [passed.to_example for passed in self.results if passed.status == TestResultStatus.PASSED]
 
     @property
     def errors(self):
-        return [error.to_example() for error in self.errors if error.status == TestResultStatus.ERROR]
+        return [error.to_example for error in self.results if error.status == TestResultStatus.ERROR]
 
     @property
     def passed(self):
