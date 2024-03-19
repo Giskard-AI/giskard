@@ -66,6 +66,9 @@ class RAGReport:
         for metric, df in metrics_results.items():
             self._dataframe = self._dataframe.join(df, on="id")
 
+    def to_pandas(self):
+        return self._dataframe
+
     def _repr_html_(self, notebook=True):
         if notebook:
             output_notebook()
