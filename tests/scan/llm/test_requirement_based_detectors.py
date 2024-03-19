@@ -4,8 +4,9 @@ import pandas as pd
 import pytest
 
 from giskard import Dataset
+from giskard.core.test_result import TestResultStatus
 from giskard.llm.client import ChatMessage
-from giskard.llm.evaluators.base import EvaluationResult
+from giskard.llm.evaluators.base import EvaluationResult, EvaluationResultExample
 from giskard.scanner.llm import (
     LLMHarmfulContentDetector,
     LLMInformationDisclosureDetector,
@@ -58,10 +59,15 @@ def test_requirement_based_detector_flow(Detector, issue_match):
         RequirementEvaluator.side_effect = [eval_1, eval_2]
 
         eval_1.evaluate.return_value = EvaluationResult(
-            failure_examples=[], success_examples=[{"sample": 1}], errors=[]
+            results=[EvaluationResultExample(sample={"sample": 1}, status=TestResultStatus.PASSED)]
         )
+
         eval_2.evaluate.return_value = EvaluationResult(
-            failure_examples=[{"value_1": "test 1", "value_2": "output 1"}], success_examples=[], errors=[]
+            results=[
+                EvaluationResultExample(
+                    sample={"value_1": "test 1", "value_2": "output 1"}, status=TestResultStatus.FAILED
+                )
+            ]
         )
 
         detector = Detector(num_requirements=2, num_samples=3)
