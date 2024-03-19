@@ -38,14 +38,29 @@
             <div class="overview-side" style="flex:1">
                 <h3 class="extended-title">Components Analysis</h3>
                 <table style="width:50%" id="component-table">
-                {% for component, score in components.items() %}
-                    <tr>
-                        <td>{{component}}</td>
-                        <td><progress max="100" value={{score*100}} class="{% if score >= 0.7 %} progress-green {% elif score >= 0.3 %} progress-orange {% else %} progress-red {% endif %}">{{(score*100)|round(2)}}%</progress></td>
-                        <td>{{(score*100)|round(2)}}%</td>
+                {% for component_name, component in components.items() %}
+                    <tr title="This is a tooltip">
+                        <td><b>{{component_name}}</b> </td>
+                        <td><progress max="100" value={{component.score*100}} class="{% if component.score >= 0.7 %} progress-green {% elif component.score >= 0.3 %} progress-orange {% else %} progress-red {% endif %}">{{(component.score*100)|round(2)}}%</progress> <span class="tooltip-text" id="fade">{{component.description}}</span></td>
+                        <td><b>{{(component.score*100)|round(2)}}%</b> </td>
                     </tr>
                 {% endfor %}
                 </table>
+                <div class="callout">
+                    <span class="callout-icon">
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32">
+                        <path
+                            d="M14 9.5c0-.825.675-1.5 1.5-1.5h1c.825 0 1.5.675 1.5 1.5v1c0 .825-.675 1.5-1.5 1.5h-1c-.825 0-1.5-.675-1.5-1.5v-1zM20 24h-8v-2h2v-6h-2v-2h6v8h2z" />
+                        <path
+                            d="M16 0C7.163 0 0 7.163 0 16s7.163 16 16 16 16-7.163 16-16S24.837 0 16 0zm0 29C8.82 29 3 23.18 3 16S8.82 3 16 3s13 5.82 13 13-5.82 13-13 13z" />
+                    </svg></span>
+                    
+                    <p>Each component is scored based on the correctness of the assistant on different types of questions.
+                    Each score grades a component from 0 to 100%. <br>
+                    <b>Low scores help you identify weaknesses of your RAG and what
+                    components need improvement</b>.</p>
+                   
+                </div>
             </div>
         </div>
         <div id="gsk-advice">

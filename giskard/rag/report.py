@@ -20,7 +20,7 @@ except ImportError as err:
 from ..llm.client.base import LLMClient
 from ..visualization.widget import get_template
 from .knowledge_base import KnowledgeBase
-from .question_generators import QUESTION_ATTRIBUTION, RAGComponents
+from .question_generators import COMPONENT_DESCRIPTIONS, QUESTION_ATTRIBUTION, RAGComponents
 from .testset import QATestset
 
 
@@ -83,11 +83,16 @@ class RAGReport:
 
         additional_metrics, metric_histograms = self.get_metrics_histograms()
 
+        component_dict = self.component_scores().to_dict()["score"]
+
+        for name, description in COMPONENT_DESCRIPTIONS.items():
+            if name in component_dict:
+                component_dict[name] = {"score": component_dict[name], "description": description}
         return tpl.render(
             knowledge_script=kb_script,
             knowledge_div=kb_div,
             recommendation=self._recommendation,
-            components=self.component_scores().to_dict()["score"],
+            components=component_dict,
             correctness=self.correctness,
             q_type_correctness_script=q_type_script,
             q_type_correctness_div=q_type_div,

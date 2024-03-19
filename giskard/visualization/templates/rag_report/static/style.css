@@ -182,6 +182,7 @@ label {
   color: #27272A;
   width:95%;
   box-shadow: 0 4px 8px 0 #000000, 0 6px 20px 0 #000000;
+  font-size: 12pt;
 }
 
 .separator {
@@ -267,4 +268,84 @@ label {
 .corr-plot{
   flex: 1;
   padding-left: 2%;
+}
+
+.tooltip-text {
+  position: absolute;
+  display: none;
+  visibility: hidden;
+  z-index: 1;
+  top: 100%;
+  left: 0%;
+  width: 100%;
+  color: white;
+  font-size: 12px;
+  background-color: #2d3d4c;
+  border-radius: 10px;
+  padding: 10px 15px 10px 15px;
+}
+
+#fade {
+  opacity: 1;
+  transition: opacity 0.5s;
+}
+
+#delay {
+  opacity: 0;
+  transition: opacity 0.2s;
+  transition-delay: 1s;
+}
+
+td {
+  position: relative;
+}
+
+tr:hover .tooltip-text {
+  display: block;
+  visibility: visible;
+}
+
+.tr:hover #fade {
+  opacity: 1;
+}
+
+.tr:hover #delay {
+  opacity: 1;
+}
+
+.callout {
+  padding: 0.5rem 1rem 0.5rem 3rem;
+  background: #D9EDF9;
+  border: 3px solid #0088D1;
+  color: #272eb5;
+  position: relative;
+  max-width: 40rem;
+  border-radius: 10px;
+  margin-top: 10%;
+  font-size: 11pt;
+}
+
+.callout-icon {
+  content: "";
+
+  /* SVG via a data URI! */
+  background-size: cover;
+  width: 1.5rem;
+  height: 1.5rem;
+  display: block;
+  position: absolute;
+  left: 0.9rem;
+  top: 1.1rem;
+}
+
+.callout-icon svg{
+  fill: #016ca7;
+}
+.callout p+p {
+  margin-top: 1em;
+}
+
+.callout a {
+  color: #272eb5;
+  font-weight: bold;
 }

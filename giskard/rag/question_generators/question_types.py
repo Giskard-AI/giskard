@@ -27,3 +27,11 @@ QUESTION_ATTRIBUTION = {
     RAGComponents.ROUTING: ["simple", "out of scope"],
     RAGComponents.KNOWLEDGE_BASE: ["out of scope"],
 }
+
+COMPONENT_DESCRIPTIONS = {
+    "GENERATOR": "The Generator is the LLM inside the RAG to generate the answers.",
+    "RETRIEVER": "The Retriever fetches relevant documents from the knowledge base according to a user query.",
+    "REWRITER": "The Rewriter modifies the user query to match a predefined format or to include the context from the chat history.",
+    "ROUTING": "The Router filters the query of the user based on his intentions (intentions detection).",
+    "KNOWLEDGE_BASE": "The knowledge base is the set of documents given to the RAG to generate the answers. Its scores is computed differently than the other components: it is the difference between the maximum and minimum correctness score across all the topics of the knowledge base.",
+}
