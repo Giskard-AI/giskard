@@ -5,6 +5,7 @@ import logging
 from abc import ABC, abstractmethod
 from dataclasses import dataclass, field
 
+from ...core.test_result import TestResultDetails, TestResultStatus
 from ...datasets.base import Dataset
 from ...models.base.model import BaseModel
 from ..client import LLMClient, get_default_client
@@ -16,10 +17,36 @@ logger = logging.getLogger("giskard.llm")
 
 
 @dataclass
+class EvaluationResultExample:
+    # The status of the example
+    status: TestResultStatus
+    sample: Optional[Sequence[Dict]]
+    # The reason why the example have given status
+    reason: Optional[str]
+
+    @property
+    def to_example(self):
+        if self.status == TestResultStatus.ERROR:
+            return {"error": self.reason, "sample": self.sample}
+        else:
+            return {"reason": self.reason, "sample": self.sample}
+
+
+@dataclass
 class EvaluationResult:
-    failure_examples: Sequence[dict] = field(default_factory=list)
-    success_examples: Sequence[dict] = field(default_factory=list)
-    errors: Sequence[dict] = field(default_factory=list)
+    results: Sequence[EvaluationResultExample] = field(default_factory=list)
+
+    @property
+    def failure_examples(self):
+        return [failed.to_example() for failed in self.errors if failed.status == TestResultStatus.FAILED]
+
+    @property
+    def success_examples(self):
+        return [passed.to_example() for passed in self.errors if passed.status == TestResultStatus.PASSED]
+
+    @property
+    def errors(self):
+        return [error.to_example() for error in self.errors if error.status == TestResultStatus.ERROR]
 
     @property
     def passed(self):
@@ -38,14 +65,25 @@ class EvaluationResult:
         return len(self.success_examples) / (len(self.success_examples) + len(self.failure_examples))
 
     def add_error(self, error: str, sample: Dict):
-        self.errors.append({"error": error, "sample": sample})
+        self.results.append(EvaluationResultExample(reason=error, sample=sample, status=TestResultStatus.ERROR))
 
     def add_sample(self, eval_passed: bool, reason: Optional[str] = None, sample: Optional[Dict] = None):
-        # @TODO: improve this
-        if eval_passed:
-            self.success_examples.append({"sample": sample, "reason": reason})
-        else:
-            self.failure_examples.append({"sample": sample, "reason": reason})
+        status = TestResultStatus.PASSED if eval_passed else TestResultStatus.FAILED
+        self.results.append(EvaluationResultExample(reason=reason, sample=sample, status=status))
+
+    @property
+    def details(self):
+        details = TestResultDetails.empty()
+
+        for result in self.results:
+            details.append(
+                result.status,
+                result.sample.get(["inputs"], {}),
+                str(result.sample.get(["conversation"], "No conversation provided")),
+                result.sample.get("meta", None),
+            )
+
+        return details
 
 
 class BaseEvaluator(ABC):
@@ -91,6 +129,7 @@ class _BaseLLMEvaluator(BaseEvaluator):
 
             conversation = [{"role": "user", "content": input_vars}, {"role": "agent", "content": model_output}]
             sample = {
+                "inputs": input_vars,
                 "conversation": conversation,
                 "meta": input_meta,
             }
