@@ -22,11 +22,12 @@ def test_testset_suite_conversion_with_metadata():
     suite = testset.to_test_suite(slicing_metadata=["question_type"])
 
     assert len(suite.tests) == 4
-    assert suite.tests[0].display_name == "TestsetCorrectnessTest_question_type_1"
+    assert suite.tests[0].display_name == "TestsetCorrectnessTest_question_type_complex"
 
-    assert len(suite.tests[0].provided_inputs["dataset"].df) == 3
+    assert len(suite.tests[0].provided_inputs["dataset"].df) == 1
     assert len(suite.tests[1].provided_inputs["dataset"].df) == 1
     assert len(suite.tests[2].provided_inputs["dataset"].df) == 1
+    assert len(suite.tests[3].provided_inputs["dataset"].df) == 3
 
     suite = testset.to_test_suite(slicing_metadata=["question_type", "color"])
     assert len(suite.tests) == 6

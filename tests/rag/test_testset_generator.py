@@ -1,216 +1,91 @@
+import logging
 from unittest.mock import Mock
 
-import numpy as np
-import pandas as pd
-import pytest
-
-from giskard.llm.client import LLMMessage
-from giskard.rag.knowledge_base import Document, KnowledgeBase
-from giskard.rag.question_generators import (
-    complex_questions,
-    conversational_questions,
-    distracting_questions,
-    double_questions,
-    situational_questions,
-)
+from giskard.rag.question_generators import SimpleQuestionGenerator
 from giskard.rag.testset_generation import generate_testset
 
-
-def make_knowledge_base(**kwargs):
-    knowledge_base_df = pd.DataFrame(
-        [
-            {"context": "Camembert is a moist, soft, creamy, surface-ripened cow's milk cheese."},
-            {
-                "context": "Bleu d'Auvergne is a French blue cheese, named for its place of origin in the Auvergne region."
-            },
-            {"context": "Scamorza is a Southern Italian cow's milk cheese."},
-            {
-                "context": "Freeriding is a style of snowboarding or skiing performed on natural, un-groomed terrain, without a set course, goals or rules."
-            },
-        ]
-    )
-    knowledge = KnowledgeBase(knowledge_base_df, **kwargs)
-    knowledge._topics_inst = ["cheese", "ski"]
-    return knowledge
-
-
-def make_testset_generation_inputs():
-    llm_client = Mock()
-
-    mock_llm_complete_simple = [
-        LLMMessage(
-            role="assistant",
-            content="""{"question": "Where is Camembert from?",
-                                                    "answer": "Camembert was created in Normandy, in the northwest of France."}""",
-        )
-    ]
-
-    mock_llm_complete_complex = [
-        LLMMessage(
-            role="assistant",
-            content="""{"question": "What is freeriding ski?",
-                                                    "answer": "Freeriding is a style of snowboarding or skiing."}""",
-        ),
-        LLMMessage(
-            role="assistant",
-            content="""{"question": "Where is Camembert from?"}""",
-        ),
-    ]
-
-    mock_llm_complete_distracting = [
-        LLMMessage(
-            role="assistant",
-            content="""{"question": "Where is Camembert from?",
-                                                    "answer": "Camembert was created in Normandy, in the northwest of France."}""",
-        ),
-        LLMMessage(
-            role="assistant",
-            content="""{"question": "Where is Camembert from?"}""",
-        ),
-    ]
-
-    mock_llm_complete_situation = [
-        LLMMessage(
-            role="assistant",
-            content="""{"question": "Where is Camembert from?",
-                                                    "answer": "Camembert was created in Normandy, in the northwest of France."}""",
-        ),
-        LLMMessage(
-            role="assistant",
-            content="""I am a cheese enthusiast and I want to know more about Camembert.""",
-        ),
-        LLMMessage(
-            role="assistant",
-            content="""{"question": "I am a cheese enthusiast, where is Camembert from?"}""",
-        ),
-    ]
-
-    mock_llm_complete_double = [
-        LLMMessage(
-            role="assistant",
-            content="""[{"question": "1 Where is Camembert from?",
-                                                    "answer": "Camembert was created in Normandy, in the northwest of France."},
-                                                    {"question": "Where is Scamorza from?",
-                                                    "answer": "Scamorza is a cheese from southern Italy."}]""",
-        ),
-        LLMMessage(
-            role="assistant",
-            content="""{"question": "2 Where are Camembert and Scamorza from?",
-                                                    "answer": "Camembert was created in Normandy, in the northwest of France, Scamorza is a cheese from southern Italy."}""",
-        ),
-    ]
-
-    mock_llm_complete_conversation = [
-        LLMMessage(
-            role="assistant",
-            content="""{"question": "Where is Camembert from?",
-                                                    "answer": "Camembert was created in Normandy, in the northwest of France."}""",
-        ),
-        LLMMessage(
-            role="assistant",
-            content="""{"question": "Where is it from?",
-                                                    "introduction": "Camembert is a cheese."}""",
-        ),
-    ]
-
-    llm_client.complete.side_effect = [
-        *mock_llm_complete_simple,
-        *mock_llm_complete_complex,
-        *mock_llm_complete_distracting,
-        *mock_llm_complete_situation,
-        *mock_llm_complete_double,
-        *mock_llm_complete_conversation,
-    ]
-
-    embedding_dimension = 8
-
-    llm_client.embeddings = Mock()
-    # evenly spaced embeddings for the knowledge base elements and specifically chosen embeddings for
-    # each mock embedding calls.
-    kb_embeddings = np.ones((4, embedding_dimension)) * np.array([0, 1, 2, 20])[:, None] / 100
-
-    llm_client.embeddings.side_effect = [kb_embeddings]
-
-    knowledge_base = make_knowledge_base(llm_client=llm_client)
-    for doc, topic_id in zip(knowledge_base._documents, [0, 0, 0, 1]):
-        doc.topic_id = topic_id
-
-    knowledge_base._rng = Mock()
-    knowledge_base._rng.choice = Mock()
-    knowledge_base._rng.choice.side_effect = [
-        2,
-        3,
-        3,
-        Document({"content": "Distracting content"}, idx="123"),
-        2,
-        3,
-        3,
-    ]
-
-    return llm_client, knowledge_base
-
-
-CONTEXT_STRING = """
-------
-Scamorza is a Southern Italian cow's milk cheese.
-------
-Bleu d'Auvergne is a French blue cheese, named for its place of origin in the Auvergne region.
-------
-Camembert is a moist, soft, creamy, surface-ripened cow's milk cheese.
-------
-"""
+q1 = {
+    "id": "test1",
+    "question": "Where is Camembert from?",
+    "answer": "Camembert was created in Normandy, in the northwest of France.",
+    "conversation_history": [],
+    "metadata": {"seed_document_id": 2, "question_type": "simple"},
+}
+q2 = {
+    "id": "test2",
+    "question": "What is freeriding ski?",
+    "answer": "Freeriding is a style of snowboarding or skiing.",
+    "conversation_history": [],
+    "metadata": {"seed_document_id": 3, "question_type": "simple"},
+}
+q3 = {
+    "id": "test3",
+    "question": "Where is Camembert from?",
+    "answer": "Camembert was created in Normandy, in the northwest of France.",
+    "conversation_history": [],
+    "metadata": {"seed_document_id": 2, "question_type": "complex"},
+}
+q4 = {
+    "id": "test4",
+    "question": "What is freeriding ski?",
+    "answer": "Freeriding is a style of snowboarding or skiing.",
+    "conversation_history": [],
+    "metadata": {
+        "seed_document_id": 3,
+        "question_type": "distracting element",
+        "distracting_context": "Distracting content",
+    },
+}
+q5 = {
+    "id": "test5",
+    "question": "Where is Camembert from?",
+    "answer": "Camembert was created in Normandy, in the northwest of France.",
+    "conversation_history": [],
+    "metadata": {
+        "seed_document_id": 2,
+        "question_type": "situational",
+        "situational_context": "I am a cheese enthusiast and I want to know more about Camembert.",
+    },
+}
+q6 = {
+    "id": "test6",
+    "question": "What is freeriding ski?",
+    "answer": "Freeriding is a style of snowboarding or skiing.",
+    "conversation_history": [],
+    "metadata": {
+        "seed_document_id": 3,
+        "question_type": "double",
+        "original_questions": [
+            {"question": "Where is Camembert from?", "answer": "Normandy"},
+            {"question": "Where is Scamorza from?", "answer": "Southern Italy"},
+        ],
+    },
+}
+q7 = {
+    "id": "test7",
+    "question": "What is freeriding ski?",
+    "answer": "Freeriding is a style of snowboarding or skiing.",
+    "conversation_history": [
+        {"role": "user", "content": "First message."},
+        {"role": "assistant", "content": "First response."},
+    ],
+    "metadata": {"seed_document_id": 3, "question_type": "conversational"},
+}
 
 
 def test_testset_generation():
     knowledge_base = Mock()
+    documents = [Mock(topic_id=1), Mock(topic_id=0)]
+    knowledge_base.get_document.side_effect = documents
+    knowledge_base.topics = ["Cheese", "Ski"]
 
-    knowledge_base.topics = {
-        0: "Cheese",
-        1: "Ski",
-    }
-
-    def get_document(id_):
-        if id_ == 2:
-            return Document(
-                {"content": "Camembert is a moist, soft, creamy, surface-ripened cow's milk cheese."},
-                idx=2,
-                topic_id=0,
-            )
-        elif id_ == 3:
-            return Document(
-                {
-                    "content": "Freeriding is a style of snowboarding or skiing performed on natural, un-groomed terrain, without a set course, goals or rules."
-                },
-                idx=3,
-                topic_id=1,
-            )
-        raise ValueError(f"Unknown document id {id_}")
-
-    knowledge_base.get_document = get_document
-
-    generator = Mock()
-    q1 = {
-        "id": "test1",
-        "question": "Where is Camembert from?",
-        "answer": "Camembert was created in Normandy, in the northwest of France.",
-        "metadata": {
-            "seed_document_id": 2,
-        },
-    }
-    q2 = {
-        "id": "test2",
-        "question": "What is freeriding ski?",
-        "answer": "Freeriding is a style of snowboarding or skiing.",
-        "metadata": {
-            "seed_document_id": 3,
-        },
-    }
-    generator.generate_questions.return_value = iter([q1, q2])
+    question_generator = Mock()
+    question_generator.generate_questions.return_value = [q1, q2]
 
     test_set = generate_testset(
         knowledge_base=knowledge_base,
         num_questions=2,
-        question_generators=[generator],
+        question_generators=question_generator,
     )
 
     assert len(test_set) == 2
@@ -221,70 +96,88 @@ def test_testset_generation():
     assert records[0]["answer"] == q1["answer"]
     assert records[0]["metadata"] == {
         "seed_document_id": 2,
-        "topic": "Cheese",
+        "topic": "Ski",
+        "question_type": "simple",
     }
 
     assert records[1]["question"] == q2["question"]
     assert records[1]["answer"] == q2["answer"]
     assert records[1]["metadata"] == {
         "seed_document_id": 3,
-        "topic": "Ski",
+        "topic": "Cheese",
+        "question_type": "simple",
     }
 
 
-@pytest.mark.skip("TODO: Fix this test")
 def test_testset_question_types():
-    llm_client, knowledge_base = make_testset_generation_inputs()
-    testset = generate_testset(
-        knowledge_base=knowledge_base,
-        llm_client=llm_client,
-        num_questions=1,
-        question_generators=[
-            complex_questions,
-            distracting_questions,
-            situational_questions,
-            double_questions,
-            conversational_questions,
-        ],
-    )
-    assert len(testset._dataframe["metadata"]) == 6
+    knowledge_base = Mock()
+    documents = [Mock(topic_id=1)] + [Mock(topic_id=0)] * 6
+    knowledge_base.get_document.side_effect = documents
+    knowledge_base.topics = ["Cheese", "Ski"]
+
+    simple_gen = Mock()
+    simple_gen.generate_questions.return_value = [q1, q2]
+    complex_gen = Mock()
+    complex_gen.generate_questions.return_value = [q3]
+    distracting_gen = Mock()
+    distracting_gen.generate_questions.return_value = [q4]
+    situational_gen = Mock()
+    situational_gen.generate_questions.return_value = [q5]
+    double_gen = Mock()
+    double_gen.generate_questions.return_value = [q6]
+    conversational_gen = Mock()
+    conversational_gen.generate_questions.return_value = [q7]
+
+    question_generators = [simple_gen, complex_gen, distracting_gen, situational_gen, double_gen, conversational_gen]
+
+    testset = generate_testset(knowledge_base=knowledge_base, num_questions=7, question_generators=question_generators)
+    assert len(testset._dataframe["metadata"]) == 7
+    assert testset._dataframe["metadata"][0]["question_type"] == "simple"
+    assert testset._dataframe["metadata"][1]["question_type"] == "simple"
+    assert testset._dataframe["metadata"][2]["question_type"] == "complex"
+    assert testset._dataframe["metadata"][3]["question_type"] == "distracting element"
+    assert testset._dataframe["metadata"][4]["question_type"] == "situational"
+    assert testset._dataframe["metadata"][5]["question_type"] == "double"
+    assert testset._dataframe["metadata"][6]["question_type"] == "conversational"
+
     for idx, row_id in enumerate(testset.to_pandas().index):
-        assert testset._dataframe["metadata"][row_id]["question_type"] == idx + 1
-        if testset._dataframe["metadata"][row_id]["question_type"] != 6:
+        if testset._dataframe["metadata"][row_id]["question_type"] != "conversational":
             assert testset._dataframe["conversation_history"][row_id] == []
         else:
             assert testset._dataframe["conversation_history"][row_id] == [
-                {"role": "user", "content": "Camembert is a cheese."}
+                {"role": "user", "content": "First message."},
+                {"role": "assistant", "content": "First response."},
             ]
 
-    assert "distracting_context" in testset._dataframe["metadata"][2]
-    assert testset._dataframe["metadata"][2]["distracting_context"] == "Distracting content"
+    assert "distracting_context" in testset._dataframe["metadata"][3]
+    assert testset._dataframe["metadata"][3]["distracting_context"] == "Distracting content"
 
-    assert "situational_context" in testset._dataframe["metadata"][3]
+    assert "situational_context" in testset._dataframe["metadata"][4]
     assert (
-        testset._dataframe["metadata"][3]["situational_context"]
+        testset._dataframe["metadata"][4]["situational_context"]
         == "I am a cheese enthusiast and I want to know more about Camembert."
     )
-
-    assert "original_questions" in testset._dataframe["metadata"][4]
-    assert testset._dataframe["metadata"][4]["original_questions"] == [
-        {
-            "question": "1 Where is Camembert from?",
-            "answer": "Camembert was created in Normandy, in the northwest of France.",
-        },
-        {"question": "Where is Scamorza from?", "answer": "Scamorza is a cheese from southern Italy."},
+    assert testset._dataframe["metadata"][5]["original_questions"] == [
+        {"question": "Where is Camembert from?", "answer": "Normandy"},
+        {"question": "Where is Scamorza from?", "answer": "Southern Italy"},
     ]
 
 
-@pytest.mark.skip("TODO: Fix this test")
 def test_question_generation_fail(caplog):
-    llm_client, knowledge_base = make_testset_generation_inputs()
-    testset = generate_testset(
-        knowledge_base=knowledge_base,
-        llm_client=llm_client,
-        num_questions=1,
-        question_generators=[complex_questions, distracting_questions, Mock()],
-    )
+    knowledge_base = Mock()
+    documents = [Mock(topic_id=1)] + [Mock(topic_id=0)] * 6
+    knowledge_base.get_document.side_effect = documents
+    knowledge_base.topics = ["Cheese", "Ski"]
 
+    simple_gen = Mock()
+    simple_gen.generate_questions.return_value = [q1, q2]
+    failing_gen = SimpleQuestionGenerator(llm_client=Mock())
+
+    with caplog.at_level(logging.DEBUG, logger="giskard.rag"):
+        testset = generate_testset(
+            knowledge_base=knowledge_base,
+            num_questions=4,
+            question_generators=[simple_gen, failing_gen],
+        )
+    assert len(testset.to_pandas()) == 2
     assert "Encountered error in question generation" in caplog.text
-    assert len(testset.to_pandas()) == 3
