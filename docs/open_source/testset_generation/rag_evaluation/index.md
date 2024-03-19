@@ -25,7 +25,11 @@ report
 ```
 
 The `evaluate` function generates a {class}`~giskard.rag.RAGReport` object. The report is an HTML widget presenting all 
-the results of the evaluation. It displays automatically in a notebook, but you can save it and view it in any browser: 
+the results of the evaluation, see below:
+
+![image](../../../_static/rag_report.png)
+
+It displays automatically in a notebook, but you can save it and view it in any browser: 
 `report.save_html("report.html")`.
 
 ### RAG Components Scores
