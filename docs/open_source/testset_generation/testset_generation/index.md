@@ -186,9 +186,11 @@ Each row of the test set contains 5 columns:
 
 
 
-### Select the question types in your test set
+### Selecting the generated question types
 
-By default, the test set contains all question types. **You can change this by providing question generators** to the `giskard.rag.generate_testset` function. Generators are available inside the `question_generators` module. For instance to generate only complex and double questions use the following:
+By default, the test set contains all question types. **You can change this by providing question generators** to 
+the `giskard.rag.generate_testset` function. Generators are available inside the `question_generators` module. For 
+instance to generate only complex and double questions use the following:
 
 ```python
 from giskard.rag.question_generators import complex_questions, double_questions
@@ -213,7 +215,9 @@ In order to perform the question generation, we will be sending the following in
 - Model name and description
 
 ## Will the test set generation work in any language?
-Yes, you can specify the language of the generated questions when calling the `generate_testset` function. Ultimately, the quality of the generated questions will depend on the LLM performance in the desired language.
+Yes, you can specify the language of the generated questions when calling the `generate_testset` function. 
+Ultimately, the quality of the generated questions will depend on the LLM performance in the desired language.
 
 ## Troubleshooting
-If you encounter any issues, join our [Discord community](https://discord.gg/fkv7CAr3FE) and ask questions in our #support channel.
+If you encounter any issues, join our [Discord community](https://discord.gg/fkv7CAr3FE) and ask questions in 
+our #support channel.
