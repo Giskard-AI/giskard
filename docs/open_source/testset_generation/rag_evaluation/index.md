@@ -60,7 +60,7 @@ report.get_failures(topic="Topic from your knowledge base", question_type="simpl
 
 (custom_metrics)=
 ### Evaluate your RAG with custom metrics
-You can pass evaluation metrics to the `evaluate` function so they will be computed during the evaluation. We currently provide [RAGAS metrics](https://docs.ragas.io/en/latest/concepts/metrics/index.html) as additional metrics, but you can use your own metric as well. Just wrap your metric inside a `giskard.rag.metric.Metric` object and implement a `__call__` function. Then you can pass it to the `evaluate` function as follows: 
+**You can pass additional evaluation metrics to the `evaluate` function**. They will be computed during the evaluation. We currently provide [RAGAS metrics](https://docs.ragas.io/en/latest/concepts/metrics/index.html) as additional metrics, but you can use your own metric as well. Just wrap your metric inside a `giskard.rag.metric.Metric` object and implement a `__call__` function. Then you can pass it to the `evaluate` function as follows: 
 
 ```python
 import pandas as pd

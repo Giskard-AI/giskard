@@ -3,7 +3,7 @@
 > ⚠️ **The RAG Evaluation Toolkit (RAGET) is currently in early version and is subject to change**. Feel free to reach out on our [Discord server](https://discord.gg/fkv7CAr3FE) if you have any trouble with test set generation or to provide feedback.
 
 
-The Giskard python library provides a toolkit dedicated to Retrieval Augmented Generative assistant (RAGET: RAG Evaluation Toolkit) that generates a list of `question`, `reference_answer` and `reference_context` from the knowledge base of the RAG. The generated test set is then used to evaluate your assistant. All questions are asked to your model and its answers are compared against the reference answers to create a score. 
+The Giskard python library provides **RAGET: RAG Evaluation Toolkit**, a toolkit to evaluate RAGs. RAGET generates a list of `question`, `reference_answer` and `reference_context` from the knowledge base of the RAG. The **generated test set is then used to evaluate your assistant**. All questions are asked to your model and its answers are compared against the reference answers to create a score. 
 
 ## Before starting
 
@@ -71,7 +71,7 @@ knowledge_base = KnowledgeBase(knowledge_base_df,
 
 
 ## Generate a test set
-We are ready to generate the test set. By default we generate questions from 6 different [question types](q_types). The total number of questions is divided equally between each question type. To make the question generation more accurate, you can also provide a description of your assistant. This will help the generator to generate questions that are more relevant to your assistant's task. 
+We are ready to generate the test set. By default, **we generate questions from 6 different [question types](q_types)**. The total number of questions is divided equally between each question type. To make the question generation more accurate, you can also provide a description of your assistant. This will help the generator to generate questions that are more relevant to your assistant's task. 
 
 ```python
 # Generate a testset with 10 questions & answers for each question types (this will take a while)
@@ -111,7 +111,7 @@ Let's have a look at the generated questions:
 |----------|-------------------|------------------|-----------|
 | For which countries can I track my shipping? | Document 1: We offer free shipping on all orders over \$50. For orders below \$50, we charge a flat rate of \$5.99. We offer shipping services to customers residing in all 50 states of the US, in addition to providing delivery options to Canada and Mexico. Document 2: Once your purchase has been successfully confirmed and shipped, you will receive a confirmation email containing your tracking number. You can simply click on the link provided in the email or visit our website's order tracking page. | We ship to all 50 states in the US, as well as to Canada and Mexico. We offer tracking for all our shippings. | {"question_type": "simple", "seed_document_id": 1, "topic": "Shipping policy"} |
 
-As you can see, the data contains 4 columns:
+Each row of the testset contains 5 columns:
 - `question`: the generated question
 - `reference_context`: the context that can be used to answer the question
 - `reference_answer`: the answer to the question (generated with GPT-4)
@@ -171,7 +171,7 @@ Here is the list of components evaluated with RAGET:
 
 ### Select the question types in your test set
 
-By default, the testset contains all question types. You can change this by providing question generators to the `giskard.rag.generate_testset` function. Generators are available inside the `question_generators` module. For instance to generate only complex and double questions use the following:
+By default, the testset contains all question types. **You can change this by providing question generators** to the `giskard.rag.generate_testset` function. Generators are available inside the `question_generators` module. For instance to generate only complex and double questions use the following:
 
 ```python
 from giskard.rag.question_generators import complex_questions, double_questions
