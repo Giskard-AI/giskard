@@ -1,7 +1,7 @@
 from ..knowledge_base import KnowledgeBase
 from .base import _BaseModifierGenerator
 from .prompt import QAGenerationPrompt
-from .simple_questions import SimpleQuestionGenerator
+from .simple_questions import SimpleQuestionsGenerator
 
 DISTRACTING_SYSTEM_PROMPT = """You are an expert at rewriting questions.
 Your task is to re-write questions that will be used to evaluate the following assistant:
@@ -42,7 +42,7 @@ DISTRACTING_EXAMPLE_OUTPUT = """{
 
 
 class DistractingQuestionsGenerator(_BaseModifierGenerator):
-    _base_generator = SimpleQuestionGenerator(show_progress=False)
+    _base_generator = SimpleQuestionsGenerator()
 
     _prompt = QAGenerationPrompt(
         system_prompt=DISTRACTING_SYSTEM_PROMPT,

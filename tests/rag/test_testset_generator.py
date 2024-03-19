@@ -1,7 +1,7 @@
 import logging
 from unittest.mock import Mock
 
-from giskard.rag.question_generators import SimpleQuestionGenerator
+from giskard.rag.question_generators import SimpleQuestionsGenerator
 from giskard.rag.testset_generation import generate_testset
 
 q1 = {
@@ -171,7 +171,7 @@ def test_question_generation_fail(caplog):
 
     simple_gen = Mock()
     simple_gen.generate_questions.return_value = [q1, q2]
-    failing_gen = SimpleQuestionGenerator(llm_client=Mock())
+    failing_gen = SimpleQuestionsGenerator(llm_client=Mock())
 
     with caplog.at_level(logging.DEBUG, logger="giskard.rag"):
         testset = generate_testset(

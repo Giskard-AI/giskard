@@ -39,18 +39,16 @@ QA_GENERATION_EXAMPLE_OUTPUT = """{
 }"""
 
 
-class SimpleQuestionGenerator(GenerateFromSingleQuestionMixin, _LLMBasedQuestionGenerator):
+class SimpleQuestionsGenerator(GenerateFromSingleQuestionMixin, _LLMBasedQuestionGenerator):
     """
     Base question generator that generates questions from a KnowledgeBase.
 
     Parameters
     ----------
-    knowledge_base : KnowledgeBase
-        The knowledge base to generate questions from.
-    language: str, optional
-        The language to use for question generation. The default is "en" to generate questions in english.
-    assistant_description: str, optional
-        Description of the assistant to be evaluated. This will be used in the prompt for question generation to get more fitting questions.
+    context_neighbors: int, optional
+        Number of context neighbors to use for question generation.
+    context_similarity_threshold: float, optional
+        Similarity threshold to keep neighboring document during question generation.
     context_window_length: int, optional
         Context window length of the llm used in the `llm_client` of the generator.
     llm_client: LLMClient, optional
@@ -110,4 +108,4 @@ class SimpleQuestionGenerator(GenerateFromSingleQuestionMixin, _LLMBasedQuestion
         return question
 
 
-simple_questions = SimpleQuestionGenerator()
+simple_questions = SimpleQuestionsGenerator()

@@ -4,14 +4,14 @@ from .conversational_questions import ConversationalQuestionsGenerator, conversa
 from .distracting_questions import DistractingQuestionsGenerator, distracting_questions
 from .double_questions import DoubleQuestionsGenerator, double_questions
 from .question_types import QUESTION_ATTRIBUTION, RAGComponents
-from .simple_questions import SimpleQuestionGenerator, simple_questions
+from .simple_questions import SimpleQuestionsGenerator, simple_questions
 from .situational_questions import SituationalQuestionsGenerator, situational_questions
 
 __all__ = [
     "RAGComponents",
     "QuestionGenerator",
     "QUESTION_ATTRIBUTION",
-    "SimpleQuestionGenerator",
+    "SimpleQuestionsGenerator",
     "ComplexQuestionsGenerator",
     "ConversationalQuestionsGenerator",
     "DistractingQuestionsGenerator",

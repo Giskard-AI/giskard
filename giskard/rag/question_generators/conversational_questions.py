@@ -1,7 +1,7 @@
 from ..knowledge_base import KnowledgeBase
 from .base import _BaseModifierGenerator
 from .prompt import QAGenerationPrompt
-from .simple_questions import SimpleQuestionGenerator
+from .simple_questions import SimpleQuestionsGenerator
 
 CONVERSATIONAL_SYSTEM_PROMPT = """You are an expert at re-writing questions.
 
@@ -30,7 +30,7 @@ CONVERSATIONAL_ASSISTANT_EXAMPLE = (
 
 
 class ConversationalQuestionsGenerator(_BaseModifierGenerator):
-    _base_generator = SimpleQuestionGenerator(show_progress=False)
+    _base_generator = SimpleQuestionsGenerator()
 
     _prompt = QAGenerationPrompt(
         system_prompt=CONVERSATIONAL_SYSTEM_PROMPT,

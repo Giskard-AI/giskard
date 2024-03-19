@@ -3,7 +3,7 @@ import logging
 from ..knowledge_base import KnowledgeBase
 from .base import _BaseModifierGenerator
 from .prompt import QAGenerationPrompt
-from .simple_questions import SimpleQuestionGenerator
+from .simple_questions import SimpleQuestionsGenerator
 
 logger = logging.getLogger(__name__)
 
@@ -66,7 +66,7 @@ SITUATIONAL_QUESTION_EXAMPLE_OUTPUT = (
 
 
 class SituationalQuestionsGenerator(_BaseModifierGenerator):
-    _base_generator = SimpleQuestionGenerator(show_progress=False)
+    _base_generator = SimpleQuestionsGenerator()
 
     _situation_generation_prompt = QAGenerationPrompt(
         system_prompt=SITUATIONAL_CONTEXT_SYSTEM_PROMPT,

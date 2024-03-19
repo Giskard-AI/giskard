@@ -1,7 +1,7 @@
 from ..knowledge_base import KnowledgeBase
 from .base import _BaseModifierGenerator
 from .prompt import QAGenerationPrompt
-from .simple_questions import SimpleQuestionGenerator
+from .simple_questions import SimpleQuestionsGenerator
 
 COMPLEXIFICATION_SYSTEM_PROMPT = """You are an expert at writing questions. 
 Your task is to re-write questions that will be used to evaluate the following assistant:
@@ -53,7 +53,27 @@ COMPLEXIFICATION_EXAMPLE_OUTPUT = """{
 
 
 class ComplexQuestionsGenerator(_BaseModifierGenerator):
-    _base_generator = SimpleQuestionGenerator(show_progress=False)
+    """
+    Complex question generator that generates questions from a KnowledgeBase.
+    This generator is a subclass of the `_BaseModifierGenerator` class. Hence it has a `_base_generator` attribute that is an instance of the `SimpleQuestionsGenerator` class.
+
+    Generates first simple question that will be complexified.
+
+    Parameters
+    ----------
+    context_neighbors: int, optional
+        Number of context neighbors to use for question generation.
+    context_similarity_threshold: float, optional
+        Similarity threshold to keep neighboring document during question generation.
+    context_window_length: int, optional
+        Context window length of the llm used in the `llm_client` of the generator.
+    llm_client: LLMClient, optional
+        The LLM client to use for question generation. If not specified, a default openai client will be used.
+    llm_temperature: float, optional
+        The temperature to use in the LLM for question generation. The default is 0.5.
+    """
+
+    _base_generator = SimpleQuestionsGenerator()
 
     _prompt = QAGenerationPrompt(
         system_prompt=COMPLEXIFICATION_SYSTEM_PROMPT,
@@ -67,6 +87,25 @@ class ComplexQuestionsGenerator(_BaseModifierGenerator):
     def _modify_question(
         self, question: dict, knowledge_base: KnowledgeBase, assistant_description: str, language: str
     ) -> dict:
+        """
+        Modify a question by complexifying it.
+
+        Parameters
+        ----------
+        question : dict
+            The question to modify.
+        knowledge_base : KnowledgeBase
+            The knowledge base to use for question generation.
+        assistant_description : str
+            The description of the assistant.
+        language : str
+            The language to use for question generation.
+
+        Returns
+        -------
+        dict
+            The modified question.
+        """
         messages = self._prompt.to_messages(
             system_prompt_input={
                 "assistant_description": assistant_description,

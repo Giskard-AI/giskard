@@ -2,7 +2,7 @@ import logging
 from unittest.mock import Mock
 
 from giskard.llm.client.base import LLMMessage
-from giskard.rag.question_generators.simple_questions import SimpleQuestionGenerator
+from giskard.rag.question_generators.simple_questions import SimpleQuestionsGenerator
 
 
 def test_base_generator():
@@ -14,7 +14,7 @@ def test_base_generator():
         )
     )
 
-    base_generator = SimpleQuestionGenerator(llm_client=llm_client)
+    base_generator = SimpleQuestionsGenerator(llm_client=llm_client)
     completion = base_generator._llm_complete(messages=[])
 
     assert isinstance(completion, dict)
@@ -31,7 +31,7 @@ def test_json_parsing(caplog):
         )
     ]
 
-    base_generator = SimpleQuestionGenerator(llm_client=llm_client)
+    base_generator = SimpleQuestionsGenerator(llm_client=llm_client)
     with caplog.at_level(logging.DEBUG, logger="giskard.rag"):
         completion = base_generator._llm_complete(messages=[])
 
@@ -52,7 +52,7 @@ def test_json_parsing(caplog):
         ),
     ]
 
-    base_generator = SimpleQuestionGenerator(llm_client=llm_client)
+    base_generator = SimpleQuestionsGenerator(llm_client=llm_client)
     with caplog.at_level(logging.DEBUG, logger="giskard.rag"):
         completion = base_generator._llm_complete(messages=[])
 

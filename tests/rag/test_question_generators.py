@@ -7,7 +7,7 @@ from giskard.rag.question_generators import (
     ConversationalQuestionsGenerator,
     DistractingQuestionsGenerator,
     DoubleQuestionsGenerator,
-    SimpleQuestionGenerator,
+    SimpleQuestionsGenerator,
     SituationalQuestionsGenerator,
 )
 
@@ -33,7 +33,7 @@ def test_simple_question_generation():
     )
     knowledge_base.get_neighbors = Mock(return_value=documents)
 
-    question_generator = SimpleQuestionGenerator(llm_client=llm_client)
+    question_generator = SimpleQuestionsGenerator(llm_client=llm_client)
 
     question = list(
         question_generator.generate_questions(
