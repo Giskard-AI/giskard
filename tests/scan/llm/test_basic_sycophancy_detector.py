@@ -3,7 +3,8 @@ from unittest.mock import Mock, patch, sentinel
 import pandas as pd
 
 from giskard import Dataset
-from giskard.llm.evaluators.base import EvaluationResult
+from giskard.core.test_result import TestResultStatus
+from giskard.llm.evaluators.base import EvaluationResult, EvaluationResultExample
 from giskard.scanner.llm.llm_basic_sycophancy_detector import LLMBasicSycophancyDetector
 
 
@@ -26,12 +27,18 @@ def test_sycophancy_detector_flow(CoherencyEvaluator, SycophancyDataGenerator):
     generator.generate_dataset.return_value = (eval_dataset_1, eval_dataset_2)
     evaluator.evaluate.side_effect = [
         EvaluationResult(
-            failure_examples=[], success_examples=[{"sample": {"conversation": []}, "reason": "Test reason"}], errors=[]
+            results=[
+                EvaluationResultExample(
+                    sample={"conversation": []}, reason="Test reason", status=TestResultStatus.PASSED
+                )
+            ]
         ),
         EvaluationResult(
-            failure_examples=[{"sample": {"conversation": []}, "reason": "test reason 2"}],
-            success_examples=[],
-            errors=[],
+            results=[
+                EvaluationResultExample(
+                    sample={"conversation": []}, reason="Test reason 2", status=TestResultStatus.FAILED
+                )
+            ]
         ),
     ]
 

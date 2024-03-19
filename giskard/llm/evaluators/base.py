@@ -22,7 +22,7 @@ class EvaluationResultExample:
     status: TestResultStatus
     sample: Optional[Sequence[Dict]]
     # The reason why the example have given status
-    reason: Optional[str]
+    reason: Optional[str] = None
 
     @property
     def to_example(self):
