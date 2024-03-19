@@ -23,14 +23,12 @@ class _LLMBasedQuestionGenerator(QuestionGenerator):
         context_neighbors: int = 4,
         context_similarity_threshold: float = 0.2,
         context_window_length: int = 8192,
-        show_progress: bool = True,
         llm_client: Optional[LLMClient] = None,
         llm_temperature: float = 0.4,
     ):
         self._context_window_length = context_window_length
         self._context_neighbors = context_neighbors
         self._context_similarity_threshold = context_similarity_threshold
-        self._show_progress = show_progress
         self._llm_client_instance = llm_client
         self._llm_temperature = llm_temperature
 
@@ -58,7 +56,7 @@ class _LLMBasedQuestionGenerator(QuestionGenerator):
 
         logger.debug("Raw output: %s", raw_json)
         # Let's see if it's just a matter of markdown format (```json ... ```)
-        match = re.search(r"```json\s+(.*?)\s+```", raw_json, re.DOTALL)
+        match = re.search(r"```json\s{0,5}(.*?)\s{0,5}```", raw_json, re.DOTALL)
         if match:
             try:
                 return json.loads(match.group(1), strict=False)
