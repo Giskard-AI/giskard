@@ -3,6 +3,7 @@ from typing import Callable, Optional, Sequence, Union
 import logging
 
 from ..llm.client import LLMClient, get_default_client
+from ..utils.analytics_collector import analytics
 from .knowledge_base import KnowledgeBase
 from .metrics import CorrectnessMetric, Metric
 from .question_generators.utils import maybe_tqdm
@@ -86,12 +87,22 @@ def evaluate(
         llm_client,
     )
     report._recommendation = recommendation
+    analytics.track(
+        "raget:evaluation",
+        {
+            "testset_size": len(testset),
+            "knowledge_base_size": len(knowledge_base._documents) if knowledge_base else -1,
+            "assistant_description": assistant_description,
+            "additional_metrics": [metric.name for metric in additional_metrics] if additional_metrics else "None",
+            "conversation_support": conversation_support,
+            "correctness": report.correctness,
+        },
+    )
     return report
 
 
 def make_predictions(answers_fn, testset, conversation_support=False):
     answers = []
-    logger.debug("Starting to make predictions on the test set.")
     for sample in maybe_tqdm(
         testset.to_pandas().itertuples(), desc="Asking questions to the assistant", total=len(testset)
     ):
@@ -99,5 +110,4 @@ def make_predictions(answers_fn, testset, conversation_support=False):
             answers.append(answers_fn(sample.question, sample.conversation_history))
         else:
             answers.append(answers_fn(sample.question))
-    logger.debug("Predictions finished. Starting evaluation.")
     return answers

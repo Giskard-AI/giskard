@@ -4,6 +4,7 @@ import itertools
 
 import pandas as pd
 
+from ..utils.analytics_collector import analytics
 from .knowledge_base import KnowledgeBase
 from .question_generators import (
     QuestionGenerator,
@@ -89,4 +90,14 @@ def generate_testset(
         topic_id = knowledge_base.get_document(question["metadata"]["seed_document_id"]).topic_id
         question["metadata"]["topic"] = knowledge_base.topics[topic_id]
 
+    analytics.track(
+        "raget:testset-generation",
+        {
+            "num_questions": num_questions,
+            "language": language,
+            "assistant_description": assistant_description,
+            "question_generators": [qg.__class__.__name__ for qg in question_generators],
+            "knowledge_base_size": len(knowledge_base._documents),
+        },
+    )
     return QATestset(pd.DataFrame(questions).set_index("id"))

@@ -9,6 +9,7 @@ from sklearn.cluster import HDBSCAN
 from ..datasets.metadata.text_metadata_provider import _detect_lang
 from ..llm.client import LLMClient, LLMMessage, get_default_client
 from ..llm.errors import LLMImportError
+from ..utils.analytics_collector import analytics
 from .knowledge_base_plots import get_failure_plot, get_knowledge_plot
 
 try:
@@ -143,6 +144,14 @@ class KnowledgeBase:
 
         self._documents_index = {doc.id: doc for doc in self._documents}
 
+        analytics.track(
+            "raget:knowledge-base-creation",
+            {
+                "num_documents": len(self._documents),
+                "language": self._language,
+            },
+        )
+
     @property
     def _embeddings(self):
         if self._embeddings_inst is None:
@@ -217,6 +226,14 @@ class KnowledgeBase:
             if idx != -1
         }
         topics[-1] = "Others"
+
+        analytics.track(
+            "raget:knowledge-topic-creation",
+            {
+                "num_topic": len(topics),
+                "min_topic_size": self._min_topic_size,
+            },
+        )
 
         return topics
 
