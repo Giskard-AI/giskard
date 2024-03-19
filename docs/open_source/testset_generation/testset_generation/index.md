@@ -1,6 +1,6 @@
 # 🎯 RAGET Testset Generation 
 
-> ⚠️ **The RAG Evaluation Toolkit (RAGET) is currently in early version and is subject to change**. Feel free to reach out on our [Discord server](https://discord.gg/fkv7CAr3FE) if you have any trouble with test set generation or to provide feedback.
+> ⚠️ **The RAG Evaluation Toolkit (RAGET) is currently in early version and is subject to change**. Feel free to reach out on our [Discord server](https://discord.gg/fkv7CAr3FE) if you have any trouble or to provide feedback.
 
 
 The Giskard python library provides **RAGET: RAG Evaluation Toolkit**, a toolkit to evaluate RAGs. RAGET generates a list of `question`, `reference_answer` and `reference_context` from the knowledge base of the RAG. The **generated test set is then used to evaluate your assistant**. All questions are asked to your model and its answers are compared against the reference answers to create a score. 
