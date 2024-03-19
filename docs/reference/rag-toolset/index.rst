@@ -1,4 +1,4 @@
-RAG Toolset
+RAG Evaluation Toolkit
 =============
 
 .. toctree::

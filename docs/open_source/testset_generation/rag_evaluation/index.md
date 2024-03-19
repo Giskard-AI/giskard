@@ -1,24 +1,47 @@
-# 🥇 RAG Evaluation
+# 🥇 RAGET Evaluation
 
-> ⚠️ **The RAG toolset is currently in early version and is subject to change**. Feel free to reach out on our [Discord server](https://discord.gg/fkv7CAr3FE) if you have any trouble with test set generation or to provide feedback.
+> ⚠️ **RAGET is currently in early version and is subject to change**. Feel free to reach out on our [Discord server](https://discord.gg/fkv7CAr3FE) if you have any trouble with test set generation or to provide feedback.
 
 
-## Evaluate your RAG system on your test set
+## Correctness Evaluation on the Generated Test Set
 
-To evaluate your RAG on the generated test set you can use the `giskard.rag.evaluate` function:
+To evaluate your RAG on the generated test set you can use the `giskard.rag.evaluate` function. **The evaluation computes the correctness of the assistant answers** compared to the reference answers (using a **LLM-as-a-judge approach**). You can also [pass custom metrics](custom_metrics) to the `evaluate` function to compute additional scores.
 
 ```python
-def answer_fn(question):
+from giskard.rag import evaluate
+
+def answer_fn(question, history=None):
     # a function that wraps your model predictions function
+    messages = history if history else []
+    message.append({"role": "user", "content": question})
 
-    return your_assistant.predict(question)
+    return your_assistant.predict(messages)
 
-evaluate(answers_fn, testset=testset)
+report = evaluate(answers_fn, testset=testset, knoledge_base=knowledge_base)
+report
 ```
 
-The evaluate function generates a `giskard.rag.RAGReport` object. The report takes the form an HTML widget presenting all the results of the evaluation. It displays automatically in a notebook, but you can save it and view it in any browser: `report.save_html("report.html")`.
+The `evaluate` function generates a {class}`~giskard.rag.RAGReport` object. The report takes the form an HTML widget presenting all the results of the evaluation. It displays automatically in a notebook, but you can save it and view it in any browser: `report.save_html("report.html")`.
 
-You can access the correctness of the assistant aggregated in various ways: 
+### RAG Components Scores
+Inside the {class}`~giskard.rag.RAGReport`, we compute scores for each component of the RAG. The scores are computed by aggregating the correctness of the assistant answers on different question types (see what question type is attributed to what component [here](q_types)). Each score grades a component on a scale from 0 to 100, 100 being a perfect score. **Low scores can help you identify weakness of your RAG and what components need improvement.**
+
+Here is the list of components evaluated with RAGET:
+- **`Generator`**: the LLM used inside the RAG to generate the answers
+- **`Retriever`**: fetch relevant documents from the knowledge base according to a user query
+- **`Rewriter`** (optional): rewrite the user query to make it more relevant to the knowledge base or to account for chat history
+- **`Router`** (optional): filter the query of the user based on his intentions (intentions detection)
+- **`Knowledge Base`**: the set of documents given to the RAG to generate the answers
+
+
+### Analyze Correctness and Failures
+All the information contained in the report can also be accessed through the API:
+    
+```python
+report.to_pandas()
+```
+
+You can access the correctness of the assistant aggregated in various ways or analyze only it failures: 
 
 ```python
 # Correctness on each topic of the Knowledge Base
@@ -26,33 +49,46 @@ report.correctness_by_topic()
 
 # Correctness on each type of question
 report.correctness_by_question_type()
-```
 
-The failures examples can be accessed easily as:
-```python
 # get all the failed questions
 report.failures
 
 # get the failed questions filtered by topic and question type
-report.get_failures(topic="Topic from your knowledge base", question_type=1)
+report.get_failures(topic="Topic from your knowledge base", question_type="simple")
 ```
 
-You can also access the score the components of the RAG with `report.component_scores()`. More detail about the computation of these scores is available [here]().
 
-
-## Evaluate your RAG with custom metrics
-
-You can pass evaluation metrics to the `evaluate` function so they will be computed during the evaluation. 
-Your metrics should inherit from the `giskard.rag.metric.Metric` class and implement a `__call__` function. 
-Then you can pass it to the `evaluate` function as follows: 
+(custom_metrics)=
+### Evaluate your RAG with custom metrics
+You can pass evaluation metrics to the `evaluate` function so they will be computed during the evaluation. We currently provide [RAGAS metrics](https://docs.ragas.io/en/latest/concepts/metrics/index.html) as additional metrics, but you can use your own metric as well. Just wrap your metric inside a `giskard.rag.metric.Metric` object and implement a `__call__` function. Then you can pass it to the `evaluate` function as follows: 
 
 ```python
-report = evaluate(answers_fn, testset=testset, metrics=[your_custom_metric])
+import pandas as pd
+from giskard.rag.metric import Metric
+
+your_metric_fn = ...
+
+class MyCustomMetric(Metric):
+    def __call__(self, testset, answers, *args, **kwargs):
+        # your custom metric implementation
+        metric_df = pd.DataFrame([{"id": q.id, "value": your_metric_fn(q, a)} for q, a in zip(testset.itertuples(), answers)])
+        return {self.name: metric_df.set_index("id")}
+
+your_custom_metric = MyCustomMetric(name="My custom metric")
+report = evaluate(answers_fn, testset=testset, knowledge_base=knowledge_base, additional_metrics=[your_custom_metric])
 ```
 
-The results of your metrics will be displayed in the report object. 
+The results of your metrics will be displayed in the report object as histograms and will be available inside the report main `DataFrame`. 
 
-## Giskard Hub Evaluation 
+To use RAGAS metrics, make sure that the `ragas` package is installed in your environment. You can install it with `pip install ragas`.
+
+```python
+from giskard.rag.metrics.ragas_metrics import ragas_context_recall, ragas_faithfulness
+
+report = evaluate(answers_fn, testset=testset, knowledge_base=knowledge_base, additional_metrics=[ragas_context_recall, ragas_faithfulness])
+```
+
+## Giskard Hub Integration 
 ### Step 1: Convert the test set into a test suite
 Let's convert our test set into an actionable test suite ({class}`giskard.Suite`) that we can save and reuse in further iterations.
 
@@ -86,7 +122,7 @@ Once you have wrapped your model, we can proceed with evaluation.
 test_suite.run(model=giskard_model)
 ```
 
-## Step 3: upload your test suite to the Giskard Hub
+### Step 3: upload your test suite to the Giskard Hub
 
 Uploading a test suite to the hub allows you to:
 * Compare the quality of different models and prompts to decide which one to promote

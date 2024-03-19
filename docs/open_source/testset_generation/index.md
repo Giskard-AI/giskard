@@ -14,7 +14,7 @@ rag_evaluation/index
 ::::::{grid} 1 1 2 2
 
 
-::::{grid-item-card} <br/><h3>🎯 Generate Evaluation Testset</h3>
+::::{grid-item-card} <br/><h3>🎯 Testset Generation</h3>
 :text-align: center
 :link: testset_generation/index.html
 ::::
