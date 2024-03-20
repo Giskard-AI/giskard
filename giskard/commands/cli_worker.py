@@ -159,7 +159,7 @@ def initialize_hf_token(hf_token):
 
 def _start_server_command(worker_name, url: AnyHttpUrl, api_key, hf_token=None):
     client: GiskardClient = GiskardClient(str(url), api_key, hf_token)
-    client.start_kernel(worker_name)
+    client.start_managed_worker(worker_name)
 
 
 def _start_command(worker_name, url: AnyHttpUrl, api_key, hf_token=None, nb_workers=None):
@@ -218,7 +218,7 @@ async def _start_worker(worker_name, url, api_key, hf_token, nb_workers):
 
 def _stop_server_command(worker_name, url: AnyHttpUrl, api_key, hf_token=None):
     client: GiskardClient = GiskardClient(str(url), api_key, hf_token)
-    return client.stop_kernel(worker_name)
+    return client.stop_managed_worker(worker_name)
 
 
 @worker.command("stop", help="Stop running ML Workers")
