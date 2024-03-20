@@ -349,3 +349,7 @@ tr:hover .tooltip-text {
   color: #272eb5;
   font-weight: bold;
 }
+
+#gsk-logo {
+  padding-top: 10px;
+}
