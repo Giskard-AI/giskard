@@ -51,3 +51,5 @@ You'll then be able to open Giskard at `http://localhost:19000/`
 Giskard executes your model using an ML worker that runs the model. The worker is created along with your project, using the dependencies in your current environment. You can start the worker on Giskard Hub, if it is not started automatically.
 
 For advanced and flexible usages, please check [our doc for ML worker](../../mlworker/index.md).
+
+You're all set to try Giskard in action. Upload your first model, dataset or test suite by following the [upload an object](../../../upload/index.md) page.
