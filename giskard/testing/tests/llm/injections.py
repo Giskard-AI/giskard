@@ -58,6 +58,10 @@ class LLMCharInjector:
             return self._scorer
 
         try:
+            # Note(Bazire): This torch import is needed to avoid segfault on MacOS
+            # Evaluate depends on datasets from hugging face, which import torch and segfault
+            # if not imported before it seems
+            import torch  # noqa isort: skip
             import evaluate
         except ImportError as err:
             raise LLMImportError() from err
