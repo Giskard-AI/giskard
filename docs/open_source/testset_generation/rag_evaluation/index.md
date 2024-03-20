@@ -3,9 +3,9 @@
 > ⚠️ **RAGET is currently in early version and is subject to change**. Feel free to reach out on our [Discord server](https://discord.gg/fkv7CAr3FE) if you have any trouble or to provide feedback.
 
 
-After automatically generating a test set for your RAG application using RAGET, you can then evaluate the **correctness 
-of the application's answers** compared to the reference answers (using a LLM-as-a-judge approach). The main purpose
-of this evaluation is to help you **identify the weakest components in your RAG application**.
+After automatically generating a test set for your RAG agent using RAGET, you can then evaluate the **correctness 
+of the agent's answers** compared to the reference answers (using a LLM-as-a-judge approach). The main purpose
+of this evaluation is to help you **identify the weakest components in your RAG agent**.
 
 
 
@@ -22,7 +22,7 @@ def answer_fn(question, history=None):
     messages = history if history else []
     message.append({"role": "user", "content": question})
 
-    return your_assistant.predict(messages)
+    return your_agent.predict(messages)
 
 report = evaluate(answers_fn, testset=testset, knoledge_base=knowledge_base)
 report
@@ -37,10 +37,10 @@ It displays automatically in a notebook, but you can save it and view it in any 
 `report.save_html("report.html")`.
 
 ### RAG Components Scores
-RAGET computes scores for each component of the RAG application. The scores are computed by aggregating the correctness 
-of the application's answers on different question types (see question type to component mapping [here](q_types)). 
+RAGET computes scores for each component of the RAG agent. The scores are computed by aggregating the correctness 
+of the agent's answers on different question types (see question type to component mapping [here](q_types)). 
 Each score grades a component on a scale from 0 to 100, 100 being a perfect score. **Low scores can help you identify 
-weaknesses of your RAG application and which components need improvement.**
+weaknesses of your RAG agent and which components need improvement.**
 
 Here is the list of components evaluated with RAGET:
 - **`Generator`**: the LLM used inside the RAG to generate the answers
@@ -57,7 +57,7 @@ All the information contained in the report can also be accessed through the API
 report.to_pandas()
 ```
 
-You can access the correctness of the assistant aggregated in various ways or analyze only it failures: 
+You can access the correctness of the agent aggregated in various ways or analyze only it failures: 
 
 ```python
 # Correctness on each topic of the Knowledge Base
