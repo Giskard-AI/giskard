@@ -199,7 +199,7 @@ testset = generate_testset(
     num_questions=60,
     language='en',
     agent_description=agent_description,
-    question_modifiers=[complex_questions, double_questions],
+    question_generators=[complex_questions, double_questions],
     generate_simple_question=False,
 )
 ```
