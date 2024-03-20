@@ -251,8 +251,8 @@ def stop_command(worker_name, stop_all, is_server, url: AnyHttpUrl, api_key, hf_
 
 def _restart_server_command(worker_name, url: AnyHttpUrl, api_key, hf_token=None):
     client: GiskardClient = GiskardClient(url, api_key, hf_token)
-    client.stop_kernel(worker_name)
-    client.start_kernel(worker_name)
+    client.stop_managed_worker(worker_name)
+    client.start_managed_worker(worker_name)
 
 
 @worker.command("restart", help="Restart ML Worker")
