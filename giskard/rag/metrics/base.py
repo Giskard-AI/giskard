@@ -24,7 +24,7 @@ class Metric(ABC):
         testset : QATestset
             The test set to compare the answers with.
         answers : Sequence[str]
-            The answers of the assistant to evaluate.
+            The answers of the agent to evaluate.
 
         Returns
         -------

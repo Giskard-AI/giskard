@@ -40,9 +40,9 @@
                 <table style="width:50%" id="component-table">
                 {% for component_name, component in components.items() %}
                     <tr title="This is a tooltip">
-                        <td><b>{{component_name}}</b> </td>
+                        <td><strong>{{component_name}}</strong> </td>
                         <td><progress max="100" value={{component.score*100}} class="{% if component.score >= 0.7 %} progress-green {% elif component.score >= 0.3 %} progress-orange {% else %} progress-red {% endif %}">{{(component.score*100)|round(2)}}%</progress> <span class="tooltip-text" id="fade">{{component.description}}</span></td>
-                        <td><b>{{(component.score*100)|round(2)}}%</b> </td>
+                        <td><strong>{{(component.score*100)|round(2)}}%</strong> </td>
                     </tr>
                 {% endfor %}
                 </table>
@@ -55,10 +55,10 @@
                             d="M16 0C7.163 0 0 7.163 0 16s7.163 16 16 16 16-7.163 16-16S24.837 0 16 0zm0 29C8.82 29 3 23.18 3 16S8.82 3 16 3s13 5.82 13 13-5.82 13-13 13z" />
                     </svg></span>
                     
-                    <p>Each component is scored based on the correctness of the assistant on different types of questions.
+                    <p>Each component is scored based on the correctness of the agent on different types of questions.
                     Each score grades a component from 0 to 100%. <br>
-                    <b>Low scores help you identify weaknesses of your RAG and what
-                    components need improvement</b>.</p>
+                    <strong>Low scores help you identify weaknesses of your RAG and what
+                    components need improvement</strong>.</p>
                    
                 </div>
             </div>

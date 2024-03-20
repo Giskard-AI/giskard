@@ -4,14 +4,14 @@ from .prompt import QAGenerationPrompt
 from .simple_questions import SimpleQuestionsGenerator
 
 DISTRACTING_SYSTEM_PROMPT = """You are an expert at rewriting questions.
-Your task is to re-write questions that will be used to evaluate the following assistant:
-- Assistant description: {assistant_description}  
+Your task is to re-write questions that will be used to evaluate the following agent:
+- Agent description: {agent_description}  
 
 Your task is to complexify questions given a provided context. 
 Please respect the following rules to generate the question:
 - The new question must include a condition or constraint based on the provided context. 
 - The original question direction should be preserved.
-- The question must be plausible according to the context and the assistant description.
+- The question must be plausible according to the context and the agent description.
 - The question must be self-contained and understandable by humans. 
 - The question must be in this language: {language}
 
@@ -54,12 +54,12 @@ class DistractingQuestionsGenerator(_BaseModifierGenerator):
     _question_type = "distracting element"
 
     def _modify_question(
-        self, question: dict, knowledge_base: KnowledgeBase, assistant_description: str, language: str
+        self, question: dict, knowledge_base: KnowledgeBase, agent_description: str, language: str
     ) -> dict:
         distracting_context = knowledge_base.get_random_document().content
         messages = self._prompt.to_messages(
             system_prompt_input={
-                "assistant_description": assistant_description,
+                "agent_description": agent_description,
                 "language": language,
             },
             user_input={

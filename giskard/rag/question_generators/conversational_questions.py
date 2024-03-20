@@ -24,7 +24,7 @@ CONVERSATIONAL_USER_EXAMPLE = CONVERSATIONAL_USER_TEMPLATE.format(
     question="Is it possible to repair the car without any tools?"
 )
 
-CONVERSATIONAL_ASSISTANT_EXAMPLE = (
+CONVERSATIONAL_AGENT_EXAMPLE = (
     """{"introduction":"I want to repair the car without tools.","question":"Is it possible?"}"""
 )
 
@@ -35,14 +35,14 @@ class ConversationalQuestionsGenerator(_BaseModifierGenerator):
     _prompt = QAGenerationPrompt(
         system_prompt=CONVERSATIONAL_SYSTEM_PROMPT,
         example_input=CONVERSATIONAL_USER_EXAMPLE,
-        example_output=CONVERSATIONAL_ASSISTANT_EXAMPLE,
+        example_output=CONVERSATIONAL_AGENT_EXAMPLE,
         user_input_template=CONVERSATIONAL_USER_TEMPLATE,
     )
 
     _question_type = "conversational"
 
     def _modify_question(
-        self, question: dict, knowledge_base: KnowledgeBase, assistant_description: str, language: str
+        self, question: dict, knowledge_base: KnowledgeBase, agent_description: str, language: str
     ) -> dict:
         messages = self._prompt.to_messages(
             system_prompt_input={

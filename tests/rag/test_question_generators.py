@@ -37,7 +37,7 @@ def test_simple_question_generation():
 
     question = list(
         question_generator.generate_questions(
-            knowledge_base=knowledge_base, num_questions=1, assistant_description="Test", language="en"
+            knowledge_base=knowledge_base, num_questions=1, agent_description="Test", language="en"
         )
     )[0]
 
@@ -81,7 +81,7 @@ def test_complex_question_generation():
 
     question = list(
         question_generator.generate_questions(
-            knowledge_base=knowledge_base, num_questions=1, assistant_description="Test", language="en"
+            knowledge_base=knowledge_base, num_questions=1, agent_description="Test", language="en"
         )
     )[0]
 
@@ -128,7 +128,7 @@ def test_distracting_question_generation():
 
     question = list(
         question_generator.generate_questions(
-            knowledge_base=knowledge_base, num_questions=1, assistant_description="Test", language="en"
+            knowledge_base=knowledge_base, num_questions=1, agent_description="Test", language="en"
         )
     )[0]
 
@@ -177,7 +177,7 @@ def test_situational_question_generation():
 
     question = list(
         question_generator.generate_questions(
-            knowledge_base=knowledge_base, num_questions=1, assistant_description="Test", language="en"
+            knowledge_base=knowledge_base, num_questions=1, agent_description="Test", language="en"
         )
     )[0]
 
@@ -221,7 +221,7 @@ def test_double_question_generation():
 
     question = list(
         question_generator.generate_questions(
-            knowledge_base=knowledge_base, num_questions=1, assistant_description="Test", language="en"
+            knowledge_base=knowledge_base, num_questions=1, agent_description="Test", language="en"
         )
     )[0]
 
@@ -268,7 +268,7 @@ def test_conversational_question_generation():
 
     question = list(
         question_generator.generate_questions(
-            knowledge_base=knowledge_base, num_questions=1, assistant_description="Test", language="en"
+            knowledge_base=knowledge_base, num_questions=1, agent_description="Test", language="en"
         )
     )[0]
 

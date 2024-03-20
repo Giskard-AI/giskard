@@ -23,7 +23,7 @@ While the knowledge base quality is not assessed by any question type, each ques
 A proxy for the quality of the knowledge base is the RAG's ability to answer equally well across all topics. Here are the topics:
 {topics}
 
-Your are now provided with the scores of the assistant on each question type and each topic.
+Your are now provided with the scores of the agent on each question type and each topic.
 """
 
 RECOMMENDATION_USER_PROMPT = """

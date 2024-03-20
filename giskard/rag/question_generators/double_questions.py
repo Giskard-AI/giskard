@@ -6,8 +6,8 @@ from .prompt import QAGenerationPrompt
 
 LINKED_QUESTION_SYSTEM_PROMPT = """You are a powerful auditor, your role is to generate two question & answer pairs from a given list of context paragraphs.
 
-The assistant you are auditing is the following:
-- Assitant description: {assistant_description}
+The agent you are auditing is the following:
+- Assitant description: {agent_description}
 
 Your questions must be related to the provided context.  
 Please respect the following rules to generate the question:
@@ -90,9 +90,7 @@ class DoubleQuestionsGenerator(GenerateFromSingleQuestionMixin, _LLMBasedQuestio
 
     _question_type = "double"
 
-    def generate_single_question(
-        self, knowledge_base: KnowledgeBase, assistant_description: str, language: str
-    ) -> dict:
+    def generate_single_question(self, knowledge_base: KnowledgeBase, agent_description: str, language: str) -> dict:
         seed_document = knowledge_base.get_random_document()
         context_documents = knowledge_base.get_neighbors(
             seed_document, self._context_neighbors, self._context_similarity_threshold
@@ -104,7 +102,7 @@ class DoubleQuestionsGenerator(GenerateFromSingleQuestionMixin, _LLMBasedQuestio
         linked_questions = self._llm_complete(
             self._linked_question_generation_prompt.to_messages(
                 system_prompt_input={
-                    "assistant_description": assistant_description,
+                    "agent_description": agent_description,
                     "language": language,
                 },
                 user_input=context_str,

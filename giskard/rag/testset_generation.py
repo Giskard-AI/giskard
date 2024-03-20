@@ -24,7 +24,7 @@ def generate_testset(
     num_questions: Optional[int] = 120,
     question_generators: Optional[Union[QuestionGenerator, Sequence[QuestionGenerator]]] = None,
     language: Optional[str] = "en",
-    assistant_description: Optional[str] = "This assistant is a chatbot that answers question from users.",
+    agent_description: Optional[str] = "This agent is a chatbot that answers question from users.",
 ) -> QATestset:
     """Generate a testset from a knowledge base.
 
@@ -39,8 +39,8 @@ def generate_testset(
         `num_questions` will be generated with each generators. If not specified, all available question generators will be used.
     language : str, optional
         The language to use for question generation. The default is "en" to generate questions in english.
-    assistant_description : str, optional
-        Description of the assistant to be evaluated. This will be used in the prompt for question generation to get more fitting questions.
+    agent_description : str, optional
+        Description of the agent to be evaluated. This will be used in the prompt for question generation to get more fitting questions.
 
     Returns
     -------
@@ -77,7 +77,7 @@ def generate_testset(
             generator.generate_questions(
                 knowledge_base,
                 num_questions=n,
-                assistant_description=assistant_description,
+                agent_description=agent_description,
                 language=language,
             )
             for generator, n in zip(question_generators, generator_num_questions)
@@ -95,7 +95,7 @@ def generate_testset(
         {
             "num_questions": num_questions,
             "language": language,
-            "assistant_description": assistant_description,
+            "agent_description": agent_description,
             "question_generators": [qg.__class__.__name__ for qg in question_generators],
             "knowledge_base_size": len(knowledge_base._documents),
         },

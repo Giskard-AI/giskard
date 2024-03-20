@@ -20,30 +20,30 @@ def evaluate(
     knowledge_base: Optional[KnowledgeBase] = None,
     testset: Optional[QATestset] = None,
     llm_client: Optional[LLMClient] = None,
-    assistant_description: str = "This assistant is a chatbot that answers question from users.",
+    agent_description: str = "This agent is a chatbot that answers question from users.",
     additional_metrics: Optional[Sequence[Metric]] = None,
     conversation_support: bool = False,
 ) -> RAGReport:
     """
-    Evaluate an assistant by comparing its answers on a QATestset
+    Evaluate an agent by comparing its answers on a QATestset
 
     Parameters
     ----------
     answers_fn : Union[Callable, Sequence[str]]
-        The prediction function of the assistant to evaluate or the list its answers on the testset.
+        The prediction function of the agent to evaluate or the list its answers on the testset.
     knowledge_base : KnowledgeBase, optional
-        The knowledge base of the assistant to evaluate. If not provided, a testset must be provided.
+        The knowledge base of the agent to evaluate. If not provided, a testset must be provided.
     testset : QATestset, optional
-        The test set to evaluate the assistant on. If not provided, a knowledge base must be provided and a default testset will be created from the knowledge base.
+        The test set to evaluate the agent on. If not provided, a knowledge base must be provided and a default testset will be created from the knowledge base.
         Note that if the answers_fn is a list of answers, the testset is required.
     llm_client : LLMClient, optional
         The LLM client to use for the evaluation. If not provided, a default openai client will be used.
-    assistant_description : str, optional
-        Description of the assistant to be tested.
+    agent_description : str, optional
+        Description of the agent to be tested.
     additional_metrics : Optional[Sequence[Metric]], optional
         The metrics to compute on the test set. If not provided, only the correctness of the answers will be computed.
     conversation_support : bool, optional
-        Whether the assistant supports conversational questions or not. By default False.
+        Whether the agent supports conversational questions or not. By default False.
 
 
     Returns
@@ -71,7 +71,7 @@ def evaluate(
 
     llm_client = llm_client or get_default_client()
 
-    metrics = [CorrectnessMetric(name="Correctness", assistant_description=assistant_description)]
+    metrics = [CorrectnessMetric(name="Correctness", agent_description=agent_description)]
     if additional_metrics:
         metrics.extend(additional_metrics)
 
@@ -92,7 +92,7 @@ def evaluate(
         {
             "testset_size": len(testset),
             "knowledge_base_size": len(knowledge_base._documents) if knowledge_base else -1,
-            "assistant_description": assistant_description,
+            "agent_description": agent_description,
             "additional_metrics": [metric.name for metric in additional_metrics] if additional_metrics else "None",
             "conversation_support": conversation_support,
             "correctness": report.correctness,
@@ -104,7 +104,7 @@ def evaluate(
 def make_predictions(answers_fn, testset, conversation_support=False):
     answers = []
     for sample in maybe_tqdm(
-        testset.to_pandas().itertuples(), desc="Asking questions to the assistant", total=len(testset)
+        testset.to_pandas().itertuples(), desc="Asking questions to the agent", total=len(testset)
     ):
         if conversation_support and len(sample.conversation_history) > 0:
             answers.append(answers_fn(sample.question, sample.conversation_history))

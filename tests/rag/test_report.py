@@ -17,12 +17,12 @@ def test_report_plots():
     answers = ["Default answer"] * 6
 
     eval_results = [
-        {"id": "1", "correctness": True, "reason": "The assistant answer is correct."},
-        {"id": "2", "correctness": True, "reason": "The assistant answer is correct."},
-        {"id": "3", "correctness": False, "reason": "The assistant answer is incorrect."},
-        {"id": "4", "correctness": True, "reason": "The assistant answer is correct."},
-        {"id": "5", "correctness": False, "reason": "The assistant answer is incorrect."},
-        {"id": "6", "correctness": False, "reason": "The assistant answer is incorrect."},
+        {"id": "1", "correctness": True, "reason": "The agent answer is correct."},
+        {"id": "2", "correctness": True, "reason": "The agent answer is correct."},
+        {"id": "3", "correctness": False, "reason": "The agent answer is incorrect."},
+        {"id": "4", "correctness": True, "reason": "The agent answer is correct."},
+        {"id": "5", "correctness": False, "reason": "The agent answer is incorrect."},
+        {"id": "6", "correctness": False, "reason": "The agent answer is incorrect."},
     ]
 
     metrics_results = {
@@ -84,12 +84,12 @@ def test_report_save_load(tmp_path):
     answers = ["Default answer"] * 6
 
     eval_results = [
-        {"id": "1", "correctness": True, "reason": "The assistant answer is correct."},
-        {"id": "2", "correctness": True, "reason": "The assistant answer is correct."},
-        {"id": "3", "correctness": False, "reason": "The assistant answer is incorrect."},
-        {"id": "4", "correctness": True, "reason": "The assistant answer is correct."},
-        {"id": "5", "correctness": False, "reason": "The assistant answer is incorrect."},
-        {"id": "6", "correctness": False, "reason": "The assistant answer is incorrect."},
+        {"id": "1", "correctness": True, "reason": "The agent answer is correct."},
+        {"id": "2", "correctness": True, "reason": "The agent answer is correct."},
+        {"id": "3", "correctness": False, "reason": "The agent answer is incorrect."},
+        {"id": "4", "correctness": True, "reason": "The agent answer is correct."},
+        {"id": "5", "correctness": False, "reason": "The agent answer is incorrect."},
+        {"id": "6", "correctness": False, "reason": "The agent answer is incorrect."},
     ]
 
     metrics_results = {
@@ -128,4 +128,4 @@ def test_report_save_load(tmp_path):
         == loaded_report._metrics_results["context_precision"].loc["1", "context_precision"]
     )
     assert all(report._metrics_results["correctness"] == loaded_report._metrics_results["correctness"])
-    assert all(report._dataframe["assistant_answer"] == loaded_report._dataframe["assistant_answer"])
+    assert all(report._dataframe["agent_answer"] == loaded_report._dataframe["agent_answer"])

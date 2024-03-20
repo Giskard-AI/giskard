@@ -4,8 +4,8 @@ from .prompt import QAGenerationPrompt
 from .simple_questions import SimpleQuestionsGenerator
 
 COMPLEXIFICATION_SYSTEM_PROMPT = """You are an expert at writing questions. 
-Your task is to re-write questions that will be used to evaluate the following assistant:
-- Model description: {assistant_description}  
+Your task is to re-write questions that will be used to evaluate the following agent:
+- Model description: {agent_description}  
 
 Respect the following rules to reformulate the question:
 - The re-written question should not be longer than the original question by up to 10 to 15 words. 
@@ -85,7 +85,7 @@ class ComplexQuestionsGenerator(_BaseModifierGenerator):
     _question_type = "complex"
 
     def _modify_question(
-        self, question: dict, knowledge_base: KnowledgeBase, assistant_description: str, language: str
+        self, question: dict, knowledge_base: KnowledgeBase, agent_description: str, language: str
     ) -> dict:
         """
         Modify a question by complexifying it.
@@ -96,8 +96,8 @@ class ComplexQuestionsGenerator(_BaseModifierGenerator):
             The question to modify.
         knowledge_base : KnowledgeBase
             The knowledge base to use for question generation.
-        assistant_description : str
-            The description of the assistant.
+        agent_description : str
+            The description of the agent.
         language : str
             The language to use for question generation.
 
@@ -108,7 +108,7 @@ class ComplexQuestionsGenerator(_BaseModifierGenerator):
         """
         messages = self._prompt.to_messages(
             system_prompt_input={
-                "assistant_description": assistant_description,
+                "agent_description": agent_description,
                 "language": language,
             },
             user_input={"question": question["question"], "context": question["reference_context"]},

@@ -23,27 +23,27 @@ def test_evaluate_from_answers():
     llm_client.complete.side_effect = [
         LLMMessage(
             role="assistant",
-            content="""{"correctness": true, "correctness_reason": "The assistant answer is correct."}""",
+            content="""{"correctness": true, "correctness_reason": "The agent answer is correct."}""",
         ),
         LLMMessage(
             role="assistant",
-            content="""{"correctness": true, "correctness_reason": "The assistant answer is correct."}""",
+            content="""{"correctness": true, "correctness_reason": "The agent answer is correct."}""",
         ),
         LLMMessage(
             role="assistant",
-            content="""{"correctness": false, "correctness_reason": "The assistant answer is incorrect."}""",
+            content="""{"correctness": false, "correctness_reason": "The agent answer is incorrect."}""",
         ),
         LLMMessage(
             role="assistant",
-            content="""{"correctness": true, "correctness_reason": "The assistant answer is correct."}""",
+            content="""{"correctness": true, "correctness_reason": "The agent answer is correct."}""",
         ),
         LLMMessage(
             role="assistant",
-            content="""{"correctness": false, "correctness_reason": "The assistant answer is incorrect."}""",
+            content="""{"correctness": false, "correctness_reason": "The agent answer is incorrect."}""",
         ),
         LLMMessage(
             role="assistant",
-            content="""{"correctness": false, "correctness_reason": "The assistant answer is incorrect."}""",
+            content="""{"correctness": false, "correctness_reason": "The agent answer is incorrect."}""",
         ),
         LLMMessage(
             role="assistant",
@@ -90,27 +90,27 @@ def test_evaluate_from_answer_fn():
     llm_client.complete.side_effect = [
         LLMMessage(
             role="assistant",
-            content="""{"correctness": true, "correctness_reason": "The assistant answer is correct."}""",
+            content="""{"correctness": true, "correctness_reason": "The agent answer is correct."}""",
         ),
         LLMMessage(
             role="assistant",
-            content="""{"correctness": true, "correctness_reason": "The assistant answer is correct."}""",
+            content="""{"correctness": true, "correctness_reason": "The agent answer is correct."}""",
         ),
         LLMMessage(
             role="assistant",
-            content="""{"correctness": false, "correctness_reason": "The assistant answer is incorrect."}""",
+            content="""{"correctness": false, "correctness_reason": "The agent answer is incorrect."}""",
         ),
         LLMMessage(
             role="assistant",
-            content="""{"correctness": true, "correctness_reason": "The assistant answer is correct."}""",
+            content="""{"correctness": true, "correctness_reason": "The agent answer is correct."}""",
         ),
         LLMMessage(
             role="assistant",
-            content="""{"correctness": false, "correctness_reason": "The assistant answer is incorrect."}""",
+            content="""{"correctness": false, "correctness_reason": "The agent answer is incorrect."}""",
         ),
         LLMMessage(
             role="assistant",
-            content="""{"correctness": false, "correctness_reason": "The assistant answer is incorrect."}""",
+            content="""{"correctness": false, "correctness_reason": "The agent answer is incorrect."}""",
         ),
         LLMMessage(
             role="assistant",
@@ -190,15 +190,15 @@ def test_evaluate_conversational_question():
     llm_client.complete.side_effect = [
         LLMMessage(
             role="assistant",
-            content="""{"correctness": true, "correctness_reason": "The assistant answer is correct."}""",
+            content="""{"correctness": true, "correctness_reason": "The agent answer is correct."}""",
         ),
         LLMMessage(
             role="assistant",
-            content="""{"correctness": true, "correctness_reason": "The assistant answer is correct."}""",
+            content="""{"correctness": true, "correctness_reason": "The agent answer is correct."}""",
         ),
         LLMMessage(
             role="assistant",
-            content="""{"correctness": false, "correctness_reason": "The assistant answer is incorrect."}""",
+            content="""{"correctness": false, "correctness_reason": "The agent answer is incorrect."}""",
         ),
         LLMMessage(
             role="assistant",

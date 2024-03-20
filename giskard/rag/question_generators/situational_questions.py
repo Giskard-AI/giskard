@@ -22,13 +22,13 @@ You must only return one the situational description, nothing else.
 """
 
 SITUATIONAL_CONTEXT_INPUT = """
-<description>{assistant_description}</description>
+<description>{agent_description}</description>
 <context>{context}</context>
 """
 
 SITUATIONAL_QUESTION_SYSTEM_PROMPT = """You are an expert at rewriting questions.
-Your task is to re-write questions that will be used to evaluate the following assistant:
-- Assistant description: {assistant_description}  
+Your task is to re-write questions that will be used to evaluate the following agent:
+- Agent description: {agent_description}  
 
 Your task is to add situational context about the user inside the question. 
 Please respect the following rules to generate the question:
@@ -83,12 +83,12 @@ class SituationalQuestionsGenerator(_BaseModifierGenerator):
     _question_type = "situational"
 
     def _modify_question(
-        self, question: dict, knowledge_base: KnowledgeBase, assistant_description: str, language: str
+        self, question: dict, knowledge_base: KnowledgeBase, agent_description: str, language: str
     ) -> dict:
         situation_generation_messages = self._situation_generation_prompt.to_messages(
             system_prompt_input={},
             user_input={
-                "assistant_description": assistant_description,
+                "agent_description": agent_description,
                 "context": question["reference_context"],
             },
         )
@@ -103,7 +103,7 @@ class SituationalQuestionsGenerator(_BaseModifierGenerator):
 
         messages = self._prompt.to_messages(
             system_prompt_input={
-                "assistant_description": assistant_description,
+                "agent_description": agent_description,
                 "language": language,
             },
             user_input={

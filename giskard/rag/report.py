@@ -38,9 +38,9 @@ class RAGReport:
     Parameters
     ----------
     testset : QATestset
-        The testset used to evaluate the assistant.
+        The testset used to evaluate the agent.
     results : Sequence[dict]
-        The evaluation results of the assistant's answers. Should be a list of dictionaries with the following keys: "evaluation", "reason", "assistant_answer".
+        The evaluation results of the agent's answers. Should be a list of dictionaries with the following keys: "evaluation", "reason", "agent_answer".
     metrics_results : pd.DataFrame, optional
         The additional metrics computed during the evaluation. If provided, these metrics will be included in the report.
     knowledge_base : KnowledgeBase
@@ -62,7 +62,7 @@ class RAGReport:
         self._recommendation = "Placeholder for the recommmendation."
 
         self._dataframe = testset.to_pandas().copy()
-        self._dataframe["assistant_answer"] = answers
+        self._dataframe["agent_answer"] = answers
         for metric, df in metrics_results.items():
             self._dataframe = self._dataframe.join(df, on="id")
 
@@ -137,7 +137,7 @@ class RAGReport:
         with open(path / "knowledge_base_meta.json", "w", encoding="utf-8") as f:
             json.dump(self._knowledge_base.get_savable_data(), f)
 
-        with open(path / "assistant_answer.json", "w", encoding="utf-8") as f:
+        with open(path / "agent_answer.json", "w", encoding="utf-8") as f:
             json.dump(self._answers, f)
 
         if self._metrics_results is not None:
@@ -161,7 +161,7 @@ class RAGReport:
         knowledge_base_data = pd.read_json(path / "knowledge_base.jsonl", orient="records", lines=True)
         testset = QATestset.load(path / "testset.json")
 
-        answers = json.load(open(path / "assistant_answer.json", "r"))
+        answers = json.load(open(path / "agent_answer.json", "r"))
 
         topics = {int(k): topic for k, topic in knowledge_base_meta.pop("topics", None).items()}
         documents_topics = [int(topic_id) for topic_id in knowledge_base_meta.pop("documents_topics", None)]
@@ -223,7 +223,7 @@ class RAGReport:
     @property
     def correctness(self) -> float:
         """
-        Compute the overall correctness of the assistant's answers.
+        Compute the overall correctness of the agent's answers.
         """
         return self._dataframe["correctness"].mean()
 
@@ -290,7 +290,7 @@ class RAGReport:
             TabPanel(
                 child=self._knowledge_base.get_failure_plot(
                     self._dataframe[
-                        ["question", "reference_answer", "assistant_answer", "correctness", "metadata"]
+                        ["question", "reference_answer", "agent_answer", "correctness", "metadata"]
                     ].to_dict(orient="records")
                 ),
                 title="Failures",

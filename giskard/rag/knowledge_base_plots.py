@@ -23,7 +23,7 @@ def get_failure_plot(knowledge_base, question_evaluation: Sequence[dict] = None)
     topics = [question["metadata"]["topic"] for question in question_evaluation]
     failure_palette = ["#ba0e0e", "#0a980a"]
     questions = [question["question"] for question in question_evaluation]
-    assistant_answer = [question["assistant_answer"] for question in question_evaluation]
+    agent_answer = [question["agent_answer"] for question in question_evaluation]
     reference_answer = [question["reference_answer"] for question in question_evaluation]
     correctness = [question["correctness"] for question in question_evaluation]
     colors = [failure_palette[question["correctness"]] for question in question_evaluation]
@@ -45,7 +45,7 @@ def get_failure_plot(knowledge_base, question_evaluation: Sequence[dict] = None)
             "topic": [textwrap.fill(t) for t in topics],
             "correctness": correctness,
             "questions": questions,
-            "assistant_answer": assistant_answer,
+            "agent_answer": agent_answer,
             "reference_answer": reference_answer,
             "id": document_ids,
             "content": [
@@ -63,7 +63,7 @@ def get_failure_plot(knowledge_base, question_evaluation: Sequence[dict] = None)
     <b>Document id:</b> @id <br>
     <b>Topic:</b> @topic <br>
     <b>Question:</b> @questions <br>
-    <b>Assistant Answer:</b> @assistant_answer <br>
+    <b>agent Answer:</b> @agent_answer <br>
     <b>Reference Answer:</b> @reference_answer <br>
     <b>Correctness:</b> @correctness <br>
     <b>Content:</b> @content

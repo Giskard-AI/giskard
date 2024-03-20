@@ -6,8 +6,8 @@ from .prompt import QAGenerationPrompt
 
 QA_GENERATION_SYSTEM_PROMPT = """You are a powerful auditor, your role is to generate question & answer pair from a given list of context paragraphs.
 
-The assistant model you are auditing is the following:
-- Assistant description: {assistant_description}
+The agent model you are auditing is the following:
+- Agent description: {agent_description}
 
 Your question must be related to a provided context.  
 Please respect the following rules to generate the question:
@@ -65,9 +65,7 @@ class SimpleQuestionsGenerator(GenerateFromSingleQuestionMixin, _LLMBasedQuestio
 
     _question_type = "simple"
 
-    def generate_single_question(
-        self, knowledge_base: KnowledgeBase, assistant_description: str, language: str
-    ) -> dict:
+    def generate_single_question(self, knowledge_base: KnowledgeBase, agent_description: str, language: str) -> dict:
         """
         Generate a question from a list of context documents.
 
@@ -90,7 +88,7 @@ class SimpleQuestionsGenerator(GenerateFromSingleQuestionMixin, _LLMBasedQuestio
         reference_context = "\n\n".join([f"Document {doc.id}: {doc.content}" for doc in context_documents])
 
         messages = self._prompt.to_messages(
-            system_prompt_input={"assistant_description": assistant_description, "language": language},
+            system_prompt_input={"agent_description": agent_description, "language": language},
             user_input=context_str,
         )
 
