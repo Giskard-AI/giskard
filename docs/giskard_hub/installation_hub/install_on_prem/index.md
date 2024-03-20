@@ -46,85 +46,8 @@ You'll then be able to open Giskard at `http://localhost:19000/`
 > giskard hub --help
 > ```
 
-<!-- TODO: Create an ML Worker on a hub -->
-
 ## 2. Start the ML worker
 
-Giskard executes your model using a worker that runs the model directly in **your Python environment**, with all the dependencies required by your model. You can either execute the ML worker:
+Giskard executes your model using an ML worker that runs the model. The worker is created along with your project, using the dependencies in your current environment. You can start the worker on Giskard Hub, if it is not started automatically.
 
-- From your **local notebook** within the kernel that contains all the dependencies of your model
-- From **Google Colab** within the kernel that contains all the dependencies of your model
-- Or from **your terminal** within the Python environment that contains all the dependencies of your model
-
-:::{note}
-If you plan to use LLM-assisted tests or transformations, don’t forget to set the ``OPENAI_API_KEY`` environment
-variable before starting the Giskard worker.
-:::
-
-:::::::{tab-set}
-::::::{tab-item} From your local notebook
-
-To start the ML worker from your notebook, run in the cell of your notebook:
-
-```
-!giskard worker start -d -k YOUR_KEY
-```
-
-The API Access Key (`YOUR_KEY`) can be found in the Settings tab of the Giskard Hub.
-
-
-> ### ⚠️ Warning
-> To see the available commands of the worker, you can execute:
->```
->!giskard worker --help
->```
-
-You're all set to try Giskard in action. Upload your first model, dataset or test suite by following the [upload an object](../../upload/index.md) page.
-
-::::::
-::::::{tab-item} From Colab notebook
-
-To start the ML worker from your Colab notebook, read the following [instructions](../../../cli/ngrok/index.rst) in order to get the
-`ngrok_API_token`. Once you got your token, run in your **local** terminal (**not the the terminal from Colab**):
-
-```
-giskard hub expose --ngrok-token <ngrok_API_token>
-```
-
-Then run in a **cell of your Colab notebook**:
-
-```
-!giskard worker start -d -k YOUR_KEY -u https://e840-93-23-184-184.ngrok-free.app
-```
-
-The API Access Key (`YOUR_KEY`) can be found in the Settings tab of the Giskard Hub.
-
-> ### ⚠️ Warning
-> To see the available commands of the worker, you can execute:
->```
->!giskard worker --help
->```
-
-You're all set to try Giskard in action. Upload your first model, dataset or test suite by following the [upload an object](../../upload/index.md) page.
-
-::::::
-::::::{tab-item} From your terminal
-
-Run this command **within the Python environment that contains all the dependencies of your model**:
-
-```
-giskard worker start -k -u http://localhost:19000/
-```
-
-You then will be asked to provide your API Access Key. The API Access key can be found in the Settings tab of the Giskard hub (accessible via: http://localhost:19000/)
-
-> ### ⚠️ Warning
-> To see the available commands of the worker, you can execute:
->```
->!giskard worker --help
->```
-
-You're all set to try Giskard in action. Upload your first model, dataset or test suite by following the [upload an object](../../upload/index.md) page.
-
-::::::
-:::::::
+For advanced and flexible usages, please check [our doc for ML worker](../../mlworker/index.md).
