@@ -11,6 +11,7 @@ from tests.rag.test_qa_testset import make_testset_df
 
 def test_evaluate_from_answers():
     knowledge_base = Mock()
+    knowledge_base._documents = []
     answers = ["Default answer"] * 6
 
     with pytest.raises(ValueError, match="At least one of testset or knowledge base must be provided."):
@@ -76,6 +77,7 @@ def test_evaluate_from_answers():
 
 def test_evaluate_from_answer_fn():
     knowledge_base = Mock()
+    knowledge_base._documents = []
 
     def answer_fn(message, history=None):
         if history:
@@ -181,7 +183,7 @@ def make_conversation_testset_df():
 
 def test_evaluate_conversational_question():
     knowledge_base = Mock()
-
+    knowledge_base._documents = []
     testset = QATestset(make_conversation_testset_df())
     llm_client = Mock()
     llm_client.complete = Mock()

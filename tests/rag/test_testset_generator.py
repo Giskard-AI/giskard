@@ -76,6 +76,7 @@ q7 = {
 def test_testset_generation():
     knowledge_base = Mock()
     documents = [Mock(topic_id=1), Mock(topic_id=0)]
+    knowledge_base._documents = documents
     knowledge_base.get_document.side_effect = documents
     knowledge_base.topics = ["Cheese", "Ski"]
 
@@ -112,6 +113,7 @@ def test_testset_generation():
 def test_testset_question_types():
     knowledge_base = Mock()
     documents = [Mock(topic_id=1)] + [Mock(topic_id=0)] * 6
+    knowledge_base._documents = documents
     knowledge_base.get_document.side_effect = documents
     knowledge_base.topics = ["Cheese", "Ski"]
 
@@ -166,6 +168,7 @@ def test_testset_question_types():
 def test_question_generation_fail(caplog):
     knowledge_base = Mock()
     documents = [Mock(topic_id=1)] + [Mock(topic_id=0)] * 6
+    knowledge_base._documents = documents
     knowledge_base.get_document.side_effect = documents
     knowledge_base.topics = ["Cheese", "Ski"]
 
