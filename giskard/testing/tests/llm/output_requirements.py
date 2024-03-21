@@ -22,7 +22,7 @@ def _test_output_with_evaluator(model, dataset, evaluator):
         metric_name="Failing examples",
         is_error=eval_result.has_errors,
         messages=messages,
-        details=None,  # TODO: @kevinmessiaen, please check this
+        evaluation_result=eval_result,
     )
 
 

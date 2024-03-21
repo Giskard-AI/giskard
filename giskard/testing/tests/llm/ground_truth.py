@@ -1,8 +1,9 @@
 import numpy as np
 
-from ....core.test_result import TestResult, TestResultDetails, TestResultStatus
+from ....core.test_result import TestResult, TestResultStatus
 from ....datasets.base import Dataset
 from ....llm import LLMImportError
+from ....llm.evaluators.base import EvaluationResult, EvaluationResultExample
 from ....llm.evaluators.correctness import CorrectnessEvaluator
 from ....models.base import BaseModel
 from ....registry.decorators import test
@@ -24,16 +25,7 @@ def test_llm_ground_truth(model: BaseModel, dataset: Dataset, threshold: float =
     passed = np.array(pred.prediction) == dataset.df[dataset.target]
     metric = len([p for p in passed if p]) / len(passed)
 
-    return TestResult(
-        passed=metric >= threshold,
-        metric=metric,
-        details=TestResultDetails(
-            inputs=dataset.df.loc[:, model.meta.feature_names].to_dict("list"),
-            outputs=list(pred.prediction),
-            results=[TestResultStatus.PASSED if result else TestResultStatus.FAILED for result in passed],
-            metadata={"target": list(dataset.df[dataset.target])},
-        ),
-    )
+    return _create_groud_truth_test_result(dataset, metric, model, passed, pred, threshold)
 
 
 @test(
@@ -64,14 +56,26 @@ def test_llm_ground_truth_similarity(
     passed = np.array(score["f1"]) > 1 - output_sensitivity
     metric = len([p for p in passed if p]) / len(passed)
 
+    return _create_groud_truth_test_result(dataset, metric, model, passed, pred, threshold)
+
+
+def _create_groud_truth_test_result(dataset, metric, model, passed, pred, threshold):
     return TestResult(
         passed=metric >= threshold,
         metric=metric,
-        details=TestResultDetails(
-            inputs=dataset.df.loc[:, model.meta.feature_names].to_dict("list"),
-            outputs=list(pred.prediction),
-            results=[TestResultStatus.PASSED if result else TestResultStatus.FAILED for result in passed],
-            metadata={"target": list(dataset.df[dataset.target]), "F1 similarity": score["f1"]},
+        evaluation_result=EvaluationResult(
+            results=[
+                EvaluationResultExample(
+                    status=result,
+                    sample={"inputs": inputs, "output": output, "target": target},
+                )
+                for inputs, output, result, target in zip(
+                    dataset.df.loc[:, model.meta.feature_names].to_dict("records"),
+                    list(pred.prediction),
+                    [TestResultStatus.PASSED if result else TestResultStatus.FAILED for result in passed],
+                    list(dataset.df[dataset.target]),
+                )
+            ]
         ),
     )
 
