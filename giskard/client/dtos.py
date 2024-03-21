@@ -93,7 +93,7 @@ class DataTable(ConfiguredBaseModel):
 
     def _append_value(self, path: str, item: SimpleColumnRecordInfo, missing_columns: Set[str]):
         if path not in self.columns:
-            self.columns[path] = [None] * self.items + item
+            self.columns[path] = [None] * self.items + [item]
         else:
             self.columns[path].append(item)
             missing_columns.remove(path)
