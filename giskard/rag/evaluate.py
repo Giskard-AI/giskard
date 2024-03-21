@@ -1,6 +1,7 @@
 from typing import Callable, Optional, Sequence, Union
 
 import logging
+from inspect import signature
 
 from ..llm.client import LLMClient, get_default_client
 from ..utils.analytics_collector import analytics
@@ -16,21 +17,19 @@ logger = logging.getLogger(__name__)
 
 
 def evaluate(
-    answers_fn: Union[Callable, Sequence[str]],
+    answer_fn: Union[Callable, Sequence[str]],
     knowledge_base: Optional[KnowledgeBase] = None,
     testset: Optional[QATestset] = None,
     llm_client: Optional[LLMClient] = None,
     agent_description: str = "This agent is a chatbot that answers question from users.",
-    additional_metrics: Optional[Sequence[Metric]] = None,
-    conversation_support: bool = False,
+    metrics: Optional[Sequence[Metric | Callable]] = None,
 ) -> RAGReport:
-    """
-    Evaluate an agent by comparing its answers on a QATestset
+    """Evaluate an agent by comparing its answers on a QATestset.
 
     Parameters
     ----------
     answers_fn : Union[Callable, Sequence[str]]
-        The prediction function of the agent to evaluate or the list its answers on the testset.
+        The prediction function of the agent to evaluate or a list of precalculated answers on the testset.
     knowledge_base : KnowledgeBase, optional
         The knowledge base of the agent to evaluate. If not provided, a testset must be provided.
     testset : QATestset, optional
@@ -40,11 +39,8 @@ def evaluate(
         The LLM client to use for the evaluation. If not provided, a default openai client will be used.
     agent_description : str, optional
         Description of the agent to be tested.
-    additional_metrics : Optional[Sequence[Metric]], optional
-        The metrics to compute on the test set. If not provided, only the correctness of the answers will be computed.
-    conversation_support : bool, optional
-        Whether the agent supports conversational questions or not. By default False.
-
+    metrics : Optional[Sequence[Metric]], optional
+        Metrics to compute on the test set.
 
     Returns
     -------
@@ -55,29 +51,26 @@ def evaluate(
     if testset is None and knowledge_base is None:
         raise ValueError("At least one of testset or knowledge base must be provided to the evaluate function.")
 
-    if testset is None and not isinstance(answers_fn, Sequence):
+    if testset is None and not isinstance(answer_fn, Sequence):
         raise ValueError(
-            "If the testset is not provided, the answers_fn must be a list of answers to ensure the matching between questions and answers."
+            "If the testset is not provided, the answer_fn must be a list of answers to ensure the matching between questions and answers."
         )
 
     if testset is None:
         testset = generate_testset(knowledge_base)
 
-    answers = (
-        answers_fn
-        if isinstance(answers_fn, Sequence)
-        else make_predictions(answers_fn, testset, conversation_support=conversation_support)
-    )
+    answers = answer_fn if isinstance(answer_fn, Sequence) else _compute_answers(answer_fn, testset)
 
     llm_client = llm_client or get_default_client()
 
-    metrics = [CorrectnessMetric(name="Correctness", agent_description=agent_description)]
-    if additional_metrics:
-        metrics.extend(additional_metrics)
+    # @TODO: improve this
+    metrics = metrics or []
+    if not any(isinstance(metric, CorrectnessMetric) for metric in metrics):
+        metrics.append(CorrectnessMetric(name="Correctness", agent_description=agent_description))
 
     metrics_results = {}
     for metric in metrics:
-        metrics_results.update(metric(testset, answers, llm_client))
+        metrics_results.update(metric(testset, answers, llm_client=llm_client))
 
     report = RAGReport(testset, answers, metrics_results, knowledge_base)
     recommendation = get_rag_recommendation(
@@ -87,27 +80,28 @@ def evaluate(
         llm_client,
     )
     report._recommendation = recommendation
+
     analytics.track(
         "raget:evaluation",
         {
             "testset_size": len(testset),
-            "knowledge_base_size": len(knowledge_base._documents) if knowledge_base else -1,
+            "knowledge_base_size": len(knowledge_base) if knowledge_base else -1,
             "agent_description": agent_description,
-            "additional_metrics": [metric.name for metric in additional_metrics] if additional_metrics else "None",
-            "conversation_support": conversation_support,
+            "num_metrics": len(metrics),
             "correctness": report.correctness,
         },
     )
     return report
 
 
-def make_predictions(answers_fn, testset, conversation_support=False):
+def _compute_answers(answer_fn, testset):
     answers = []
-    for sample in maybe_tqdm(
-        testset.to_pandas().itertuples(), desc="Asking questions to the agent", total=len(testset)
-    ):
-        if conversation_support and len(sample.conversation_history) > 0:
-            answers.append(answers_fn(sample.question, sample.conversation_history))
-        else:
-            answers.append(answers_fn(sample.question))
+    needs_history = len(signature(answer_fn).parameters) > 1
+    for sample in maybe_tqdm(testset.samples, desc="Asking questions to the agent", total=len(testset)):
+        kwargs = {}
+
+        if needs_history:
+            kwargs["history"] = sample["conversation_history"]
+
+        answers.append(answer_fn(sample["question"], **kwargs))
     return answers

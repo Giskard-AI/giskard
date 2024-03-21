@@ -75,6 +75,21 @@ class RAGReport:
         else:
             reset_output()
 
+        return self.to_html()
+
+    def to_html(
+        self,
+        filename=None,
+    ):
+        """Renders the evaluation report as HTML.
+
+        Saves or returns the HTML representation of the scan report.
+
+        Parameters
+        ----------
+        filename : Optional[str]
+            If provided, the HTML will be written to the file.
+        """
         tpl = get_template("rag_report/rag_report.html")
 
         kb_script, kb_div = components(self._get_knowledge_plot()) if self._knowledge_base else (None, None)
@@ -88,7 +103,8 @@ class RAGReport:
         for name, description in COMPONENT_DESCRIPTIONS.items():
             if name in component_dict:
                 component_dict[name] = {"score": component_dict[name], "description": description}
-        return tpl.render(
+
+        html = tpl.render(
             knowledge_script=kb_script,
             knowledge_div=kb_div,
             recommendation=self._recommendation,
@@ -102,22 +118,18 @@ class RAGReport:
             metric_histograms=metric_histograms,
         )
 
-    def save_html(self, path: str):
-        """
-        Save the report as an HTML file.
+        if filename is not None:
+            with open(filename, "w") as f:
+                f.write(html)
+            return
 
-        Parameters
-        ----------
-        path : str or Path
-            The path to save the report.
-        """
-
-        with open(path, "w", encoding="utf-8") as f:
-            f.write(self._repr_html_(notebook=False))
+        return html
 
     def save(self, folder_path: str):
-        """
-        Save all the report data to a folder. This includes the HTML report, the testset, the knowledge base, the evaluation results and the metrics if provided.
+        """Save all the report data to a folder.
+
+        This includes the HTML report, the testset, the knowledge base, the evaluation results and the metrics if
+        provided.
 
         Parameters
         ----------
@@ -126,7 +138,7 @@ class RAGReport:
         """
         path = Path(folder_path)
         path.mkdir(exist_ok=True, parents=True)
-        self.save_html(path / "report.html")
+        self.to_html(path / "report.html")
         self._testset.save(path / "testset.json")
 
         report_details = {"recommendation": self._recommendation}
@@ -146,8 +158,9 @@ class RAGReport:
 
     @classmethod
     def load(cls, folder_path: str, llm_client: LLMClient = None):
-        """
-        Load a report from a folder. It reconstructs the objects inside the report including the testset and the knowledge base.
+        """Load a saved report.
+
+        It reconstructs the objects inside the report including the testset and the knowledge base.
 
         Parameters
         ----------

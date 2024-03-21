@@ -112,3 +112,7 @@ class QATestset:
     def copy(self):
         """Return a copy of the testset."""
         return QATestset(self._dataframe.copy())
+
+    @property
+    def samples(self):
+        return self._dataframe.loc[:, ("question", "conversation_history")].to_dict(orient="records")

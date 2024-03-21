@@ -71,7 +71,7 @@
             
         </div>
         <div class="separator"></div>
-        <div id="" gsk-correctness">
+        <div id="gsk-correctness">
             <h3>Correctness</h3>
 
             <div class="flex-row">
@@ -88,7 +88,7 @@
         {% if additional_metrics %}
         <div class="separator"></div>
         <div id="gsk-metrics">
-            <!-- Tab links -->
+            {# Tab links #}
             <div class="tab">
                 <div class="tab-title">Selected metrics</div>
                 {% for tab, _ in metric_histograms.items() %}
@@ -97,7 +97,7 @@
                     endif %}</button>
                 {% endfor %}
             </div>
-            <!-- Tab content -->
+            {# Tab content #}
             {% for tab, content in metric_histograms.items() %}
             <div id={{tab}} class="tabcontent">
                 {% for split_value, metrics in content.items()%}

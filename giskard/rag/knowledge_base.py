@@ -89,7 +89,7 @@ class KnowledgeBase:
         The LLM client to use for question generation. If not specified, a default openai client will be used.
     embedding_model: str = "text-embedding-ada-002"
         The name of the embedding model to use for the knowledge base. It should match the llm_client available embedding models.
-    min_topic_size: int = 2
+    min_topic_size: int, optional
         The minimum number of document to form a topic inside the knowledge base.
     chunk_size: int = 2048
         The number of document to embed in a single batch.
@@ -97,22 +97,22 @@ class KnowledgeBase:
 
     def __init__(
         self,
-        knowledge_base_df: pd.DataFrame,
-        knowledge_base_columns: Sequence[str] = None,
+        data: pd.DataFrame,
+        columns: Sequence[str] = None,
         seed: int = None,
         llm_client: Optional[LLMClient] = None,
         embedding_model: Optional[str] = "text-embedding-ada-002",
         min_topic_size: Optional[int] = None,
         chunk_size: int = 2048,
     ) -> None:
-        if len(knowledge_base_df) > 0:
+        if len(data) > 0:
             self._documents = [
                 Document(
                     knowledge_chunk,
-                    features=knowledge_base_columns,
+                    features=columns,
                     idx=idx,
                 )
-                for idx, knowledge_chunk in enumerate(knowledge_base_df.to_dict("records"))
+                for idx, knowledge_chunk in enumerate(data.to_dict("records"))
             ]
         else:
             raise ValueError("Cannot generate a vector store from empty DataFrame.")
@@ -121,8 +121,8 @@ class KnowledgeBase:
         for i, doc in enumerate(self._documents):
             doc.id = i
 
-        self._knowledge_base_df = knowledge_base_df
-        self._knowledge_base_columns = knowledge_base_columns
+        self._knowledge_base_df = data
+        self._knowledge_base_columns = columns
 
         self._rng = np.random.default_rng(seed=seed)
         self._llm_client = llm_client or get_default_client()
@@ -151,6 +151,24 @@ class KnowledgeBase:
                 "language": self._language,
             },
         )
+
+    @classmethod
+    def from_pandas(cls, df: pd.DataFrame, columns: Sequence[str], **kwargs) -> "KnowledgeBase":
+        """Create a KnowledgeBase from a pandas DataFrame.
+
+        Parameters
+        ----------
+        df: pd.DataFrame
+            The DataFrame containing the knowledge base.
+        columns: Sequence[str]
+            The list of columns from the `knowledge_base` to consider. If not specified, all columns of the knowledge base
+            dataframe will be concatenated to produce a single document.
+            Example: if your knowledge base consists in FAQ data with columns "Q" and "A", we will format each row into a
+            single document "Q: [question]\\nA: [answer]" to generate questions.
+        kwargs:
+            Additional settings for knowledge base (see __init__).
+        """
+        return cls(data=df, columns=columns, **kwargs)
 
     @property
     def _embeddings(self):
@@ -289,3 +307,6 @@ class KnowledgeBase:
         query_emb = np.atleast_2d(query_emb)
         distances, indices = self._index.search(query_emb, k)
         return [(self._documents[i], d) for d, i in zip(distances[0], indices[0])]
+
+    def __len__(self):
+        return len(self._documents)
