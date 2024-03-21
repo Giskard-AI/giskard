@@ -353,3 +353,7 @@ tr:hover .tooltip-text {
 #gsk-logo {
   padding-top: 10px;
 }
+
+.tabcontent:first-child {
+  display: block;
+}

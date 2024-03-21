@@ -18,8 +18,3 @@ function opentab(evt, name) {
     document.getElementById(name).style.display = "block";
     evt.currentTarget.className += " active";
 }
-
-tabcontent = document.getElementsByClassName("tabcontent");
-tabcontent[0].style.display = "block";
-tablinks = document.getElementsByClassName("tablinks");
-tablinks[0].className += " active";

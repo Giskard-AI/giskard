@@ -78,11 +78,7 @@
                 <div style="flex:0.7">
                     <div class="correctness-indicator {% if correctness >= 0.7 %} green {% elif correctness >= 0.3 %} orange {% else %} red {% endif %}">Overall Correctness Score: {{(correctness*100)|round(2)}}% </div>
                 </div>
-                
-                <!-- <div class="corr-plot">
-                    {{q_type_correctness_script | safe}}
-                    {{q_type_correctness_div | safe}}
-                </div> -->
+
                 <div class="corr-plot">
                     {{topic_correctness_script | safe}}
                     {{topic_correctness_div | safe}}
@@ -96,8 +92,10 @@
             <div class="tab">
                 <div class="tab-title">Selected metrics</div>
                 {% for tab, _ in metric_histograms.items() %}
-                <button class="tablinks" onclick="opentab(event, '{{tab}}')">{% if tab == "Question" %} Question types {% else %} {{tab}} {% endif %}</button>
-                {% endfor %} 
+                <button class="tablinks{% if loop.index == 0 %} active{% endif %}"
+                    onclick="opentab(event, '{{tab}}')">{% if tab == "Question" %} Question types {% else %} {{tab}} {%
+                    endif %}</button>
+                {% endfor %}
             </div>
             <!-- Tab content -->
             {% for tab, content in metric_histograms.items() %}
