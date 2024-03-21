@@ -1,5 +1,8 @@
-from typing import Any, Dict, List, Optional
+from __future__ import annotations
 
+from typing import TYPE_CHECKING, Any, Dict, List, Optional, Union
+
+from abc import ABC
 from enum import Enum
 
 from pydantic import Field
@@ -7,6 +10,9 @@ from pydantic import Field
 from giskard.core.core import TestResultStatusEnum
 from giskard.core.validation import ConfiguredBaseModel
 from giskard.utils.artifacts import serialize_parameter
+
+if TYPE_CHECKING:
+    from giskard.llm.evaluators.base import EvaluationResult
 
 
 class TestInputDTO(ConfiguredBaseModel):
@@ -57,11 +63,110 @@ class TestResultMessageDTO(ConfiguredBaseModel):
     text: str
 
 
-class SaveSuiteTestExecutionDetailsDTO(ConfiguredBaseModel):
-    inputs: Dict[str, List[str]]
-    outputs: List[str]
-    results: List[TestResultStatusEnum]
-    metadata: Dict[str, List[str]]
+class Column(ABC, ConfiguredBaseModel):
+    pass
+
+
+class SimpleColumn(Column):
+    row_data: List[str]
+
+
+class ColumnGroup(Column):
+    columns: SimpleColumn
+
+
+# Records are dictionaries of single table entry
+# Example:
+# [
+# {'threshold_range': {'min': '10', 'max': '20'}, 'value': '15', 'status': 'PASSED'},
+# {'threshold_range': {'min': '15', 'max': '20'}, 'value': '12', 'status': 'FAILED'}
+# ]
+SimpleColumnRecordInfo = Optional[str]
+ColumnGroupRecordInfo = Dict[str, SimpleColumnRecordInfo]
+DataTableRecord = Dict[str, Union[SimpleColumnRecordInfo, ColumnGroupRecordInfo]]
+
+# ListInfo are list of dictionaries representing a table (used to minimize data size by reducing redundancy of keys)
+# Example:
+# {'threshold_range': {'min': ['10', '15'], 'max': ['20', '20' }, 'value': ['15', '12'], 'status': ['PASSED', 'FAILED']}
+SimpleColumnListInfo = List[Optional[str]]
+ColumnGroupListInfo = Dict[str, SimpleColumnListInfo]
+
+
+class DataTable(ConfiguredBaseModel):
+    columns: Dict[str, Union[ColumnGroupListInfo, SimpleColumnListInfo]]
+    items: int
+
+    def _append_to_column_group(self, key: str, record: ColumnGroupRecordInfo):
+        existing = key in self.columns
+        if not existing:
+            self.columns[key] = dict()
+
+        column_group = self.columns[key]
+        if not isinstance(column_group, dict):
+            raise ValueError(f"Mix of single items and dict for key {key}")
+
+        missing_columns = set(column_group.keys())
+
+        for key, value in record.items():
+            if key in column_group:
+                column_group[key].append(record)
+                missing_columns.remove(key)
+            else:
+                column_group[key] = [None] * self.items + [record]
+
+        for missing_column in missing_columns:
+            column_group[missing_column].append(None)
+
+        return existing
+
+    def _append_to_column(self, key: str, record: SimpleColumnRecordInfo):
+        existing = key in self.columns
+        if not existing:
+            self.columns[key] = [None] * self.items
+
+        column = self.columns[key]
+        if not isinstance(column, list):
+            raise ValueError(f"Mix of single items and dict for key {key}")
+
+        column.append(record)
+
+        return existing
+
+    def append(self, record: DataTableRecord):
+        missing_columns = set(self.columns.keys())
+
+        for key, value in record.items():
+            if isinstance(value, dict):
+                to_remove = self._append_to_column_group(key, value)
+            else:
+                to_remove = self._append_to_column_group(key, value)
+
+            if to_remove:
+                missing_columns.remove(key)
+
+        for missing_column in missing_columns:
+            column = self.columns[missing_column]
+
+            if isinstance(column, list):
+                column.append(None)
+            else:
+                for sub_column in column:
+                    sub_column.append(None)
+
+        self.items += 1
+
+    @classmethod
+    def from_records(cls, records: List[DataTableRecord]):
+        data_table = cls(columns=[], items=0)
+
+        for record in records:
+            data_table.append(record)
+
+        return data_table
+
+    @classmethod
+    def from_evaluation_result(cls, evaluation_result: EvaluationResult):
+        return cls.from_records([result.to_dict() for result in evaluation_result.results])
 
 
 class SaveSuiteTestExecutionDTO(ConfiguredBaseModel):
@@ -75,7 +180,7 @@ class SaveSuiteTestExecutionDTO(ConfiguredBaseModel):
     metric: Optional[float]
     metricName: str
     failedIndexes: Dict[str, List[int]]
-    details: Optional[SaveSuiteTestExecutionDetailsDTO]
+    evaluation_result: Optional[DataTable]
 
 
 class SaveSuiteExecutionDTO(ConfiguredBaseModel):

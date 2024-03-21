@@ -4,42 +4,73 @@ import pandas as pd
 
 from giskard import Dataset
 from giskard.core.core import ModelMeta, SupportedModelTypes
-from giskard.llm.evaluators.base import EvaluationResult
+from giskard.core.test_result import TestResultStatus
+from giskard.llm.evaluators.base import EvaluationResult, EvaluationResultExample
 from giskard.models.base.model import BaseModel
 from giskard.testing.tests import llm as llm_tests
 
-_demo_samples = [
-    {
-        "sample": {
-            "conversation": [
-                {
-                    "role": "user",
-                    "content": {"feature": "value"},
+
+def _mock_evaluation_result_error():
+    return EvaluationResult(
+        results=[
+            EvaluationResultExample(status=TestResultStatus.ERROR, sample=dict(), reason="Something went wrong!"),
+            EvaluationResultExample(
+                status=TestResultStatus.PASSED,
+                sample={
+                    "conversation": [
+                        {
+                            "role": "user",
+                            "content": {"feature": "value"},
+                        },
+                        {
+                            "role": "agent",
+                            "content": "demo",
+                        },
+                    ]
                 },
-                {
-                    "role": "agent",
-                    "content": "demo",
+                reason="This is a test",
+            ),
+        ]
+    )
+
+
+def _mock_evaluation_result(status: TestResultStatus, examples=2):
+    return EvaluationResult(
+        results=[
+            EvaluationResultExample(
+                status=status,
+                sample={
+                    "conversation": [
+                        {
+                            "role": "user",
+                            "content": {"feature": "value"},
+                        },
+                        {
+                            "role": "agent",
+                            "content": "demo",
+                        },
+                    ]
                 },
-            ]
-        },
-        "reason": "This is a test",
-    },
-    {
-        "sample": {
-            "conversation": [
-                {
-                    "role": "user",
-                    "content": {"feature": "value2"},
+                reason="This is a test",
+            ),
+            EvaluationResultExample(
+                status=status,
+                sample={
+                    "conversation": [
+                        {
+                            "role": "user",
+                            "content": {"feature": "value2"},
+                        },
+                        {
+                            "role": "agent",
+                            "content": "demo2",
+                        },
+                    ]
                 },
-                {
-                    "role": "agent",
-                    "content": "demo2",
-                },
-            ]
-        },
-        "reason": "This is another test",
-    },
-]
+                reason="This is another test",
+            ),
+        ][:examples]
+    )
 
 
 @patch("giskard.testing.tests.llm.output_requirements.RequirementEvaluator")
@@ -48,9 +79,7 @@ def test_llm_output_requirement(RequirementEvaluator):
     dataset = Dataset(pd.DataFrame({"feature": ["value"]}))
 
     # Successful test
-    RequirementEvaluator.return_value.evaluate.return_value = EvaluationResult(
-        failure_examples=[], success_examples=_demo_samples, errors=[]
-    )
+    RequirementEvaluator.return_value.evaluate.return_value = _mock_evaluation_result(TestResultStatus.PASSED)
 
     my_test = llm_tests.test_llm_output_against_requirement(
         model=model,
@@ -68,20 +97,15 @@ def test_llm_output_requirement(RequirementEvaluator):
     RequirementEvaluator.return_value.evaluate.assert_called_once_with(model, dataset)
 
     # Failed test
-    RequirementEvaluator.return_value.evaluate.return_value = EvaluationResult(
-        failure_examples=_demo_samples, success_examples=[], errors=[]
-    )
+    RequirementEvaluator.return_value.evaluate.return_value = _mock_evaluation_result(TestResultStatus.FAILED)
+
     res = my_test.execute()
     assert not res.passed
     assert res.metric == 2
     assert res.metric_name == "Failing examples"
 
     # Errored tests
-    RequirementEvaluator.return_value.evaluate.return_value = EvaluationResult(
-        failure_examples=[],
-        success_examples=_demo_samples,
-        errors=[{"error": "Something went wrong!", "sample": dict()}],
-    )
+    RequirementEvaluator.return_value.evaluate.return_value = _mock_evaluation_result_error()
     res = my_test.execute()
     assert res.passed
     assert res.metric == 0
@@ -103,13 +127,9 @@ def test_llm_single_output_requirement(RequirementEvaluator):
         loader_module="",
     )
     input_var = "My demo question??"
-    demo_sample = _demo_samples[:1]
 
     # Successful test
-    RequirementEvaluator.return_value.evaluate.return_value = EvaluationResult(
-        failure_examples=[], success_examples=demo_sample, errors=[]
-    )
-
+    RequirementEvaluator.return_value.evaluate.return_value = _mock_evaluation_result(TestResultStatus.PASSED, 1)
     my_test = llm_tests.test_llm_single_output_against_requirement(
         model=model,
         input_var=input_var,
@@ -132,22 +152,16 @@ def test_llm_single_output_requirement(RequirementEvaluator):
     assert arg2.df.iloc[0].question == "My demo question??"
 
     # Failed test
-    RequirementEvaluator.return_value.evaluate.return_value = EvaluationResult(
-        failure_examples=demo_sample,
-        success_examples=[],
-        errors=[],
-    )
+    RequirementEvaluator.return_value.evaluate.return_value = _mock_evaluation_result(TestResultStatus.FAILED, 1)
+
     res = my_test.execute()
     assert not res.passed
     assert res.metric == 1
     assert res.metric_name == "Failing examples"
 
     # Errored tests
-    RequirementEvaluator.return_value.evaluate.return_value = EvaluationResult(
-        failure_examples=[],
-        success_examples=demo_sample,
-        errors=[{"error": "Something went wrong!", "sample": dict()}],
-    )
+    RequirementEvaluator.return_value.evaluate.return_value = _mock_evaluation_result_error()
+
     res = my_test.execute()
     assert res.passed
     assert res.metric == 0
@@ -168,11 +182,7 @@ def test_llm_output_requirement_per_row(RequirementEvaluator):
     )
 
     # Successful test
-    RequirementEvaluator.return_value.evaluate.return_value = EvaluationResult(
-        failure_examples=[],
-        success_examples=_demo_samples,
-        errors=[],
-    )
+    RequirementEvaluator.return_value.evaluate.return_value = _mock_evaluation_result(TestResultStatus.PASSED)
 
     my_test = llm_tests.test_llm_output_against_requirement_per_row(
         model=model, dataset=dataset, requirement_column="requirement", rng_seed=1
@@ -188,22 +198,16 @@ def test_llm_output_requirement_per_row(RequirementEvaluator):
     assert RequirementEvaluator.call_args.kwargs["llm_seed"] == 1
 
     # Failed test
-    RequirementEvaluator.return_value.evaluate.return_value = EvaluationResult(
-        failure_examples=_demo_samples,
-        success_examples=[],
-        errors=[],
-    )
+    RequirementEvaluator.return_value.evaluate.return_value = _mock_evaluation_result(TestResultStatus.FAILED)
+
     res = my_test.execute()
     assert not res.passed
     assert res.metric == 2
     assert res.metric_name == "Failing examples"
 
     # Errored tests
-    RequirementEvaluator.return_value.evaluate.return_value = EvaluationResult(
-        failure_examples=[],
-        success_examples=_demo_samples,
-        errors=[{"error": "Something went wrong!", "sample": dict()}],
-    )
+    RequirementEvaluator.return_value.evaluate.return_value = _mock_evaluation_result_error()
+
     res = my_test.execute()
     assert res.passed
     assert res.metric == 0

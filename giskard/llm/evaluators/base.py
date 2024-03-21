@@ -5,7 +5,7 @@ import logging
 from abc import ABC, abstractmethod
 from dataclasses import dataclass, field
 
-from ...core.test_result import TestResultDetails, TestResultStatus
+from ...core.test_result import TestResultStatus
 from ...datasets.base import Dataset
 from ...models.base.model import BaseModel
 from ..client import LLMClient, get_default_client
@@ -24,12 +24,14 @@ class EvaluationResultExample:
     # The reason why the example have given status
     reason: Optional[str] = None
 
-    @property
     def to_example(self):
         if self.status == TestResultStatus.ERROR:
             return {"error": self.reason, "sample": self.sample}
         else:
             return {"reason": self.reason, "sample": self.sample}
+
+    def to_dict(self):
+        return {"reason": self.reason, "sample": self.sample, "status": self.status}
 
 
 @dataclass
@@ -38,15 +40,15 @@ class EvaluationResult:
 
     @property
     def failure_examples(self):
-        return [failed.to_example for failed in self.results if failed.status == TestResultStatus.FAILED]
+        return [failed.to_example() for failed in self.results if failed.status == TestResultStatus.FAILED]
 
     @property
     def success_examples(self):
-        return [passed.to_example for passed in self.results if passed.status == TestResultStatus.PASSED]
+        return [passed.to_example() for passed in self.results if passed.status == TestResultStatus.PASSED]
 
     @property
     def errors(self):
-        return [error.to_example for error in self.results if error.status == TestResultStatus.ERROR]
+        return [error.to_example() for error in self.results if error.status == TestResultStatus.ERROR]
 
     @property
     def passed(self):
@@ -70,20 +72,6 @@ class EvaluationResult:
     def add_sample(self, eval_passed: bool, reason: Optional[str] = None, sample: Optional[Dict] = None):
         status = TestResultStatus.PASSED if eval_passed else TestResultStatus.FAILED
         self.results.append(EvaluationResultExample(reason=reason, sample=sample, status=status))
-
-    @property
-    def details(self):
-        details = TestResultDetails.empty()
-
-        for result in self.results:
-            details.append(
-                result.status,
-                result.sample.get(["inputs"], {}),
-                str(result.sample.get(["conversation"], "No conversation provided")),
-                result.sample.get("meta", None),
-            )
-
-        return details
 
 
 class BaseEvaluator(ABC):
