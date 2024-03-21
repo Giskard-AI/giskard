@@ -11,32 +11,49 @@ of this evaluation is to help you **identify the weakest components in your RAG 
 
 ## Correctness Evaluation on the Generated Test Set
 
-To evaluate, use the `giskard.rag.evaluate` function. You can also [pass custom metrics](custom_metrics) to the 
-`evaluate` function to compute custom scores.
+First, you need to wrap your RAG agent in a function that takes a question as input and returns an answer. For
+conversational agents, we will also pass a `history` parameter which will contain a list of dictionaries in OpenAI chat
+format (e.g. `{"role": "user", "content": "What is the capital of France?"}`).
+
+Then, you can evaluate your RAG agent using the `giskard.rag.evaluate` function. This function will compare the answers
+of your RAG agent with the reference answers in the test set.
 
 ```python
 from giskard.rag import evaluate
 
-def answer_fn(question, history=None):
-    # a function that wraps your model predictions function
+# Wrap your RAG model
+def get_answer_fn(question: str, history=None) -> str:
+    """A function representing your RAG agent."""
+    # Format appropriately the history for your RAG agent
     messages = history if history else []
     message.append({"role": "user", "content": question})
 
-    return your_agent.predict(messages)
+    # Get the answer
+    answer = get_answer_from_agent(messages)  # could be langchain, llama_index, etc.
 
-report = evaluate(answers_fn, testset=testset, knoledge_base=knowledge_base)
-report
+    return answer
+
+
+# Run the evaluation and get a report
+report = evaluate(get_answer_fn, testset=testset, knoledge_base=knowledge_base)
 ```
 
-The evaluation generates a {class}`~giskard.rag.RAGReport` object. This report is an HTML widget presenting all the 
-results of the evaluation:
+The evaluation generates a {class}`~giskard.rag.RAGReport` object. Once you get your report, you can display it in a
+notebook or save it as an HTML file.
 
+```python
+display(report)  # if you are working in a notebook
+
+# or save the report as an HTML file
+report.to_html("rag_eval_report.html")
+```
+
+This report is what you'll obtain:
 ![image](../../../_static/rag_report.png)
 
-It displays automatically in a notebook, but you can save it and view it in any browser: 
-`report.save_html("report.html")`.
 
 ### RAG Components Scores
+
 RAGET computes scores for each component of the RAG agent. The scores are computed by aggregating the correctness 
 of the agent's answers on different question types (see question type to component mapping [here](q_types)). 
 Each score grades a component on a scale from 0 to 100, 100 being a perfect score. **Low scores can help you identify 
@@ -51,11 +68,6 @@ Here is the list of components evaluated with RAGET:
 
 
 ### Analyze Correctness and Failures
-All the information contained in the report can also be accessed through the API:
-    
-```python
-report.to_pandas()
-```
 
 You can access the correctness of the agent aggregated in various ways or analyze only it failures: 
 
@@ -73,39 +85,35 @@ report.failures
 report.get_failures(topic="Topic from your knowledge base", question_type="simple")
 ```
 
-
-(custom_metrics)=
-### Evaluate your RAG with custom metrics
-**You can pass additional evaluation metrics to the `evaluate` function**. They will be computed during the evaluation. 
-We currently provide [RAGAS metrics](https://docs.ragas.io/en/latest/concepts/metrics/index.html) as additional metrics, 
-but you can use your own metric as well. Just wrap your metric inside a `giskard.rag.metric.Metric` object and 
-implement a `__call__` function. Then you can pass it to the `evaluate` function as follows: 
+You can also export the report to a pandas DataFrame to analyze the results programmatically:
 
 ```python
-import pandas as pd
-from giskard.rag.metric import Metric
-
-your_metric_fn = ...
-
-class MyCustomMetric(Metric):
-    def __call__(self, testset, answers, *args, **kwargs):
-        # your custom metric implementation
-        metric_df = pd.DataFrame([{"id": q.id, "value": your_metric_fn(q, a)} for q, a in zip(testset.itertuples(), answers)])
-        return {self.name: metric_df.set_index("id")}
-
-your_custom_metric = MyCustomMetric(name="My custom metric")
-report = evaluate(answers_fn, testset=testset, knowledge_base=knowledge_base, additional_metrics=[your_custom_metric])
+results = report.to_pandas()
 ```
+
+### RAGAS Metrics
+
+**You can pass additional evaluation metrics to the `evaluate` function**. They will be computed during the evaluation. 
+We currently provide [RAGAS metrics](https://docs.ragas.io/en/latest/concepts/metrics/index.html) as additional metrics.
 
 The results of your metrics will be displayed in the report object as histograms and will be available inside the report main `DataFrame`. 
 
-To use RAGAS metrics, make sure that the `ragas` package is installed in your environment. You can install it with `pip install ragas`.
+To include RAGAS metrics in evaluation, make sure to have installed the `ragas` library, then use the following code:
 
 ```python
 from giskard.rag.metrics.ragas_metrics import ragas_context_recall, ragas_faithfulness
 
-report = evaluate(answers_fn, testset=testset, knowledge_base=knowledge_base, additional_metrics=[ragas_context_recall, ragas_faithfulness])
+report = evaluate(
+    answer_fn,
+    testset=testset,
+    knowledge_base=knowledge_base,
+    metrics=[ragas_context_recall, ragas_faithfulness]
+)
 ```
+
+Built-in metrics include `ragas_context_precision`, `ragas_faithfulness`, `ragas_answer_relevancy`,
+`ragas_context_recall`. Note that including these metrics can significantly increase the evaluation time and LLM usage.
+
 
 ## Going Further: Giskard's Visual Interface 
 

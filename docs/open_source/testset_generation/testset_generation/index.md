@@ -1,6 +1,7 @@
 # 🎯 RAGET Testset Generation 
 
-> ⚠️ **The RAG Evaluation Toolkit (RAGET) is currently in early version and is subject to change**. Feel free to reach out on our [Discord server](https://discord.gg/fkv7CAr3FE) if you have any trouble or to provide feedback.
+> ⚠️ **The RAG Evaluation Toolkit (RAGET) is currently in early version and is subject to change**. Feel free to reach
+out on our [Discord server](https://discord.gg/fkv7CAr3FE) if you have any trouble or to provide feedback.
 
 
 Waiting to collect data from production to evaluate your RAG agents extensively is a risky business. But building 
@@ -10,23 +11,27 @@ To help with this, the Giskard python library provides **RAGET: RAG Evaluation T
 agents **automatically**.
 
 
-
 (q_types)=
 ## What does RAGET do exactly?
 
-RAGET automatically generates a list of `question`, `reference_answer` and `reference_context` from the knowledge 
-base of the RAG. The **generated test set is then used to evaluate your RAG agent**. 
-All questions are asked to your agent and its answers are compared against the reference answers to calculate a score.
+RAGET can generate automatically a list of `question`, `reference_answer` and `reference_context` from the knowledge 
+base of the RAG. It relies on a chain of LLM operations to generate realistic questions across different types.
+You can then use this **generated test set is to evaluate your RAG agent**. 
+
+By default, RAGET will create multiple types of questions. Each of them are designed to target and evaluate specific
+components of the RAG system (for example: the retriever, the generation, or the quality of your knowledge base
+chunks). During evaluation, RAGET will use a mapping between questions type and RAG components to identify possible
+weaknesses affecting a specific component of your RAG agent. 
 
 RAGET is capable of targeting and evaluating the following components of a RAG agent:
 - **`Generator`**: the LLM used inside the RAG to generate the answers
 - **`Retriever`**: fetch relevant documents from the knowledge base according to a user query
-- **`Rewriter`** (optional): rewrite the user query to make it more relevant to the knowledge base or to account for chat history
+- **`Rewriter`** (optional): rewrite the user query to make it more relevant to the knowledge base or to account for
+  chat history
 - **`Router`** (optional): filter the query of the user based on his intentions (intentions detection)
 - **`Knowledge Base`**: the set of documents given to the RAG to generate the answers
 
-RAGET currently automatically generates 6 types of questions. Each of them are designed to target and evaluate specific 
-components of the RAG system. 
+These are the question types currently supported by RAGET:
 ```{list-table}
 :header-rows: 1
 :widths: 20, 50, 25
@@ -92,7 +97,7 @@ os.environ["OPENAI_API_KEY"] = "sk-…"
 ::::::
 ::::::{tab-item} Azure OpenAI
 
-Require `openai>=1.0.0`
+Requires `openai>=1.0.0`.
 Make sure that both the LLM and Embeddings models are deployed on the Azure endpoint. The default embedding model used 
 by the Giskard client is `text-embedding-ada-002`. 
 
@@ -118,53 +123,53 @@ set_llm_model('my-gpt-4-model')
 
 ## Prepare your Knowledge Base
 
-Prepare your data or knowledge base in a pandas `DataFrame`. Then, initialize the 
-{class}`~giskard.rag.knowledge_base.KnowledgeBase` by passing your dataframe. 
+Prepare your data or knowledge base in a pandas `DataFrame`. Then, create a 
+{class}`~giskard.rag.knowledge_base.KnowledgeBase` instance with the `from_pandas` method. 
 
-If certain columns in your dataframe are not relevant for the generation of questions (e.g. they contain metadata), 
-make sure to specify their names in the `knowledge_base_columns` argument 
-(see {class}`~giskard.rag.knowledge_base.KnowledgeBase`).
+By default, we will use all columns in your data frame to populate your knowledge base. If only certain columns in your
+dataframe are relevant for the generation of questions, make sure to specify the columns
+you want to be used with `columns` argument (see {class}`~giskard.rag.knowledge_base.KnowledgeBase`).
 
 ```python
 
 from giskard.rag import generate_testset, KnowledgeBase
 
 # Load your data and initialize the KnowledgeBase
-knowledge_base_df = pd.read_csv("path/to/your/knowledge_base.csv")
-knowledge_base = KnowledgeBase(knowledge_base_df, 
-                               knowledge_base_columns=["column_1", "column_2"])
+df = pd.read_csv("path/to/your/knowledge_base.csv")
+
+knowledge_base = KnowledgeBase.from_pandas(df, columns=["column_1", "column_2"])
 ```
 
 
 ## Generate a test set
 By default, **RAGET automatically generates 6 different [question types](q_types)**. The total number of questions is 
 divided equally between each question type. To make the question generation more relevant and accurate, you can also 
-provide a description of your agent. 
+provide a description of your agent.
 
 ```python
 # Generate a testset with 10 questions & answers for each question types (this will take a while)
 testset = generate_testset(
     knowledge_base, 
     num_questions=60,
-    language='en', # Optional, if you want to  generate questions in a specific language
-    # Optionally, you can provide a description of your RAG agent to improve the questions quality.
-    agent_description="An agent that answers common questions about our products",
+    language='en',  # optional, we'll auto detect if not provided
+    agent_description="A customer support chatbot for company X", # helps generating better questions
 )
 ```
 
-You can save this generated test set and load it back for future use.
+Depending on how many questions you generate, this can take a while. Once you're done, you can save this generated test
+set for future use:
 
 ```python
 # Save the generated testset
 testset.save("my_testset.jsonl")
 
-# Load it back
+# You can easily load it back
 from giskard.rag import QATestset
 
 loaded_testset = QATestset.load("my_testset.jsonl")
 ```
 
-You can also convert it to a pandas DataFrame with `testset.to_pandas()`:
+You can also convert it to a pandas DataFrame, for quick inspection or further processing:
 
 ```py
 # Convert it to a pandas dataframe
@@ -185,7 +190,12 @@ Each row of the test set contains 5 columns:
 - `metadata`: a dictionary with various metadata about the question, this includes the `question_type`, `seed_document_id` the id of the document used to generate the question and the `topic` of the question
 
 
-### Selecting the generated question types
+## What’s next: evaluate your model on the generated testset
+Once you have generated the test set, you can evaluate your RAG agent using the `giskard.rag.evaluate` function.
+Detailed instructions can be found in the [RAGET Evaluation](../rag_evaluation/index.md) section.
+
+
+### Advanced configuration of the question generation
 
 By default, the test set contains all question types. **You can change this by providing question generators** to 
 the `giskard.rag.generate_testset` function. Generators are available inside the `question_generators` module. For 
@@ -195,19 +205,15 @@ instance to generate only complex and double questions use the following:
 from giskard.rag.question_generators import complex_questions, double_questions
 
 testset = generate_testset(
-    knowledge, 
-    num_questions=60,
-    language='en',
-    agent_description=agent_description,
+    knowledge_base, 
     question_generators=[complex_questions, double_questions],
-    generate_simple_question=False,
 )
 ```
 
+You can also implement custom question generators, by implementing the interface defined
+by {class}`~giskard.rag.question_generators.QuestionGenerator`.
 
 
-## What’s next: evaluate your model on the generated testset
-Once you have generated the test set, you can evaluate your RAG agent using the `giskard.rag.evaluate` function. Detailed instructions can be found in the [RAGET Evaluation](../rag_evaluation/index.md) section.
 
 ## Frequently Asked Questions
 
