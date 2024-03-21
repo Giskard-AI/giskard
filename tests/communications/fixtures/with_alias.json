@@ -415,12 +415,10 @@
           "Any reason",
           "Any other reason"
         ],
-        "inputs": {
-          "content": [
+        "inputs.content": [
             "This is a test.",
             "Hello!"
-          ]
-        },
+        ],
         "conversation": [
           "USER: This is a test. ASSISTANT: How can I help you?",
           "USER: Hello. ASSISTANT: Hello!"

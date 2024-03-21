@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Any, Dict, List, Optional, Union
+from typing import TYPE_CHECKING, Any, Dict, List, Optional, Set, Union
 
 from abc import ABC
 from enum import Enum
@@ -85,73 +85,37 @@ SimpleColumnRecordInfo = Optional[str]
 ColumnGroupRecordInfo = Dict[str, SimpleColumnRecordInfo]
 DataTableRecord = Dict[str, Union[SimpleColumnRecordInfo, ColumnGroupRecordInfo]]
 
-# ListInfo are list of dictionaries representing a table (used to minimize data size by reducing redundancy of keys)
-# Example:
-# {'threshold_range': {'min': ['10', '15'], 'max': ['20', '20' }, 'value': ['15', '12'], 'status': ['PASSED', 'FAILED']}
-SimpleColumnListInfo = List[Optional[str]]
-ColumnGroupListInfo = Dict[str, SimpleColumnListInfo]
-
 
 class DataTable(ConfiguredBaseModel):
-    columns: Dict[str, Union[ColumnGroupListInfo, SimpleColumnListInfo]]
+    # Ordered list of header for each column
+    columns: Dict[str, List[Optional[str]]]
     items: int
 
-    def _append_to_column_group(self, key: str, record: ColumnGroupRecordInfo):
-        existing = key in self.columns
-        if not existing:
-            self.columns[key] = dict()
+    def _append_value(self, path: str, item: SimpleColumnRecordInfo, missing_columns: Set[str]):
+        if path not in self.columns:
+            self.columns[path] = [None] * self.items + item
+        else:
+            self.columns[path].append(item)
+            missing_columns.remove(path)
 
-        column_group = self.columns[key]
-        if not isinstance(column_group, dict):
-            raise ValueError(f"Mix of single items and dict for key {key}")
-
-        missing_columns = set(column_group.keys())
-
-        for key, value in record.items():
-            if key in column_group:
-                column_group[key].append(record)
-                missing_columns.remove(key)
+    def _append_dict(self, path: str, item: ColumnGroupRecordInfo, missing_columns: Set[str]):
+        for key, value in item.items():
+            if isinstance(value, dict):
+                self._append_dict(f"{path}.{key}", value, missing_columns)
             else:
-                column_group[key] = [None] * self.items + [record]
-
-        for missing_column in missing_columns:
-            column_group[missing_column].append(None)
-
-        return existing
-
-    def _append_to_column(self, key: str, record: SimpleColumnRecordInfo):
-        existing = key in self.columns
-        if not existing:
-            self.columns[key] = [None] * self.items
-
-        column = self.columns[key]
-        if not isinstance(column, list):
-            raise ValueError(f"Mix of single items and dict for key {key}")
-
-        column.append(record)
-
-        return existing
+                self._append_value(path, value, missing_columns)
 
     def append(self, record: DataTableRecord):
         missing_columns = set(self.columns.keys())
 
         for key, value in record.items():
             if isinstance(value, dict):
-                to_remove = self._append_to_column_group(key, value)
+                self._append_dict(key, value, missing_columns)
             else:
-                to_remove = self._append_to_column_group(key, value)
-
-            if to_remove:
-                missing_columns.remove(key)
+                self._append_value(key, value, missing_columns)
 
         for missing_column in missing_columns:
-            column = self.columns[missing_column]
-
-            if isinstance(column, list):
-                column.append(None)
-            else:
-                for sub_column in column:
-                    sub_column.append(None)
+            self.columns[missing_column].append(None)
 
         self.items += 1
 
