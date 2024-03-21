@@ -134,8 +134,8 @@ class WrapperModel(BaseModel, ABC):
 
         raw_prediction = np.concatenate(outputs)
 
-        if self.is_regression:
-            return raw_prediction.astype(float)
+        # if self.is_regression:
+        #     return raw_prediction.astype(float)
 
         return raw_prediction
 
