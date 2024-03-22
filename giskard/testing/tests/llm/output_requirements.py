@@ -2,6 +2,8 @@ import json
 
 import pandas as pd
 
+from giskard.llm.evaluators.base import BaseEvaluator
+
 from ....core.test_result import (
     TestMessage,
     TestMessageLevel,
@@ -16,11 +18,15 @@ from ....utils.display import truncate
 from .. import debug_description_prefix
 
 
-def _test_output_with_evaluator(model, dataset, evaluator: RequirementEvaluator):
+def _test_output_with_evaluator(model, dataset, evaluator: BaseEvaluator, metadata=None):
     eval_result = evaluator.evaluate(model, dataset)
     messages = []
     if eval_result.has_errors:
         messages = [TestMessage(TestMessageLevel.ERROR, err["error"]) for err in eval_result.errors]
+
+    metadata = metadata or dict()
+    metadata["reason"] = [str(result.sample.get("reason", "<empty>")) for result in eval_result.results]
+
     return TestResult(
         passed=eval_result.passed,
         metric=len(eval_result.failure_examples),
@@ -31,12 +37,8 @@ def _test_output_with_evaluator(model, dataset, evaluator: RequirementEvaluator)
             dataset,
             model,
             [str(result.sample.get("conversation", "<empty>")) for result in eval_result.results],
-            {
-                "requirement": [evaluator.requirements] * len(eval_result.results)
-                if evaluator.requirements
-                else list(dataset.df[evaluator.requirement_col]),
-                "reason": [str(result.sample.get("reason", "<empty>")) for result in eval_result.results],
-            },
+            [result.status for result in eval_result.results],
+            metadata,
         ),
     )
 
@@ -75,7 +77,10 @@ def test_llm_output_against_requirement_per_row(
         A TestResult object containing the test result.
     """
     return _test_output_with_evaluator(
-        model, dataset, RequirementEvaluator(requirement_col=requirement_column, llm_seed=rng_seed)
+        model,
+        dataset,
+        RequirementEvaluator(requirement_col=requirement_column, llm_seed=rng_seed),
+        {"requirement": list(dataset.df[requirement_column])},
     )
 
 
@@ -110,7 +115,12 @@ def test_llm_output_against_requirement(model: BaseModel, dataset: Dataset, requ
     TestResult
         A TestResult object containing the test result.
     """
-    return _test_output_with_evaluator(model, dataset, RequirementEvaluator([requirement], llm_seed=rng_seed))
+    return _test_output_with_evaluator(
+        model,
+        dataset,
+        RequirementEvaluator([requirement], llm_seed=rng_seed),
+        {"requirement": [requirement] * len(dataset.df)},
+    )
 
 
 @test(
@@ -169,4 +179,6 @@ def test_llm_single_output_against_requirement(
     )
 
     # Run normal output requirement test
-    return _test_output_with_evaluator(model, dataset, RequirementEvaluator([requirement], llm_seed=rng_seed))
+    return _test_output_with_evaluator(
+        model, dataset, RequirementEvaluator([requirement], llm_seed=rng_seed), {"requirement": [requirement]}
+    )
