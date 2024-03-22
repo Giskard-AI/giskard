@@ -190,11 +190,6 @@ Each row of the test set contains 5 columns:
 - `metadata`: a dictionary with various metadata about the question, this includes the `question_type`, `seed_document_id` the id of the document used to generate the question and the `topic` of the question
 
 
-## What’s next: evaluate your model on the generated testset
-Once you have generated the test set, you can evaluate your RAG agent using the `giskard.rag.evaluate` function.
-Detailed instructions can be found in the [RAGET Evaluation](../rag_evaluation/index.md) section.
-
-
 ### Advanced configuration of the question generation
 
 By default, the test set contains all question types. **You can change this by providing question generators** to 
@@ -214,6 +209,9 @@ You can also implement custom question generators, by implementing the interface
 by {class}`~giskard.rag.question_generators.QuestionGenerator`.
 
 
+## What’s next: evaluate your model on the generated testset
+Once you have generated the test set, you can evaluate your RAG agent using the `giskard.rag.evaluate` function.
+Detailed instructions can be found in the [RAGET Evaluation](../rag_evaluation/index.md) section.
 
 ## Frequently Asked Questions
 
