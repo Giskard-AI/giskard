@@ -14,7 +14,7 @@ def get_talk_llm_model() -> str:
     return os.getenv("GSK_TALK_LLM_MODEL", "gpt-4-0125-preview")
 
 
-MODEL_INSTRUCTION = """You are an agent designed to help a user obtain information about the model and/or it's 
+MODEL_INSTRUCTION = """You are an agent designed to help a user obtain information about the model and/or its 
 predictions.
 
 
