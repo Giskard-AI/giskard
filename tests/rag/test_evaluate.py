@@ -51,7 +51,7 @@ def test_evaluate_from_answers():
         ),
     ]
 
-    report = evaluate(answers, knowledge_base, testset, llm_client=llm_client)
+    report = evaluate(answers, testset, knowledge_base, llm_client=llm_client)
     assert len(report.failures) == 3
     assert len(report.get_failures(topic="Cheese_1")) == 1
     assert len(report.get_failures(topic="Cheese_2")) == 2
@@ -117,7 +117,7 @@ def test_evaluate_from_answer_fn():
         ),
     ]
 
-    report = evaluate(answer_fn, knowledge_base, testset, llm_client=llm_client)
+    report = evaluate(answer_fn, testset, knowledge_base, llm_client=llm_client)
     assert len(report.failures) == 3
     assert len(report.get_failures(topic="Cheese_1")) == 1
     assert len(report.get_failures(topic="Cheese_2")) == 2
@@ -176,7 +176,7 @@ def test_evaluate_from_answer_fn():
         ),
     ]
 
-    report = evaluate(answer_fn, knowledge_base, testset, llm_client=llm_client)
+    report = evaluate(answer_fn, testset, knowledge_base, llm_client=llm_client)
     assert len(report.failures) == 3
 
 
@@ -227,4 +227,4 @@ def test_user_friendly_error_if_parameters_are_swapped():
     testset = QATestset(make_testset_df())
 
     with pytest.raises(ValueError, match="must be a KnowledgeBase object"):
-        evaluate([], testset, knowledge_base, llm_client=llm_client)
+        evaluate([], knowledge_base, testset, llm_client=llm_client)
