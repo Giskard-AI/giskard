@@ -1,4 +1,4 @@
-# Giskard Evaluator on 🤗 Hugging Face
+# 🔍Giskard Evaluator
 **Leverage the Hugging Face (HF) Space to easily scan and evaluate your Nature Language Processing (NLP) models on HF.**
 
 This is a guide to submit an evaluation job for a model on HF with a dataset on HF from Giskard Evaluator.
