@@ -104,7 +104,7 @@ class MetricTool(BaseTool):
         # Get the predicted labels.
         model_input = self._get_input_from_dataset(features_dict)
         if len(model_input) == 0:
-            raise ValueError("No records in the dataset given feature values combination.")
+            raise ValueError("No records found in the dataset for the given combination of feature values.")
 
         prediction = self._model.predict(model_input).prediction
 
