@@ -49,7 +49,7 @@ report.to_html("rag_eval_report.html")
 ```
 
 This report is what you'll obtain:
-![image](../../../_static/rag_report.png)
+![image](../../../_static/rag_report_full.png)
 
 
 ### RAG Components Scores
