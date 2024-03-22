@@ -4,7 +4,7 @@ import logging
 
 from datasets import Dataset
 
-from ...llm.client import LLMClient, LLMMessage
+from ...llm.client import LLMClient, LLMMessage, get_default_client
 from ..testset import QATestset
 from .base import Metric
 
@@ -106,7 +106,42 @@ class RagasMetric(Metric):
         return ragas_metrics_result
 
 
-ragas_context_precision = RagasMetric(name="RAGAS Context Precision", metrics=context_precision)
-ragas_faithfulness = RagasMetric(name="RAGAS Faithfulness", metrics=faithfulness)
-ragas_answer_relevancy = RagasMetric(name="RAGAS Answer Relevancy", metrics=answer_relevancy)
-ragas_context_recall = RagasMetric(name="RAGAS Context Recall", metrics=context_recall)
+def ragas_metric(question_sample, answer, metric, llm_client=None):
+    llm_client = llm_client or get_default_client()
+    ragas_llm = RagasLLMWrapper(llm_client, 8192)
+    ragas_embedddings = RagasEmbeddingsWrapper(llm_client)
+
+    if hasattr(metric, "llm"):
+        metric.llm = ragas_llm
+    if hasattr(metric, "embeddings"):
+        metric.embeddings = ragas_embedddings
+
+    ragas_sample = {
+        "question": [question_sample.question],
+        "answer": [answer],
+        "contexts": [question_sample.reference_context.split("\n\n")],
+        "ground_truth": [question_sample.reference_answer],
+    }
+    return metric.score(ragas_sample)
+
+
+# ragas_context_precision = RagasMetric(name="RAGAS Context Precision", metrics=context_precision)
+# ragas_faithfulness = RagasMetric(name="RAGAS Faithfulness", metrics=faithfulness)
+# ragas_answer_relevancy = RagasMetric(name="RAGAS Answer Relevancy", metrics=answer_relevancy)
+# ragas_context_recall = RagasMetric(name="RAGAS Context Recall", metrics=context_recall)
+
+
+def ragas_faithfulness(question_sample, answer, llm_client):
+    return ragas_metric(question_sample, answer, faithfulness, llm_client)
+
+
+def ragas_answer_relevancy(question_sample, answer, llm_client):
+    return ragas_metric(question_sample, answer, answer_relevancy, llm_client)
+
+
+def ragas_context_recall(question_sample, answer, llm_client):
+    return ragas_metric(question_sample, answer, context_recall, llm_client)
+
+
+def ragas_context_precision(question_sample, answer, llm_client):
+    return ragas_metric(question_sample, answer, context_precision, llm_client)
