@@ -18,8 +18,8 @@ logger = logging.getLogger(__name__)
 
 def evaluate(
     answer_fn: Union[Callable, Sequence[str]],
-    knowledge_base: Optional[KnowledgeBase] = None,
     testset: Optional[QATestset] = None,
+    knowledge_base: Optional[KnowledgeBase] = None,
     llm_client: Optional[LLMClient] = None,
     agent_description: str = "This agent is a chatbot that answers question from users.",
     metrics: Optional[Sequence[Callable]] = None,
@@ -30,11 +30,11 @@ def evaluate(
     ----------
     answers_fn : Union[Callable, Sequence[str]]
         The prediction function of the agent to evaluate or a list of precalculated answers on the testset.
-    knowledge_base : KnowledgeBase, optional
-        The knowledge base of the agent to evaluate. If not provided, a testset must be provided.
     testset : QATestset, optional
         The test set to evaluate the agent on. If not provided, a knowledge base must be provided and a default testset will be created from the knowledge base.
         Note that if the answers_fn is a list of answers, the testset is required.
+    knowledge_base : KnowledgeBase, optional
+        The knowledge base of the agent to evaluate. If not provided, a testset must be provided.
     llm_client : LLMClient, optional
         The LLM client to use for the evaluation. If not provided, a default openai client will be used.
     agent_description : str, optional
