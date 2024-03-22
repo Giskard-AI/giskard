@@ -1,9 +1,8 @@
 import numpy as np
 
-from ....core.test_result import TestResult, TestResultStatus
+from ....core.test_result import TestResult, TestResultStatus, create_test_result_details
 from ....datasets.base import Dataset
 from ....llm import LLMImportError
-from ....llm.evaluators.base import EvaluationResult, EvaluationResultExample
 from ....llm.evaluators.correctness import CorrectnessEvaluator
 from ....models.base import BaseModel
 from ....registry.decorators import test
@@ -63,19 +62,12 @@ def _create_groud_truth_test_result(dataset, metric, model, passed, pred, thresh
     return TestResult(
         passed=metric >= threshold,
         metric=metric,
-        evaluation_result=EvaluationResult(
-            results=[
-                EvaluationResultExample(
-                    status=result,
-                    sample={"inputs": inputs, "output": output, "target": target},
-                )
-                for inputs, output, result, target in zip(
-                    dataset.df.loc[:, model.meta.feature_names].to_dict("records"),
-                    list(pred.prediction),
-                    [TestResultStatus.PASSED if result else TestResultStatus.FAILED for result in passed],
-                    list(dataset.df[dataset.target]),
-                )
-            ]
+        details=create_test_result_details(
+            dataset,
+            model,
+            list(pred.prediction),
+            [TestResultStatus.PASSED if result else TestResultStatus.FAILED for result in passed],
+            {"target": list(dataset.df[dataset.target])},
         ),
     )
 
@@ -112,5 +104,8 @@ def test_llm_as_a_judge_ground_truth_similarity(
         raise ValueError(f"Provided dataset ({dataset}) does not have any ground truth (target)")
 
     return _test_output_with_evaluator(
-        model, dataset, CorrectnessEvaluator(answer_col=dataset.target, llm_seed=rng_seed)
+        model,
+        dataset,
+        CorrectnessEvaluator(answer_col=dataset.target, llm_seed=rng_seed),
+        {"target": list(dataset.df[dataset.target])},
     )
