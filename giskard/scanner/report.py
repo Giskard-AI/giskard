@@ -212,7 +212,8 @@ class ScanReport:
     @staticmethod
     def get_scan_summary_for_mlflow(scan_results):
         results_df = scan_results.to_dataframe()
-        results_df.metric = results_df.metric.replace("=.*", "", regex=True)
+        if "metric" in results_df.columns:
+            results_df.metric = results_df.metric.replace("=.*", "", regex=True)
         return results_df
 
     def to_mlflow(

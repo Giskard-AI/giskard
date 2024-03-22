@@ -22,11 +22,17 @@ def set_llm_api(llm_api: str):
 
     global _default_llm_api
     _default_llm_api = llm_api.lower()
+    # If the API is set, we unset the default client
+    global _default_client
+    _default_client = None
 
 
 def set_llm_model(llm_model: str):
     global _default_llm_model
     _default_llm_model = llm_model
+    # If the model is set, we unset the default client
+    global _default_client
+    _default_client = None
 
 
 def get_default_llm_api() -> str:

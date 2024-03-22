@@ -58,6 +58,10 @@ class LLMCharInjector:
             return self._scorer
 
         try:
+            # Note(Bazire): This torch import is needed to avoid segfault on MacOS
+            # Evaluate depends on datasets from hugging face, which import torch and segfault
+            # if not imported before it seems
+            import torch  # noqa isort: skip
             import evaluate
         except ImportError as err:
             raise LLMImportError() from err
@@ -292,9 +296,9 @@ def _test_llm_output_against_strings(model, dataset, configs, threshold, **_kwar
 def test_llm_single_output_against_strings(
     model: BaseModel,
     input_var: str,
-    substrings: List[str],
+    expected_strings: List[str],
     input_as_json: bool = False,
-    all_substrings_must_be_found: bool = True,
+    all_expected_strings_must_be_found: bool = True,
     exact_matching: bool = False,
     word_matching: bool = False,
     case_sensitive: bool = True,
@@ -316,26 +320,26 @@ def test_llm_single_output_against_strings(
         The model to test.
     dataset : Dataset
         A dataset of adversarial prompts.
-    substrings : List[str]
-        A list of substrings that needs to be found in the model's output in
+    expected_strings : List[str]
+        A list of expected_strings that needs to be found in the model's output in
         order to classify it as a failure.
-    all_substrings_must_be_found : bool
+    all_expected_strings_must_be_found : bool
         A flag to indicate whether all (True, default) or any (False) of the
-        substrings must be found in order to
+        expected_strings must be found in order to
         classify the output as a failure. Default: True
     exact_matching : bool
-        A flag to indicate whether the substrings (typically one) needs to match
+        A flag to indicate whether the expected_strings (typically one) needs to match
         exactly the model's output in order to classify it as a failure.
         Default: False.
     word_matching : bool
-        A flag to indicate whether the substrings should be found as independent
+        A flag to indicate whether the expected_strings should be found as independent
         words in the model's output in order to classify it as a failure.
         Default: False
     case_sensitive : bool
-        A flag to indicate whether the substrings matching should be
+        A flag to indicate whether the expected_strings matching should be
         case-sensitive or not. Default: True
     punctuation_sensitive : bool
-        A flag to indicate whether the substrings matching should be
+        A flag to indicate whether the expected_strings matching should be
         punctuation-sensitive or not. Default: True
     threshold : float
         Threshold for the fail rate, by default 0.5. If the fail rate is above
@@ -357,8 +361,8 @@ def test_llm_single_output_against_strings(
 
     # The evaluation method is fixed for all the prompts in the dataset
     config_kwargs = {
-        "substrings": substrings,
-        "all_substrings_must_be_found": all_substrings_must_be_found,
+        "expected_strings": expected_strings,
+        "all_expected_strings_must_be_found": all_expected_strings_must_be_found,
         "exact_matching": exact_matching,
         "word_matching": word_matching,
         "case_sensitive": case_sensitive,
@@ -378,7 +382,7 @@ def test_llm_single_output_against_strings(
         column_types={k: "text" for k in input_sample.keys()},
     )
 
-    return _test_llm_output_against_strings(model, dataset, configs, threshold, debug)
+    return _test_llm_output_against_strings(model, dataset, configs, threshold, debug=debug)
 
 
 @test(
@@ -404,21 +408,21 @@ def test_llm_output_against_strings(
         A dataset of adversarial prompts.
     evaluator_configs : List[StringMatcherConfig]
         A list of StringMatcherConfig that has the following attributes:
-            - substrings : List[str]
-                A list of substrings that needs to be found in the model's output in order to classify it as a failure.
-            - all_substrings_must_be_found : bool
-                A flag to indicate whether all (True, default) or any (False) of the substrings must be found in order to
+            - expected_strings : List[str]
+                A list of expected_strings that needs to be found in the model's output in order to classify it as a failure.
+            - all_expected_strings_must_be_found : bool
+                A flag to indicate whether all (True, default) or any (False) of the expected_strings must be found in order to
                 classify the output as a failure. Default: True
             - exact_matching : bool
-                A flag to indicate whether the substrings (typically one) needs to match exactly the model's output in order to
+                A flag to indicate whether the expected_strings (typically one) needs to match exactly the model's output in order to
                 classify it as a failure. Default: False
             - word_matching : bool
-                A flag to indicate whether the substrings should be found as independent words in the model's output in order to
+                A flag to indicate whether the expected_strings should be found as independent words in the model's output in order to
                 classify it as a failure. Default: False
             - case_sensitive : bool
-                A flag to indicate whether the substrings matching should be case-sensitive or not. Default: True
+                A flag to indicate whether the expected_strings matching should be case-sensitive or not. Default: True
             - punctuation_sensitive : bool
-                A flag to indicate whether the substrings matching should be punctuation-sensitive or not. Default: True
+                A flag to indicate whether the expected_strings matching should be punctuation-sensitive or not. Default: True
     threshold : float
         Threshold for the fail rate, by default 0.5. If the fail rate is above
         this threshold, the test will fail.
