@@ -84,6 +84,20 @@ class MetricTool(BaseTool):
 
         return Dataset(filtered_df, target=None)
 
+    def _validate_features_dict(self, features_dict: dict[str, any]) -> None:
+        """Validate the `features_dict` contains correct features.
+
+        Parameters
+        ----------
+        features_dict : dict[str, any]
+            The dictionary with features and related values extracted from the query.
+        """
+
+        # Check, if 'features_dict' contains features different from the dataset.
+        if not set(features_dict).issubset(self._dataset.df):
+            invalid_features = set(features_dict).difference(self._dataset.df)
+            raise ValueError(f"Invalid features were detected: {invalid_features}")
+
     def __call__(self, metric_type: str, features_dict: dict[str, any]) -> str:
         """Execute the Tool's functionality.
 
@@ -102,6 +116,8 @@ class MetricTool(BaseTool):
             The calculated performance metric.
         """
         # Get the predicted labels.
+        self._validate_features_dict(features_dict)
+
         model_input = self._get_input_from_dataset(features_dict)
         if len(model_input) == 0:
             raise ValueError("No records found in the dataset for the given combination of feature values.")

@@ -140,6 +140,20 @@ class PredictTool(BaseTool):
 
         return Dataset(final_input, target=None)
 
+    def _validate_features_dict(self, features_dict: dict[str, any]) -> None:
+        """Validate the `features_dict` contains correct features.
+
+        Parameters
+        ----------
+        features_dict : dict[str, any]
+            The dictionary with features and related values extracted from the query.
+        """
+
+        # Check, if 'features_dict' contains features different from the dataset.
+        if not set(features_dict).issubset(self._dataset.df):
+            invalid_features = set(features_dict).difference(self._dataset.df)
+            raise ValueError(f"Invalid features were detected: {invalid_features}")
+
     def __call__(self, features_dict: dict[str, any]) -> str:
         """Execute the Tool's functionality.
 
@@ -155,6 +169,7 @@ class PredictTool(BaseTool):
         str
             The model's prediction.
         """
+        self._validate_features_dict(features_dict)
         model_input = self._prepare_input(features_dict)
         prediction = self._model.predict(model_input).prediction
         return ", ".join(map(str, prediction))
