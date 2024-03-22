@@ -18,7 +18,7 @@ MODEL_INSTRUCTION = """You are an agent designed to help a user obtain informati
 predictions.
 
 
-You interact with the model through different tools. Tools are functions, whose response is used to enrich you with 
+You interact with the model through various tools. These tools are functions whose responses are used to enrich you with 
 the necessary context to answer a user's question.
 
 
