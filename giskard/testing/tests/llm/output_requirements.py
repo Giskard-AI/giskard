@@ -2,7 +2,12 @@ import json
 
 import pandas as pd
 
-from ....core.test_result import TestMessage, TestMessageLevel, TestResult
+from ....core.test_result import (
+    TestMessage,
+    TestMessageLevel,
+    TestResult,
+    create_test_result_details,
+)
 from ....datasets.base import Dataset
 from ....llm.evaluators import RequirementEvaluator
 from ....models.base import BaseModel
@@ -11,7 +16,7 @@ from ....utils.display import truncate
 from .. import debug_description_prefix
 
 
-def _test_output_with_evaluator(model, dataset, evaluator):
+def _test_output_with_evaluator(model, dataset, evaluator: RequirementEvaluator):
     eval_result = evaluator.evaluate(model, dataset)
     messages = []
     if eval_result.has_errors:
@@ -22,7 +27,17 @@ def _test_output_with_evaluator(model, dataset, evaluator):
         metric_name="Failing examples",
         is_error=eval_result.has_errors,
         messages=messages,
-        evaluation_result=eval_result,
+        details=create_test_result_details(
+            dataset,
+            model,
+            [str(result.sample.get("conversation", "<empty>")) for result in eval_result.results],
+            {
+                "requirement": [evaluator.requirements] * len(eval_result.results)
+                if evaluator.requirements
+                else list(dataset.df[evaluator.requirement_col]),
+                "reason": [str(result.sample.get("reason", "<empty>")) for result in eval_result.results],
+            },
+        ),
     )
 
 

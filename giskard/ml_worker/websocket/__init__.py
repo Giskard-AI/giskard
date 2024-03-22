@@ -1,4 +1,4 @@
-from typing import Dict, List, Optional
+from typing import Any, Dict, List, Optional
 
 from enum import Enum
 from uuid import UUID
@@ -7,7 +7,6 @@ import pydantic
 from packaging import version
 from pydantic import Field
 
-from giskard.client.dtos import DataTable
 from giskard.core.validation import ConfiguredBaseModel
 
 IS_PYDANTIC_V2 = version.parse(pydantic.version.VERSION) >= version.parse("2.0")
@@ -269,6 +268,13 @@ class PartialUnexpectedCounts(ConfiguredBaseModel):
     count: int
 
 
+class SingleTestResultDetails(ConfiguredBaseModel):
+    inputs: Dict[str, List[Any]]
+    outputs: List[Any]
+    results: List[Any]
+    metadata: Dict[str, List[Any]]
+
+
 class SingleTestResult(ConfiguredBaseModel):
     passed: bool
     is_error: Optional[bool] = None
@@ -277,7 +283,7 @@ class SingleTestResult(ConfiguredBaseModel):
     metric: Optional[float] = None
     metric_name: Optional[str] = None
     failed_indexes: Optional[Dict[str, List[int]]] = None
-    evaluation_result: Optional[DataTable] = None
+    details: Optional[SingleTestResultDetails] = None
 
 
 class IdentifierSingleTestResult(ConfiguredBaseModel):

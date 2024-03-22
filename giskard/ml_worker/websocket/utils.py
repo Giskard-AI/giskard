@@ -9,7 +9,6 @@ from collections import defaultdict
 import pandas as pd
 from mlflow.store.artifact.artifact_repo import verify_artifact_path
 
-from giskard.client.dtos import DataTable
 from giskard.client.giskard_client import GiskardClient
 from giskard.core.suite import DatasetInput, ModelInput, SuiteInput
 from giskard.core.test_result import TestMessageLevel, TestResult
@@ -276,9 +275,14 @@ def map_result_to_single_test_result_ws(
                 str(dataset.original_id): list(datasets[dataset.original_id].df.index.get_indexer_for(dataset.df.index))
                 for dataset in result.output_ds
             },
-            evaluation_result=None
-            if not result.evaluation_result
-            else DataTable.from_evaluation_result(result.evaluation_result),
+            details=None
+            if not result.details
+            else websocket.SingleTestResultDetails(
+                inputs=result.details.inputs,
+                outputs=result.details.outputs,
+                results=result.details.results,
+                metadata=result.details.metadata,
+            ),
         )
     elif isinstance(result, bool):
         return websocket.SingleTestResult(passed=result)

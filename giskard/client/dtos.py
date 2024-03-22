@@ -1,8 +1,5 @@
-from __future__ import annotations
+from typing import Any, Dict, List, Optional
 
-from typing import TYPE_CHECKING, Any, Dict, List, Optional, Set, Union
-
-from abc import ABC
 from enum import Enum
 
 from pydantic import Field
@@ -10,9 +7,6 @@ from pydantic import Field
 from giskard.core.core import TestResultStatusEnum
 from giskard.core.validation import ConfiguredBaseModel
 from giskard.utils.artifacts import serialize_parameter
-
-if TYPE_CHECKING:
-    from giskard.llm.evaluators.base import EvaluationResult
 
 
 class TestInputDTO(ConfiguredBaseModel):
@@ -63,74 +57,11 @@ class TestResultMessageDTO(ConfiguredBaseModel):
     text: str
 
 
-class Column(ABC, ConfiguredBaseModel):
-    pass
-
-
-class SimpleColumn(Column):
-    row_data: List[str]
-
-
-class ColumnGroup(Column):
-    columns: SimpleColumn
-
-
-# Records are dictionaries of single table entry
-# Example:
-# [
-# {'threshold_range': {'min': '10', 'max': '20'}, 'value': '15', 'status': 'PASSED'},
-# {'threshold_range': {'min': '15', 'max': '20'}, 'value': '12', 'status': 'FAILED'}
-# ]
-SimpleColumnRecordInfo = Optional[str]
-ColumnGroupRecordInfo = Dict[str, SimpleColumnRecordInfo]
-DataTableRecord = Dict[str, Union[SimpleColumnRecordInfo, ColumnGroupRecordInfo]]
-
-
-class DataTable(ConfiguredBaseModel):
-    # Ordered list of header for each column
-    columns: Dict[str, List[Optional[str]]]
-    items: int
-
-    def _append_value(self, path: str, item: SimpleColumnRecordInfo, missing_columns: Set[str]):
-        if path not in self.columns:
-            self.columns[path] = [None] * self.items + [item]
-        else:
-            self.columns[path].append(item)
-            missing_columns.remove(path)
-
-    def _append_dict(self, path: str, item: ColumnGroupRecordInfo, missing_columns: Set[str]):
-        for key, value in item.items():
-            if isinstance(value, dict):
-                self._append_dict(f"{path}.{key}", value, missing_columns)
-            else:
-                self._append_value(path, value, missing_columns)
-
-    def append(self, record: DataTableRecord):
-        missing_columns = set(self.columns.keys())
-
-        for key, value in record.items():
-            if isinstance(value, dict):
-                self._append_dict(key, value, missing_columns)
-            else:
-                self._append_value(key, value, missing_columns)
-
-        for missing_column in missing_columns:
-            self.columns[missing_column].append(None)
-
-        self.items += 1
-
-    @classmethod
-    def from_records(cls, records: List[DataTableRecord]):
-        data_table = cls(columns=[], items=0)
-
-        for record in records:
-            data_table.append(record)
-
-        return data_table
-
-    @classmethod
-    def from_evaluation_result(cls, evaluation_result: EvaluationResult):
-        return cls.from_records([result.to_dict() for result in evaluation_result.results])
+class SaveSuiteTestExecutionDetailsDTO(ConfiguredBaseModel):
+    inputs: Dict[str, List[str]]
+    outputs: List[str]
+    results: List[TestResultStatusEnum]
+    metadata: Dict[str, List[str]]
 
 
 class SaveSuiteTestExecutionDTO(ConfiguredBaseModel):
@@ -144,7 +75,7 @@ class SaveSuiteTestExecutionDTO(ConfiguredBaseModel):
     metric: Optional[float]
     metricName: str
     failedIndexes: Dict[str, List[int]]
-    evaluation_result: Optional[DataTable]
+    details: Optional[SaveSuiteTestExecutionDetailsDTO]
 
 
 class SaveSuiteExecutionDTO(ConfiguredBaseModel):
