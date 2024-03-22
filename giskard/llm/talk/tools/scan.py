@@ -49,11 +49,9 @@ class IssuesScannerTool(BaseTool):
         AttributeError
             If the 'scan_report' was not provided.
         """
-        try:
-            scan_report = self._scan_report.to_markdown(template="huggingface")
-        except AttributeError as e:
+        if not self._scan_report:
             raise AttributeError(
-                "To get the information about model's issues, detected by the Giskard Scan,"
-                "you need to provide the 'scan_report' argument."
-            ) from e
+                "To obtain information about issues detected by the Giskard Scan, provide the 'scan_report' argument."
+            )
+        scan_report = self._scan_report.to_markdown(template="huggingface")
         return self._output_template.format(scan_report=scan_report)
