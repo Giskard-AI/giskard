@@ -400,33 +400,6 @@
       ]
     }
   ],
-  "DataTable": [
-    {
-      "columns": {},
-      "items": 0
-    },
-    {
-      "columns": {
-        "result": [
-          "FAILED",
-          "PASSED"
-        ],
-        "reason": [
-          "Any reason",
-          "Any other reason"
-        ],
-        "inputs.content": [
-            "This is a test.",
-            "Hello!"
-        ],
-        "conversation": [
-          "USER: This is a test. ASSISTANT: How can I help you?",
-          "USER: Hello. ASSISTANT: Hello!"
-        ]
-      },
-      "items": 2
-    }
-  ],
   "DataRow": [
     {
       "columns": {
@@ -1702,9 +1675,23 @@
             2399
           ]
         },
-        "evaluation_result": {
-          "columns": {},
-          "items": 0
+        "details": {
+          "inputs": {
+            "bXxAwRYGKxBbJPIwMglc": [
+              "df11"
+            ]
+          },
+          "outputs": [
+            "d9892fed05"
+          ],
+          "results": [
+            "b48"
+          ],
+          "metadata": {
+            "ddVpiDgDSElUxRTOGbkf": [
+              "d46d44e5b"
+            ]
+          }
         }
       },
       "arguments": []
@@ -1730,9 +1717,23 @@
             2450
           ]
         },
-        "evaluation_result": {
-          "columns": {},
-          "items": 0
+        "details": {
+          "inputs": {
+            "ZQqfAVpUhVbqUPVRMJjw": [
+              "424dc2a88c"
+            ]
+          },
+          "outputs": [
+            "1ba19dc80"
+          ],
+          "results": [
+            "698003c"
+          ],
+          "metadata": {
+            "iLIndYQCCSxurnbHvDds": [
+              "fa79"
+            ]
+          }
         }
       },
       "arguments": [
@@ -1789,9 +1790,23 @@
             9570
           ]
         },
-        "evaluation_result": {
-          "columns": {},
-          "items": 0
+        "details": {
+          "inputs": {
+            "zgQBDREBbYZMkuqvgdpP": [
+              "200b09"
+            ]
+          },
+          "outputs": [
+            "cc0861b"
+          ],
+          "results": [
+            "7"
+          ],
+          "metadata": {
+            "BvqoMBagqLODxoxsMtUe": [
+              "898a0"
+            ]
+          }
         }
       },
       "arguments": []
@@ -1830,9 +1845,23 @@
             5263
           ]
         },
-        "evaluation_result": {
-          "columns": {},
-          "items": 0
+        "details": {
+          "inputs": {
+            "IwMglcddVpiDgDSElUxR": [
+              "df11"
+            ]
+          },
+          "outputs": [
+            "d9892fed05"
+          ],
+          "results": [
+            "b48"
+          ],
+          "metadata": {
+            "TOGbkfDUEzWuAaFuoiSQ": [
+              "d46d44e5b"
+            ]
+          }
         }
       }
     },
@@ -1857,9 +1886,23 @@
             5548
           ]
         },
-        "evaluation_result": {
-          "columns": {},
-          "items": 0
+        "details": {
+          "inputs": {
+            "izPWYaJEEhZoDiezjqUV": [
+              "298a8683f9"
+            ]
+          },
+          "outputs": [
+            "61b4e5e8e"
+          ],
+          "results": [
+            "1ba19dc80"
+          ],
+          "metadata": {
+            "WHlqJXLrFLHYlVNHtAPk": [
+              "57cd20f3"
+            ]
+          }
         }
       }
     },
@@ -1884,9 +1927,23 @@
             9113
           ]
         },
-        "evaluation_result": {
-          "columns": {},
-          "items": 0
+        "details": {
+          "inputs": {
+            "oFmDiPTrlYKRbUGqwNOj": [
+              "c4660287f3"
+            ]
+          },
+          "outputs": [
+            "639ef0a5b6"
+          ],
+          "results": [
+            "a444dfb3"
+          ],
+          "metadata": {
+            "GiYxVLFnBhhLsNmLLpfu": [
+              "4f"
+            ]
+          }
         }
       }
     }
@@ -2064,9 +2121,23 @@
                 3425
               ]
             },
-            "evaluation_result": {
-              "columns": {},
-              "items": 0
+            "details": {
+              "inputs": {
+                "YwYlubXxAwRYGKxBbJPI": [
+                  "6a"
+                ]
+              },
+              "outputs": [
+                "451da1"
+              ],
+              "results": [
+                "3ebe"
+              ],
+              "metadata": {
+                "wMglcddVpiDgDSElUxRT": [
+                  "0d38"
+                ]
+              }
             }
           }
         }
@@ -2297,9 +2368,23 @@
           3425
         ]
       },
-      "evaluation_result": {
-        "columns": {},
-        "items": 0
+      "details": {
+        "inputs": {
+          "YwYlubXxAwRYGKxBbJPI": [
+            "df11"
+          ]
+        },
+        "outputs": [
+          "d9892fed05"
+        ],
+        "results": [
+          "b48"
+        ],
+        "metadata": {
+          "wMglcddVpiDgDSElUxRT": [
+            "d46d44e5b"
+          ]
+        }
       }
     },
     {
@@ -2321,9 +2406,23 @@
           2526
         ]
       },
-      "evaluation_result": {
-        "columns": {},
-        "items": 0
+      "details": {
+        "inputs": {
+          "fOrAIjhhTpKRFgkCLOQG": [
+            "298a8683f9"
+          ]
+        },
+        "outputs": [
+          "61b4e5e8e"
+        ],
+        "results": [
+          "1ba19dc80"
+        ],
+        "metadata": {
+          "ICXZkpBcSmOJxwnwBaRi": [
+            "57cd20f3"
+          ]
+        }
       }
     },
     {
@@ -2345,9 +2444,23 @@
           63
         ]
       },
-      "evaluation_result": {
-        "columns": {},
-        "items": 0
+      "details": {
+        "inputs": {
+          "ZHLMLkWFAWLZKxIkBJEY": [
+            "c4660287f3"
+          ]
+        },
+        "outputs": [
+          "639ef0a5b6"
+        ],
+        "results": [
+          "a444dfb3"
+        ],
+        "metadata": {
+          "rGYKYdZmYpbLiOuojdOa": [
+            "4f"
+          ]
+        }
       }
     }
   ],
@@ -2555,9 +2668,23 @@
                 273
               ]
             },
-            "evaluation_result": {
-              "columns": {},
-              "items": 0
+            "details": {
+              "inputs": {
+                "xNonPjpinXIHpKzfqrPn": [
+                  "6a"
+                ]
+              },
+              "outputs": [
+                "451da1"
+              ],
+              "results": [
+                "3ebe"
+              ],
+              "metadata": {
+                "nLYYwYlubXxAwRYGKxBb": [
+                  "0d38"
+                ]
+              }
             }
           },
           "arguments": [

@@ -1,15 +1,12 @@
-from __future__ import annotations
+from typing import Any, Dict, List, Optional
 
-from typing import TYPE_CHECKING, Dict, List, Optional
-
+from collections import defaultdict
 from dataclasses import dataclass, field
 from enum import Enum
 
 from ..datasets.base import Dataset
+from ..models.base import BaseModel
 from .core import TestResultStatusEnum
-
-if TYPE_CHECKING:
-    from ..llm.evaluators.base import EvaluationResult
 
 # Ensure backward compatibility of "from giskard.core.test_result import TestResultStatus"
 TestResultStatus = TestResultStatusEnum
@@ -43,6 +40,43 @@ class PartialUnexpectedCounts:
 
 
 @dataclass
+class TestResultDetails:
+    inputs: Dict[str, List[Any]]
+    outputs: List[Any]
+    results: List[TestResultStatus]
+    metadata: Dict[str, List[Any]] = field(default_factory=dict)
+
+    @classmethod
+    def empty(cls):
+        return TestResultDetails(defaultdict(list), list(), list(), defaultdict(list))
+
+    def append(self, row_result: TestResultStatus, row_input: Dict[str, Any], row_output: Any, row_metadata):
+        for input_col, input_val in row_input.items():
+            self.inputs[input_col].append(input_val)
+
+        self.outputs.append(row_output)
+        self.results.append(row_result)
+
+        for metadata_col, metadata_val in row_metadata.items():
+            self.metadata[metadata_col].append(metadata_val)
+
+
+def create_test_result_details(
+    dataset: Dataset,
+    model: BaseModel,
+    predictions: List[Any],
+    results: List[TestResultStatus],
+    metadata: Optional[Dict[str, List[str]]] = None,
+) -> TestResultDetails:
+    return TestResultDetails(
+        inputs=dataset.df.loc[:, model.feature_names].to_dict("list"),
+        outputs=list(predictions),
+        results=results,
+        metadata=metadata or dict(),
+    )
+
+
+@dataclass
 class TestResult:
     """
     Dataclass representing the result of a test
@@ -70,7 +104,7 @@ class TestResult:
     reference_slices_size: List[int] = field(default_factory=list, repr=False)
     output_df: Optional[bytes] = None  # Legacy output, use output_ds instead as this will be removed in the future
     output_ds: List[Dataset] = field(default_factory=list, repr=False)
-    evaluation_result: Optional[EvaluationResult] = None
+    details: Optional[TestResultDetails] = None
     is_error: bool = False
 
     def _repr_html_(self):

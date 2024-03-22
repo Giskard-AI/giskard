@@ -13,8 +13,8 @@ from xml.dom import minidom
 from xml.etree.ElementTree import Element, SubElement, tostring
 
 from giskard.client.dtos import (
-    DataTable,
     SaveSuiteExecutionDTO,
+    SaveSuiteTestExecutionDetailsDTO,
     SaveSuiteTestExecutionDTO,
     SuiteInfo,
     SuiteTestDTO,
@@ -146,9 +146,20 @@ class SuiteResult:
                 str(dataset.original_id): list(datasets[dataset.original_id].df.index.get_indexer_for(dataset.df.index))
                 for dataset in self.result.output_ds
             },
-            evaluation_result=DataTable.from_evaluation_result(self.result.evaluation_result)
-            if self.result.evaluation_result
-            else None,
+            details=(
+                SaveSuiteTestExecutionDetailsDTO(
+                    inputs={
+                        key: [str(value) for value in values] for key, values in self.result.details.inputs.items()
+                    },
+                    outputs=[str(output) for output in self.result.details.outputs],
+                    results=self.result.details.results,
+                    metadata={
+                        key: [str(value) for value in values] for key, values in self.result.details.metadata.items()
+                    },
+                )
+                if self.result.details
+                else None
+            ),
         )
 
 
