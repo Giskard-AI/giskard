@@ -6,7 +6,7 @@ from inspect import signature
 from ..llm.client import LLMClient, get_default_client
 from ..utils.analytics_collector import analytics
 from .knowledge_base import KnowledgeBase
-from .metrics import CorrectnessMetric, Metric
+from .metrics import CorrectnessMetric
 from .question_generators.utils import maybe_tqdm
 from .recommendation import get_rag_recommendation
 from .report import RAGReport
@@ -22,7 +22,7 @@ def evaluate(
     testset: Optional[QATestset] = None,
     llm_client: Optional[LLMClient] = None,
     agent_description: str = "This agent is a chatbot that answers question from users.",
-    metrics: Optional[Sequence[Metric | Callable]] = None,
+    metrics: Optional[Sequence[Callable]] = None,
 ) -> RAGReport:
     """Evaluate an agent by comparing its answers on a QATestset.
 
@@ -39,7 +39,7 @@ def evaluate(
         The LLM client to use for the evaluation. If not provided, a default openai client will be used.
     agent_description : str, optional
         Description of the agent to be tested.
-    metrics : Optional[Sequence[Metric]], optional
+    metrics : Optional[Sequence[Callable]], optional
         Metrics to compute on the test set.
 
     Returns
