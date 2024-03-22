@@ -118,9 +118,6 @@ def get_feature_json_type(df: pd.DataFrame) -> dict[str, str]:
     dict[str, str]
         The dictionary with columns and related JSON types.
     """
-    # number_columns = {column: "number" for column in dataset.df.select_dtypes(include=(int, float)).columns}
-    # string_columns = {column: "string" for column in dataset.df.select_dtypes(exclude=(int, float)).columns}
-
     feature_json_type = dict()
 
     for col in df:
