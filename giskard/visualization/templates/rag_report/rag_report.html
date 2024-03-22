@@ -92,14 +92,14 @@
             <div class="tab">
                 <div class="tab-title">Selected metrics</div>
                 {% for tab, _ in metric_histograms.items() %}
-                <button class="tablinks{% if loop.index == 0 %} active{% endif %}"
+                <button class="tablinks{% if loop.index == 1 %} active{% endif %}"
                     onclick="opentab(event, '{{tab}}')">{% if tab == "Question" %} Question types {% else %} {{tab}} {%
                     endif %}</button>
                 {% endfor %}
             </div>
             {# Tab content #}
             {% for tab, content in metric_histograms.items() %}
-            <div id={{tab}} class="tabcontent">
+            <div id={{tab}} class="tabcontent"{% if loop.index == 1 %} style="display: block"{% endif %}>
                 {% for split_value, metrics in content.items()%}
                 <div class="tab-row">
                     {% if split_value != "Overall" %}<h4>{{split_value}}</h4>{% endif %}
