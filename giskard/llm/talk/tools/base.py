@@ -4,7 +4,6 @@ from typing import TYPE_CHECKING, Optional
 
 from abc import ABC, abstractmethod
 
-import pandas as pd
 from pandas.api.types import is_bool_dtype, is_numeric_dtype
 
 if TYPE_CHECKING:
@@ -102,31 +101,26 @@ class BaseTool(ABC):
         """
         ...
 
+    @property
+    def features_json_type(self) -> dict[str, str]:
+        """Get features' JSON type.
 
-def get_feature_json_type(df: pd.DataFrame) -> dict[str, str]:
-    """Get features' JSON type.
+        Determine the JSON type of features from the tool's `dataset`.
 
-    Determine the JSON type of features from the given `dataset`.
+        Returns
+        -------
+        dict[str, str]
+            The dictionary with columns and related JSON types.
+        """
+        features_json_type = dict()
 
-    Parameters
-    ----------
-    df : pd.DataFrame
-        The dataframe with data.
+        for col in self._dataset.df:
+            if is_bool_dtype(self._dataset.df[col]):
+                features_json_type[col] = "boolean"
+            elif is_numeric_dtype(self._dataset.df[col]):
+                features_json_type[col] = "number"
+            else:
+                # String, datetime and category.
+                features_json_type[col] = "string"
 
-    Returns
-    -------
-    dict[str, str]
-        The dictionary with columns and related JSON types.
-    """
-    feature_json_type = dict()
-
-    for col in df:
-        if is_bool_dtype(df[col]):
-            feature_json_type[col] = "boolean"
-        elif is_numeric_dtype(df[col]):
-            feature_json_type[col] = "number"
-        else:
-            # String, datetime and category.
-            feature_json_type[col] = "string"
-
-    return feature_json_type
+        return features_json_type

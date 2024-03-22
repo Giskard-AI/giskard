@@ -2,7 +2,7 @@ from difflib import SequenceMatcher as SeqM
 
 from giskard.datasets.base import Dataset
 from giskard.llm.talk.config import AVAILABLE_METRICS, FUZZY_SIMILARITY_THRESHOLD, ToolDescription
-from giskard.llm.talk.tools.base import BaseTool, get_feature_json_type
+from giskard.llm.talk.tools.base import BaseTool
 
 
 class MetricTool(BaseTool):
@@ -28,8 +28,6 @@ class MetricTool(BaseTool):
         str
             The Tool's specification.
         """
-        feature_json_type = get_feature_json_type(self._dataset.df)
-
         return {
             "type": "function",
             "function": {
@@ -41,7 +39,9 @@ class MetricTool(BaseTool):
                         "metric_type": {"type": "string", "enum": list(AVAILABLE_METRICS.keys())},
                         "features_dict": {
                             "type": "object",
-                            "properties": {feature: {"type": dtype} for feature, dtype in feature_json_type.items()},
+                            "properties": {
+                                feature: {"type": dtype} for feature, dtype in self.features_json_type.items()
+                            },
                         },
                     },
                     "required": ["metric_type", "features_dict"],
@@ -67,7 +67,7 @@ class MetricTool(BaseTool):
         filtered_df = self._dataset.df
         for col_name, col_value in row_filter.items():
             # Use fuzzy comparison to filter string features.
-            if filtered_df[col_name].dtype == "object":
+            if self.features_json_type[col_name] == "string":
                 index = filtered_df[col_name].apply(
                     lambda x: SeqM(None, x.lower(), col_value.lower()).ratio() >= FUZZY_SIMILARITY_THRESHOLD
                 )

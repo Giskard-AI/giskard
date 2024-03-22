@@ -4,7 +4,7 @@ import pandas as pd
 
 from giskard.datasets.base import Dataset
 from giskard.llm.talk.config import FUZZY_SIMILARITY_THRESHOLD, ToolDescription
-from giskard.llm.talk.tools.base import BaseTool, get_feature_json_type
+from giskard.llm.talk.tools.base import BaseTool
 
 
 class PredictTool(BaseTool):
@@ -30,8 +30,6 @@ class PredictTool(BaseTool):
         str
             The Tool's specification.
         """
-        feature_json_type = get_feature_json_type(self._dataset.df)
-
         return {
             "type": "function",
             "function": {
@@ -42,7 +40,9 @@ class PredictTool(BaseTool):
                     "properties": {
                         "features_dict": {
                             "type": "object",
-                            "properties": {feature: {"type": dtype} for feature, dtype in feature_json_type.items()},
+                            "properties": {
+                                feature: {"type": dtype} for feature, dtype in self.features_json_type.items()
+                            },
                         }
                     },
                     "required": ["features_dict"],
@@ -68,7 +68,7 @@ class PredictTool(BaseTool):
         filtered_df = self._dataset.df
         for col_name, col_value in row_filter.items():
             # Use fuzzy comparison to filter string features.
-            if filtered_df[col_name].dtype == "object":
+            if self.features_json_type[col_name] == "string":
                 index = filtered_df[col_name].apply(
                     lambda x: SeqM(None, x.lower(), col_value.lower()).ratio() >= FUZZY_SIMILARITY_THRESHOLD
                 )
