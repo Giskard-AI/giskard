@@ -1,4 +1,4 @@
-from unittest.mock import Mock
+from unittest.mock import MagicMock, Mock
 
 import numpy as np
 import pandas as pd
@@ -10,7 +10,7 @@ from tests.rag.test_qa_testset import make_testset_df
 
 
 def test_evaluate_from_answers():
-    knowledge_base = Mock()
+    knowledge_base = MagicMock()
     knowledge_base._documents = []
     answers = ["Default answer"] * 6
 
@@ -76,7 +76,7 @@ def test_evaluate_from_answers():
 
 
 def test_evaluate_from_answer_fn():
-    knowledge_base = Mock()
+    knowledge_base = MagicMock()
     knowledge_base._documents = []
 
     def answer_fn(message, history=None):
@@ -86,7 +86,6 @@ def test_evaluate_from_answer_fn():
 
     testset = QATestset(make_testset_df())
     llm_client = Mock()
-    llm_client.complete = Mock()
     llm_client.complete.side_effect = [
         LLMMessage(
             role="assistant",
@@ -122,7 +121,7 @@ def test_evaluate_from_answer_fn():
     assert len(report.failures) == 3
     assert len(report.get_failures(topic="Cheese_1")) == 1
     assert len(report.get_failures(topic="Cheese_2")) == 2
-    assert report._answers == ["Cheesy answer"] * 6
+    assert report._answers == ["Cheesy answer"] * 5 + ["Conversation answer"]
 
     assert len(report.get_failures(question_type="simple")) == 1
     assert len(report.get_failures(question_type="complex")) == 0
@@ -139,6 +138,46 @@ def test_evaluate_from_answer_fn():
     assert len(report.component_scores()) == 5
     assert np.isclose(report.component_scores().loc["GENERATOR"], 1 / 3 + 2 / 9)
     assert np.isclose(report.component_scores().loc["RETRIEVER"], 1 / 3)
+
+    # Without conversation support
+    def answer_fn_no_conv(message):
+        return "ANSWER"
+
+    testset = QATestset(make_testset_df())
+    llm_client = Mock()
+    llm_client.complete.side_effect = [
+        LLMMessage(
+            role="assistant",
+            content="""{"correctness": true, "correctness_reason": "The agent answer is correct."}""",
+        ),
+        LLMMessage(
+            role="assistant",
+            content="""{"correctness": true, "correctness_reason": "The agent answer is correct."}""",
+        ),
+        LLMMessage(
+            role="assistant",
+            content="""{"correctness": false, "correctness_reason": "The agent answer is incorrect."}""",
+        ),
+        LLMMessage(
+            role="assistant",
+            content="""{"correctness": true, "correctness_reason": "The agent answer is correct."}""",
+        ),
+        LLMMessage(
+            role="assistant",
+            content="""{"correctness": false, "correctness_reason": "The agent answer is incorrect."}""",
+        ),
+        LLMMessage(
+            role="assistant",
+            content="""{"correctness": false, "correctness_reason": "The agent answer is incorrect."}""",
+        ),
+        LLMMessage(
+            role="assistant",
+            content="""This is a recommendation test.""",
+        ),
+    ]
+
+    report = evaluate(answer_fn, knowledge_base, testset, llm_client=llm_client)
+    assert len(report.failures) == 3
 
 
 def make_conversation_testset_df():
@@ -179,49 +218,3 @@ def make_conversation_testset_df():
             },
         ]
     )
-
-
-def test_evaluate_conversational_question():
-    knowledge_base = Mock()
-    knowledge_base._documents = []
-    testset = QATestset(make_conversation_testset_df())
-    llm_client = Mock()
-    llm_client.complete = Mock()
-    llm_client.complete.side_effect = [
-        LLMMessage(
-            role="assistant",
-            content="""{"correctness": true, "correctness_reason": "The agent answer is correct."}""",
-        ),
-        LLMMessage(
-            role="assistant",
-            content="""{"correctness": true, "correctness_reason": "The agent answer is correct."}""",
-        ),
-        LLMMessage(
-            role="assistant",
-            content="""{"correctness": false, "correctness_reason": "The agent answer is incorrect."}""",
-        ),
-        LLMMessage(
-            role="assistant",
-            content="""This is a recommendation test.""",
-        ),
-    ]
-
-    def answer_fn(messages, history=None):
-        if history:
-            return "Conversation answer"
-        return "Cheesy answer"
-
-    answer_fn = Mock(side_effect=answer_fn)
-
-    report = evaluate(answer_fn, knowledge_base, testset, llm_client=llm_client, conversation_support=True)
-
-    assert answer_fn.call_count == 3
-
-    assert report._answers == ["Conversation answer"] * 3
-
-    assert len(report.failures) == 1
-    assert len(report.get_failures(topic="Cheese_1")) == 1
-    assert len(report.get_failures(topic="Cheese_2")) == 0
-
-    assert len(report.get_failures(question_type=5)) == 1
-    assert len(report.get_failures(question_type=2)) == 0

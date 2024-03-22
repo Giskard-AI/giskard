@@ -157,3 +157,11 @@ def test_metadata_value_retrieval():
     ]
     assert testset.get_metadata_values("color") == ["blue", "red"]
     assert testset.get_metadata_values("distracting_context") == ["This is a distracting context"]
+
+
+def test_testset_samples_property():
+    testset = QATestset(make_testset_df())
+
+    assert len(testset.samples) == 6
+    assert testset.samples[0] == {"question": "Which milk is used to make Camembert?", "conversation_history": []}
+    assert testset.samples[-1] == {"question": "Where is it from?", "conversation_history": ["Scamorza"]}

@@ -78,7 +78,7 @@ class KnowledgeBase:
     ----------
     knowledge_base_df: pd.DataFrame
         A dataframe containing the whole knowledge base.
-    knowledge_base_columns: Sequence[str], optional
+    columns: Sequence[str], optional
         The list of columns from the `knowledge_base` to consider. If not specified, all columns of the knowledge base
         dataframe will be concatenated to produce a single document.
         Example: if your knowledge base consists in FAQ data with columns "Q" and "A", we will format each row into a
@@ -98,7 +98,7 @@ class KnowledgeBase:
     def __init__(
         self,
         data: pd.DataFrame,
-        columns: Sequence[str] = None,
+        columns: Optional[Sequence[str]] = None,
         seed: int = None,
         llm_client: Optional[LLMClient] = None,
         embedding_model: Optional[str] = "text-embedding-ada-002",
@@ -153,14 +153,14 @@ class KnowledgeBase:
         )
 
     @classmethod
-    def from_pandas(cls, df: pd.DataFrame, columns: Sequence[str], **kwargs) -> "KnowledgeBase":
+    def from_pandas(cls, df: pd.DataFrame, columns: Optional[Sequence[str]] = None, **kwargs) -> "KnowledgeBase":
         """Create a KnowledgeBase from a pandas DataFrame.
 
         Parameters
         ----------
         df: pd.DataFrame
             The DataFrame containing the knowledge base.
-        columns: Sequence[str]
+        columns: Sequence[str], optional
             The list of columns from the `knowledge_base` to consider. If not specified, all columns of the knowledge base
             dataframe will be concatenated to produce a single document.
             Example: if your knowledge base consists in FAQ data with columns "Q" and "A", we will format each row into a
@@ -198,7 +198,7 @@ class KnowledgeBase:
 
     def get_savable_data(self):
         return {
-            "knowledge_base_columns": self._knowledge_base_columns,
+            "columns": self._knowledge_base_columns,
             "embedding_model": self._embedding_model,
             "min_topic_size": self._min_topic_size,
             "topics": {int(k): topic for k, topic in self.topics.items()},
