@@ -142,7 +142,7 @@ knowledge_base = KnowledgeBase.from_pandas(df, columns=["column_1", "column_2"])
 
 
 ## Generate a test set
-By default, **RAGET automatically generates 6 different [question types](q_types)**. The total number of questions is 
+By default, **RAGET automatically generates 6 different [question types](q_types)** (these can be selected if needed, see [advanced question generation](advanced_config)). The total number of questions is 
 divided equally between each question type. To make the question generation more relevant and accurate, you can also 
 provide a description of your agent.
 
@@ -189,7 +189,7 @@ Each row of the test set contains 5 columns:
 - `conversation_history`: not shown in the table above, contain the history of the conversation with the agent as a list, only relevant for conversational question, otherwise it contains an empty list.
 - `metadata`: a dictionary with various metadata about the question, this includes the `question_type`, `seed_document_id` the id of the document used to generate the question and the `topic` of the question
 
-
+(advanced_config)=
 ### Advanced configuration of the question generation
 
 By default, the test set contains all question types. **You can change this by providing question generators** to 
