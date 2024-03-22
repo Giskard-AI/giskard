@@ -1,14 +1,6 @@
 import os
 from enum import Enum
 
-from sklearn.metrics import (
-    classification_report,
-    explained_variance_score,
-    mean_absolute_error,
-    mean_squared_error,
-    r2_score,
-)
-
 
 def get_talk_llm_model() -> str:
     return os.getenv("GSK_TALK_LLM_MODEL", "gpt-4-0125-preview")
@@ -139,14 +131,14 @@ class ToolDescription(str, Enum):
 
 
 AVAILABLE_METRICS = {
-    "accuracy": classification_report,
-    "f1": classification_report,
-    "precision": classification_report,
-    "recall": classification_report,
-    "r2": r2_score,
-    "explained_variance": explained_variance_score,
-    "mse": mean_squared_error,
-    "mae": mean_absolute_error,
+    "accuracy": "test_accuracy",
+    "f1": "test_f1",
+    "precision": "test_precision",
+    "recall": "test_recall",
+    "r2": "test_r2",
+    "rmse": "test_rmse",
+    "mse": "test_mse",
+    "mae": "test_mae",
 }
 
 FUZZY_SIMILARITY_THRESHOLD = 0.85

@@ -82,7 +82,7 @@ class MetricTool(BaseTool):
             if not len(filtered_df):
                 break
 
-        return Dataset(filtered_df, target=None)
+        return Dataset(filtered_df, target=self._dataset.target)
 
     def _validate_features_dict(self, features_dict: dict[str, any]) -> None:
         """Validate the `features_dict` contains correct features.
@@ -115,19 +115,18 @@ class MetricTool(BaseTool):
         str
             The calculated performance metric.
         """
-        # Get the predicted labels.
+
         self._validate_features_dict(features_dict)
 
+        # Get the predicted labels.
         model_input = self._get_input_from_dataset(features_dict)
         if len(model_input) == 0:
             raise ValueError("No records found in the dataset for the given combination of feature values.")
 
-        prediction = self._model.predict(model_input).prediction
-
-        # Get the ground-truth labels.
-        ground_truth = model_input.df[self._dataset.target]
-
         # Calculate the metric value.
-        metric = AVAILABLE_METRICS[metric_type]
-        metric_value = metric(ground_truth, prediction)
+        # Temporary workaround, unless we solve the circular import error, when importing performance at the top level.
+        from giskard.testing.tests import performance
+
+        metric = getattr(performance, AVAILABLE_METRICS[metric_type])
+        metric_value = metric(self._model, model_input).execute()
         return str(metric_value)
