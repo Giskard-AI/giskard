@@ -229,6 +229,14 @@ class GiskardClient:
             },
         )
 
+    def start_managed_worker(self, kernel_name: str):
+        self._session.post(f"kernels/start/{kernel_name}")
+        logger.info("The worker is starting up")
+
+    def stop_managed_worker(self, kernel_name: str):
+        self._session.post(f"kernels/stop/{kernel_name}")
+        logger.info("The worker has been requested to stop")
+
     def create_project(self, project_key: str, name: str, description: str = None, kernel_name: str = None) -> Project:
         """Function to create a project in Giskard
 
