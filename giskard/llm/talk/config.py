@@ -22,8 +22,7 @@ You interact with the model through various tools. These tools are functions who
 the necessary context to answer a user's question.
 
 
-The descriptions of these tools is provided below:
-Tools descriptions: 
+The description of these tools is provided below:
 {tools_description}
 
 
