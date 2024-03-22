@@ -47,13 +47,23 @@ def evaluate(
     RAGReport
         The report of the evaluation.
     """
-
     if testset is None and knowledge_base is None:
         raise ValueError("At least one of testset or knowledge base must be provided to the evaluate function.")
 
     if testset is None and not isinstance(answer_fn, Sequence):
         raise ValueError(
             "If the testset is not provided, the answer_fn must be a list of answers to ensure the matching between questions and answers."
+        )
+
+    # Check basic types, in case the user passed the params in the wrong order
+    if knowledge_base is not None and not isinstance(knowledge_base, KnowledgeBase):
+        raise ValueError(
+            f"knowledge_base must be a KnowledgeBase object (got {type(knowledge_base)} instead). Are you sure you passed the parameters in the right order?"
+        )
+
+    if testset is not None and not isinstance(testset, QATestset):
+        raise ValueError(
+            f"testset must be a QATestset object (got {type(testset)} instead). Are you sure you passed the parameters in the right order?"
         )
 
     if testset is None:

@@ -5,12 +5,12 @@ import pandas as pd
 import pytest
 
 from giskard.llm.client.base import LLMMessage
-from giskard.rag import QATestset, evaluate
+from giskard.rag import KnowledgeBase, QATestset, evaluate
 from tests.rag.test_qa_testset import make_testset_df
 
 
 def test_evaluate_from_answers():
-    knowledge_base = MagicMock()
+    knowledge_base = MagicMock(KnowledgeBase)
     knowledge_base._documents = []
     answers = ["Default answer"] * 6
 
@@ -76,7 +76,7 @@ def test_evaluate_from_answers():
 
 
 def test_evaluate_from_answer_fn():
-    knowledge_base = MagicMock()
+    knowledge_base = MagicMock(KnowledgeBase)
     knowledge_base._documents = []
 
     def answer_fn(message, history=None):
@@ -218,3 +218,13 @@ def make_conversation_testset_df():
             },
         ]
     )
+
+
+def test_user_friendly_error_if_parameters_are_swapped():
+    llm_client = MagicMock()
+    llm_client.embeddings.side_effect = [np.random.rand(6, 10)]
+    knowledge_base = KnowledgeBase.from_pandas(df=pd.DataFrame({"text": ["test"] * 6}), llm_client=llm_client)
+    testset = QATestset(make_testset_df())
+
+    with pytest.raises(ValueError, match="must be a KnowledgeBase object"):
+        evaluate([], testset, knowledge_base, llm_client=llm_client)
