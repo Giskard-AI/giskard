@@ -640,7 +640,7 @@ class BaseModel(ABC):
             PredictTool.default_name: PredictTool(model=self, dataset=dataset),
             MetricTool.default_name: MetricTool(model=self, dataset=dataset),
             SHAPExplanationTool.default_name: SHAPExplanationTool(model=self, dataset=dataset),
-            IssuesScannerTool.default_name: IssuesScannerTool(scan_report=scan_report),
+            IssuesScannerTool.default_name: IssuesScannerTool(model=self, dataset=dataset, scan_report=scan_report),
         }
 
     @staticmethod

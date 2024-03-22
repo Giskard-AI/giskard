@@ -28,7 +28,7 @@ class MetricTool(BaseTool):
         str
             The Tool's specification.
         """
-        feature_json_type = get_feature_json_type(self._dataset)
+        feature_json_type = get_feature_json_type(self._dataset.df)
 
         return {
             "type": "function",

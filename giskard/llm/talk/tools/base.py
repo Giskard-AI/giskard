@@ -4,6 +4,9 @@ from typing import TYPE_CHECKING, Optional
 
 from abc import ABC, abstractmethod
 
+import pandas as pd
+from pandas.api.types import is_bool_dtype, is_numeric_dtype
+
 if TYPE_CHECKING:
     from giskard.datasets.base import Dataset
     from giskard.models.base import BaseModel
@@ -26,8 +29,8 @@ class BaseTool(ABC):
 
     def __init__(
         self,
-        model: Optional[BaseModel] = None,
-        dataset: Optional[Dataset] = None,
+        model: BaseModel,
+        dataset: Dataset,
         scan_report: Optional[ScanReport] = None,
         name: Optional[str] = None,
         description: Optional[str] = None,
@@ -36,9 +39,9 @@ class BaseTool(ABC):
 
         Parameters
         ----------
-        model : BaseModel, optional
+        model : BaseModel
             The Giskard Model.
-        dataset : Dataset, optional
+        dataset : Dataset
             The Giskard Dataset.
         scan_report : ScanReport, optional
             The Giskard ScanReport object.
@@ -100,21 +103,33 @@ class BaseTool(ABC):
         ...
 
 
-def get_feature_json_type(dataset: Dataset) -> dict[str, str]:
+def get_feature_json_type(df: pd.DataFrame) -> dict[str, str]:
     """Get features' JSON type.
 
     Determine the JSON type of features from the given `dataset`.
 
     Parameters
     ----------
-    dataset : Dataset
-        The Giskard Dataset.
+    df : pd.DataFrame
+        The dataframe with data.
 
     Returns
     -------
     dict[str, str]
         The dictionary with columns and related JSON types.
     """
-    number_columns = {column: "number" for column in dataset.df.select_dtypes(include=(int, float)).columns}
-    string_columns = {column: "string" for column in dataset.df.select_dtypes(exclude=(int, float)).columns}
-    return number_columns | string_columns
+    # number_columns = {column: "number" for column in dataset.df.select_dtypes(include=(int, float)).columns}
+    # string_columns = {column: "string" for column in dataset.df.select_dtypes(exclude=(int, float)).columns}
+
+    feature_json_type = dict()
+
+    for col in df:
+        if is_bool_dtype(df[col]):
+            feature_json_type[col] = "boolean"
+        elif is_numeric_dtype(df[col]):
+            feature_json_type[col] = "number"
+        else:
+            # String, datetime and category.
+            feature_json_type[col] = "string"
+
+    return feature_json_type
