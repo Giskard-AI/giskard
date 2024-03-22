@@ -173,6 +173,7 @@ class KnowledgeBase:
     @property
     def _embeddings(self):
         if self._embeddings_inst is None:
+            logger.info("Computing Knowledge Base embeddings.")
             self._embeddings_inst = self._llm_client.embeddings(
                 [doc.content for doc in self._documents], model=self._embedding_model, chunk_size=self.chunk_size
             )
@@ -224,7 +225,7 @@ class KnowledgeBase:
         return self._topics_inst
 
     def _find_topics(self):
-        logger.debug("Running HDBSCAN to cluster topics")
+        logger.info("Finding topics in the knowledge base.")
         hdbscan = HDBSCAN(
             min_cluster_size=self._min_topic_size,
             min_samples=3,
@@ -252,7 +253,7 @@ class KnowledgeBase:
                 "min_topic_size": self._min_topic_size,
             },
         )
-
+        logger.info(f"Found {len(topics)} topics in the knowledge base.")
         return topics
 
     def _get_topic_name(self, topic_documents):
