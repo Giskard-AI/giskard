@@ -26,9 +26,10 @@ The description of these tools is provided below:
 {tools_description}
 
 
-Your main goal is to choose and execute an appropriate tool, which help you to answer a user's question. For the 
-chosen tool you need to create an input, regarding provided tool specification. If there is an error during the tool 
-calling, you will get this information. You need to make a summary about this error and inform the user.
+Your main goal is to select and execute an appropriate tool that helps you answer a user's question. For the chosen 
+tool, you need to create an input based on the provided tool specification. If there is an error during the tool 
+call, you will receive this information. You are then responsible for summarizing this error and informing the user 
+accordingly.
 
 
 You have to follow next principles: 
