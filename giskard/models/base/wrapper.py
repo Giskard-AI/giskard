@@ -134,9 +134,6 @@ class WrapperModel(BaseModel, ABC):
 
         raw_prediction = np.concatenate(outputs)
 
-        if self.is_regression:
-            return raw_prediction.astype(float)
-
         return raw_prediction
 
     def _possibly_fix_predictions_shape(self, raw_predictions: np.ndarray):
