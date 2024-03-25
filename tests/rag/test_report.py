@@ -1,4 +1,5 @@
-from unittest.mock import Mock
+import uuid
+from unittest.mock import Mock, patch
 
 import numpy as np
 import pandas as pd
@@ -6,13 +7,15 @@ from bokeh.plotting import figure
 
 from giskard.rag import QATestset, RAGReport
 from giskard.rag.knowledge_base import KnowledgeBase
-from tests.rag.test_qa_testset import make_testset_df
+from tests.rag.test_qa_testset import make_testset_samples
+
+TEST_UUIDS = ["{}".format(i) for i in range(6)]
 
 
 def test_report_plots():
     knowledge_base = Mock()
 
-    testset = QATestset(make_testset_df())
+    testset = QATestset(make_testset_samples())
 
     answers = ["Default answer"] * 6
 
@@ -62,27 +65,25 @@ def test_report_plots():
 
 
 def test_report_save_load(tmp_path):
-    df = make_testset_df()
+    question_samples = make_testset_samples()
+    testset = QATestset(question_samples)
     llm_client = Mock()
-    llm_client.embeddings = Mock()
-    llm_client.embeddings.return_value = np.random.randn(len(df), 8)
+    llm_client.embeddings.return_value = np.random.randn(len(testset), 8)
+    llm_client.reduced_embeddings.return_value = np.random.randn(len(testset), 8)
 
-    knowledge_base = KnowledgeBase(df, llm_client=llm_client)
+    with patch.object(uuid, "uuid4", side_effect=TEST_UUIDS):
+        knowledge_base = KnowledgeBase(testset.to_pandas(), llm_client=llm_client)
     knowledge_base._topics_inst = {0: "Cheese_1", 1: "Cheese_2"}
     for doc_idx, doc in enumerate(knowledge_base._documents):
         if doc_idx < 3:
             doc.topic_id = 0
         else:
             doc.topic_id = 1
+        doc.reduced_embeddings = np.random.randn(8)
 
     knowledge_base._documents
 
-    testset = QATestset(make_testset_df())
-
     answers = ["Default answer"] * 6
-
-    answers = ["Default answer"] * 6
-
     eval_results = [
         {"id": "1", "correctness": True, "reason": "The agent answer is correct."},
         {"id": "2", "correctness": True, "reason": "The agent answer is correct."},
