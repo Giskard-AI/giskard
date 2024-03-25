@@ -62,7 +62,7 @@ class CorrectnessMetric(Metric):
     def __call__(self, testset: QATestset, answers: Sequence[str], llm_client: LLMClient) -> dict:
         results = []
         for sample, answer in maybe_tqdm(
-            zip(testset.to_pandas().reset_index().itertuples(), answers),
+            zip(testset.samples, answers),
             desc=f"{self.name} evaluation",
             total=len(answers),
         ):

@@ -15,6 +15,9 @@ from .testset_generation import generate_testset
 
 logger = logging.getLogger(__name__)
 
+REPORT_CORRECTNESS_COL = "correctness"
+ANSWER_FN_HISTORY_PARAM = "history"
+
 
 def evaluate(
     answer_fn: Union[Callable, Sequence[str]],
@@ -76,6 +79,7 @@ def evaluate(
     # @TODO: improve this
     metrics = metrics or []
     if not any(isinstance(metric, CorrectnessMetric) for metric in metrics):
+        # By default only correctness is computed as it is required to build the report
         metrics.append(CorrectnessMetric(name="Correctness", agent_description=agent_description))
 
     metrics_results = {}
@@ -85,8 +89,8 @@ def evaluate(
     report = RAGReport(testset, answers, metrics_results, knowledge_base)
     recommendation = get_rag_recommendation(
         report.topics,
-        report.correctness_by_question_type().to_dict()["correctness"],
-        report.correctness_by_topic().to_dict()["correctness"],
+        report.correctness_by_question_type().to_dict()[REPORT_CORRECTNESS_COL],
+        report.correctness_by_topic().to_dict()[REPORT_CORRECTNESS_COL],
         llm_client,
     )
     report._recommendation = recommendation
@@ -106,12 +110,15 @@ def evaluate(
 
 def _compute_answers(answer_fn, testset):
     answers = []
-    needs_history = len(signature(answer_fn).parameters) > 1
+    needs_history = (
+        len(signature(answer_fn).parameters) > 1 and ANSWER_FN_HISTORY_PARAM in signature(answer_fn).parameters
+    )
+
     for sample in maybe_tqdm(testset.samples, desc="Asking questions to the agent", total=len(testset)):
         kwargs = {}
 
         if needs_history:
-            kwargs["history"] = sample["conversation_history"]
+            kwargs[ANSWER_FN_HISTORY_PARAM] = sample.conversation_history
 
-        answers.append(answer_fn(sample["question"], **kwargs))
+        answers.append(answer_fn(sample.question, **kwargs))
     return answers

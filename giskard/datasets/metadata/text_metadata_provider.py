@@ -19,7 +19,7 @@ class TextMetadataProvider(MetadataProvider):
             {
                 "text_length": values.map(len),
                 "charset": pd.Categorical(values.map(_detect_charset)),
-                "language": values.map(_detect_lang),
+                "language": values.map(detect_lang),
             },
             index=values.index,
         )
@@ -35,7 +35,7 @@ def _detect_charset(text: str):
     return charset or "undefined"
 
 
-def _detect_lang(text: str):
+def detect_lang(text: str):
     if len(text.split()) <= 5:
         return pd.NA
     try:

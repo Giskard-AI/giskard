@@ -21,7 +21,7 @@ from ..llm.client.base import LLMClient
 from ..visualization.widget import get_template
 from .knowledge_base import KnowledgeBase
 from .question_generators import COMPONENT_DESCRIPTIONS, QUESTION_ATTRIBUTION, RAGComponents
-from .testset import QATestset
+from .testset import QATestset, QuestionSample
 
 
 def get_colors(values, cmap_name="RdYlGn"):
@@ -194,6 +194,7 @@ class RAGReport:
                 metrics_results[metric_name].set_index("id", inplace=True)
 
         report_details = json.load(open(path / "report_details.json", "r"))
+        testset._dataframe.index = testset._dataframe.index.astype(str)
 
         report = cls(testset, answers, metrics_results, knowledge_base)
         report._recommendation = report_details["recommendation"]
@@ -302,9 +303,12 @@ class RAGReport:
         tabs = [
             TabPanel(
                 child=self._knowledge_base.get_failure_plot(
-                    self._dataframe[
-                        ["question", "reference_answer", "agent_answer", "correctness", "metadata"]
-                    ].to_dict(orient="records")
+                    [
+                        QuestionSample(**question, id="", reference_context="", conversation_history=[])
+                        for question in self._dataframe[
+                            ["question", "reference_answer", "agent_answer", "correctness", "metadata"]
+                        ].to_dict(orient="records")
+                    ]
                 ),
                 title="Failures",
             ),

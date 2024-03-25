@@ -61,6 +61,7 @@ class _LLMBasedQuestionGenerator(QuestionGenerator):
             try:
                 return json.loads(match.group(1), strict=False)
             except json.JSONDecodeError:
+                logger.debug("String matching didn't fix the format, trying to fix it with the LLM itself.")
                 pass
 
         # Final attempt, let's try to fix the JSON with the LLM itself

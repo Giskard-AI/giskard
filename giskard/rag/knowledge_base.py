@@ -1,12 +1,13 @@
-from typing import Optional, Sequence
+from typing import Dict, Optional, Sequence
 
 import logging
+import uuid
 
 import numpy as np
 import pandas as pd
 from sklearn.cluster import HDBSCAN
 
-from ..datasets.metadata.text_metadata_provider import _detect_lang
+from ..datasets.metadata.text_metadata_provider import detect_lang
 from ..llm.client import LLMClient, LLMMessage, get_default_client
 from ..llm.errors import LLMImportError
 from ..utils.analytics_collector import analytics
@@ -21,6 +22,8 @@ except ImportError as err:
 
 logger = logging.getLogger("giskard.rag")
 
+LANGDETECT_MAX_TEXT_LENGTH = 300
+LANGDETECT_DOCUMENTS = 10
 
 TOPIC_SUMMARIZATION_PROMPT = """Your task is to define the topic which best represents a set of documents.
 
@@ -56,17 +59,21 @@ The topic is:
 class Document:
     """A class to wrap the elements of the knowledge base into a unified format."""
 
-    def __init__(self, document: dict, idx: int, features: Optional[Sequence] = None, topic_id=None):
+    def __init__(
+        self, document: Dict[str, str], doc_id: str = None, features: Optional[Sequence] = None, topic_id: int = None
+    ):
         features = features if features is not None else list(document.keys())
 
-        if len(features) == 1:
-            self.content = document[features[0]]
-        else:
-            self.content = "\n".join(f"{feat}: {document[feat]}" for feat in features)
+        self.content = (
+            "\n".join(f"{k}: {v}" for k, v in document.items() if k in features)
+            if len(features) > 1
+            else document[features[0]]
+        )
 
         self.metadata = document
-        self.id = idx
+        self.id = doc_id or str(uuid.uuid4())
         self.embeddings = None
+        self.reduced_embeddings = None
         self.topic_id = topic_id
 
 
@@ -105,21 +112,21 @@ class KnowledgeBase:
         min_topic_size: Optional[int] = None,
         chunk_size: int = 2048,
     ) -> None:
-        if len(data) > 0:
-            self._documents = [
-                Document(
-                    knowledge_chunk,
-                    features=columns,
-                    idx=idx,
-                )
-                for idx, knowledge_chunk in enumerate(data.to_dict("records"))
-            ]
-        else:
-            raise ValueError("Cannot generate a vector store from empty DataFrame.")
+        if len(data) == 0:
+            raise ValueError("Cannot generate a Knowledge Base from empty DataFrame.")
+
+        self._documents = [
+            Document(
+                knowledge_chunk,
+                features=columns,
+            )
+            for knowledge_chunk in data.to_dict("records")
+        ]
 
         self._documents = [doc for doc in self._documents if doc.content.strip() != ""]
-        for i, doc in enumerate(self._documents):
-            doc.id = i
+
+        if len(self) == 0:
+            raise ValueError("Cannot generate a Knowledge Base with empty documents.")
 
         self._knowledge_base_df = data
         self._knowledge_base_columns = columns
@@ -128,6 +135,7 @@ class KnowledgeBase:
         self._llm_client = llm_client or get_default_client()
         self._embedding_model = embedding_model
 
+        # Estimate the minimum number of documents to form a topic
         self._min_topic_size = min_topic_size or round(2 + np.log(len(self._documents)))
         self.chunk_size = chunk_size
 
@@ -136,7 +144,11 @@ class KnowledgeBase:
         self._index_inst = None
         self._reduced_embeddings_inst = None
 
-        document_languages = [_detect_lang(doc.content[:300]) for doc in self._rng.choice(self._documents, size=10)]
+        # Detect language of the documents, use only the first characters of a few documents to speed up the process
+        document_languages = [
+            detect_lang(doc.content[:LANGDETECT_MAX_TEXT_LENGTH])
+            for doc in self._rng.choice(self._documents, size=LANGDETECT_DOCUMENTS)
+        ]
         languages, occurences = np.unique(
             ["en" if (pd.isna(lang) or lang == "unknown") else lang for lang in document_languages], return_counts=True
         )
@@ -191,6 +203,8 @@ class KnowledgeBase:
                 n_components=2,
             )
             self._reduced_embeddings_inst = reducer.fit_transform(self._embeddings)
+            for doc, emb in zip(self._documents, self._reduced_embeddings_inst):
+                doc.reduced_embeddings = emb
         return self._reduced_embeddings_inst
 
     @property
@@ -283,9 +297,6 @@ class KnowledgeBase:
     def get_failure_plot(self, question_evaluation: Sequence[dict] = None):
         return get_failure_plot(self, question_evaluation)
 
-    def get_document(self, doc_id: int) -> Document:
-        return self._documents_index[doc_id]
-
     def get_random_document(self):
         return self._rng.choice(self._documents)
 
@@ -311,3 +322,6 @@ class KnowledgeBase:
 
     def __len__(self):
         return len(self._documents)
+
+    def __getitem__(self, doc_id: str):
+        return self._documents_index[doc_id]
