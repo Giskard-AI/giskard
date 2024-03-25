@@ -1,10 +1,10 @@
 import uuid
 
 from ..knowledge_base import KnowledgeBase
-from .base import _LLMBasedQuestionGenerator, GenerateFromSingleQuestionMixin
+from .base import GenerateFromSingleQuestionMixin, _LLMBasedQuestionGenerator
 from .prompt import QAGenerationPrompt
 
-OoKB_PROMPT = """
+OOKB_PROMPT = """
 You are a powerful auditor and mindful judger, your role is to generate question from a given context and 
 by adding some fake or non-existing details/facts to the context to check whether the agent model you are auditing is capable of reasoning and answering questions
 which has no direct answer in the provided context.
@@ -20,16 +20,14 @@ You will return the isolated detail/fact and the question based exclusively on t
 You must output a single JSON object with keys 'selected detail/fact', 'fake detail/fact' and 'question' , without any other wrapping text or markdown and everything is in low letter. Make sure you only return valid JSON. 
 """
 
-OoKB_QUESTION_EXAMPLE_INPUT = """Paul Graham liked to buy a baguette every day at the local market."""
+OOKB_QUESTION_EXAMPLE_INPUT = """Paul Graham liked to buy a baguette every day at the local market."""
 
-OoKB_QUESTION_EXAMPLE_OUTPUT = """
-
+OOKB_QUESTION_EXAMPLE_OUTPUT = """
 {   
     "selected detail/fact": "Paul Graham liked to buy a baguette every day at the local market.",
     "fake detail/fact": "Paul Graham paid 1 USD for a baguette",
     "question": "How much did Paul pay for the baguette?"
 }
-
 """
 
 QUESTION_CHECK_PROMPT = """
@@ -63,23 +61,21 @@ QUESTION_FILTER_INPUT_TEMPLATE = """
 """
 
 QUESTION_FILTER_INPUT_EXAMPLE = QUESTION_FILTER_INPUT_TEMPLATE.format(
-    question = "What was the name of the Boston investment bank where Jessica worked?", 
-    context = "Jessica was in charge of marketing at a Boston investment bank.",
-    related_context = "[11]\n\nIn the print era, the channel for publishing essays had been vanishingly small. Except for a few officially anointed thinkers who went to the right parties in New York, the only people allowed to publish essays were specialists writing about their specialties. There were so many essays that had never been written, because there had been no way to publish them. Now they could be, and I was going to write them. [12]\n\nI've worked on several different things, but to the extent there was a turning point where I figured out what to work on, it was when I started publishing essays online. From then on I knew that whatever else I did, I'd always write essays too.\n\nI knew that online essays would be a marginal medium at first. Socially they'd seem more like rants posted by nutjobs on their GeoCities sites than the genteel and beautifully typeset compositions published in The New Yorker. But by this point I knew enough to find that encouraging instead of discouraging.\n\nOne of the most conspicuous patterns I've noticed in my life is how well it has worked, for me at least, to work on things that weren't prestigious. Still life has always been the least prestigious form of painting. Viaweb and Y Combinator both seemed lame when we started them. I still get the glassy eye from strangers when they ask what I'm writing, and I explain that it's an essay I'm going to publish on my web site. Even Lisp, though prestigious intellectually in something like the way Latin is, also seems about as hip.\n\nIt's not that unprestigious types of work are good per se. But when you find yourself drawn to some kind of work despite its current lack of prestige, it's a sign both that there's something real to be discovered there, and that you have the right kind of motives. Impure motives are a big danger for the ambitious. If anything is going to lead you astray, it will be the desire to impress people. So while working on things that aren't prestigious doesn't guarantee you're on the right track, it at least guarantees you're not on the most common type of wrong one.\n\nOver the next several years I wrote lots of essays about all kinds of different topics. O'Reilly reprinted a collection of them as a book, called Hackers & Painters after one of the essays in it. I also worked on spam filters, and did some more painting. I used to have dinners for a group of friends every thursday night, which taught me how to cook for groups. And I bought another building in Cambridge, a former candy factory (and later, twas said, porn studio), to use as an office.\n\nOne night in October 2003 there was a big party at my house. It was a clever idea of my friend Maria Daniels, who was one of the thursday diners. Three separate hosts would all invite their friends to one party. So for every guest, two thirds of the other guests would be people they didn't know but would probably like. One of the guests was someone I didn't know but would turn out to like a lot: a woman called Jessica Livingston. A couple days later I asked her out.\n\nJessica was in charge of marketing at a Boston investment bank. This bank thought it understood startups, but over the next year, as she met friends of mine from the startup world, she was surprised how different reality was. And how colorful their stories were. So she decided to compile a book of interviews with startup founders.\n\nWhen the bank had financial problems and she had to fire half her staff, she started looking for a new job. In early 2005 she interviewed for a marketing job at a Boston VC firm. It took them weeks to make up their minds, and during this time I started telling her about all the things that needed to be fixed about venture capital. They should make a larger number of smaller investments instead of a handful of giant ones, they should be funding younger, more technical founders instead of MBAs, they should let the founders remain as CEO, and so on.\n\nOne of my tricks for writing essays had always been to give talks. The prospect of having to stand up in front of a group of people and tell them something that won't waste their time is a great spur to the imagination. When the Harvard Computer Society, the undergrad computer club, asked me to give a talk, I decided I would tell them how to start a startup. Maybe they'd be able to avoid the worst of the mistakes we'd made.")
+    question="What was the name of the Boston investment bank where Jessica worked?",
+    context="Jessica was in charge of marketing at a Boston investment bank.",
+    related_context="Jessica was in charge of marketing at a Boston investment bank. This bank thought it understood startups, but over the next year, as she met friends of mine from the startup world, she was surprised how different reality was. And how colorful their stories were. So she decided to compile a book of interviews with startup founders.",
+)
 
-QUESTION_FILTER_OUTPUT_EXAMPLE = """
-
-{
+QUESTION_FILTER_OUTPUT_EXAMPLE = """{
     "can_be_answered": false,
     "correctness_reason": "The name of the Boston investment bank where Jessica worked is not directly mentioned in the context."
 }
-
 """
 
 DUMMY_ANSWER = "This question can not be answered by the context. No sufficient information is provided in the context to answer this question."
 
 
-class OutofKnowledgeBaseGenerator(GenerateFromSingleQuestionMixin, _LLMBasedQuestionGenerator):
+class OutOfKnowledgeBaseGenerator(GenerateFromSingleQuestionMixin, _LLMBasedQuestionGenerator):
     """
     Out of Knowledge Base question generator that generates questions from a KnowledgeBase.
 
@@ -97,27 +93,20 @@ class OutofKnowledgeBaseGenerator(GenerateFromSingleQuestionMixin, _LLMBasedQues
         The temperature to use in the LLM for question generation. The default is 0.5.
     """
 
-    _OoKB_question_generation_prompt = QAGenerationPrompt(
-        system_prompt=OoKB_PROMPT,
-        example_input=OoKB_QUESTION_EXAMPLE_INPUT,
-        example_output=OoKB_QUESTION_EXAMPLE_OUTPUT,
+    _OOKB_question_generation_prompt = QAGenerationPrompt(
+        system_prompt=OOKB_PROMPT,
+        example_input=OOKB_QUESTION_EXAMPLE_INPUT,
+        example_output=OOKB_QUESTION_EXAMPLE_OUTPUT,
     )
 
-    _OoKB_question_check_prompt = QAGenerationPrompt(
+    _OOKB_question_check_prompt = QAGenerationPrompt(
         system_prompt=QUESTION_CHECK_PROMPT,
         user_input_template=QUESTION_FILTER_INPUT_TEMPLATE,
         example_input=QUESTION_FILTER_INPUT_EXAMPLE,
-        example_output=QUESTION_FILTER_OUTPUT_EXAMPLE
+        example_output=QUESTION_FILTER_OUTPUT_EXAMPLE,
     )
 
     _question_type = "out of scope"
-
-    # TODO: split the following function into two parts,
-
-    # 1. generate one single question by using OoKB_PROMPT with example input and output
-    # 2. check the question by using QUESTION_FILTER_INPUT_TEMPLATE with example input and output
-    # 3. if the question can not be answered by the context, return the Question Object with the DUMMY_ANSWER
-    # 4. if the question can be answered by the context, back to step 1 and generate a new question and check it again until the question can not be answered by the context.
 
     def generate_single_question(self, knowledge_base: KnowledgeBase, agent_description: str, language: str) -> dict:
         """
@@ -125,8 +114,13 @@ class OutofKnowledgeBaseGenerator(GenerateFromSingleQuestionMixin, _LLMBasedQues
 
         Parameters
         ----------
-        context_documents : Sequence[Document]
-            The context documents to generate the question from.
+        knowledge_base: KnowledgeBase
+            The knowledge base to generate the question from.
+        agent_description: str
+            The description of the agent to generate the question for.
+        language: str
+            The language to generate the question in.
+
 
         Returns
         -------
@@ -141,27 +135,24 @@ class OutofKnowledgeBaseGenerator(GenerateFromSingleQuestionMixin, _LLMBasedQues
 
         reference_context = "\n\n".join([f"Document {doc.id}: {doc.content}" for doc in context_documents])
 
-        # 3 attempts to generate a question that can not be answered by the context
         for _ in range(3):
-            # setup the ookb question generation prompt
-            question_messages = self._OoKB_question_generation_prompt.to_messages(
+            # setup the OOKB question generation prompt
+            question_messages = self._OOKB_question_generation_prompt.to_messages(
                 system_prompt_input={"agent_description": agent_description, "language": language},
                 user_input=seed_document.content,
             )
 
-            print("current number of runs is: ", _)
-
             generated_qa = self._llm_complete(messages=question_messages)
 
             # check the generated question
-            check_messages = self._OoKB_question_check_prompt.to_messages(
+            check_messages = self._OOKB_question_check_prompt.to_messages(
                 system_prompt_input={"agent_description": agent_description, "language": language},
-                user_input=dict(question=generated_qa["question"], context=seed_document.content, related_context=context_str)
+                user_input=dict(
+                    question=generated_qa["question"], context=seed_document.content, related_context=context_str
+                ),
             )
 
             check_result = self._llm_complete(messages=check_messages)
-
-            print("check_result: ", check_result)
 
             if bool(check_result["can_be_answered"]):
                 continue
@@ -178,7 +169,8 @@ class OutofKnowledgeBaseGenerator(GenerateFromSingleQuestionMixin, _LLMBasedQues
             }
 
             return question
-        
+
         raise Exception("Can not generate a question that can not be answered by the context after 3 attempts.")
 
-OoKB_questions = OutofKnowledgeBaseGenerator()
+
+ookb_questions = OutOfKnowledgeBaseGenerator()
