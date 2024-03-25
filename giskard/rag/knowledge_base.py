@@ -129,7 +129,7 @@ class KnowledgeBase:
             raise ValueError("Cannot generate a Knowledge Base with empty documents.")
 
         self._knowledge_base_df = data
-        self._knowledge_base_columns = columns
+        self._columns = columns
 
         self._rng = np.random.default_rng(seed=seed)
         self._llm_client = llm_client or get_default_client()
@@ -213,7 +213,7 @@ class KnowledgeBase:
 
     def get_savable_data(self):
         return {
-            "columns": self._knowledge_base_columns,
+            "columns": self._columns,
             "embedding_model": self._embedding_model,
             "min_topic_size": self._min_topic_size,
             "topics": {int(k): topic for k, topic in self.topics.items()},

@@ -1,24 +1,25 @@
-from typing import Sequence, Union
+from typing import Sequence
 
 import logging
 
-from datasets import Dataset
+import nest_asyncio
 
 from ...llm.client import LLMClient, LLMMessage, get_default_client
-from ..testset import QATestset
 from .base import Metric
 
+nest_asyncio.apply()
 logger = logging.getLogger(__name__)
 
 try:
     from langchain_core.outputs import LLMResult
     from langchain_core.outputs.generation import Generation
-    from ragas import evaluate
     from ragas.embeddings import BaseRagasEmbeddings
     from ragas.llms import BaseRagasLLM
     from ragas.llms.prompt import PromptValue
     from ragas.metrics import answer_relevancy, context_precision, context_recall, faithfulness
     from ragas.metrics.base import Metric as BaseRagasMetric
+    from ragas.run_config import RunConfig
+
 
 except ImportError as err:
     logger.error(
@@ -73,75 +74,37 @@ class RagasMetric(Metric):
     """
 
     def __init__(
-        self, name: str, metrics: Union[BaseRagasMetric, Sequence[BaseRagasMetric]], context_window_length: int = 8192
+        self, name: str, metric: BaseRagasMetric, context_window_length: int = 8192, llm_client: LLMClient = None
     ) -> None:
         self.name = name
-        self.metrics = metrics if isinstance(metrics, Sequence) else [metrics]
+        self.metric = metric
         self.context_window_length = context_window_length
+        self._llm_client = llm_client
 
-    def __call__(self, testset: QATestset, answers: Sequence[str], llm_client: LLMClient) -> dict:
+    def __call__(self, question_sample, answer) -> dict:
+        llm_client = self._llm_client or get_default_client()
         ragas_llm = RagasLLMWrapper(llm_client, self.context_window_length)
         ragas_embedddings = RagasEmbeddingsWrapper(llm_client)
 
-        testset_df = testset.to_pandas().copy()
-        testset_df["answer"] = answers
-        testset_df.rename(columns={"reference_context": "contexts", "reference_answer": "ground_truth"}, inplace=True)
-        testset_df["contexts"] = testset_df["contexts"].apply(lambda x: x.split("\n------\n"))
-        dataset = Dataset.from_pandas(testset_df[["question", "ground_truth", "contexts", "answer"]])
+        run_config = RunConfig()
 
-        ragas_metrics_df = evaluate(
-            dataset,
-            metrics=self.metrics,
-            llm=ragas_llm,
-            embeddings=ragas_embedddings,
-        ).to_pandas()
+        if hasattr(self.metric, "llm"):
+            self.metric.llm = ragas_llm
+        if hasattr(self.metric, "embeddings"):
+            self.metric.embeddings = ragas_embedddings
 
-        ragas_metrics_df = ragas_metrics_df.rename(
-            columns={metric.name: f"{self.name}_{metric.name}" for metric in self.metrics}
-        )
-        ragas_metrics_result = {
-            f"{self.name}_{metric.name}": ragas_metrics_df[["id", f"{self.name}_{metric.name}"]].set_index("id")
-            for metric in self.metrics
+        self.metric.init(run_config)
+
+        ragas_sample = {
+            "question": question_sample["question"],
+            "answer": answer,
+            "contexts": question_sample["reference_context"].split("\n\n"),
+            "ground_truth": question_sample["reference_answer"],
         }
-        return ragas_metrics_result
+        return {self.name: self.metric.score(ragas_sample)}
 
 
-def ragas_metric(question_sample, answer, metric, llm_client=None):
-    llm_client = llm_client or get_default_client()
-    ragas_llm = RagasLLMWrapper(llm_client, 8192)
-    ragas_embedddings = RagasEmbeddingsWrapper(llm_client)
-
-    if hasattr(metric, "llm"):
-        metric.llm = ragas_llm
-    if hasattr(metric, "embeddings"):
-        metric.embeddings = ragas_embedddings
-
-    ragas_sample = {
-        "question": [question_sample.question],
-        "answer": [answer],
-        "contexts": [question_sample.reference_context.split("\n\n")],
-        "ground_truth": [question_sample.reference_answer],
-    }
-    return metric.score(ragas_sample)
-
-
-# ragas_context_precision = RagasMetric(name="RAGAS Context Precision", metrics=context_precision)
-# ragas_faithfulness = RagasMetric(name="RAGAS Faithfulness", metrics=faithfulness)
-# ragas_answer_relevancy = RagasMetric(name="RAGAS Answer Relevancy", metrics=answer_relevancy)
-# ragas_context_recall = RagasMetric(name="RAGAS Context Recall", metrics=context_recall)
-
-
-def ragas_faithfulness(question_sample, answer, llm_client):
-    return ragas_metric(question_sample, answer, faithfulness, llm_client)
-
-
-def ragas_answer_relevancy(question_sample, answer, llm_client):
-    return ragas_metric(question_sample, answer, answer_relevancy, llm_client)
-
-
-def ragas_context_recall(question_sample, answer, llm_client):
-    return ragas_metric(question_sample, answer, context_recall, llm_client)
-
-
-def ragas_context_precision(question_sample, answer, llm_client):
-    return ragas_metric(question_sample, answer, context_precision, llm_client)
+ragas_context_precision = RagasMetric(name="RAGAS Context Precision", metric=context_precision)
+ragas_faithfulness = RagasMetric(name="RAGAS Faithfulness", metric=faithfulness)
+ragas_answer_relevancy = RagasMetric(name="RAGAS Answer Relevancy", metric=answer_relevancy)
+ragas_context_recall = RagasMetric(name="RAGAS Context Recall", metric=context_recall)

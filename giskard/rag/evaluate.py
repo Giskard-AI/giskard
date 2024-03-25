@@ -81,19 +81,20 @@ def evaluate(
     metrics = metrics or []
     if not any(isinstance(metric, CorrectnessMetric) for metric in metrics):
         # By default only correctness is computed as it is required to build the report
-        metrics.append(CorrectnessMetric(name="Correctness", agent_description=agent_description))
+        metrics.insert(
+            0, CorrectnessMetric(name="Correctness", llm_client=llm_client, agent_description=agent_description)
+        )
 
     metrics_results = defaultdict(dict)
-    # for metric in metrics:
-    #     metrics_results.update(metric(testset, answers, llm_client=llm_client))
 
     for metric in metrics:
-        for question_sample, answer in maybe_tqdm(
-            zip(testset.to_pandas().reset_index().itertuples(), answers),
-            desc=f"{metric.__name__} evaluation",
+        metric_name = metric.name if isinstance(metric, Metric) else metric.__name__
+        for sample, answer in maybe_tqdm(
+            zip(testset.to_pandas().to_records(index=True), answers),
+            desc=f"{metric_name} evaluation",
             total=len(answers),
         ):
-            metrics_results[metric.__name__].update({question_sample.id: metric(question_sample, answer, llm_client)})
+            metrics_results[sample["id"]].update(metric(sample, answer))
 
     report = RAGReport(testset, answers, metrics_results, knowledge_base)
     recommendation = get_rag_recommendation(

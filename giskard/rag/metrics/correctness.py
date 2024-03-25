@@ -1,13 +1,9 @@
-from typing import Optional, Sequence
+from typing import Optional
 
 import json
 
-import pandas as pd
-
-from ...llm.client.base import LLMClient, LLMMessage
+from ...llm.client import LLMClient, LLMMessage, get_default_client
 from ...llm.errors import LLMGenerationError
-from ..question_generators.utils import maybe_tqdm
-from ..testset import QATestset
 from .base import Metric
 
 CORRECTNESS_EVALUATION_SYSTEM_PROMPT = """Your role is to test AI agents. Your task consists in assessing whether a agent output correctly answers a question. 
@@ -55,76 +51,39 @@ CORRECTNESS_FALSE_EXAMPLE_OUTPUT = (
 
 
 class CorrectnessMetric(Metric):
-    def __init__(self, name: str, agent_description: Optional[str] = None):
+    def __init__(self, name: str, llm_client: LLMClient = None, agent_description: Optional[str] = None):
         self.name = name
+        self._llm_client = llm_client
         self.agent_description = agent_description or "This agent is a chatbot that answers question from users."
 
-    def __call__(self, testset: QATestset, answers: Sequence[str], llm_client: LLMClient) -> dict:
-        results = []
-        for sample, answer in maybe_tqdm(
-            zip(testset.samples, answers),
-            desc=f"{self.name} evaluation",
-            total=len(answers),
-        ):
-            try:
-                out = llm_client.complete(
-                    messages=[
-                        LLMMessage(
-                            role="system",
-                            content=CORRECTNESS_EVALUATION_SYSTEM_PROMPT.format(
-                                agent_description=self.agent_description
-                            ),
-                        ),
-                        LLMMessage(role="user", content=CORRECTNESS_TRUE_EXAMPLE_INPUT),
-                        LLMMessage(role="assistant", content=CORRECTNESS_TRUE_EXAMPLE_OUTPUT),
-                        LLMMessage(role="user", content=CORRECTNESS_FALSE_EXAMPLE_INPUT),
-                        LLMMessage(role="assistant", content=CORRECTNESS_FALSE_EXAMPLE_OUTPUT),
-                        LLMMessage(
-                            role="user",
-                            content=CORRECTNESS_INPUT_TEMPLATE.format(
-                                question=sample.question, agent_answer=answer, ground_truth=sample.reference_answer
-                            ),
-                        ),
-                    ],
-                    temperature=0,
-                )
-                evaluation = json.loads(out.content, strict=False)
-                evaluation["id"] = sample.id
-                results.append(evaluation)
-            except Exception as err:
-                raise LLMGenerationError(f"Error while evaluating the agent: {err}")
-
-        return {"correctness": pd.DataFrame(results).set_index("id")}
-
-
-# correctness_metric = CorrectnessMetric(name="correctness")
-
-
-def correctness_metric(question_sample, answer, llm_client=None, agent_description=None):
-    agent_description = agent_description or "This agent is a chatbot that answers question from users."
-    try:
-        out = llm_client.complete(
-            messages=[
-                LLMMessage(
-                    role="system",
-                    content=CORRECTNESS_EVALUATION_SYSTEM_PROMPT.format(agent_description=agent_description),
-                ),
-                LLMMessage(role="user", content=CORRECTNESS_TRUE_EXAMPLE_INPUT),
-                LLMMessage(role="assistant", content=CORRECTNESS_TRUE_EXAMPLE_OUTPUT),
-                LLMMessage(role="user", content=CORRECTNESS_FALSE_EXAMPLE_INPUT),
-                LLMMessage(role="assistant", content=CORRECTNESS_FALSE_EXAMPLE_OUTPUT),
-                LLMMessage(
-                    role="user",
-                    content=CORRECTNESS_INPUT_TEMPLATE.format(
-                        question=question_sample.question,
-                        agent_answer=answer,
-                        ground_truth=question_sample.reference_answer,
+    def __call__(self, question_sample: dict, answer: str) -> dict:
+        llm_client = self._llm_client or get_default_client()
+        try:
+            out = llm_client.complete(
+                messages=[
+                    LLMMessage(
+                        role="system",
+                        content=CORRECTNESS_EVALUATION_SYSTEM_PROMPT.format(agent_description=self.agent_description),
                     ),
-                ),
-            ],
-            temperature=0,
-        )
-        evaluation = json.loads(out.content, strict=False)
-        return evaluation
-    except Exception as err:
-        raise LLMGenerationError(f"Error while evaluating the agent: {err}")
+                    LLMMessage(role="user", content=CORRECTNESS_TRUE_EXAMPLE_INPUT),
+                    LLMMessage(role="assistant", content=CORRECTNESS_TRUE_EXAMPLE_OUTPUT),
+                    LLMMessage(role="user", content=CORRECTNESS_FALSE_EXAMPLE_INPUT),
+                    LLMMessage(role="assistant", content=CORRECTNESS_FALSE_EXAMPLE_OUTPUT),
+                    LLMMessage(
+                        role="user",
+                        content=CORRECTNESS_INPUT_TEMPLATE.format(
+                            question=question_sample.question,
+                            agent_answer=answer,
+                            ground_truth=question_sample.reference_answer,
+                        ),
+                    ),
+                ],
+                temperature=0,
+            )
+            evaluation = json.loads(out.content, strict=False)
+            return evaluation
+        except Exception as err:
+            raise LLMGenerationError("Error while evaluating the agent") from err
+
+
+correctness_metric = CorrectnessMetric(name="correctness")
