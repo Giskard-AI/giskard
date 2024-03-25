@@ -21,7 +21,7 @@ def test_monotonicity():
     }
     df = pd.DataFrame(data)
     dataset = Dataset(df)
-    model_increasing = Model(lambda df : df["col1"], model_type="regression", feature_names=["col1", "col2"])
+    model_increasing = Model(lambda df: df["col1"], model_type="regression", feature_names=["col1", "col2"])
 
     # Call the function with test inputs
     result = miscellaneous.monotonicity_test_function(model_increasing, dataset, "col1").execute()

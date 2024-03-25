@@ -1,21 +1,22 @@
 import numpy as np
-import pandas as pd
 
-from giskard import test, Dataset, TestResult
+from giskard import Dataset, TestResult, test
 from giskard.models.base import BaseModel
 from giskard.testing.tests.debug_slicing_functions import row_failing_monotonicity_slicing_fn
 
 
 @test(name="Monotonicity", tags=["monotonicity"])
-def monotonicity_test_function(model: BaseModel,
-                               dataset: Dataset,
-                               column_name: str,
-                               increasing: bool = True,
-                               random_state: int = 123456,
-                               num_samples: int = 100,
-                               num_grid: int = 50,
-                               classif_index_label: int = 0,
-                               debug : bool = True):
+def monotonicity_test_function(
+    model: BaseModel,
+    dataset: Dataset,
+    column_name: str,
+    increasing: bool = True,
+    random_state: int = 123456,
+    num_samples: int = 100,
+    num_grid: int = 50,
+    classif_index_label: int = 0,
+    debug: bool = True,
+):
     """Test if the model is monotonic for a given column name by selecting random samples from
     the dataset and augmenting them with different values for the specified column
 
@@ -80,7 +81,9 @@ def monotonicity_test_function(model: BaseModel,
     # --- debug ---
     output_ds = list()
     if not passed.all():
-        output_ds.append(dataset.slice(row_failing_monotonicity_slicing_fn(index_failure=sample_rows.index[~passed.all(axis=0)])))
+        output_ds.append(
+            dataset.slice(row_failing_monotonicity_slicing_fn(index_failure=sample_rows.index[~passed.all(axis=0)]))
+        )
     # ---
 
     return TestResult(passed=passed.all(), output_ds=output_ds)
