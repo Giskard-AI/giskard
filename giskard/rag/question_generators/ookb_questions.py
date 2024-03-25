@@ -3,7 +3,6 @@ import uuid
 from ..knowledge_base import KnowledgeBase
 from .base import _LLMBasedQuestionGenerator, GenerateFromSingleQuestionMixin
 from .prompt import QAGenerationPrompt
-from .simple_questions import SimpleQuestionsGenerator
 
 OoKB_PROMPT = """
 You are a powerful auditor and mindful judger, your role is to generate question from a given context and 
