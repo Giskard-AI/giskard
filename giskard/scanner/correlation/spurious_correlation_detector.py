@@ -1,4 +1,4 @@
-from typing import Sequence
+from typing import Optional, Sequence
 
 import pandas as pd
 
@@ -15,9 +15,12 @@ from ..registry import Detector
 
 @detector(name="spurious_correlation", tags=["spurious_correlation", "classification"])
 class SpuriousCorrelationDetector(Detector):
-    def __init__(self, method="theil", threshold=0.5) -> None:
+    def __init__(
+        self, method: Optional[str] = "theil", threshold: Optional[float] = 0.5, min_slice_size: Optional[float] = None
+    ):
         self.threshold = threshold
         self.method = method
+        self.min_slice_size = min_slice_size
 
     def run(self, model: BaseModel, dataset: Dataset, features: Sequence[str]):
         logger.info(f"{self.__class__.__name__}: Running")
@@ -39,7 +42,7 @@ class SpuriousCorrelationDetector(Detector):
         wdata.load_metadata_from_instance(dataset.column_meta)
 
         # Find slices
-        sliced_cols = SliceFinder("tree").run(wdata, features, target=wdata.target)
+        sliced_cols = SliceFinder("tree").run(wdata, features, target=wdata.target, min_slice_size=self.min_slice_size)
 
         measure_fn, measure_name = self._get_measure_fn()
         issues = []
