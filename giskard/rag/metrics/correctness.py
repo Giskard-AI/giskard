@@ -1,6 +1,8 @@
 from typing import Optional
 
-from ...llm.client.base import ChatMessage, LLMClient, get_default_client
+import json
+
+from ...llm.client import ChatMessage, LLMClient, get_default_client
 from ...llm.errors import LLMGenerationError
 from ..question_generators.utils import parse_json_output
 from .base import Metric
