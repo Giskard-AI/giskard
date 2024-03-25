@@ -26,7 +26,7 @@ def get_answer_fn(question: str, history=None) -> str:
     """A function representing your RAG agent."""
     # Format appropriately the history for your RAG agent
     messages = history if history else []
-    message.append({"role": "user", "content": question})
+    messages.append({"role": "user", "content": question})
 
     # Get the answer
     answer = get_answer_from_agent(messages)  # could be langchain, llama_index, etc.
@@ -35,7 +35,7 @@ def get_answer_fn(question: str, history=None) -> str:
 
 
 # Run the evaluation and get a report
-report = evaluate(get_answer_fn, testset=testset, knoledge_base=knowledge_base)
+report = evaluate(get_answer_fn, testset=testset, knowledge_base=knowledge_base)
 ```
 
 The evaluation generates a {class}`~giskard.rag.RAGReport` object. Once you get your report, you can display it in a
@@ -49,7 +49,7 @@ report.to_html("rag_eval_report.html")
 ```
 
 This report is what you'll obtain:
-![image](../../../_static/rag_report.png)
+![image](../../../_static/rag_report_full.png)
 
 
 ### RAG Components Scores
@@ -97,6 +97,7 @@ results = report.to_pandas()
 We currently provide [RAGAS metrics](https://docs.ragas.io/en/latest/concepts/metrics/index.html) as additional metrics.
 
 The results of your metrics will be displayed in the report object as histograms and will be available inside the report main `DataFrame`. 
+![image](../../../_static/ragas_metrics.png)
 
 To include RAGAS metrics in evaluation, make sure to have installed the `ragas` library, then use the following code:
 
@@ -113,6 +114,7 @@ report = evaluate(
 
 Built-in metrics include `ragas_context_precision`, `ragas_faithfulness`, `ragas_answer_relevancy`,
 `ragas_context_recall`. Note that including these metrics can significantly increase the evaluation time and LLM usage.
+
 
 
 ## Going Further: Giskard's Visual Interface 

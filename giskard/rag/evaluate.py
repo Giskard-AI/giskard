@@ -6,7 +6,7 @@ from inspect import signature
 from ..llm.client import LLMClient, get_default_client
 from ..utils.analytics_collector import analytics
 from .knowledge_base import KnowledgeBase
-from .metrics import CorrectnessMetric, Metric
+from .metrics import CorrectnessMetric
 from .question_generators.utils import maybe_tqdm
 from .recommendation import get_rag_recommendation
 from .report import RAGReport
@@ -18,11 +18,11 @@ logger = logging.getLogger(__name__)
 
 def evaluate(
     answer_fn: Union[Callable, Sequence[str]],
-    knowledge_base: Optional[KnowledgeBase] = None,
     testset: Optional[QATestset] = None,
+    knowledge_base: Optional[KnowledgeBase] = None,
     llm_client: Optional[LLMClient] = None,
     agent_description: str = "This agent is a chatbot that answers question from users.",
-    metrics: Optional[Sequence[Metric | Callable]] = None,
+    metrics: Optional[Sequence[Callable]] = None,
 ) -> RAGReport:
     """Evaluate an agent by comparing its answers on a QATestset.
 
@@ -30,16 +30,16 @@ def evaluate(
     ----------
     answers_fn : Union[Callable, Sequence[str]]
         The prediction function of the agent to evaluate or a list of precalculated answers on the testset.
-    knowledge_base : KnowledgeBase, optional
-        The knowledge base of the agent to evaluate. If not provided, a testset must be provided.
     testset : QATestset, optional
         The test set to evaluate the agent on. If not provided, a knowledge base must be provided and a default testset will be created from the knowledge base.
         Note that if the answers_fn is a list of answers, the testset is required.
+    knowledge_base : KnowledgeBase, optional
+        The knowledge base of the agent to evaluate. If not provided, a testset must be provided.
     llm_client : LLMClient, optional
         The LLM client to use for the evaluation. If not provided, a default openai client will be used.
     agent_description : str, optional
         Description of the agent to be tested.
-    metrics : Optional[Sequence[Metric]], optional
+    metrics : Optional[Sequence[Callable]], optional
         Metrics to compute on the test set.
 
     Returns
@@ -47,13 +47,23 @@ def evaluate(
     RAGReport
         The report of the evaluation.
     """
-
     if testset is None and knowledge_base is None:
         raise ValueError("At least one of testset or knowledge base must be provided to the evaluate function.")
 
     if testset is None and not isinstance(answer_fn, Sequence):
         raise ValueError(
             "If the testset is not provided, the answer_fn must be a list of answers to ensure the matching between questions and answers."
+        )
+
+    # Check basic types, in case the user passed the params in the wrong order
+    if knowledge_base is not None and not isinstance(knowledge_base, KnowledgeBase):
+        raise ValueError(
+            f"knowledge_base must be a KnowledgeBase object (got {type(knowledge_base)} instead). Are you sure you passed the parameters in the right order?"
+        )
+
+    if testset is not None and not isinstance(testset, QATestset):
+        raise ValueError(
+            f"testset must be a QATestset object (got {type(testset)} instead). Are you sure you passed the parameters in the right order?"
         )
 
     if testset is None:

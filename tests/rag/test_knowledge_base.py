@@ -17,7 +17,7 @@ def test_knowledge_base_creation_from_df():
     random_embedding = np.random.rand(5, dimension)
     llm_client.embeddings.side_effect = [random_embedding]
 
-    knowledge_base = KnowledgeBase(df, llm_client=llm_client)
+    knowledge_base = KnowledgeBase.from_pandas(df, llm_client=llm_client)
     assert knowledge_base._index.d == dimension
     assert knowledge_base._embeddings.shape == (5, 8)
     assert len(knowledge_base._documents) == 5
@@ -91,3 +91,15 @@ def test_knowledge_base_topic_plot():
     plot = knowledge_base.get_knowledge_plot()
     assert plot is not None
     assert isinstance(plot, figure)
+
+
+def test_knowledge_base_basic_properties():
+    llm_client = Mock()
+    llm_client.embeddings.side_effect = [np.random.rand(5, 10), np.random.rand(3, 10)]
+
+    # Length
+    kb = KnowledgeBase.from_pandas(df=pd.DataFrame({"text": ["This is a test string"] * 5}), llm_client=llm_client)
+    assert len(kb) == 5
+
+    kb = KnowledgeBase.from_pandas(df=pd.DataFrame({"text": ["Test 1", "Test 2", "Test 3"]}), llm_client=llm_client)
+    assert len(kb) == 3
