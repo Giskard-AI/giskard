@@ -77,6 +77,14 @@ def test_complex_question_generation():
                 conversation_history=[],
                 metadata={"question_type": "simple", "seed_document_id": "2"},
             )
+            QuestionSample(
+                question="Where is Camembert from?",
+                id="1",
+                reference_answer="Camembert was created in Normandy, in the northwest of France.",
+                reference_context="Document 1: Camembert is a cheese from Normandy, in the northwest of France.\n\nDocument 2: Cheese is made of milk.\n\nDocument 3: Milk is produced by cows, goats or sheep.",
+                conversation_history=[],
+                metadata={"question_type": "simple", "seed_document_id": "2"},
+            )
         ]
     )
 
@@ -295,11 +303,15 @@ def test_oos_question_generation():
     ]
 
     documents = [
+        Document(dict(content="Paul Graham liked to buy a baguette every day at the local market."), idx="1"),
+        Document(dict(content="Cheese is made of milk."), idx="2"),
+        Document(dict(content="Milk is produced by cows, goats or sheep."), idx="3"),
         Document(dict(content="Paul Graham liked to buy a baguette every day at the local market."), doc_id="1"),
         Document(dict(content="Cheese is made of milk."), doc_id="2"),
         Document(dict(content="Milk is produced by cows, goats or sheep."), doc_id="3"),
     ]
     knowledge_base.get_random_document = Mock(
+        return_value=Document(dict(content="Paul Graham liked to buy a baguette every day at the local market."), idx="1")
         return_value=Document(
             dict(content="Paul Graham liked to buy a baguette every day at the local market."), doc_id="1"
         )
