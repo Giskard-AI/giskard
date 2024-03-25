@@ -1,4 +1,4 @@
-from unittest.mock import MagicMock, Mock
+from unittest.mock import MagicMock, MagicMock, Mock
 
 import numpy as np
 import pandas as pd
