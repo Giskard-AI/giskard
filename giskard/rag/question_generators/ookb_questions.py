@@ -150,6 +150,8 @@ class OutofKnowledgeBaseGenerator(GenerateFromSingleQuestionMixin, _LLMBasedQues
                 user_input=seed_document.content,
             )
 
+            print("current number of runs is: ", _)
+
             generated_qa = self._llm_complete(messages=question_messages)
 
             # check the generated question
@@ -160,7 +162,9 @@ class OutofKnowledgeBaseGenerator(GenerateFromSingleQuestionMixin, _LLMBasedQues
 
             check_result = self._llm_complete(messages=check_messages)
 
-            if not check_result["can_be_answered"]:
+            print("check_result: ", check_result)
+
+            if bool(check_result["can_be_answered"]):
                 continue
 
             question_metadata = {"question_type": self._question_type, "seed_document_id": seed_document.id}

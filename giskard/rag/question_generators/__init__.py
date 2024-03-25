@@ -6,6 +6,7 @@ from .double_questions import DoubleQuestionsGenerator, double_questions
 from .question_types import COMPONENT_DESCRIPTIONS, QUESTION_ATTRIBUTION, RAGComponents
 from .simple_questions import SimpleQuestionsGenerator, simple_questions
 from .situational_questions import SituationalQuestionsGenerator, situational_questions
+from .ookb_questions import OutofKnowledgeBaseGenerator, OoKB_questions
 
 __all__ = [
     "RAGComponents",
@@ -18,10 +19,12 @@ __all__ = [
     "DistractingQuestionsGenerator",
     "SituationalQuestionsGenerator",
     "DoubleQuestionsGenerator",
+    "OutofKnowledgeBaseGenerator",
     "simple_questions",
     "complex_questions",
     "conversational_questions",
     "distracting_questions",
     "situational_questions",
     "double_questions",
+    "OoKB_questions",
 ]
