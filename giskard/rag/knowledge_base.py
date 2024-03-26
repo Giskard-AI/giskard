@@ -301,7 +301,7 @@ class KnowledgeBase:
         return self._rng.choice(self._documents)
 
     def get_neighbors(self, seed_document: Document, n_neighbors: int = 4, similarity_threshold: float = 0.2):
-        seed_embedding = self._embeddings[seed_document.id]
+        seed_embedding = seed_document.embeddings
 
         relevant_documents = [
             doc

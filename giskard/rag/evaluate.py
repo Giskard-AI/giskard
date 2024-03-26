@@ -7,7 +7,7 @@ from inspect import signature
 from ..llm.client import LLMClient, get_default_client
 from ..utils.analytics_collector import analytics
 from .knowledge_base import KnowledgeBase
-from .metrics import CorrectnessMetric
+from .metrics import CorrectnessMetric, Metric
 from .question_generators.utils import maybe_tqdm
 from .recommendation import get_rag_recommendation
 from .report import RAGReport

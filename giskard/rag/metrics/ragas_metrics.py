@@ -22,7 +22,7 @@ try:
 
 
 except ImportError as err:
-    logger.error(
+    raise ImportError(
         f"Package {err.name} is missing, it is required for the computation of RAGAS metrics. You can install it with `pip install {err.name}`."
     )
 
