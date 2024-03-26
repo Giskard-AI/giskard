@@ -1,5 +1,4 @@
 import os
-import re
 from unittest.mock import Mock, patch
 
 import pytest
@@ -17,7 +16,7 @@ from tests.models.talk.talk_test_resources import (
     test_scan_tool_llm_responses_1,
     test_scan_tool_llm_responses_2,
     test_shap_tool_llm_responses,
-    type_error_messages,
+    type_error_patterns,
 )
 
 os.environ["OPENAI_API_KEY"] = ""  # Mock openai token.
@@ -37,13 +36,13 @@ def test_talk(mock_client, dataset_name, model_name, request):
     scan_report = scan(model, dataset)
 
     # Test if an exception is raised when the necessary parameters are omitted.
-    with pytest.raises(TypeError, match=re.escape(type_error_messages["question_dataset"])):
+    with pytest.raises(TypeError, match=type_error_patterns["question_dataset"]):
         model.talk()
 
-    with pytest.raises(TypeError, match=re.escape(type_error_messages["dataset"])):
+    with pytest.raises(TypeError, match=type_error_patterns["dataset"]):
         model.talk(question=default_question)
 
-    with pytest.raises(TypeError, match=re.escape(type_error_messages["question"])):
+    with pytest.raises(TypeError, match=type_error_patterns["question"]):
         model.talk(dataset=dataset)
 
     # Test if no exception is raised when the necessary parameters are passed.
