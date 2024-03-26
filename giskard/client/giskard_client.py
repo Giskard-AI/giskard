@@ -1,4 +1,5 @@
 """API Client to interact with the Giskard app"""
+
 from typing import List
 
 import json
@@ -18,6 +19,8 @@ import giskard
 from giskard.client.dtos import (
     DatasetMetaInfo,
     ModelMetaInfo,
+    ProjectPostDTO,
+    ProjectType,
     SaveSuiteExecutionDTO,
     ServerInfo,
     SuiteInfo,
@@ -170,7 +173,7 @@ class GiskardClient:
     def list_projects(self) -> List[Project]:
         analytics.track("List Projects")
         response = self._session.get("projects").json()
-        return [Project(self._session, p["key"], p["id"]) for p in response]
+        return [Project(self._session, p["key"], p["id"], p["type"].lower()) for p in response]
 
     def get_project(self, project_key: str) -> Project:
         """
@@ -184,9 +187,11 @@ class GiskardClient:
         """
         analytics.track("Get Project", {"project_key": anonymize(project_key)})
         response = self._session.get("project", params={"key": project_key}).json()
-        return Project(self._session, response["key"], response["id"])
+        return Project(self._session, response["key"], response["id"], response["type"].lower())
 
-    def create_project(self, project_key: str, name: str, description: str = None) -> Project:
+    def create_project(
+        self, project_key: str, name: str, description: str = None, project_type: ProjectType = "tabular"
+    ) -> Project:
         """
         Function to create a project in Giskard
         Args:
@@ -196,6 +201,8 @@ class GiskardClient:
                 The name of the project
             description:
                 Describe your project
+            project_type:
+                The type of the project ["tabular", "llm"]
         Returns:
             Project:
                 The project created in giskard
@@ -204,14 +211,19 @@ class GiskardClient:
             "Create Project",
             {
                 "project_key": anonymize(project_key),
+                "project_type": project_type,
                 "description": anonymize(description),
                 "name": anonymize(name),
             },
         )
         try:
+            project_post_dto = ProjectPostDTO(
+                key=project_key, name=name, project_type=project_type, description=description
+            )
+
             response = self._session.post(
                 "project",
-                json={"description": description, "key": project_key, "name": name},
+                json=project_post_dto.model_dump(),
             ).json()
         except GiskardError as e:
             if e.code == "error.http.409":
@@ -222,9 +234,10 @@ class GiskardClient:
             raise e
         actual_project_key = response.get("key")
         actual_project_id = response.get("id")
+        actual_project_type = response.get("type").lower()
         if actual_project_key != project_key:
             print(f"Project created with a key : {actual_project_key}")
-        return Project(self._session, actual_project_key, actual_project_id)
+        return Project(self._session, actual_project_key, actual_project_id, actual_project_type)
 
     def get_suite(self, project_id: int, suite_id: int) -> SuiteInfo:
         analytics.track("Get suite", {"suite_id": suite_id})

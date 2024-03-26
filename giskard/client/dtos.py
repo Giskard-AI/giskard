@@ -2,7 +2,7 @@ from typing import Any, Dict, List, Optional
 
 from enum import Enum
 
-from pydantic import Field
+from pydantic import Field, field_serializer, model_serializer
 
 from giskard.core.core import TestResultStatusEnum
 from giskard.core.validation import ConfiguredBaseModel
@@ -142,3 +142,35 @@ class DatasetMetaInfo(ConfiguredBaseModel):
     compressedSizeBytes: int
     createdDate: str
     id: str
+
+
+class ProjectType(Enum):
+    TABULAR = "tabular"
+    LLM = "llm"
+
+
+class ProjectPostDTO(ConfiguredBaseModel):
+    key: str
+    name: str
+    project_type: ProjectType
+    description: Optional[str] = None
+
+    class Config:
+        use_enum_values = True
+
+    @field_serializer("project_type")
+    def serialize_project_type(self, project_type: ProjectType) -> str:
+        mapped_type = {
+            "llm": "LLM",
+            "tabular": "Tabular",
+        }
+        return mapped_type[project_type]
+
+    @model_serializer(when_used="always")
+    def ser_model(self) -> Dict[str, Any]:
+        return {
+            "key": self.key,
+            "name": self.name,
+            "type": self.serialize_project_type(self.project_type),
+            "description": self.description,
+        }
