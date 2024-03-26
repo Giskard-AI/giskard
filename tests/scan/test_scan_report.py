@@ -1,3 +1,4 @@
+import os
 import tempfile
 from pathlib import Path
 from unittest.mock import Mock
@@ -51,3 +52,15 @@ def test_scan_report_exports_to_markdown():
         assert dest.exists()
         assert dest.is_file()
         assert dest.read_text() == markdown
+
+
+def test_scan_report_exports_to_doc():
+    model = Mock()
+    dataset = Mock()
+
+    report = ScanReport(issues=[Issue(model, dataset, Robustness, IssueLevel.MAJOR)])
+
+    # Markdown report
+    with tempfile.TemporaryDirectory() as tmpdir:
+        report.to_doc(dir=tmpdir, llm_based=False)
+        assert os.listdir(tmpdir)
