@@ -7,6 +7,7 @@ from pydantic import Field, field_serializer, model_serializer
 from giskard.core.core import TestResultStatusEnum
 from giskard.core.validation import ConfiguredBaseModel
 from giskard.utils.artifacts import serialize_parameter
+from giskard.client.project import ProjectType
 
 
 class TestInputDTO(ConfiguredBaseModel):
@@ -147,11 +148,14 @@ class DatasetMetaInfo(ConfiguredBaseModel):
 class ProjectPostDTO(ConfiguredBaseModel):
     key: str
     name: str
-    project_type: str
+    project_type: ProjectType
     description: Optional[str] = None
 
+    class Config:
+        use_enum_values = True
+
     @field_serializer('project_type')
-    def serialize_project_type(self, project_type: str) -> str:
+    def serialize_project_type(self, project_type: ProjectType) -> str:
         mapped_type = {
             "llm": "LLM",
             "tabular": "Tabular",

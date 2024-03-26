@@ -187,7 +187,9 @@ class GiskardClient:
         response = self._session.get("project", params={"key": project_key}).json()
         return Project(self._session, response["key"], response["id"])
 
-    def create_project(self, project_key: str, name: str, project_type: ProjectType, description: str = None) -> Project:
+    def create_project(
+        self, project_key: str, name: str, description: str = None,  project_type: ProjectType = "tabular"
+    ) -> Project:
         """
         Function to create a project in Giskard
         Args:
@@ -195,10 +197,10 @@ class GiskardClient:
                 The unique value of the project which will be used to identify  and fetch the project in future
             name:
                 The name of the project
-            project_type:
-                The type of the project ["tabular", "llm"]
             description:
                 Describe your project
+            project_type:
+                The type of the project ["tabular", "llm"]
         Returns:
             Project:
                 The project created in giskard
@@ -207,12 +209,15 @@ class GiskardClient:
             "Create Project",
             {
                 "project_key": anonymize(project_key),
+                "project_type": project_type,
                 "description": anonymize(description),
                 "name": anonymize(name),
             },
         )
         try:
-            project_post_dto = ProjectPostDTO(key=project_key, name=name, project_type=project_type, description=description)
+            project_post_dto = ProjectPostDTO(
+                key=project_key, name=name, project_type=project_type, description=description
+            )
 
             response = self._session.post(
                 "project",
