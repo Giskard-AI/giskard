@@ -1,4 +1,5 @@
 """API Client to interact with the Giskard app"""
+
 from typing import List
 
 import json
@@ -19,13 +20,14 @@ from giskard.client.dtos import (
     DatasetMetaInfo,
     ModelMetaInfo,
     ProjectPostDTO,
+    ProjectType,
     SaveSuiteExecutionDTO,
     ServerInfo,
     SuiteInfo,
     TestSuiteDTO,
 )
 from giskard.client.io_utils import GiskardJSONSerializer
-from giskard.client.project import Project, ProjectType
+from giskard.client.project import Project
 from giskard.client.python_utils import warning
 from giskard.core.core import SMT, DatasetMeta, ModelMeta, TestFunctionMeta
 from giskard.utils.analytics_collector import analytics, anonymize

@@ -1,13 +1,7 @@
-from enum import Enum
-
 from requests_toolbelt.sessions import BaseUrlSession
 
+from giskard.client.dtos import ProjectType
 from giskard.utils.analytics_collector import analytics, anonymize
-
-
-class ProjectType(Enum):
-    TABULAR = "tabular"
-    LLM = "llm"
 
 
 class Project:

@@ -4,7 +4,6 @@ from enum import Enum
 
 from pydantic import Field, field_serializer, model_serializer
 
-from giskard.client.project import ProjectType
 from giskard.core.core import TestResultStatusEnum
 from giskard.core.validation import ConfiguredBaseModel
 from giskard.utils.artifacts import serialize_parameter
@@ -143,6 +142,11 @@ class DatasetMetaInfo(ConfiguredBaseModel):
     compressedSizeBytes: int
     createdDate: str
     id: str
+
+
+class ProjectType(Enum):
+    TABULAR = "tabular"
+    LLM = "llm"
 
 
 class ProjectPostDTO(ConfiguredBaseModel):
