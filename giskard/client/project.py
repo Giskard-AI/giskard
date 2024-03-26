@@ -1,7 +1,8 @@
+from enum import Enum
+
 from requests_toolbelt.sessions import BaseUrlSession
 
 from giskard.utils.analytics_collector import analytics, anonymize
-from enum import Enum
 
 
 class ProjectType(Enum):

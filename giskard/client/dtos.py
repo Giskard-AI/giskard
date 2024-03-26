@@ -4,10 +4,10 @@ from enum import Enum
 
 from pydantic import Field, field_serializer, model_serializer
 
+from giskard.client.project import ProjectType
 from giskard.core.core import TestResultStatusEnum
 from giskard.core.validation import ConfiguredBaseModel
 from giskard.utils.artifacts import serialize_parameter
-from giskard.client.project import ProjectType
 
 
 class TestInputDTO(ConfiguredBaseModel):
@@ -154,7 +154,7 @@ class ProjectPostDTO(ConfiguredBaseModel):
     class Config:
         use_enum_values = True
 
-    @field_serializer('project_type')
+    @field_serializer("project_type")
     def serialize_project_type(self, project_type: ProjectType) -> str:
         mapped_type = {
             "llm": "LLM",
@@ -162,11 +162,11 @@ class ProjectPostDTO(ConfiguredBaseModel):
         }
         return mapped_type[project_type]
 
-    @model_serializer(when_used='always')
+    @model_serializer(when_used="always")
     def ser_model(self) -> Dict[str, Any]:
         return {
             "key": self.key,
             "name": self.name,
             "type": self.serialize_project_type(self.project_type),
-            "description": self.description
+            "description": self.description,
         }

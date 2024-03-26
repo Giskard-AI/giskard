@@ -1,6 +1,6 @@
 import pytest
-import wandb
 
+import wandb
 from giskard import scan
 from giskard.models.model_explanation import explain_with_shap
 

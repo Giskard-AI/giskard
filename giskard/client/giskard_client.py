@@ -18,11 +18,11 @@ import giskard
 from giskard.client.dtos import (
     DatasetMetaInfo,
     ModelMetaInfo,
+    ProjectPostDTO,
     SaveSuiteExecutionDTO,
     ServerInfo,
     SuiteInfo,
     TestSuiteDTO,
-    ProjectPostDTO,
 )
 from giskard.client.io_utils import GiskardJSONSerializer
 from giskard.client.project import Project, ProjectType
@@ -188,7 +188,7 @@ class GiskardClient:
         return Project(self._session, response["key"], response["id"])
 
     def create_project(
-        self, project_key: str, name: str, description: str = None,  project_type: ProjectType = "tabular"
+        self, project_key: str, name: str, description: str = None, project_type: ProjectType = "tabular"
     ) -> Project:
         """
         Function to create a project in Giskard
