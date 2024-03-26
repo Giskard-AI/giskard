@@ -66,71 +66,11 @@ Alternatively, provide your HF access token through the Giskard Settings.
 
 ### 4. Start the ML worker
 
-Giskard executes your model using a worker that runs the model directly in **your Python environment**, with all the dependencies required by your model. You can either execute the ML worker:
+Giskard executes your model using an ML worker that runs the model. The worker is created along with your project, using the dependencies in your current environment. You can start the worker on Giskard Hub, if it is not started automatically.
 
-- From your **local notebook** within the kernel that contains all the dependencies of your model
-- From **Google Colab** within the kernel that contains all the dependencies of your model
-- Or from **your terminal** within the Python environment that contains all the dependencies of your model
+For advanced and flexible usages, please check [our doc for ML worker](../mlworker/index.md).
 
-:::{note}
-If you plan to use LLM-assisted tests or transformations, don’t forget to set the ``OPENAI_API_KEY`` environment
-variable before starting the Giskard worker.
-:::
-
-:::::::{tab-set}
-::::::{tab-item} From your local notebook
-
-To start the ML worker from your notebook, run the following code in your notebook:
-
-```
-!giskard worker start -d -k YOUR_KEY -u https://XXX.hf.space -t HF-TOKEN
-```
-
-To find the **exact** command with the right API Access Key (`YOUR_KEY`) and HuggingFace token (`HF-TOKEN`), go to the "Ml Worker" section in the Settings tab in the Giskard Hub that you install in HF Space.
-
-
-> ### ⚠️ Warning
-> To see the available commands of the worker, you can execute:
->```
->!giskard worker --help
->```
-
-::::::
-::::::{tab-item} From Colab notebook
-
-To start the ML worker from your Colab notebook, run in your Colab cell:
-
-```
-!giskard worker start -d -k YOUR_KEY -u https://XXX.hf.space -t HF-TOKEN
-```
-
-To find the **exact** command with the right API Access Key (`YOUR_KEY`) and HuggingFace token (`HF-TOKEN`), go to the "Ml Worker" section in the Settings tab in the Giskard Hub that you install in HF Space.
-
-> ### ⚠️ Warning
-> To see the available commands of the worker, you can execute:
->```
->!giskard worker --help
->```
-
-::::::
-::::::{tab-item} From your terminal
-
-* Run the following command **within the Python environment that contains all the dependencies of your model**:
-
-```
-giskard worker start -d -k YOUR_KEY -u https://XXX.hf.space -t HF-TOKEN
-```
-
-To find the **exact** command with the right API Access Key (`YOUR_KEY`) and HuggingFace token (`HF-TOKEN`), go to the "Ml Worker" section in the Settings tab in the Giskard Hub that you install in HF Space.
-
-> ### ⚠️ Warning
-> To see the available commands of the worker, you can execute:
->```
->!giskard worker --help
->```
-
-::::::
-:::::::
+You're all set to try Giskard in action. Upload your first model, dataset or test suite by following the [upload an object](../../../upload/index.md) page.
 
 ### 5. Upload your test suite by creating a Giskard Client for your HF Space
 

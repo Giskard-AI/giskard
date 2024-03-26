@@ -31,7 +31,13 @@ Now you can run :code:`giskard hub expose --ngrok-token <ngrok_API_key>` which s
     token=...
     client = giskard.GiskardClient("<ngrok_external_server_link>", token)
 
-    # To run your model with the Giskard Hub, execute these three lines on Google Colab:
+    # To run your model with the current Python environment on Google Colab, execute these lines:
 
     %env GSK_API_KEY=...
-    !giskard worker start -d -u <ngrok_external_server_link>
+    !giskard worker start -d -u <ngrok_external_server_link> --name <your-project-worker-id>
+
+    # To let Giskard Hub run your model in a managed Python environment, execute these lines:
+
+    %env GSK_API_KEY=...
+    !giskard worker start -s -u <ngrok_external_server_link> --name <your-project-worker-id>
+
