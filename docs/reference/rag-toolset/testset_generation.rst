@@ -1,8 +1,7 @@
 Testset Generation
 ======
 
-.. autoclass:: giskard.rag.TestsetGenerator
-    :members:
+.. autofunction:: giskard.rag.generate_testset
 
 .. autoclass:: giskard.rag.QATestset
     :members:
