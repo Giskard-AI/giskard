@@ -404,6 +404,15 @@ def explain_ws(client: GiskardClient, params: websocket.ExplainParam, *args, **k
     )
 
 
+@websocket_actor(MLWorkerAction.devJob)
+def dev_job(client: GiskardClient, params: websocket.Empty, *args, **kwargs) -> websocket.Empty:
+    for i in range(10000):
+        time.sleep(1)
+        logger.info(f"Sleeping for 100ms {i}")
+
+    return websocket.Empty()
+
+
 @websocket_actor(MLWorkerAction.explainText)
 def explain_text_ws(
     client: GiskardClient, params: websocket.ExplainTextParam, *args, **kwargs
