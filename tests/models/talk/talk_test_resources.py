@@ -3,9 +3,9 @@ from itertools import cycle
 from giskard.llm.client import LLMFunctionCall, LLMMessage, LLMToolCall
 
 type_error_messages = {
-    "question_dataset": "BaseModel\.talk\(\) missing 2 required positional arguments: 'question' and 'dataset'",
-    "dataset": "BaseModel\.talk\(\) missing 1 required positional argument: 'dataset'",
-    "question": "BaseModel\.talk\(\) missing 1 required positional argument: 'question'",
+    "question_dataset": "BaseModel.talk() missing 2 required positional arguments: 'question' and 'dataset'",
+    "dataset": "BaseModel.talk() missing 1 required positional argument: 'dataset'",
+    "question": "BaseModel.talk() missing 1 required positional argument: 'question'",
 }
 
 default_question = "What can you do?"

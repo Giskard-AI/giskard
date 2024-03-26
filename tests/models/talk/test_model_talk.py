@@ -1,4 +1,5 @@
 import os
+import re
 from unittest.mock import Mock, patch
 
 import pytest
@@ -36,13 +37,13 @@ def test_talk(mock_client, dataset_name, model_name, request):
     scan_report = scan(model, dataset)
 
     # Test if an exception is raised when the necessary parameters are omitted.
-    with pytest.raises(TypeError, match=type_error_messages["question_dataset"]):
+    with pytest.raises(TypeError, match=re.escape(type_error_messages["question_dataset"])):
         model.talk()
 
-    with pytest.raises(TypeError, match=type_error_messages["dataset"]):
+    with pytest.raises(TypeError, match=re.escape(type_error_messages["dataset"])):
         model.talk(question=default_question)
 
-    with pytest.raises(TypeError, match=type_error_messages["question"]):
+    with pytest.raises(TypeError, match=re.escape(type_error_messages["question"])):
         model.talk(dataset=dataset)
 
     # Test if no exception is raised when the necessary parameters are passed.
