@@ -11,11 +11,14 @@ class ProjectType(Enum):
 
 
 class Project:
-    def __init__(self, session: BaseUrlSession, project_key: str, project_id: int) -> None:
+    def __init__(
+        self, session: BaseUrlSession, project_key: str, project_id: int, project_type: ProjectType = "tabular"
+    ) -> None:
         self.project_key = project_key
         self._session = session
         self.url = self._session.base_url.replace("/api/v2/", "")
         self.project_id = project_id
+        self.project_type = project_type
 
     def _update_test_suite_params(self, actual_ds_id, reference_ds_id, model_id, test_id=None, test_suite_id=None):
         assert test_id is not None or test_suite_id is not None, "Either test_id or test_suite_id should be specified"
@@ -89,4 +92,4 @@ class Project:
         return [self._execution_dto_filter(test) for test in answer_json]
 
     def __repr__(self) -> str:
-        return f"GiskardProject(project_key='{self.project_key}')"
+        return f"GiskardProject(project_key='{self.project_key}', project_type='{self.project_type}')"
