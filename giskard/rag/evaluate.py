@@ -1,12 +1,13 @@
 from typing import Callable, Optional, Sequence, Union
 
 import logging
+from collections import defaultdict
 from inspect import signature
 
 from ..llm.client import LLMClient, get_default_client
 from ..utils.analytics_collector import analytics
 from .knowledge_base import KnowledgeBase
-from .metrics import CorrectnessMetric
+from .metrics import CorrectnessMetric, Metric
 from .question_generators.utils import maybe_tqdm
 from .recommendation import get_rag_recommendation
 from .report import RAGReport
@@ -80,11 +81,20 @@ def evaluate(
     metrics = metrics or []
     if not any(isinstance(metric, CorrectnessMetric) for metric in metrics):
         # By default only correctness is computed as it is required to build the report
-        metrics.append(CorrectnessMetric(name="Correctness", agent_description=agent_description))
+        metrics.insert(
+            0, CorrectnessMetric(name="Correctness", llm_client=llm_client, agent_description=agent_description)
+        )
 
-    metrics_results = {}
+    metrics_results = defaultdict(dict)
+
     for metric in metrics:
-        metrics_results.update(metric(testset, answers, llm_client=llm_client))
+        metric_name = metric.name if isinstance(metric, Metric) else metric.__name__
+        for sample, answer in maybe_tqdm(
+            zip(testset.to_pandas().to_records(index=True), answers),
+            desc=f"{metric_name} evaluation",
+            total=len(answers),
+        ):
+            metrics_results[sample["id"]].update(metric(sample, answer))
 
     report = RAGReport(testset, answers, metrics_results, knowledge_base)
     recommendation = get_rag_recommendation(

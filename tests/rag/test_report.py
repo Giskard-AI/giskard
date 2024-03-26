@@ -2,7 +2,6 @@ import uuid
 from unittest.mock import Mock, patch
 
 import numpy as np
-import pandas as pd
 from bokeh.plotting import figure
 
 from giskard.rag import QATestset, RAGReport
@@ -19,29 +18,49 @@ def test_report_plots():
 
     answers = ["Default answer"] * 6
 
-    eval_results = [
-        {"id": "1", "correctness": True, "reason": "The agent answer is correct."},
-        {"id": "2", "correctness": True, "reason": "The agent answer is correct."},
-        {"id": "3", "correctness": False, "reason": "The agent answer is incorrect."},
-        {"id": "4", "correctness": True, "reason": "The agent answer is correct."},
-        {"id": "5", "correctness": False, "reason": "The agent answer is incorrect."},
-        {"id": "6", "correctness": False, "reason": "The agent answer is incorrect."},
-    ]
-
     metrics_results = {
-        "correctness": pd.DataFrame(eval_results).set_index("id"),
-        "context_precision": pd.DataFrame.from_dict(
-            {"id": ["1", "2", "3", "4", "5", "6"], "context_precision": [0.1] * 6}
-        ).set_index("id"),
-        "faithfulness": pd.DataFrame.from_dict(
-            {"id": ["1", "2", "3", "4", "5", "6"], "faithfulness": [0.2] * 6}
-        ).set_index("id"),
-        "answer_relevancy": pd.DataFrame.from_dict(
-            {"id": ["1", "2", "3", "4", "5", "6"], "answer_relevancy": [0.3] * 6}
-        ).set_index("id"),
-        "context_recall": pd.DataFrame.from_dict(
-            {"id": ["1", "2", "3", "4", "5", "6"], "context_recall": [0.4] * 6}
-        ).set_index("id"),
+        "1": {
+            "correctness": True,
+            "context_precision": 0.1,
+            "faithfulness": 0.2,
+            "answer_relevancy": 0.3,
+            "context_recall": 0.4,
+        },
+        "2": {
+            "correctness": True,
+            "context_precision": 0.1,
+            "faithfulness": 0.2,
+            "answer_relevancy": 0.3,
+            "context_recall": 0.4,
+        },
+        "3": {
+            "correctness": False,
+            "context_precision": 0.1,
+            "faithfulness": 0.2,
+            "answer_relevancy": 0.3,
+            "context_recall": 0.4,
+        },
+        "4": {
+            "correctness": True,
+            "context_precision": 0.1,
+            "faithfulness": 0.2,
+            "answer_relevancy": 0.3,
+            "context_recall": 0.4,
+        },
+        "5": {
+            "correctness": False,
+            "context_precision": 0.1,
+            "faithfulness": 0.2,
+            "answer_relevancy": 0.3,
+            "context_recall": 0.4,
+        },
+        "6": {
+            "correctness": False,
+            "context_precision": 0.1,
+            "faithfulness": 0.2,
+            "answer_relevancy": 0.3,
+            "context_recall": 0.4,
+        },
     }
 
     report = RAGReport(testset, answers, metrics_results, knowledge_base)
@@ -51,8 +70,7 @@ def test_report_plots():
     plot = report.plot_metrics_hist("context_precision", filter_metadata={"question_type": ["simple"]})
     assert isinstance(plot, figure)
 
-    additional_metrics, histograms = report.get_metrics_histograms()
-    assert additional_metrics
+    histograms = report.get_metrics_histograms()
     assert "Overall" in histograms
     assert "Question" in histograms
     assert "Topics" in histograms
@@ -84,29 +102,50 @@ def test_report_save_load(tmp_path):
     knowledge_base._documents
 
     answers = ["Default answer"] * 6
-    eval_results = [
-        {"id": "1", "correctness": True, "reason": "The agent answer is correct."},
-        {"id": "2", "correctness": True, "reason": "The agent answer is correct."},
-        {"id": "3", "correctness": False, "reason": "The agent answer is incorrect."},
-        {"id": "4", "correctness": True, "reason": "The agent answer is correct."},
-        {"id": "5", "correctness": False, "reason": "The agent answer is incorrect."},
-        {"id": "6", "correctness": False, "reason": "The agent answer is incorrect."},
-    ]
 
     metrics_results = {
-        "correctness": pd.DataFrame(eval_results).set_index("id"),
-        "context_precision": pd.DataFrame.from_dict(
-            {"id": ["1", "2", "3", "4", "5", "6"], "context_precision": [0.1] * 6}
-        ).set_index("id"),
-        "faithfulness": pd.DataFrame.from_dict(
-            {"id": ["1", "2", "3", "4", "5", "6"], "faithfulness": [0.2] * 6}
-        ).set_index("id"),
-        "answer_relevancy": pd.DataFrame.from_dict(
-            {"id": ["1", "2", "3", "4", "5", "6"], "answer_relevancy": [0.3] * 6}
-        ).set_index("id"),
-        "context_recall": pd.DataFrame.from_dict(
-            {"id": ["1", "2", "3", "4", "5", "6"], "context_recall": [0.4] * 6}
-        ).set_index("id"),
+        "1": {
+            "correctness": True,
+            "context_precision": 0.1,
+            "faithfulness": 0.2,
+            "answer_relevancy": 0.3,
+            "context_recall": 0.4,
+        },
+        "2": {
+            "correctness": True,
+            "context_precision": 0.1,
+            "faithfulness": 0.2,
+            "answer_relevancy": 0.3,
+            "context_recall": 0.4,
+        },
+        "3": {
+            "correctness": False,
+            "context_precision": 0.1,
+            "faithfulness": 0.2,
+            "answer_relevancy": 0.3,
+            "context_recall": 0.4,
+        },
+        "4": {
+            "correctness": True,
+            "context_precision": 0.1,
+            "faithfulness": 0.2,
+            "answer_relevancy": 0.3,
+            "context_recall": 0.4,
+        },
+        "5": {
+            "correctness": False,
+            "context_precision": 0.1,
+            "faithfulness": 0.2,
+            "answer_relevancy": 0.3,
+            "context_recall": 0.4,
+        },
+        "6": {
+            "correctness": False,
+            "context_precision": 0.1,
+            "faithfulness": 0.2,
+            "answer_relevancy": 0.3,
+            "context_recall": 0.4,
+        },
     }
 
     report = RAGReport(testset, answers, metrics_results, knowledge_base)
@@ -124,9 +163,11 @@ def test_report_save_load(tmp_path):
 
     assert len(report._testset._dataframe) == len(loaded_report._testset._dataframe)
     assert len(report._metrics_results) == len(loaded_report._metrics_results)
-    assert (
-        report._metrics_results["context_precision"].loc["1", "context_precision"]
-        == loaded_report._metrics_results["context_precision"].loc["1", "context_precision"]
+    assert report._metrics_results["1"]["context_precision"] == loaded_report._metrics_results["1"]["context_precision"]
+    assert all(
+        [
+            report._metrics_results[idx]["correctness"] == loaded_report._metrics_results[idx]["correctness"]
+            for idx in report._metrics_results
+        ]
     )
-    assert all(report._metrics_results["correctness"] == loaded_report._metrics_results["correctness"])
     assert all(report._dataframe["agent_answer"] == loaded_report._dataframe["agent_answer"])

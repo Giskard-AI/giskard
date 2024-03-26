@@ -63,8 +63,12 @@ class RAGReport:
 
         self._dataframe = testset.to_pandas().copy()
         self._dataframe["agent_answer"] = answers
-        for metric, df in metrics_results.items():
-            self._dataframe = self._dataframe.join(df, on="id")
+
+        metric_df = pd.DataFrame.from_dict(metrics_results, orient="index")
+        self.metric_names = [
+            metric for metric in metric_df.columns if metric not in ["correctness", "correctness_reason"]
+        ]
+        self._dataframe = self._dataframe.join(metric_df, on="id")
 
     def to_pandas(self):
         return self._dataframe
@@ -96,7 +100,7 @@ class RAGReport:
         q_type_script, q_type_div = components(self.plot_correctness_by_metadata("question_type"))
         topic_script, topic_div = components(self.plot_correctness_by_metadata("topic"))
 
-        additional_metrics, metric_histograms = self.get_metrics_histograms()
+        metric_histograms = self.get_metrics_histograms()
 
         component_dict = self.component_scores().to_dict()["score"]
 
@@ -114,7 +118,7 @@ class RAGReport:
             q_type_correctness_div=q_type_div,
             topic_correctness_script=topic_script,
             topic_correctness_div=topic_div,
-            additional_metrics=additional_metrics,
+            additional_metrics=len(self.metric_names) > 0,
             metric_histograms=metric_histograms,
         )
 
@@ -153,8 +157,8 @@ class RAGReport:
             json.dump(self._answers, f)
 
         if self._metrics_results is not None:
-            for metric, df in self._metrics_results.items():
-                df.reset_index().to_json(path / f"metric_{metric}.jsonl", orient="records", lines=True)
+            with open(path / "metrics_results.json", "w", encoding="utf-8") as f:
+                json.dump(self._metrics_results, f)
 
     @classmethod
     def load(cls, folder_path: str, llm_client: LLMClient = None):
@@ -186,12 +190,8 @@ class RAGReport:
             doc.topic_id = documents_topics[doc_idx]
 
         metrics_results = {}
-        for file in path.iterdir():
-            if file.suffix == ".jsonl" and file.name.startswith("metric_"):
-                metric_name = file.name.replace("metric_", "").replace(".jsonl", "")
-                metrics_results[metric_name] = pd.read_json(file, orient="records", lines=True)
-                metrics_results[metric_name]["id"] = metrics_results[metric_name]["id"].astype(str)
-                metrics_results[metric_name].set_index("id", inplace=True)
+        if (path / "metrics_results.json").exists():
+            metrics_results = json.load(open(path / "metrics_results.json", "r"))
 
         report_details = json.load(open(path / "report_details.json", "r"))
         testset._dataframe.index = testset._dataframe.index.astype(str)
@@ -380,13 +380,13 @@ class RAGReport:
         filter_metadata : dict, optional
             Aggregate the question that have the specified metadata values. The keys of the dictionary should be the metadata names and the values should be the metadata values to filter by.
         """
-        if metric_name in self._metrics_results:
+        if metric_name in self.metric_names:
             if filter_metadata is not None:
-                data = self._metrics_results[metric_name][
+                data = self._dataframe[metric_name][
                     self._dataframe["metadata"].apply(lambda x: all(x.get(k) in v for k, v in filter_metadata.items()))
-                ][metric_name]
+                ]
             else:
-                data = self._metrics_results[metric_name]
+                data = self._dataframe[metric_name]
 
             p = figure(
                 width=300,
@@ -420,30 +420,24 @@ class RAGReport:
         return {"script": script, "div": div}
 
     def get_metrics_histograms(self):
-        if len(self._metrics_results) == 1:
-            return False, {}
         histograms_dict = {}
         histograms_dict["Overall"] = {
             "Overall": {
-                metric: self._get_plot_components(self.plot_metrics_hist(metric))
-                for metric in self._metrics_results
-                if metric != "correctness"
+                metric: self._get_plot_components(self.plot_metrics_hist(metric)) for metric in self.metric_names
             }
         }
         histograms_dict["Topics"] = {
             topic: {
                 metric: self._get_plot_components(self.plot_metrics_hist(metric, {"topic": [topic]}))
-                for metric in self._metrics_results
-                if metric != "correctness"
+                for metric in self.metric_names
             }
             for topic in self._testset.get_metadata_values("topic")
         }
         histograms_dict["Question"] = {
             q_type: {
                 metric: self._get_plot_components(self.plot_metrics_hist(metric, {"question_type": [q_type]}))
-                for metric in self._metrics_results
-                if metric != "correctness"
+                for metric in self.metric_names
             }
             for q_type in self._testset.get_metadata_values("question_type")
         }
-        return True, histograms_dict
+        return histograms_dict
