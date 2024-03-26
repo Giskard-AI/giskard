@@ -22,9 +22,10 @@ from giskard.client.dtos import (
     ServerInfo,
     SuiteInfo,
     TestSuiteDTO,
+    ProjectPostDTO,
 )
 from giskard.client.io_utils import GiskardJSONSerializer
-from giskard.client.project import Project
+from giskard.client.project import Project, ProjectType
 from giskard.client.python_utils import warning
 from giskard.core.core import SMT, DatasetMeta, ModelMeta, TestFunctionMeta
 from giskard.utils.analytics_collector import analytics, anonymize
@@ -186,7 +187,7 @@ class GiskardClient:
         response = self._session.get("project", params={"key": project_key}).json()
         return Project(self._session, response["key"], response["id"])
 
-    def create_project(self, project_key: str, name: str, description: str = None) -> Project:
+    def create_project(self, project_key: str, name: str, project_type: ProjectType, description: str = None) -> Project:
         """
         Function to create a project in Giskard
         Args:
@@ -194,6 +195,8 @@ class GiskardClient:
                 The unique value of the project which will be used to identify  and fetch the project in future
             name:
                 The name of the project
+            project_type:
+                The type of the project ["tabular", "llm"]
             description:
                 Describe your project
         Returns:
@@ -209,9 +212,11 @@ class GiskardClient:
             },
         )
         try:
+            project_post_dto = ProjectPostDTO(key=project_key, name=name, project_type=project_type, description=description)
+
             response = self._session.post(
                 "project",
-                json={"description": description, "key": project_key, "name": name},
+                json=project_post_dto.model_dump(),
             ).json()
         except GiskardError as e:
             if e.code == "error.http.409":
