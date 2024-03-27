@@ -62,5 +62,5 @@ def test_scan_report_exports_to_doc():
 
     # Markdown report
     with tempfile.TemporaryDirectory() as tmpdir:
-        report.to_doc(dir=tmpdir, llm_based=False)
+        report.to_doc(dir=tmpdir)
         assert "Robustness.md" in os.listdir(tmpdir)

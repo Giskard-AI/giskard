@@ -12,8 +12,6 @@ from pathlib import Path
 import pandas as pd
 
 from giskard.core.errors import GiskardImportError
-from giskard.llm import get_default_client
-from giskard.llm.client import LLMMessage
 from giskard.utils.analytics_collector import analytics, anonymize
 
 if TYPE_CHECKING:
@@ -96,7 +94,7 @@ class ScanReport:
 
         return html
 
-    def to_doc(self, dir: Optional[str] = "doc_scan", llm_based: Optional[bool] = False):
+    def to_doc(self, dir: Optional[str] = "doc_scan"):
         """
         Generates a doc from the scan report results
 
@@ -104,48 +102,7 @@ class ScanReport:
         ----------
         dir : Optional[str]
             If provided, the docs will be written in the specified folder.
-        llm_based : Optional[bool]
-            Whether to generate further content with an LLM or to stick to the basic information.
         """
-
-        def generate_prompt(report_content, result_test):
-            return f"""
-
-            You are an AI reading and summarizing tool made to allow non expert people in a company to understand technical reports about machine learning models. Your mission is to understand a report which analyzes the behavior of a machine learning model.
-
-            Report:
-
-            {report_content}
-
-            ----------------
-
-            The requirement is: {result_test}
-
-            ----------------
-
-            Start by explicitly mentioning if the model passed the requirement or not.
-
-            Then, provide a summary of the report and explain the issues found by sticking
-            to the content of the report. You must not extrapolate, you should stick to the facts.
-            You must make it as understandable as possible to non expert people and not relate
-            to anything else than the report.
-            Provide enough details so that it is easy to understand.
-
-            List the issues found as follows:
-            - Issue 1: ...
-            - Issue 2: ...
-            ...
-
-            If the model failed to pass the test, explicitly mention why.
-            Otherwise, if the model passed the test, state that the test is a success
-            and explain the other issues that can be fixed to further improve it.
-
-            Factual and easy to understand summary of the report for non expert people:
-
-            """
-
-        # Get default llm
-        llm = get_default_client() if llm_based else None
 
         # Group issues by type
         issue_groups = {}
@@ -169,19 +126,7 @@ class ScanReport:
         for issue_group in content_issues:
             results[issue_group] = {
                 "status": 0 if "major" in content_issues[issue_group] else 1,
-                "summary": llm.complete(
-                    [
-                        LLMMessage(
-                            role="user",
-                            content=generate_prompt(
-                                content_issues[issue_group],
-                                "failed" if "major" in content_issues[issue_group] else "passed",
-                            ),
-                        )
-                    ]
-                ).content
-                if llm_based
-                else content_issues[issue_group],
+                "summary": content_issues[issue_group],
             }
 
         final_results = {"context_requirement": [], "rejection_reason": [], "checklist": []}
