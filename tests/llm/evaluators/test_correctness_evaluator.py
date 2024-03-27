@@ -19,7 +19,7 @@ def _make_eval_dataset():
                     "France is a unitary semi-presidential republic with its capital in Paris, the country's largest city and main cultural and commercial centre.",
                     "Italy covers an area of 301,340 km2 is the third-most populous member state of the European Union. Its capital and largest city is Rome.",
                 ],
-                "difficulty": [0, 1],
+                "question_type": [0, 1],
                 "answerable": [True, True],
             }
         )
