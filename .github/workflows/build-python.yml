@@ -93,6 +93,32 @@ jobs:
             langchain_minimal: true
     continue-on-error: false # https://ncorti.com/blog/howto-github-actions-build-matrix
     steps:
+      - name: Check disk space
+        run: |
+          df -h
+      # - name: List installed packages
+      #   run: |
+      #     dpkg-query --show --showformat='${Installed-Size}\t${Package}\n' | sort -rh | head -25 | awk '{print $1/1024, $2}'
+      #     apt list --installed | wc -l
+      - name: Free disk space
+        run: |
+          sudo swapoff -a
+          sudo rm -f /swapfile
+          sudo rm -rf /usr/local/lib/android
+          docker rmi $(docker image ls -aq)
+          sudo apt update && sudo apt remove -y \
+          google-cloud-cli microsoft-edge-stable dotnet-sdk-* llvm-* google-chrome-stable temurin-*
+          sudo apt autoremove -y
+          sudo apt autoclean -y
+
+      - name: Check new disk space
+        run: |
+          df -h
+      # - name: List remaining installed packages
+      #   run: |
+      #     dpkg-query --show --showformat='${Installed-Size}\t${Package}\n' | sort -rh | head -25 | awk '{print $1/1024, $2}'
+      #     apt list --installed | wc -l
+
       - name: Checkout code
         uses: actions/checkout@v4.1.0
         with:
