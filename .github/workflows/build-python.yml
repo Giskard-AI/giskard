@@ -112,6 +112,9 @@ jobs:
           key: ${{ matrix.os }}-${{ matrix.python-version }}-python-test-resources-${{ hashFiles('tests/fixtures/**/*py')}}
           restore-keys: ${{ matrix.os }}-${{ matrix.python-version }}-python-giskard-test-resources
 
+      - name: Debugging with ssh
+        uses: lhotari/action-upterm@v1
+
       - name: Install dependencies
         run: |
           pdm install -G :all
