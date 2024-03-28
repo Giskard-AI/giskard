@@ -33,4 +33,4 @@ def row_failing_monotonicity_slicing_fn(df: pd.DataFrame, index_failure: pd.Inde
     """
     Filter the dataset by index
     """
-    return df.iloc[index_failure]
+    return df.loc[index_failure]
