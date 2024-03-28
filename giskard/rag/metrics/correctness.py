@@ -1,6 +1,6 @@
 from typing import Optional
 
-from ...llm.client import LLMClient, LLMMessage, get_default_client
+from ...llm.client.base import ChatMessage, LLMClient, get_default_client
 from ...llm.errors import LLMGenerationError
 from ..question_generators.utils import parse_json_output
 from .base import Metric
@@ -60,15 +60,15 @@ class CorrectnessMetric(Metric):
         try:
             out = llm_client.complete(
                 messages=[
-                    LLMMessage(
+                    ChatMessage(
                         role="system",
                         content=CORRECTNESS_EVALUATION_SYSTEM_PROMPT.format(agent_description=self.agent_description),
                     ),
-                    LLMMessage(role="user", content=CORRECTNESS_TRUE_EXAMPLE_INPUT),
-                    LLMMessage(role="assistant", content=CORRECTNESS_TRUE_EXAMPLE_OUTPUT),
-                    LLMMessage(role="user", content=CORRECTNESS_FALSE_EXAMPLE_INPUT),
-                    LLMMessage(role="assistant", content=CORRECTNESS_FALSE_EXAMPLE_OUTPUT),
-                    LLMMessage(
+                    ChatMessage(role="user", content=CORRECTNESS_TRUE_EXAMPLE_INPUT),
+                    ChatMessage(role="assistant", content=CORRECTNESS_TRUE_EXAMPLE_OUTPUT),
+                    ChatMessage(role="user", content=CORRECTNESS_FALSE_EXAMPLE_INPUT),
+                    ChatMessage(role="assistant", content=CORRECTNESS_FALSE_EXAMPLE_OUTPUT),
+                    ChatMessage(
                         role="user",
                         content=CORRECTNESS_INPUT_TEMPLATE.format(
                             question=question_sample.question,

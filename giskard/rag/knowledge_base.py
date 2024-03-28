@@ -7,7 +7,8 @@ import numpy as np
 import pandas as pd
 from sklearn.cluster import HDBSCAN
 
-from ..llm.client import LLMClient, LLMMessage, get_default_client
+from ..datasets.metadata.text_metadata_provider import _detect_lang
+from ..llm.client import ChatMessage, LLMClient, get_default_client
 from ..llm.errors import LLMImportError
 from ..utils.analytics_collector import analytics
 from ..utils.language_detection import detect_lang
@@ -281,7 +282,7 @@ class KnowledgeBase:
         topics_str = topics_str[: 3 * 8192]
         prompt = TOPIC_SUMMARIZATION_PROMPT.format(language=self._language, topics_elements=topics_str)
 
-        raw_output = self._llm_client.complete([LLMMessage(role="user", content=prompt)], temperature=0.0).content
+        raw_output = self._llm_client.complete([ChatMessage(role="user", content=prompt)], temperature=0.0).content
 
         return raw_output.strip().strip('"')
 

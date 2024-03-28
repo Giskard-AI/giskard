@@ -3,7 +3,7 @@ from typing import Dict, Iterator, Optional, Sequence
 import logging
 from abc import ABC, abstractmethod
 
-from ...llm.client import LLMClient, LLMMessage, get_default_client
+from ...llm.client import ChatMessage, LLMClient, get_default_client
 from ..knowledge_base import KnowledgeBase
 from .utils import parse_json_output
 
@@ -38,7 +38,7 @@ class _LLMBasedQuestionGenerator(QuestionGenerator):
 
         return self._llm_client_instance
 
-    def _llm_complete(self, messages: Sequence[LLMMessage]) -> dict:
+    def _llm_complete(self, messages: Sequence[ChatMessage]) -> dict:
         out = self._llm_client.complete(
             messages=messages,
             temperature=0.5,

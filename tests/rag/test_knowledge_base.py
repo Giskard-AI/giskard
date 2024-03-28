@@ -4,7 +4,7 @@ import numpy as np
 import pandas as pd
 from bokeh.plotting import figure
 
-from giskard.llm.client.base import LLMMessage
+from giskard.llm.client.base import ChatMessage
 from giskard.rag.knowledge_base import KnowledgeBase
 
 
@@ -62,7 +62,7 @@ def test_knowledge_base_topic_discovery():
     llm_client.embeddings.side_effect = [points]
 
     llm_client.complete = Mock()
-    llm_client.complete.side_effect = [LLMMessage(role="assistant", content=f"'Topic {idx+1}'") for idx in range(n)]
+    llm_client.complete.side_effect = [ChatMessage(role="assistant", content=f"'Topic {idx+1}'") for idx in range(n)]
 
     topics = {idx: f"'Topic {idx+1}'" for idx in range(n)}
     topics[-1] = "Others"
@@ -85,7 +85,7 @@ def test_knowledge_base_topic_plot():
     llm_client.embeddings.side_effect = [points]
 
     llm_client.complete = Mock()
-    llm_client.complete.side_effect = [LLMMessage(role="assistant", content=f"'Topic {idx+1}'") for idx in range(n)]
+    llm_client.complete.side_effect = [ChatMessage(role="assistant", content=f"'Topic {idx+1}'") for idx in range(n)]
 
     knowledge_base = KnowledgeBase(df, llm_client=llm_client)
     plot = knowledge_base.get_knowledge_plot()

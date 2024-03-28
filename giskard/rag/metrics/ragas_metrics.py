@@ -4,7 +4,7 @@ import logging
 
 import nest_asyncio
 
-from ...llm.client import LLMClient, LLMMessage, get_default_client
+from ...llm.client import ChatMessage, LLMClient, get_default_client
 from .base import Metric
 
 nest_asyncio.apply()
@@ -36,7 +36,7 @@ class RagasLLMWrapper(BaseRagasLLM):
         return prompt[: int(self.context_window_length * 3.5)]
 
     def generate_text(self, prompt: PromptValue, n: int = 1, temperature: float = 1e-8, stop=None, callbacks=[]):
-        out = self.llm_client.complete([LLMMessage(role="user", content=self.trim_prompt(prompt.to_string()))])
+        out = self.llm_client.complete([ChatMessage(role="user", content=self.trim_prompt(prompt.to_string()))])
         return LLMResult(generations=[[Generation(text=out.content)]])
 
     async def agenerate_text(
