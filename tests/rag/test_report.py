@@ -7,6 +7,7 @@ from bokeh.plotting import figure
 from giskard.rag import QATestset, RAGReport
 from giskard.rag.knowledge_base import KnowledgeBase
 from tests.rag.test_qa_testset import make_testset_df
+from tests.utils import DummyEmbedding
 
 
 def test_report_plots():
@@ -64,10 +65,11 @@ def test_report_plots():
 def test_report_save_load(tmp_path):
     df = make_testset_df()
     llm_client = Mock()
-    llm_client.embeddings = Mock()
-    llm_client.embeddings.return_value = np.random.randn(len(df), 8)
 
-    knowledge_base = KnowledgeBase(df, llm_client=llm_client)
+    embeddings = Mock()
+    embeddings.embed.return_value = np.random.randn(len(df), 8)
+
+    knowledge_base = KnowledgeBase(df, llm_client=llm_client, embedding_model=embeddings)
     knowledge_base._topics_inst = {0: "Cheese_1", 1: "Cheese_2"}
     for doc_idx, doc in enumerate(knowledge_base._documents):
         if doc_idx < 3:
@@ -111,7 +113,7 @@ def test_report_save_load(tmp_path):
     report = RAGReport(testset, answers, metrics_results, knowledge_base)
 
     report.save(tmp_path)
-    loaded_report = RAGReport.load(tmp_path, llm_client=llm_client)
+    loaded_report = RAGReport.load(tmp_path, llm_client=llm_client, embedding_model=DummyEmbedding())
 
     assert all(
         [

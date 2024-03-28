@@ -9,20 +9,18 @@ from . import LLMClient
 from .base import ChatMessage
 
 try:
-    import openai
+    from mistralai.client import MistralClient as _MistralClient
+    from mistralai.models.chat_completion import ChatMessage as MistralChatMessage
 except ImportError as err:
-    raise LLMImportError(flavor="llm") from err
-
-AUTH_ERROR_MESSAGE = (
-    "Could not authenticate with OpenAI API. Please make sure you have configured the API key by "
-    "setting OPENAI_API_KEY in the environment."
-)
+    raise LLMImportError(
+        flavor="llm", msg="To use Mistral models, please install the `mistralai` package with `pip install mistralai`"
+    ) from err
 
 
-class OpenAIClient(LLMClient):
-    def __init__(self, model: str = "gpt-4", client: openai.Client = None):
+class MistralClient(LLMClient):
+    def __init__(self, model: str = "mistral-large-latest", client: _MistralClient = None):
         self.model = model
-        self._client = client or openai.OpenAI()
+        self._client = client or _MistralClient()
 
     def complete(
         self,
@@ -31,14 +29,13 @@ class OpenAIClient(LLMClient):
         max_tokens: Optional[int] = None,
         caller_id: Optional[str] = None,
         seed: Optional[int] = None,
-        format=None,
+        format: str = None,
     ) -> ChatMessage:
         extra_params = dict()
-
         if seed is not None:
-            extra_params["seed"] = seed
+            extra_params["random_seed"] = seed
 
-        if format not in (None, "json", "json_object"):
+        if format not in (None, "json", "json_object") and "large" not in self.model:
             warning(f"Unsupported format '{format}', ignoring.")
             format = None
 
@@ -46,15 +43,15 @@ class OpenAIClient(LLMClient):
             extra_params["response_format"] = {"type": "json_object"}
 
         try:
-            completion = self._client.chat.completions.create(
+            completion = self._client.chat(
                 model=self.model,
-                messages=[asdict(m) for m in messages],
+                messages=[MistralChatMessage(**asdict(m)) for m in messages],
                 temperature=temperature,
                 max_tokens=max_tokens,
                 **extra_params,
             )
-        except openai.AuthenticationError as err:
-            raise LLMConfigurationError(AUTH_ERROR_MESSAGE) from err
+        except RuntimeError as err:
+            raise LLMConfigurationError("Could not get response from Mistral API") from err
 
         self.logger.log_call(
             prompt_tokens=completion.usage.prompt_tokens,

@@ -7,6 +7,7 @@ import matplotlib
 import numpy as np
 import pandas as pd
 
+from ..llm.embeddings.base import BaseEmbedding
 from ..llm.errors import LLMImportError
 
 try:
@@ -157,7 +158,9 @@ class RAGReport:
                 df.reset_index().to_json(path / f"metric_{metric}.jsonl", orient="records", lines=True)
 
     @classmethod
-    def load(cls, folder_path: str, llm_client: LLMClient = None):
+    def load(
+        cls, folder_path: str, llm_client: Optional[LLMClient] = None, embedding_model: Optional[BaseEmbedding] = None
+    ):
         """Load a saved report.
 
         It reconstructs the objects inside the report including the testset and the knowledge base.
@@ -168,6 +171,8 @@ class RAGReport:
             The folder path to load the report data from.
         llm_client : LLMClient, optional
             The LLMClient to use inside the knowledge base. If not provided, the default client will be used.
+        embedding_model : BaseEmbedding, optional
+            The embedding model to use inside the knowledge base. If not provided, the default model will be used.
         """
         path = Path(folder_path)
         knowledge_base_meta = json.load(open(path / "knowledge_base_meta.json", "r"))
@@ -179,7 +184,9 @@ class RAGReport:
         topics = {int(k): topic for k, topic in knowledge_base_meta.pop("topics", None).items()}
         documents_topics = [int(topic_id) for topic_id in knowledge_base_meta.pop("documents_topics", None)]
 
-        knowledge_base = KnowledgeBase(knowledge_base_data, llm_client=llm_client, **knowledge_base_meta)
+        knowledge_base = KnowledgeBase(
+            knowledge_base_data, llm_client=llm_client, embedding_model=embedding_model, **knowledge_base_meta
+        )
         knowledge_base._topics_inst = topics
 
         for doc_idx, doc in enumerate(knowledge_base._documents):

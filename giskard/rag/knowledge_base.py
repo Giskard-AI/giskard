@@ -7,7 +7,9 @@ import pandas as pd
 from sklearn.cluster import HDBSCAN
 
 from ..datasets.metadata.text_metadata_provider import _detect_lang
-from ..llm.client import LLMClient, LLMMessage, get_default_client
+from ..llm.client import ChatMessage, LLMClient, get_default_client
+from ..llm.embeddings import get_default_embedding
+from ..llm.embeddings.base import BaseEmbedding
 from ..llm.errors import LLMImportError
 from ..utils.analytics_collector import analytics
 from .knowledge_base_plots import get_failure_plot, get_knowledge_plot
@@ -101,7 +103,7 @@ class KnowledgeBase:
         columns: Optional[Sequence[str]] = None,
         seed: int = None,
         llm_client: Optional[LLMClient] = None,
-        embedding_model: Optional[str] = "text-embedding-ada-002",
+        embedding_model: Optional[BaseEmbedding] = None,
         min_topic_size: Optional[int] = None,
         chunk_size: int = 2048,
     ) -> None:
@@ -126,7 +128,7 @@ class KnowledgeBase:
 
         self._rng = np.random.default_rng(seed=seed)
         self._llm_client = llm_client or get_default_client()
-        self._embedding_model = embedding_model
+        self._embedding_model = embedding_model or get_default_embedding()
 
         self._min_topic_size = min_topic_size or round(2 + np.log(len(self._documents)))
         self.chunk_size = chunk_size
@@ -173,10 +175,8 @@ class KnowledgeBase:
     @property
     def _embeddings(self):
         if self._embeddings_inst is None:
-            logger.info("Computing Knowledge Base embeddings.")
-            self._embeddings_inst = self._llm_client.embeddings(
-                [doc.content for doc in self._documents], model=self._embedding_model, chunk_size=self.chunk_size
-            )
+            logger.debug("Computing Knowledge Base embeddings.")
+            self._embeddings_inst = np.array(self._embedding_model.embed([doc.content for doc in self._documents]))
             for doc, emb in zip(self._documents, self._embeddings_inst):
                 doc.embeddings = emb
         return self._embeddings_inst
@@ -200,7 +200,6 @@ class KnowledgeBase:
     def get_savable_data(self):
         return {
             "columns": self._knowledge_base_columns,
-            "embedding_model": self._embedding_model,
             "min_topic_size": self._min_topic_size,
             "topics": {int(k): topic for k, topic in self.topics.items()},
             "documents_topics": [int(doc.topic_id) for doc in self._documents],
@@ -266,7 +265,7 @@ class KnowledgeBase:
         topics_str = topics_str[: 3 * 8192]
         prompt = TOPIC_SUMMARIZATION_PROMPT.format(language=self._language, topics_elements=topics_str)
 
-        raw_output = self._llm_client.complete([LLMMessage(role="user", content=prompt)], temperature=0.0).content
+        raw_output = self._llm_client.complete([ChatMessage(role="user", content=prompt)], temperature=0.0).content
 
         return raw_output.strip().strip('"')
 
@@ -300,8 +299,8 @@ class KnowledgeBase:
 
         return relevant_documents
 
-    def similarity_search_with_score(self, query: Sequence[str], k: int) -> Sequence:
-        query_emb = self._llm_client.embeddings(query, model=self._embedding_model).astype("float32")
+    def similarity_search_with_score(self, query: str, k: int) -> Sequence:
+        query_emb = np.array(self._embedding_model.embed(query), dtype="float32")
         return self.vector_similarity_search_with_score(query_emb, k)
 
     def vector_similarity_search_with_score(self, query_emb: np.ndarray, k: int) -> Sequence:

@@ -1,6 +1,6 @@
 from typing import Sequence
 
-from ..llm.client.base import LLMClient, LLMMessage
+from ..llm.client.base import ChatMessage, LLMClient
 
 RECOMMENDATION_SYSTEM_PROMPT = """You are an expert at designing Retrieval Augmented Generation (RAG) systems. You new task is to help debug a RAG based on several scores.
 
@@ -49,8 +49,8 @@ def get_rag_recommendation(
 
     recommendation = llm_client.complete(
         [
-            LLMMessage(role="system", content=RECOMMENDATION_SYSTEM_PROMPT.format(topics=formatted_topics)),
-            LLMMessage(
+            ChatMessage(role="system", content=RECOMMENDATION_SYSTEM_PROMPT.format(topics=formatted_topics)),
+            ChatMessage(
                 role="user",
                 content=RECOMMENDATION_USER_PROMPT.format(
                     scores_per_question_type=formatted_scores_per_question_type,

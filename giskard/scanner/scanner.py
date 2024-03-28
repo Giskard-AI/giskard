@@ -31,16 +31,12 @@ from .report import ScanReport
 
 MAX_ISSUES_PER_DETECTOR = 15
 
-COST_ESTIMATE_TEMPLATE = """This automatic scan will use LLM-assisted detectors based on GPT-4 to identify vulnerabilities in your model.
-These are the total estimated costs:
-Estimated calls to your model: ~{num_model_calls}
-Estimated OpenAI GPT-4 calls for evaluation: {num_llm_calls} (~{num_llm_prompt_tokens} prompt tokens and ~{num_llm_sampled_tokens} sampled tokens)
-OpenAI API costs for evaluation are estimated to ${estimated_usd:.2f}.
+COST_ESTIMATE_TEMPLATE = """Estimated calls to your model: ~{num_model_calls}
+Estimated LLM calls for evaluation: {num_llm_calls}
 """
 
 COST_SUMMARY_TEMPLATE = """LLM-assisted detectors have used the following resources:
-OpenAI GPT-4 calls for evaluation: {num_llm_calls} ({num_llm_prompt_tokens} prompt tokens and {num_llm_sampled_tokens} sampled tokens)
-OpenAI API costs for evaluation amount to ${estimated_usd:.2f} (standard pricing).
+OpenAI LLM calls for evaluation: {num_llm_calls} ({num_llm_prompt_tokens} prompt tokens and {num_llm_sampled_tokens} sampled tokens)
 """
 
 # Hardcoded for now…

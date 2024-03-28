@@ -4,6 +4,7 @@ from giskard.scanner import logger
 
 from ...datasets.base import Dataset
 from ...llm.client import get_default_client
+from ...llm.client.base import ChatMessage
 from ...models.base.model import BaseModel
 from ..decorators import detector
 from ..issues import Issue, IssueLevel, OutputFormatting
@@ -60,13 +61,13 @@ class LLMOutputFormattingDetector(RequirementBasedDetector):
         llm_client = get_default_client()
         out = llm_client.complete(
             [
-                {"role": "system", "content": BREAKER_PROMPT},
-                {"role": "user", "content": "Model description: " + model.meta.description},
+                ChatMessage(role="system", content=BREAKER_PROMPT),
+                ChatMessage(role="user", content="Model description: " + model.meta.description),
             ],
             temperature=0.1,
             max_tokens=1,
             caller_id=self.__class__.__name__,
-            seed=self.rng_seed,
+            seed=self.llm_seed,
         )
 
         if out.content.strip().upper() != "Y":

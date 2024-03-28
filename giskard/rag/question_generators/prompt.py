@@ -2,7 +2,7 @@ from typing import Optional
 
 from dataclasses import dataclass
 
-from ...llm.client import LLMMessage
+from ...llm.client import ChatMessage
 
 
 @dataclass
@@ -18,9 +18,9 @@ class QAGenerationPrompt:
 
         examples = []
         if self.example_input is not None:
-            examples.append(LLMMessage(role="user", content=self.example_input))
+            examples.append(ChatMessage(role="user", content=self.example_input))
         if self.example_output is not None:
-            examples.append(LLMMessage(role="assistant", content=self.example_output))
+            examples.append(ChatMessage(role="assistant", content=self.example_output))
         return examples
 
     def to_messages(
@@ -31,7 +31,7 @@ class QAGenerationPrompt:
         examples=None,
     ):
         messages = [
-            LLMMessage(
+            ChatMessage(
                 role="system",
                 content=self.system_prompt.format(**system_prompt_input),
             )
@@ -40,8 +40,8 @@ class QAGenerationPrompt:
             messages.extend(self._format_example_prompt(examples))
 
         if self.user_input_template is None:
-            messages.append(LLMMessage(role="user", content=user_input))
+            messages.append(ChatMessage(role="user", content=user_input))
         else:
-            messages.append(LLMMessage(role="user", content=self.user_input_template.format(**user_input)))
+            messages.append(ChatMessage(role="user", content=self.user_input_template.format(**user_input)))
 
         return messages

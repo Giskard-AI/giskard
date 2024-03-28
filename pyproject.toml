@@ -21,6 +21,7 @@ giskard = [
 ]
 
 
+
 [tool.pdm.scripts]
 _.env = { GSK_DISABLE_ANALYTICS = "True", GISKARD_DEV_MODE = "True" }
 # add "-n auto" to the pytest command to parallelize the execution
@@ -59,6 +60,7 @@ dev = [
     "pytest-asyncio>=0.21.1",
     "pydantic>=2",
     "avidtools",
+    "mistralai>=0.1.8",
 ]
 ml_runtime = [
     "langchain>=0.0.275",
