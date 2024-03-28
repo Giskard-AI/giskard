@@ -101,6 +101,7 @@ jobs:
       #     dpkg-query --show --showformat='${Installed-Size}\t${Package}\n' | sort -rh | head -25 | awk '{print $1/1024, $2}'
       #     apt list --installed | wc -l
       - name: Free disk space
+        if: ${{ matrix.os == 'ubuntu-latest' }}
         run: |
           sudo swapoff -a
           sudo rm -f /swapfile
@@ -138,10 +139,18 @@ jobs:
           key: ${{ matrix.os }}-${{ matrix.python-version }}-python-test-resources-${{ hashFiles('tests/fixtures/**/*py')}}
           restore-keys: ${{ matrix.os }}-${{ matrix.python-version }}-python-giskard-test-resources
 
+      - name: Check again new disk space
+        run: |
+          df -h
+
       - name: Install dependencies
         run: |
           pdm install -G :all
           pdm list
+
+      - name: Check yet again new disk space
+        run: |
+          df -h
 
       - name: Re-install lightgbm from sources for MacOS
         if: ${{ matrix.os == 'macos-latest' }}
@@ -305,6 +314,28 @@ jobs:
     name: "Build and check doc"
     runs-on: ubuntu-latest
     steps:
+      - name: Check disk space
+        run: |
+          df -h
+      # - name: List installed packages
+      #   run: |
+      #     dpkg-query --show --showformat='${Installed-Size}\t${Package}\n' | sort -rh | head -25 | awk '{print $1/1024, $2}'
+      #     apt list --installed | wc -l
+      - name: Free disk space
+        run: |
+          sudo swapoff -a
+          sudo rm -f /swapfile
+          sudo rm -rf /usr/local/lib/android
+          docker rmi $(docker image ls -aq)
+          sudo apt update && sudo apt remove -y \
+          google-cloud-cli microsoft-edge-stable dotnet-sdk-* llvm-* google-chrome-stable temurin-*
+          sudo apt autoremove -y
+          sudo apt autoclean -y
+
+      - name: Check new disk space
+        run: |
+          df -h
+
       - name: Checkout code
         uses: actions/checkout@v4.1.0
         with:
@@ -323,6 +354,10 @@ jobs:
 
       - name: Install dependencies
         run: pdm install -G :all
+
+      - name: Check new disk space
+        run: |
+          df -h
 
       - name: Build doc
         run: pdm  doc
