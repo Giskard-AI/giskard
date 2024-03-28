@@ -4,7 +4,7 @@ import numpy as np
 import pandas as pd
 import pytest
 
-from giskard.llm.client.base import LLMMessage
+from giskard.llm.client.base import ChatMessage
 from giskard.rag import KnowledgeBase, QATestset, evaluate
 from tests.rag.test_qa_testset import make_testset_df
 
@@ -21,31 +21,31 @@ def test_evaluate_from_answers():
     llm_client = Mock()
     llm_client.complete = Mock()
     llm_client.complete.side_effect = [
-        LLMMessage(
+        ChatMessage(
             role="assistant",
             content="""{"correctness": true, "correctness_reason": "The agent answer is correct."}""",
         ),
-        LLMMessage(
+        ChatMessage(
             role="assistant",
             content="""{"correctness": true, "correctness_reason": "The agent answer is correct."}""",
         ),
-        LLMMessage(
+        ChatMessage(
             role="assistant",
             content="""{"correctness": false, "correctness_reason": "The agent answer is incorrect."}""",
         ),
-        LLMMessage(
+        ChatMessage(
             role="assistant",
             content="""{"correctness": true, "correctness_reason": "The agent answer is correct."}""",
         ),
-        LLMMessage(
+        ChatMessage(
             role="assistant",
             content="""{"correctness": false, "correctness_reason": "The agent answer is incorrect."}""",
         ),
-        LLMMessage(
+        ChatMessage(
             role="assistant",
             content="""{"correctness": false, "correctness_reason": "The agent answer is incorrect."}""",
         ),
-        LLMMessage(
+        ChatMessage(
             role="assistant",
             content="""This is a recommendation test.""",
         ),
@@ -87,31 +87,31 @@ def test_evaluate_from_answer_fn():
     testset = QATestset(make_testset_df())
     llm_client = Mock()
     llm_client.complete.side_effect = [
-        LLMMessage(
+        ChatMessage(
             role="assistant",
             content="""{"correctness": true, "correctness_reason": "The agent answer is correct."}""",
         ),
-        LLMMessage(
+        ChatMessage(
             role="assistant",
             content="""{"correctness": true, "correctness_reason": "The agent answer is correct."}""",
         ),
-        LLMMessage(
+        ChatMessage(
             role="assistant",
             content="""{"correctness": false, "correctness_reason": "The agent answer is incorrect."}""",
         ),
-        LLMMessage(
+        ChatMessage(
             role="assistant",
             content="""{"correctness": true, "correctness_reason": "The agent answer is correct."}""",
         ),
-        LLMMessage(
+        ChatMessage(
             role="assistant",
             content="""{"correctness": false, "correctness_reason": "The agent answer is incorrect."}""",
         ),
-        LLMMessage(
+        ChatMessage(
             role="assistant",
             content="""{"correctness": false, "correctness_reason": "The agent answer is incorrect."}""",
         ),
-        LLMMessage(
+        ChatMessage(
             role="assistant",
             content="""This is a recommendation test.""",
         ),
@@ -146,31 +146,31 @@ def test_evaluate_from_answer_fn():
     testset = QATestset(make_testset_df())
     llm_client = Mock()
     llm_client.complete.side_effect = [
-        LLMMessage(
+        ChatMessage(
             role="assistant",
             content="""{"correctness": true, "correctness_reason": "The agent answer is correct."}""",
         ),
-        LLMMessage(
+        ChatMessage(
             role="assistant",
             content="""{"correctness": true, "correctness_reason": "The agent answer is correct."}""",
         ),
-        LLMMessage(
+        ChatMessage(
             role="assistant",
             content="""{"correctness": false, "correctness_reason": "The agent answer is incorrect."}""",
         ),
-        LLMMessage(
+        ChatMessage(
             role="assistant",
             content="""{"correctness": true, "correctness_reason": "The agent answer is correct."}""",
         ),
-        LLMMessage(
+        ChatMessage(
             role="assistant",
             content="""{"correctness": false, "correctness_reason": "The agent answer is incorrect."}""",
         ),
-        LLMMessage(
+        ChatMessage(
             role="assistant",
             content="""{"correctness": false, "correctness_reason": "The agent answer is incorrect."}""",
         ),
-        LLMMessage(
+        ChatMessage(
             role="assistant",
             content="""This is a recommendation test.""",
         ),
