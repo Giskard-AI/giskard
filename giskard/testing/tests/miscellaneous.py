@@ -6,7 +6,7 @@ from giskard.testing.tests.debug_slicing_functions import row_failing_monotonici
 
 
 @test(name="Monotonicity", tags=["monotonicity"])
-def monotonicity_test_function(
+def test_monotonicity(
     model: BaseModel,
     dataset: Dataset,
     column_name: str,

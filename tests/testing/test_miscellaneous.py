@@ -24,13 +24,13 @@ def test_monotonicity():
     model_increasing = Model(lambda df: df["col1"], model_type="regression", feature_names=["col1", "col2"])
 
     # Call the function with test inputs
-    result = miscellaneous.monotonicity_test_function(model_increasing, dataset, "col1").execute()
+    result = miscellaneous.test_monotonicity(model_increasing, dataset, "col1").execute()
 
     # Assert that the result is as expected
     assert result.passed, "Test failed: the model should be monotonic"
 
     # Call the function with test inputs
-    result = miscellaneous.monotonicity_test_function(model_increasing, dataset, "col1", increasing=False).execute()
+    result = miscellaneous.test_monotonicity(model_increasing, dataset, "col1", increasing=False).execute()
 
     # Assert that the result is as expected
     assert not result.passed, "Test failed: the model should not be monotonic"
