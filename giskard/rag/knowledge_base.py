@@ -200,7 +200,6 @@ class KnowledgeBase:
     def get_savable_data(self):
         return {
             "columns": self._knowledge_base_columns,
-            "embedding_model": self._embedding_model,
             "min_topic_size": self._min_topic_size,
             "topics": {int(k): topic for k, topic in self.topics.items()},
             "documents_topics": [int(doc.topic_id) for doc in self._documents],
