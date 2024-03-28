@@ -92,6 +92,7 @@ test = [
     "openai>=1",
     "pytest-memray; sys_platform == 'linux' or sys_platform == 'darwin'",
     "pytest-reportlog>=0.4.0",
+    "shap<0.45",                                                          # Fixing this to avoid changed on insights
 ]
 doc = [
     "furo>=2023.5.20",
