@@ -14,19 +14,6 @@ from ..errors import LLMGenerationError
 
 logger = logging.getLogger("giskard.llm")
 
-DEFAULT_GENERATE_INPUTS_PROMPT = """You are auditing an AI model. Your task is to generate typical but varied inputs for this model.
-
-Your will generate inputs for the following model: {model_name} - {model_description}.
-Model Features: {feature_names}
-
-Each generated input must be an object with values for each of the model features, aimed at simulating typical usage of the model, or typical inputs that the model is supposed to handle.
-Take the model description into account when generating the inputs. You should not generate repeated inputs or variations of the same input, instead try to generate inputs that varied for use cases of the model and cover all situations that could be encoutered during typical usage of the model.
-
-Think step by step and then call the `generate_inputs` function with the generated inputs. You must generate {num_samples} inputs.
-"""
-
-LANGUAGE_REQUIREMENT_PROMPT = "You must generate input using different languages among the following list: {languages}."
-
 
 class BaseGenerator(ABC):
     @abstractmethod
