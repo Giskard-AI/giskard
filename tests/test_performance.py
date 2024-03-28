@@ -113,6 +113,22 @@ def test_recall(model, data, threshold, expected_metric, actual_slices_size, req
 @pytest.mark.parametrize(
     "model,data,threshold,expected_metric,actual_slices_size",
     [
+        ("german_credit_model", "german_credit_data", 0.5, 0.22, 1000),
+    ],
+)
+def test_brier(model, data, threshold, expected_metric, actual_slices_size, request):
+    results = performance.test_brier(
+        model=request.getfixturevalue(model), dataset=request.getfixturevalue(data), threshold=threshold
+    ).execute()
+
+    assert results.actual_slices_size[0] == actual_slices_size
+    assert round(results.metric, 2) == expected_metric
+    assert results.passed
+
+
+@pytest.mark.parametrize(
+    "model,data,threshold,expected_metric,actual_slices_size",
+    [
         ("german_credit_model", "german_credit_data", 0.5, 0.78, 1000),
         ("enron_model", "enron_data", 0.5, 0.76, 50),
     ],
