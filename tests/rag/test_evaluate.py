@@ -7,6 +7,7 @@ import pytest
 from giskard.llm.client.base import ChatMessage
 from giskard.rag import KnowledgeBase, QATestset, evaluate
 from tests.rag.test_qa_testset import make_testset_samples
+from tests.utils import DummyEmbedding
 
 
 def test_evaluate_from_answers():
@@ -222,8 +223,11 @@ def make_conversation_testset_df():
 
 def test_user_friendly_error_if_parameters_are_swapped():
     llm_client = MagicMock()
-    llm_client.embeddings.side_effect = [np.random.rand(6, 10)]
-    knowledge_base = KnowledgeBase.from_pandas(df=pd.DataFrame({"text": ["test"] * 6}), llm_client=llm_client)
+    embeddings = Mock()
+    embeddings.embed.side_effect = [np.random.rand(6, 10)]
+    knowledge_base = KnowledgeBase.from_pandas(
+        df=pd.DataFrame({"text": ["test"] * 6}), llm_client=llm_client, embedding_model=DummyEmbedding()
+    )
     testset = QATestset(make_testset_samples())
 
     with pytest.raises(ValueError, match="must be a KnowledgeBase object"):
