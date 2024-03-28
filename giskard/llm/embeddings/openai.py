@@ -6,7 +6,17 @@ from .base import BaseEmbedding, batched
 
 
 class OpenAIEmbedding(BaseEmbedding):
-    def __init__(self, client, model, batch_size=20):
+    def __init__(self, client, model: str, batch_size=40):
+        """
+        Parameters
+        ----------
+        client : OpenAI
+            OpenAI or AzureOpenAI client instance.
+        model : str
+            Model name.
+        batch_size : int, optional
+            Batch size for embeddings, by default 40.
+        """
         self.client = client
         self.model = model
         self.batch_size = batch_size
