@@ -1,7 +1,6 @@
-from typing import Sequence, Union
+from typing import Sequence
 
 import numpy as np
-import torch
 
 from .base import BaseEmbedding, batched
 
@@ -12,7 +11,7 @@ class OpenAIEmbedding(BaseEmbedding):
         self.model = model
         self.batch_size = batch_size
 
-    def embed(self, texts: Sequence[str]) -> Union[np.ndarray, torch.Tensor]:
+    def embed(self, texts: Sequence[str]) -> np.ndarray:
         if isinstance(texts, str):
             texts = [texts]
 
@@ -21,4 +20,4 @@ class OpenAIEmbedding(BaseEmbedding):
             response = self.client.embeddings.create(input=batch, model=self.model)
             embeddings.extend([item.embedding for item in response.data])
 
-        return embeddings
+        return np.array(embeddings)
