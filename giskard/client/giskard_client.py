@@ -1,14 +1,18 @@
 """API Client to interact with the Giskard app"""
+
 from typing import List
 
 import json
 import logging
 import os
 import posixpath
+import sys
+import uuid
 from pathlib import Path
 from urllib.parse import urljoin
 from uuid import UUID
 
+import importlib_metadata
 from requests import Response
 from requests.adapters import HTTPAdapter
 from requests.auth import AuthBase
@@ -186,19 +190,72 @@ class GiskardClient:
         response = self._session.get("project", params={"key": project_key}).json()
         return Project(self._session, response["key"], response["id"])
 
-    def create_project(self, project_key: str, name: str, description: str = None) -> Project:
-        """
-        Function to create a project in Giskard
-        Args:
-            project_key:
-                The unique value of the project which will be used to identify  and fetch the project in future
-            name:
-                The name of the project
-            description:
-                Describe your project
-        Returns:
-            Project:
-                The project created in giskard
+    def initialize_kernel(self, project_key: str):
+        python_version = f"{sys.version_info[0]}.{sys.version_info[1]}"
+        kernel_name = f"{project_key}_kernel"
+
+        kernels = self._session.get("kernels").json()
+        frozen_dependencies = [f"{dist.name}=={dist.version}" for dist in importlib_metadata.distributions()]
+
+        existing_kernel = next((kernel for kernel in kernels if kernel["name"] == kernel_name), None)
+
+        if (
+            existing_kernel
+            and existing_kernel["pythonVersion"] == python_version
+            and set(frozen_dependencies).issubset(set(existing_kernel["frozenDependencies"].split("\n")))
+        ):
+            # A similar kernel already exists
+            return existing_kernel["name"]
+        elif existing_kernel:
+            # A different kernel exists that uses the same name
+            kernel_name = f"{kernel_name}_{uuid.uuid4()}"
+
+        self.create_kernel(kernel_name, python_version, frozen_dependencies="\n".join(frozen_dependencies))
+
+        return kernel_name
+
+    def create_kernel(
+        self, kernel_name: str, python_version: str, requestedDependencies: str = "", frozen_dependencies: str = ""
+    ):
+        self._session.post(
+            "kernels",
+            json={
+                "name": kernel_name,
+                "pythonVersion": python_version,
+                "requestedDependencies": requestedDependencies,
+                "frozenDependencies": frozen_dependencies,
+                "type": "PROCESS",
+                "version": 0,
+            },
+        )
+
+    def start_managed_worker(self, kernel_name: str):
+        self._session.post(f"kernels/start/{kernel_name}")
+        logger.info("The worker is starting up")
+
+    def stop_managed_worker(self, kernel_name: str):
+        self._session.post(f"kernels/stop/{kernel_name}")
+        logger.info("The worker has been requested to stop")
+
+    def create_project(self, project_key: str, name: str, description: str = None, kernel_name: str = None) -> Project:
+        """Function to create a project in Giskard
+
+        Parameters
+        ----------
+        project_key : str
+            The unique value of the project which will be used to identify  and fetch the project in future
+        name : str
+            The name of the project
+        description : str, optional
+            Describe your project, by default None
+        kernel_name : str
+            The name of the kernel to run on
+
+        Returns
+        -------
+        Project
+            The project created in giskard
+
         """
         analytics.track(
             "Create Project",
@@ -208,10 +265,15 @@ class GiskardClient:
                 "name": anonymize(name),
             },
         )
+
+        if kernel_name is None:
+            kernel_name = self.initialize_kernel(project_key)
+
         try:
+            # TODO(Bazire) : use typed object for validation here
             response = self._session.post(
                 "project",
-                json={"description": description, "key": project_key, "name": name},
+                json={"description": description, "key": project_key, "name": name, "kernelName": kernel_name},
             ).json()
         except GiskardError as e:
             if e.code == "error.http.409":

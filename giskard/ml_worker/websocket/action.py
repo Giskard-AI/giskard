@@ -31,6 +31,7 @@ class MLWorkerAction(str, Enum):
     abort = "abort"
     getLogs = "getLogs"
     createDataset = "createDataset"
+    devJob = "devTask"
 
     @classmethod
     def __get_validators__(cls):

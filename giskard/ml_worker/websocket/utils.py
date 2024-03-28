@@ -1,13 +1,10 @@
 from typing import Any, Callable, Dict, List, Optional
 
 import logging
-import os
-import shutil
 import uuid
 from collections import defaultdict
 
 import pandas as pd
-from mlflow.store.artifact.artifact_repo import verify_artifact_path
 
 from giskard.client.giskard_client import GiskardClient
 from giskard.core.suite import DatasetInput, ModelInput, SuiteInput
@@ -34,7 +31,6 @@ from giskard.ml_worker.websocket import (
 )
 from giskard.ml_worker.websocket.action import MLWorkerAction
 from giskard.models.base import BaseModel
-from giskard.path_utils import artifacts_dir
 from giskard.registry.registry import tests_registry
 from giskard.registry.slicing_function import SlicingFunction
 from giskard.registry.transformation_function import TransformationFunction
@@ -126,21 +122,6 @@ def map_function_meta_ws(callable_type):
     }
 
 
-def log_artifact_local(local_file, artifact_path=None):
-    # Log artifact locally from an internal worker
-    verify_artifact_path(artifact_path)
-
-    file_name = os.path.basename(local_file)
-
-    if artifact_path:
-        artifact_file = artifacts_dir / artifact_path / file_name
-    else:
-        artifact_file = artifacts_dir / file_name
-    artifact_file.parent.mkdir(parents=True, exist_ok=True)
-
-    shutil.copy(local_file, artifact_file)
-
-
 def map_dataset_process_function_meta_ws(callable_type):
     return {
         test.uuid: websocket.DatasetProcessFunctionMeta(
@@ -182,7 +163,7 @@ def _get_or_load(loaded_artifacts: Dict[str, Dict[str, Any]], type: str, uuid: s
 
 
 def parse_function_arguments(
-    client: Optional[GiskardClient],
+    client: GiskardClient,
     request_arguments: List[websocket.FuncArgument],
     loaded_artifacts: Optional[Dict[str, Dict[str, Any]]] = None,
 ):
@@ -245,7 +226,7 @@ def parse_function_arguments(
 def map_result_to_single_test_result_ws(
     result,
     datasets: Dict[uuid.UUID, Dataset],
-    client: Optional[GiskardClient] = None,
+    client: GiskardClient,
     project_key: Optional[str] = None,
 ) -> websocket.SingleTestResult:
     if isinstance(result, TestResult):
@@ -302,9 +283,6 @@ def _upload_generated_output_df(client, datasets, project_key, result):
     )
 
     if result.output_df.original_id not in datasets.keys():
-        if not client:
-            raise RuntimeError("Legacy test debugging using `output_df` is not supported internal ML worker")
-
         if not project_key:
             raise ValueError("Unable to upload debug dataset due to missing `project_key`")
 

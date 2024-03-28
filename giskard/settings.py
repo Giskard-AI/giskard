@@ -28,7 +28,7 @@ def expand_env_var(env_var: Optional[str]) -> Optional[str]:
 class Settings(BaseModel):
     home: str = "~/giskard-home"
     ws_port: int = 9000
-    ws_path: str = "/ml-worker"
+    ws_path: str = "/websocket"
     host: str = "localhost"
     max_workers: int = 10
     loglevel: str = "INFO"

@@ -79,6 +79,8 @@ class StompWSClient:
                 await self._sender_queue.put(StompFrame.DISCONNECT.build_frame({}))
 
     async def _process_frame(self, frame: Frame) -> List[Frame]:
+        if HeaderType.SUBSCRIPTION not in frame.headers:
+            raise StompClientError(f"Missing subscription header, got frame ({frame})")
         subscription = frame.headers[HeaderType.SUBSCRIPTION]
         if subscription not in self._subscriptions:
             raise StompClientError(f"Unknown subscription {subscription}")

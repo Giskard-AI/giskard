@@ -17,6 +17,7 @@ from tests.utils import (
 )
 
 model_name = "uploaded model"
+PROJECT_KEY = "project_key"
 
 
 def test_upload_df(diabetes_dataset: Dataset, diabetes_dataset_with_target: Dataset):
@@ -151,7 +152,7 @@ def test_upload_callable_function(cf: Artifact):
         + "/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/.*"
     )
     with MockedClient() as (client, mr):
-        cf.upload(client=client, project_key=None)
+        cf.upload(client=client, project_key=PROJECT_KEY)
         # Check local cache
         cache_dir = get_local_cache_callable_artifact(artifact=cf)
         assert (cache_dir / CALLABLE_FUNCTION_PKL_CACHE).exists()

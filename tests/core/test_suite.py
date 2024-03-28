@@ -21,6 +21,7 @@ def my_test(model: BaseModel):
 
 
 def test_save_suite_with_artifact_error():
+    project_key = "project_key"
     model = FailingModel(model_type="regression")
     regex_model_name = str(model).replace("(", "\\(").replace(")", "\\)")
 
@@ -28,13 +29,13 @@ def test_save_suite_with_artifact_error():
         UserWarning,
         match=f"Failed to upload {regex_model_name} used in the test suite. The test suite will be partially uploaded.",
     ):
-        utils.register_uri_for_artifact_meta_info(mr, my_test, None)
+        utils.register_uri_for_artifact_meta_info(mr, my_test, project_key)
         mr.register_uri(
             method=requests_mock.POST,
-            url="http://giskard-host:12345/api/v2/testing/project/titanic/suites",
+            url="http://giskard-host:12345/api/v2/testing/project/project_key/suites",
             json={"id": 1, "tests": [{"id": 2}]},
         )
 
         test_suite = Suite().add_test(my_test, model=model)
 
-        test_suite.upload(client, "titanic")
+        test_suite.upload(client, project_key)

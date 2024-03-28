@@ -155,7 +155,7 @@ def info_frame(action_id: str):
 
 
 def ensure_config_worker(requests_mock: requests_mock.Mocker) -> MLWorker:
-    worker = MLWorker(is_server=False, backend_url=validate_url(None, None, "http://127.0.0.1:6789"))
+    worker = MLWorker(worker_name="EXTERNAL", backend_url=validate_url(None, None, "http://127.0.0.1:6789"))
     # Make sure settings are patched
     assert worker._host_url == "ws://127.0.0.1:6789"
     requests_mock.get("http://127.0.0.1:6789/public-api/ml-worker-connect", json={})
@@ -214,8 +214,7 @@ async def test_ml_worker_get_info(requests_mock: requests_mock.Mocker, patch_set
         "interpreter",
         "interpreterVersion",
         "installedPackages",
-        "mlWorkerId",
-        "isRemote",
+        "kernelName",
         "pid",
         "processStartTime",
         "giskardClientVersion",

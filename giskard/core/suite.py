@@ -431,7 +431,7 @@ class TestPartial:
 
         return SuiteTestDTO(
             id=self.suite_test_id,
-            testUuid=self.giskard_test.upload(client),
+            testUuid=self.giskard_test.upload(client, project_key),
             functionInputs=params,
             displayName=self.display_name,
         )
@@ -935,7 +935,7 @@ class Suite:
         suite.project_key = project_key
 
         for test_json in suite_dto.tests:
-            test = GiskardTest.download(test_json.testUuid, client, None)
+            test = GiskardTest.download(test_json.testUuid, client, project_key)
             test_arguments = parse_function_arguments(client, project_key, test_json.functionInputs.values())
             suite.add_test(test(**test_arguments), suite_test_id=test_json.id)
 
