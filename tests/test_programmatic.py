@@ -297,7 +297,7 @@ def test_save_suite_real_debug(german_credit_data: Dataset, german_credit_model:
     from giskard.client.giskard_client import GiskardClient
 
     client = GiskardClient("http://localhost:9000", "API_KEY")
-    client.create_project("test_debug", "test_debug", "test_debug")
+    client.create_project("test_debug", "test_debug", "test_debug", "tabular")
 
     german_credit_data.upload(client, "test_debug")
     german_credit_data_actual = german_credit_data.copy()
@@ -432,6 +432,7 @@ def test_download_suite_run_and_upload_results():
                 ],
                 "id": 2,
                 "projectKey": "test_project",
+                "type": "Tabular",
             },
         )
         register_uri_for_artifact_meta_info(mr, test_auc)

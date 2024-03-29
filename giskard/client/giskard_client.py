@@ -241,7 +241,11 @@ class GiskardClient:
 
     def get_suite(self, project_id: int, suite_id: int) -> SuiteInfo:
         analytics.track("Get suite", {"suite_id": suite_id})
-        return SuiteInfo.parse_obj(self._session.get(f"testing/project/{project_id}/suite/{suite_id}").json())
+
+        response = self._session.get(f"testing/project/{project_id}/suite/{suite_id}").json()
+        del response["type"]
+
+        return SuiteInfo.parse_obj(response)
 
     def load_model_meta(self, project_key: str, uuid: str) -> ModelMetaInfo:
         res = self._session.get(f"project/{project_key}/models/{uuid}").json()

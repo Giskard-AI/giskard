@@ -86,7 +86,7 @@ class MockedClient:
         self.mocked_requests.register_uri(
             requests_mock.GET,
             "http://giskard-host:12345/api/v2/project?key=test_project",
-            json={"key": "test_project", "id": 1},
+            json={"key": "test_project", "id": 1, "type": "Tabular"},
         )
         self.mocked_requests.register_uri(
             requests_mock.GET,
