@@ -268,7 +268,7 @@ class RAGReport:
             component: (
                 [sum(1 / len(attribution) * correctness.loc[q_type, "correctness"] for q_type in attribution)]
                 if len(attribution) > 0
-                else [np.nan]
+                else [1]
             )
             for component, attribution in available_question_types.items()
         }
@@ -301,6 +301,7 @@ class RAGReport:
 
     def _get_knowledge_plot(self):
         tabs = [
+            TabPanel(child=self._knowledge_base.get_knowledge_plot(), title="Topic exploration"),
             TabPanel(
                 child=self._knowledge_base.get_failure_plot(
                     [
@@ -312,7 +313,6 @@ class RAGReport:
                 ),
                 title="Failures",
             ),
-            TabPanel(child=self._knowledge_base.get_knowledge_plot(), title="Topic exploration"),
         ]
 
         tabs = Tabs(tabs=tabs, sizing_mode="stretch_width", tabs_location="below")

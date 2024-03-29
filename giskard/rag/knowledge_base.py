@@ -71,7 +71,7 @@ class Document:
         )
 
         self.metadata = document
-        self.id = doc_id or str(uuid.uuid4())
+        self.id = doc_id if doc_id is not None else str(uuid.uuid4())
         self.embeddings = None
         self.reduced_embeddings = None
         self.topic_id = topic_id
@@ -119,8 +119,9 @@ class KnowledgeBase:
             Document(
                 knowledge_chunk,
                 features=columns,
+                doc_id=doc_id,
             )
-            for knowledge_chunk in data.to_dict("records")
+            for doc_id, knowledge_chunk in data.to_dict("index").items()
         ]
 
         self._documents = [doc for doc in self._documents if doc.content.strip() != ""]
@@ -201,6 +202,8 @@ class KnowledgeBase:
                 n_neighbors=50,
                 min_dist=0.5,
                 n_components=2,
+                random_state=1234,
+                n_jobs=1,
             )
             self._reduced_embeddings_inst = reducer.fit_transform(self._embeddings)
             for doc, emb in zip(self._documents, self._reduced_embeddings_inst):
@@ -248,7 +251,6 @@ class KnowledgeBase:
         )
         clustering = hdbscan.fit(self._reduced_embeddings)
 
-        logger.debug(f"Found {clustering.labels_.max() + 1} clusters.")
         for i, doc in enumerate(self._documents):
             doc.topic_id = clustering.labels_[i]
 
@@ -272,7 +274,6 @@ class KnowledgeBase:
 
     def _get_topic_name(self, topic_documents):
         logger.debug("Create topic name from topic documents")
-
         self._rng.shuffle(topic_documents)
         topics_str = "\n\n".join(["----------" + doc.content[:500] for doc in topic_documents[:10]])
 

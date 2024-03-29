@@ -16,8 +16,9 @@ except ImportError as err:
 
 def get_failure_plot(knowledge_base, question_evaluation: Sequence = None):
     document_ids = [question.metadata["seed_document_id"] for question in question_evaluation]
+    knowledge_base._reduced_embeddings
     reduced_embeddings = np.stack(
-        [doc.reduced_embeddings for _, doc in knowledge_base._documents_index.items() if doc.id in document_ids]
+        [knowledge_base._documents_index[doc_id].reduced_embeddings for doc_id in document_ids]
     )
 
     TITLE = "Knowledge Base UMAP representation"
