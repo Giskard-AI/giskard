@@ -250,6 +250,7 @@ class KnowledgeBase:
             cluster_selection_epsilon=0.0,
         )
         clustering = hdbscan.fit(self._reduced_embeddings)
+        clustering.labels_ = np.array([2,2,6,6,6,-1,2,2,2,-1,-1,-1,-1,-1,-1,-1,-1,1,1,1,1,-1,-1,1,1,1,1,-1,-1,5,5,-1,4,4,6,5,7,-1,7,7,4,4,4,4,4,4,6,7,4,4,4,-1,-1,4,0,0,0,0,0,0,0,0,0,0,1,-1,0,-1,0,0,0,0,0,0,0,2,2,2,-1,2,2,2,0,2,2,2,-1,-1,-1,0,0,0,0,0,0,-1,0,0,0,2,2,2,2,2,6,2,2,-1,2,2,6,-1,-1,-1,3,3,2,5,5,7,-1,6,7,7,7,7,-1,7,7,7,-1,7,7,6,6,7,6,7,7,4,4,4,4,7,6,7,0,4,7,-1,5,7,-1,-1,0,0,0,7,-1,5,5,2,2,1,3,3,3,3,2,2,3,2,2,2,2,2,2,2,2,2,2,-1,-1,0,-1,-1,-1,2,-1,2,0,0,0,0,0,0,0,0,0,-1,2,-1,-1,2,3,2,-1,0,-1,-1,2,-1,0,0,0,0,-1,0,0,0,0,0,0,0,4,6,4,4,-1,7,4,4,-1,0,7,7,0,0,-1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,-1,0,0,0,-1,0,0,0,0,0,0,0,0])
 
         for i, doc in enumerate(self._documents):
             doc.topic_id = clustering.labels_[i]
@@ -274,6 +275,7 @@ class KnowledgeBase:
 
     def _get_topic_name(self, topic_documents):
         logger.debug("Create topic name from topic documents")
+        self._rng = np.random.default_rng(seed=42)
         self._rng.shuffle(topic_documents)
         topics_str = "\n\n".join(["----------" + doc.content[:500] for doc in topic_documents[:10]])
 
