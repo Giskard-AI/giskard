@@ -1,12 +1,13 @@
-import numpy as np
 from typing import List, Optional
+
+import numpy as np
+
 from giskard import Dataset, TestResult, test
 from giskard.models.base import BaseModel
 from giskard.testing.tests.debug_slicing_functions import row_failing_monotonicity_slicing_fn
 
 
 def _check_columns(column_names, column_values):
-
     if column_values is None:
         return
 
@@ -26,9 +27,8 @@ def _get_predictions(
     random_state: int = 123456,
     num_samples: int = 100,
     num_grid: int = 50,
-    classif_index_label: int = 0
+    classif_index_label: int = 0,
 ):
-
     # Create grids of values per column if not passed as input
     if column_values is None:
         column_values = {}
@@ -120,7 +120,7 @@ def test_monotonicity(
         random_state=random_state,
         num_samples=num_samples,
         num_grid=num_grid,
-        classif_index_label=classif_index_label
+        classif_index_label=classif_index_label,
     )
 
     # Check for monotonicity
@@ -201,22 +201,22 @@ def test_smoothness(
         random_state=random_state,
         num_samples=num_samples,
         num_grid=num_grid,
-        classif_index_label=classif_index_label
+        classif_index_label=classif_index_label,
     )
 
     # Check smoothness with respect to ref (sin)
     ref_function = np.sin(2 * np.pi * np.linspace(0, 1, predictions.shape[0]))[:, None]
     ref_score = np.mean((ref_function[:-2, :] - 2 * ref_function[1:-1, :] + ref_function[2:, :]) ** 2, axis=0)
-    scores = np.log10(np.mean((predictions[:-2, :] - 2 * predictions[1:-1, :] + predictions[2:, :]) ** 2, axis=0) / ref_score + 1e-20)
+    scores = np.log10(
+        np.mean((predictions[:-2, :] - 2 * predictions[1:-1, :] + predictions[2:, :]) ** 2, axis=0) / ref_score + 1e-20
+    )
 
     passed = scores < threshold
 
     # --- debug ---
     output_ds = list()
     if not passed.all():
-        output_ds.append(
-            dataset.slice(row_failing_monotonicity_slicing_fn(index_failure=sample_rows.index[~passed]))
-        )
+        output_ds.append(dataset.slice(row_failing_monotonicity_slicing_fn(index_failure=sample_rows.index[~passed])))
     # ---
 
     return TestResult(passed=passed.all(), output_ds=output_ds, metric=scores.max())
