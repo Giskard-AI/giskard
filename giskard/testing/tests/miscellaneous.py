@@ -4,7 +4,7 @@ import numpy as np
 
 from giskard import Dataset, TestResult, test
 from giskard.models.base import BaseModel
-from giskard.testing.tests.debug_slicing_functions import row_failing_miscellaneous_slicing_fn
+from giskard.testing.tests.debug_slicing_functions import row_failing_slicing_fn
 
 
 def _check_columns(column_names, column_values):
@@ -48,12 +48,20 @@ def _get_predictions(
         sample_rows_copy = sample_rows.copy()
         for col_name in column_names:
             sample_rows_copy.loc[:, col_name] = column_values[col_name][i].astype(dataset.df.dtypes[col_name])
-        augmented_df.append(sample_rows_copy)
+        augmented_df.append(
+            Dataset(
+                sample_rows_copy,
+                target=dataset.target,
+                cat_columns=dataset.cat_columns,
+                column_types=dataset.column_types,
+                validation=False,
+            )
+        )
 
     # Predictions
     predictions = []
-    for current_df in augmented_df:
-        predictions.append(model.predict_df(current_df[model.feature_names]))
+    for current_dataset in augmented_df:
+        predictions.append(model.predict(current_dataset).raw)
     predictions = np.array(predictions)
 
     # If classification, select the right index in the last dimension
@@ -74,7 +82,6 @@ def test_monotonicity(
     num_samples: int = 100,
     num_grid: int = 50,
     classif_index_label: int = 0,
-    debug: bool = True,
 ):
     """Test if the model is monotonic for a given column name by selecting random samples from
     the dataset and augmenting them with different values for the specified column
@@ -99,9 +106,6 @@ def test_monotonicity(
         Number of points in the grid of values for the colum
     classif_index_label : int
         If classification, which index to consider for the test
-    debug : bool
-        If True and the test fails,
-        a dataset will be provided containing all the incorrectly predicted rows.
 
     Returns
     -------
@@ -132,12 +136,10 @@ def test_monotonicity(
     # --- debug ---
     output_ds = list()
     if not passed.all():
-        output_ds.append(
-            dataset.slice(row_failing_miscellaneous_slicing_fn(index_failure=sample_rows.index[~passed.all(axis=0)]))
-        )
+        output_ds.append(dataset.slice(row_failing_slicing_fn(index_failure=sample_rows.index[~passed.all(axis=0)])))
     # ---
 
-    return TestResult(passed=passed.all(), output_ds=output_ds)
+    return TestResult(passed=passed.all(), output_ds=output_ds, metric=passed.mean())
 
 
 @test(name="Smoothness", tags=["smoothness"])
@@ -152,7 +154,6 @@ def test_smoothness(
     classif_index_label: int = 0,
     threshold: float = 2,
     ord: int = 2,
-    debug: bool = True,
 ):
     """Test if the model is smooth with respect to given columns.
     The smoothness score is computed as follows
@@ -183,9 +184,6 @@ def test_smoothness(
         Threshold over which the test is failed
     ord : int
         Order of the norm used to evaluate smoothness
-    debug : bool
-        If True and the test fails,
-        a dataset will be provided containing all the incorrectly predicted rows.
 
     Returns
     -------
@@ -224,7 +222,7 @@ def test_smoothness(
     # --- debug ---
     output_ds = list()
     if not passed.all():
-        output_ds.append(dataset.slice(row_failing_miscellaneous_slicing_fn(index_failure=sample_rows.index[~passed])))
+        output_ds.append(dataset.slice(row_failing_slicing_fn(index_failure=sample_rows.index[~passed])))
     # ---
 
     return TestResult(passed=passed.all(), output_ds=output_ds, metric=scores.max())

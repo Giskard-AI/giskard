@@ -49,6 +49,9 @@ __all__ = [
     "test_mislabeling",
     "test_feature_importance",
     "test_class_imbalance",
+    "test_brier",
+    "test_monotonicity",
+    "test_smoothness",
 ]
 
 from giskard.testing.tests.calibration import test_overconfidence_rate, test_underconfidence_rate
@@ -86,9 +89,11 @@ from giskard.testing.tests.metamorphic import (
     test_metamorphic_invariance_t_test,
     test_metamorphic_invariance_wilcoxon,
 )
+from giskard.testing.tests.miscellaneous import test_monotonicity, test_smoothness
 from giskard.testing.tests.performance import (
     test_accuracy,
     test_auc,
+    test_brier,
     test_diff_accuracy,
     test_diff_f1,
     test_diff_precision,
