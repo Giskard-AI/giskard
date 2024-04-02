@@ -282,19 +282,15 @@ def test_conversational_question_generation():
     assert question["metadata"]["seed_document_id"] == 2
 
 
-def test_ookb_question_generation():
+def test_oos_question_generation():
     knowledge_base = Mock()
     llm_client = Mock()
 
     llm_client.complete.side_effect = [
         LLMMessage(
             role="assistant",
-            content='{"selected detail/fact": "Paul Graham liked to buy a baguette every day at the local market.", "fake detail/fact": "Paul Graham paid 1 USD for a baguette", "question": "How much did Paul pay for the baguette?"}',
-        ),
-        LLMMessage(
-            role="assistant",
-            content='{"can_be_answered": false, "correctness_reason": "The price of baguette is not mentioned in the text."}',
-        ),
+            content='{"selected": "Paul Graham liked to buy a baguette every day at the local market.", "fake": "Paul Graham paid 1 USD for a baguette", "question": "How much did Paul pay for the baguette?"}',
+        )
     ]
 
     documents = [
