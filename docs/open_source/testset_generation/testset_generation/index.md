@@ -8,7 +8,7 @@ Waiting to collect data from production to evaluate your RAG agents extensively 
 an in-house evaluation dataset is a painful task that requires manual curation and review. 
 
 To help with this, the Giskard python library provides **RAGET: RAG Evaluation Toolkit**, a toolkit to evaluate RAG 
-agents **automatically**. You can find a [notebook](https://colab.research.google.com/drive/1Gb33uSl3FLK0dSMe5KS4zlwrtjeN5wEK?usp=sharing) where we demonstrate the capabilities of RAGET with a simple RAG agent build with LlamaIndex 
+agents **automatically**. You can find a [notebook](https://colab.research.google.com/drive/1GWrVeFR_dnec3uynlLcKwOUvW5JEKFMf?usp=sharing) where we demonstrate the capabilities of RAGET with a simple RAG agent build with LlamaIndex 
 on the IPCC report.  
 
 
