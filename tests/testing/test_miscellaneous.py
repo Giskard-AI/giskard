@@ -1,11 +1,13 @@
 import numpy as np
 import pandas as pd
+from pytest import mark
 
 from giskard import Dataset, Model
 from giskard.testing.tests import miscellaneous
 
 
-def test_smoothness():
+@mark.parametrize("ord", [1, 2])
+def test_smoothness(ord):
     """
     Test for smoothness function in the miscellaneous module
 
@@ -18,8 +20,6 @@ def test_smoothness():
     data = {
         "seasonality_x": np.arange(0, 1, 0.01),
         "seasonality_y": np.arange(0, 1, 0.01),
-        "target1": np.sin(2 * np.pi * np.arange(0, 1, 0.01)),
-        "target2": rng.random(size=100),
     }
     df = pd.DataFrame(data)
     dataset = Dataset(df)
@@ -27,7 +27,7 @@ def test_smoothness():
         lambda df: df["seasonality_x"], model_type="regression", feature_names=["seasonality_x", "seasonality_y"]
     )
     model_rough = Model(
-        lambda df: pd.Series(rng.random(size=len(df))),
+        lambda df: pd.Series(rng.random(size=len(df)) * 100),
         model_type="regression",
         feature_names=["seasonality_x", "seasonality_y"],
     )
@@ -40,21 +40,27 @@ def test_smoothness():
 
     # Call the function with test inputs
     result = miscellaneous.test_smoothness(
-        model_smooth, dataset, column_names=["seasonality_x", "seasonality_y"], column_values=column_values
+        model_smooth, dataset, column_names=["seasonality_x", "seasonality_y"], column_values=column_values, ord=ord
     ).execute()
 
     # Assert that the result is as expected
     assert result.passed, "Test failed: the model should be considered smooth"
-    assert np.isclose(result.metric, -0.013, atol=1e-3), "Test failed: the metric value should be -20"
+    if ord == 1:
+        assert np.isclose(result.metric, -0.007, atol=1e-3), "Test failed: the metric value should be -0.007"
+    elif ord == 2:
+        assert np.isclose(result.metric, -0.013, atol=1e-3), "Test failed: the metric value should be -20"
 
     # Call the function with test inputs
     result = miscellaneous.test_smoothness(
-        model_rough, dataset, column_names=["seasonality_x", "seasonality_y"], column_values=column_values
+        model_rough, dataset, column_names=["seasonality_x", "seasonality_y"], column_values=column_values, ord=ord
     ).execute()
 
     # Assert that the result is as expected
     assert not result.passed, "Test failed: the model should not be considered smooth"
-    assert np.isclose(result.metric, 4.995, atol=1e-3), "Test failed: the metric value should be 5.61"
+    if ord == 1:
+        assert np.isclose(result.metric, 3.013, atol=1e-3), "Test failed: the metric value should be 3.013"
+    elif ord == 2:
+        assert np.isclose(result.metric, 8.99, atol=1e-3), "Test failed: the metric value should be 8.99"
 
 
 def test_monotonicity():

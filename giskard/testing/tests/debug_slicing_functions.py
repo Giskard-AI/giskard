@@ -29,7 +29,7 @@ def nlargest_abs_err_rows_slicing_fn(
 
 # Miscellaneous: Monotonicity
 @slicing_function(name="Rows failing monotonicity", row_level=False)
-def row_failing_monotonicity_slicing_fn(df: pd.DataFrame, index_failure: pd.Index) -> pd.DataFrame:
+def row_failing_miscellaneous_slicing_fn(df: pd.DataFrame, index_failure: pd.Index) -> pd.DataFrame:
     """
     Filter the dataset by index
     """

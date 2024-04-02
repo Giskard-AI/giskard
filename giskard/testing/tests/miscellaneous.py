@@ -4,7 +4,7 @@ import numpy as np
 
 from giskard import Dataset, TestResult, test
 from giskard.models.base import BaseModel
-from giskard.testing.tests.debug_slicing_functions import row_failing_monotonicity_slicing_fn
+from giskard.testing.tests.debug_slicing_functions import row_failing_miscellaneous_slicing_fn
 
 
 def _check_columns(column_names, column_values):
@@ -133,7 +133,7 @@ def test_monotonicity(
     output_ds = list()
     if not passed.all():
         output_ds.append(
-            dataset.slice(row_failing_monotonicity_slicing_fn(index_failure=sample_rows.index[~passed.all(axis=0)]))
+            dataset.slice(row_failing_miscellaneous_slicing_fn(index_failure=sample_rows.index[~passed.all(axis=0)]))
         )
     # ---
 
@@ -151,6 +151,7 @@ def test_smoothness(
     num_grid: int = 50,
     classif_index_label: int = 0,
     threshold: float = 2,
+    ord: int = 2,
     debug: bool = True,
 ):
     """Test if the model is smooth with respect to given columns.
@@ -180,6 +181,8 @@ def test_smoothness(
         If classification, which index to consider for the test
     threshold : float
         Threshold over which the test is failed
+    ord : int
+        Order of the norm used to evaluate smoothness
     debug : bool
         If True and the test fails,
         a dataset will be provided containing all the incorrectly predicted rows.
@@ -206,17 +209,22 @@ def test_smoothness(
 
     # Check smoothness with respect to ref (sin)
     ref_function = np.sin(2 * np.pi * np.linspace(0, 1, predictions.shape[0]))[:, None]
-    ref_score = np.mean((ref_function[:-2, :] - 2 * ref_function[1:-1, :] + ref_function[2:, :]) ** 2, axis=0)
-    scores = np.log10(
-        np.mean((predictions[:-2, :] - 2 * predictions[1:-1, :] + predictions[2:, :]) ** 2, axis=0) / ref_score + 1e-20
-    )
+    if ord == 2:
+        ref_score = np.mean((ref_function[:-2, :] - 2 * ref_function[1:-1, :] + ref_function[2:, :]) ** 2, axis=0)
+        scores = np.log10(
+            np.mean((predictions[:-2, :] - 2 * predictions[1:-1, :] + predictions[2:, :]) ** 2, axis=0) / ref_score
+            + 1e-20
+        )
+    elif ord == 1:
+        ref_score = np.abs(ref_function[1:, :] - ref_function[:-1, :]).mean(axis=0)
+        scores = np.log10(np.abs(predictions[1:, :] - predictions[:-1, :]).mean(axis=0) / ref_score + 1e-20)
 
     passed = scores < threshold
 
     # --- debug ---
     output_ds = list()
     if not passed.all():
-        output_ds.append(dataset.slice(row_failing_monotonicity_slicing_fn(index_failure=sample_rows.index[~passed])))
+        output_ds.append(dataset.slice(row_failing_miscellaneous_slicing_fn(index_failure=sample_rows.index[~passed])))
     # ---
 
     return TestResult(passed=passed.all(), output_ds=output_ds, metric=scores.max())
