@@ -1,7 +1,6 @@
 import langdetect
 import pandas as pd
 
-
 def detect_lang(text: str):
     if len(text.split()) <= 5:
         return pd.NA

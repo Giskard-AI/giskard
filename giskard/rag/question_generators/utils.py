@@ -4,7 +4,7 @@ import json
 import logging
 import re
 
-from ...llm.client import LLMClient, LLMMessage
+from ...llm.client import LLMClient, ChatMessage
 
 try:
     from tqdm.auto import tqdm, trange
@@ -44,11 +44,11 @@ def parse_json_output(
     # Final attempt, let's try to fix the JSON with the LLM itself
     out = llm_client.complete(
         messages=[
-            LLMMessage(
+            ChatMessage(
                 role="system",
                 content="Fix the following text so it contains a single valid JSON object. Make sure to start and end with curly brackets.",
             ),
-            LLMMessage(role="user", content=raw_json),
+            ChatMessage(role="user", content=raw_json),
         ],
         temperature=0,
         caller_id=caller_id,

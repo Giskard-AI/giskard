@@ -6,6 +6,7 @@ from ...llm.client import ChatMessage, LLMClient, get_default_client
 from ...llm.errors import LLMGenerationError
 from ..question_generators.utils import parse_json_output
 from .base import Metric
+from ..question_generators.utils import parse_json_output
 
 CORRECTNESS_EVALUATION_SYSTEM_PROMPT = """Your role is to test AI agents. Your task consists in assessing whether a agent output correctly answers a question. 
 You are provided with the ground truth answer to the question. Your task is then to evaluate if the agent answer is close to the ground thruth answer. 

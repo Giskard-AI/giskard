@@ -3,6 +3,7 @@ from langdetect import DetectorFactory
 
 from ...utils.language_detection import detect_lang
 from .registry import MetadataProvider
+from ...utils.language_detection import detect_lang
 
 DetectorFactory.seed = 0
 
