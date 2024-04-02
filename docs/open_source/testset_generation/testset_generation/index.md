@@ -8,7 +8,8 @@ Waiting to collect data from production to evaluate your RAG agents extensively 
 an in-house evaluation dataset is a painful task that requires manual curation and review. 
 
 To help with this, the Giskard python library provides **RAGET: RAG Evaluation Toolkit**, a toolkit to evaluate RAG 
-agents **automatically**.
+agents **automatically**. You can find a [notebook](https://colab.research.google.com/drive/1Gb33uSl3FLK0dSMe5KS4zlwrtjeN5wEK?usp=sharing) where we demonstrate the capabilities of RAGET with a simple RAG agent build with LlamaIndex 
+on the IPCC report.  
 
 
 (q_types)=
@@ -16,7 +17,7 @@ agents **automatically**.
 
 RAGET can generate automatically a list of `question`, `reference_answer` and `reference_context` from the knowledge 
 base of the RAG. It relies on a chain of LLM operations to generate realistic questions across different types.
-You can then use this **generated test set is to evaluate your RAG agent**. 
+You can then use this **generated test set to evaluate your RAG agent**. 
 
 By default, RAGET will create multiple types of questions. Each of them are designed to target and evaluate specific
 components of the RAG system (for example: the retriever, the generation, or the quality of your knowledge base
@@ -64,7 +65,7 @@ These are the question types currently supported by RAGET:
     *Example: What is the capital and the population of France?*
   - `Generator`, `Rewriter`
 * - **Conversational questions**
-  - Questions made as part of a conversation, first message describe the context of the question that is ask in the last message, also tests the rewriter
+  - Questions made as part of a conversation, first message describes the context of the question that is asked in the last message, also tests the rewriter
 
     *Example: (two separate messages)* 
       - *I would like to know some information about France.* 
