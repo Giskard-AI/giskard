@@ -16,7 +16,6 @@ from .testset_generation import generate_testset
 
 logger = logging.getLogger(__name__)
 
-REPORT_CORRECTNESS_COL = "correctness"
 ANSWER_FN_HISTORY_PARAM = "history"
 
 
@@ -78,17 +77,19 @@ def evaluate(
     llm_client = llm_client or get_default_client()
 
     # @TODO: improve this
-    metrics = metrics or []
+    metrics = list(metrics) if metrics is not None else []
     if not any(isinstance(metric, CorrectnessMetric) for metric in metrics):
         # By default only correctness is computed as it is required to build the report
         metrics.insert(
-            0, CorrectnessMetric(name="Correctness", llm_client=llm_client, agent_description=agent_description)
+            0, CorrectnessMetric(name="correctness", llm_client=llm_client, agent_description=agent_description)
         )
 
     metrics_results = defaultdict(dict)
 
     for metric in metrics:
-        metric_name = metric.name if isinstance(metric, Metric) else metric.__name__
+        metric_name = getattr(metric, "name", metric.__class__.__name__ if isinstance(metric, Metric) else metric.__name__)
+
+        
         for sample, answer in maybe_tqdm(
             zip(testset.to_pandas().to_records(index=True), answers),
             desc=f"{metric_name} evaluation",
@@ -99,8 +100,8 @@ def evaluate(
     report = RAGReport(testset, answers, metrics_results, knowledge_base)
     recommendation = get_rag_recommendation(
         report.topics,
-        report.correctness_by_question_type().to_dict()[REPORT_CORRECTNESS_COL],
-        report.correctness_by_topic().to_dict()[REPORT_CORRECTNESS_COL],
+        report.correctness_by_question_type().to_dict()[metrics[0].name],
+        report.correctness_by_topic().to_dict()[metrics[0].name],
         llm_client,
     )
     report._recommendation = recommendation

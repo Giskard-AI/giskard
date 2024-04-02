@@ -5,6 +5,7 @@ import json
 from ...llm.client import LLMClient, LLMMessage, get_default_client
 from ...llm.errors import LLMGenerationError
 from .base import Metric
+from ..question_generators.utils import parse_json_output
 
 CORRECTNESS_EVALUATION_SYSTEM_PROMPT = """Your role is to test AI agents. Your task consists in assessing whether a agent output correctly answers a question. 
 You are provided with the ground truth answer to the question. Your task is then to evaluate if the agent answer is close to the ground thruth answer. 
@@ -80,8 +81,8 @@ class CorrectnessMetric(Metric):
                 ],
                 temperature=0,
             )
-            evaluation = json.loads(out.content, strict=False)
-            return evaluation
+            return parse_json_output(out.content, llm_client=llm_client, keys=["correctness", "correctness_reason"], caller_id=self.__class__.__name__)
+        
         except Exception as err:
             raise LLMGenerationError("Error while evaluating the agent") from err
 

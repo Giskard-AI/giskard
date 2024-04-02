@@ -7,7 +7,7 @@ import numpy as np
 import pandas as pd
 from sklearn.cluster import HDBSCAN
 
-from ..datasets.metadata.text_metadata_provider import detect_lang
+from ..utils.language_detection import detect_lang
 from ..llm.client import LLMClient, LLMMessage, get_default_client
 from ..llm.errors import LLMImportError
 from ..utils.analytics_collector import analytics
