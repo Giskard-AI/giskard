@@ -139,7 +139,7 @@ def test_monotonicity(
         output_ds.append(dataset.slice(row_failing_slicing_fn(index_failure=sample_rows.index[~passed.all(axis=0)])))
     # ---
 
-    return TestResult(passed=passed.all(), output_ds=output_ds, metric=passed.mean())
+    return TestResult(passed=passed.all(), output_ds=output_ds, metric=(~passed).mean())
 
 
 @test(name="Smoothness", tags=["smoothness"])

@@ -86,6 +86,7 @@ def test_monotonicity():
 
     # Assert that the result is as expected
     assert result.passed, "Test failed: the model should be considered monotonic"
+    assert result.metric == 0, "Test failed: the metric value should be 0"
 
     # Call the function with test inputs
     result = miscellaneous.test_monotonicity(
@@ -94,3 +95,4 @@ def test_monotonicity():
 
     # Assert that the result is as expected
     assert not result.passed, "Test failed: the model should not be considered monotonic"
+    assert result.metric == 1, "Test failed: the metric value should be 1"
