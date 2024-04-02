@@ -7,7 +7,7 @@ from giskard.rag.question_generators import (
     ConversationalQuestionsGenerator,
     DistractingQuestionsGenerator,
     DoubleQuestionsGenerator,
-    OutOfKnowledgeBaseGenerator,
+    OutOfScopeGenerator,
     SimpleQuestionsGenerator,
     SituationalQuestionsGenerator,
 )
@@ -307,7 +307,7 @@ def test_ookb_question_generation():
     )
     knowledge_base.get_neighbors = Mock(return_value=documents)
 
-    question_generator = OutOfKnowledgeBaseGenerator(llm_client=llm_client)
+    question_generator = OutOfScopeGenerator(llm_client=llm_client)
 
     question = list(
         question_generator.generate_questions(
