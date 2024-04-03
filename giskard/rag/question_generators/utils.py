@@ -1,7 +1,8 @@
-import json
-import re
-import logging
 from typing import Optional, Sequence
+
+import json
+import logging
+import re
 
 from ...llm.client import LLMClient, LLMMessage
 
@@ -18,9 +19,13 @@ except ImportError:
     def maybe_tqdm(x, *args, **kwargs):
         return x
 
+
 logger = logging.getLogger(__name__)
 
-def parse_json_output(raw_json: str, llm_client: LLMClient, keys: Optional[Sequence[str]] = None, caller_id: Optional[str] = None) -> dict:
+
+def parse_json_output(
+    raw_json: str, llm_client: LLMClient, keys: Optional[Sequence[str]] = None, caller_id: Optional[str] = None
+) -> dict:
     try:
         return json.loads(raw_json, strict=False)
     except json.JSONDecodeError:

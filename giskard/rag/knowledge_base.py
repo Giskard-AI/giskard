@@ -7,10 +7,10 @@ import numpy as np
 import pandas as pd
 from sklearn.cluster import HDBSCAN
 
-from ..utils.language_detection import detect_lang
 from ..llm.client import LLMClient, LLMMessage, get_default_client
 from ..llm.errors import LLMImportError
 from ..utils.analytics_collector import analytics
+from ..utils.language_detection import detect_lang
 from .knowledge_base_plots import get_failure_plot, get_knowledge_plot
 
 try:
