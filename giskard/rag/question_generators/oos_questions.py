@@ -85,7 +85,7 @@ class OutOfScopeGenerator(GenerateFromSingleQuestionMixin, _LLMBasedQuestionGene
             The generated question and the metadata of the question.
         """
         seed_document = knowledge_base.get_random_document()
-        
+
         context_documents = knowledge_base.get_neighbors(
             seed_document, self._context_neighbors, self._context_similarity_threshold
         )
@@ -100,7 +100,11 @@ class OutOfScopeGenerator(GenerateFromSingleQuestionMixin, _LLMBasedQuestionGene
 
         generated_qa = self._llm_complete(messages=question_messages)
 
-        question_metadata = {"question_type": self._question_type, "seed_document_id": seed_document.id, "fake_fact": generated_qa["fake_fact"]}
+        question_metadata = {
+            "question_type": self._question_type,
+            "seed_document_id": seed_document.id,
+            "fake_fact": generated_qa["fake_fact"],
+        }
 
         question = {
             "id": str(uuid.uuid4()),
@@ -112,5 +116,6 @@ class OutOfScopeGenerator(GenerateFromSingleQuestionMixin, _LLMBasedQuestionGene
         }
 
         return question
+
 
 oos_questions = OutOfScopeGenerator()
