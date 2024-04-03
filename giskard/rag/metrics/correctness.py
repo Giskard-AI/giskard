@@ -4,7 +4,6 @@ from ...llm.client import ChatMessage, LLMClient, get_default_client
 from ...llm.errors import LLMGenerationError
 from ..question_generators.utils import parse_json_output
 from .base import Metric
-from ..question_generators.utils import parse_json_output
 
 CORRECTNESS_EVALUATION_SYSTEM_PROMPT = """Your role is to test AI agents. Your task consists in assessing whether a agent output correctly answers a question. 
 You are provided with the ground truth answer to the question. Your task is then to evaluate if the agent answer is close to the ground thruth answer. 
@@ -99,15 +98,15 @@ def correctness_metric(question_sample, answer, llm_client=None, agent_descripti
     try:
         out = llm_client.complete(
             messages=[
-                LLMMessage(
+                ChatMessage(
                     role="system",
                     content=CORRECTNESS_EVALUATION_SYSTEM_PROMPT.format(agent_description=agent_description),
                 ),
-                LLMMessage(role="user", content=CORRECTNESS_TRUE_EXAMPLE_INPUT),
-                LLMMessage(role="assistant", content=CORRECTNESS_TRUE_EXAMPLE_OUTPUT),
-                LLMMessage(role="user", content=CORRECTNESS_FALSE_EXAMPLE_INPUT),
-                LLMMessage(role="assistant", content=CORRECTNESS_FALSE_EXAMPLE_OUTPUT),
-                LLMMessage(
+                ChatMessage(role="user", content=CORRECTNESS_TRUE_EXAMPLE_INPUT),
+                ChatMessage(role="assistant", content=CORRECTNESS_TRUE_EXAMPLE_OUTPUT),
+                ChatMessage(role="user", content=CORRECTNESS_FALSE_EXAMPLE_INPUT),
+                ChatMessage(role="assistant", content=CORRECTNESS_FALSE_EXAMPLE_OUTPUT),
+                ChatMessage(
                     role="user",
                     content=CORRECTNESS_INPUT_TEMPLATE.format(
                         question=question_sample.question,
