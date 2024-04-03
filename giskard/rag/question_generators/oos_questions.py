@@ -58,7 +58,7 @@ class OutOfScopeGenerator(GenerateFromSingleQuestionMixin, _LLMBasedQuestionGene
         The temperature to use in the LLM for question generation. The default is 0.5.
     """
 
-    _OOKB_question_generation_prompt = QAGenerationPrompt(
+    _OOS_question_generation_prompt = QAGenerationPrompt(
         system_prompt=OOS_PROMPT,
         example_input=OOS_QUESTION_EXAMPLE_INPUT,
         example_output=OOS_QUESTION_EXAMPLE_OUTPUT,
@@ -93,7 +93,7 @@ class OutOfScopeGenerator(GenerateFromSingleQuestionMixin, _LLMBasedQuestionGene
         reference_context = "\n\n".join([f"Document {doc.id}: {doc.content}" for doc in context_documents])
 
         # setup the OOKB question generation prompt
-        question_messages = self._OOKB_question_generation_prompt.to_messages(
+        question_messages = self._OOS_question_generation_prompt.to_messages(
             system_prompt_input={"agent_description": agent_description, "language": language},
             user_input=seed_document.content,
         )
