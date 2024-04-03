@@ -1,7 +1,5 @@
 from typing import Optional
 
-import json
-
 from ...llm.client import ChatMessage, LLMClient, get_default_client
 from ...llm.errors import LLMGenerationError
 from ..question_generators.utils import parse_json_output
