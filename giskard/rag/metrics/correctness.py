@@ -1,7 +1,5 @@
 from typing import Optional
 
-import json
-
 from ...llm.client import LLMClient, LLMMessage, get_default_client
 from ...llm.errors import LLMGenerationError
 from .base import Metric
