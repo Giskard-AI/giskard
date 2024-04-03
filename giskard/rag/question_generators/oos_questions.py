@@ -6,34 +6,34 @@ from .prompt import QAGenerationPrompt
 
 OOS_PROMPT = """
 You are a powerful auditor and mindful judger, your role is to generate question from a given context and 
-by adding some fake or non-existing details/facts to the context to check whether the agent model you are auditing is capable of reasoning and answering questions
-which has no direct answer in the provided context.
+add some fake or non-existing details to the context to check whether the agent you are auditing is capable of answering questions
+which have no direct answer in the provided context.
 
-The agent model you are auditing is the following:
-- Agent description: {agent_description}
-
-All the generated content should be in the following language: {language}
+The agent you are auditing is desribed bellow: 
+{agent_description}
 
 There are your tasks, you should finish them step by step:
-1. select one detail/fact from the context
-2. add some fake details/facts which is not inclued in the whole provided context but based on the detail/facts you selected in the previous step.
-3. Isolate this added fake detail/fact into a single sentence
-4. Generate a question based on the new added isolated detail/fact, fit the question in the context and can not be answered by the information in the context.
+1. Select one fact from the context.
+2. Imagine some fake details not present in the whole provided context but should be plausible based on the detail you selected in the previous step.
+3. Isolate this fake detail into a single sentence.
+4. Generate an open question asking about this new detail, make sure the question is relevant and can not be answered by the information in the context.
 
-The user will provide the context and give your answer after read it thoroughly.
+The generated question should be in the following language: {language}
+
+You will first be provided with an example, followed by the user input. Read the example thoroughly and take inspiration of it but do not use information or name from the example in your answers.
 You will return the isolated detail/fact and the question based exclusively on the new added isolated context.
-You must output a single JSON object with keys 'selected fact', 'fake fact' and 'question' , without any other wrapping text or markdown and everything is in low letter. Make sure you only return valid JSON. 
+You must output a single JSON object with keys 'selected_fact', 'fake_fact' and 'question' , without any other wrapping text or markdown and everything is in low letter. Make sure you only return valid JSON. 
 """
 
-OOS_QUESTION_EXAMPLE_INPUT = """Paul Graham liked to buy a baguette every day at the local market.
-Computers were expensive in those days and it took me years of nagging before I convinced my father to buy one, a TRS-80, in about 1980.
-The gold standard then was the Apple II, but a TRS-80 was good enough."""
+OOS_QUESTION_EXAMPLE_INPUT = """ 
+Paul usually go to the market at 8:00 AM. He starts with the grocery store and then goes to the bakery. 
+He enjoy buying a fresh baguette every morning at the bakery. The bakery is located at the corner of his street."""
 
 OOS_QUESTION_EXAMPLE_OUTPUT = """
 {   
-    "selected fact": "Paul Graham liked to buy a baguette every day at the local market.",
-    "fake fact": "Paul Graham paid 1 USD for a baguette",
-    "question": "How much did Paul pay for the baguette?"
+    "selected_fact": "Paul likes to buy a baguette every day.",
+    "fake_fact": "Paul Graham pays 1 euro for a baguette",
+    "question": "How much does Paul pay for his baguette?"
 }
 """
 
@@ -100,7 +100,7 @@ class OutOfScopeGenerator(GenerateFromSingleQuestionMixin, _LLMBasedQuestionGene
 
         generated_qa = self._llm_complete(messages=question_messages)
 
-        question_metadata = {"question_type": self._question_type, "seed_document_id": seed_document.id}
+        question_metadata = {"question_type": self._question_type, "seed_document_id": seed_document.id, "fake_fact": generated_qa["fake_fact"]}
 
         question = {
             "id": str(uuid.uuid4()),
