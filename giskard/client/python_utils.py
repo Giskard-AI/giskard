@@ -7,6 +7,12 @@ from platform import python_version
 
 import importlib_metadata
 
+# Libs to be excluded when create a kernel automatically from the current env
+EXCLUDED_PYLIBS = [
+    "setuptools",
+    "pip",
+]
+
 
 def get_python_requirements() -> str:
     pip_requirements = os.popen(f"{sys.executable} -m pip list --format freeze").read()

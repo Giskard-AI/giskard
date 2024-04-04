@@ -29,7 +29,7 @@ from giskard.client.dtos import (
 )
 from giskard.client.io_utils import GiskardJSONSerializer
 from giskard.client.project import Project
-from giskard.client.python_utils import format_pylib_extras, warning
+from giskard.client.python_utils import EXCLUDED_PYLIBS, format_pylib_extras, warning
 from giskard.core.core import SMT, DatasetMeta, ModelMeta, TestFunctionMeta
 from giskard.utils.analytics_collector import analytics, anonymize
 
@@ -190,7 +190,7 @@ class GiskardClient:
         response = self._session.get("project", params={"key": project_key}).json()
         return Project(self._session, response["key"], response["id"])
 
-    def initialize_kernel(self, project_key: str, exact_deps: bool = False):
+    def initialize_kernel(self, project_key: str, exact_deps: bool = False, excludes: List[str] = EXCLUDED_PYLIBS):
         python_version = f"{sys.version_info[0]}.{sys.version_info[1]}"
         kernel_name = f"{project_key}_kernel"
 
@@ -198,6 +198,7 @@ class GiskardClient:
         frozen_dependencies = [
             f"{dist.name}{format_pylib_extras(dist.name) if exact_deps or dist.name == 'giskard' else ''}=={dist.version}"
             for dist in importlib_metadata.distributions()
+            if dist.name not in excludes
         ]
 
         existing_kernel = next((kernel for kernel in kernels if kernel["name"] == kernel_name), None)
