@@ -5,6 +5,8 @@ import sys
 import warnings
 from platform import python_version
 
+import importlib_metadata
+
 
 def get_python_requirements() -> str:
     pip_requirements = os.popen(f"{sys.executable} -m pip list --format freeze").read()
@@ -24,3 +26,11 @@ def get_python_version() -> str:
 
 def warning(content: str):
     warnings.warn(content, stacklevel=2)
+
+
+def format_pylib_extras(name):
+    extras = importlib_metadata.metadata(name).get_all("Provides-Extra")
+    if not extras or len(extras) == 0:
+        return ""
+    else:
+        return f"[{', '.join(extras)}]"
