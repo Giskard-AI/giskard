@@ -195,8 +195,9 @@ class GiskardClient:
         kernel_name = f"{project_key}_kernel"
 
         analytics.track(
-            "Get kernel",
+            "Init kernel from env",
             {
+                "project_key": anonymize(project_key),
                 "kernel_name": anonymize(kernel_name),
                 "python_version": python_version,
             },
