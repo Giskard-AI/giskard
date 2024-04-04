@@ -10,11 +10,11 @@ import pandas as pd
 from ..llm.errors import LLMImportError
 
 try:
+    from bokeh.document import Document
     from bokeh.embed import components
-    from bokeh.io import output_notebook, reset_output, curdoc
+    from bokeh.io import curdoc, output_notebook, reset_output
     from bokeh.models import ColumnDataSource, Span, TabPanel, Tabs
     from bokeh.plotting import figure
-    from bokeh.document import Document
 except ImportError as err:
     raise LLMImportError(flavor="llm") from err
 
@@ -97,9 +97,15 @@ class RAGReport:
         """
         tpl = get_template("rag_report/rag_report.html")
 
-        kb_script, kb_div = components(self._apply_theme(self._get_knowledge_plot())) if self._knowledge_base else (None, None)
-        q_type_script, q_type_div = components(self._apply_theme(self.plot_correctness_by_metadata("question_type")),  theme="dark_minimal")
-        topic_script, topic_div = components(self._apply_theme(self.plot_correctness_by_metadata("topic")),  theme="dark_minimal")
+        kb_script, kb_div = (
+            components(self._apply_theme(self._get_knowledge_plot())) if self._knowledge_base else (None, None)
+        )
+        q_type_script, q_type_div = components(
+            self._apply_theme(self.plot_correctness_by_metadata("question_type")), theme="dark_minimal"
+        )
+        topic_script, topic_div = components(
+            self._apply_theme(self.plot_correctness_by_metadata("topic")), theme="dark_minimal"
+        )
 
         metric_histograms = self.get_metrics_histograms()
 
@@ -415,7 +421,7 @@ class RAGReport:
             ]
 
             return p
-        
+
     def _apply_theme(self, p):
         curdoc().theme = "dark_minimal"
         doc = Document(theme=curdoc().theme)
