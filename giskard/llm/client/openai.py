@@ -19,10 +19,23 @@ AUTH_ERROR_MESSAGE = (
 )
 
 
+def _supports_json_format(model: str) -> bool:
+    if "gpt-4-turbo" in model:
+        return True
+
+    if model == "gpt-3.5-turbo" or model == "gpt-3.5-turbo-0125":
+        return True
+
+    return False
+
+
 class OpenAIClient(LLMClient):
-    def __init__(self, model: str = "gpt-4", client: openai.Client = None):
+    def __init__(
+        self, model: str = "gpt-4-turbo-preview", client: openai.Client = None, json_mode: Optional[bool] = None
+    ):
         self.model = model
         self._client = client or openai.OpenAI()
+        self.json_mode = json_mode if json_mode is not None else _supports_json_format(model)
 
     def complete(
         self,
@@ -38,12 +51,13 @@ class OpenAIClient(LLMClient):
         if seed is not None:
             extra_params["seed"] = seed
 
-        if format not in (None, "json", "json_object"):
-            warning(f"Unsupported format '{format}', ignoring.")
-            format = None
+        if self.json_mode:
+            if format not in (None, "json", "json_object"):
+                warning(f"Unsupported format '{format}', ignoring.")
+                format = None
 
-        if format == "json" or format == "json_object":
-            extra_params["response_format"] = {"type": "json_object"}
+            if format == "json" or format == "json_object":
+                extra_params["response_format"] = {"type": "json_object"}
 
         try:
             completion = self._client.chat.completions.create(
