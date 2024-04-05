@@ -772,4 +772,10 @@ def get_logs(params: websocket.GetLogsParams, *arg, **kwargs):
     job_id = params.job_id
     assert job_id, "Job ID is required"
 
-    return websocket.GetLogs(logs=tail_file(job_logs_path(job_id), params.nb_last_lines))
+    try:
+        logs = tail_file(job_logs_path(job_id), params.nb_last_lines)
+    except Exception as e:
+        logger.exception(f"Failed to get logs for job {job_id}: {e}")
+        logs = str(e)
+
+    return websocket.GetLogs(logs=logs)
