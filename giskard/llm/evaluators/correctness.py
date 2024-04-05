@@ -34,7 +34,7 @@ EX_USER_PROMPT = PROMPT_TEMPLATE.format(
 )
 
 
-EX_ASSISTANT_PROMPT = """{"eval_passed": False, "reason": "The agent stated that they ship to United States, but should have included Canada and Mexico."}"""
+EX_ASSISTANT_PROMPT = """{"eval_passed": false, "reason": "The agent stated that they ship to United States, but should have included Canada and Mexico."}"""
 
 
 class CorrectnessEvaluator(_BaseLLMEvaluator):
