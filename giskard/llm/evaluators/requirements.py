@@ -92,7 +92,7 @@ class HostedRequirementEvaluator(_BaseLLMEvaluator):
         self.categories_list = categories
 
     def _format_messages(
-        self, model: BaseModel, conversation: Sequence[Dict], meta: Dict | None = None
+        self, model: BaseModel, conversation: Sequence[Dict], meta: Optional[Dict] = None
     ) -> Sequence[ChatMessage]:
         return []  # No need to format messages for hosted evaluator
 
