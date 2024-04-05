@@ -68,7 +68,7 @@ def get_default_client() -> LLMClient:
 
         client = AzureOpenAI() if default_llm_api == "azure" else OpenAI()
 
-        _default_client = OpenAIClient(_default_llm_model, client)
+        _default_client = OpenAIClient(model=_default_llm_model, client=client)
     except ImportError:
         raise ValueError(f"LLM scan using {default_llm_api.name} require openai>=1.0.0")
 
