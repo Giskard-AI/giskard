@@ -29,7 +29,7 @@ from giskard.client.dtos import (
 )
 from giskard.client.io_utils import GiskardJSONSerializer
 from giskard.client.project import Project
-from giskard.client.python_utils import warning
+from giskard.client.python_utils import EXCLUDED_PYLIBS, format_pylib_extras, warning
 from giskard.core.core import SMT, DatasetMeta, ModelMeta, TestFunctionMeta
 from giskard.utils.analytics_collector import analytics, anonymize
 
@@ -190,7 +190,7 @@ class GiskardClient:
         response = self._session.get("project", params={"key": project_key}).json()
         return Project(self._session, response["key"], response["id"])
 
-    def initialize_kernel(self, project_key: str):
+    def initialize_kernel(self, project_key: str, exact_deps: bool = False, excludes: List[str] = EXCLUDED_PYLIBS):
         python_version = f"{sys.version_info[0]}.{sys.version_info[1]}"
         kernel_name = f"{project_key}_kernel"
 
@@ -204,7 +204,11 @@ class GiskardClient:
         )
 
         kernels = self._session.get("kernels").json()
-        frozen_dependencies = [f"{dist.name}=={dist.version}" for dist in importlib_metadata.distributions()]
+        frozen_dependencies = [
+            f"{dist.name}{format_pylib_extras(dist.name) if exact_deps or dist.name == 'giskard' else ''}=={dist.version}"
+            for dist in importlib_metadata.distributions()
+            if dist.name not in excludes
+        ]
 
         existing_kernel = next((kernel for kernel in kernels if kernel["name"] == kernel_name), None)
 
@@ -224,14 +228,14 @@ class GiskardClient:
         return kernel_name
 
     def create_kernel(
-        self, kernel_name: str, python_version: str, requestedDependencies: str = "", frozen_dependencies: str = ""
+        self, kernel_name: str, python_version: str, requested_dependencies: str = "", frozen_dependencies: str = ""
     ):
         analytics.track(
             "Create kernel",
             {
                 "kernel_name": anonymize(kernel_name),
                 "python_version": python_version,
-                "requestedDependencies": requestedDependencies,
+                "requestedDependencies": requested_dependencies,
             },
         )
 
@@ -240,7 +244,7 @@ class GiskardClient:
             json={
                 "name": kernel_name,
                 "pythonVersion": python_version,
-                "requestedDependencies": requestedDependencies,
+                "requestedDependencies": requested_dependencies,
                 "frozenDependencies": frozen_dependencies,
                 "type": "PROCESS",
                 "version": 0,
