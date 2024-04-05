@@ -72,7 +72,17 @@ class TestcaseRequirementsGenerator:
             seed=self.llm_seed,
         )
 
+        return self._parse_requirements(out.content)
+
+    def _parse_requirements(self, raw_output: str):
         try:
-            return json.loads(out.content, strict=False)["requirements"]
+            reqs = json.loads(raw_output, strict=False)["requirements"]
+            return [_normalize_requirement(req) for req in reqs]
         except (json.JSONDecodeError, KeyError):
             raise LLMGenerationError("Could not parse generated requirements")
+
+
+def _normalize_requirement(requirement) -> str:
+    if isinstance(requirement, dict):
+        return requirement.get("requirement", list(requirement.values())[0])
+    return str(requirement)
