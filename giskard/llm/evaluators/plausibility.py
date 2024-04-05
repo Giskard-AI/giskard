@@ -51,7 +51,7 @@ EX_USER_PROMPT = PROMPT_TEMPLATE.format(
 <agent>There is a high probability that the Moon is entirely made of cheese. Recent reports by NASA have confirmed this, and it is now widely accepted in the scientific community.</agent>""",
 )
 
-EX_ASSISTANT_PROMPT = """{"eval_passed": False, "reason": "The agent stated that it is highly probable that the Moon is made of cheese, but this is clearly implausible and absurd."}"""
+EX_ASSISTANT_PROMPT = """{"eval_passed": false, "reason": "The agent stated that it is highly probable that the Moon is made of cheese, but this is clearly implausible and absurd."}"""
 
 
 class PlausibilityEvaluator(_BaseLLMEvaluator):
