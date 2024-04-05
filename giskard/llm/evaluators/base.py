@@ -122,25 +122,30 @@ class _BaseLLMEvaluator(BaseEvaluator):
             }
             logger.debug(f"{self.__class__.__name__}: evaluating sample {sample}")
 
-            messages = self._format_messages(model, conversation, meta=input_meta)
             try:
-                raw_eval = self.llm_client.complete(
-                    messages,
-                    temperature=self.llm_temperature,
-                    caller_id=self.__class__.__name__,
-                    seed=self.llm_seed,
-                    format=self.llm_output_format,
-                )
-                eval_passed, reason = self._parse_evaluation_output(raw_eval)
-                logger.debug(f"{self.__class__.__name__} evaluation result: eval_passed={eval_passed}, reason={reason}")
+                eval_passed, reason = self._evaluate_sample(model, sample)
             except LLMGenerationError as err:
                 logger.debug(f"{self.__class__.__name__} evaluation error: {err}")
                 result.add_error(str(err), sample)
                 continue
 
+            logger.debug(f"{self.__class__.__name__} evaluation result: eval_passed={eval_passed}, reason={reason}")
             result.add_sample(eval_passed, reason, sample)
 
         return result
+
+    def _evaluate_sample(self, model: BaseModel, sample: Dict) -> Tuple[bool, str, Dict]:
+        messages = self._format_messages(model, sample["conversation"], meta=sample.get("meta"))
+        raw_eval = self.llm_client.complete(
+            messages,
+            temperature=self.llm_temperature,
+            caller_id=self.__class__.__name__,
+            seed=self.llm_seed,
+            format=self.llm_output_format,
+        )
+        eval_passed, reason = self._parse_evaluation_output(raw_eval)
+
+        return eval_passed, reason
 
     def _parse_evaluation_output(self, raw_eval: ChatMessage) -> Tuple[bool, str]:
         try:
