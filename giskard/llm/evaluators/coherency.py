@@ -71,11 +71,14 @@ class CoherencyEvaluator(_BaseLLMEvaluator):
         # Run evaluation
         result = EvaluationResult()
         for input_1, input_2, output_1, output_2 in zip(inputs_1, inputs_2, outputs_1, outputs_2):
+            if len(input_1) == 1:
+                input_1 = list(input_1.values())[0]
+            if len(input_2) == 1:
+                input_2 = list(input_2.values())[0]
+
             sample = {
-                "input_1": input_1,
-                "output_1": output_1,
-                "input_2": input_2,
-                "output_2": output_2,
+                "conversation_1": [{"role": "user", "content": input_1}, {"role": "agent", "content": output_1}],
+                "conversation_2": [{"role": "user", "content": input_2}, {"role": "agent", "content": output_2}],
             }
 
             logger.debug(f"{self.__class__.__name__}: evaluating sample: {sample}")
@@ -106,10 +109,10 @@ class CoherencyEvaluator(_BaseLLMEvaluator):
     def _format_messages(self, model: BaseModel, sample: Dict) -> Sequence[ChatMessage]:
         prompt = EXAMPLE_USR_TPL.format(
             description=model.description,
-            input_1=sample["input_1"],
-            output_1=sample["output_1"],
-            input_2=sample["input_2"],
-            output_2=sample["output_2"],
+            input_1=sample["conversation_1"][0]["content"],
+            output_1=sample["conversation_1"][1]["content"],
+            input_2=sample["conversation_2"][0]["content"],
+            output_2=sample["conversation_2"][1]["content"],
         )
 
         return [

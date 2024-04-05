@@ -59,6 +59,8 @@ class StringMatcherEvaluator(BaseEvaluator):
 
         result = EvaluationResult()
         for inputs, outputs, config in zip(model_inputs, model_outputs, evaluator_configs):
+            if len(inputs) == 1:
+                inputs = list(inputs.values())[0]
             conversation = [{"role": "user", "content": inputs}, {"role": "agent", "content": outputs}]
             sample = {"conversation": conversation}
             string_matcher = StringMatcher(config)
@@ -69,6 +71,6 @@ class StringMatcherEvaluator(BaseEvaluator):
                 result.add_error(str(err), sample)
                 continue
 
-            result.add_sample(not injection_success, sample)
+            result.add_sample(eval_passed=not injection_success, sample=sample)
 
         return result

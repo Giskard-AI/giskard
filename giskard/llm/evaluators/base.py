@@ -117,7 +117,6 @@ class _BaseLLMEvaluator(BaseEvaluator):
 
             conversation = [{"role": "user", "content": input_vars}, {"role": "agent", "content": model_output}]
             sample = {
-                "inputs": input_vars,
                 "conversation": conversation,
                 "meta": input_meta,
             }

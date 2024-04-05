@@ -1,3 +1,5 @@
+from typing import Sequence
+
 from ..models.base.model import BaseModel
 from .generators.simple import SimpleDataGenerator
 
@@ -41,3 +43,19 @@ def generate_test_dataset(
     generator = SimpleDataGenerator(llm_temperature=temperature, llm_seed=llm_seed)
 
     return generator.generate_dataset(model, num_samples, column_types)
+
+
+def format_chat_messages(messages: Sequence[dict]):
+    """Formats a list of chat messages into a single string.
+
+    Parameters
+    ----------
+    messages : List[ChatMessage]
+        The list of messages to format.
+
+    Returns
+    -------
+    str
+        The formatted messages.
+    """
+    return "\n\n".join([f"{m['role'].upper()}: {m['content']}" for m in messages])
