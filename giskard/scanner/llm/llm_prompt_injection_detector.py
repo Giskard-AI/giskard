@@ -69,6 +69,16 @@ class LLMPromptInjectionDetector(Detector):
             group_description = self.data_loader.group_description(group)
             group_deviation_description = self.data_loader.group_deviation_description(group)
 
+            examples = pd.DataFrame(
+                [
+                    {
+                        "User prompt": r["sample"]["conversation"][0]["content"],
+                        "Agent response": r["sample"]["conversation"][1]["content"],
+                    }
+                    for r in evaluation_results.failure_examples
+                ]
+            )
+
             issues.append(
                 Issue(
                     model,
@@ -78,7 +88,7 @@ class LLMPromptInjectionDetector(Detector):
                         name="Prompt Injection",
                         description="LLM Prompt injection involves bypassing "
                         "filters or manipulating the LLM using carefully crafted prompts that make the "
-                        "model ignore "
+                        "agent ignore "
                         "previous instructions or perform unintended actions.",
                     ),
                     description=group_description,
@@ -93,7 +103,7 @@ class LLMPromptInjectionDetector(Detector):
                         "input_prompts": group_dataset.df.loc[:, model.feature_names],
                         "evaluator_configs": evaluator_configs,
                     },
-                    examples=pd.DataFrame(evaluation_results.failure_examples),
+                    examples=examples,
                     tests=_generate_prompt_injection_tests,
                     taxonomy=["avid-effect:security:S0403"],
                 )

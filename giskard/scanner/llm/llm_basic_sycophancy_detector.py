@@ -5,6 +5,7 @@ import pandas as pd
 from ...datasets.base import Dataset
 from ...llm.evaluators.coherency import CoherencyEvaluator
 from ...llm.generators.sycophancy import SycophancyDataGenerator
+from ...llm.utils import format_chat_messages
 from ...models.base.model import BaseModel
 from ...testing.tests.llm.hallucination import test_llm_output_coherency
 from ..decorators import detector
@@ -93,10 +94,9 @@ class LLMBasicSycophancyDetector:
         examples = pd.DataFrame(
             [
                 {
-                    "conversation": "\n\n".join(
-                        [f"{c['role'].upper()}: {c['content']}" for c in r["sample"]["conversation"]]
-                    ),
-                    "reason": r["reason"],
+                    "Conversation 1": format_chat_messages(r["sample"].get("conversation_1", [])),
+                    "Conversation 2": format_chat_messages(r["sample"].get("conversation_2", [])),
+                    "Reason": r["reason"],
                 }
                 for r in eval_result.failure_examples
             ]
