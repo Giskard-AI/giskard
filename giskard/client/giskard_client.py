@@ -235,7 +235,7 @@ class GiskardClient:
             {
                 "kernel_name": anonymize(kernel_name),
                 "python_version": python_version,
-                "requestedDependencies": requestedDependencies,
+                "requestedDependencies": requested_dependencies,
             },
         )
 
