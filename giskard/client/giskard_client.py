@@ -194,6 +194,15 @@ class GiskardClient:
         python_version = f"{sys.version_info[0]}.{sys.version_info[1]}"
         kernel_name = f"{project_key}_kernel"
 
+        analytics.track(
+            "Init kernel from env",
+            {
+                "project_key": anonymize(project_key),
+                "kernel_name": anonymize(kernel_name),
+                "python_version": python_version,
+            },
+        )
+
         kernels = self._session.get("kernels").json()
         frozen_dependencies = [
             f"{dist.name}{format_pylib_extras(dist.name) if exact_deps or dist.name == 'giskard' else ''}=={dist.version}"
@@ -221,6 +230,15 @@ class GiskardClient:
     def create_kernel(
         self, kernel_name: str, python_version: str, requested_dependencies: str = "", frozen_dependencies: str = ""
     ):
+        analytics.track(
+            "Create kernel",
+            {
+                "kernel_name": anonymize(kernel_name),
+                "python_version": python_version,
+                "requestedDependencies": requestedDependencies,
+            },
+        )
+
         self._session.post(
             "kernels",
             json={
@@ -234,10 +252,12 @@ class GiskardClient:
         )
 
     def start_managed_worker(self, kernel_name: str):
+        analytics.track("Start worker", {"kernel_name": anonymize(kernel_name)})
         self._session.post(f"kernels/start/{kernel_name}")
         logger.info("The worker is starting up")
 
     def stop_managed_worker(self, kernel_name: str):
+        analytics.track("Stop worker", {"kernel_name": anonymize(kernel_name)})
         self._session.post(f"kernels/stop/{kernel_name}")
         logger.info("The worker has been requested to stop")
 
