@@ -1,4 +1,4 @@
-from typing import Sequence
+from typing import Optional, Sequence
 
 import logging
 
@@ -44,7 +44,7 @@ class RagasLLMWrapper(BaseRagasLLM):
         prompt: PromptValue,
         n: int = 1,
         temperature: float = 1e-8,
-        stop: Sequence[str] | None = None,
+        stop: Optional[Sequence[str]] = None,
         callbacks=[],
     ):
         return self.generate_text(prompt, n, temperature, stop, callbacks)
