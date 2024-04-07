@@ -1,14 +1,18 @@
 """API Client to interact with the Giskard app"""
+
 from typing import List
 
 import json
 import logging
 import os
 import posixpath
+import sys
+import uuid
 from pathlib import Path
 from urllib.parse import urljoin
 from uuid import UUID
 
+import importlib_metadata
 from requests import Response
 from requests.adapters import HTTPAdapter
 from requests.auth import AuthBase
@@ -25,9 +29,10 @@ from giskard.client.dtos import (
 )
 from giskard.client.io_utils import GiskardJSONSerializer
 from giskard.client.project import Project
-from giskard.client.python_utils import warning
+from giskard.client.python_utils import EXCLUDED_PYLIBS, format_pylib_extras, warning
 from giskard.core.core import SMT, DatasetMeta, ModelMeta, TestFunctionMeta
 from giskard.utils.analytics_collector import analytics, anonymize
+from giskard.utils.environment_detector import COLAB, EnvironmentDetector
 
 UNKNOWN_ERROR = "No details or messages available."
 
@@ -147,6 +152,8 @@ class GiskardClient:
 
         self._session.auth = BearerAuth(key)
 
+        self._environment = EnvironmentDetector().detect()
+
         if hf_token:
             self._session.cookies["spaces-jwt"] = hf_token
 
@@ -186,19 +193,102 @@ class GiskardClient:
         response = self._session.get("project", params={"key": project_key}).json()
         return Project(self._session, response["key"], response["id"])
 
-    def create_project(self, project_key: str, name: str, description: str = None) -> Project:
-        """
-        Function to create a project in Giskard
-        Args:
-            project_key:
-                The unique value of the project which will be used to identify  and fetch the project in future
-            name:
-                The name of the project
-            description:
-                Describe your project
-        Returns:
-            Project:
-                The project created in giskard
+    def initialize_kernel(
+        self,
+        project_key: str,
+        exact_deps: bool = False,
+        excludes: List[str] = EXCLUDED_PYLIBS,
+        only_giskard: bool = False,
+    ):
+        python_version = f"{sys.version_info[0]}.{sys.version_info[1]}"
+        kernel_name = f"{project_key}_kernel"
+
+        analytics.track(
+            "Init kernel from env",
+            {
+                "project_key": anonymize(project_key),
+                "kernel_name": anonymize(kernel_name),
+                "python_version": python_version,
+            },
+        )
+
+        kernels = self._session.get("kernels").json()
+        frozen_dependencies = [
+            f"{dist.name}{format_pylib_extras(dist.name) if exact_deps or dist.name == 'giskard' else ''}=={dist.version}"
+            for dist in importlib_metadata.distributions()
+            if dist.name not in excludes and (not only_giskard or dist.name == "giskard")
+        ]
+
+        existing_kernel = next((kernel for kernel in kernels if kernel["name"] == kernel_name), None)
+
+        if (
+            existing_kernel
+            and existing_kernel["pythonVersion"] == python_version
+            and set(frozen_dependencies).issubset(set(existing_kernel["frozenDependencies"].split("\n")))
+        ):
+            # A similar kernel already exists
+            return existing_kernel["name"]
+        elif existing_kernel:
+            # A different kernel exists that uses the same name
+            kernel_name = f"{kernel_name}_{uuid.uuid4()}"
+
+        self.create_kernel(kernel_name, python_version, frozen_dependencies="\n".join(frozen_dependencies))
+
+        return kernel_name
+
+    def create_kernel(
+        self, kernel_name: str, python_version: str, requested_dependencies: str = "", frozen_dependencies: str = ""
+    ):
+        analytics.track(
+            "Create kernel",
+            {
+                "kernel_name": anonymize(kernel_name),
+                "python_version": python_version,
+                "requestedDependencies": requested_dependencies,
+            },
+        )
+
+        self._session.post(
+            "kernels",
+            json={
+                "name": kernel_name,
+                "pythonVersion": python_version,
+                "requestedDependencies": requested_dependencies,
+                "frozenDependencies": frozen_dependencies,
+                "type": "PROCESS",
+                "version": 0,
+            },
+        )
+
+    def start_managed_worker(self, kernel_name: str):
+        analytics.track("Start worker", {"kernel_name": anonymize(kernel_name)})
+        self._session.post(f"kernels/start/{kernel_name}")
+        logger.info("The worker is starting up")
+
+    def stop_managed_worker(self, kernel_name: str):
+        analytics.track("Stop worker", {"kernel_name": anonymize(kernel_name)})
+        self._session.post(f"kernels/stop/{kernel_name}")
+        logger.info("The worker has been requested to stop")
+
+    def create_project(self, project_key: str, name: str, description: str = None, kernel_name: str = None) -> Project:
+        """Function to create a project in Giskard
+
+        Parameters
+        ----------
+        project_key : str
+            The unique value of the project which will be used to identify  and fetch the project in future
+        name : str
+            The name of the project
+        description : str, optional
+            Describe your project, by default None
+        kernel_name : str
+            The name of the kernel to run on
+
+        Returns
+        -------
+        Project
+            The project created in giskard
+
         """
         analytics.track(
             "Create Project",
@@ -208,10 +298,22 @@ class GiskardClient:
                 "name": anonymize(name),
             },
         )
+
+        if kernel_name is None:
+            is_colab = COLAB in self._environment
+            kernel_name = self.initialize_kernel(project_key, only_giskard=is_colab)
+            if is_colab:
+                print(
+                    f"Kernel '{kernel_name}' is created on your Giskard hub."
+                    "We are initializing the environment with only giskard, since you are in Colab."
+                    "Please edit the dependencies in the kernel to align with your environment for model execution."
+                )
+
         try:
+            # TODO(Bazire) : use typed object for validation here
             response = self._session.post(
                 "project",
-                json={"description": description, "key": project_key, "name": name},
+                json={"description": description, "key": project_key, "name": name, "kernelName": kernel_name},
             ).json()
         except GiskardError as e:
             if e.code == "error.http.409":
