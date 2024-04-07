@@ -486,7 +486,7 @@ class BaseModel(ABC):
         return str(self.id)
 
     @classmethod
-    def download(cls, client: Optional[GiskardClient], project_key, model_id, *_args, **_kwargs):
+    def download(cls, client: GiskardClient, project_key, model_id, *_args, **_kwargs):
         """
         Downloads the specified model from the Giskard hub and loads it into memory.
 
@@ -502,29 +502,24 @@ class BaseModel(ABC):
             AssertionError: If the local directory where the model should be saved does not exist.
         """
         local_dir = settings.home_dir / settings.cache_dir / "models" / model_id
-        if client is None:
-            # internal worker case, no token based http client [deprecated, to be removed]
-            assert local_dir.exists(), f"Cannot find existing model {project_key}.{model_id} in {local_dir}"
-            meta_response, meta = cls.read_meta_from_local_dir(local_dir)
-        else:
-            client.load_artifact(local_dir, posixpath.join("models", model_id))
-            meta_response: ModelMetaInfo = client.load_model_meta(project_key, model_id)
-            # internal worker case, no token based http client
-            if not local_dir.exists():
-                raise RuntimeError(f"Cannot find existing model {project_key}.{model_id} in {local_dir}")
-            with (Path(local_dir) / META_FILENAME).open(encoding="utf-8") as f:
-                file_meta = yaml.load(f, Loader=yaml.Loader)
-                classification_labels = cls.cast_labels(meta_response)
-                meta = ModelMeta(
-                    name=meta_response.name,
-                    description=meta_response.description,
-                    model_type=SupportedModelTypes[meta_response.modelType],
-                    feature_names=meta_response.featureNames,
-                    classification_labels=classification_labels,
-                    classification_threshold=meta_response.threshold,
-                    loader_module=file_meta["loader_module"],
-                    loader_class=file_meta["loader_class"],
-                )
+        client.load_artifact(local_dir, posixpath.join("models", model_id))
+        meta_response: ModelMetaInfo = client.load_model_meta(project_key, model_id)
+        # internal worker case, no token based http client
+        if not local_dir.exists():
+            raise RuntimeError(f"Cannot find existing model {project_key}.{model_id} in {local_dir}")
+        with (Path(local_dir) / META_FILENAME).open(encoding="utf-8") as f:
+            file_meta = yaml.load(f, Loader=yaml.Loader)
+            classification_labels = cls.cast_labels(meta_response)
+            meta = ModelMeta(
+                name=meta_response.name,
+                description=meta_response.description,
+                model_type=SupportedModelTypes[meta_response.modelType],
+                feature_names=meta_response.featureNames,
+                classification_labels=classification_labels,
+                classification_threshold=meta_response.threshold,
+                loader_module=file_meta["loader_module"],
+                loader_class=file_meta["loader_class"],
+            )
 
         model_py_ver = (
             tuple(meta_response.languageVersion.split(".")) if "PYTHON" == meta_response.language.upper() else None

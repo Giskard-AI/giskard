@@ -13,7 +13,7 @@ The Giskard Hub is the app adapted for an enterprise use of Giskard. Extending t
 You have 3 ways to install the Hub:
 * **Hugging Face Space installation**: This is adapted for an **easy installation** in the cloud for prototyping purposes. If you don't want to upload your own model and just want to check some Giskard demo projects, the HF public space is perfect for you.
 * **On-premise installation**: This is adapted if your data and model are **private** and you don't have the possibility to use the cloud (for instance, because of privacy and connectivity issues).
-* **Private cloud**: This is adapted if you can easily run a **Cloud instance** by your favourite Cloud provider (AWS, GCP or Azure) and want to easily use Giskard collaborative features (collect feedback from business, share results, etc.). Make sure that you have the rights to open ports of your Cloud machine because Giskard needs to open a connection with an ML Worker running on your Python environment.
+* **Private cloud**: This is adapted if you can easily run a **Cloud instance** by your favourite Cloud provider (AWS, GCP or Azure) and want to easily use Giskard collaborative features (collect feedback from business, share results, etc.). Make sure that you have the rights to open ports of your Cloud machine, if you want to connect your own ML Worker to the Giskard Hub.
 
 ```{toctree}
 :caption: Table of Contents
