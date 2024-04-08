@@ -92,6 +92,7 @@ test = [
     "openai>=1",
     "pytest-memray; sys_platform == 'linux' or sys_platform == 'darwin'",
     "pytest-reportlog>=0.4.0",
+    "shap<0.45",                                                          # Fixing this to avoid changed on insights
 ]
 doc = [
     "furo>=2023.5.20",
@@ -132,7 +133,7 @@ giskard = "giskard.integrations.mlflow.giskard_evaluator:GiskardEvaluator"
 name = "giskard"
 readme = "README.md"
 license = { text = "Apache Software License 2.0" }
-version = "2.8.0"
+version = "2.9.0"
 description = "The testing framework dedicated to ML models, from tabular to LLMs"
 authors = [{ name = "Giskard AI", email = "hello@giskard.ai" }]
 keywords = ["Artificial Intelligence", "Machine Learning", "Quality", "MLOps"]
@@ -200,10 +201,9 @@ hub = [
     "click>=7.0",
     "docker>=6.0.0",
     "shap>=0.41.0",
-    "llvmlite>=0.40.0",        # Needed to be installable for Poetry
-    "numba>=0.50.0",           # Needed to be installable for Poetry
+    "llvmlite>=0.40.0",    # Needed to be installable for Poetry
+    "numba>=0.50.0",       # Needed to be installable for Poetry
     "lockfile>=0.12.2",
-    "python-daemon>=2.2.2,<3",
     "pycryptodome>=3.6.1",
     "pyngrok>=6.0.0",
 ]
