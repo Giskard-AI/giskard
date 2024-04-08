@@ -25,9 +25,9 @@
 <br />
 
 ## Install Giskard 🐢
-Install the latest version of Giskard from PyPi:
+Install the latest version of Giskard from PyPi using pip:
 ```sh
-pip install "giskard[llm]"
+pip install "giskard[llm]" -U
 ```
 We officially support Python 3.9, 3.10 and 3.11.
 ## Try in Colab 📙
@@ -41,7 +41,8 @@ Giskard is a Python library that **automatically detects performance issues** in
 - Prompt injection
 - Robustness issues
 - Sensitive information disclosure
-- Stereotypes & discrimination, and many more.
+- Stereotypes & discrimination
+- many more...
 
 [//]: # (TODO: replace with GIF for IPCC scan)
 <p align="center">
@@ -76,6 +77,12 @@ Giskard works with any model, in any environment and integrates seamlessly with 
 ## 1. 🏗️ Build a LLM agent
 
 Let's build an agent that answers questions about climate change, based on the 2023 Climate Change Synthesis Report by the IPCC.
+
+Before starting let's install the required libraries:
+```sh
+pip install langchain tiktoken "pypdf<=3.17.0"
+```
+
 
 ```python
 from langchain import OpenAI, FAISS, PromptTemplate
@@ -161,7 +168,44 @@ test_suite = scan_results.generate_test_suite("My first test suite")
 
 If you're testing a RAG application, you can get an even more in-depth assessment using RAGET, Giskard's RAG Evaluation Toolkit.
 
-[//]: # (TODO: code snippets from RAGET)
+RAGET can generate automatically a list of `question`, `reference_answer` and `reference_context` from the knowledge base of the RAG. It relies on a chain of LLM operations to generate realistic questions across different types. You can then use this generated test set to evaluate your RAG agent.
+
+By default, RAGET automatically generates 6 different question types (these can be selected if needed, see advanced question generation). The total number of questions is divided equally between each question type. To make the question generation more relevant and accurate, you can also provide a description of your agent.
+
+```python
+
+from giskard.rag import generate_testset, KnowledgeBase
+
+# Load your data and initialize the KnowledgeBase
+df = pd.read_csv("path/to/your/knowledge_base.csv")
+
+knowledge_base = KnowledgeBase.from_pandas(df, columns=["column_1", "column_2"])
+
+# Generate a testset with 10 questions & answers for each question types (this will take a while)
+testset = generate_testset(
+    knowledge_base, 
+    num_questions=60,
+    language='en',  # optional, we'll auto detect if not provided
+    agent_description="A customer support chatbot for company X", # helps generating better questions
+)
+```
+
+Depending on how many questions you generate, this can take a while. Once you’re done, you can save this generated test set for future use:
+
+```python
+# Save the generated testset
+testset.save("my_testset.jsonl")
+```
+You can easily load it back
+
+```python
+from giskard.rag import QATestset
+
+loaded_testset = QATestset.load("my_testset.jsonl")
+
+# Convert it to a pandas dataframe
+df = loaded_testset.to_pandas()
+```
 
 # 👋 Community
 We welcome contributions from the AI community! Read this [guide](CONTRIBUTING.md) to get started.
