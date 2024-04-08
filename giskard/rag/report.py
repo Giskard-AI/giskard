@@ -351,7 +351,7 @@ class RAGReport:
             width_policy="max",
         )
         p.hbar(y="metadata_values", right="correctness", source=source, height=0.85, fill_color="#14191B")
-        p.hbar(y="metadata_values", right="correctness", source=source, height=0.85, fill_color="#1D78B4", fill_alpha=0.7, line_color="#1D78B4", line_width=2)
+        p.hbar(y="metadata_values", right="correctness", source=source, height=0.85, fill_color="#78BBFA", fill_alpha=0.7, line_color="white", line_width=2)
         vline = Span(
             location=overall_correctness * 100,
             dimension="height",
