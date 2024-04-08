@@ -110,7 +110,6 @@ def get_failure_plot(knowledge_base, question_evaluation: Sequence = None):
     p.title.text_font_size = "14pt"
     p.legend.title_text_color = "#B1B1B1"
 
-
     background_source = ColumnDataSource(
         data={
             "x": knowledge_base._reduced_embeddings[:, 0],
