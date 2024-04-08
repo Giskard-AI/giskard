@@ -87,9 +87,10 @@ def evaluate(
     metrics_results = defaultdict(dict)
 
     for metric in metrics:
-        metric_name = getattr(metric, "name", metric.__class__.__name__ if isinstance(metric, Metric) else metric.__name__)
+        metric_name = getattr(
+            metric, "name", metric.__class__.__name__ if isinstance(metric, Metric) else metric.__name__
+        )
 
-        
         for sample, answer in maybe_tqdm(
             zip(testset.to_pandas().to_records(index=True), answers),
             desc=f"{metric_name} evaluation",

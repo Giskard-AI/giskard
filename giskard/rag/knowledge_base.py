@@ -7,10 +7,10 @@ import numpy as np
 import pandas as pd
 from sklearn.cluster import HDBSCAN
 
-from ..utils.language_detection import detect_lang
 from ..llm.client import LLMClient, LLMMessage, get_default_client
 from ..llm.errors import LLMImportError
 from ..utils.analytics_collector import analytics
+from ..utils.language_detection import detect_lang
 from .knowledge_base_plots import get_failure_plot, get_knowledge_plot
 
 try:
@@ -187,9 +187,9 @@ class KnowledgeBase:
     def _embeddings(self):
         if self._embeddings_inst is None:
             logger.info("Computing Knowledge Base embeddings.")
-            #self._embeddings_inst = self._llm_client.embeddings(
+            # self._embeddings_inst = self._llm_client.embeddings(
             #    [doc.content for doc in self._documents], model=self._embedding_model, chunk_size=self.chunk_size
-            #)
+            # )
             self._embeddings_inst = np.random.randn(304, 1536)
             for doc, emb in zip(self._documents, self._embeddings_inst):
                 doc.embeddings = emb
