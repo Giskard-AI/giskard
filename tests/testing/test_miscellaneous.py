@@ -38,29 +38,31 @@ def test_smoothness(ord):
         "seasonality_y": np.cos(2 * np.pi * np.arange(0, 1, 0.01)),
     }
 
+    ref_function = np.sin(2 * np.pi * np.arange(0, 1, 0.01))
+
     # Call the function with test inputs
     result = miscellaneous.test_smoothness(
-        model_smooth, dataset, column_names=["seasonality_x", "seasonality_y"], column_values=column_values, ord=ord
+        model_smooth, dataset, column_names=["seasonality_x", "seasonality_y"], column_values=column_values, ord=ord, ref_function=ref_function
     ).execute()
 
     # Assert that the result is as expected
     assert result.passed, "Test failed: the model should be considered smooth"
     if ord == 1:
-        assert np.isclose(result.metric, -0.007, atol=1e-3), "Test failed: the metric value should be -0.007"
+        assert np.isclose(result.metric, 0, atol=1e-3), "Test failed: the metric value should be 0"
     elif ord == 2:
-        assert np.isclose(result.metric, -0.013, atol=1e-3), "Test failed: the metric value should be -20"
+        assert np.isclose(result.metric, 0, atol=1e-3), "Test failed: the metric value should be 0"
 
     # Call the function with test inputs
     result = miscellaneous.test_smoothness(
-        model_rough, dataset, column_names=["seasonality_x", "seasonality_y"], column_values=column_values, ord=ord
+        model_rough, dataset, column_names=["seasonality_x", "seasonality_y"], column_values=column_values, ord=ord, ref_function=ref_function
     ).execute()
 
     # Assert that the result is as expected
     assert not result.passed, "Test failed: the model should not be considered smooth"
     if ord == 1:
-        assert np.isclose(result.metric, 3.013, atol=1e-3), "Test failed: the metric value should be 3.013"
+        assert np.isclose(result.metric, 3.020, atol=1e-3), "Test failed: the metric value should be 3.020"
     elif ord == 2:
-        assert np.isclose(result.metric, 8.99, atol=1e-3), "Test failed: the metric value should be 8.99"
+        assert np.isclose(result.metric, 9.003, atol=1e-3), "Test failed: the metric value should be 9.003"
 
 
 def test_monotonicity():

@@ -154,6 +154,7 @@ def test_smoothness(
     classif_index_label: int = 0,
     threshold: float = 2,
     ord: int = 2,
+    ref_function: Optional[np.ndarray] = None
 ):
     """Test if the model is smooth with respect to given columns.
     The smoothness score is computed as follows
@@ -184,6 +185,8 @@ def test_smoothness(
         Threshold over which the test is failed
     ord : int
         Order of the norm used to evaluate smoothness
+    ref_function : np.ndarray
+        Function values to compare to
 
     Returns
     -------
@@ -206,15 +209,18 @@ def test_smoothness(
     )
 
     # Check smoothness with respect to ref (sin)
-    ref_function = np.sin(2 * np.pi * np.linspace(0, 1, predictions.shape[0]))[:, None]
+    if ref_function is None:
+        ref_score = 1
+    elif ord == 2:
+        ref_score = np.mean((ref_function[:-2] - 2 * ref_function[1:-1] + ref_function[2:]) ** 2)
+    else:
+        ref_score = np.abs(ref_function[1:] - ref_function[:-1]).mean()
     if ord == 2:
-        ref_score = np.mean((ref_function[:-2, :] - 2 * ref_function[1:-1, :] + ref_function[2:, :]) ** 2, axis=0)
         scores = np.log10(
             np.mean((predictions[:-2, :] - 2 * predictions[1:-1, :] + predictions[2:, :]) ** 2, axis=0) / ref_score
             + 1e-20
         )
     elif ord == 1:
-        ref_score = np.abs(ref_function[1:, :] - ref_function[:-1, :]).mean(axis=0)
         scores = np.log10(np.abs(predictions[1:, :] - predictions[:-1, :]).mean(axis=0) / ref_score + 1e-20)
 
     passed = scores < threshold
