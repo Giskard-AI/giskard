@@ -1,6 +1,6 @@
-# 🤗 HuggingFace
+# 🤗 Hugging Face
 
-**Leverage the Hugging Face (HF) and HF Spaces to easily scan, test & debug your own ML models.**
+**Leverage Hugging Face (HF) Spaces to easily scan, test & debug your own ML models.**
 
 ```{toctree}
 :caption: Table of Contents
