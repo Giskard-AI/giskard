@@ -42,7 +42,12 @@ def test_smoothness(ord):
 
     # Call the function with test inputs
     result = miscellaneous.test_smoothness(
-        model_smooth, dataset, column_names=["seasonality_x", "seasonality_y"], column_values=column_values, ord=ord, ref_function=ref_function
+        model_smooth,
+        dataset,
+        column_names=["seasonality_x", "seasonality_y"],
+        column_values=column_values,
+        ord=ord,
+        ref_function=ref_function,
     ).execute()
 
     # Assert that the result is as expected
@@ -54,7 +59,12 @@ def test_smoothness(ord):
 
     # Call the function with test inputs
     result = miscellaneous.test_smoothness(
-        model_rough, dataset, column_names=["seasonality_x", "seasonality_y"], column_values=column_values, ord=ord, ref_function=ref_function
+        model_rough,
+        dataset,
+        column_names=["seasonality_x", "seasonality_y"],
+        column_values=column_values,
+        ord=ord,
+        ref_function=ref_function,
     ).execute()
 
     # Assert that the result is as expected

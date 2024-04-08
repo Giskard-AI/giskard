@@ -154,7 +154,7 @@ def test_smoothness(
     classif_index_label: int = 0,
     threshold: float = 2,
     ord: int = 2,
-    ref_function: Optional[np.ndarray] = None
+    ref_function: Optional[np.ndarray] = None,
 ):
     """Test if the model is smooth with respect to given columns.
     The smoothness score is computed as follows
