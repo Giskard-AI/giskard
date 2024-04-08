@@ -12,11 +12,9 @@ from ..llm.errors import LLMImportError
 try:
     from bokeh.document import Document
     from bokeh.embed import components
-    from bokeh.io import output_notebook, reset_output, curdoc
-    from bokeh.io import output_notebook, reset_output
+    from bokeh.io import curdoc, output_notebook, reset_output
     from bokeh.models import ColumnDataSource, Span, TabPanel, Tabs
     from bokeh.plotting import figure
-    from bokeh.document import Document
 except ImportError as err:
     raise LLMImportError(flavor="llm") from err
 
@@ -343,7 +341,6 @@ class RAGReport:
                 "colors": get_colors(correctness),
             }
         )
-        
 
         p = figure(
             y_range=metadata_values,
