@@ -1,5 +1,5 @@
 # 🐢Giskard Hub
-**Leverage the Hugging Face (HF) Space to easily test & debug your own ML models.**
+**Leverage Hugging Face (HF) Spaces to easily test & debug your own ML models.**
 
 ## Why Giskard?
 **Giskard** is an open-source testing framework dedicated for AI models, from tabular to LLMs. Giskard is composed of 
@@ -14,7 +14,7 @@ On this page, you'll learn to deploy your own Giskard Hub and use it for testing
 
 </div>
 
-## Try the Giskard Hub on demo models in 1 click
+## Try the Giskard Hub on demo models in a single click
 
 If you want to try the Giskard Hub on some demo ML projects (not on your own ML models), navigate to our public demo Space:
 
@@ -28,16 +28,16 @@ The demo Giskard Space is read-only. To upload your own models, datasets and pro
 
 ## Test & debug your own ML model in the Giskard Hub using HF Spaces
 
-Leverage the Hugging Face (HF) Space to easily test & debug your own ML models. This implies that you deploy a private HF space containing the Giskard Hub and upload your Python objects (such as ML models, test suites, datasets, slicing functions, or transformation functions) to your HF Space. To do so, follow these steps:
+Leverage the Hugging Face (HF) Space to easily test & debug your own ML models. This implies that you deploy a private HF space containing the Giskard Hub and upload your Python objects (such as ML models, test suites, datasets, slicing functions, or transformation functions) to it. To do so, follow these steps:
 
 ### 1. Create a new Space using the Giskard Docker template
-Begin by visiting [HuggingFace Spaces](https://huggingface.co/spaces) and click on "Create new Space" as depicted below. 
+Begin by visiting [Hugging Face Spaces](https://huggingface.co/spaces) and click on "Create new Space" as depicted below. 
 Alternatively, navigate directly [here](https://huggingface.co/new-space?template=giskardai%2Fgiskard) to create a new space
 from the Giskard template.
 
 ![New space](../../assets/integrations/hfs/create_new_space.png)
 
-You can then deploy Giskard on Spaces with just a few clicks. You need to define the **Owner** (your personal account or an organization), a **Space name**, and the **Visibility**.
+You can then deploy Giskard on Spaces with just a few clicks. You need to define the **Owner** (your personal account or an organization), the **Space name**, and the **Visibility**.
 
 ![Space from template](../../assets/integrations/hfs/create_from_template.png)
 
@@ -89,7 +89,7 @@ client.upload(...)
 
 ## Upgrade your Giskard Hub in HuggingFace Spaces
 
-When installing the Hub in HuggingFace Spaces, the latest version will be fetched. The version will always remain the same unless you manually run an upgrade. Upgrades are recommended to get the latest features and bug fixes deployed by Giskard.
+When installing the Hub in Hugging Face Spaces, the latest version will be fetched. The version will always remain the same unless you manually run an upgrade. Upgrades are recommended to get the latest features and bug fixes deployed by Giskard.
 
 To do so, you can open the `Dockerfile` in your repository. The first line should be similar to this:
 
