@@ -187,9 +187,10 @@ class KnowledgeBase:
     def _embeddings(self):
         if self._embeddings_inst is None:
             logger.info("Computing Knowledge Base embeddings.")
-            self._embeddings_inst = self._llm_client.embeddings(
-                [doc.content for doc in self._documents], model=self._embedding_model, chunk_size=self.chunk_size
-            )
+            #self._embeddings_inst = self._llm_client.embeddings(
+            #    [doc.content for doc in self._documents], model=self._embedding_model, chunk_size=self.chunk_size
+            #)
+            self._embeddings_inst = np.random.randn(304, 1536)
             for doc, emb in zip(self._documents, self._embeddings_inst):
                 doc.embeddings = emb
         return self._embeddings_inst

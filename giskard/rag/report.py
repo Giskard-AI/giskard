@@ -11,9 +11,11 @@ from ..llm.errors import LLMImportError
 
 try:
     from bokeh.embed import components
+    from bokeh.io import output_notebook, reset_output, curdoc
     from bokeh.io import output_notebook, reset_output
     from bokeh.models import ColumnDataSource, Span, TabPanel, Tabs
     from bokeh.plotting import figure
+    from bokeh.document import Document
 except ImportError as err:
     raise LLMImportError(flavor="llm") from err
 
@@ -96,9 +98,9 @@ class RAGReport:
         """
         tpl = get_template("rag_report/rag_report.html")
 
-        kb_script, kb_div = components(self._get_knowledge_plot()) if self._knowledge_base else (None, None)
-        q_type_script, q_type_div = components(self.plot_correctness_by_metadata("question_type"))
-        topic_script, topic_div = components(self.plot_correctness_by_metadata("topic"))
+        kb_script, kb_div = components(self._apply_theme(self._get_knowledge_plot())) if self._knowledge_base else (None, None)
+        q_type_script, q_type_div = components(self._apply_theme(self.plot_correctness_by_metadata("question_type")),  theme="dark_minimal")
+        topic_script, topic_div = components(self._apply_theme(self.plot_correctness_by_metadata("topic")),  theme="dark_minimal")
 
         metric_histograms = self.get_metrics_histograms()
 
@@ -334,11 +336,12 @@ class RAGReport:
                 "colors": get_colors(correctness),
             }
         )
+        
 
         p = figure(
             y_range=metadata_values,
             height=350,
-            title=f"Correctness by {metadata_name}",
+            # title=f"Correctness by {metadata_name}",
             toolbar_location=None,
             tools="hover",
             width_policy="max",
@@ -346,7 +349,7 @@ class RAGReport:
 
         p.hbar(y="metadata_values", right="correctness", source=source, height=0.9, fill_color="colors")
         vline = Span(
-            location=overall_correctness * 100, dimension="height", line_color="red", line_width=2, line_dash="dashed"
+            location=overall_correctness * 100, dimension="height", line_color="#EA3829", line_width=2, line_dash="dashed"
         )
         p.add_layout(vline)
 
@@ -355,10 +358,12 @@ class RAGReport:
             [0],
             legend_label="Correctness on the entire Testset",
             line_dash="dashed",
-            line_color="red",
+            line_color="#EA3829",
             line_width=2,
         )
         r_line.visible = False  # Set this fake line to invisible
+        p.legend.background_fill_color = "#111516"
+        p.legend.background_fill_alpha = 0.5
 
         p.xaxis.axis_label = "Correctness (%)"
         p.title.text_font_size = "14pt"
@@ -404,7 +409,7 @@ class RAGReport:
                 bottom=0,
                 left=edges[:-1],
                 right=edges[1:],
-                fill_color="skyblue",
+                fill_color="#78bbfa",
                 line_color="white",
             )
             p.title.text_font_size = "12pt"
@@ -414,9 +419,15 @@ class RAGReport:
             ]
 
             return p
+        
+    def _apply_theme(self, p):
+        curdoc().theme = "dark_minimal"
+        doc = Document(theme=curdoc().theme)
+        doc.add_root(p)
+        return p
 
     def _get_plot_components(self, p):
-        script, div = components(p)
+        script, div = components(self._apply_theme(p), theme="dark_minimal")
         return {"script": script, "div": div}
 
     def get_metrics_histograms(self):
