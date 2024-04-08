@@ -115,21 +115,35 @@ ENV_DETECTED = enum(
 )
 
 
+DOCKER_DEV = "docker-dev-mode"
+DATABRICKS = "databricks"
+VSCODE = "vscode"
+AZURE = "azure"
+AZUREML = "azureml"
+KAGGLE = "kaggle"
+SAGEMAKER = "sagemaker"
+BINDER = "binder"
+COLAB = "colab"
+AZURESYNAPSE = "azuresynapse"
+IPYTHON = "ipython"
+IPYTHON_ZMQ = "ipython-zmq"
+
+
 def is_cloud_env(detected):
     non_cloud_env = [
-        "ipython-zmq",
-        "ipython",
-        "vscode",
+        IPYTHON_ZMQ,
+        IPYTHON,
+        VSCODE,
     ]
     cloud_env = [
-        "databricks",
-        "azure",
-        "azureml",
-        "kaggle",
-        "sagemaker",
-        "binder",
-        "colab",
-        "azuresynapse",
+        DATABRICKS,
+        AZURE,
+        AZUREML,
+        KAGGLE,
+        SAGEMAKER,
+        BINDER,
+        COLAB,
+        AZURESYNAPSE,
     ]
     if len(set(cloud_env).intersection(detected)) != 0 and len(set(non_cloud_env).intersection(detected)) == 0:
         return ENV_DETECTED.CLOUD
@@ -142,18 +156,18 @@ def is_cloud_env(detected):
 class EnvironmentDetector:
     def __init__(self):
         self.checks = {
-            "docker-dev-mode": _is_docker_development_mode,
-            "databricks": _detect_databricks,
-            "vscode": _detect_vscode,
-            "azure": _detect_azure_notebook,
-            "azureml": _detect_azureml,
-            "kaggle": _detect_kaggle,
-            "sagemaker": _detect_sagemaker,
-            "binder": _detect_binder,
-            "colab": _detect_colab,
-            "ipython-zmq": _detect_ipython_zmq,
-            "ipython": _detect_ipython,
-            "azuresynapse": _detect_azure_synapse,
+            DOCKER_DEV: _is_docker_development_mode,
+            DATABRICKS: _detect_databricks,
+            VSCODE: _detect_vscode,
+            AZURE: _detect_azure_notebook,
+            AZUREML: _detect_azureml,
+            KAGGLE: _detect_kaggle,
+            SAGEMAKER: _detect_sagemaker,
+            BINDER: _detect_binder,
+            COLAB: _detect_colab,
+            IPYTHON_ZMQ: _detect_ipython_zmq,
+            IPYTHON: _detect_ipython,
+            AZURESYNAPSE: _detect_azure_synapse,
         }
 
     def detect(self):
