@@ -1,10 +1,17 @@
+from __future__ import annotations
+
+from typing import TYPE_CHECKING, Optional
+
 from difflib import SequenceMatcher as SeqM
 
 import pandas as pd
 
 from giskard.datasets.base import Dataset
 from giskard.llm.talk.config import FUZZY_SIMILARITY_THRESHOLD, ToolDescription
-from giskard.llm.talk.tools.base import BaseTool
+from giskard.llm.talk.tools.base import BaseTool, get_features_json_type
+
+if TYPE_CHECKING:
+    from giskard.models.base import BaseModel
 
 
 class PredictTool(BaseTool):
@@ -21,12 +28,36 @@ class PredictTool(BaseTool):
     default_name: str = "predict"
     default_description: str = ToolDescription.PREDICT.value
 
+    def __init__(
+        self, model: BaseModel, dataset: Dataset, name: Optional[str] = None, description: Optional[str] = None
+    ):
+        """Constructor of the class.
+
+        Parameters
+        ----------
+        model : BaseModel
+            The Giskard Model.
+        dataset : Dataset
+            The Giskard Dataset.
+        name : str, optional
+            The name of the Tool.
+            If not set, the `default_name` is used.
+        description : str, optional
+            The description of the Tool.
+            If not set, the `default_description` is used.
+        """
+        super().__init__(name, description)
+        self._model = model
+        self._dataset = dataset
+
+        self._features_json_type = get_features_json_type(self._dataset)
+
     @property
     def specification(self) -> str:
         """Return the Tool's specification in a JSON Schema format.
 
         Returns
-        -------x
+        -------
         str
             The Tool's specification.
         """
@@ -41,7 +72,7 @@ class PredictTool(BaseTool):
                         "features_dict": {
                             "type": "object",
                             "properties": {
-                                feature: {"type": dtype} for feature, dtype in self.features_json_type.items()
+                                feature: {"type": dtype} for feature, dtype in self._features_json_type.items()
                             },
                         }
                     },
@@ -68,7 +99,7 @@ class PredictTool(BaseTool):
         filtered_df = self._dataset.df
         for col_name, col_value in row_filter.items():
             # Use fuzzy comparison to filter string features.
-            if self.features_json_type[col_name] == "string":
+            if self._features_json_type[col_name] == "string":
                 index = filtered_df[col_name].apply(
                     lambda x: SeqM(None, x.lower(), col_value.lower()).ratio() >= FUZZY_SIMILARITY_THRESHOLD
                 )

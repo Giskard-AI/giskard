@@ -8,8 +8,6 @@ from pandas.api.types import is_bool_dtype, is_numeric_dtype
 
 if TYPE_CHECKING:
     from giskard.datasets.base import Dataset
-    from giskard.models.base import BaseModel
-    from giskard.scanner.report import ScanReport
 
 
 class BaseTool(ABC):
@@ -28,9 +26,6 @@ class BaseTool(ABC):
 
     def __init__(
         self,
-        model: BaseModel,
-        dataset: Dataset,
-        scan_report: Optional[ScanReport] = None,
         name: Optional[str] = None,
         description: Optional[str] = None,
     ):
@@ -38,21 +33,11 @@ class BaseTool(ABC):
 
         Parameters
         ----------
-        model : BaseModel
-            The Giskard Model.
-        dataset : Dataset
-            The Giskard Dataset.
-        scan_report : ScanReport, optional
-            The Giskard ScanReport object.
         name : str, optional
             The name of the Tool. If not set, the `default_name` is used.
         description : str, optional
             The description of the Tool. If not set, the `default_description` is used.
         """
-        self._model = model
-        self._dataset = dataset
-        self._scan_report = scan_report
-
         self._name = name if name is not None else self.default_name
         self._description = description if description is not None else self.default_description
 
@@ -101,26 +86,31 @@ class BaseTool(ABC):
         """
         ...
 
-    @property
-    def features_json_type(self) -> dict[str, str]:
-        """Get features' JSON type.
 
-        Determine the JSON type of features from the tool's `dataset`.
+def get_features_json_type(dataset: Dataset) -> dict[str, str]:
+    """Get features' JSON type.
 
-        Returns
-        -------
-        dict[str, str]
-            The dictionary with columns and related JSON types.
-        """
-        features_json_type = dict()
+    Determine the JSON type of features from the tool's `dataset`.
 
-        for col in self._dataset.df:
-            if is_bool_dtype(self._dataset.df[col]):
-                features_json_type[col] = "boolean"
-            elif is_numeric_dtype(self._dataset.df[col]):
-                features_json_type[col] = "number"
-            else:
-                # String, datetime and category.
-                features_json_type[col] = "string"
+    Parameters
+    ----------
+    dataset : Dataset
+        The Giskard Dataset.
 
-        return features_json_type
+    Returns
+    -------
+    dict[str, str]
+        The dictionary with feature names and related JSON types.
+    """
+    features_json_type = dict()
+
+    for col in dataset.df:
+        if is_bool_dtype(dataset.df[col]):
+            features_json_type[col] = "boolean"
+        elif is_numeric_dtype(dataset.df[col]):
+            features_json_type[col] = "number"
+        else:
+            # String, datetime and category.
+            features_json_type[col] = "string"
+
+    return features_json_type

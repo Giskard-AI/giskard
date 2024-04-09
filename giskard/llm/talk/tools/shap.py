@@ -1,8 +1,16 @@
+from __future__ import annotations
+
+from typing import TYPE_CHECKING, Optional
+
 import numpy as np
 
 from giskard.llm.talk.config import ToolDescription
 from giskard.llm.talk.tools.predict import PredictTool
 from giskard.llm.talk.utils.shap import explain_with_shap
+
+if TYPE_CHECKING:
+    from giskard.datasets.base import Dataset
+    from giskard.models.base import BaseModel
 
 
 class SHAPExplanationTool(PredictTool):
@@ -19,6 +27,26 @@ class SHAPExplanationTool(PredictTool):
     default_name: str = "shap_explanation"
     default_description: str = ToolDescription.SHAP_EXPLANATION.value
     _output_template: str = "'{feature_name}' | {attributions_values}"
+
+    def __init__(
+        self, model: BaseModel, dataset: Dataset, name: Optional[str] = None, description: Optional[str] = None
+    ):
+        """Constructor of the class.
+
+        Parameters
+        ----------
+        model : BaseModel
+            The Giskard Model.
+        dataset : Dataset
+            The Giskard Dataset.
+        name : str, optional
+            The name of the Tool.
+            If not set, the `default_name` is used.
+        description : str, optional
+            The description of the Tool.
+            If not set, the `default_description` is used.
+        """
+        super().__init__(model, dataset, name, description)  # To reflect the docstring.
 
     @staticmethod
     def _finalise_output(prediction_result: str, shap_result: np.ndarray) -> str:

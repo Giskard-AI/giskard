@@ -635,7 +635,7 @@ class BaseModel(ABC):
             PredictTool.default_name: PredictTool(model=self, dataset=dataset),
             MetricTool.default_name: MetricTool(model=self, dataset=dataset),
             SHAPExplanationTool.default_name: SHAPExplanationTool(model=self, dataset=dataset),
-            IssuesScannerTool.default_name: IssuesScannerTool(model=self, dataset=dataset, scan_report=scan_report),
+            IssuesScannerTool.default_name: IssuesScannerTool(scan_report=scan_report),
         }
 
     @staticmethod
@@ -677,6 +677,11 @@ class BaseModel(ABC):
             Context of the previous 'talk' results. Necessary to keep context between sequential 'talk' calls.
         scan_report : ScanReport
             Giskard Scan Report to be analysed by the 'talk'.
+
+        Returns
+        -------
+        TalkResult
+            The response for the user's prompt.
         """
         set_llm_model(get_talk_llm_model())
         client = get_default_client()

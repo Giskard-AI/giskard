@@ -1,5 +1,12 @@
+from __future__ import annotations
+
+from typing import TYPE_CHECKING, Optional
+
 from giskard.llm.talk.config import ToolDescription
 from giskard.llm.talk.tools.base import BaseTool
+
+if TYPE_CHECKING:
+    from giskard.scanner.report import ScanReport
 
 
 class IssuesScannerTool(BaseTool):
@@ -16,6 +23,23 @@ class IssuesScannerTool(BaseTool):
     default_name: str = "issues_scanner"
     default_description: str = ToolDescription.ISSUES_SCANNER.value
     _output_template: str = "ML model performance issues scanner result:\n {scan_report}"
+
+    def __init__(self, scan_report: ScanReport, name: Optional[str] = None, description: Optional[str] = None):
+        """Constructor of the class.
+
+        Parameters
+        ----------
+        scan_report : ScanReport
+            The Giskard ScanReport object.
+        name : str, optional
+            The name of the Tool.
+            If not set, the `default_name` is used.
+        description : str, optional
+            The description of the Tool.
+            If not set, the `default_description` is used.
+        """
+        super().__init__(name, description)
+        self._scan_report = scan_report
 
     @property
     def specification(self) -> str:
