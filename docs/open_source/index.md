@@ -26,7 +26,7 @@ integrate_tests/index
 
 ::::{grid-item-card} <br/><h3>🧰 RAG Evaluation Toolkit</h3>
 :text-align: center
-:link: testset_generation/index.html
+:link: ai_quality_copilot/index.html
 ::::
 
 ::::{grid-item-card} <br/><h3>🧪 Customize your tests</h3>
