@@ -46,7 +46,7 @@ Giskard is a Python library that **automatically detects performance issues** in
 
 [//]: # (TODO: replace with GIF for IPCC scan)
 <p align="center">
-  <img src="https://raw.githubusercontent.com/giskard-ai/giskard/main/readme/scan_update.gif" alt="Scan Example" width="800">
+  <img src="https://raw.githubusercontent.com/giskard-ai/giskard/main/readme/scan_updates.gif" alt="Scan Example" width="800">
 </p>
 
 ## **RAGET**: Instantaneously generate evaluation datasets and then evaluate the correctness of the agent's answers for your RAG applications ⤵️
@@ -65,7 +65,7 @@ If you're testing a RAG application, you can get an even more in-depth assessmen
   
 [//]: # (TODO: replace with an example of dataset generated + GIF of RAGET)
 <p align="center">
-  <img src="https://raw.githubusercontent.com/giskard-ai/giskard/main/readme/RAGET_update.png" alt="Test Suite Example" width="800">
+  <img src="https://raw.githubusercontent.com/giskard-ai/giskard/main/readme/RAGET_updated.gif" alt="Test Suite Example" width="800">
 </p>
 
 
