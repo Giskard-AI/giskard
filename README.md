@@ -2,8 +2,8 @@
   <img alt="giskardlogo" src="https://raw.githubusercontent.com/giskard-ai/giskard/main/readme/giskard_logo.png#gh-light-mode-only">
   <img alt="giskardlogo" src="https://raw.githubusercontent.com/giskard-ai/giskard/main/readme/giskard_logo_green.png#gh-dark-mode-only">
 </p>
-<h1 align="center" weight='300' >The testing & evaluation framework for LLMs & other AI models</h1>
-<h3 align="center" weight='300' >Scan AI models to detect risks of performance issues. In 4 lines of code. </h3>
+<h1 align="center" weight='300' >The Evaluation & Testing framework for LLMs & ML models</h1>
+<h3 align="center" weight='300' >Control risks of performance issues, biases and security vulnerabilities in AI models</h3>
 <div align="center">
 
   [![GitHub release](https://img.shields.io/github/v/release/Giskard-AI/giskard)](https://github.com/Giskard-AI/giskard/releases)
@@ -16,7 +16,7 @@
 
 </div>
 <h3 align="center">
-   <a href="https://docs.giskard.ai/en/latest/index.html"><b>Docs</b></a> &bull;
+   <a href="https://docs.giskard.ai/en/latest/getting_started/index.html"><b>Docs</b></a> &bull;
    <a href="https://www.giskard.ai/knowledge-categories/news/?utm_source=github&utm_medium=github&utm_campaign=github_readme&utm_id=readmeblog"><b>Blog</b></a> &bull;
   <a href="https://www.giskard.ai/?utm_source=github&utm_medium=github&utm_campaign=github_readme&utm_id=readmeblog"><b>Website</b></a> &bull;
   <a href="https://gisk.ar/discord"><b>Discord</b></a>
@@ -34,7 +34,7 @@ We officially support Python 3.9, 3.10 and 3.11.
 
 ______________________________________________________________________
 
-Giskard is a Python library that **automatically detects performance issues and evaluates** AI applications. The library covers LLM-based applications such as RAG agents, all the way to traditional ML models for tabular data. 
+Giskard is an open-source Python library that **automatically detects performance, bias & security issues in AI applications**. The library covers LLM-based applications such as RAG agents, all the way to traditional ML models for tabular data. 
 
 ## Scan: Automatically assess your LLM-based agents for performance issues & vulnerabilities ⤵️
 
@@ -231,10 +231,9 @@ Each row of the test set contains 5 columns:
 - `metadata`: a dictionary with various metadata about the question, this includes the question_type, seed_document_id the id of the document used to generate the question and the topic of the question
 
 <h1 id="community">👋 Community</h1>
-We welcome contributions from the AI community! Read this [guide](CONTRIBUTING.md) to get started.
 
-Join our thriving community on our Discord server: [join Discord server](https://gisk.ar/discord)
+We welcome contributions from the AI community! Read this [guide](./CONTRIBUTING.md) to get started, and join our thriving community on [Discord](https://gisk.ar/discord).
 
 🌟 [Leave us a star](https://github.com/Giskard-AI/giskard), it helps the project to get discovered by others and keeps us motivated to build awesome open-source tools! 🌟
 
-❤️ You can also [sponsor us](https://github.com/sponsors/Giskard-AI) on GitHub. With a monthly sponsor subscription, you can get a sponsor badge and get your bug reports prioritized. We also offer one-time sponsoring if you want us to get involved in a consulting project, run a workshop, or give a talk at your company.
+❤️ If you find our work useful, please consider [sponsoring us](https://github.com/sponsors/Giskard-AI) on GitHub. With a monthly sponsoring, you can get a sponsor badge, display your company in this readme, and get your bug reports prioritized. We also offer one-time sponsoring if you want us to get involved in a consulting project, run a workshop, or give a talk at your company.
