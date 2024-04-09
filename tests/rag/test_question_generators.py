@@ -287,7 +287,7 @@ def test_oos_question_generation():
     llm_client = Mock()
 
     llm_client.complete.side_effect = [
-        LLMMessage(
+        ChatMessage(
             role="assistant",
             content='{"selected_fact": "Paul Graham liked to buy a baguette every day at the local market.", "fake_fact": "Paul Graham paid 1 USD for a baguette", "question": "How much did Paul pay for the baguette?"}',
         )
