@@ -2,7 +2,7 @@
   <img alt="giskardlogo" src="https://raw.githubusercontent.com/giskard-ai/giskard/main/readme/giskard_logo.png#gh-light-mode-only">
   <img alt="giskardlogo" src="https://raw.githubusercontent.com/giskard-ai/giskard/main/readme/giskard_logo_green.png#gh-dark-mode-only">
 </p>
-<h1 align="center" weight='300' >The testing framework dedicated to LLMs & other AI models</h1>
+<h1 align="center" weight='300' >The testing & evaluation framework for LLMs & other AI models</h1>
 <h3 align="center" weight='300' >Scan AI models to detect risks of performance issues. In 4 lines of code. </h3>
 <div align="center">
 
@@ -46,14 +46,26 @@ Giskard is a Python library that **automatically detects performance issues** in
 
 [//]: # (TODO: replace with GIF for IPCC scan)
 <p align="center">
-  <img src="https://raw.githubusercontent.com/giskard-ai/giskard/main/readme/scan_example.gif" alt="Scan Example" width="800">
+  <img src="https://raw.githubusercontent.com/giskard-ai/giskard/main/readme/scan_update.gif" alt="Scan Example" width="800">
 </p>
 
-Instantaneously generate evaluation datasets for your RAG applications ⤵️
+## **RAGET**: Instantaneously generate evaluation datasets and then evaluate the correctness of the agent's answers for your RAG applications ⤵️
 
+If you're testing a RAG application, you can get an even more in-depth assessment using **RAGET**, Giskard's RAG Evaluation Toolkit.
+
+- **RAGET** can generate automatically a list of `question`, `reference_answer` and `reference_context` from the knowledge base of the RAG. You can then use this generated test set to evaluate your RAG agent.
+- **RAGET** computes scores *for each component of the RAG agent*. The scores are computed by aggregating the correctness of the agent’s answers on different question types.
+
+  - Here is the list of components evaluated with **RAGET**:
+    - `Generator`: the LLM used inside the RAG to generate the answers
+    - `Retriever`: fetch relevant documents from the knowledge base according to a user query
+    - `Rewriter`: rewrite the user query to make it more relevant to the knowledge base or to account for chat history
+    - `Router`: filter the query of the user based on his intentions
+    - `Knowledge Base`: the set of documents given to the RAG to generate the answers
+  
 [//]: # (TODO: replace with an example of dataset generated + GIF of RAGET)
 <p align="center">
-  <img src="https://raw.githubusercontent.com/giskard-ai/giskard/main/readme/suite_example.png" alt="Test Suite Example" width="800">
+  <img src="https://raw.githubusercontent.com/giskard-ai/giskard/main/readme/RAGET_update.png" alt="Test Suite Example" width="800">
 </p>
 
 
@@ -166,10 +178,6 @@ If the scan found issues in your model, you can automatically extract an evaluat
 test_suite = scan_results.generate_test_suite("My first test suite")
 ```
 
-If you're testing a RAG application, you can get an even more in-depth assessment using RAGET, Giskard's RAG Evaluation Toolkit.
-
-RAGET can generate automatically a list of `question`, `reference_answer` and `reference_context` from the knowledge base of the RAG. It relies on a chain of LLM operations to generate realistic questions across different types. You can then use this generated test set to evaluate your RAG agent.
-
 By default, RAGET automatically generates 6 different question types (these can be selected if needed, see advanced question generation). The total number of questions is divided equally between each question type. To make the question generation more relevant and accurate, you can also provide a description of your agent.
 
 ```python
@@ -206,6 +214,20 @@ loaded_testset = QATestset.load("my_testset.jsonl")
 # Convert it to a pandas dataframe
 df = loaded_testset.to_pandas()
 ```
+
+Here’s an example of a generated question:
+
+| question                               | reference_context                                                                                                                                                     | reference_answer                                             | metadata                                               |
+|----------------------------------------|----------------------------------------------------------------------------------------------------------------------------------------------------------------------|--------------------------------------------------------------|-------------------------------------------------------|
+| For which countries can I track my shipping? | Document 1: We offer free shipping on all orders over $50. For orders below $50, we charge a flat rate of $5.99. We offer shipping services to customers residing in all 50 states of the US, in addition to providing delivery options to Canada and Mexico. Document 2: Once your purchase has been successfully confirmed and shipped, you will receive a confirmation email containing your tracking number. You can simply click on the link provided in the email or visit our website’s order tracking page. | We ship to all 50 states in the US, as well as to Canada and Mexico. We offer tracking for all our shippings. | `{"question_type": "simple", "seed_document_id": 1, "topic": "Shipping policy"}` |
+
+Each row of the test set contains 5 columns:
+
+- `question`: the generated question
+- `reference_context`: the context that can be used to answer the question
+- `reference_answer`: the answer to the question (generated with GPT-4)
+- `conversation_history`: not shown in the table above, contain the history of the conversation with the agent as a list, only relevant for conversational question, otherwise it contains an empty list.
+- `metadata`: a dictionary with various metadata about the question, this includes the question_type, seed_document_id the id of the document used to generate the question and the topic of the question
 
 # 👋 Community
 We welcome contributions from the AI community! Read this [guide](CONTRIBUTING.md) to get started.
