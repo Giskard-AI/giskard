@@ -61,7 +61,7 @@ Giskard works with any model, in any environment and integrates seamlessly with 
 
 [//]: # (TODO: add logos of LLM providers, remove some logos like pandas, github, kaggle, xgboost, fastai, pytorch ignite)
 <p align="center">
-  <img width='600' src="https://raw.githubusercontent.com/giskard-ai/giskard/TeoAle-image-tools-1/readme/tools_updated.png">
+  <img width='600' src="https://raw.githubusercontent.com/giskard-ai/giskard/main/readme/tools_updated.png">
 </p>
 <br/>
 
