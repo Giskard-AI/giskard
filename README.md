@@ -74,18 +74,19 @@ If you're testing a RAG application, you can get an even more in-depth assessmen
 
 Giskard works with any model, in any environment and integrates seamlessly with your favorite tools ⤵️ <br/>
 
-[//]: # (TODO: add logos of LLM providers, remove some logos like pandas, github, kaggle, xgboost, fastai, pytorch ignite)
+[//]: 
 <p align="center">
   <img width='600' src="https://raw.githubusercontent.com/giskard-ai/giskard/main/readme/tools_updated.png">
 </p>
 <br/>
 
-
 # Contents
 
 1. 🤸‍♀️ **[Quickstart](#%EF%B8%8F-quickstart)**
+   - 🏗️ Build a LLM agent
+   - 🔎 Scan your model for issues
+   - 🪄 Automatically generate an evaluation dataset for your RAG applications
 2. 👋 **[Community](#-community)**
-
 
 # 🤸‍♀️ Quickstart
 
@@ -173,7 +174,7 @@ scan_results.to_html("scan_results.html")
 
 *If you're facing issues, check out our [docs](https://docs.giskard.ai/en/stable/open_source/scan/scan_llm/index.html) for more information.*
 
-## 3. 🪄 Automatically generate an evaluation dataset
+## 3. 🪄 Automatically generate an evaluation dataset for your RAG applications
 
 If the scan found issues in your model, you can automatically extract an evaluation dataset based on the vulnerabilities found:
 
