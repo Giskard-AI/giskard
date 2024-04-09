@@ -20,7 +20,6 @@ from giskard.client.giskard_client import GiskardClient
 from giskard.core.savable import Artifact
 from giskard.datasets.base import Dataset
 from giskard.llm.embeddings.base import BaseEmbedding
-from giskard.ml_worker import ml_worker
 from giskard.models.base.model import BaseModel
 from giskard.path_utils import get_size
 from giskard.settings import settings
