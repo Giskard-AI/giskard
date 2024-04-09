@@ -91,7 +91,7 @@ class SHAPExplanationTool(PredictTool):
         str
             SHAP explanation of the predictions.
         """
-        # Get prediction result from the parent tool, to add more context to the result.
+        # Get a prediction result from the parent tool, to add more context to the result.
         prediction_result = super().__call__(features_dict)
 
         model_input = self._prepare_input(features_dict)
