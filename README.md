@@ -36,7 +36,7 @@ ______________________________________________________________________
 
 Giskard is a Python library that **automatically detects performance issues and evaluates** AI applications. The library covers LLM-based applications such as RAG agents, all the way to traditional ML models for tabular data. 
 
-## Scan: Automatically assess your LLM-based agents for performance issues & vulnerabilities ⤵
+## Scan: Automatically assess your LLM-based agents for performance issues & vulnerabilities ⤵️
 
 Issues detected include: 
 - Hallucinations
