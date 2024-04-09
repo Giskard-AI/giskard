@@ -47,7 +47,6 @@ Issues detected include:
 - Stereotypes & discrimination
 - many more...
 
-[//]: # (TODO: replace with GIF for IPCC scan)
 <p align="center">
   <img src="https://raw.githubusercontent.com/giskard-ai/giskard/main/readme/scan_updates.gif" alt="Scan Example" width="800">
 </p>
@@ -66,15 +65,13 @@ If you're testing a RAG application, you can get an even more in-depth assessmen
     - `Router`: filter the query of the user based on his intentions
     - `Knowledge Base`: the set of documents given to the RAG to generate the answers
   
-[//]: # (TODO: replace with an example of dataset generated + GIF of RAGET)
 <p align="center">
   <img src="https://raw.githubusercontent.com/giskard-ai/giskard/main/readme/RAGET_updated.gif" alt="Test Suite Example" width="800">
 </p>
 
 
 Giskard works with any model, in any environment and integrates seamlessly with your favorite tools ⤵️ <br/>
-
-[//]: 
+ 
 <p align="center">
   <img width='600' src="https://raw.githubusercontent.com/giskard-ai/giskard/main/readme/tools_updated.png">
 </p>
