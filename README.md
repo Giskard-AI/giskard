@@ -82,11 +82,11 @@ Giskard works with any model, in any environment and integrates seamlessly with 
 
 # Contents
 
-1. 🤸‍♀️ **[Quickstart](#%EF%B8%8F-quickstart)**
-   - 🏗️ Build a LLM agent
-   - 🔎 Scan your model for issues
-   - 🪄 Automatically generate an evaluation dataset for your RAG applications
-2. 👋 **[Community](#-community)**
+- 🤸‍♀️ **[Quickstart](#%EF%B8%8F-quickstart)**
+    - **1**. 🏗️ [Build a LLM agent](#1-build-a-llm-agent)
+    - **2**. 🔎 [Scan your model for issues](#2-scan-your-model-for-issues)
+    - **3**. 🪄 [Automatically generate an evaluation dataset for your RAG applications](#3-automatically-generate-an-evaluation-dataset-for-your-rag-applications)
+- 👋 **[Community](#-community)**
 
 # 🤸‍♀️ Quickstart
 
