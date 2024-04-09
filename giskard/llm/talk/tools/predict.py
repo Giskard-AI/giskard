@@ -2,19 +2,17 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING, Optional
 
-from difflib import SequenceMatcher as SeqM
-
 import pandas as pd
 
 from giskard.datasets.base import Dataset
-from giskard.llm.talk.config import FUZZY_SIMILARITY_THRESHOLD, ToolDescription
-from giskard.llm.talk.tools.base import BaseTool, get_features_json_type
+from giskard.llm.talk.config import ToolDescription
+from giskard.llm.talk.tools.base import BaseTool, PredictionMixin
 
 if TYPE_CHECKING:
     from giskard.models.base import BaseModel
 
 
-class PredictTool(BaseTool):
+class PredictTool(BaseTool, PredictionMixin):
     """Prediction calculation Tool.
 
     Attributes
@@ -46,11 +44,8 @@ class PredictTool(BaseTool):
             The description of the Tool.
             If not set, the `default_description` is used.
         """
-        super().__init__(name, description)
-        self._model = model
-        self._dataset = dataset
-
-        self._features_json_type = get_features_json_type(self._dataset)
+        BaseTool.__init__(self, name, description)
+        PredictionMixin.__init__(self, model, dataset)
 
     @property
     def specification(self) -> str:
@@ -72,7 +67,7 @@ class PredictTool(BaseTool):
                         "features_dict": {
                             "type": "object",
                             "properties": {
-                                feature: {"type": dtype} for feature, dtype in self._features_json_type.items()
+                                feature: {"type": dtype} for feature, dtype in self.features_json_type.items()
                             },
                         }
                     },
@@ -80,41 +75,6 @@ class PredictTool(BaseTool):
                 },
             },
         }
-
-    def _get_input_from_dataset(self, row_filter: dict[str, any]) -> pd.DataFrame:
-        """Get input from dataset.
-
-        Filter rows from the dataset, using the `row_filter`.
-
-        Parameters
-        ----------
-        row_filter : dict[str, any]
-            The dictionary with features and related values to filter the dataset.
-
-        Returns
-        -------
-        pd.DataFrame
-            The DataFrame with filtered rows.
-        """
-        filtered_df = self._dataset.df
-        for col_name, col_value in row_filter.items():
-            # Use fuzzy comparison to filter string features.
-            if self._features_json_type[col_name] == "string":
-                index = filtered_df[col_name].apply(
-                    lambda x: SeqM(None, x.lower(), col_value.lower()).ratio() >= FUZZY_SIMILARITY_THRESHOLD
-                )
-            else:
-                # Otherwise, filter by the exact value.
-                index = filtered_df[col_name] == col_value
-
-            # Apply selection.
-            filtered_df = filtered_df[index]
-
-            # Break, if dataframe is empty.
-            if not len(filtered_df):
-                break
-
-        return filtered_df
 
     def _get_input_from_user(self, feature_values: dict[str, any]) -> pd.DataFrame:
         """Form input based on the user's query.
@@ -170,20 +130,6 @@ class PredictTool(BaseTool):
             final_input = self._get_input_from_user(feature_values)
 
         return Dataset(final_input, target=None)
-
-    def _validate_features_dict(self, features_dict: dict[str, any]) -> None:
-        """Validate the `features_dict` contains correct features.
-
-        Parameters
-        ----------
-        features_dict : dict[str, any]
-            The dictionary with features and related values extracted from the query.
-        """
-
-        # Check, if 'features_dict' contains features different from the dataset.
-        if not set(features_dict).issubset(self._dataset.df):
-            invalid_features = set(features_dict).difference(self._dataset.df)
-            raise ValueError(f"Invalid features were detected: {invalid_features}")
 
     def __call__(self, features_dict: dict[str, any]) -> str:
         """Execute the Tool's functionality.
