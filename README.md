@@ -16,11 +16,10 @@
 
 </div>
 <h3 align="center">
-   <a href="https://docs.giskard.ai/en/latest/index.html"><b>Documentation</b></a> &bull;
-   <a href="https://www.giskard.ai/knowledge-categories/blog/?utm_source=github&utm_medium=github&utm_campaign=github_readme&utm_id=readmeblog"><b>Blog</b></a> &bull;
+   <a href="https://docs.giskard.ai/en/latest/index.html"><b>Docs</b></a> &bull;
+   <a href="https://www.giskard.ai/knowledge-categories/news/?utm_source=github&utm_medium=github&utm_campaign=github_readme&utm_id=readmeblog"><b>Blog</b></a> &bull;
   <a href="https://www.giskard.ai/?utm_source=github&utm_medium=github&utm_campaign=github_readme&utm_id=readmeblog"><b>Website</b></a> &bull;
-  <a href="https://gisk.ar/discord"><b>Discord Community</b></a> &bull;
-  <a href="https://www.giskard.ai/about?utm_source=github&utm_medium=github&utm_campaign=github_readme&utm_id=readmeblog#advisors"><b>Advisors</b></a>
+  <a href="https://gisk.ar/discord"><b>Discord</b></a>
  </h3>
 <br />
 
@@ -35,7 +34,11 @@ We officially support Python 3.9, 3.10 and 3.11.
 
 ______________________________________________________________________
 
-Giskard is a Python library that **automatically detects performance issues** in AI applications. The library covers LLM-based applications such as RAG agents, all the way to traditional ML models for tabular data. Issues detected include: 
+Giskard is a Python library that **automatically detects performance issues and evaluates** AI applications. The library covers LLM-based applications such as RAG agents, all the way to traditional ML models for tabular data. 
+
+## Scan: Automatically assess your LLM-based agents for performance issues & vulnerabilities ⤵
+
+Issues detected include: 
 - Hallucinations
 - Harmful content generation
 - Prompt injection
@@ -49,7 +52,7 @@ Giskard is a Python library that **automatically detects performance issues** in
   <img src="https://raw.githubusercontent.com/giskard-ai/giskard/main/readme/scan_updates.gif" alt="Scan Example" width="800">
 </p>
 
-## **RAGET**: Instantaneously generate evaluation datasets and then evaluate the correctness of the agent's answers for your RAG applications ⤵️
+## RAG Evaluation Toolkit (RAGET): Automatically generate evaluation datasets & evaluate RAG application answers ⤵️
 
 If you're testing a RAG application, you can get an even more in-depth assessment using **RAGET**, Giskard's RAG Evaluation Toolkit.
 
