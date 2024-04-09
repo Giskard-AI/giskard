@@ -14,9 +14,9 @@ interface. Users can prompt the Copilot, and it will provide the necessary infor
 essence, instead of writing code, one can simply "talk" to the model.
 
 ## How it works?
-"The AI Quality Copilot is an LLM agent that, based on a user's input query, determines which function to call along 
+The AI Quality Copilot is an LLM agent that, based on a user's input query, determines which function to call along 
 with its arguments. The output of these functions will then be used to provide an answer. To utilize it, all you need to
-do is call the talk method of the Giskard model and provide a question about the model."
+do is call the talk method of the Giskard model and provide a question about the model.
 
 We implemented this feature using the OpenAI [function calling API](https://platform.openai.com/docs/guides/function-calling). 
 This approach expands the standard capabilities of LLM agents by enabling them to utilize a predefined set of python
