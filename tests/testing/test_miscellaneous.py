@@ -1,12 +1,54 @@
 import numpy as np
 import pandas as pd
-from pytest import mark
+import pytest
 
 from giskard import Dataset, Model
 from giskard.testing.tests import miscellaneous
 
 
-@mark.parametrize("ord", [1, 2])
+def test_checks():
+    """
+    Test for checks in miscellaneous
+
+    Returns:
+        None
+    """
+
+    # Create data
+    data = {
+        "seasonality_x": np.arange(0, 1, 0.01),
+        "seasonality_y": np.arange(0, 1, 0.01),
+        "non_numeric": ["object" for _ in range(np.arange(0, 1, 0.01).shape[0])],
+    }
+    df = pd.DataFrame(data)
+    dataset = Dataset(df)
+
+    # Create models
+    model_error_1 = Model(
+        lambda df: df["seasonality_x"], model_type="regression", feature_names=["seasonality_x", "seasonality_y"]
+    )
+    model_error_2 = Model(lambda df: df["seasonality_x"], model_type="regression", feature_names=["non_numeric"])
+
+    # Check if raises error when feature is not in model.features
+    with pytest.raises(ValueError):
+        miscellaneous._check_features(
+            feature_names=["non_numeric"],
+            feature_values=None,
+            model=model_error_1,
+            dataset=dataset,
+        ).execute()
+
+    # Check if raises error when feature is not numeric
+    with pytest.raises(ValueError):
+        miscellaneous.test_smoothness(
+            feature_names=["non_numeric"],
+            feature_values=None,
+            model=model_error_2,
+            datatset=dataset,
+        ).execute()
+
+
+@pytest.mark.parametrize("ord", [1, 2])
 def test_smoothness(ord):
     """
     Test for smoothness function in the miscellaneous module
@@ -20,6 +62,7 @@ def test_smoothness(ord):
     data = {
         "seasonality_x": np.arange(0, 1, 0.01),
         "seasonality_y": np.arange(0, 1, 0.01),
+        "non_numeric": ["object" for _ in range(np.arange(0, 1, 0.01).shape[0])],
     }
     df = pd.DataFrame(data)
     dataset = Dataset(df)
@@ -44,8 +87,8 @@ def test_smoothness(ord):
     result = miscellaneous.test_smoothness(
         model_smooth,
         dataset,
-        column_names=["seasonality_x", "seasonality_y"],
-        column_values=column_values,
+        feature_names=["seasonality_x", "seasonality_y"],
+        feature_values=column_values,
         ord=ord,
         ref_function=ref_function,
     ).execute()
@@ -61,8 +104,8 @@ def test_smoothness(ord):
     result = miscellaneous.test_smoothness(
         model_rough,
         dataset,
-        column_names=["seasonality_x", "seasonality_y"],
-        column_values=column_values,
+        feature_names=["seasonality_x", "seasonality_y"],
+        feature_values=column_values,
         ord=ord,
         ref_function=ref_function,
     ).execute()
@@ -94,7 +137,7 @@ def test_monotonicity():
     model_increasing = Model(lambda df: df["col1"], model_type="regression", feature_names=["col1", "col2"])
 
     # Call the function with test inputs
-    result = miscellaneous.test_monotonicity(model_increasing, dataset, column_names=["col1"]).execute()
+    result = miscellaneous.test_monotonicity(model_increasing, dataset, feature_names=["col1"]).execute()
 
     # Assert that the result is as expected
     assert result.passed, "Test failed: the model should be considered monotonic"
@@ -102,7 +145,7 @@ def test_monotonicity():
 
     # Call the function with test inputs
     result = miscellaneous.test_monotonicity(
-        model_increasing, dataset, column_names=["col1"], increasing=False
+        model_increasing, dataset, feature_names=["col1"], increasing=False
     ).execute()
 
     # Assert that the result is as expected
