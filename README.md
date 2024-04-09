@@ -82,15 +82,15 @@ Giskard works with any model, in any environment and integrates seamlessly with 
 
 # Contents
 
-- 🤸‍♀️ **[Quickstart](#%EF%B8%8F-quickstart)**
-    - **1**. 🏗️ [Build a LLM agent](#1.-build-a-llm-agent)
-    - **2**. 🔎 [Scan your model for issues](#2.-scan-your-model-for-issues)
-    - **3**. 🪄 [Automatically generate an evaluation dataset for your RAG applications](#3.-automatically-generate-an-evaluation-dataset-for-your-rag-applications)
-- 👋 **[Community](#-community)**
+- 🤸‍♀️ **[Quickstart](#quickstart)**
+    - **1**. 🏗️ [Build a LLM agent](#build-a-llm-agent)
+    - **2**. 🔎 [Scan your model for issues](#scan-your-model-for-issues)
+    - **3**. 🪄 [Automatically generate an evaluation dataset for your RAG applications](#automatically-generate-an-evaluation-dataset-for-your-rag-applications)
+- 👋 **[Community](#community)**
 
-# 🤸‍♀️ Quickstart
+<h1 id="quickstart">🤸‍♀️ Quickstart</h1>
 
-## 1. 🏗️ Build a LLM agent
+<h2 id="build-a-llm-agent">1. 🏗️ Build a LLM agent</h2>
 
 Let's build an agent that answers questions about climate change, based on the 2023 Climate Change Synthesis Report by the IPCC.
 
@@ -132,7 +132,7 @@ prompt = PromptTemplate(template=PROMPT_TEMPLATE, input_variables=["question", "
 climate_qa_chain = RetrievalQA.from_llm(llm=llm, retriever=db.as_retriever(), prompt=prompt)
 ```
 
-## 2. 🔎 Scan your model for issues
+<h2 id="scan-your-model-for-issues">2. 🔎 Scan your model for issues</h2>
 
 Next, wrap your agent to prepare it for Giskard's scan:
 
@@ -174,7 +174,7 @@ scan_results.to_html("scan_results.html")
 
 *If you're facing issues, check out our [docs](https://docs.giskard.ai/en/stable/open_source/scan/scan_llm/index.html) for more information.*
 
-## 3. 🪄 Automatically generate an evaluation dataset for your RAG applications
+<h2 id="automatically-generate-an-evaluation-dataset-for-your-rag-applications">3. 🪄 Automatically generate an evaluation dataset for your RAG applications</h2>
 
 If the scan found issues in your model, you can automatically extract an evaluation dataset based on the vulnerabilities found:
 
@@ -233,7 +233,7 @@ Each row of the test set contains 5 columns:
 - `conversation_history`: not shown in the table above, contain the history of the conversation with the agent as a list, only relevant for conversational question, otherwise it contains an empty list.
 - `metadata`: a dictionary with various metadata about the question, this includes the question_type, seed_document_id the id of the document used to generate the question and the topic of the question
 
-# 👋 Community
+<h1 id="community">👋 Community</h1>
 We welcome contributions from the AI community! Read this [guide](CONTRIBUTING.md) to get started.
 
 Join our thriving community on our Discord server: [join Discord server](https://gisk.ar/discord)
