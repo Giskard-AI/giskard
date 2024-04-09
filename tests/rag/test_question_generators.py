@@ -7,6 +7,7 @@ from giskard.rag.question_generators import (
     ConversationalQuestionsGenerator,
     DistractingQuestionsGenerator,
     DoubleQuestionsGenerator,
+    OutOfScopeGenerator,
     SimpleQuestionsGenerator,
     SituationalQuestionsGenerator,
 )
@@ -15,7 +16,6 @@ from giskard.rag.question_generators import (
 def test_simple_question_generation():
     knowledge_base = Mock()
     llm_client = Mock()
-    llm_client.complete = Mock()
     llm_client.complete.side_effect = [
         ChatMessage(
             role="assistant",
@@ -55,7 +55,6 @@ def test_simple_question_generation():
 
 def test_complex_question_generation():
     llm_client = Mock()
-    llm_client.complete = Mock()
     llm_client.complete.side_effect = [
         ChatMessage(
             role="assistant",
@@ -99,7 +98,6 @@ def test_complex_question_generation():
 
 def test_distracting_question_generation():
     llm_client = Mock()
-    llm_client.complete = Mock()
     llm_client.complete.side_effect = [
         ChatMessage(
             role="assistant",
@@ -147,7 +145,6 @@ def test_distracting_question_generation():
 
 def test_situational_question_generation():
     llm_client = Mock()
-    llm_client.complete = Mock()
     llm_client.complete.side_effect = [
         ChatMessage(
             role="assistant",
@@ -195,7 +192,6 @@ def test_situational_question_generation():
 
 def test_double_question_generation():
     llm_client = Mock()
-    llm_client.complete = Mock()
     llm_client.complete.side_effect = [
         ChatMessage(
             role="assistant",
@@ -242,7 +238,6 @@ def test_double_question_generation():
 
 def test_conversational_question_generation():
     llm_client = Mock()
-    llm_client.complete = Mock()
     llm_client.complete.side_effect = [
         ChatMessage(
             role="assistant",
@@ -285,3 +280,47 @@ def test_conversational_question_generation():
     ]
     assert question["metadata"]["question_type"] == "conversational"
     assert question["metadata"]["seed_document_id"] == 2
+
+
+def test_oos_question_generation():
+    knowledge_base = Mock()
+    llm_client = Mock()
+
+    llm_client.complete.side_effect = [
+        LLMMessage(
+            role="assistant",
+            content='{"selected_fact": "Paul Graham liked to buy a baguette every day at the local market.", "fake_fact": "Paul Graham paid 1 USD for a baguette", "question": "How much did Paul pay for the baguette?"}',
+        )
+    ]
+
+    documents = [
+        Document(dict(content="Paul Graham liked to buy a baguette every day at the local market."), idx=1),
+        Document(dict(content="Cheese is made of milk."), idx=2),
+        Document(dict(content="Milk is produced by cows, goats or sheep."), idx=3),
+    ]
+    knowledge_base.get_random_document = Mock(
+        return_value=Document(dict(content="Paul Graham liked to buy a baguette every day at the local market."), idx=1)
+    )
+    knowledge_base.get_neighbors = Mock(return_value=documents)
+
+    question_generator = OutOfScopeGenerator(llm_client=llm_client)
+
+    question = list(
+        question_generator.generate_questions(
+            knowledge_base=knowledge_base, num_questions=1, agent_description="Test", language="en"
+        )
+    )[0]
+
+    assert question["question"] == "How much did Paul pay for the baguette?"
+    assert isinstance(question["id"], str)
+    assert (
+        question["reference_answer"]
+        == "This question can not be answered by the context. No sufficient information is provided in the context to answer this question."
+    )
+    assert (
+        question["reference_context"]
+        == "Document 1: Paul Graham liked to buy a baguette every day at the local market.\n\nDocument 2: Cheese is made of milk.\n\nDocument 3: Milk is produced by cows, goats or sheep."
+    )
+    assert question["conversation_history"] == []
+    assert question["metadata"]["question_type"] == "out of scope"
+    assert question["metadata"]["seed_document_id"] == 1
