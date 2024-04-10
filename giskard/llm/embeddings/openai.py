@@ -1,8 +1,10 @@
-from typing import Sequence
+from typing import Optional, Sequence
 
 import numpy as np
 
-from .base import BaseEmbedding, batched
+from ...utils.iterables import batched
+from ..client import get_default_llm_api
+from .base import BaseEmbedding
 
 
 class OpenAIEmbedding(BaseEmbedding):
@@ -31,3 +33,21 @@ class OpenAIEmbedding(BaseEmbedding):
             embeddings.extend([item.embedding for item in response.data])
 
         return np.array(embeddings)
+
+
+def try_get_openai_embeddings() -> Optional[OpenAIEmbedding]:
+    try:
+        from openai import AzureOpenAI, OpenAI
+
+        from .openai import OpenAIEmbedding
+
+        llm_api = get_default_llm_api()
+
+        if llm_api == "azure":
+            client = AzureOpenAI()
+        else:
+            client = OpenAI()
+
+        return OpenAIEmbedding(client=client, model="text-embedding-ada-002")
+    except ImportError:
+        return None
