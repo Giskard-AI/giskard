@@ -3,12 +3,12 @@ import pandas as pd
 import pytest
 
 from giskard import Dataset, Model
-from giskard.testing.tests import miscellaneous
+from giskard.testing.tests import stability
 
 
 def test_checks():
     """
-    Test for checks in miscellaneous
+    Test for checks in stability
 
     Returns:
         None
@@ -31,7 +31,7 @@ def test_checks():
 
     # Check if raises error when feature is not in model.features
     with pytest.raises(ValueError):
-        miscellaneous._check_features(
+        stability._check_features(
             feature_names=["non_numeric"],
             feature_values=None,
             model=model_error_1,
@@ -40,7 +40,7 @@ def test_checks():
 
     # Check if raises error when feature is not numeric
     with pytest.raises(ValueError):
-        miscellaneous.test_smoothness(
+        stability.test_smoothness(
             feature_names=["non_numeric"],
             feature_values=None,
             model=model_error_2,
@@ -51,7 +51,7 @@ def test_checks():
 @pytest.mark.parametrize("ord", [1, 2])
 def test_smoothness(ord):
     """
-    Test for smoothness function in the miscellaneous module
+    Test for smoothness function in the stability module
 
     Returns:
         None
@@ -84,7 +84,7 @@ def test_smoothness(ord):
     ref_function = np.sin(2 * np.pi * np.arange(0, 1, 0.01))
 
     # Call the function with test inputs
-    result = miscellaneous.test_smoothness(
+    result = stability.test_smoothness(
         model_smooth,
         dataset,
         feature_names=["seasonality_x", "seasonality_y"],
@@ -101,7 +101,7 @@ def test_smoothness(ord):
         assert np.isclose(result.metric, 0, atol=1e-3), "Test failed: the metric value should be 0"
 
     # Call the function with test inputs
-    result = miscellaneous.test_smoothness(
+    result = stability.test_smoothness(
         model_rough,
         dataset,
         feature_names=["seasonality_x", "seasonality_y"],
@@ -120,7 +120,7 @@ def test_smoothness(ord):
 
 def test_monotonicity():
     """
-    Test for the monotonicity function in the miscellaneous module.
+    Test for the monotonicity function in the stability module.
 
     This test checks that the model is monotonic with respect to a given column.
 
@@ -137,16 +137,14 @@ def test_monotonicity():
     model_increasing = Model(lambda df: df["col1"], model_type="regression", feature_names=["col1", "col2"])
 
     # Call the function with test inputs
-    result = miscellaneous.test_monotonicity(model_increasing, dataset, feature_names=["col1"]).execute()
+    result = stability.test_monotonicity(model_increasing, dataset, feature_names=["col1"]).execute()
 
     # Assert that the result is as expected
     assert result.passed, "Test failed: the model should be considered monotonic"
     assert result.metric == 0, "Test failed: the metric value should be 0"
 
     # Call the function with test inputs
-    result = miscellaneous.test_monotonicity(
-        model_increasing, dataset, feature_names=["col1"], increasing=False
-    ).execute()
+    result = stability.test_monotonicity(model_increasing, dataset, feature_names=["col1"], increasing=False).execute()
 
     # Assert that the result is as expected
     assert not result.passed, "Test failed: the model should not be considered monotonic"

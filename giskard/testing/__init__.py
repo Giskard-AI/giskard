@@ -89,7 +89,6 @@ from giskard.testing.tests.metamorphic import (
     test_metamorphic_invariance_t_test,
     test_metamorphic_invariance_wilcoxon,
 )
-from giskard.testing.tests.miscellaneous import test_monotonicity, test_smoothness
 from giskard.testing.tests.performance import (
     test_accuracy,
     test_auc,
@@ -106,6 +105,7 @@ from giskard.testing.tests.performance import (
     test_recall,
     test_rmse,
 )
+from giskard.testing.tests.stability import test_monotonicity, test_smoothness
 from giskard.testing.tests.statistic import (
     test_cramer_v,
     test_disparate_impact,
