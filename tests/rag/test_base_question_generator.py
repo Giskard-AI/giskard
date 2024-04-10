@@ -1,14 +1,14 @@
 import logging
 from unittest.mock import Mock
 
-from giskard.llm.client.base import LLMMessage
+from giskard.llm.client.base import ChatMessage
 from giskard.rag.question_generators.simple_questions import SimpleQuestionsGenerator
 
 
 def test_base_generator():
     llm_client = Mock()
     llm_client.complete = Mock(
-        return_value=LLMMessage(
+        return_value=ChatMessage(
             role="assistant",
             content='{"question": "Where is Camembert from?", "answer": "Camembert was created in Normandy, in the northwest of France."}',
         )
@@ -25,7 +25,7 @@ def test_base_generator():
 def test_json_parsing(caplog):
     llm_client = Mock()
     llm_client.complete.side_effect = [
-        LLMMessage(
+        ChatMessage(
             role="assistant",
             content='```json {"question": "Where is Camembert from?", "answer": "Camembert was created in Normandy, in the northwest of France."} ```',
         )
@@ -42,11 +42,11 @@ def test_json_parsing(caplog):
     assert "JSON decoding error" in caplog.text
 
     llm_client.complete.side_effect = [
-        LLMMessage(
+        ChatMessage(
             role="assistant",
             content='```json {"question": "Where is Camembert from?", "answer": "Camembert was created in Normandy, in the northwest of France." ```',
         ),
-        LLMMessage(
+        ChatMessage(
             role="assistant",
             content='{"question": "Where is Camembert from?", "answer": "Camembert was created in Normandy, in the northwest of France."}',
         ),
