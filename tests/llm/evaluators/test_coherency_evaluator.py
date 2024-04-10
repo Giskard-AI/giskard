@@ -58,15 +58,15 @@ def test_requirements_evaluator_correctly_flags_examples():
 
     assert result.failure_examples[0]["reason"] == "Model output is not coherent"
     result.failure_examples[0]
-    assert result.failure_examples[0]["sample"]["input_1"] == {
+    assert result.failure_examples[0]["sample"]["conversation_1"][0]["content"] == {
         "question": "What is the capital of France?",
         "other": "test 1",
     }
-    assert result.failure_examples[0]["sample"]["input_2"] == {
+    assert result.failure_examples[0]["sample"]["conversation_2"][0]["content"] == {
         "question": "Why is Madrid the capital of France?",
         "other": "test 1",
     }
-    assert result.failure_examples[0]["sample"]["output_1"] == "Paris"
+    assert result.failure_examples[0]["sample"]["conversation_1"][1]["content"] == "Paris"
 
 
 def test_requirements_evaluator_handles_generation_errors():

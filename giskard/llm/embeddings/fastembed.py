@@ -1,9 +1,13 @@
-from typing import Optional, Sequence
+from __future__ import annotations
+
+from typing import TYPE_CHECKING, Optional, Sequence
 
 import numpy as np
-from fastembed import TextEmbedding
 
 from .base import BaseEmbedding
+
+if TYPE_CHECKING:
+    from fastembed import TextEmbedding
 
 
 class FastEmbedEmbedding(BaseEmbedding):
