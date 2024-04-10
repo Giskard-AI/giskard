@@ -279,8 +279,8 @@ def test_conversational_question_generation():
         {"role": "assistant", "content": "How can I help you with that?"},
     ]
 
-    assert question["metadata"]["question_type"] == "conversational"
-    assert question["metadata"]["seed_document_id"] == 2
+    assert question.metadata["question_type"] == "conversational"
+    assert question.metadata["seed_document_id"] == "2"
 
 
 def test_oos_question_generation():
@@ -295,12 +295,14 @@ def test_oos_question_generation():
     ]
 
     documents = [
-        Document(dict(content="Paul Graham liked to buy a baguette every day at the local market."), idx=1),
-        Document(dict(content="Cheese is made of milk."), idx=2),
-        Document(dict(content="Milk is produced by cows, goats or sheep."), idx=3),
+        Document(dict(content="Paul Graham liked to buy a baguette every day at the local market."), doc_id="1"),
+        Document(dict(content="Cheese is made of milk."), doc_id="2"),
+        Document(dict(content="Milk is produced by cows, goats or sheep."), doc_id="3"),
     ]
     knowledge_base.get_random_document = Mock(
-        return_value=Document(dict(content="Paul Graham liked to buy a baguette every day at the local market."), idx=1)
+        return_value=Document(
+            dict(content="Paul Graham liked to buy a baguette every day at the local market."), doc_id="1"
+        )
     )
     knowledge_base.get_neighbors = Mock(return_value=documents)
 
@@ -312,16 +314,16 @@ def test_oos_question_generation():
         )
     )[0]
 
-    assert question["question"] == "How much did Paul pay for the baguette?"
-    assert isinstance(question["id"], str)
+    assert question.question == "How much did Paul pay for the baguette?"
+    assert isinstance(question.id, str)
     assert (
-        question["reference_answer"]
+        question.reference_answer
         == "This question can not be answered by the context. No sufficient information is provided in the context to answer this question."
     )
     assert (
-        question["reference_context"]
+        question.reference_context
         == "Document 1: Paul Graham liked to buy a baguette every day at the local market.\n\nDocument 2: Cheese is made of milk.\n\nDocument 3: Milk is produced by cows, goats or sheep."
     )
-    assert question["conversation_history"] == []
-    assert question["metadata"]["question_type"] == "out of scope"
-    assert question["metadata"]["seed_document_id"] == 1
+    assert question.conversation_history == []
+    assert question.metadata["question_type"] == "out of scope"
+    assert question.metadata["seed_document_id"] == "1"
