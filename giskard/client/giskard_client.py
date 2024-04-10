@@ -138,13 +138,14 @@ def _limit_str_size(json, field, limit=255):
 
 
 class GiskardClient:
-    def __init__(self, url: str, key: str, hf_token: str = None):
+    def __init__(self, url: str, key: str, hf_token: str = None, verify_ssl: bool = True):
         self.host_url = url
         self.key = key
         self.hf_token = hf_token
         base_url = urljoin(url, "/api/v2/")
 
         self._session = sessions.BaseUrlSession(base_url=base_url)
+        self._session.verify = verify_ssl
 
         adapter = ErrorHandlingAdapter()
 
