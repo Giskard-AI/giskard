@@ -43,11 +43,17 @@ class OpenAIClient(LLMClient):
         temperature: float = 1.0,
         max_tokens: Optional[int] = None,
         caller_id: Optional[str] = None,
+        tools=None,
+        tool_choice=None,
         seed: Optional[int] = None,
         format=None,
     ) -> ChatMessage:
         extra_params = dict()
 
+        if tools is not None:
+            extra_params["tools"] = tools
+        if tool_choice is not None:
+            extra_params["tool_choice"] = tool_choice
         if seed is not None:
             extra_params["seed"] = seed
 
@@ -80,4 +86,4 @@ class OpenAIClient(LLMClient):
 
         msg = completion.choices[0].message
 
-        return ChatMessage(role=msg.role, content=msg.content)
+        return ChatMessage(role=msg.role, content=msg.content, tool_calls=msg.tool_calls)

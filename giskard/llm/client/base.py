@@ -10,6 +10,7 @@ from .logger import LLMLogger
 class ChatMessage:
     role: str
     content: Optional[str] = None
+    tool_calls: list = None
 
 
 _logger = LLMLogger()
@@ -27,6 +28,8 @@ class LLMClient(ABC):
         temperature: float = 1,
         max_tokens: Optional[int] = None,
         caller_id: Optional[str] = None,
+        tools=None,
+        tool_choice=None,
         seed: Optional[int] = None,
         format=None,
     ) -> ChatMessage:
