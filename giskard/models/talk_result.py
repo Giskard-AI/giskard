@@ -1,6 +1,6 @@
 from dataclasses import dataclass
 
-from giskard.llm.client import LLMMessage
+from giskard.llm.client import ChatMessage
 
 
 @dataclass
@@ -9,16 +9,16 @@ class TalkResult:
 
     Attributes
     ----------
-    response : LLMMessage
+    response : ChatMessage
         The response to the user's query.
-    summary : LLMMessage
+    summary : ChatMessage
         The summary of the conversation between the user and the LLM agent.
     tool_errors : list[Exception]
         The list of errors raised during tools execution.
     """
 
-    response: LLMMessage
-    summary: LLMMessage
+    response: ChatMessage
+    summary: ChatMessage
     tool_errors: list[Exception]
 
     def __repr__(self) -> str:
