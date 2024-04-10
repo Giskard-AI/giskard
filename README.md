@@ -3,7 +3,7 @@
   <img alt="giskardlogo" src="https://raw.githubusercontent.com/giskard-ai/giskard/main/readme/giskard_logo_green.png#gh-dark-mode-only">
 </p>
 <h1 align="center" weight='300' >The Evaluation & Testing framework for LLMs & ML models</h1>
-<h3 align="center" weight='300' >Control risks of performance issues, biases and security vulnerabilities in AI models</h3>
+<h3 align="center" weight='300' >Control risks of performance, bias and security issues in AI models</h3>
 <div align="center">
 
   [![GitHub release](https://img.shields.io/github/v/release/Giskard-AI/giskard)](https://github.com/Giskard-AI/giskard/releases)
@@ -36,7 +36,7 @@ ______________________________________________________________________
 
 Giskard is an open-source Python library that **automatically detects performance, bias & security issues in AI applications**. The library covers LLM-based applications such as RAG agents, all the way to traditional ML models for tabular data. 
 
-## Scan: Automatically assess your LLM-based agents for performance issues & vulnerabilities ⤵️
+## Scan: Automatically assess your LLM-based agents for performance, bias & security issues ⤵️
 
 Issues detected include: 
 - Hallucinations
@@ -173,7 +173,7 @@ scan_results.to_html("scan_results.html")
 
 <h2 id="automatically-generate-an-evaluation-dataset-for-your-rag-applications">3. 🪄 Automatically generate an evaluation dataset for your RAG applications</h2>
 
-If the scan found issues in your model, you can automatically extract an evaluation dataset based on the vulnerabilities found:
+If the scan found issues in your model, you can automatically extract an evaluation dataset based on the issues found:
 
 ```python
 test_suite = scan_results.generate_test_suite("My first test suite")
