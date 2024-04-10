@@ -34,6 +34,7 @@ Classification tests
   - :func:`~.giskard.testing.test_diff_accuracy`
   - :func:`~.giskard.testing.test_diff_precision`
   - :func:`~.giskard.testing.test_diff_f1`
+  - :func:`~.giskard.testing.test_brier`
 
 - **Drift tests**
 
