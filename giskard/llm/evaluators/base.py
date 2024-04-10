@@ -1,4 +1,4 @@
-from typing import Dict, Optional, Sequence, Tuple
+from typing import Dict, List, Optional, Sequence, Tuple
 
 import json
 import logging
@@ -36,7 +36,7 @@ class EvaluationResultExample:
 
 @dataclass
 class EvaluationResult:
-    results: Sequence[EvaluationResultExample] = field(default_factory=list)
+    results: List[EvaluationResultExample] = field(default_factory=list)
 
     @property
     def failure_examples(self):
@@ -134,7 +134,7 @@ class _BaseLLMEvaluator(BaseEvaluator):
 
         return result
 
-    def _evaluate_sample(self, model: BaseModel, sample: Dict) -> Tuple[bool, str, Dict]:
+    def _evaluate_sample(self, model: BaseModel, sample: Dict) -> Tuple[bool, Optional[str]]:
         messages = self._format_messages(model, sample["conversation"], meta=sample.get("meta"))
         raw_eval = self.llm_client.complete(
             messages,
@@ -147,7 +147,7 @@ class _BaseLLMEvaluator(BaseEvaluator):
 
         return eval_passed, reason
 
-    def _parse_evaluation_output(self, raw_eval: ChatMessage) -> Tuple[bool, str]:
+    def _parse_evaluation_output(self, raw_eval: ChatMessage) -> Tuple[bool, Optional[str]]:
         try:
             eval_result = json.loads(raw_eval.content)
             return eval_result["eval_passed"], eval_result.get("reason")

@@ -58,15 +58,15 @@ class CoherencyEvaluator(_BaseLLMEvaluator):
 
         # Prepare inputs and outputs
         outputs_1 = model.predict(dataset_1).prediction
+        inputs_1 = dataset_1.df.to_dict("records")
 
         if dataset_2 is not None:
             outputs_2 = model.predict(dataset_2).prediction
+            inputs_2 = dataset_2.df.loc[dataset_1.df.index].to_dict("records")
         else:
             with model_cache.no_cache():
-                outputs_2 = model.predict(dataset_2).prediction
-
-        inputs_1 = dataset_1.df.to_dict("records")
-        inputs_2 = dataset_2.df.loc[dataset_1.df.index].to_dict("records")
+                outputs_2 = model.predict(dataset_1).prediction
+                inputs_2 = dataset_1.df.to_dict("records")
 
         # Run evaluation
         result = EvaluationResult()
@@ -83,7 +83,7 @@ class CoherencyEvaluator(_BaseLLMEvaluator):
 
             logger.debug(f"{self.__class__.__name__}: evaluating sample: {sample}")
 
-            messages = self._format_messages(model, sample)
+            messages = self._format_messages(model, [sample])
 
             try:
                 raw_eval = self.llm_client.complete(
@@ -106,7 +106,10 @@ class CoherencyEvaluator(_BaseLLMEvaluator):
 
         return result
 
-    def _format_messages(self, model: BaseModel, sample: Dict) -> Sequence[ChatMessage]:
+    def _format_messages(
+        self, model: BaseModel, conversation: Sequence[Dict], meta: Optional[Dict] = None
+    ) -> Sequence[ChatMessage]:
+        sample = conversation[0]
         prompt = EXAMPLE_USR_TPL.format(
             description=model.description,
             input_1=sample["conversation_1"][0]["content"],

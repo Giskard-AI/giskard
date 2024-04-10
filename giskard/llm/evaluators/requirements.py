@@ -96,13 +96,13 @@ class HostedRequirementEvaluator(_BaseLLMEvaluator):
     ) -> Sequence[ChatMessage]:
         return []  # No need to format messages for hosted evaluator
 
-    def _evaluate_sample(self, model: BaseModel, sample: Dict) -> Tuple[bool, str, Dict]:
+    def _evaluate_sample(self, model: BaseModel, sample: Dict) -> Tuple[bool, Optional[str]]:
         payload = json.dumps({"categories": self.categories_list, "conversation": sample["conversation"]})
         headers = {"x-api-key": os.environ.get("HOSTED_EVAL_API_KEY"), "Content-Type": "application/json"}
         raw_eval = requests.post(API_ENDPOINT, headers=headers, data=payload)
         return self._parse_evaluation_output(raw_eval)
 
-    def _parse_evaluation_output(self, raw_eval: requests.Response) -> str:
+    def _parse_evaluation_output(self, raw_eval: requests.Response) -> Tuple[bool, Optional[str]]:
         try:
             eval_result = json.loads(raw_eval.text)["label"]
         except (AttributeError, KeyError, json.JSONDecodeError) as err:

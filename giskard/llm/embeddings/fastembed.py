@@ -1,4 +1,4 @@
-from typing import Sequence
+from typing import Optional, Sequence
 
 import numpy as np
 from fastembed import TextEmbedding
@@ -21,3 +21,16 @@ class FastEmbedEmbedding(BaseEmbedding):
             texts = [texts]
 
         return np.array(list(self.text_embedding.embed(texts)))
+
+
+def try_get_fastembed_embeddings() -> Optional[FastEmbedEmbedding]:
+    try:
+        from fastembed import TextEmbedding
+
+        from .fastembed import FastEmbedEmbedding
+
+        return FastEmbedEmbedding(
+            text_embedding=TextEmbedding("sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2")
+        )
+    except ImportError:
+        return None

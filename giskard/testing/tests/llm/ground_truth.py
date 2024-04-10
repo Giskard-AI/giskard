@@ -77,9 +77,7 @@ def _create_groud_truth_test_result(dataset, metric, model, passed, pred, thresh
     tags=["llm", "llm-as-a-judge"],
     debug_description=debug_description_prefix + "that are <b>failing the evaluation criteria</b>.",
 )
-def test_llm_as_a_judge_ground_truth_similarity(
-    model: BaseModel, dataset: Dataset, prefix: str = "The requirement should be similar to: ", rng_seed: int = 1729
-):
+def test_llm_as_a_judge_ground_truth_similarity(model: BaseModel, dataset: Dataset, rng_seed: int = 1729):
     """Evaluates the correctness of the model output against a ground truth with an LLM (LLM-as-a-judge).
 
     The model outputs over a given dataset will be validated against the
