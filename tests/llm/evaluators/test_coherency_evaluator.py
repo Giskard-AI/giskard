@@ -4,7 +4,7 @@ import pandas as pd
 import pytest
 
 from giskard.datasets.base import Dataset
-from giskard.llm.client import LLMFunctionCall, LLMMessage, LLMToolCall
+from giskard.llm.client import ChatMessage
 from giskard.llm.evaluators.coherency import CoherencyEvaluator
 from giskard.models.base.model_prediction import ModelPredictionResults
 
@@ -39,37 +39,13 @@ def test_requirements_evaluator_correctly_flags_examples():
 
     client = Mock()
     client.complete.side_effect = [
-        LLMMessage(
+        ChatMessage(
             role="assistant",
-            content=None,
-            function_call=None,
-            tool_calls=[
-                LLMToolCall(
-                    id="call_abc123",
-                    type="function",
-                    function=LLMFunctionCall(
-                        name="evaluate_model",
-                        arguments={"passed_test": False, "reason": "Model output is not coherent"},
-                    ),
-                )
-            ],
+            content='{"eval_passed": false, "reason": "Model output is not coherent"}',
         ),
-        LLMMessage(
+        ChatMessage(
             role="assistant",
-            content=None,
-            function_call=None,
-            tool_calls=[
-                LLMToolCall(
-                    id="call_abc123",
-                    type="function",
-                    function=LLMFunctionCall(
-                        name="evaluate_model",
-                        arguments={
-                            "passed_test": True,
-                        },
-                    ),
-                )
-            ],
+            content='{"eval_passed": true}',
         ),
     ]
 
@@ -81,17 +57,16 @@ def test_requirements_evaluator_correctly_flags_examples():
     assert len(result.failure_examples) == 1
 
     assert result.failure_examples[0]["reason"] == "Model output is not coherent"
-    assert result.failure_examples[0]["input_1"] == {"question": "What is the capital of France?", "other": "test 1"}
-    assert result.failure_examples[0]["input_2"] == {
+    result.failure_examples[0]
+    assert result.failure_examples[0]["sample"]["conversation_1"][0]["content"] == {
+        "question": "What is the capital of France?",
+        "other": "test 1",
+    }
+    assert result.failure_examples[0]["sample"]["conversation_2"][0]["content"] == {
         "question": "Why is Madrid the capital of France?",
         "other": "test 1",
     }
-    assert result.failure_examples[0]["output_1"] == "Paris"
-
-    # Check LLM client calls arguments
-    args = client.complete.call_args_list[0]
-    assert "This is a model for testing purposes" in args[0][0][0]["content"]
-    assert args[1]["tools"][0]["function"]["name"] == "evaluate_model"
+    assert result.failure_examples[0]["sample"]["conversation_1"][1]["content"] == "Paris"
 
 
 def test_requirements_evaluator_handles_generation_errors():
@@ -100,37 +75,13 @@ def test_requirements_evaluator_handles_generation_errors():
 
     client = Mock()
     client.complete.side_effect = [
-        LLMMessage(
+        ChatMessage(
             role="assistant",
-            content=None,
-            function_call=None,
-            tool_calls=[
-                LLMToolCall(
-                    id="call_abc123",
-                    type="function",
-                    function=LLMFunctionCall(
-                        name="evaluate_model",
-                        arguments={
-                            "passed_test": True,
-                        },
-                    ),
-                )
-            ],
+            content='{"eval_passed": true}',
         ),
-        LLMMessage(
+        ChatMessage(
             role="assistant",
-            content=None,
-            function_call=None,
-            tool_calls=[
-                LLMToolCall(
-                    id="call_abc123",
-                    type="function",
-                    function=LLMFunctionCall(
-                        name="evaluate_model",
-                        arguments={"model_did_pass_the_test": False},
-                    ),
-                )
-            ],
+            content='{"model_did_pass_the_test": false}',
         ),
     ]
 
@@ -141,7 +92,7 @@ def test_requirements_evaluator_handles_generation_errors():
     assert len(result.success_examples) == 1
     assert len(result.failure_examples) == 0
     assert len(result.errors) == 1
-    assert result.errors[0]["message"] == "Invalid function call arguments received"
+    assert result.errors[0]["error"] == "Could not parse evaluator output"
 
 
 def test_raises_error_if_datasets_have_different_length():

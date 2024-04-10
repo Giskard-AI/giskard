@@ -98,7 +98,7 @@ jobs:
 
       - name: Create Github Release
         id: github-release
-        uses: softprops/action-gh-release@v1
+        uses: softprops/action-gh-release@v2
         with:
           tag_name: ${{ env.VERSION_NAME }}
           fail_on_unmatched_files: true
