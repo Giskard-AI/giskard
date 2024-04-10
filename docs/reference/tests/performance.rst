@@ -13,3 +13,4 @@ Performance tests
 .. autofunction:: giskard.testing.test_diff_precision
 .. autofunction:: giskard.testing.test_diff_rmse
 .. autofunction:: giskard.testing.test_diff_f1
+.. autofunction:: giskard.testing.test_brier
