@@ -1,6 +1,5 @@
 from typing import Optional, Sequence
 
-from dataclasses import asdict
 from logging import warning
 
 from ..config import LLMConfigurationError
@@ -29,6 +28,29 @@ def _supports_json_format(model: str) -> bool:
     return False
 
 
+def _format_message(msg: ChatMessage) -> dict:
+    """Format chat message.
+
+    Based on a message's role, include related attributes and exclude non-related.
+
+    Parameters
+    ----------
+    msg : ChatMessage
+        Message to the LLMClient.
+
+    Returns
+    -------
+    dict
+        A dictionary with attributes related to the role.
+    """
+    fmt_msg = {"role": msg.role, "content": msg.content}
+    if msg.role == "tool":
+        fmt_msg.update({"name": msg.name, "tool_call_id": msg.tool_call_id})
+    if msg.role == "assistant" and msg.tool_calls:
+        fmt_msg.update({"tool_calls": msg.tool_calls})
+    return fmt_msg
+
+
 class OpenAIClient(LLMClient):
     def __init__(
         self, model: str = "gpt-4-turbo-preview", client: openai.Client = None, json_mode: Optional[bool] = None
@@ -43,11 +65,17 @@ class OpenAIClient(LLMClient):
         temperature: float = 1.0,
         max_tokens: Optional[int] = None,
         caller_id: Optional[str] = None,
+        tools=None,
+        tool_choice=None,
         seed: Optional[int] = None,
         format=None,
     ) -> ChatMessage:
         extra_params = dict()
 
+        if tools is not None:
+            extra_params["tools"] = tools
+        if tool_choice is not None:
+            extra_params["tool_choice"] = tool_choice
         if seed is not None:
             extra_params["seed"] = seed
 
@@ -62,7 +90,7 @@ class OpenAIClient(LLMClient):
         try:
             completion = self._client.chat.completions.create(
                 model=self.model,
-                messages=[asdict(m) for m in messages],
+                messages=[_format_message(m) for m in messages],
                 temperature=temperature,
                 max_tokens=max_tokens,
                 **extra_params,
@@ -80,4 +108,4 @@ class OpenAIClient(LLMClient):
 
         msg = completion.choices[0].message
 
-        return ChatMessage(role=msg.role, content=msg.content)
+        return ChatMessage(role=msg.role, content=msg.content, tool_calls=msg.tool_calls)
