@@ -1,6 +1,5 @@
 from typing import Optional, Sequence
 
-from dataclasses import asdict
 from logging import warning
 
 from ..config import LLMConfigurationError
@@ -27,6 +26,29 @@ def _supports_json_format(model: str) -> bool:
         return True
 
     return False
+
+
+def _format_message(msg: ChatMessage) -> dict:
+    """Format chat message.
+
+    Based on a message's role, include related attributes and exclude non-related.
+
+    Parameters
+    ----------
+    msg : ChatMessage
+        Message to the LLMClient.
+
+    Returns
+    -------
+    dict
+        A dictionary with attributes related to the role.
+    """
+    fmt_msg = {"role": msg.role, "content": msg.content}
+    if msg.role == "tool":
+        fmt_msg.update({"name": msg.name, "tool_call_id": msg.tool_call_id})
+    if msg.role == "assistant" and msg.tool_calls:
+        fmt_msg.update({"tool_calls": msg.tool_calls})
+    return fmt_msg
 
 
 class OpenAIClient(LLMClient):
@@ -68,7 +90,7 @@ class OpenAIClient(LLMClient):
         try:
             completion = self._client.chat.completions.create(
                 model=self.model,
-                messages=[asdict(m) for m in messages],
+                messages=[_format_message(m) for m in messages],
                 temperature=temperature,
                 max_tokens=max_tokens,
                 **extra_params,

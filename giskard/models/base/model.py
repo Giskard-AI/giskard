@@ -11,6 +11,7 @@ import posixpath
 import tempfile
 import uuid
 from abc import ABC, abstractmethod
+from dataclasses import asdict
 from pathlib import Path
 
 import cloudpickle
@@ -26,6 +27,7 @@ from ...core.validation import configured_validate_arguments
 from ...datasets.base import Dataset
 from ...exceptions.giskard_exception import GiskardException, python_env_exception_helper
 from ...llm import get_default_client, set_llm_model
+from ...llm.client import ChatMessage
 from ...llm.talk.config import (
     ERROR_RESPONSE,
     MODEL_INSTRUCTION,
@@ -654,13 +656,7 @@ class BaseModel(ABC):
         str
             The string with the joined messages' contents.
         """
-        context = list()
-
-        for msg in message_list:
-            if isinstance(msg, dict) and "content" in msg:
-                context.append(json.dumps(msg))
-
-        return "\n".join(context)
+        return "\n".join([json.dumps(asdict(msg)) for msg in message_list])
 
     def talk(self, question: str, dataset: Dataset, scan_report: ScanReport = None, context: str = "") -> TalkResult:
         """Perform the 'talk' to the model.
@@ -696,7 +692,7 @@ class BaseModel(ABC):
             context=context,
         )
 
-        messages = [{"role": "system", "content": system_prompt}, {"role": "user", "content": question}]
+        messages = [ChatMessage(role="system", content=system_prompt), ChatMessage(role="user", content=question)]
         response = client.complete(
             messages=messages,
             tools=[tool.specification for tool in list(available_tools.values())],
@@ -705,17 +701,18 @@ class BaseModel(ABC):
         )
 
         if content := response.content:
-            messages.append({"role": "assistant", "content": content})
+            messages.append(ChatMessage(role="assistant", content=content))
 
         # Store exceptions raised by tool execution.
         tool_errors = list()
 
         if tool_calls := response.tool_calls:
-            messages.append(client._serialize_message(response))
+            response.tool_calls = [json.loads(tool_call.json()) for tool_call in tool_calls]
+            messages.append(response)
 
             for tool_call in tool_calls:
                 tool_name = tool_call.function.name
-                tool_args = tool_call.function.arguments
+                tool_args = json.loads(tool_call.function.arguments)
 
                 # Get the reference to the chosen callable tool.
                 tool = available_tools[tool_name]
@@ -724,28 +721,22 @@ class BaseModel(ABC):
                     tool_response = tool(**tool_args)
                 except Exception as error_msg:
                     tool_response = ERROR_RESPONSE.format(
-                        tool_name=tool_name, tool_args=tool_args, error_msg=error_msg.args[0]
+                        tool_name=tool_name, tool_args=tool_args, error_msg=error_msg.args[:1]
                     )
                     tool_errors.append(error_msg)
 
                 # Append the tool's response to the conversation.
                 messages.append(
-                    {
-                        "role": "tool",
-                        "name": tool_name,
-                        "tool_call_id": tool_call.id,
-                        "content": tool_response,
-                    }
+                    ChatMessage(role="tool", name=tool_name, tool_call_id=tool_call.id, content=tool_response)
                 )
 
             # Get the final model's response, based on the tool's output.
             response = client.complete(messages=messages, **TALK_CLIENT_CONFIG)
-            messages.append({"role": "assistant", "content": response.content})
+            messages.append(ChatMessage(role="assistant", content=response.content))
 
         # Summarise the conversation.
         context = self._gather_context(messages)
         summary = client.complete(
-            messages=[{"role": "user", "content": SUMMARY_PROMPT.format(context=context)}], **TALK_CLIENT_CONFIG
+            messages=[ChatMessage(role="user", content=SUMMARY_PROMPT.format(context=context))], **TALK_CLIENT_CONFIG
         )
-
         return TalkResult(response, summary, tool_errors)

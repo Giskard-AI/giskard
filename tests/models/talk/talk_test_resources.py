@@ -1,6 +1,11 @@
 from itertools import cycle
 
-from giskard.llm.client import LLMFunctionCall, LLMMessage, LLMToolCall
+from openai.types.chat.chat_completion_message_tool_call import (
+    ChatCompletionMessageToolCall,
+    Function,
+)
+
+from giskard.llm.client.base import ChatMessage
 
 type_error_patterns = {
     "question_dataset": r"(?:BaseModel\.)?talk\(\) missing 2 required positional arguments: 'question' and 'dataset'",
@@ -11,7 +16,7 @@ type_error_patterns = {
 default_question = "What can you do?"
 test_default_llm_responses = cycle(
     [
-        LLMMessage(
+        ChatMessage(
             role="assistant",
             content="I can assist you with various tasks related to a Titanic binary classification model, "
             "which predicts whether a passenger survived or not in the Titanic incident. Here's what I can "
@@ -26,18 +31,14 @@ test_default_llm_responses = cycle(
             "such as unrobustness, underconfidence, unethical behavior, data leakage, performance bias, "
             "and more.\n\nFeel free to ask for any of these services or if you have any questions related to "
             "the Titanic binary classification model!",
-            function_call=None,
-            tool_calls=None,
         ),
-        LLMMessage(
+        ChatMessage(
             role="assistant",
             content="- The user inquires about the capabilities of the assistant.\n- The assistant responds by "
             "detailing its capabilities related to a Titanic binary classification model, which include:\n  "
             "1. Predicting survival based on passenger details.\n  2. Estimating model performance metrics.\n "
             " 3. Providing SHAP explanations for model predictions.\n  4. Scanning for model performance "
             "issues.",
-            function_call=None,
-            tool_calls=None,
         ),
     ]
 )
@@ -45,27 +46,23 @@ test_default_llm_responses = cycle(
 predict_tool_question = "Give me predictions of the model on a given dataset. Use 'predict' tool."
 test_predict_tool_llm_responses = cycle(
     [
-        LLMMessage(
+        ChatMessage(
             role="assistant",
-            content=None,
-            function_call=None,
             tool_calls=[
-                LLMToolCall(
+                ChatCompletionMessageToolCall(
                     id="call_GeMR17xALaOSuh1NqnBJIuVP",
                     type="function",
-                    function=LLMFunctionCall(name="predict", arguments={"features_dict": {}}),
+                    function=Function(name="predict", arguments='{"features_dict": {}}'),
                 )
             ],
         ),
-        LLMMessage(
+        ChatMessage(
             role="assistant",
             content='The model has provided predictions for the given dataset. The predictions include both "yes" ('
             'survived) and "no" (did not survive) outcomes for various passengers. If you need more detailed '
             "information or have specific questions about these predictions, feel free to ask!",
-            function_call=None,
-            tool_calls=None,
         ),
-        LLMMessage(
+        ChatMessage(
             role="assistant",
             content="- User requested predictions from the Titanic binary classification model on a given dataset "
             "using the 'predict' tool.\n- The 'predict' tool returned a series of predictions indicating "
@@ -73,8 +70,6 @@ test_predict_tool_llm_responses = cycle(
             "tool's output, informing the user that the model provided predictions for the dataset, "
             'including both "yes" (survived) and "no" (did not survive) outcomes for various passengers, '
             "and offered further assistance if needed.",
-            function_call=None,
-            tool_calls=None,
         ),
     ]
 )
@@ -82,19 +77,17 @@ test_predict_tool_llm_responses = cycle(
 shap_tool_question = "Calculate SHAP values of each feature. Use 'shap_explanation' tool."
 test_shap_tool_llm_responses = cycle(
     [
-        LLMMessage(
+        ChatMessage(
             role="assistant",
-            content=None,
-            function_call=None,
             tool_calls=[
-                LLMToolCall(
+                ChatCompletionMessageToolCall(
                     id="call_B55HjJ2TNHvNo1cohsaOV4nS",
                     type="function",
-                    function=LLMFunctionCall(name="shap_explanation", arguments={"features_dict": {}}),
+                    function=Function(name="shap_explanation", arguments='{"features_dict": {}}'),
                 )
             ],
         ),
-        LLMMessage(
+        ChatMessage(
             role="assistant",
             content="The SHAP values for each feature have been calculated successfully. Here's a summary of the "
             "results:\n\n- **PassengerId**: The SHAP values vary across different passengers, indicating "
@@ -114,10 +107,8 @@ test_shap_tool_llm_responses = cycle(
             "showing a stronger influence on survival predictions than others.\n\nThese results indicate that "
             "features like sex, passenger class, and fare play significant roles in the model's predictions, "
             "while other features like name, age, and family aboard also contribute to varying extents.",
-            function_call=None,
-            tool_calls=None,
         ),
-        LLMMessage(
+        ChatMessage(
             role="assistant",
             content="- The user requested the calculation of SHAP values for each feature using the "
             "'shap_explanation' tool.\n- The tool provided SHAP values for features: 'PassengerId', 'Pclass', "
@@ -126,8 +117,6 @@ test_shap_tool_llm_responses = cycle(
             "of features like 'Sex', 'Pclass', 'Fare', 'Age', 'SibSp', 'Parch', and 'Embarked' on the model's "
             "survival predictions. It noted significant roles for sex, passenger class, and fare, with other "
             "features contributing to varying extents.",
-            function_call=None,
-            tool_calls=None,
         ),
     ]
 )
@@ -138,30 +127,26 @@ metric_tool_question = (
 )
 test_metric_tool_llm_responses = cycle(
     [
-        LLMMessage(
+        ChatMessage(
             role="assistant",
-            content=None,
-            function_call=None,
             tool_calls=[
-                LLMToolCall(
+                ChatCompletionMessageToolCall(
                     id="call_rdqJGVFzrW4gfpuEEtihBBsG",
                     type="function",
-                    function=LLMFunctionCall(
-                        name="calculate_metric", arguments={"features_dict": {}, "metric_type": "accuracy"}
+                    function=Function(
+                        name="calculate_metric", arguments='{"features_dict": {}, "metric_type": "accuracy"}'
                     ),
                 )
             ],
         ),
-        LLMMessage(role="assistant", content="The accuracy of the model is 0.79.", function_call=None, tool_calls=None),
-        LLMMessage(
+        ChatMessage(role="assistant", content="The accuracy of the model is 0.79.", tool_calls=None),
+        ChatMessage(
             role="assistant",
             content="- The user requested the calculation of accuracy for a classification model or R2 score for a "
             "regression model using the 'calculate_metric' tool.\n- The tool was called with the appropriate "
             "parameters to calculate the metric.\n- The tool's output indicated a test failure but provided a "
             "metric value of 0.79.\n- The assistant informed the user that the accuracy of the model is 0.79, "
             "interpreting the metric value provided by the tool.",
-            function_call=None,
-            tool_calls=None,
         ),
     ]
 )
@@ -169,19 +154,17 @@ test_metric_tool_llm_responses = cycle(
 scan_tool_question = "Tell me, which performance issues/vulnerabilities does the model have. Use 'issues_scanner' tool."
 test_scan_tool_llm_responses_1 = cycle(
     [
-        LLMMessage(
+        ChatMessage(
             role="assistant",
-            content=None,
-            function_call=None,
             tool_calls=[
-                LLMToolCall(
+                ChatCompletionMessageToolCall(
                     id="call_u7gekjksLI08eRcGU7Bb0HEY",
                     type="function",
-                    function=LLMFunctionCall(name="issues_scanner", arguments={}),
+                    function=Function(name="issues_scanner", arguments="{}"),
                 )
             ],
         ),
-        LLMMessage(
+        ChatMessage(
             role="assistant",
             content="The model has been identified to have the following performance issues and "
             "vulnerabilities:\n\n1. **Robustness issues**: The model's predictions change in 6.67% of the "
@@ -199,10 +182,8 @@ test_scan_tool_llm_responses_1 = cycle(
             '"master" and `Embarked` == "S", among others.\n\nThese issues highlight the model\'s '
             "vulnerabilities in handling certain transformations, overconfidence in predictions, "
             "spurious correlations, and performance discrepancies across different data slices.",
-            function_call=None,
-            tool_calls=None,
         ),
-        LLMMessage(
+        ChatMessage(
             role="assistant",
             content="- The user requested information on the performance issues/vulnerabilities of the model using "
             "the 'issues_scanner' tool.\n- The 'issues_scanner' tool identified several vulnerabilities, "
@@ -220,43 +201,35 @@ test_scan_tool_llm_responses_1 = cycle(
             "model's vulnerabilities in handling certain transformations, its overconfidence in predictions, "
             "the presence of spurious correlations, and performance discrepancies across different data "
             "slices.",
-            function_call=None,
-            tool_calls=None,
         ),
     ]
 )
 
 test_scan_tool_llm_responses_2 = cycle(
     [
-        LLMMessage(
+        ChatMessage(
             role="assistant",
-            content=None,
-            function_call=None,
             tool_calls=[
-                LLMToolCall(
+                ChatCompletionMessageToolCall(
                     id="call_88KzczVdOyoakLNBLp6SosCp",
                     type="function",
-                    function=LLMFunctionCall(name="issues_scanner", arguments={}),
+                    function=Function(name="issues_scanner", arguments="{}"),
                 )
             ],
         ),
-        LLMMessage(
+        ChatMessage(
             role="assistant",
             content="There was an error when trying to obtain information about the model's performance issues or "
             'vulnerabilities. The error message is: "To obtain information about issues detected by the '
             "Giskard Scan, provide the 'scan_report' argument.\" It seems I need to provide additional "
             "information to proceed with your request.",
-            function_call=None,
-            tool_calls=None,
         ),
-        LLMMessage(
+        ChatMessage(
             role="assistant",
             content="- The user requested information on the performance issues or vulnerabilities of a model using "
             "the 'issues_scanner' tool.\n- The 'issues_scanner' tool call resulted in an error due to missing "
             "the 'scan_report' argument.\n- The assistant informed the user about the error and the need for "
             "additional information to proceed with the request.",
-            function_call=None,
-            tool_calls=None,
         ),
     ]
 )
