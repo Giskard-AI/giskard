@@ -81,11 +81,7 @@ def hotel_text_raw_model(hotel_text_raw_data) -> SKLearnModel:
 @pytest.fixture()
 def hotel_text_model(hotel_text_raw_model) -> SKLearnModel:
     wrapped_model = SKLearnModel(
-        hotel_text_raw_model,
-        model_type="regression",
-        name="hotel_text_regression",
-        feature_names=[FEATURE_COLUMN_NAME],
-        description="The linear regression model, which predict hotel review's score based on its contents. The worst score is 0 and the best is 10.",
+        hotel_text_raw_model, model_type="regression", name="hotel_text_regression", feature_names=[FEATURE_COLUMN_NAME]
     )
 
     return wrapped_model

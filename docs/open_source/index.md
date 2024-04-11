@@ -29,11 +29,6 @@ integrate_tests/index
 :link: testset_generation/index.html
 ::::
 
-::::{grid-item-card} <br/><h3>🤖 AI Quality Copilot</h3>
-:text-align: center
-:link: ai_quality_copilot/index.html
-::::
-
 ::::{grid-item-card} <br/><h3>🧪 Customize your tests</h3>
 :text-align: center
 :link: customize_tests/index.html
