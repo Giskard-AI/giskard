@@ -10,6 +10,7 @@ import tarfile
 import tempfile
 from pathlib import Path
 
+import numpy as np
 import requests
 import requests_mock
 
@@ -18,6 +19,7 @@ from giskard.client import dtos
 from giskard.client.giskard_client import GiskardClient
 from giskard.core.savable import Artifact
 from giskard.datasets.base import Dataset
+from giskard.llm.embeddings.base import BaseEmbedding
 from giskard.models.base.model import BaseModel
 from giskard.path_utils import get_size
 from giskard.settings import settings
@@ -418,3 +420,8 @@ def register_uri_for_inspection(mr: requests_mock.Mocker, project_key: str, insp
     predictions_url = posixpath.join(url, get_file_name("predictions", "csv", sample))
     mr.register_uri(method=requests_mock.POST, url=calculated_url, json={})
     mr.register_uri(method=requests_mock.POST, url=predictions_url, json={})
+
+
+class DummyEmbedding(BaseEmbedding):
+    def embed(self, texts):
+        return np.random.uniform(size=(len(texts), 768))

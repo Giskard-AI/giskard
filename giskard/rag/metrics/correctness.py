@@ -4,7 +4,7 @@ import json
 
 import pandas as pd
 
-from ...llm.client.base import LLMClient, LLMMessage
+from ...llm.client.base import ChatMessage, LLMClient
 from ...llm.errors import LLMGenerationError
 from ..question_generators.utils import maybe_tqdm
 from ..testset import QATestset
@@ -69,17 +69,17 @@ class CorrectnessMetric(Metric):
             try:
                 out = llm_client.complete(
                     messages=[
-                        LLMMessage(
+                        ChatMessage(
                             role="system",
                             content=CORRECTNESS_EVALUATION_SYSTEM_PROMPT.format(
                                 agent_description=self.agent_description
                             ),
                         ),
-                        LLMMessage(role="user", content=CORRECTNESS_TRUE_EXAMPLE_INPUT),
-                        LLMMessage(role="assistant", content=CORRECTNESS_TRUE_EXAMPLE_OUTPUT),
-                        LLMMessage(role="user", content=CORRECTNESS_FALSE_EXAMPLE_INPUT),
-                        LLMMessage(role="assistant", content=CORRECTNESS_FALSE_EXAMPLE_OUTPUT),
-                        LLMMessage(
+                        ChatMessage(role="user", content=CORRECTNESS_TRUE_EXAMPLE_INPUT),
+                        ChatMessage(role="assistant", content=CORRECTNESS_TRUE_EXAMPLE_OUTPUT),
+                        ChatMessage(role="user", content=CORRECTNESS_FALSE_EXAMPLE_INPUT),
+                        ChatMessage(role="assistant", content=CORRECTNESS_FALSE_EXAMPLE_OUTPUT),
+                        ChatMessage(
                             role="user",
                             content=CORRECTNESS_INPUT_TEMPLATE.format(
                                 question=sample.question, agent_answer=answer, ground_truth=sample.reference_answer

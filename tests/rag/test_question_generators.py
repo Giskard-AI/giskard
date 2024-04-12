@@ -1,6 +1,6 @@
 from unittest.mock import Mock
 
-from giskard.llm.client import LLMMessage
+from giskard.llm.client import ChatMessage
 from giskard.rag.knowledge_base import Document
 from giskard.rag.question_generators import (
     ComplexQuestionsGenerator,
@@ -17,7 +17,7 @@ def test_simple_question_generation():
     knowledge_base = Mock()
     llm_client = Mock()
     llm_client.complete.side_effect = [
-        LLMMessage(
+        ChatMessage(
             role="assistant",
             content='{"question": "Where is Camembert from?", "answer": "Camembert was created in Normandy, in the northwest of France."}',
         )
@@ -56,7 +56,7 @@ def test_simple_question_generation():
 def test_complex_question_generation():
     llm_client = Mock()
     llm_client.complete.side_effect = [
-        LLMMessage(
+        ChatMessage(
             role="assistant",
             content='{"question": "Among all regions of France which one is the home of Camembert?"}',
         )
@@ -99,7 +99,7 @@ def test_complex_question_generation():
 def test_distracting_question_generation():
     llm_client = Mock()
     llm_client.complete.side_effect = [
-        LLMMessage(
+        ChatMessage(
             role="assistant",
             content='{"question": "Scamorza is a cheese from Italy, but where is the camembert from?"}',
         )
@@ -146,11 +146,11 @@ def test_distracting_question_generation():
 def test_situational_question_generation():
     llm_client = Mock()
     llm_client.complete.side_effect = [
-        LLMMessage(
+        ChatMessage(
             role="assistant",
             content="A cheese enthusiast is asking various questions about cheese.",
         ),
-        LLMMessage(
+        ChatMessage(
             role="assistant",
             content='{"question": "I really love cheese, I wonder where is the camembert from?"}',
         ),
@@ -193,11 +193,11 @@ def test_situational_question_generation():
 def test_double_question_generation():
     llm_client = Mock()
     llm_client.complete.side_effect = [
-        LLMMessage(
+        ChatMessage(
             role="assistant",
             content='[{"question": "Where is scamorza from?", "answer": "Scamorza is a cheese from southern Italy."}, {"question": "Where is scamorza camembert from?", "answer": "Camembert is a cheese from Normandy."}]',
         ),
-        LLMMessage(
+        ChatMessage(
             role="assistant",
             content='{"question": "Where are scamorza and camembert from?", "answer": "Scamorza is a cheese from southern Italy, but Camembert was created in Normandy, in the northwest of France."}',
         ),
@@ -239,7 +239,7 @@ def test_double_question_generation():
 def test_conversational_question_generation():
     llm_client = Mock()
     llm_client.complete.side_effect = [
-        LLMMessage(
+        ChatMessage(
             role="assistant",
             content='{"question": "Where is it from?", "introduction": "I would like to know some information about the Camembert."}',
         )
@@ -287,7 +287,7 @@ def test_oos_question_generation():
     llm_client = Mock()
 
     llm_client.complete.side_effect = [
-        LLMMessage(
+        ChatMessage(
             role="assistant",
             content='{"selected_fact": "Paul Graham liked to buy a baguette every day at the local market.", "fake_fact": "Paul Graham paid 1 USD for a baguette", "question": "How much did Paul pay for the baguette?"}',
         )

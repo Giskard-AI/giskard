@@ -5,6 +5,7 @@ import pandas as pd
 from ...datasets.base import Dataset
 from ...llm.evaluators.coherency import CoherencyEvaluator
 from ...llm.generators.sycophancy import SycophancyDataGenerator
+from ...llm.utils import format_chat_messages
 from ...models.base.model import BaseModel
 from ...testing.tests.llm.hallucination import test_llm_output_coherency
 from ..decorators import detector
@@ -90,6 +91,17 @@ class LLMBasicSycophancyDetector:
         evaluator = CoherencyEvaluator()
         eval_result = evaluator.evaluate(model, dataset1, dataset2)
 
+        examples = pd.DataFrame(
+            [
+                {
+                    "Conversation 1": format_chat_messages(r["sample"].get("conversation_1", [])),
+                    "Conversation 2": format_chat_messages(r["sample"].get("conversation_2", [])),
+                    "Reason": r["reason"],
+                }
+                for r in eval_result.failure_examples
+            ]
+        )
+
         if eval_result.failed:
             return [
                 Issue(
@@ -102,7 +114,7 @@ class LLMBasicSycophancyDetector:
                         "of inputs which are biased in a different way. This is generally a symptom of hallucination "
                         "or sycophancy, i.e. the tendency to produce outputs that agree with the input bias."
                     ),
-                    examples=pd.DataFrame(eval_result.failure_examples),
+                    examples=examples,
                     meta={
                         "domain": "Sycophancy",
                         "deviation": "The model produces incoherent or hallucinated output when prompted with biased inputs.",

@@ -38,7 +38,7 @@ def test_llm_output_coherency(
     TestResult
         The test result.
     """
-    evaluator = CoherencyEvaluator(eval_prompt=eval_prompt, rng_seed=rng_seed)
+    evaluator = CoherencyEvaluator(eval_prompt=eval_prompt, llm_seed=rng_seed)
     eval_result = evaluator.evaluate(model, dataset_1, dataset_2)
 
     return TestResult(

@@ -5,7 +5,7 @@ import logging
 import re
 from abc import ABC, abstractmethod
 
-from ...llm.client import LLMClient, LLMMessage, get_default_client
+from ...llm.client import ChatMessage, LLMClient, get_default_client
 from ..knowledge_base import KnowledgeBase
 
 logger = logging.getLogger("giskard.rag")
@@ -39,7 +39,7 @@ class _LLMBasedQuestionGenerator(QuestionGenerator):
 
         return self._llm_client_instance
 
-    def _llm_complete(self, messages: Sequence[LLMMessage]) -> dict:
+    def _llm_complete(self, messages: Sequence[ChatMessage]) -> dict:
         out = self._llm_client.complete(
             messages=messages,
             temperature=0.5,
@@ -66,11 +66,11 @@ class _LLMBasedQuestionGenerator(QuestionGenerator):
         # Final attempt, let's try to fix the JSON with the LLM itself
         out = self._llm_client.complete(
             messages=[
-                LLMMessage(
+                ChatMessage(
                     role="system",
                     content="Fix the following text so it contains a single valid JSON object. Make sure to start and end with curly brackets.",
                 ),
-                LLMMessage(role="user", content=raw_json),
+                ChatMessage(role="user", content=raw_json),
             ],
             temperature=0,
             caller_id=self.__class__.__name__,

@@ -3,7 +3,7 @@ from typing import Optional
 import logging
 import os
 
-from .base import LLMClient, LLMFunctionCall, LLMMessage, LLMToolCall
+from .base import ChatMessage, LLMClient
 from .logger import LLMLogger
 
 _default_client = None
@@ -58,7 +58,7 @@ def get_default_client() -> LLMClient:
         return _default_client
 
     # Setup the default client
-    from .openai import LegacyOpenAIClient, OpenAIClient
+    from .openai import OpenAIClient
 
     default_llm_api = get_default_llm_api()
 
@@ -68,21 +68,16 @@ def get_default_client() -> LLMClient:
 
         client = AzureOpenAI() if default_llm_api == "azure" else OpenAI()
 
-        _default_client = OpenAIClient(_default_llm_model, client)
+        _default_client = OpenAIClient(model=_default_llm_model, client=client)
     except ImportError:
-        # Fallback for openai<=0.28.1
-        if default_llm_api != "openai":
-            raise ValueError(f"LLM scan using {default_llm_api.name} require openai>=1.0.0")
-        _default_client = LegacyOpenAIClient(_default_llm_model)
+        raise ValueError(f"LLM scan using {default_llm_api.name} require openai>=1.0.0")
 
     return _default_client
 
 
 __all__ = [
     "LLMClient",
-    "LLMFunctionCall",
-    "LLMToolCall",
-    "LLMMessage",
+    "ChatMessage",
     "LLMLogger",
     "get_default_client",
     "set_llm_model",
