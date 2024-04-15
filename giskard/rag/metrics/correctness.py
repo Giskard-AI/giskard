@@ -90,34 +90,4 @@ class CorrectnessMetric(Metric):
             raise LLMGenerationError("Error while evaluating the agent") from err
 
 
-# correctness_metric = CorrectnessMetric(name="correctness")
-
-
-def correctness_metric(question_sample, answer, llm_client=None, agent_description=None):
-    agent_description = agent_description or "This agent is a chatbot that answers question from users."
-    try:
-        out = llm_client.complete(
-            messages=[
-                ChatMessage(
-                    role="system",
-                    content=CORRECTNESS_EVALUATION_SYSTEM_PROMPT.format(agent_description=agent_description),
-                ),
-                ChatMessage(role="user", content=CORRECTNESS_TRUE_EXAMPLE_INPUT),
-                ChatMessage(role="assistant", content=CORRECTNESS_TRUE_EXAMPLE_OUTPUT),
-                ChatMessage(role="user", content=CORRECTNESS_FALSE_EXAMPLE_INPUT),
-                ChatMessage(role="assistant", content=CORRECTNESS_FALSE_EXAMPLE_OUTPUT),
-                ChatMessage(
-                    role="user",
-                    content=CORRECTNESS_INPUT_TEMPLATE.format(
-                        question=question_sample.question,
-                        agent_answer=answer,
-                        ground_truth=question_sample.reference_answer,
-                    ),
-                ),
-            ],
-            temperature=0,
-        )
-        evaluation = json.loads(out.content, strict=False)
-        return evaluation
-    except Exception as err:
-        raise LLMGenerationError(f"Error while evaluating the agent: {err}")
+correctness_metric = CorrectnessMetric(name="correctness")
