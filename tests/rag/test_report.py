@@ -92,7 +92,7 @@ def test_report_save_load(tmp_path):
     embeddings.embed.return_value = np.random.randn(len(testset), 8)
 
     with patch.object(uuid, "uuid4", side_effect=TEST_UUIDS):
-        knowledge_base = KnowledgeBase(testset.to_pandas(), llm_client=llm_client)
+        knowledge_base = KnowledgeBase(testset.to_pandas(), llm_client=llm_client, embedding_model=embeddings)
     knowledge_base._topics_inst = {0: "Cheese_1", 1: "Cheese_2"}
     for doc_idx, doc in enumerate(knowledge_base._documents):
         if doc_idx < 3:
