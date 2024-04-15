@@ -7,9 +7,9 @@ from bokeh.plotting import figure
 from giskard.rag import QATestset, RAGReport
 from giskard.rag.knowledge_base import KnowledgeBase
 from tests.rag.test_qa_testset import make_testset_samples
+from tests.utils import DummyEmbedding
 
 TEST_UUIDS = ["{}".format(i) for i in range(6)]
-from tests.utils import DummyEmbedding
 
 
 def test_report_plots():
@@ -89,7 +89,7 @@ def test_report_save_load(tmp_path):
     llm_client = Mock()
 
     embeddings = Mock()
-    embeddings.embed.return_value = np.random.randn(len(df), 8)
+    embeddings.embed.return_value = np.random.randn(len(testset), 8)
 
     with patch.object(uuid, "uuid4", side_effect=TEST_UUIDS):
         knowledge_base = KnowledgeBase(testset.to_pandas(), llm_client=llm_client)

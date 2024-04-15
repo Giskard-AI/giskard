@@ -77,14 +77,6 @@ def test_complex_question_generation():
                 conversation_history=[],
                 metadata={"question_type": "simple", "seed_document_id": "2"},
             )
-            QuestionSample(
-                question="Where is Camembert from?",
-                id="1",
-                reference_answer="Camembert was created in Normandy, in the northwest of France.",
-                reference_context="Document 1: Camembert is a cheese from Normandy, in the northwest of France.\n\nDocument 2: Cheese is made of milk.\n\nDocument 3: Milk is produced by cows, goats or sheep.",
-                conversation_history=[],
-                metadata={"question_type": "simple", "seed_document_id": "2"},
-            )
         ]
     )
 
@@ -324,10 +316,7 @@ def test_oos_question_generation():
 
     assert question.question == "How much did Paul pay for the baguette?"
     assert isinstance(question.id, str)
-    assert question.question == "How much did Paul pay for the baguette?"
-    assert isinstance(question.id, str)
     assert (
-        question.reference_answer
         question.reference_answer
         == "This question can not be answered by the context. No sufficient information is provided in the context to answer this question."
     )

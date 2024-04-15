@@ -4,7 +4,7 @@ import json
 import logging
 import re
 
-from ...llm.client import LLMClient, ChatMessage
+from ...llm.client import ChatMessage, LLMClient
 
 try:
     from tqdm.auto import tqdm, trange

@@ -7,7 +7,6 @@ import numpy as np
 import pandas as pd
 from sklearn.cluster import HDBSCAN
 
-from ..utils.language_detection import detect_lang
 from ..llm.client import ChatMessage, LLMClient, get_default_client
 from ..llm.embeddings import get_default_embedding
 from ..llm.embeddings.base import BaseEmbedding
@@ -217,7 +216,7 @@ class KnowledgeBase:
 
     def get_savable_data(self):
         return {
-            "columns": self._knowledge_base_columns,
+            "columns": self._columns,
             "min_topic_size": self._min_topic_size,
             "topics": {int(k): topic for k, topic in self.topics.items()},
             "documents_topics": [int(doc.topic_id) for doc in self._documents],
