@@ -20,7 +20,6 @@ class TextMetadataProvider(MetadataProvider):
                 "text_length": values.map(len),
                 "charset": pd.Categorical(values.map(_detect_charset)),
                 "language": values.map(detect_lang),
-                "language": values.map(detect_lang),
             },
             index=values.index,
         )
