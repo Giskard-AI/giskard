@@ -5,6 +5,7 @@
 :hidden:
 
 installation_library/index
+setting_up_language_models/index
 scan/index
 testset_generation/index
 customize_tests/index
@@ -17,6 +18,11 @@ integrate_tests/index
 ::::{grid-item-card} <br/><h3>📥 Install the Giskard Python Library</h3>
 :text-align: center
 :link: installation_library/index.html
+::::
+
+::::{grid-item-card} <br/><h3>🤖 Setting up Language Models</h3>
+:text-align: center
+:link: setting_up_language_models/index.html
 ::::
 
 ::::{grid-item-card} <br/><h3>🔍 Scan a model</h3>
