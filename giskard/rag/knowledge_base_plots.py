@@ -21,8 +21,6 @@ def get_failure_plot(knowledge_base, question_evaluation: Sequence = None):
         [knowledge_base._documents_index[doc_id].reduced_embeddings for doc_id in document_ids]
     )
 
-    # TITLE = "Knowledge Base UMAP representation"
-
     topics = [question.metadata["topic"] for question in question_evaluation]
     failure_palette = ["#ba0e0e", "#0a980a"]
     questions = [question.question for question in question_evaluation]
@@ -77,7 +75,6 @@ def get_failure_plot(knowledge_base, question_evaluation: Sequence = None):
     p = figure(
         tools=["pan", "wheel_zoom", "box_zoom", "reset", "save"],
         toolbar_location="right",
-        # title=TITLE,
         x_range=x_range,
         y_range=y_range,
         sizing_mode="stretch_width",
@@ -168,7 +165,6 @@ def get_knowledge_plot(knowledge_base):
     if knowledge_base.topics is None:
         raise ValueError("No topics found.")
 
-    # TITLE = "Knowledge Base UMAP representation"
     TOOLS = "hover,pan,wheel_zoom,box_zoom,reset,save"
 
     topics_ids = [doc.topic_id for doc in knowledge_base._documents]
@@ -200,7 +196,6 @@ def get_knowledge_plot(knowledge_base):
     p = figure(
         tools=TOOLS,
         toolbar_location="right",
-        # title=TITLE,
         x_range=x_range,
         y_range=y_range,
         sizing_mode="stretch_width",
@@ -230,7 +225,7 @@ def get_knowledge_plot(knowledge_base):
         legend_group="topic",
     )
     p.legend.location = "top_right"
-    p.legend.title = "Knowledge Base Topics"
+    p.legend.title = "Knowledge Base Tospics"
     p.legend.title_text_font_style = "bold"
     p.legend.background_fill_color = "#111516"
     p.legend.background_fill_alpha = 0.5
