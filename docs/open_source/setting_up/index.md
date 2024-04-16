@@ -8,6 +8,7 @@ This guide focuses primarily on configuring and using various LLM clients suppor
 - Any Custom Model
 
 ## OpenAI GPT-4 Client Setup
+
     ```python
     import giskard
     import os
@@ -21,6 +22,7 @@ This guide focuses primarily on configuring and using various LLM clients suppor
     ```
 
 ## Azure OpenAI Client Setup
+
     ```python
     import os
     from giskard.llm import set_llm_model
@@ -36,6 +38,7 @@ This guide focuses primarily on configuring and using various LLM clients suppor
     ```
 
 ## Mistral Client Setup
+
     ```python
     import os
     from giskard.llm.client.mistral import MistralClient
@@ -47,7 +50,8 @@ This guide focuses primarily on configuring and using various LLM clients suppor
     ```
 
 ## Ollama Client Setup
-    The Ollama setup involves configuring an OpenAI client customized for the Ollama API:
+
+The Ollama setup involves configuring an OpenAI client customized for the Ollama API:
 
     ```python
     from openai import OpenAI
@@ -61,6 +65,7 @@ This guide focuses primarily on configuring and using various LLM clients suppor
     ```
 
 ## Custom Client Setup
+
     ```python
     import giskard
     from typing import Sequence, Optional
