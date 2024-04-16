@@ -352,27 +352,45 @@ class RAGReport:
         p = figure(
             y_range=metadata_values,
             height=350,
-            title=f"Correctness by {metadata_name}",
+            # title=f"Correctness by {metadata_name}",
             toolbar_location=None,
             tools="hover",
             width_policy="max",
         )
-
-        p.hbar(y="metadata_values", right="correctness", source=source, height=0.9, fill_color="colors")
-        vline = Span(
-            location=overall_correctness * 100, dimension="height", line_color="red", line_width=2, line_dash="dashed"
+        p.hbar(y="metadata_values", right="correctness", source=source, height=0.85, fill_color="#14191B")
+        p.hbar(
+            y="metadata_values",
+            right="correctness",
+            source=source,
+            height=0.85,
+            fill_color="#78BBFA",
+            fill_alpha=0.7,
+            line_color="white",
+            line_width=2,
         )
-        p.add_layout(vline)
+        vline = Span(
+            location=overall_correctness * 100,
+            dimension="height",
+            line_color="#EA3829",
+            line_width=2,
+            line_dash="dashed",
+        )
 
+        p.add_layout(vline)
+        p.background_fill_color = "#14191B"
+
+        p.x_range.start = 0
         r_line = p.line(
             [0],
             [0],
             legend_label="Correctness on the entire Testset",
             line_dash="dashed",
-            line_color="red",
+            line_color="#EA3829",
             line_width=2,
         )
         r_line.visible = False  # Set this fake line to invisible
+        p.legend.background_fill_color = "#111516"
+        p.legend.background_fill_alpha = 0.5
 
         p.xaxis.axis_label = "Correctness (%)"
         p.title.text_font_size = "14pt"
@@ -418,7 +436,7 @@ class RAGReport:
                 bottom=0,
                 left=edges[:-1],
                 right=edges[1:],
-                fill_color="skyblue",
+                fill_color="#78bbfa",
                 line_color="white",
             )
             p.title.text_font_size = "12pt"
@@ -428,6 +446,12 @@ class RAGReport:
             ]
 
             return p
+
+    def _apply_theme(self, p):
+        curdoc().theme = "dark_minimal"
+        doc = Document(theme=curdoc().theme)
+        doc.add_root(p)
+        return p
 
     def _apply_theme(self, p):
         curdoc().theme = "dark_minimal"
