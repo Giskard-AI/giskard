@@ -29,7 +29,7 @@ Most of the detectors ran by the scan should work with any language, however the
 
 ## Before starting
 
-In the following example, we illustrate the procedure using **OpenAI** and **Azure OpenAI**; however, please note that our platform supports a variety of language models. For details on configuring different models, visit our [Setting Up Language Models page](#)
+In the following example, we illustrate the procedure using **OpenAI** and **Azure OpenAI**; however, please note that our platform supports a variety of language models. For details on configuring different models, visit our [🤖 Setting up the LLM Client page](../../open_source/setting_up/index.md)
 
 
 Before starting, make sure you have installed the LLM flavor of Giskard:
@@ -45,11 +45,16 @@ like this:
 ::::::{tab-item} OpenAI
 
 ```python
+import giskard
 import os
+from giskard.llm.client.openai import OpenAIClient
 
 os.environ["OPENAI_API_KEY"] = "sk-…"
-```
 
+giskard.llm.set_llm_api("openai")
+oc = OpenAIClient(model="gpt-4-turbo-preview")
+giskard.llm.set_default_client(oc)
+```
 ::::::
 ::::::{tab-item} Azure OpenAI
 
@@ -70,13 +75,91 @@ set_llm_model('my-gpt-4-model')
 ```
 
 ::::::
+::::::{tab-item} Mistral
+```python
+import os
+from giskard.llm.client.mistral import MistralClient
+
+os.environ["MISTRAL_API_KEY"] = "sk-…"
+
+mc = MistralClient()
+giskard.llm.set_default_client(mc)
+```
+
+::::::
+::::::{tab-item} Ollama
+```python
+from openai import OpenAI
+from giskard.llm.client.openai import OpenAIClient
+from giskard.llm.client.mistral import MistralClient
+
+# Setup the Ollama client with API key and base URL
+_client = OpenAI(base_url="http://localhost:11434/v1/", api_key="ollama")
+oc = OpenAIClient(model="gemma:2b", client=_client)
+giskard.llm.set_default_client(oc)
+```
+::::::
+::::::{tab-item} Custom Client
+```python
+import giskard
+from typing import Sequence, Optional
+from giskard.llm.client import set_default_client
+from giskard.llm.client.base import LLMClient, ChatMessage
+
+
+
+class MyLLMClient(LLMClient):
+    def __init__(self, my_client):
+        self._client = my_client
+
+    def complete(
+            self,
+            messages: Sequence[ChatMessage],
+            temperature: float = 1,
+            max_tokens: Optional[int] = None,
+            caller_id: Optional[str] = None,
+            seed: Optional[int] = None,
+            format=None,
+    ) -> ChatMessage:
+        # Create the prompt
+        prompt = ""
+        for msg in messages:
+            if msg.role.lower() == "assistant":
+                prefix = "\n\nAssistant: "
+            else:
+                prefix = "\n\nHuman: "
+
+            prompt += prefix + msg.content
+
+        prompt += "\n\nAssistant: "
+
+        # Create the body
+        params = {
+            "prompt": prompt,
+            "max_tokens_to_sample": max_tokens or 1000,
+            "temperature": temperature,
+            "top_p": 0.9,
+        }
+        body = json.dumps(params)
+
+        response = self._client.invoke_model(
+            body=body,
+            modelId=self._model_id,
+            accept="application/json",
+            contentType="application/json",
+        )
+        data = json.loads(response.get("body").read())
+
+        return ChatMessage(role="assistant", message=data["completion"])
+
+set_default_client(MyLLMClient())
+
+```
+
+::::::
 :::::::
 
 We are now ready to start.
-
->  #### 💡 Customize your scan
->
-> It’s possible to use another LLM provider than Open AI to run the scan. For that, please contact us on [Discord](https://discord.gg/ABvfpbu69R).
 
 (model-wrapping)=
 ## Step 1: Wrap your model
