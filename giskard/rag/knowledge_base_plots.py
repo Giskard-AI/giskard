@@ -108,6 +108,7 @@ def get_failure_plot(knowledge_base, question_evaluation: Sequence = None):
     p.legend.background_fill_color = "#111516"
     p.legend.background_fill_alpha = 0.5
     p.title.text_font_size = "14pt"
+    p.legend.title_text_color = "#B1B1B1"
 
     background_source = ColumnDataSource(
         data={
@@ -155,6 +156,7 @@ def get_failure_plot(knowledge_base, question_evaluation: Sequence = None):
             text_align="center",
             text_font_size="12pt",
             text_font_style="bold",
+            text_color="#B1B1B1",
             source=label_source,
         )
         p.add_layout(labels)
@@ -232,6 +234,8 @@ def get_knowledge_plot(knowledge_base):
     p.legend.title_text_font_style = "bold"
     p.legend.background_fill_color = "#111516"
     p.legend.background_fill_alpha = 0.5
+    p.legend.title_text_color = "#B1B1B1"
+
     p.title.text_font_size = "14pt"
 
     return p

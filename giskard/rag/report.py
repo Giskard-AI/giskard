@@ -357,8 +357,17 @@ class RAGReport:
             tools="hover",
             width_policy="max",
         )
-
-        p.hbar(y="metadata_values", right="correctness", source=source, height=0.9, fill_color="colors")
+        p.hbar(y="metadata_values", right="correctness", source=source, height=0.85, fill_color="#14191B")
+        p.hbar(
+            y="metadata_values",
+            right="correctness",
+            source=source,
+            height=0.85,
+            fill_color="#1D78B4",
+            fill_alpha=0.7,
+            line_color="#1D78B4",
+            line_width=2,
+        )
         vline = Span(
             location=overall_correctness * 100,
             dimension="height",
@@ -366,8 +375,11 @@ class RAGReport:
             line_width=2,
             line_dash="dashed",
         )
-        p.add_layout(vline)
 
+        p.add_layout(vline)
+        p.background_fill_color = "#14191B"
+
+        p.x_range.start = 0
         r_line = p.line(
             [0],
             [0],
