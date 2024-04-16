@@ -99,7 +99,7 @@ We currently provide [RAGAS metrics](https://docs.ragas.io/en/latest/concepts/me
 The results of your metrics will be displayed in the report object as histograms and will be available inside the report main `DataFrame`. 
 ![image](../../../_static/ragas_metrics.png)
 
-To include RAGAS metrics in evaluation, make sure to have installed the `ragas` library, then use the following code:
+To include RAGAS metrics in evaluation, make sure to have installed the `ragas>=0.1.5` library, then use the following code:
 
 ```python
 from giskard.rag.metrics.ragas_metrics import ragas_context_recall, ragas_faithfulness

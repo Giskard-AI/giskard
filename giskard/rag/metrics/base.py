@@ -1,8 +1,6 @@
-from typing import Sequence
-
 from abc import ABC, abstractmethod
 
-from ..testset import QATestset
+from ...llm.client.base import LLMClient
 
 
 class Metric(ABC):
@@ -11,11 +9,12 @@ class Metric(ABC):
     The instances of this class can be passed to the evaluate method.
     """
 
-    def __init__(self, name: str) -> None:
+    def __init__(self, name: str, llm_client: LLMClient = None) -> None:
         self.name = name
+        self._llm_client = llm_client
 
     @abstractmethod
-    def __call__(self, testset: QATestset, answers: Sequence[str], *args, **kwargs):
+    def __call__(self, question_sample: dict, answer: str):
         """
         Compute the metric on the test set and the answers.
 

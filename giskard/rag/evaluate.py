@@ -1,12 +1,13 @@
 from typing import Callable, Optional, Sequence, Union
 
 import logging
+from collections import defaultdict
 from inspect import signature
 
 from ..llm.client import LLMClient, get_default_client
 from ..utils.analytics_collector import analytics
 from .knowledge_base import KnowledgeBase
-from .metrics import CorrectnessMetric
+from .metrics import CorrectnessMetric, Metric
 from .question_generators.utils import maybe_tqdm
 from .recommendation import get_rag_recommendation
 from .report import RAGReport
@@ -14,6 +15,8 @@ from .testset import QATestset
 from .testset_generation import generate_testset
 
 logger = logging.getLogger(__name__)
+
+ANSWER_FN_HISTORY_PARAM = "history"
 
 
 def evaluate(
@@ -74,19 +77,32 @@ def evaluate(
     llm_client = llm_client or get_default_client()
 
     # @TODO: improve this
-    metrics = metrics or []
+    metrics = list(metrics) if metrics is not None else []
     if not any(isinstance(metric, CorrectnessMetric) for metric in metrics):
-        metrics.append(CorrectnessMetric(name="Correctness", agent_description=agent_description))
+        # By default only correctness is computed as it is required to build the report
+        metrics.insert(
+            0, CorrectnessMetric(name="correctness", llm_client=llm_client, agent_description=agent_description)
+        )
 
-    metrics_results = {}
+    metrics_results = defaultdict(dict)
+
     for metric in metrics:
-        metrics_results.update(metric(testset, answers, llm_client=llm_client))
+        metric_name = getattr(
+            metric, "name", metric.__class__.__name__ if isinstance(metric, Metric) else metric.__name__
+        )
+
+        for sample, answer in maybe_tqdm(
+            zip(testset.to_pandas().to_records(index=True), answers),
+            desc=f"{metric_name} evaluation",
+            total=len(answers),
+        ):
+            metrics_results[sample["id"]].update(metric(sample, answer))
 
     report = RAGReport(testset, answers, metrics_results, knowledge_base)
     recommendation = get_rag_recommendation(
         report.topics,
-        report.correctness_by_question_type().to_dict()["correctness"],
-        report.correctness_by_topic().to_dict()["correctness"],
+        report.correctness_by_question_type().to_dict()[metrics[0].name],
+        report.correctness_by_topic().to_dict()[metrics[0].name],
         llm_client,
     )
     report._recommendation = recommendation
@@ -106,12 +122,15 @@ def evaluate(
 
 def _compute_answers(answer_fn, testset):
     answers = []
-    needs_history = len(signature(answer_fn).parameters) > 1
+    needs_history = (
+        len(signature(answer_fn).parameters) > 1 and ANSWER_FN_HISTORY_PARAM in signature(answer_fn).parameters
+    )
+
     for sample in maybe_tqdm(testset.samples, desc="Asking questions to the agent", total=len(testset)):
         kwargs = {}
 
         if needs_history:
-            kwargs["history"] = sample["conversation_history"]
+            kwargs[ANSWER_FN_HISTORY_PARAM] = sample.conversation_history
 
-        answers.append(answer_fn(sample["question"], **kwargs))
+        answers.append(answer_fn(sample.question, **kwargs))
     return answers
