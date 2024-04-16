@@ -13,10 +13,9 @@ from ..llm.errors import LLMImportError
 try:
     from bokeh.document import Document
     from bokeh.embed import components
-    from bokeh.io import output_notebook, reset_output, curdoc
+    from bokeh.io import curdoc, output_notebook, reset_output
     from bokeh.models import ColumnDataSource, Span, TabPanel, Tabs
     from bokeh.plotting import figure
-    from bokeh.document import Document
 except ImportError as err:
     raise LLMImportError(flavor="llm") from err
 
@@ -364,9 +363,9 @@ class RAGReport:
             right="correctness",
             source=source,
             height=0.85,
-            fill_color="#1D78B4",
+            fill_color="#78BBFA",
             fill_alpha=0.7,
-            line_color="#1D78B4",
+            line_color="white",
             line_width=2,
         )
         vline = Span(
