@@ -24,7 +24,7 @@ QUESTION_ATTRIBUTION = {
         "conversational",
         "multi-context",
     ],
-    RAGComponents.ROUTING: ["simple", "out of scope"],
+    RAGComponents.ROUTING: ["out of scope"],
     RAGComponents.KNOWLEDGE_BASE: ["out of scope"],
 }
 

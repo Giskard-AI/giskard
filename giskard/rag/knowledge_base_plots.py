@@ -14,19 +14,20 @@ except ImportError as err:
     raise LLMImportError(flavor="llm") from err
 
 
-def get_failure_plot(knowledge_base, question_evaluation: Sequence[dict] = None):
-    document_ids = [question["metadata"]["seed_document_id"] for question in question_evaluation]
-    reduced_embeddings = knowledge_base._reduced_embeddings[document_ids]
+def get_failure_plot(knowledge_base, question_evaluation: Sequence = None):
+    document_ids = [question.metadata["seed_document_id"] for question in question_evaluation]
+    knowledge_base._reduced_embeddings
+    reduced_embeddings = np.stack(
+        [knowledge_base._documents_index[doc_id].reduced_embeddings for doc_id in document_ids]
+    )
 
-    TITLE = "Knowledge Base UMAP representation"
-
-    topics = [question["metadata"]["topic"] for question in question_evaluation]
+    topics = [question.metadata["topic"] for question in question_evaluation]
     failure_palette = ["#ba0e0e", "#0a980a"]
-    questions = [question["question"] for question in question_evaluation]
-    agent_answer = [question["agent_answer"] for question in question_evaluation]
-    reference_answer = [question["reference_answer"] for question in question_evaluation]
-    correctness = [question["correctness"] for question in question_evaluation]
-    colors = [failure_palette[question["correctness"]] for question in question_evaluation]
+    questions = [question.question for question in question_evaluation]
+    agent_answer = [question.agent_answer for question in question_evaluation]
+    reference_answer = [question.reference_answer for question in question_evaluation]
+    correctness = [question.correctness for question in question_evaluation]
+    colors = [failure_palette[question.correctness] for question in question_evaluation]
 
     x_min = knowledge_base._reduced_embeddings[:, 0].min()
     x_max = knowledge_base._reduced_embeddings[:, 0].max()
@@ -35,8 +36,6 @@ def get_failure_plot(knowledge_base, question_evaluation: Sequence[dict] = None)
 
     x_range = (x_min - (x_max - x_min) * 0.05, x_max + (x_max - x_min) * 0.6)
     y_range = (y_min - (y_max - y_min) * 0.25, y_max + (y_max - y_min) * 0.25)
-
-    kb_docs = knowledge_base._documents
 
     source = ColumnDataSource(
         data={
@@ -49,7 +48,9 @@ def get_failure_plot(knowledge_base, question_evaluation: Sequence[dict] = None)
             "reference_answer": reference_answer,
             "id": document_ids,
             "content": [
-                kb_docs[doc_id].content if len(kb_docs[doc_id].content) < 500 else kb_docs[doc_id].content[:500] + "..."
+                knowledge_base[doc_id].content
+                if len(knowledge_base[doc_id].content) < 500
+                else knowledge_base[doc_id].content[:500] + "..."
                 for doc_id in document_ids
             ],
             "color": colors,
@@ -74,14 +75,13 @@ def get_failure_plot(knowledge_base, question_evaluation: Sequence[dict] = None)
     p = figure(
         tools=["pan", "wheel_zoom", "box_zoom", "reset", "save"],
         toolbar_location="right",
-        title=TITLE,
         x_range=x_range,
         y_range=y_range,
         sizing_mode="stretch_width",
     )
     p.add_tools(hover)
     p.toolbar.logo = "grey"
-    p.background_fill_color = "#efefef"
+    p.background_fill_color = "#14191B"
     p.grid.grid_line_color = "white"
 
     foreground_scatter = p.scatter(
@@ -102,7 +102,10 @@ def get_failure_plot(knowledge_base, question_evaluation: Sequence[dict] = None)
     p.legend.location = "top_right"
     p.legend.title = "Question Correctness"
     p.legend.title_text_font_style = "bold"
+    p.legend.background_fill_color = "#111516"
+    p.legend.background_fill_alpha = 0.5
     p.title.text_font_size = "14pt"
+    p.legend.title_text_color = "#B1B1B1"
 
     background_source = ColumnDataSource(
         data={
@@ -124,8 +127,8 @@ def get_failure_plot(knowledge_base, question_evaluation: Sequence[dict] = None)
             [
                 np.mean(
                     [
-                        knowledge_base._reduced_embeddings[doc.id]
-                        for doc in knowledge_base._documents
+                        doc.reduced_embeddings
+                        for _, doc in knowledge_base._documents_index.items()
                         if doc.topic_id == topic_id
                     ],
                     axis=0,
@@ -150,6 +153,7 @@ def get_failure_plot(knowledge_base, question_evaluation: Sequence[dict] = None)
             text_align="center",
             text_font_size="12pt",
             text_font_style="bold",
+            text_color="#B1B1B1",
             source=label_source,
         )
         p.add_layout(labels)
@@ -161,7 +165,6 @@ def get_knowledge_plot(knowledge_base):
     if knowledge_base.topics is None:
         raise ValueError("No topics found.")
 
-    TITLE = "Knowledge Base UMAP representation"
     TOOLS = "hover,pan,wheel_zoom,box_zoom,reset,save"
 
     topics_ids = [doc.topic_id for doc in knowledge_base._documents]
@@ -193,13 +196,12 @@ def get_knowledge_plot(knowledge_base):
     p = figure(
         tools=TOOLS,
         toolbar_location="right",
-        title=TITLE,
         x_range=x_range,
         y_range=y_range,
         sizing_mode="stretch_width",
     )
     p.toolbar.logo = "grey"
-    p.background_fill_color = "#efefef"
+    p.background_fill_color = "#14191B"
     p.grid.grid_line_color = "white"
 
     p.hover.tooltips = """
@@ -223,8 +225,12 @@ def get_knowledge_plot(knowledge_base):
         legend_group="topic",
     )
     p.legend.location = "top_right"
-    p.legend.title = "Knowledge Base Topics"
+    p.legend.title = "Knowledge Base Tospics"
     p.legend.title_text_font_style = "bold"
+    p.legend.background_fill_color = "#111516"
+    p.legend.background_fill_alpha = 0.5
+    p.legend.title_text_color = "#B1B1B1"
+
     p.title.text_font_size = "14pt"
 
     return p

@@ -1,6 +1,7 @@
 import uuid
 
 from ..knowledge_base import KnowledgeBase
+from ..testset import QuestionSample
 from .base import GenerateFromSingleQuestionMixin, _LLMBasedQuestionGenerator
 from .prompt import QAGenerationPrompt
 
@@ -76,7 +77,7 @@ class SimpleQuestionsGenerator(GenerateFromSingleQuestionMixin, _LLMBasedQuestio
 
         Returns
         -------
-        Tuple[dict, dict]
+        QuestionSample
             The generated question and the metadata of the question.
         """
         seed_document = knowledge_base.get_random_document()
@@ -95,14 +96,14 @@ class SimpleQuestionsGenerator(GenerateFromSingleQuestionMixin, _LLMBasedQuestio
         generated_qa = self._llm_complete(messages=messages)
         question_metadata = {"question_type": self._question_type, "seed_document_id": seed_document.id}
 
-        question = {
-            "id": str(uuid.uuid4()),
-            "question": generated_qa["question"],
-            "reference_answer": generated_qa["answer"],
-            "reference_context": reference_context,
-            "conversation_history": [],
-            "metadata": question_metadata,
-        }
+        question = QuestionSample(
+            id=str(uuid.uuid4()),
+            question=generated_qa["question"],
+            reference_answer=generated_qa["answer"],
+            reference_context=reference_context,
+            conversation_history=[],
+            metadata=question_metadata,
+        )
         return question
 
 
