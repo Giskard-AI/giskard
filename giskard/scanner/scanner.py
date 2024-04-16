@@ -338,7 +338,7 @@ class Scanner:
         llm_logger = _maybe_get_llm_logger()
         if llm_logger is None:
             return None
-        llm_logger = get_default_client().logger
+
         num_calls = llm_logger.get_num_calls()
         num_prompt_tokens = llm_logger.get_num_prompt_tokens()
         num_sampled_tokens = llm_logger.get_num_sampled_tokens()
