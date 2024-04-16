@@ -5,7 +5,7 @@
 :hidden:
 
 installation_library/index
-setting_up_language_models/index
+setting_up/index
 scan/index
 testset_generation/index
 customize_tests/index
@@ -20,9 +20,9 @@ integrate_tests/index
 :link: installation_library/index.html
 ::::
 
-::::{grid-item-card} <br/><h3>🤖 Setting up Language Models</h3>
+::::{grid-item-card} <br/><h3>🤖 Setting up the LLM Client</h3>
 :text-align: center
-:link: setting_up_language_models/index.html
+:link: setting_up/index.html
 ::::
 
 ::::{grid-item-card} <br/><h3>🔍 Scan a model</h3>
