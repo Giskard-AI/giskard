@@ -352,7 +352,6 @@ class RAGReport:
         p = figure(
             y_range=metadata_values,
             height=350,
-            # title=f"Correctness by {metadata_name}",
             toolbar_location=None,
             tools="hover",
             width_policy="max",
@@ -446,12 +445,6 @@ class RAGReport:
             ]
 
             return p
-
-    def _apply_theme(self, p):
-        curdoc().theme = "dark_minimal"
-        doc = Document(theme=curdoc().theme)
-        doc.add_root(p)
-        return p
 
     def _apply_theme(self, p):
         curdoc().theme = "dark_minimal"
