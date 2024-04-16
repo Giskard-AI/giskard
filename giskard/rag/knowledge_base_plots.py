@@ -14,19 +14,22 @@ except ImportError as err:
     raise LLMImportError(flavor="llm") from err
 
 
-def get_failure_plot(knowledge_base, question_evaluation: Sequence[dict] = None):
-    document_ids = [question["metadata"]["seed_document_id"] for question in question_evaluation]
-    reduced_embeddings = knowledge_base._reduced_embeddings[document_ids]
+def get_failure_plot(knowledge_base, question_evaluation: Sequence = None):
+    document_ids = [question.metadata["seed_document_id"] for question in question_evaluation]
+    knowledge_base._reduced_embeddings
+    reduced_embeddings = np.stack(
+        [knowledge_base._documents_index[doc_id].reduced_embeddings for doc_id in document_ids]
+    )
 
     TITLE = "Knowledge Base UMAP representation"
 
-    topics = [question["metadata"]["topic"] for question in question_evaluation]
+    topics = [question.metadata["topic"] for question in question_evaluation]
     failure_palette = ["#ba0e0e", "#0a980a"]
-    questions = [question["question"] for question in question_evaluation]
-    agent_answer = [question["agent_answer"] for question in question_evaluation]
-    reference_answer = [question["reference_answer"] for question in question_evaluation]
-    correctness = [question["correctness"] for question in question_evaluation]
-    colors = [failure_palette[question["correctness"]] for question in question_evaluation]
+    questions = [question.question for question in question_evaluation]
+    agent_answer = [question.agent_answer for question in question_evaluation]
+    reference_answer = [question.reference_answer for question in question_evaluation]
+    correctness = [question.correctness for question in question_evaluation]
+    colors = [failure_palette[question.correctness] for question in question_evaluation]
 
     x_min = knowledge_base._reduced_embeddings[:, 0].min()
     x_max = knowledge_base._reduced_embeddings[:, 0].max()
@@ -35,8 +38,6 @@ def get_failure_plot(knowledge_base, question_evaluation: Sequence[dict] = None)
 
     x_range = (x_min - (x_max - x_min) * 0.05, x_max + (x_max - x_min) * 0.6)
     y_range = (y_min - (y_max - y_min) * 0.25, y_max + (y_max - y_min) * 0.25)
-
-    kb_docs = knowledge_base._documents
 
     source = ColumnDataSource(
         data={
@@ -49,7 +50,9 @@ def get_failure_plot(knowledge_base, question_evaluation: Sequence[dict] = None)
             "reference_answer": reference_answer,
             "id": document_ids,
             "content": [
-                kb_docs[doc_id].content if len(kb_docs[doc_id].content) < 500 else kb_docs[doc_id].content[:500] + "..."
+                knowledge_base[doc_id].content
+                if len(knowledge_base[doc_id].content) < 500
+                else knowledge_base[doc_id].content[:500] + "..."
                 for doc_id in document_ids
             ],
             "color": colors,
@@ -124,8 +127,8 @@ def get_failure_plot(knowledge_base, question_evaluation: Sequence[dict] = None)
             [
                 np.mean(
                     [
-                        knowledge_base._reduced_embeddings[doc.id]
-                        for doc in knowledge_base._documents
+                        doc.reduced_embeddings
+                        for _, doc in knowledge_base._documents_index.items()
                         if doc.topic_id == topic_id
                     ],
                     axis=0,
