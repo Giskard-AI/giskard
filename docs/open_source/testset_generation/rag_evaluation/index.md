@@ -4,7 +4,8 @@ After automatically generating a test set for your RAG agent using RAGET, you ca
 of the agent's answers** compared to the reference answers (using a LLM-as-a-judge approach). The main purpose
 of this evaluation is to help you **identify the weakest components in your RAG agent**.
 
-
+> ℹ️ You can find a [tutorial](../../../reference/notebooks/RAGET.ipynb) where we demonstrate the capabilities of RAGET with a simple RAG agent build with LlamaIndex 
+on the IPCC report.  
 
 ## Correctness Evaluation on the Generated Test Set
 
