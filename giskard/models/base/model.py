@@ -20,7 +20,7 @@ import pandas as pd
 import yaml
 
 from giskard.client.dtos import ModelMetaInfo
-from giskard.llm import LLMImportError
+from giskard.core.errors import GiskardInstallationError
 
 from ...client.giskard_client import GiskardClient
 from ...core.core import ModelMeta, ModelType, SupportedModelTypes
@@ -625,7 +625,7 @@ class BaseModel(ABC):
                 SHAPExplanationTool,
             )
         except ImportError as err:
-            raise LLMImportError(flavor="talk") from err
+            raise GiskardInstallationError(flavor="talk") from err
 
         return {
             PredictTool.default_name: PredictTool(model=self, dataset=dataset),
@@ -685,7 +685,7 @@ class BaseModel(ABC):
             )
             from ..talk_result import TalkResult
         except ImportError as err:
-            raise LLMImportError(flavor="talk") from err
+            raise GiskardInstallationError(flavor="talk") from err
 
         set_llm_model(get_talk_llm_model())
         client = get_copilot_client()
