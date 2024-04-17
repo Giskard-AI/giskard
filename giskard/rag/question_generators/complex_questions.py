@@ -1,4 +1,5 @@
 from ..knowledge_base import KnowledgeBase
+from ..testset import QuestionSample
 from .base import _BaseModifierGenerator
 from .prompt import QAGenerationPrompt
 from .simple_questions import SimpleQuestionsGenerator
@@ -85,14 +86,14 @@ class ComplexQuestionsGenerator(_BaseModifierGenerator):
     _question_type = "complex"
 
     def _modify_question(
-        self, question: dict, knowledge_base: KnowledgeBase, agent_description: str, language: str
-    ) -> dict:
+        self, question: QuestionSample, knowledge_base: KnowledgeBase, agent_description: str, language: str
+    ) -> QuestionSample:
         """
         Modify a question by complexifying it.
 
         Parameters
         ----------
-        question : dict
+        question : QuestionSample
             The question to modify.
         knowledge_base : KnowledgeBase
             The knowledge base to use for question generation.
@@ -103,7 +104,7 @@ class ComplexQuestionsGenerator(_BaseModifierGenerator):
 
         Returns
         -------
-        dict
+        QuestionSample
             The modified question.
         """
         messages = self._prompt.to_messages(
@@ -111,11 +112,11 @@ class ComplexQuestionsGenerator(_BaseModifierGenerator):
                 "agent_description": agent_description,
                 "language": language,
             },
-            user_input={"question": question["question"], "context": question["reference_context"]},
+            user_input={"question": question.question, "context": question.reference_context},
         )
-        question["metadata"]["question_type"] = self._question_type
+        question.metadata["question_type"] = self._question_type
         out = self._llm_complete(messages=messages)
-        question["question"] = out["question"]
+        question.question = out["question"]
         return question
 
 

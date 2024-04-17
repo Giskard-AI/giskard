@@ -99,7 +99,7 @@ We currently provide [RAGAS metrics](https://docs.ragas.io/en/latest/concepts/me
 The results of your metrics will be displayed in the report object as histograms and will be available inside the report main `DataFrame`. 
 ![image](../../../_static/ragas_metrics.png)
 
-To include RAGAS metrics in evaluation, make sure to have installed the `ragas` library, then use the following code:
+To include RAGAS metrics in evaluation, make sure to have installed the `ragas>=0.1.5` library, then use the following code:
 
 ```python
 from giskard.rag.metrics.ragas_metrics import ragas_context_recall, ragas_faithfulness
@@ -143,7 +143,7 @@ test_suite_by_question_types = testset.to_test_suite("Split test suite", slicing
 Jump to the [test customization](https://docs.giskard.ai/en/latest/open_source/customize_tests/index.html) and [test integration](https://docs.giskard.ai/en/latest/open_source/integrate_tests/index.html) sections to find out everything you can do with test suites.
 
 ### Step 2: Wrap your model
-Before evaluating your model with a test suite, you must wrap it as a `giskard.Model`. This step is necessary to ensure a common format for your model and its metadata. You can wrap anything as long as you can represent it in a Python function (for example an API call to Azure or OpenAI). We also have pre-built wrappers for LangChain objects, or you can create your own wrapper by extending the `giskard.Model` class if you need to wrap a complex object such as a custom-made RAG communicating with a vectorstore.
+Before evaluating your model with a test suite, you must wrap it as a `giskard.Model`. This step is necessary to ensure a common format for your model and its metadata. You can wrap anything as long as you can represent it in a Python function (for example an API call to Azure, OpenAI, Mistral, Ollama etc...). We also have pre-built wrappers for LangChain objects, or you can create your own wrapper by extending the `giskard.Model` class if you need to wrap a complex object such as a custom-made RAG communicating with a vectorstore.
 
 To do so, you can follow the instructions from the [LLM Scan feature](../scan/scan_llm/index.md#step-1-wrap-your-model). Make sure that you pass `feature_names = "question"` when wrapping your model, so that it matches the question column of the test set.
 
