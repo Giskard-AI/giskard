@@ -674,21 +674,18 @@ class BaseModel(ABC):
             The response for the user's prompt.
         """
         try:
-            from ...llm import get_copilot_client, set_llm_model
-            from ...llm.client import ToolChatMessage
+            from ...llm.client import GiskardCopilotClient, ToolChatMessage
             from ...llm.talk.config import (
                 ERROR_RESPONSE,
                 MODEL_INSTRUCTION,
                 SUMMARY_PROMPT,
                 TALK_CLIENT_CONFIG,
-                get_talk_llm_model,
             )
             from ..talk_result import TalkResult
         except ImportError as err:
             raise GiskardInstallationError(flavor="talk") from err
 
-        set_llm_model(get_talk_llm_model())
-        client = get_copilot_client()
+        client = GiskardCopilotClient()
 
         available_tools = self._get_available_tools(dataset, scan_report)
 
