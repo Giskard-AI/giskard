@@ -26,15 +26,6 @@ from ...core.core import ModelMeta, ModelType, SupportedModelTypes
 from ...core.validation import configured_validate_arguments
 from ...datasets.base import Dataset
 from ...exceptions.giskard_exception import GiskardException, python_env_exception_helper
-from ...llm import get_copilot_client, set_llm_model
-from ...llm.client import ToolChatMessage
-from ...llm.talk.config import (
-    ERROR_RESPONSE,
-    MODEL_INSTRUCTION,
-    SUMMARY_PROMPT,
-    TALK_CLIENT_CONFIG,
-    get_talk_llm_model,
-)
 from ...llm.talk.tools import (
     BaseTool,
     IssuesScannerTool,
@@ -679,6 +670,16 @@ class BaseModel(ABC):
         TalkResult
             The response for the user's prompt.
         """
+        from ...llm import get_copilot_client, set_llm_model
+        from ...llm.client import ToolChatMessage
+        from ...llm.talk.config import (
+            ERROR_RESPONSE,
+            MODEL_INSTRUCTION,
+            SUMMARY_PROMPT,
+            TALK_CLIENT_CONFIG,
+            get_talk_llm_model,
+        )
+
         set_llm_model(get_talk_llm_model())
         client = get_copilot_client()
 

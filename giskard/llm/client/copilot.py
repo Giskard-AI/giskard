@@ -11,7 +11,7 @@ from .openai import AUTH_ERROR_MESSAGE, OpenAIClient
 try:
     import openai
 except ImportError as err:
-    raise LLMImportError(flavor="llm") from err
+    raise LLMImportError(flavor="talk") from err
 
 
 @dataclass
