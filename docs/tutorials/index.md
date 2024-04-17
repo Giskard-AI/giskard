@@ -17,6 +17,11 @@ nlp_tutorials/index
 :link: llm_tutorials/index.html
 ::::
 
+::::{grid-item-card} <br/><h3>🗄️  RAG tutorials</h3>
+:text-align: center
+:link: rag_tutorials/index.html
+::::
+
 ::::{grid-item-card} <br/><h3>📊  Tabular tutorials</h3>
 :text-align: center
 :link: tabular_tutorials/index.html
