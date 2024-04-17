@@ -162,7 +162,7 @@ Uploading a test suite to the hub allows you to:
 * Create more tests relevant to your use case, combining input prompts that make your model fail and custome evaluation criteria
 * Share results, and collaborate with your team to integrate business feedback
 
-To upload your test suite, you must have created a project on Giskard Hub and instantiated a Giskard Python client. If you haven't done this yet, follow the first steps of [upload your object](https://docs.giskard.ai/en/latest/giskard_hub/upload/index.html#upload-your-object) guide. 
+To upload your test suite, you must have created a project on Giskard Hub and instantiated a Giskard Python client.
 
 Then, upload your test suite and model like this:
 ```python

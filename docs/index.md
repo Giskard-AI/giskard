@@ -97,19 +97,13 @@ community/contribution_guidelines/index
 :img-bottom: assets/intro/coffee.png
 ::::
 
-::::{grid-item-card} <h3> Open-Source Library </h3>
+::::{grid-item-card} <h3> Guides </h3>
 :text-align: center
 :link: open_source/index.rst
 :img-bottom: assets/intro/ninja.png
 ::::
 
-::::{grid-item-card} <h3> Giskard Hub </h3>
-:text-align: center
-:link: giskard_hub/index.rst
-:img-bottom: assets/intro/Giskard_Turtle_SK8.png
-::::
-
-::::{grid-item-card} <h3> Tutorials </h3>
+::::{grid-item-card} <h3> Notebook Tutorials </h3>
 :text-align: center
 :link: tutorials/index.md
 :img-bottom: assets/intro/test_turtle.png

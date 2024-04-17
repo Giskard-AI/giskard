@@ -141,8 +141,8 @@ giskard_model = giskard.Model(
 ::::::{tab-item} Wrap a custom RAG
 
 Wrap your RAG-based LLM app in an extension of Giskard's `Model` class. This example uses a FAISS vector store, a
-langchain chain and an OpenAI model. Extending the `giskard.Model` class allows for persistence and {doc}`upload to the
-Giskard Hub </giskard_hub/upload/index>` of complex models which cannot be automatically serialized with `pickle`.
+langchain chain and an OpenAI model. Extending the `giskard.Model` class allows for persistence and upload to the
+Giskard Hub of complex models which cannot be automatically serialized with `pickle`.
 
 You will have to implement just three methods:
 - `model_predict`: This method takes a `pandas.DataFrame` with columns corresponding to the input variables of your
@@ -262,7 +262,7 @@ Jump to the [test customization](https://docs.giskard.ai/en/latest/open_source/c
 * Create more tests relevant to your use case, combining input prompts that make your model fail and custom evaluation criteria
 * Share results, and collaborate with your team to integrate business feedback
 
-To upload your test suite, you must have created a project on Giskard Hub and instantiated a Giskard Python client. If you haven't done this yet, follow the first steps of [upload your object](https://docs.giskard.ai/en/latest/giskard_hub/upload/index.html#upload-your-object) guide.
+To upload your test suite, you must have created a project on Giskard Hub and instantiated a Giskard Python client.
 
 Then, upload your test suite like this:
 ```python
