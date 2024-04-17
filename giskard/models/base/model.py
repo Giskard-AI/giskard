@@ -674,7 +674,7 @@ class BaseModel(ABC):
             The response for the user's prompt.
         """
         try:
-            from ...llm.client import GiskardCopilotClient, ToolChatMessage
+            from ...llm.client.copilot import GiskardCopilotClient, ToolChatMessage
             from ...llm.talk.config import (
                 ERROR_RESPONSE,
                 MODEL_INSTRUCTION,
