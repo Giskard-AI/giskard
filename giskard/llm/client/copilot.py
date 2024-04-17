@@ -1,52 +1,64 @@
 from typing import Optional, Sequence
 
-from dataclasses import asdict
+from dataclasses import dataclass
 from logging import warning
 
 from ..config import LLMConfigurationError
 from ..errors import LLMImportError
-from . import LLMClient
 from .base import ChatMessage
+from .openai import AUTH_ERROR_MESSAGE, OpenAIClient
 
 try:
     import openai
 except ImportError as err:
     raise LLMImportError(flavor="llm") from err
 
-AUTH_ERROR_MESSAGE = (
-    "Could not authenticate with OpenAI API. Please make sure you have configured the API key by "
-    "setting OPENAI_API_KEY in the environment."
-)
+
+@dataclass
+class ToolChatMessage(ChatMessage):
+    name: Optional[str] = None
+    tool_call_id: Optional[str] = None
+    tool_calls: Optional[list] = None
 
 
-def _supports_json_format(model: str) -> bool:
-    if "gpt-4-turbo" in model:
-        return True
+def _format_message(msg: ChatMessage) -> dict:
+    """Format chat message.
+    Based on a message's role, include related attributes and exclude non-related.
+    Parameters
+    ----------
+    msg : ChatMessage
+        Message to the LLMClient.
+    Returns
+    -------
+    dict
+        A dictionary with attributes related to the role.
+    """
+    fmt_msg = {"role": msg.role, "content": msg.content}
+    if msg.role == "tool":
+        fmt_msg.update({"name": msg.name, "tool_call_id": msg.tool_call_id})
+    if msg.role == "assistant" and msg.tool_calls:
+        fmt_msg.update({"tool_calls": msg.tool_calls})
+    return fmt_msg
 
-    if model == "gpt-3.5-turbo" or model == "gpt-3.5-turbo-0125":
-        return True
 
-    return False
-
-
-class OpenAIClient(LLMClient):
-    def __init__(
-        self, model: str = "gpt-4-turbo-preview", client: openai.Client = None, json_mode: Optional[bool] = None
-    ):
-        self.model = model
-        self._client = client or openai.OpenAI()
-        self.json_mode = json_mode if json_mode is not None else _supports_json_format(model)
-
+class GiskardCopilotClient(OpenAIClient):
     def complete(
         self,
         messages: Sequence[ChatMessage],
         temperature: float = 1.0,
         max_tokens: Optional[int] = None,
         caller_id: Optional[str] = None,
+        tools=None,
+        tool_choice=None,
         seed: Optional[int] = None,
         format=None,
     ) -> ChatMessage:
         extra_params = dict()
+
+        if tools is not None:
+            extra_params["tools"] = tools
+        if tool_choice is not None:
+            extra_params["tool_choice"] = tool_choice
 
         if seed is not None:
             extra_params["seed"] = seed
@@ -62,7 +74,7 @@ class OpenAIClient(LLMClient):
         try:
             completion = self._client.chat.completions.create(
                 model=self.model,
-                messages=[asdict(m) for m in messages],
+                messages=[_format_message(m) for m in messages],
                 temperature=temperature,
                 max_tokens=max_tokens,
                 **extra_params,
@@ -80,4 +92,4 @@ class OpenAIClient(LLMClient):
 
         msg = completion.choices[0].message
 
-        return ChatMessage(role=msg.role, content=msg.content)
+        return ToolChatMessage(role=msg.role, content=msg.content, tool_calls=msg.tool_calls)

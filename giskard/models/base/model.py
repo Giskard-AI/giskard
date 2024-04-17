@@ -26,7 +26,7 @@ from ...core.core import ModelMeta, ModelType, SupportedModelTypes
 from ...core.validation import configured_validate_arguments
 from ...datasets.base import Dataset
 from ...exceptions.giskard_exception import GiskardException, python_env_exception_helper
-from ...llm import get_default_client, set_llm_model
+from ...llm import get_copilot_client, set_llm_model
 from ...llm.client import ChatMessage
 from ...llm.talk.config import (
     ERROR_RESPONSE,
@@ -680,7 +680,7 @@ class BaseModel(ABC):
             The response for the user's prompt.
         """
         set_llm_model(get_talk_llm_model())
-        client = get_default_client()
+        client = get_copilot_client()
 
         available_tools = self._get_available_tools(dataset, scan_report)
 

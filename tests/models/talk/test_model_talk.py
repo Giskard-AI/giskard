@@ -23,13 +23,13 @@ os.environ["OPENAI_API_KEY"] = ""  # Mock openai token.
 
 
 @pytest.mark.parametrize("dataset_name,model_name", [("titanic_dataset", "titanic_model")])
-@patch(target="giskard.llm.client.openai.OpenAIClient", return_value=Mock())
+@patch(target="giskard.llm.client.copilot.GiskardCopilotClient", return_value=Mock())
 def test_talk(mock_client, dataset_name, model_name, request):
     """Test the 'talk' feature.
 
     The responses from OpenAI LLM are mocked using unittest.mock.patch. Mocked LLM responses chains for different
     scenarios are located in the `talk_test_resources`.
-    Specifically, sequential calls to the `OpenAIClient.complete` were mocked with pre-calculated LLM responses.
+    Specifically, sequential calls to the `GiskardCopilotClient.complete` were mocked with pre-calculated LLM responses.
     """
     dataset = request.getfixturevalue(dataset_name)
     model = request.getfixturevalue(model_name)

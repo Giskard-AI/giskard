@@ -75,11 +75,36 @@ def get_default_client() -> LLMClient:
     return _default_client
 
 
+def get_copilot_client() -> LLMClient:
+    global _default_client
+
+    if _default_client is not None:
+        return _default_client
+
+    # Setup the default client
+    from .copilot import GiskardCopilotClient
+
+    default_llm_api = get_default_llm_api()
+
+    try:
+        # For openai>=1.0.0
+        from openai import AzureOpenAI, OpenAI
+
+        client = AzureOpenAI() if default_llm_api == "azure" else OpenAI()
+
+        _default_client = GiskardCopilotClient(model=_default_llm_model, client=client)
+    except ImportError:
+        raise ValueError(f"Giskard copilot using {default_llm_api.name} require openai>=1.0.0")
+
+    return _default_client
+
+
 __all__ = [
     "LLMClient",
     "ChatMessage",
     "LLMLogger",
     "get_default_client",
+    "get_copilot_client",
     "set_llm_model",
     "set_llm_api",
     "set_default_client",
