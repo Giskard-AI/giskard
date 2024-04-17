@@ -35,7 +35,7 @@ The analysis is performed by running a series of vulnerability-specific detector
 The Giskard LLM scan comprises two main types of detectors:
 
 - :ref:`llm_traditional_detectors`, which exploit known techniques or heuristics to detect vulnerabilities
-- :ref:`llm_assisted_detectors`, which use another LLM model to probe the model under analysis (GPT-4, in our case)
+- :ref:`llm_assisted_detectors`, which use another LLM model to probe the model under analysis
 
 
 Issue detection in LLM models
