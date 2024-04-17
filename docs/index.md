@@ -26,6 +26,7 @@ open_source/integrate_tests/index
 :hidden:
 
 tutorials/llm_tutorials/index
+tutorials/rag_tutorials/index
 tutorials/tabular_tutorials/index
 tutorials/nlp_tutorials/index
 ```
