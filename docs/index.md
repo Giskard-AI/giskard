@@ -13,6 +13,7 @@ getting_started/quickstart/index
 :hidden:
 
 open_source/installation_library/index
+open_source/setting_up/index
 open_source/scan/index
 open_source/testset_generation/index
 open_source/customize_tests/index
