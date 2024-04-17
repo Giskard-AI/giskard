@@ -11,8 +11,9 @@ from ..llm.embeddings.base import BaseEmbedding
 from ..llm.errors import LLMImportError
 
 try:
+    from bokeh.document import Document
     from bokeh.embed import components
-    from bokeh.io import output_notebook, reset_output
+    from bokeh.io import curdoc, output_notebook, reset_output
     from bokeh.models import ColumnDataSource, Span, TabPanel, Tabs
     from bokeh.plotting import figure
 except ImportError as err:
@@ -22,7 +23,7 @@ from ..llm.client.base import LLMClient
 from ..visualization.widget import get_template
 from .knowledge_base import KnowledgeBase
 from .question_generators import COMPONENT_DESCRIPTIONS, QUESTION_ATTRIBUTION, RAGComponents
-from .testset import QATestset
+from .testset import QATestset, QuestionSample
 
 
 def get_colors(values, cmap_name="RdYlGn"):
@@ -64,8 +65,12 @@ class RAGReport:
 
         self._dataframe = testset.to_pandas().copy()
         self._dataframe["agent_answer"] = answers
-        for metric, df in metrics_results.items():
-            self._dataframe = self._dataframe.join(df, on="id")
+
+        metric_df = pd.DataFrame.from_dict(metrics_results, orient="index")
+        self.metric_names = [
+            metric for metric in metric_df.columns if metric not in ["correctness", "correctness_reason"]
+        ]
+        self._dataframe = self._dataframe.join(metric_df, on="id")
 
     def to_pandas(self):
         return self._dataframe
@@ -93,11 +98,17 @@ class RAGReport:
         """
         tpl = get_template("rag_report/rag_report.html")
 
-        kb_script, kb_div = components(self._get_knowledge_plot()) if self._knowledge_base else (None, None)
-        q_type_script, q_type_div = components(self.plot_correctness_by_metadata("question_type"))
-        topic_script, topic_div = components(self.plot_correctness_by_metadata("topic"))
+        kb_script, kb_div = (
+            components(self._apply_theme(self._get_knowledge_plot())) if self._knowledge_base else (None, None)
+        )
+        q_type_script, q_type_div = components(
+            self._apply_theme(self.plot_correctness_by_metadata("question_type")), theme="dark_minimal"
+        )
+        topic_script, topic_div = components(
+            self._apply_theme(self.plot_correctness_by_metadata("topic")), theme="dark_minimal"
+        )
 
-        additional_metrics, metric_histograms = self.get_metrics_histograms()
+        metric_histograms = self.get_metrics_histograms()
 
         component_dict = self.component_scores().to_dict()["score"]
 
@@ -115,7 +126,7 @@ class RAGReport:
             q_type_correctness_div=q_type_div,
             topic_correctness_script=topic_script,
             topic_correctness_div=topic_div,
-            additional_metrics=additional_metrics,
+            additional_metrics=len(self.metric_names) > 0,
             metric_histograms=metric_histograms,
         )
 
@@ -154,8 +165,8 @@ class RAGReport:
             json.dump(self._answers, f)
 
         if self._metrics_results is not None:
-            for metric, df in self._metrics_results.items():
-                df.reset_index().to_json(path / f"metric_{metric}.jsonl", orient="records", lines=True)
+            with open(path / "metrics_results.json", "w", encoding="utf-8") as f:
+                json.dump(self._metrics_results, f)
 
     @classmethod
     def load(
@@ -193,14 +204,11 @@ class RAGReport:
             doc.topic_id = documents_topics[doc_idx]
 
         metrics_results = {}
-        for file in path.iterdir():
-            if file.suffix == ".jsonl" and file.name.startswith("metric_"):
-                metric_name = file.name.replace("metric_", "").replace(".jsonl", "")
-                metrics_results[metric_name] = pd.read_json(file, orient="records", lines=True)
-                metrics_results[metric_name]["id"] = metrics_results[metric_name]["id"].astype(str)
-                metrics_results[metric_name].set_index("id", inplace=True)
+        if (path / "metrics_results.json").exists():
+            metrics_results = json.load(open(path / "metrics_results.json", "r"))
 
         report_details = json.load(open(path / "report_details.json", "r"))
+        testset._dataframe.index = testset._dataframe.index.astype(str)
 
         report = cls(testset, answers, metrics_results, knowledge_base)
         report._recommendation = report_details["recommendation"]
@@ -274,7 +282,7 @@ class RAGReport:
             component: (
                 [sum(1 / len(attribution) * correctness.loc[q_type, "correctness"] for q_type in attribution)]
                 if len(attribution) > 0
-                else [np.nan]
+                else [1]
             )
             for component, attribution in available_question_types.items()
         }
@@ -307,15 +315,18 @@ class RAGReport:
 
     def _get_knowledge_plot(self):
         tabs = [
+            TabPanel(child=self._knowledge_base.get_knowledge_plot(), title="Topic exploration"),
             TabPanel(
                 child=self._knowledge_base.get_failure_plot(
-                    self._dataframe[
-                        ["question", "reference_answer", "agent_answer", "correctness", "metadata"]
-                    ].to_dict(orient="records")
+                    [
+                        QuestionSample(**question, id="", reference_context="", conversation_history=[])
+                        for question in self._dataframe[
+                            ["question", "reference_answer", "agent_answer", "correctness", "metadata"]
+                        ].to_dict(orient="records")
+                    ]
                 ),
                 title="Failures",
             ),
-            TabPanel(child=self._knowledge_base.get_knowledge_plot(), title="Topic exploration"),
         ]
 
         tabs = Tabs(tabs=tabs, sizing_mode="stretch_width", tabs_location="below")
@@ -341,27 +352,45 @@ class RAGReport:
         p = figure(
             y_range=metadata_values,
             height=350,
-            title=f"Correctness by {metadata_name}",
+            # title=f"Correctness by {metadata_name}",
             toolbar_location=None,
             tools="hover",
             width_policy="max",
         )
-
-        p.hbar(y="metadata_values", right="correctness", source=source, height=0.9, fill_color="colors")
-        vline = Span(
-            location=overall_correctness * 100, dimension="height", line_color="red", line_width=2, line_dash="dashed"
+        p.hbar(y="metadata_values", right="correctness", source=source, height=0.85, fill_color="#14191B")
+        p.hbar(
+            y="metadata_values",
+            right="correctness",
+            source=source,
+            height=0.85,
+            fill_color="#78BBFA",
+            fill_alpha=0.7,
+            line_color="white",
+            line_width=2,
         )
-        p.add_layout(vline)
+        vline = Span(
+            location=overall_correctness * 100,
+            dimension="height",
+            line_color="#EA3829",
+            line_width=2,
+            line_dash="dashed",
+        )
 
+        p.add_layout(vline)
+        p.background_fill_color = "#14191B"
+
+        p.x_range.start = 0
         r_line = p.line(
             [0],
             [0],
             legend_label="Correctness on the entire Testset",
             line_dash="dashed",
-            line_color="red",
+            line_color="#EA3829",
             line_width=2,
         )
         r_line.visible = False  # Set this fake line to invisible
+        p.legend.background_fill_color = "#111516"
+        p.legend.background_fill_alpha = 0.5
 
         p.xaxis.axis_label = "Correctness (%)"
         p.title.text_font_size = "14pt"
@@ -383,13 +412,13 @@ class RAGReport:
         filter_metadata : dict, optional
             Aggregate the question that have the specified metadata values. The keys of the dictionary should be the metadata names and the values should be the metadata values to filter by.
         """
-        if metric_name in self._metrics_results:
+        if metric_name in self.metric_names:
             if filter_metadata is not None:
-                data = self._metrics_results[metric_name][
+                data = self._dataframe[metric_name][
                     self._dataframe["metadata"].apply(lambda x: all(x.get(k) in v for k, v in filter_metadata.items()))
-                ][metric_name]
+                ]
             else:
-                data = self._metrics_results[metric_name]
+                data = self._dataframe[metric_name]
 
             p = figure(
                 width=300,
@@ -407,7 +436,7 @@ class RAGReport:
                 bottom=0,
                 left=edges[:-1],
                 right=edges[1:],
-                fill_color="skyblue",
+                fill_color="#78bbfa",
                 line_color="white",
             )
             p.title.text_font_size = "12pt"
@@ -418,35 +447,41 @@ class RAGReport:
 
             return p
 
+    def _apply_theme(self, p):
+        curdoc().theme = "dark_minimal"
+        doc = Document(theme=curdoc().theme)
+        doc.add_root(p)
+        return p
+
+    def _apply_theme(self, p):
+        curdoc().theme = "dark_minimal"
+        doc = Document(theme=curdoc().theme)
+        doc.add_root(p)
+        return p
+
     def _get_plot_components(self, p):
-        script, div = components(p)
+        script, div = components(self._apply_theme(p), theme="dark_minimal")
         return {"script": script, "div": div}
 
     def get_metrics_histograms(self):
-        if len(self._metrics_results) == 1:
-            return False, {}
         histograms_dict = {}
         histograms_dict["Overall"] = {
             "Overall": {
-                metric: self._get_plot_components(self.plot_metrics_hist(metric))
-                for metric in self._metrics_results
-                if metric != "correctness"
+                metric: self._get_plot_components(self.plot_metrics_hist(metric)) for metric in self.metric_names
             }
         }
         histograms_dict["Topics"] = {
             topic: {
                 metric: self._get_plot_components(self.plot_metrics_hist(metric, {"topic": [topic]}))
-                for metric in self._metrics_results
-                if metric != "correctness"
+                for metric in self.metric_names
             }
             for topic in self._testset.get_metadata_values("topic")
         }
         histograms_dict["Question"] = {
             q_type: {
                 metric: self._get_plot_components(self.plot_metrics_hist(metric, {"question_type": [q_type]}))
-                for metric in self._metrics_results
-                if metric != "correctness"
+                for metric in self.metric_names
             }
             for q_type in self._testset.get_metadata_values("question_type")
         }
-        return True, histograms_dict
+        return histograms_dict

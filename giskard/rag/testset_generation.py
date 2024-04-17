@@ -2,8 +2,6 @@ from typing import Optional, Sequence, Union
 
 import itertools
 
-import pandas as pd
-
 from ..utils.analytics_collector import analytics
 from .knowledge_base import KnowledgeBase
 from .question_generators import (
@@ -87,8 +85,8 @@ def generate_testset(
     questions = list(maybe_tqdm(main_generator, total=num_questions, desc="Generating questions"))
 
     for question in questions:
-        topic_id = knowledge_base.get_document(question["metadata"]["seed_document_id"]).topic_id
-        question["metadata"]["topic"] = knowledge_base.topics[topic_id]
+        topic_id = knowledge_base[question.metadata["seed_document_id"]].topic_id
+        question.metadata["topic"] = knowledge_base.topics[topic_id]
 
     analytics.track(
         "raget:testset-generation",
@@ -100,4 +98,4 @@ def generate_testset(
             "knowledge_base_size": len(knowledge_base._documents),
         },
     )
-    return QATestset(pd.DataFrame(questions).set_index("id"))
+    return QATestset(questions)

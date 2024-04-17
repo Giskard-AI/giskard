@@ -1,6 +1,7 @@
 import uuid
 
 from ..knowledge_base import KnowledgeBase
+from ..testset import QuestionSample
 from .base import GenerateFromSingleQuestionMixin, _LLMBasedQuestionGenerator
 from .prompt import QAGenerationPrompt
 
@@ -66,7 +67,9 @@ class OutOfScopeGenerator(GenerateFromSingleQuestionMixin, _LLMBasedQuestionGene
 
     _question_type = "out of scope"
 
-    def generate_single_question(self, knowledge_base: KnowledgeBase, agent_description: str, language: str) -> dict:
+    def generate_single_question(
+        self, knowledge_base: KnowledgeBase, agent_description: str, language: str
+    ) -> QuestionSample:
         """
         Generate a question from a list of context documents.
 
@@ -106,14 +109,14 @@ class OutOfScopeGenerator(GenerateFromSingleQuestionMixin, _LLMBasedQuestionGene
             "fake_fact": generated_qa["fake_fact"],
         }
 
-        question = {
-            "id": str(uuid.uuid4()),
-            "question": generated_qa["question"],
-            "reference_answer": DUMMY_ANSWER,
-            "reference_context": reference_context,
-            "conversation_history": [],
-            "metadata": question_metadata,
-        }
+        question = QuestionSample(
+            id=str(uuid.uuid4()),
+            question=generated_qa["question"],
+            reference_answer=DUMMY_ANSWER,
+            reference_context=reference_context,
+            conversation_history=[],
+            metadata=question_metadata,
+        )
 
         return question
 
