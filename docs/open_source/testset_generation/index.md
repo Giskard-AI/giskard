@@ -1,7 +1,5 @@
 # 🧰 RAG Evaluation Toolkit
 
-> ⚠️ **RAGET is currently in early version and is subject to change**. Feel free to reach out on our [Discord server](https://discord.gg/fkv7CAr3FE) if you have any trouble or to provide feedback.
-
 ```{toctree}
 :caption: Table of Contents
 :maxdepth: 2
