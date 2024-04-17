@@ -1,14 +1,21 @@
 from typing import Optional, Sequence, Union
 
 import json
+from html import escape
 from pathlib import Path
 
 import matplotlib
 import numpy as np
 import pandas as pd
+from IPython.core.display import HTML
 
+from ..llm.client.base import LLMClient
 from ..llm.embeddings.base import BaseEmbedding
 from ..llm.errors import LLMImportError
+from ..visualization.widget import get_template
+from .knowledge_base import KnowledgeBase
+from .question_generators import COMPONENT_DESCRIPTIONS, QUESTION_ATTRIBUTION, RAGComponents
+from .testset import QATestset, QuestionSample
 
 try:
     from bokeh.document import Document
@@ -18,12 +25,6 @@ try:
     from bokeh.plotting import figure
 except ImportError as err:
     raise LLMImportError(flavor="llm") from err
-
-from ..llm.client.base import LLMClient
-from ..visualization.widget import get_template
-from .knowledge_base import KnowledgeBase
-from .question_generators import COMPONENT_DESCRIPTIONS, QUESTION_ATTRIBUTION, RAGComponents
-from .testset import QATestset, QuestionSample
 
 
 def get_colors(values, cmap_name="RdYlGn"):
@@ -83,10 +84,7 @@ class RAGReport:
 
         return self.to_html()
 
-    def to_html(
-        self,
-        filename=None,
-    ):
+    def to_html(self, filename=None, embed=False):
         """Renders the evaluation report as HTML.
 
         Saves or returns the HTML representation of the scan report.
@@ -135,6 +133,8 @@ class RAGReport:
                 f.write(html)
             return
 
+        if embed:
+            return HTML(f'<iframe srcdoc="{escape(html)}" width=100% height=800px></iframe>')
         return html
 
     def save(self, folder_path: str):

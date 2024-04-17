@@ -1,13 +1,11 @@
 # 🥇 RAGET Evaluation
 
-> ⚠️ **RAGET is currently in early version and is subject to change**. Feel free to reach out on our [Discord server](https://discord.gg/fkv7CAr3FE) if you have any trouble or to provide feedback.
-
-
 After automatically generating a test set for your RAG agent using RAGET, you can then evaluate the **correctness 
 of the agent's answers** compared to the reference answers (using a LLM-as-a-judge approach). The main purpose
 of this evaluation is to help you **identify the weakest components in your RAG agent**.
 
-
+> ℹ️ You can find a [tutorial](../../../reference/notebooks/RAGET.ipynb) where we demonstrate the capabilities of RAGET with a simple RAG agent build with LlamaIndex 
+on the IPCC report.  
 
 ## Correctness Evaluation on the Generated Test Set
 
@@ -49,7 +47,7 @@ report.to_html("rag_eval_report.html")
 ```
 
 This report is what you'll obtain:
-![image](../../../_static/rag_report_full.png)
+![image](../../../_static/raget.png)
 
 
 ### RAG Components Scores
