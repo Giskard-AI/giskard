@@ -27,7 +27,7 @@ from ...core.validation import configured_validate_arguments
 from ...datasets.base import Dataset
 from ...exceptions.giskard_exception import GiskardException, python_env_exception_helper
 from ...llm import get_copilot_client, set_llm_model
-from ...llm.client import ChatMessage
+from ...llm.client import ToolChatMessage
 from ...llm.talk.config import (
     ERROR_RESPONSE,
     MODEL_INSTRUCTION,
@@ -692,7 +692,10 @@ class BaseModel(ABC):
             context=context,
         )
 
-        messages = [ChatMessage(role="system", content=system_prompt), ChatMessage(role="user", content=question)]
+        messages = [
+            ToolChatMessage(role="system", content=system_prompt),
+            ToolChatMessage(role="user", content=question),
+        ]
         response = client.complete(
             messages=messages,
             tools=[tool.specification for tool in list(available_tools.values())],
@@ -701,7 +704,7 @@ class BaseModel(ABC):
         )
 
         if content := response.content:
-            messages.append(ChatMessage(role="assistant", content=content))
+            messages.append(ToolChatMessage(role="assistant", content=content))
 
         # Store exceptions raised by tool execution.
         tool_errors = list()
@@ -727,16 +730,17 @@ class BaseModel(ABC):
 
                 # Append the tool's response to the conversation.
                 messages.append(
-                    ChatMessage(role="tool", name=tool_name, tool_call_id=tool_call.id, content=tool_response)
+                    ToolChatMessage(role="tool", name=tool_name, tool_call_id=tool_call.id, content=tool_response)
                 )
 
             # Get the final model's response, based on the tool's output.
             response = client.complete(messages=messages, **TALK_CLIENT_CONFIG)
-            messages.append(ChatMessage(role="assistant", content=response.content))
+            messages.append(ToolChatMessage(role="assistant", content=response.content))
 
         # Summarise the conversation.
         context = self._gather_context(messages)
         summary = client.complete(
-            messages=[ChatMessage(role="user", content=SUMMARY_PROMPT.format(context=context))], **TALK_CLIENT_CONFIG
+            messages=[ToolChatMessage(role="user", content=SUMMARY_PROMPT.format(context=context))],
+            **TALK_CLIENT_CONFIG,
         )
         return TalkResult(response, summary, tool_errors)

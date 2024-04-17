@@ -4,6 +4,7 @@ import logging
 import os
 
 from .base import ChatMessage, LLMClient
+from .copilot import ToolChatMessage
 from .logger import LLMLogger
 
 _default_client = None
@@ -102,6 +103,7 @@ def get_copilot_client() -> LLMClient:
 __all__ = [
     "LLMClient",
     "ChatMessage",
+    "ToolChatMessage",
     "LLMLogger",
     "get_default_client",
     "get_copilot_client",
