@@ -20,26 +20,19 @@ import pandas as pd
 import yaml
 
 from giskard.client.dtos import ModelMetaInfo
+from giskard.llm import LLMImportError
 
 from ...client.giskard_client import GiskardClient
 from ...core.core import ModelMeta, ModelType, SupportedModelTypes
 from ...core.validation import configured_validate_arguments
 from ...datasets.base import Dataset
 from ...exceptions.giskard_exception import GiskardException, python_env_exception_helper
-from ...llm.talk.tools import (
-    BaseTool,
-    IssuesScannerTool,
-    MetricTool,
-    PredictTool,
-    SHAPExplanationTool,
-)
 from ...models.cache import ModelCache
 from ...path_utils import get_size
 from ...registry.utils import dump_by_value
 from ...settings import settings
 from ...utils.logging_utils import Timer
 from ..cache import get_cache_enabled
-from ..talk_result import TalkResult
 from ..utils import np_types_to_native
 from .model_prediction import ModelPredictionResults
 
@@ -609,7 +602,7 @@ class BaseModel(ABC):
             return f"{self.name}({self.id})"
         return super().__str__()  # default to `<giskard.models.base.Model object at ...>`
 
-    def _get_available_tools(self, dataset: Dataset, scan_report: ScanReport) -> dict[str, BaseTool]:
+    def _get_available_tools(self, dataset: Dataset, scan_report: ScanReport) -> dict:
         """Get the dictionary with available tools.
 
         Parameters
@@ -624,6 +617,16 @@ class BaseModel(ABC):
         dict[str, BaseTool]
             The dictionary with Tools' names and related instances.
         """
+        try:
+            from ...llm.talk.tools import (
+                IssuesScannerTool,
+                MetricTool,
+                PredictTool,
+                SHAPExplanationTool,
+            )
+        except ImportError as err:
+            raise LLMImportError(flavor="talk") from err
+
         return {
             PredictTool.default_name: PredictTool(model=self, dataset=dataset),
             MetricTool.default_name: MetricTool(model=self, dataset=dataset),
@@ -649,7 +652,7 @@ class BaseModel(ABC):
         """
         return "\n".join([json.dumps(asdict(msg)) for msg in message_list])
 
-    def talk(self, question: str, dataset: Dataset, scan_report: ScanReport = None, context: str = "") -> TalkResult:
+    def talk(self, question: str, dataset: Dataset, scan_report: ScanReport = None, context: str = ""):
         """Perform the 'talk' to the model.
 
         Given `question`, allows to ask the model about prediction result, explanation, model performance, issues, etc.
@@ -670,15 +673,19 @@ class BaseModel(ABC):
         TalkResult
             The response for the user's prompt.
         """
-        from ...llm import get_copilot_client, set_llm_model
-        from ...llm.client import ToolChatMessage
-        from ...llm.talk.config import (
-            ERROR_RESPONSE,
-            MODEL_INSTRUCTION,
-            SUMMARY_PROMPT,
-            TALK_CLIENT_CONFIG,
-            get_talk_llm_model,
-        )
+        try:
+            from ...llm import get_copilot_client, set_llm_model
+            from ...llm.client import ToolChatMessage
+            from ...llm.talk.config import (
+                ERROR_RESPONSE,
+                MODEL_INSTRUCTION,
+                SUMMARY_PROMPT,
+                TALK_CLIENT_CONFIG,
+                get_talk_llm_model,
+            )
+            from ..talk_result import TalkResult
+        except ImportError as err:
+            raise LLMImportError(flavor="talk") from err
 
         set_llm_model(get_talk_llm_model())
         client = get_copilot_client()
