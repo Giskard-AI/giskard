@@ -8,7 +8,7 @@ getting_started/quickstart/index
 ```
 
 ```{toctree}
-:caption: Open-Source Library
+:caption: Guides
 :maxdepth: 1
 :hidden:
 
@@ -20,20 +20,7 @@ open_source/integrate_tests/index
 ```
 
 ```{toctree}
-:caption: Giskard Hub
-:maxdepth: 1
-:hidden:
-
-giskard_hub/installation_hub/index
-giskard_hub/upload/index
-giskard_hub/write_and_debug_tests/index
-giskard_hub/inspect/index
-giskard_hub/compare_models/index
-giskard_hub/collaborate/index
-```
-
-```{toctree}
-:caption: Tutorials
+:caption: Notebook Tutorials
 :maxdepth: 1
 :hidden:
 
