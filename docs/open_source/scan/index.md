@@ -8,6 +8,7 @@
 scan_llm/index
 scan_tabular/index
 scan_nlp/index
+scan_vision/index
 advanced_scan/index
 ```
 
@@ -27,6 +28,11 @@ advanced_scan/index
 ::::{grid-item-card} <br/><h3>🗣️ NLP model scan</h3>
 :text-align: center
 :link: scan_nlp/index.html
+::::
+
+::::{grid-item-card} <br/><h3>Vision model scan</h3>
+:text-align: center
+:link: scan_vision/index.html
 ::::
 
 ::::{grid-item-card} <br/><h3>Advanced scan usage</h3>

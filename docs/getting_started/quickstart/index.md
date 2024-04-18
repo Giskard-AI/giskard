@@ -8,6 +8,7 @@
 quickstart_llm
 quickstart_tabular
 quickstart_nlp
+quickstart_vision
 ```
 
 
@@ -27,6 +28,11 @@ quickstart_nlp
 ::::{grid-item-card} <br/><h3>🗣️ NLP Quickstart</h3>
 :text-align: center
 :link: quickstart_nlp.ipynb
+::::
+
+::::{grid-item-card} <br/><h3>Vision Quickstart</h3>
+:text-align: center
+:link: quickstart_vision.ipynb
 ::::
 
 :::::
