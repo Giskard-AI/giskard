@@ -10,6 +10,7 @@ import tarfile
 import tempfile
 from pathlib import Path
 
+import numpy as np
 import requests
 import requests_mock
 
@@ -18,7 +19,7 @@ from giskard.client import dtos
 from giskard.client.giskard_client import GiskardClient
 from giskard.core.savable import Artifact
 from giskard.datasets.base import Dataset
-from giskard.ml_worker import ml_worker
+from giskard.llm.embeddings.base import BaseEmbedding
 from giskard.models.base.model import BaseModel
 from giskard.path_utils import get_size
 from giskard.settings import settings
@@ -145,18 +146,14 @@ def get_email_files():
 
 
 class MockedWebSocketMLWorker:
-    def __init__(self, is_server=False, backend_url=None, api_key=None, hf_token=None) -> None:
-        client = None if is_server else MockedClient(mock_all=True)
+    def __init__(self, backend_url=None, api_key=None, hf_token=None, worker_name=None) -> None:
+        client = MockedClient(mock_all=True)
         self.client = client
 
         self.backend_url = backend_url
         self.api_key = api_key
         self.hf_token = hf_token
-
-        self.ml_worker_id = ml_worker.INTERNAL_WORKER_ID if is_server else ml_worker.EXTERNAL_WORKER_ID
-
-    def is_remote_worker(self):
-        return self.ml_worker_id is not ml_worker.INTERNAL_WORKER_ID
+        self._worker_name = worker_name
 
 
 class MockedProjectCacheDir:
@@ -269,12 +266,8 @@ def mock_model_meta_info(model: BaseModel, project_key: str):
     return model_meta_info.dict()
 
 
-def get_url_for_artifact_meta_info(cf: Artifact, project_key: Optional[str] = None):
-    return (
-        posixpath.join(CLIENT_BASE_URL, "project", project_key, cf._get_name(), cf.meta.uuid)
-        if project_key
-        else posixpath.join(CLIENT_BASE_URL, cf._get_name(), cf.meta.uuid)
-    )
+def get_url_for_artifact_meta_info(cf: Artifact, project_key: str):
+    return posixpath.join(CLIENT_BASE_URL, "project", project_key, cf._get_name(), cf.meta.uuid)
 
 
 def get_url_for_artifacts_base(cf: Artifact):
@@ -289,7 +282,7 @@ def get_url_for_model(model: BaseModel, project_key: str):
     return posixpath.join(CLIENT_BASE_URL, "project", project_key, "models", str(model.id))
 
 
-def register_uri_for_artifact_meta_info(mr: requests_mock.Mocker, cf: Artifact, project_key: Optional[str] = None):
+def register_uri_for_artifact_meta_info(mr: requests_mock.Mocker, cf: Artifact, project_key: str):
     url = get_url_for_artifact_meta_info(cf, project_key)
     # Fixup the differences from Backend
     meta_info = fixup_mocked_artifact_meta_version(cf.meta.to_json())
@@ -427,3 +420,8 @@ def register_uri_for_inspection(mr: requests_mock.Mocker, project_key: str, insp
     predictions_url = posixpath.join(url, get_file_name("predictions", "csv", sample))
     mr.register_uri(method=requests_mock.POST, url=calculated_url, json={})
     mr.register_uri(method=requests_mock.POST, url=predictions_url, json={})
+
+
+class DummyEmbedding(BaseEmbedding):
+    def embed(self, texts):
+        return np.random.uniform(size=(len(texts), 768))

@@ -4,8 +4,10 @@ import pandas as pd
 
 from ...datasets.base import Dataset
 from ...llm.evaluators import RequirementEvaluator
+from ...llm.evaluators.base import EvaluationResult
 from ...llm.generators import AdversarialDataGenerator
 from ...llm.testcase import TestcaseRequirementsGenerator
+from ...llm.utils import format_chat_messages
 from ...models.base.model import BaseModel
 from ...testing.tests.llm import test_llm_output_against_requirement
 from ..issues import Issue
@@ -16,10 +18,10 @@ from ..scanner import logger
 class RequirementBasedDetector(Detector):
     _taxonomy = []
 
-    def __init__(self, num_requirements=4, num_samples=5, rng_seed: int = 1729):
+    def __init__(self, num_requirements=4, num_samples=5, llm_seed: int = 1729):
         self.num_requirements = num_requirements
         self.num_samples = num_samples
-        self.rng_seed = rng_seed
+        self.llm_seed = llm_seed
 
     def get_cost_estimate(self, model: BaseModel, dataset: Dataset) -> dict:
         counts = _estimate_base_token_counts(model, dataset)
@@ -78,9 +80,7 @@ class RequirementBasedDetector(Detector):
             eval_result = evaluator.evaluate(model, eval_dataset)
 
             if eval_result.failed:
-                issues.append(
-                    self.make_issue(model, eval_dataset, requirement, pd.DataFrame(eval_result.failure_examples))
-                )
+                issues.append(self.make_issue(model, eval_dataset, requirement, eval_result))
                 logger.info(
                     f"{self.__class__.__name__}: Test case failed ({len(eval_result.failure_examples)} failed examples)"
                 )
@@ -89,7 +89,17 @@ class RequirementBasedDetector(Detector):
 
         return issues
 
-    def make_issue(self, model: BaseModel, dataset: Dataset, requirement: str, examples: pd.DataFrame) -> Issue:
+    def make_issue(self, model: BaseModel, dataset: Dataset, requirement: str, eval_result: EvaluationResult) -> Issue:
+        examples = pd.DataFrame(
+            [
+                {
+                    "Conversation": format_chat_messages(ex["sample"].get("conversation", [])),
+                    "Reason": ex.get("reason", "No reason provided."),
+                }
+                for ex in eval_result.failure_examples
+            ]
+        )
+
         return Issue(
             model,
             dataset,

@@ -31,16 +31,12 @@ from .report import ScanReport
 
 MAX_ISSUES_PER_DETECTOR = 15
 
-COST_ESTIMATE_TEMPLATE = """This automatic scan will use LLM-assisted detectors based on GPT-4 to identify vulnerabilities in your model.
-These are the total estimated costs:
-Estimated calls to your model: ~{num_model_calls}
-Estimated OpenAI GPT-4 calls for evaluation: {num_llm_calls} (~{num_llm_prompt_tokens} prompt tokens and ~{num_llm_sampled_tokens} sampled tokens)
-OpenAI API costs for evaluation are estimated to ${estimated_usd:.2f}.
+COST_ESTIMATE_TEMPLATE = """Estimated calls to your model: ~{num_model_calls}
+Estimated LLM calls for evaluation: {num_llm_calls}
 """
 
 COST_SUMMARY_TEMPLATE = """LLM-assisted detectors have used the following resources:
-OpenAI GPT-4 calls for evaluation: {num_llm_calls} ({num_llm_prompt_tokens} prompt tokens and {num_llm_sampled_tokens} sampled tokens)
-OpenAI API costs for evaluation amount to ${estimated_usd:.2f} (standard pricing).
+OpenAI LLM calls for evaluation: {num_llm_calls} ({num_llm_prompt_tokens} prompt tokens and {num_llm_sampled_tokens} sampled tokens)
 """
 
 # Hardcoded for now…
@@ -108,7 +104,8 @@ class Scanner:
 
             # Initialize LLM logger if needed
             if model.is_text_generation:
-                get_default_client().logger.reset()
+                llm_logger = _maybe_get_llm_logger()
+                llm_logger is not None and llm_logger.reset()
 
             # Good, we can start
             maybe_print("🔎 Running scan…", verbose=verbose)
@@ -338,7 +335,10 @@ class Scanner:
         }
 
     def _get_cost_measure(self):
-        llm_logger = get_default_client().logger
+        llm_logger = _maybe_get_llm_logger()
+        if llm_logger is None:
+            return None
+
         num_calls = llm_logger.get_num_calls()
         num_prompt_tokens = llm_logger.get_num_prompt_tokens()
         num_sampled_tokens = llm_logger.get_num_sampled_tokens()
@@ -361,7 +361,8 @@ class Scanner:
         )
         if model.is_text_generation:
             measured = self._get_cost_measure()
-            print(COST_SUMMARY_TEMPLATE.format(**measured))
+            if measured is not None:
+                print(COST_SUMMARY_TEMPLATE.format(**measured))
         if errors:
             warning(
                 f"{len(errors)} errors were encountered while running detectors. Please check the log to understand what went wrong. "
@@ -372,3 +373,11 @@ class Scanner:
 def maybe_print(*args, **kwargs):
     if kwargs.pop("verbose", True):
         print(*args, **kwargs)
+
+
+def _maybe_get_llm_logger():
+    """Get the LLM client logger if available."""
+    try:
+        return get_default_client().logger
+    except Exception:
+        return None

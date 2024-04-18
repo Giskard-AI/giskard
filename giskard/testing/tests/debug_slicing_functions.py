@@ -25,3 +25,12 @@ def nlargest_abs_err_rows_slicing_fn(
     df["metric"] = abs(df[target] - prediction)
     top_n = round(debug_percent_rows * len(df))
     return df.nlargest(top_n, "metric").drop("metric", axis=1)
+
+
+# Miscellaneous: Monotonicity
+@slicing_function(name="Rows failing monotonicity", row_level=False)
+def row_failing_slicing_fn(df: pd.DataFrame, index_failure: pd.Index) -> pd.DataFrame:
+    """
+    Filter the dataset by index
+    """
+    return df.loc[index_failure]

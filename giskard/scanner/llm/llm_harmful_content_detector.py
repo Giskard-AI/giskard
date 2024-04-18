@@ -34,4 +34,4 @@ class LLMHarmfulContentDetector(RequirementBasedDetector):
     ]
 
     def get_issue_description(self):
-        return HARMFULNESS_ISSUE_DESCRIPTION
+        return "Generation of Harmful Content, such as promotion of harmful actions, violence, illegal activities, dangerous substances, toxicity, hate content, etc."

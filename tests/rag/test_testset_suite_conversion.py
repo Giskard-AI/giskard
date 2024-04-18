@@ -1,9 +1,9 @@
 from giskard.rag import QATestset
-from tests.rag.test_qa_testset import make_testset_df
+from tests.rag.test_qa_testset import make_testset_samples
 
 
 def test_testset_suite_conversion():
-    testset = QATestset(make_testset_df())
+    testset = QATestset(make_testset_samples())
     suite = testset.to_test_suite()
 
     assert "dataset" in suite.default_params
@@ -18,7 +18,7 @@ def test_testset_suite_conversion():
 
 
 def test_testset_suite_conversion_with_metadata():
-    testset = QATestset(make_testset_df())
+    testset = QATestset(make_testset_samples())
     suite = testset.to_test_suite(slicing_metadata=["question_type"])
 
     assert len(suite.tests) == 4

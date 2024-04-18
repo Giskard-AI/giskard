@@ -1,4 +1,4 @@
-from giskard.llm.client.base import LLMMessage
+from giskard.llm.client.base import ChatMessage
 from giskard.rag.question_generators.prompt import QAGenerationPrompt
 
 
@@ -17,11 +17,11 @@ def test_qa_generation_prompt():
     )
 
     assert len(messages) == 2
-    assert isinstance(messages[0], LLMMessage)
+    assert isinstance(messages[0], ChatMessage)
     assert messages[0].role == "system"
     assert messages[0].content == "system prompt value1"
 
-    assert isinstance(messages[1], LLMMessage)
+    assert isinstance(messages[1], ChatMessage)
     assert messages[1].role == "user"
     assert messages[1].content == "user input template value2"
 
@@ -40,10 +40,10 @@ def test_qa_generation_prompt_with_examples():
 
     print(messages)
     assert len(messages) == 4
-    assert isinstance(messages[1], LLMMessage)
+    assert isinstance(messages[1], ChatMessage)
     assert messages[1].role == "user"
     assert messages[1].content == "example input"
-    assert isinstance(messages[2], LLMMessage)
+    assert isinstance(messages[2], ChatMessage)
     assert messages[2].role == "assistant"
     assert messages[2].content == "example output"
 
@@ -52,14 +52,14 @@ def test_qa_generation_prompt_with_examples():
         user_input={"key": "value2"},
         add_examples=True,
         examples=[
-            LLMMessage(role="user", content="new example input"),
-            LLMMessage(role="assistant", content="new example output"),
+            ChatMessage(role="user", content="new example input"),
+            ChatMessage(role="assistant", content="new example output"),
         ],
     )
     assert len(messages) == 4
-    assert isinstance(messages[1], LLMMessage)
+    assert isinstance(messages[1], ChatMessage)
     assert messages[1].role == "user"
     assert messages[1].content == "new example input"
-    assert isinstance(messages[2], LLMMessage)
+    assert isinstance(messages[2], ChatMessage)
     assert messages[2].role == "assistant"
     assert messages[2].content == "new example output"
