@@ -24,7 +24,7 @@ Testing Machine Learning applications can be tedious. Since AI models depend on 
 
 To help you solve these challenges, Giskard library helps to:
 
-- **Scan your model to find hidden vulnerabilitie automatically**: The `giskard` scan automatically detects vulnerabilities
+- **Scan your model to find hidden vulnerabilities automatically**: The `giskard` scan automatically detects vulnerabilities
 such as performance bias, hallucination, prompt injection, data leakage, spurious correlation, overconfidence, etc.
   <br><br>
   <iframe src="https://htmlpreview.github.io/?https://gist.githubusercontent.com/AbSsEnT/a67354621807f3c3a332fca7d8b9a5c8/raw/588f027dc6b14c88c7393c50ff3086fe1122e2e9/LLM_QA_IPCC_scan_report.html" width="700" height="400"></iframe>
