@@ -1,4 +1,5 @@
 from ..knowledge_base import KnowledgeBase
+from ..testset import QuestionSample
 from .base import _BaseModifierGenerator
 from .prompt import QAGenerationPrompt
 from .simple_questions import SimpleQuestionsGenerator
@@ -42,22 +43,22 @@ class ConversationalQuestionsGenerator(_BaseModifierGenerator):
     _question_type = "conversational"
 
     def _modify_question(
-        self, question: dict, knowledge_base: KnowledgeBase, agent_description: str, language: str
-    ) -> dict:
+        self, question: QuestionSample, knowledge_base: KnowledgeBase, agent_description: str, language: str
+    ) -> QuestionSample:
         messages = self._prompt.to_messages(
             system_prompt_input={
                 "language": language,
             },
             user_input={
-                "question": question["question"],
+                "question": question.question,
             },
         )
 
         out = self._llm_complete(messages=messages)
-        question["question"] = out["question"]
+        question.question = out["question"]
 
-        question["metadata"]["question_type"] = self._question_type
-        question["conversation_history"] = [
+        question.metadata["question_type"] = self._question_type
+        question.conversation_history = [
             {"role": "user", "content": out["introduction"]},
             {"role": "assistant", "content": "How can I help you with that?"},
         ]
