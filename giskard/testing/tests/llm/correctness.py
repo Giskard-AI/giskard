@@ -36,7 +36,7 @@ def test_llm_correctness(model: BaseModel, dataset: Dataset, threshold: float = 
     output_ds = list()
 
     if not eval_result.passed:
-        failed_indices = [s["sample"]["meta"]["__row_id"] for s in eval_result.failure_examples]
+        failed_indices = [s["sample"]["meta"]["__sample_id"] for s in eval_result.failure_examples]
 
         output_ds.append(dataset.slice(lambda df: df.loc[failed_indices], row_level=False))
 
