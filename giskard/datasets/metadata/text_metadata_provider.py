@@ -1,7 +1,7 @@
-import langdetect
 import pandas as pd
 from langdetect import DetectorFactory
 
+from ...utils.language_detection import detect_lang
 from .registry import MetadataProvider
 
 DetectorFactory.seed = 0
@@ -19,7 +19,7 @@ class TextMetadataProvider(MetadataProvider):
             {
                 "text_length": values.map(len),
                 "charset": pd.Categorical(values.map(_detect_charset)),
-                "language": values.map(_detect_lang),
+                "language": values.map(detect_lang),
             },
             index=values.index,
         )
@@ -33,14 +33,3 @@ def _detect_charset(text: str):
 
     charset = chardet.detect(text.encode("utf-8", errors="ignore"))["encoding"]
     return charset or "undefined"
-
-
-def _detect_lang(text: str):
-    if len(text.split()) <= 5:
-        return pd.NA
-    try:
-        detected = langdetect.detect_langs(text)
-        language = detected[0].lang
-    except langdetect.lang_detect_exception.LangDetectException:
-        language = "unknown"
-    return language
