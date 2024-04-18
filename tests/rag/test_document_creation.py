@@ -1,6 +1,6 @@
 import pytest
 
-from giskard.rag.vector_store import Document
+from giskard.rag.knowledge_base import Document
 
 
 def test_single_feature_document_creation():
@@ -8,6 +8,7 @@ def test_single_feature_document_creation():
 
     assert doc.content == "This a test value for a feature"
     assert doc.metadata == {"feature": "This a test value for a feature"}
+    assert isinstance(doc.id, str)
 
 
 def test_multiple_features_document_creation():
@@ -16,7 +17,7 @@ def test_multiple_features_document_creation():
             "feat1": "This a test value for a feature 1",
             "feat2": "This a test value for a feature 2",
             "feat3": "This a test value for a feature 3",
-        }
+        },
     )
     assert (
         doc.content

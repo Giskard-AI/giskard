@@ -1,10 +1,10 @@
 from .adversarial import AdversarialDataGenerator
-from .base import BaseDataGenerator
+from .base import LLMBasedDataGenerator
 from .implausible import ImplausibleDataGenerator
 from .sycophancy import SycophancyDataGenerator
 
 __all__ = [
-    "BaseDataGenerator",
+    "LLMBasedDataGenerator",
     "SycophancyDataGenerator",
     "ImplausibleDataGenerator",
     "AdversarialDataGenerator",

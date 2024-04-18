@@ -4,6 +4,7 @@ from typing import Optional
 import numpy as np
 from sklearn.metrics import (
     accuracy_score,
+    brier_score_loss,
     f1_score,
     mean_absolute_error,
     mean_squared_error,
@@ -286,6 +287,7 @@ def test_f1(
     if slicing_function:
         dataset = dataset.slice(slicing_function)
         check_slice_not_empty(sliced_dataset=dataset, dataset_name="dataset", test_name="test_f1")
+
     return _test_classification_score(f1_score, model, dataset, threshold)
 
 
@@ -398,6 +400,55 @@ def test_recall(
         dataset = dataset.slice(slicing_function)
         check_slice_not_empty(sliced_dataset=dataset, dataset_name="dataset", test_name="test_recall")
     return _test_classification_score(recall_score, model, dataset, threshold)
+
+
+@test(
+    name="Brier score",
+    tags=["performance", "classification", "ground_truth"],
+    debug_description=debug_description_prefix + "that are <b>incorrectly predicted</b>.",
+)
+def test_brier(
+    model: BaseModel, dataset: Dataset, slicing_function: Optional[SlicingFunction] = None, threshold: float = 1.0
+):
+    """Test if the model Brier score is lower than a threshold for a given slice
+
+    Example: The test is passed when the Brier score for females is lower than 0.7
+
+    Parameters
+    ----------
+    model : BaseModel
+        Model used to compute the test
+    dataset : Dataset
+        Actual dataset used to compute the test
+    slicing_function : Optional[SlicingFunction]
+        Slicing function to be applied on dataset (Default value = None)
+    threshold : float
+        Threshold value for Brier score (Default value = 1.0)
+
+    Returns
+    -------
+    TestResult
+        The test result.
+    """
+    if slicing_function:
+        dataset = dataset.slice(slicing_function)
+        check_slice_not_empty(sliced_dataset=dataset, dataset_name="dataset", test_name="test_brier")
+
+    _verify_target_availability(dataset)
+    if len(model.classification_labels) != 2:
+        raise ValueError("Brier score should be used for binary classification only.")
+    targets = dataset.df[dataset.target]
+    prediction = model.predict(dataset).raw[:, 1]
+    metric = brier_score_loss(targets, prediction, pos_label=model.classification_labels[1])
+    passed = bool(metric <= threshold)
+
+    # --- debug ---
+    output_ds = list()
+    if not passed:
+        output_ds.append(dataset.slice(incorrect_rows_slicing_fn(dataset.target, prediction=prediction)))
+    # ---
+
+    return TestResult(actual_slices_size=[len(dataset)], metric=metric, passed=passed, output_ds=output_ds)
 
 
 @test(

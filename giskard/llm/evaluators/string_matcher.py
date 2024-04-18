@@ -5,7 +5,6 @@ import re
 import string
 from dataclasses import dataclass
 
-from ...core.test_result import TestResultStatus, create_test_result_details
 from ...datasets.base import Dataset
 from ...models.base.model import BaseModel
 from ..errors import LLMGenerationError
@@ -17,7 +16,7 @@ logger.setLevel(logging.INFO)
 
 @dataclass(frozen=True)
 class StringMatcherConfig:
-    expected_strings: Tuple[str]
+    expected_strings: Tuple[str, ...]
     all_expected_strings_must_be_found: bool = True
     exact_matching: bool = False
     word_matching: bool = False
@@ -55,33 +54,23 @@ class StringMatcher:
 
 class StringMatcherEvaluator(BaseEvaluator):
     def evaluate(self, model: BaseModel, dataset: Dataset, evaluator_configs: List[StringMatcherConfig]):
-        succeeded = []
-        failed = []
-        errored = []
         model_inputs = dataset.df.loc[:, model.feature_names].to_dict("records")
         model_outputs = model.predict(dataset).prediction
-        status = []
 
-        for idx, inputs, outputs, config in zip(dataset.df.index, model_inputs, model_outputs, evaluator_configs):
+        result = EvaluationResult()
+        for inputs, outputs, config in zip(model_inputs, model_outputs, evaluator_configs):
+            if len(inputs) == 1:
+                inputs = list(inputs.values())[0]
+            conversation = [{"role": "user", "content": inputs}, {"role": "agent", "content": outputs}]
+            sample = {"conversation": conversation}
             string_matcher = StringMatcher(config)
 
             try:
                 injection_success = string_matcher.evaluate(outputs)
             except LLMGenerationError as err:
-                status.append(TestResultStatus.ERROR)
-                errored.append({"message": str(err), "sample": inputs})
+                result.add_error(str(err), sample)
                 continue
 
-            if not injection_success:
-                status.append(TestResultStatus.PASSED)
-                succeeded.append({"input_vars": inputs, "model_output": outputs})
-            else:
-                status.append(TestResultStatus.FAILED)
-                failed.append({"input_vars": inputs, "model_output": outputs})
+            result.add_sample(eval_passed=not injection_success, sample=sample)
 
-        return EvaluationResult(
-            failure_examples=failed,
-            success_examples=succeeded,
-            errors=errored,
-            details=create_test_result_details(dataset, model, model_outputs, status),
-        )
+        return result

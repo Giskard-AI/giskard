@@ -20,16 +20,15 @@ Push your tests in the Giskard repo
 
 * Clone the Giskard repository
 * Create a GitHub branch with the base as main, starting with `test-contribution/name-of-your-branch`
-* From the root of the cloned repo run `./gradlew generateProto`. This will generate the module`generated` that you will need to create your tests.
-* Write your test inside one of the classes (`MetamorphicTests`, `HeuristicTests`, `PerformanceTests` or `DriftTests`) inside this `repo <https://github.com/Giskard-AI/giskard/tree/main/giskard-ml-worker/ml\_worker/testing>`__. If your test does not fit these classes, you can also create a custom class in a new file.
-* We recommend writing unit tests for your test functions: this is the way you can execute and debug your test! Unit tests should be placed in `this directory <https://github.com/Giskard-AI/giskard/tree/main/giskard-ml-worker/test>`__.
+* Write your test inside one of the classes (`MetamorphicTests`, `HeuristicTests`, `PerformanceTests` or `DriftTests`) inside this `repo <https://github.com/Giskard-AI/giskard/tree/main/giskard/testing>`__. If your test does not fit these classes, you can also create a custom class in a new file.
+* We recommend writing unit tests for your test functions: this is the way you can execute and debug your test! Unit tests should be placed in `this directory <https://github.com/Giskard-AI/giskard/tree/main/tests>`__.
 
 .. hint::
     **Fixtures**
 
     A unit test is executed with a *test model* and *test data* provided as fixtures.
 
-    For example, in `test_precision <https://github.com/Giskard-AI/giskard/blob/main/giskard-ml-worker/test/test\_performance.py#L73>`_ function, we use *german_credit_data* and *german_credit_model* as fixtures. If necessary, you can create your own fixtures; check `this directory <https://github.com/Giskard-AI/giskard/tree/main/giskard-ml-worker/test/fixtures>`__ to know how.
+    For example, in `test_precision <https://github.com/Giskard-AI/giskard/blob/main/giskard/testing/tests/performance.py>`_ function, we use *german_credit_data* and *german_credit_model* as fixtures. If necessary, you can create your own fixtures; check `this directory <https://github.com/Giskard-AI/giskard/tree/main/tests/fixtures>`__ to know how.
 
 * Create a Pull Request
 
@@ -38,9 +37,9 @@ Push your tests in the Giskard repo
 
     Let us guide you with an **example where you want to create a heuristic test function**:
 
-    * Since you are writing a heuristic test, you will select heuristic\_tests.py from the list of files under https://github.com/Giskard-AI/giskard/tree/main/giskard-ml-worker/ml\_worker/testing
+    * Since you are writing a heuristic test, you will select heuristic\_tests.py from the list of files under https://github.com/Giskard-AI/giskard/tree/main/giskard/testing
     * In heuristic\_tests.py, write your code under **class HeuristicTests(AbstractTestCollection) after the existing codes**
-    * To write the unit test we select test\_heuristic.py under the list of files https://github.com/Giskard-AI/giskard/tree/main/giskard-ml-worker/test
+    * To write the unit test we select test\_heuristic.py under the list of files https://github.com/Giskard-AI/giskard/tree/main/tests
     * Follow the pattern of parameterizing the inputs which helps you to test the function using different fixtures. You can read more about parameterizing unit tests here https://docs.pytest.org/en/7.1.x/example/parametrize.html
-    * If you want to create your own dataset, You can create your own fixture python file under https://github.com/Giskard-AI/giskard/tree/main/giskard-ml-worker/test/fixtures
-    * You can use https://github.com/Giskard-AI/giskard/blob/main/giskard-ml-worker/test/fixtures/german\_credit\_scoring.py for your reference. Make sure you return the model, data(with target) and test\_data(without target) in the expected format.
+    * If you want to create your own dataset, You can create your own fixture python file under https://github.com/Giskard-AI/giskard/tree/main/tests
+    * You can use https://github.com/Giskard-AI/giskard/tree/main/tests/fixtures/german\_credit\_scoring.py for your reference. Make sure you return the model, data(with target) and test\_data(without target) in the expected format.

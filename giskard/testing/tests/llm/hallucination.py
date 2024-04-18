@@ -10,7 +10,11 @@ from ....registry.decorators import test
 
 @test(name="LLM Coherency", tags=["llm", "hallucination"])
 def test_llm_output_coherency(
-    model: BaseModel, dataset_1: Dataset, dataset_2: Optional[Dataset] = None, eval_prompt: Optional[str] = None
+    model: BaseModel,
+    dataset_1: Dataset,
+    dataset_2: Optional[Dataset] = None,
+    eval_prompt: Optional[str] = None,
+    rng_seed: int = 1729,
 ):
     """Tests that the model output is coherent for multiple inputs.
 
@@ -34,7 +38,7 @@ def test_llm_output_coherency(
     TestResult
         The test result.
     """
-    evaluator = CoherencyEvaluator(eval_prompt=eval_prompt)
+    evaluator = CoherencyEvaluator(eval_prompt=eval_prompt, llm_seed=rng_seed)
     eval_result = evaluator.evaluate(model, dataset_1, dataset_2)
 
     return TestResult(

@@ -546,3 +546,9 @@ class ComparisonClauseDTO:
     comparisonType: ComparisonType
     columnDtype: str
     value: Optional[str]
+
+
+class TestResultStatusEnum(str, Enum):
+    ERROR = "ERROR"
+    PASSED = "PASSED"
+    FAILED = "FAILED"

@@ -1,13 +1,13 @@
 import numpy as np
 
-from ....core.test_result import TestResult, TestResultDetails, TestResultStatus
+from ....core.test_result import TestResult, TestResultStatus, create_test_result_details
 from ....datasets.base import Dataset
 from ....llm import LLMImportError
-from ....llm.evaluators import PerRowRequirementEvaluator
+from ....llm.evaluators.correctness import CorrectnessEvaluator
 from ....models.base import BaseModel
 from ....registry.decorators import test
 from .. import debug_description_prefix
-from .output_requirements import _test_output_against_requirement
+from .output_requirements import _test_output_with_evaluator
 
 
 @test(
@@ -24,16 +24,7 @@ def test_llm_ground_truth(model: BaseModel, dataset: Dataset, threshold: float =
     passed = np.array(pred.prediction) == dataset.df[dataset.target]
     metric = len([p for p in passed if p]) / len(passed)
 
-    return TestResult(
-        passed=metric >= threshold,
-        metric=metric,
-        details=TestResultDetails(
-            inputs=dataset.df.loc[:, model.meta.feature_names].to_dict("list"),
-            outputs=list(pred.prediction),
-            results=[TestResultStatus.PASSED if result else TestResultStatus.FAILED for result in passed],
-            metadata={"target": list(dataset.df[dataset.target])},
-        ),
-    )
+    return _create_groud_truth_test_result(dataset, metric, model, passed, pred, threshold)
 
 
 @test(
@@ -64,14 +55,19 @@ def test_llm_ground_truth_similarity(
     passed = np.array(score["f1"]) > 1 - output_sensitivity
     metric = len([p for p in passed if p]) / len(passed)
 
+    return _create_groud_truth_test_result(dataset, metric, model, passed, pred, threshold)
+
+
+def _create_groud_truth_test_result(dataset, metric, model, passed, pred, threshold):
     return TestResult(
         passed=metric >= threshold,
         metric=metric,
-        details=TestResultDetails(
-            inputs=dataset.df.loc[:, model.meta.feature_names].to_dict("list"),
-            outputs=list(pred.prediction),
-            results=[TestResultStatus.PASSED if result else TestResultStatus.FAILED for result in passed],
-            metadata={"target": list(dataset.df[dataset.target]), "F1 similarity": score["f1"]},
+        details=create_test_result_details(
+            dataset,
+            model,
+            list(pred.prediction),
+            [TestResultStatus.PASSED if result else TestResultStatus.FAILED for result in passed],
+            {"target": list(dataset.df[dataset.target])},
         ),
     )
 
@@ -81,10 +77,8 @@ def test_llm_ground_truth_similarity(
     tags=["llm", "llm-as-a-judge"],
     debug_description=debug_description_prefix + "that are <b>failing the evaluation criteria</b>.",
 )
-def test_llm_as_a_judge_ground_truth_similarity(
-    model: BaseModel, dataset: Dataset, prefix: str = "The requirement should be similar to: "
-):
-    """Evaluates the model output against its ground truth  with another LLM (LLM-as-a-judge).
+def test_llm_as_a_judge_ground_truth_similarity(model: BaseModel, dataset: Dataset, rng_seed: int = 1729):
+    """Evaluates the correctness of the model output against a ground truth with an LLM (LLM-as-a-judge).
 
     The model outputs over a given dataset will be validated against the
     dataset target using GPT-4 (note that this requires you to set the
@@ -107,6 +101,9 @@ def test_llm_as_a_judge_ground_truth_similarity(
     if dataset.target is None:
         raise ValueError(f"Provided dataset ({dataset}) does not have any ground truth (target)")
 
-    return _test_output_against_requirement(
-        model, dataset, PerRowRequirementEvaluator(dataset.df.loc[:, [dataset.target]], prefix)
+    return _test_output_with_evaluator(
+        model,
+        dataset,
+        CorrectnessEvaluator(answer_col=dataset.target, llm_seed=rng_seed),
+        {"target": list(dataset.df[dataset.target])},
     )

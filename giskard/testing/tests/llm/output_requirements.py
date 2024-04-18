@@ -2,27 +2,44 @@ import json
 
 import pandas as pd
 
-from ....core.test_result import TestMessage, TestMessageLevel, TestResult
+from giskard.llm.evaluators.base import BaseEvaluator
+
+from ....core.test_result import (
+    TestMessage,
+    TestMessageLevel,
+    TestResult,
+    create_test_result_details,
+)
 from ....datasets.base import Dataset
-from ....llm.evaluators import PerRowRequirementEvaluator, RequirementEvaluator
+from ....llm.evaluators import RequirementEvaluator
 from ....models.base import BaseModel
 from ....registry.decorators import test
 from ....utils.display import truncate
 from .. import debug_description_prefix
 
 
-def _test_output_against_requirement(model, dataset, evaluator):
+def _test_output_with_evaluator(model, dataset, evaluator: BaseEvaluator, metadata=None):
     eval_result = evaluator.evaluate(model, dataset)
     messages = []
     if eval_result.has_errors:
-        messages = [TestMessage(TestMessageLevel.ERROR, err["message"]) for err in eval_result.errors]
+        messages = [TestMessage(TestMessageLevel.ERROR, err["error"]) for err in eval_result.errors]
+
+    metadata = metadata or dict()
+    metadata["reason"] = [str(result.sample.get("reason", "<empty>")) for result in eval_result.results]
+
     return TestResult(
         passed=eval_result.passed,
         metric=len(eval_result.failure_examples),
         metric_name="Failing examples",
         is_error=eval_result.has_errors,
         messages=messages,
-        details=eval_result.details,
+        details=create_test_result_details(
+            dataset,
+            model,
+            [str(result.sample.get("conversation", "<empty>")) for result in eval_result.results],
+            [result.status for result in eval_result.results],
+            metadata,
+        ),
     )
 
 
@@ -31,7 +48,9 @@ def _test_output_against_requirement(model, dataset, evaluator):
     tags=["llm", "llm-as-a-judge"],
     debug_description=debug_description_prefix + "that are <b>failing the evaluation criteria</b>.",
 )
-def test_llm_output_against_requirement_per_row(model: BaseModel, dataset: Dataset, requirement_column: str):
+def test_llm_output_against_requirement_per_row(
+    model: BaseModel, dataset: Dataset, requirement_column: str, rng_seed: int = 1729
+):
     """Evaluates the model output against a given requirement with another LLM (LLM-as-a-judge).
 
     The model outputs over a given dataset will be validated against the
@@ -57,8 +76,11 @@ def test_llm_output_against_requirement_per_row(model: BaseModel, dataset: Datas
     TestResult
         A TestResult object containing the test result.
     """
-    return _test_output_against_requirement(
-        model, dataset, PerRowRequirementEvaluator(dataset.df.loc[:, [requirement_column]])
+    return _test_output_with_evaluator(
+        model,
+        dataset,
+        RequirementEvaluator(requirement_col=requirement_column, llm_seed=rng_seed),
+        {"requirement": list(dataset.df[requirement_column])},
     )
 
 
@@ -67,7 +89,7 @@ def test_llm_output_against_requirement_per_row(model: BaseModel, dataset: Datas
     tags=["llm", "llm-as-a-judge"],
     debug_description=debug_description_prefix + "that are <b>failing the evaluation criteria</b>.",
 )
-def test_llm_output_against_requirement(model: BaseModel, dataset: Dataset, requirement: str):
+def test_llm_output_against_requirement(model: BaseModel, dataset: Dataset, requirement: str, rng_seed: int = 1729):
     """Evaluates the model output against a given requirement with another LLM (LLM-as-a-judge).
 
     The model outputs over a given dataset will be validated against the
@@ -93,7 +115,12 @@ def test_llm_output_against_requirement(model: BaseModel, dataset: Dataset, requ
     TestResult
         A TestResult object containing the test result.
     """
-    return _test_output_against_requirement(model, dataset, RequirementEvaluator([requirement]))
+    return _test_output_with_evaluator(
+        model,
+        dataset,
+        RequirementEvaluator([requirement], llm_seed=rng_seed),
+        {"requirement": [requirement] * len(dataset.df)},
+    )
 
 
 @test(
@@ -102,7 +129,7 @@ def test_llm_output_against_requirement(model: BaseModel, dataset: Dataset, requ
     debug_description=debug_description_prefix + "that are <b>failing the evaluation criteria</b>.",
 )
 def test_llm_single_output_against_requirement(
-    model: BaseModel, input_var: str, requirement: str, input_as_json: bool = False
+    model: BaseModel, input_var: str, requirement: str, input_as_json: bool = False, rng_seed: int = 1729
 ):
     """Evaluates the model output against a given requirement with another LLM (LLM-as-a-judge).
 
@@ -152,4 +179,6 @@ def test_llm_single_output_against_requirement(
     )
 
     # Run normal output requirement test
-    return _test_output_against_requirement(model, dataset, RequirementEvaluator([requirement]))
+    return _test_output_with_evaluator(
+        model, dataset, RequirementEvaluator([requirement], llm_seed=rng_seed), {"requirement": [requirement]}
+    )

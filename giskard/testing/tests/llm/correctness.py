@@ -1,4 +1,4 @@
-from ....core.test_result import TestResult, TestResultStatus
+from ....core.test_result import TestResult
 from ....datasets.base import Dataset
 from ....llm.evaluators import CorrectnessEvaluator
 from ....models.base import BaseModel
@@ -11,7 +11,7 @@ from .. import debug_description_prefix
     tags=["llm", "llm-as-a-judge"],
     debug_description=debug_description_prefix + "that are <b>failing the evaluation criteria</b>.",
 )
-def test_llm_correctness(model: BaseModel, dataset: Dataset, threshold: float = 0.5):
+def test_llm_correctness(model: BaseModel, dataset: Dataset, threshold: float = 0.5, rng_seed: int = 1729):
     """Tests if LLM answers are correct with respect to a known reference answers.
 
     The test is passed when the ratio of correct answers is higher than the
@@ -31,19 +31,16 @@ def test_llm_correctness(model: BaseModel, dataset: Dataset, threshold: float = 
     TestResult
         A TestResult object containing the test result.
     """
-    correctness_evaluator = CorrectnessEvaluator()
+    correctness_evaluator = CorrectnessEvaluator(llm_seed=rng_seed)
     eval_result = correctness_evaluator.evaluate(model, dataset)
     output_ds = list()
+
     if not eval_result.passed:
-        failed_indices = [
-            idx
-            for idx, status in zip(dataset.df.index, eval_result.details.results)
-            if status == TestResultStatus.FAILED
-        ]
+        failed_indices = [s["sample"]["meta"]["__row_id"] for s in eval_result.failure_examples]
 
         output_ds.append(dataset.slice(lambda df: df.loc[failed_indices], row_level=False))
 
-    passed = bool(eval_result.passed_ratio > threshold)
+    passed = eval_result.passed_ratio > threshold
 
     return TestResult(
         passed=passed,
