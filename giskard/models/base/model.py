@@ -708,17 +708,18 @@ class BaseModel(ABC):
             **TALK_CLIENT_CONFIG,
         )
 
-        if hasattr(response, "content"):
+        if hasattr(response, "content") and response.content:
             messages.append(ToolChatMessage(role="assistant", content=response.content))
 
         # Store exceptions raised by tool execution.
         tool_errors = list()
 
-        if hasattr(response, "tool_calls"):
-            response.tool_calls = [json.loads(tool_call.json()) for tool_call in response.tool_calls]
+        if hasattr(response, "tool_calls") and response.tool_calls:
+            tool_calls = response.tool_calls
+            response.tool_calls = [json.loads(tool_call.json()) for tool_call in tool_calls]
             messages.append(response)
 
-            for tool_call in response.tool_calls:
+            for tool_call in tool_calls:
                 tool_name = tool_call.function.name
                 tool_args = json.loads(tool_call.function.arguments)
 
