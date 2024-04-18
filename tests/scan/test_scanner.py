@@ -271,6 +271,30 @@ def test_can_limit_features_to_subset():
         scanner.analyze(model, dataset, features=[])
 
 
+@mock.patch("giskard.scanner.scanner.get_default_client")
+def test_scanner_does_not_break_if_llm_client_not_set(get_default_client):
+    """For scans that do not require the LLM client, the scanner must not break if the client is not set."""
+    get_default_client.side_effect = ValueError("No client set")
+
+    scanner = Scanner()
+
+    def fake_model(*args, **kwargs):
+        return None
+
+    model = Model(
+        model=fake_model,
+        model_type=SupportedModelTypes.TEXT_GENERATION,
+        name="test",
+        description="test",
+        feature_names=["query"],
+        target="query",
+    )
+
+    dataset = Dataset(pd.DataFrame({"query": ["test"]}))
+
+    scanner.analyze(model, dataset)
+
+
 @pytest.mark.memory_expensive
 def test_min_slice_size(titanic_model, titanic_dataset):
     # By default, it uses a 0.01 min slice size

@@ -1,13 +1,11 @@
 # 🥇 RAGET Evaluation
 
-> ⚠️ **RAGET is currently in early version and is subject to change**. Feel free to reach out on our [Discord server](https://discord.gg/fkv7CAr3FE) if you have any trouble or to provide feedback.
-
-
 After automatically generating a test set for your RAG agent using RAGET, you can then evaluate the **correctness 
 of the agent's answers** compared to the reference answers (using a LLM-as-a-judge approach). The main purpose
 of this evaluation is to help you **identify the weakest components in your RAG agent**.
 
-
+> ℹ️ You can find a [tutorial](../../../reference/notebooks/RAGET.ipynb) where we demonstrate the capabilities of RAGET with a simple RAG agent build with LlamaIndex 
+on the IPCC report.  
 
 ## Correctness Evaluation on the Generated Test Set
 
@@ -49,7 +47,7 @@ report.to_html("rag_eval_report.html")
 ```
 
 This report is what you'll obtain:
-![image](../../../_static/rag_report_full.png)
+![image](../../../_static/raget.png)
 
 
 ### RAG Components Scores
@@ -143,7 +141,7 @@ test_suite_by_question_types = testset.to_test_suite("Split test suite", slicing
 Jump to the [test customization](https://docs.giskard.ai/en/latest/open_source/customize_tests/index.html) and [test integration](https://docs.giskard.ai/en/latest/open_source/integrate_tests/index.html) sections to find out everything you can do with test suites.
 
 ### Step 2: Wrap your model
-Before evaluating your model with a test suite, you must wrap it as a `giskard.Model`. This step is necessary to ensure a common format for your model and its metadata. You can wrap anything as long as you can represent it in a Python function (for example an API call to Azure or OpenAI). We also have pre-built wrappers for LangChain objects, or you can create your own wrapper by extending the `giskard.Model` class if you need to wrap a complex object such as a custom-made RAG communicating with a vectorstore.
+Before evaluating your model with a test suite, you must wrap it as a `giskard.Model`. This step is necessary to ensure a common format for your model and its metadata. You can wrap anything as long as you can represent it in a Python function (for example an API call to Azure, OpenAI, Mistral, Ollama etc...). We also have pre-built wrappers for LangChain objects, or you can create your own wrapper by extending the `giskard.Model` class if you need to wrap a complex object such as a custom-made RAG communicating with a vectorstore.
 
 To do so, you can follow the instructions from the [LLM Scan feature](../scan/scan_llm/index.md#step-1-wrap-your-model). Make sure that you pass `feature_names = "question"` when wrapping your model, so that it matches the question column of the test set.
 
@@ -162,7 +160,7 @@ Uploading a test suite to the hub allows you to:
 * Create more tests relevant to your use case, combining input prompts that make your model fail and custome evaluation criteria
 * Share results, and collaborate with your team to integrate business feedback
 
-To upload your test suite, you must have created a project on Giskard Hub and instantiated a Giskard Python client. If you haven't done this yet, follow the first steps of [upload your object](https://docs.giskard.ai/en/latest/giskard_hub/upload/index.html#upload-your-object) guide. 
+To upload your test suite, you must have created a project on Giskard Hub and instantiated a Giskard Python client.
 
 Then, upload your test suite and model like this:
 ```python
