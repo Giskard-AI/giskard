@@ -10,6 +10,7 @@ from .openai import AUTH_ERROR_MESSAGE, OpenAIClient
 
 try:
     import openai
+    from openai.types.chat import ChatCompletionMessageToolCall
 except ImportError as err:
     raise LLMImportError(flavor="talk") from err
 
@@ -18,7 +19,7 @@ except ImportError as err:
 class ToolChatMessage(ChatMessage):
     name: Optional[str] = None
     tool_call_id: Optional[str] = None
-    tool_calls: Optional[list] = None
+    tool_calls: Optional[list["ChatCompletionMessageToolCall"]] = None
 
 
 def _format_message(msg: ChatMessage) -> dict:
@@ -52,7 +53,7 @@ class GiskardCopilotClient(OpenAIClient):
         tool_choice=None,
         seed: Optional[int] = None,
         format=None,
-    ) -> ChatMessage:
+    ) -> ToolChatMessage:
         extra_params = dict()
 
         if tools is not None:
