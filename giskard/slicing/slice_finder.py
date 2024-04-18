@@ -18,7 +18,7 @@ class SliceFinder:
         min_slice_size: Optional[float] = None,
     ):
         if min_slice_size and len(dataset) < min_slice_size:
-            return {}
+            return dict()
 
         target = target or dataset.target
 
