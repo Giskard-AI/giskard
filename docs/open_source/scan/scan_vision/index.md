@@ -1,4 +1,4 @@
-# Vision model scan
+# 📸 Vision model scan
 
 **Feature under development**
 
@@ -8,10 +8,11 @@ The giskard-vision extension is under development. For now, only landmark detect
 
 ## Step 1: Wrap your dataset
 
-To scan your model, start by **wrapping your dataset** with ``DataLoaderBase``. Your class should implement ``load_marks_from_file`` that returns landmark coordinates from a file and ``load_image_from_file`` that loads an image an a ``np.ndarray``.
+To scan your model, start by **wrapping your dataset** with `DataLoaderBase`. Your class should implement `load_marks_from_file` that returns landmark coordinates from a file and `load_image_from_file` that loads an image an a `np.ndarray`.
 
 > ### ⚠️ Warning
-> It's highly recommended that you wrap your data **before preprocessing** so that you can easily interpret 
+>
+> It's highly recommended that you wrap your data **before preprocessing** so that you can easily interpret
 > the scan results.
 
 ```python
@@ -95,7 +96,7 @@ giskard_dataset = DataLoader300W("examples/landmark_detection/datasets/300W/")
 
 ## Step 2: Wrap your model
 
-Next, **wrap your model** with ``FaceLandmarksModelBase``. It should contain a method ``predict_image`` that returns landmarks as ``np.ndarray``, as shown here:
+Next, **wrap your model** with `FaceLandmarksModelBase`. It should contain a method `predict_image` that returns landmarks as `np.ndarray`, as shown here:
 
 ```python
 from giskard-vision.landmark_detection.models.base import FaceLandmarksModelBase

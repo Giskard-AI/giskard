@@ -14,13 +14,12 @@ advanced_scan/index
 
 ::::::{grid} 1 1 2 2
 
-
-::::{grid-item-card} <br/><h3>📚  LLM scan</h3>
+::::{grid-item-card} <br/><h3>📚 LLM scan</h3>
 :text-align: center
 :link: scan_llm/index.html
 ::::
 
-::::{grid-item-card} <br/><h3>📊  Tabular model scan</h3>
+::::{grid-item-card} <br/><h3>📊 Tabular model scan</h3>
 :text-align: center
 :link: scan_tabular/index.html
 ::::
@@ -30,7 +29,7 @@ advanced_scan/index
 :link: scan_nlp/index.html
 ::::
 
-::::{grid-item-card} <br/><h3>Vision model scan</h3>
+::::{grid-item-card} <br/><h3>📸 Vision model scan</h3>
 :text-align: center
 :link: scan_vision/index.html
 ::::
