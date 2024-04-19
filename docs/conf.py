@@ -34,7 +34,7 @@ extensions = [
 
 autoclass_content = "both"
 
-# autodoc_mock_imports = ["giskard.ml_worker.generated"]
+autodoc_mock_imports = ["ragas", "langchain_core"]
 templates_path = ["_templates"]
 exclude_patterns = ["_build", "Thumbs.db", ".DS_Store"]
 

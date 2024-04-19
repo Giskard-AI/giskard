@@ -96,8 +96,8 @@ class KnowledgeBase:
         The seed to use for random number generation.
     llm_client: LLMClient, optional:
         The LLM client to use for question generation. If not specified, a default openai client will be used.
-    embedding_model: str = "text-embedding-ada-002"
-        The name of the embedding model to use for the knowledge base. It should match the llm_client available embedding models.
+    embedding_model: BaseEmbedding, optional
+        The giskard embedding model to use for the knowledge base. By default we use giskard default model which is OpenAI "text-embedding-ada-002".
     min_topic_size: int, optional
         The minimum number of document to form a topic inside the knowledge base.
     chunk_size: int = 2048

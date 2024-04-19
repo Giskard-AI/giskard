@@ -2,10 +2,10 @@
 # It is not intended for manual editing.
 
 [metadata]
-groups = ["default", "dev", "doc", "hub", "llm", "ml_runtime", "test"]
+groups = ["default", "dev", "doc", "hub", "llm", "ml_runtime", "talk", "test"]
 strategy = ["cross_platform", "inherit_metadata"]
 lock_version = "4.4.1"
-content_hash = "sha256:583753370ab1da325a8eb4ea1415e4ff1b491eb0ed7d10d8150f37be9a1063ab"
+content_hash = "sha256:b5b2e1aa7769c03ed6cb6754be9ba6bd3a98966315f36faa5035a6d115b53540"
 
 [[package]]
 name = "absl-py"
@@ -137,7 +137,7 @@ name = "annotated-types"
 version = "0.6.0"
 requires_python = ">=3.8"
 summary = "Reusable constraint types to use with typing.Annotated"
-groups = ["default", "dev", "llm", "ml_runtime", "test"]
+groups = ["default", "dev", "llm", "ml_runtime", "talk", "test"]
 files = [
     {file = "annotated_types-0.6.0-py3-none-any.whl", hash = "sha256:0641064de18ba7a25dee8f96403ebc39113d0cb953a01429249d5c7564666a43"},
     {file = "annotated_types-0.6.0.tar.gz", hash = "sha256:563339e807e53ffd9c267e99fc6d9ea23eb8443c08f112651963e24e22f84a5d"},
@@ -159,7 +159,9 @@ name = "anyio"
 version = "4.3.0"
 requires_python = ">=3.8"
 summary = "High level compatibility layer for multiple asynchronous event loop implementations"
-groups = ["dev", "doc", "llm", "test"]
+
+groups = ["dev", "doc", "llm", "test", "talk"]
+
 dependencies = [
     "exceptiongroup>=1.0.2; python_version < \"3.11\"",
     "idna>=2.8",
@@ -575,7 +577,7 @@ name = "certifi"
 version = "2024.2.2"
 requires_python = ">=3.6"
 summary = "Python package for providing Mozilla's CA Bundle."
-groups = ["default", "dev", "doc", "hub", "llm", "ml_runtime", "test"]
+groups = ["default", "dev", "doc", "hub", "llm", "ml_runtime", "talk", "test"]
 files = [
     {file = "certifi-2024.2.2-py3-none-any.whl", hash = "sha256:dc383c07b76109f368f6106eee2b593b04a011ea4d55f652c6ca24a754d1cdd1"},
     {file = "certifi-2024.2.2.tar.gz", hash = "sha256:0569859f95fc761b18b45ef421b1290a0f65f147e92a1e5eb3e635f9a5e4e66f"},
@@ -724,7 +726,7 @@ name = "cloudpickle"
 version = "3.0.0"
 requires_python = ">=3.8"
 summary = "Pickler class to extend the standard pickle.Pickler functionality"
-groups = ["default", "dev", "hub", "ml_runtime", "test"]
+groups = ["default", "dev", "hub", "ml_runtime", "talk", "test"]
 files = [
     {file = "cloudpickle-3.0.0-py3-none-any.whl", hash = "sha256:246ee7d0c295602a036e86369c77fecda4ab17b506496730f2f576d9016fd9c7"},
     {file = "cloudpickle-3.0.0.tar.gz", hash = "sha256:996d9a482c6fb4f33c1a35335cf8afd065d2a56e973270364840712d9131a882"},
@@ -735,7 +737,7 @@ name = "colorama"
 version = "0.4.6"
 requires_python = "!=3.0.*,!=3.1.*,!=3.2.*,!=3.3.*,!=3.4.*,!=3.5.*,!=3.6.*,>=2.7"
 summary = "Cross-platform colored terminal text."
-groups = ["default", "dev", "doc", "hub", "llm", "ml_runtime", "test"]
+groups = ["default", "dev", "doc", "hub", "llm", "ml_runtime", "talk", "test"]
 files = [
     {file = "colorama-0.4.6-py2.py3-none-any.whl", hash = "sha256:4f1d9991f5acc0ca119f9d443620b77f9d6b33703e51011c16baf57afb285fc6"},
     {file = "colorama-0.4.6.tar.gz", hash = "sha256:08695f5cb7ed6e0531a20572697297273c47b8cae5a63ffc6d6ed5c201be6e44"},
@@ -1127,7 +1129,7 @@ name = "distro"
 version = "1.9.0"
 requires_python = ">=3.6"
 summary = "Distro - an OS platform information API"
-groups = ["llm", "test"]
+groups = ["llm", "talk", "test"]
 files = [
     {file = "distro-1.9.0-py3-none-any.whl", hash = "sha256:7bffd925d65168f85027d8da9af6bddab658135b840670a223589bc0c8ef02b2"},
     {file = "distro-1.9.0.tar.gz", hash = "sha256:2fa77c6fd8940f116ee1d6b94a2f90b13b5ea8d019b98bc8bafdcabcdd9bdbed"},
@@ -1224,7 +1226,9 @@ name = "exceptiongroup"
 version = "1.2.0"
 requires_python = ">=3.7"
 summary = "Backport of PEP 654 (exception groups)"
-groups = ["dev", "doc", "llm", "test"]
+
+groups = ["dev", "doc", "llm", "test", "talk"]
+
 marker = "python_version < \"3.11\""
 files = [
     {file = "exceptiongroup-1.2.0-py3-none-any.whl", hash = "sha256:4bfd3996ac73b41e9b9628b04e079f193850720ea5945fc96a08633c66912f14"},
@@ -1735,7 +1739,8 @@ name = "h11"
 version = "0.14.0"
 requires_python = ">=3.7"
 summary = "A pure-Python, bring-your-own-I/O implementation of HTTP/1.1"
-groups = ["dev", "doc", "llm", "test"]
+
+groups = ["dev", "doc", "llm", "test", "talk"]
 files = [
     {file = "h11-0.14.0-py3-none-any.whl", hash = "sha256:e3fe4ac4b851c468cc8363d500db52c2ead036020723024a109d37346efaa761"},
     {file = "h11-0.14.0.tar.gz", hash = "sha256:8f19fbbe99e72420ff35c00b27a34cb9937e902a8b810e2c88300c6f0a3b699d"},
@@ -1771,7 +1776,7 @@ name = "httpcore"
 version = "1.0.5"
 requires_python = ">=3.8"
 summary = "A minimal low-level HTTP client."
-groups = ["dev", "llm", "test"]
+groups = ["dev", "llm", "talk", "test"]
 dependencies = [
     "certifi",
     "h11<0.15,>=0.13",
@@ -1786,7 +1791,7 @@ name = "httpx"
 version = "0.25.2"
 requires_python = ">=3.8"
 summary = "The next generation HTTP client."
-groups = ["dev", "llm", "test"]
+groups = ["dev", "llm", "talk", "test"]
 dependencies = [
     "anyio",
     "certifi",
@@ -1849,7 +1854,7 @@ name = "idna"
 version = "3.7"
 requires_python = ">=3.5"
 summary = "Internationalized Domain Names in Applications (IDNA)"
-groups = ["default", "dev", "doc", "hub", "llm", "ml_runtime", "test"]
+groups = ["default", "dev", "doc", "hub", "llm", "ml_runtime", "talk", "test"]
 files = [
     {file = "idna-3.7-py3-none-any.whl", hash = "sha256:82fee1fc78add43492d3a1898bfa6d8a904cc97d8427f683ed8e798d07761aa0"},
     {file = "idna-3.7.tar.gz", hash = "sha256:028ff3aadf0609c1fd278d8ea3089299412a7a8b9bd005dd08b9f8285bcb5cfc"},
@@ -2100,7 +2105,7 @@ name = "joblib"
 version = "1.4.0"
 requires_python = ">=3.8"
 summary = "Lightweight pipelining with Python functions"
-groups = ["default", "dev", "hub", "llm", "ml_runtime", "test"]
+groups = ["default", "dev", "hub", "llm", "ml_runtime", "talk", "test"]
 files = [
     {file = "joblib-1.4.0-py3-none-any.whl", hash = "sha256:42942470d4062537be4d54c83511186da1fc14ba354961a2114da91efa9a4ed7"},
     {file = "joblib-1.4.0.tar.gz", hash = "sha256:1eb0dc091919cd384490de890cb5dfd538410a6d4b3b54eef09fb8c50b409b1c"},
@@ -2507,6 +2512,7 @@ files = [
 [[package]]
 name = "langchain"
 version = "0.1.16"
+
 requires_python = "<4.0,>=3.8.1"
 summary = "Building applications with LLMs through composability"
 groups = ["ml_runtime"]
@@ -2669,7 +2675,7 @@ name = "llvmlite"
 version = "0.42.0"
 requires_python = ">=3.9"
 summary = "lightweight wrapper around basic LLVM functionality"
-groups = ["hub", "llm", "test"]
+groups = ["hub", "llm", "talk", "test"]
 files = [
     {file = "llvmlite-0.42.0-cp310-cp310-macosx_10_9_x86_64.whl", hash = "sha256:3366938e1bf63d26c34fbfb4c8e8d2ded57d11e0567d5bb243d89aab1eb56098"},
     {file = "llvmlite-0.42.0-cp310-cp310-macosx_11_0_arm64.whl", hash = "sha256:c35da49666a21185d21b551fc3caf46a935d54d66969d32d72af109b5e7d2b6f"},
@@ -3496,7 +3502,7 @@ name = "numba"
 version = "0.59.1"
 requires_python = ">=3.9"
 summary = "compiling Python code using LLVM"
-groups = ["hub", "llm", "test"]
+groups = ["hub", "llm", "talk", "test"]
 dependencies = [
     "llvmlite<0.43,>=0.42.0dev0",
     "numpy<1.27,>=1.22",
@@ -3525,7 +3531,7 @@ name = "numpy"
 version = "1.26.4"
 requires_python = ">=3.9"
 summary = "Fundamental package for array computing in Python"
-groups = ["default", "dev", "hub", "llm", "ml_runtime", "test"]
+groups = ["default", "dev", "hub", "llm", "ml_runtime", "talk", "test"]
 files = [
     {file = "numpy-1.26.4-cp310-cp310-macosx_10_9_x86_64.whl", hash = "sha256:9ff0f4f29c51e2803569d7a51c2304de5554655a60c5d776e35b4a41413830d0"},
     {file = "numpy-1.26.4-cp310-cp310-macosx_11_0_arm64.whl", hash = "sha256:2e4ee3380d6de9c9ec04745830fd9e2eccb3e6cf790d39d7b98ffd19b0dd754a"},
@@ -3739,7 +3745,7 @@ name = "openai"
 version = "1.21.2"
 requires_python = ">=3.7.1"
 summary = "The official Python library for the openai API"
-groups = ["llm", "test"]
+groups = ["llm", "talk", "test"]
 dependencies = [
     "anyio<5,>=3.5.0",
     "distro<2,>=1.7.0",
@@ -3824,7 +3830,7 @@ name = "packaging"
 version = "23.2"
 requires_python = ">=3.7"
 summary = "Core utilities for Python packages"
-groups = ["default", "dev", "doc", "hub", "llm", "ml_runtime", "test"]
+groups = ["default", "dev", "doc", "hub", "llm", "ml_runtime", "talk", "test"]
 files = [
     {file = "packaging-23.2-py3-none-any.whl", hash = "sha256:8c491190033a9af7e1d931d0b5dacc2ef47509b34dd0de67ed209b5203fc88c7"},
     {file = "packaging-23.2.tar.gz", hash = "sha256:048fb0e9405036518eaaf48a55953c750c11e1a1b68e0dd1a9d62ed0c092cfc5"},
@@ -3835,7 +3841,7 @@ name = "pandas"
 version = "2.2.2"
 requires_python = ">=3.9"
 summary = "Powerful data structures for data analysis, time series, and statistics"
-groups = ["default", "dev", "hub", "llm", "ml_runtime", "test"]
+groups = ["default", "dev", "hub", "llm", "ml_runtime", "talk", "test"]
 dependencies = [
     "numpy>=1.22.4; python_version < \"3.11\"",
     "numpy>=1.23.2; python_version == \"3.11\"",
@@ -4315,7 +4321,7 @@ name = "pydantic"
 version = "2.7.0"
 requires_python = ">=3.8"
 summary = "Data validation using Python type hints"
-groups = ["default", "dev", "llm", "ml_runtime", "test"]
+groups = ["default", "dev", "llm", "ml_runtime", "talk", "test"]
 dependencies = [
     "annotated-types>=0.4.0",
     "pydantic-core==2.18.1",
@@ -4331,7 +4337,7 @@ name = "pydantic-core"
 version = "2.18.1"
 requires_python = ">=3.8"
 summary = "Core functionality for Pydantic validation and serialization"
-groups = ["default", "dev", "llm", "ml_runtime", "test"]
+groups = ["default", "dev", "llm", "ml_runtime", "test", "talk"]
 dependencies = [
     "typing-extensions!=4.7.0,>=4.6.0",
 ]
@@ -4593,7 +4599,7 @@ name = "python-dateutil"
 version = "2.9.0.post0"
 requires_python = "!=3.0.*,!=3.1.*,!=3.2.*,>=2.7"
 summary = "Extensions to the standard Python datetime module"
-groups = ["default", "dev", "doc", "hub", "llm", "ml_runtime", "test"]
+groups = ["default", "dev", "doc", "hub", "llm", "ml_runtime", "talk", "test"]
 dependencies = [
     "six>=1.5",
 ]
@@ -4617,7 +4623,7 @@ files = [
 name = "pytz"
 version = "2024.1"
 summary = "World timezone definitions, modern and historical"
-groups = ["default", "dev", "hub", "llm", "ml_runtime", "test"]
+groups = ["default", "dev", "hub", "llm", "ml_runtime", "talk", "test"]
 files = [
     {file = "pytz-2024.1-py2.py3-none-any.whl", hash = "sha256:328171f4e3623139da4983451950b28e95ac706e13f3f2630a879749e7a8b319"},
     {file = "pytz-2024.1.tar.gz", hash = "sha256:2a29735ea9c18baf14b448846bde5a48030ed267578472d8955cd0e7443a9812"},
@@ -5216,7 +5222,7 @@ name = "scikit-learn"
 version = "1.4.2"
 requires_python = ">=3.9"
 summary = "A set of python modules for machine learning and data mining"
-groups = ["default", "dev", "hub", "llm", "ml_runtime", "test"]
+groups = ["default", "dev", "hub", "llm", "ml_runtime", "talk", "test"]
 dependencies = [
     "joblib>=1.2.0",
     "numpy>=1.19.5",
@@ -5247,7 +5253,7 @@ name = "scipy"
 version = "1.11.4"
 requires_python = ">=3.9"
 summary = "Fundamental algorithms for scientific computing in Python"
-groups = ["default", "dev", "hub", "llm", "ml_runtime", "test"]
+groups = ["default", "dev", "hub", "llm", "ml_runtime", "talk", "test"]
 dependencies = [
     "numpy<1.28.0,>=1.21.6",
 ]
@@ -5454,10 +5460,10 @@ files = [
 
 [[package]]
 name = "shap"
-version = "0.44.1"
+version = "0.44.0"
 requires_python = ">=3.8"
 summary = "A unified approach to explain the output of any machine learning model."
-groups = ["hub", "test"]
+groups = ["hub", "talk", "test"]
 dependencies = [
     "cloudpickle",
     "numba",
@@ -5470,25 +5476,25 @@ dependencies = [
     "tqdm>=4.27.0",
 ]
 files = [
-    {file = "shap-0.44.1-cp310-cp310-macosx_10_9_x86_64.whl", hash = "sha256:93a94961a355249855f13f1ed564466afa1c5fae84f868dd56e50e936f4f9b57"},
-    {file = "shap-0.44.1-cp310-cp310-macosx_11_0_arm64.whl", hash = "sha256:d2919f2b255e31363182afb1627b374eb6c4724c90b0318719cbe90a316682f5"},
-    {file = "shap-0.44.1-cp310-cp310-manylinux_2_12_x86_64.manylinux2010_x86_64.manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:2ad3192026a0e4c3e399ef499da4f726ab01d62f388e03c804d8e10c4e61c8d1"},
-    {file = "shap-0.44.1-cp310-cp310-manylinux_2_17_aarch64.manylinux2014_aarch64.whl", hash = "sha256:e4ba4f3e84c3adf2c5a55e6d2becb7a4bb83e5784f7aa373316099a105ad593f"},
-    {file = "shap-0.44.1-cp310-cp310-musllinux_1_1_x86_64.whl", hash = "sha256:1f19a3c531c6ceb0d7adea8262385580b52ef187981606342cd03288fc48cbfa"},
-    {file = "shap-0.44.1-cp310-cp310-win_amd64.whl", hash = "sha256:d65a21a64f3c1e76e1fb5277a0cfbcce447c08a26eaef311b1cbae9a6efe0ea0"},
-    {file = "shap-0.44.1-cp311-cp311-macosx_10_9_x86_64.whl", hash = "sha256:44ed7a80ae30ed3927f1bc7911f6f04bb32bb2d938a9e8a5794b2bb99e3b99cc"},
-    {file = "shap-0.44.1-cp311-cp311-macosx_11_0_arm64.whl", hash = "sha256:e98bb13dc351317ad2420dfe2dbca5361237ab9bef511fbe28ce6c1dfb40ff8c"},
-    {file = "shap-0.44.1-cp311-cp311-manylinux_2_12_x86_64.manylinux2010_x86_64.manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:5fe63f1f4acf6bdfa3c85db85067d0fda2a29fe38be2d14a2811844f35290f43"},
-    {file = "shap-0.44.1-cp311-cp311-manylinux_2_17_aarch64.manylinux2014_aarch64.whl", hash = "sha256:4fa67a8810a042aa2366224afa612ded8a2a77b5a5a0d89ea60eba5eff3a0c1b"},
-    {file = "shap-0.44.1-cp311-cp311-musllinux_1_1_x86_64.whl", hash = "sha256:dda26c39ac0ef17233deba09b0f313ceb4d5fa663dced2a1b77a494d48db96b8"},
-    {file = "shap-0.44.1-cp311-cp311-win_amd64.whl", hash = "sha256:e1c3de8747fb451e59768dca11b054e395a2a1601c7482738897616a70679419"},
-    {file = "shap-0.44.1-cp39-cp39-macosx_10_9_x86_64.whl", hash = "sha256:ab36e2aecd0c1ba3df58f2452aa4aa24832ec766cbb2a794e2411897eb728b30"},
-    {file = "shap-0.44.1-cp39-cp39-macosx_11_0_arm64.whl", hash = "sha256:668ebe97c60a12bdffe254dfb2c8598cf24416e202b4b662076846b12d10b4b7"},
-    {file = "shap-0.44.1-cp39-cp39-manylinux_2_12_x86_64.manylinux2010_x86_64.manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:947c7e25b96d37763948ef2edd1711c6b3098a161de8e97fa0d1fdad6e49848c"},
-    {file = "shap-0.44.1-cp39-cp39-manylinux_2_17_aarch64.manylinux2014_aarch64.whl", hash = "sha256:62bb07b4748db004c78802494c29e5e70a2efff967a5c4d50209d2ee2ace16db"},
-    {file = "shap-0.44.1-cp39-cp39-musllinux_1_1_x86_64.whl", hash = "sha256:febd7f0ad6ac27f999ed857a897f0f9963d4a4d9eeb003ee2505cf6164590d9c"},
-    {file = "shap-0.44.1-cp39-cp39-win_amd64.whl", hash = "sha256:3c873d26e4fdcdb9e6a83a1e05c1e9c8c8b48ac4365b0259d6e138afb3729c32"},
-    {file = "shap-0.44.1.tar.gz", hash = "sha256:a21d5a622e12e7c3b4a58d6e93b70133b7e09b6342b19746071a0dc2d190b432"},
+    {file = "shap-0.44.0-cp310-cp310-macosx_10_9_x86_64.whl", hash = "sha256:896a9e5cf932c34f2932a753313217ca62f8d6bf65d76719752c83328cc408f6"},
+    {file = "shap-0.44.0-cp310-cp310-macosx_11_0_arm64.whl", hash = "sha256:0d5da8d45c43de7c425c26e7efc11cc31858c2fc9ba39178a8630d1e5b564b77"},
+    {file = "shap-0.44.0-cp310-cp310-manylinux_2_12_x86_64.manylinux2010_x86_64.manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:2e6f02592ca36096be9f886dc1ea4aff4357ca0c7fe0d0493ecb304c67c14064"},
+    {file = "shap-0.44.0-cp310-cp310-manylinux_2_17_aarch64.manylinux2014_aarch64.whl", hash = "sha256:dc385c024d12402c8c667b7ce86689da169252e0e1f27ad013b9f6b276aee241"},
+    {file = "shap-0.44.0-cp310-cp310-musllinux_1_1_x86_64.whl", hash = "sha256:77d20d7e2571051e3ef12e325387c169f59561fbbfcd9ec18cd113b012c27cb1"},
+    {file = "shap-0.44.0-cp310-cp310-win_amd64.whl", hash = "sha256:bedbd076ac7f0e6055c481fd588772740febc4d8d1218364c39696016e731fc2"},
+    {file = "shap-0.44.0-cp311-cp311-macosx_10_9_x86_64.whl", hash = "sha256:b0dab61c0a2fa52d2e846a8270df2742cb6b4c45e64c32af008733aaeb5a5b3b"},
+    {file = "shap-0.44.0-cp311-cp311-macosx_11_0_arm64.whl", hash = "sha256:e3ffa926188b9d9138426e41c98146fce4baf1c64af2c6da6a1f85eae5ec4148"},
+    {file = "shap-0.44.0-cp311-cp311-manylinux_2_12_x86_64.manylinux2010_x86_64.manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:f574af8dbb00598e8ee1340dfa172a1546c73f950f06deab3bc866e8e4bb25bc"},
+    {file = "shap-0.44.0-cp311-cp311-manylinux_2_17_aarch64.manylinux2014_aarch64.whl", hash = "sha256:34fb9e0a19877b37cd1965757d750636631ee067888703728d7ecd8ad809302b"},
+    {file = "shap-0.44.0-cp311-cp311-musllinux_1_1_x86_64.whl", hash = "sha256:252228cfecb8b73e1d43698fae8f081a1febcb0110b6455cde70eded1e56733d"},
+    {file = "shap-0.44.0-cp311-cp311-win_amd64.whl", hash = "sha256:38d884d21ada459eef656939402c02d67a50ea77fee4ef53df6453e3c3dca1bc"},
+    {file = "shap-0.44.0-cp39-cp39-macosx_10_9_x86_64.whl", hash = "sha256:65c4f541eaffbdaf52c1f09a819b17a3635fcf80b3c12b5680262465a7bd1829"},
+    {file = "shap-0.44.0-cp39-cp39-macosx_11_0_arm64.whl", hash = "sha256:2b43239491f0f30c4be15a08b6d4d5e83d5ed36278f2af80a7a81bbf43fefb61"},
+    {file = "shap-0.44.0-cp39-cp39-manylinux_2_12_x86_64.manylinux2010_x86_64.manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:246677bd5dacf48de74b7d4064928da95f989b1579ea4039a884fc6442c3908f"},
+    {file = "shap-0.44.0-cp39-cp39-manylinux_2_17_aarch64.manylinux2014_aarch64.whl", hash = "sha256:5cc6a111efb70e7fb42ea156db1a457ea55c60347d288e5128682957c8fa8818"},
+    {file = "shap-0.44.0-cp39-cp39-musllinux_1_1_x86_64.whl", hash = "sha256:eaf8e10df11aff5db6832d13de860d8c2819bb336f5b8512b2df62d428f31ed5"},
+    {file = "shap-0.44.0-cp39-cp39-win_amd64.whl", hash = "sha256:8b97c0cb911b0c30e1247d820795736dfe2ff5cb60342538e735591c3b2430b8"},
+    {file = "shap-0.44.0.tar.gz", hash = "sha256:8f5f0401df83c8b2b566f41872f1bd8bc05bba43aab9e82bfb2047e9b2a0471c"},
 ]
 
 [[package]]
@@ -5496,7 +5502,7 @@ name = "six"
 version = "1.16.0"
 requires_python = ">=2.7, !=3.0.*, !=3.1.*, !=3.2.*"
 summary = "Python 2 and 3 compatibility utilities"
-groups = ["default", "dev", "doc", "hub", "llm", "ml_runtime", "test"]
+groups = ["default", "dev", "doc", "hub", "llm", "ml_runtime", "talk", "test"]
 files = [
     {file = "six-1.16.0-py2.py3-none-any.whl", hash = "sha256:8abb2f1d86890a2dfb989f9a77cfcfd3e47c2a354b01111771326f8aa26e0254"},
     {file = "six-1.16.0.tar.gz", hash = "sha256:1e61c37477a1626458e36f7b1d82aa5c9b094fa4802892072e49de9c60c4c926"},
@@ -5507,7 +5513,7 @@ name = "slicer"
 version = "0.0.7"
 requires_python = ">=3.6"
 summary = "A small package for big slicing."
-groups = ["hub", "test"]
+groups = ["hub", "talk", "test"]
 files = [
     {file = "slicer-0.0.7-py3-none-any.whl", hash = "sha256:0b94faa5251c0f23782c03f7b7eedda91d80144059645f452c4bc80fab875976"},
     {file = "slicer-0.0.7.tar.gz", hash = "sha256:f5d5f7b45f98d155b9c0ba6554fa9770c6b26d5793a3e77a1030fb56910ebeec"},
@@ -5529,7 +5535,7 @@ name = "sniffio"
 version = "1.3.1"
 requires_python = ">=3.7"
 summary = "Sniff out which async library your code is running under"
-groups = ["dev", "doc", "llm", "test"]
+groups = ["dev", "doc", "llm", "test", "talk"]
 files = [
     {file = "sniffio-1.3.1-py3-none-any.whl", hash = "sha256:2f6da418d1f1e0fddd844478f41680e794e6051915791a034ff65e5f100525a2"},
     {file = "sniffio-1.3.1.tar.gz", hash = "sha256:f4324edc670a0f49750a81b895f35c3adb843cca46f0530f79fc1babb23789dc"},
@@ -5903,11 +5909,22 @@ files = [
 ]
 
 [[package]]
+name = "tabulate"
+version = "0.9.0"
+requires_python = ">=3.7"
+summary = "Pretty-print tabular data"
+groups = ["talk"]
+files = [
+    {file = "tabulate-0.9.0-py3-none-any.whl", hash = "sha256:024ca478df22e9340661486f85298cff5f6dcdba14f3813e8830015b9ed1948f"},
+    {file = "tabulate-0.9.0.tar.gz", hash = "sha256:0095b12bf5966de529c0feb1fa08671671b3368eec77d7ef7ab114be2c068b3c"},
+]
+
+[[package]]
 name = "tenacity"
 version = "8.2.3"
 requires_python = ">=3.7"
 summary = "Retry code until it succeeds"
-groups = ["hub", "llm", "ml_runtime"]
+groups = ["hub", "llm", "ml_runtime", "talk"]
 files = [
     {file = "tenacity-8.2.3-py3-none-any.whl", hash = "sha256:ce510e327a630c9e1beaf17d42e6ffacc88185044ad85cf74c0a8887c6a0f88c"},
     {file = "tenacity-8.2.3.tar.gz", hash = "sha256:5398ef0d78e63f40007c1fb4c0bff96e1911394d2fa8d194f77619c05ff6cc8a"},
@@ -6235,7 +6252,7 @@ name = "threadpoolctl"
 version = "3.4.0"
 requires_python = ">=3.8"
 summary = "threadpoolctl"
-groups = ["default", "dev", "hub", "llm", "ml_runtime", "test"]
+groups = ["default", "dev", "hub", "llm", "ml_runtime", "talk", "test"]
 files = [
     {file = "threadpoolctl-3.4.0-py3-none-any.whl", hash = "sha256:8f4c689a65b23e5ed825c8436a92b818aac005e0f3715f6a1664d7c7ee29d262"},
     {file = "threadpoolctl-3.4.0.tar.gz", hash = "sha256:f11b491a03661d6dd7ef692dd422ab34185d982466c49c8f98c8f716b5c93196"},
@@ -6483,7 +6500,7 @@ name = "tqdm"
 version = "4.66.2"
 requires_python = ">=3.7"
 summary = "Fast, Extensible Progress Meter"
-groups = ["hub", "llm", "ml_runtime", "test"]
+groups = ["hub", "llm", "ml_runtime", "talk", "test"]
 dependencies = [
     "colorama; platform_system == \"Windows\"",
 ]
@@ -6598,7 +6615,7 @@ name = "typing-extensions"
 version = "4.11.0"
 requires_python = ">=3.8"
 summary = "Backported and Experimental Type Hints for Python 3.8+"
-groups = ["default", "dev", "doc", "llm", "ml_runtime", "test"]
+groups = ["default", "dev", "doc", "llm", "ml_runtime", "talk", "test"]
 files = [
     {file = "typing_extensions-4.11.0-py3-none-any.whl", hash = "sha256:c1f94d72897edaf4ce775bb7558d5b79d8126906a14ea5ed1635921406c0387a"},
     {file = "typing_extensions-4.11.0.tar.gz", hash = "sha256:83f085bd5ca59c80295fc2a82ab5dac679cbe02b9f33f7d83af68e241bea51b0"},
@@ -6623,7 +6640,7 @@ name = "tzdata"
 version = "2024.1"
 requires_python = ">=2"
 summary = "Provider of IANA time zone data"
-groups = ["default", "dev", "hub", "llm", "ml_runtime", "test"]
+groups = ["default", "dev", "hub", "llm", "ml_runtime", "talk", "test"]
 files = [
     {file = "tzdata-2024.1-py2.py3-none-any.whl", hash = "sha256:9068bc196136463f5245e51efda838afa15aaeca9903f49050dfa2679db4d252"},
     {file = "tzdata-2024.1.tar.gz", hash = "sha256:2674120f8d891909751c38abcdfd386ac0a5a1127954fbc332af6b5ceae07efd"},

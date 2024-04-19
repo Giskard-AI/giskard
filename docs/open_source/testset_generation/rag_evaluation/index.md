@@ -129,9 +129,6 @@ test_suite = testset.to_test_suite("My first test suite")
 test_suite.run(model=giskard_model)
 ```
 
-![](./test_suite_widget.png)
-
-
 Note that you can split the test suite on the question metadata values, for instance on each question type. 
 
 ```python
