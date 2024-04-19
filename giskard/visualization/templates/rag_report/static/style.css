@@ -3,35 +3,24 @@ body{
 }
 
 .main{
-  font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
-
-  color: #ffffff;
+  font-family: "Noto Sans", ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
+  color: #FDFDFD;
 }
 
 h1 {
   font-size: 2.5rem;
+  color: white;
 }
 
 h3 {
   font-size: 1.5rem;
-  background: #27272A;
+  background: #0c087c;
   padding: 10px;
   margin: 0px;
   border: 1px solid #6b7280;}
 
 .extended-title{
   width:100%;
-}
-
-.overview-side{
-  display: flex;
-  flex-direction: column;
-  justify-content: flex-start;
-  padding: 0 10px;
-  flex: auto;
-  align-items: center;
-  margin: 0 15px;
-  border: 1px solid #27272A;
 }
 
 #gsk-overview{
@@ -78,13 +67,12 @@ h2 {
 }
 
 progress[value] {
-  --background: lightgrey;
+  --background: #6D6D6D;
   -webkit-appearance: none;
   -moz-appearance: none;
   appearance: none;
   border: none;
-  width: 200px;
-  height: 20px;
+  height: 4px;
   margin: 0 10px;
   border-radius: 10em;
   background: var(--background);
@@ -195,7 +183,142 @@ label {
 }
 
 #gsk-rag{
-  padding: 20px;
+  margin: 32px 28px;
+  padding: 12px 24px;
+  background-color: #111516;
+}
+
+.section-container {
+  margin-bottom: 32px;
+}
+
+  .components-container {
+    display: flex;
+    flex-flow: row wrap;
+    align-items: flex-start;
+    gap: 0 32px;
+  }
+
+    .component-card {
+      background-color: #14191B;
+      border-radius: 16px;
+      padding: 28px 32px 32px 32px;
+      display: flex;
+      flex-flow: column;
+      align-items: center;
+      margin-top: 32px;
+      flex-grow: 1;
+    }
+
+    .component-title {
+      font-size: 12px;
+      font-weight: 500;
+      color: #B1B1B1;
+      padding-bottom: 8px;
+    }
+
+    .component-value {
+      font-size: 32px;
+      font-weight: 500;
+      padding-bottom: 12px;
+    }
+      
+      .text-green {
+        color: #04B543;
+      }
+      
+      .text-orange {
+        color: #E76E0F;
+      }
+      
+      .text-red {
+        color: #EA3829;
+      }
+
+      .tooltip {
+        position: relative;
+        display: inline-block;
+      }
+
+      .tooltip .tooltiptext {
+        visibility: hidden;
+        width: 120px;
+        background-color: #464646;
+        color: #E6E6E6;
+        text-align: center;
+        border-radius: 6px;
+        position: absolute;
+        z-index: 1;
+        top: 150%;
+        left: 50%;
+        margin-left: -60px;
+        font-size: 12px;
+        padding: 12px;
+      }
+      
+      .tooltip .tooltiptext::after {
+        content: "";
+        position: absolute;
+        bottom: 100%;
+        left: 50%;
+        margin-left: -5px;
+        border-width: 5px;
+        border-style: solid;
+        border-color: transparent transparent black transparent;
+      }
+      
+      .tooltip:hover .tooltiptext {
+        visibility: visible;
+      }
+
+    .overall-card {
+      background-color: #026836;
+      border-radius: 16px;
+      padding: 28px 32px 32px 32px;
+      display: flex;
+      flex-flow: column;
+      align-items: center;
+      justify-content: center;
+      margin-top: 32px;
+      flex-grow: 1;
+    }
+  
+    .overall-title {
+      font-size: 12px;
+      font-weight: 500;
+      color: #E6E6E6;
+      padding: 14px 0 8px 0;
+      text-transform: uppercase;
+     }
+  
+    .overall-value {
+      font-size: 32px;
+      font-weight: 500;
+      padding-bottom: 12px;
+      color: #E6E6E6;
+    }
+
+.section-title {
+  font-size: 12px;
+  color: #B1B1B1;
+  margin-bottom: 20px;
+  text-align: left;
+  width: 100%;
+}
+
+.section-content {
+  color: #E6E6E6;
+  font-size: 20px;
+  line-height: 1.5;
+}
+
+.section-card {
+  background-color: #14191B;
+  border-radius: 16px;
+  padding: 28px 32px 32px 32px;
+  display: flex;
+  flex-flow: column;
+  align-items: center;
 }
 
 .correctness-indicator{
@@ -254,15 +377,15 @@ label {
 }
 
 .progress-green {
-  --color: #0a980a;
+  --color: #04B543;
 }
 
 .progress-orange {
-  --color: #e5b62a;
+  --color: #E76E0F;
 }
 
 .progress-red {
-  --color: #ba0e0e;
+  --color: #EA3829;
 }
 
 .corr-plot{

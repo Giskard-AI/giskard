@@ -1,4 +1,4 @@
-from ....core.test_result import TestResult, TestResultStatus
+from ....core.test_result import TestResult
 from ....datasets.base import Dataset
 from ....llm.evaluators import CorrectnessEvaluator
 from ....models.base import BaseModel
@@ -31,19 +31,16 @@ def test_llm_correctness(model: BaseModel, dataset: Dataset, threshold: float = 
     TestResult
         A TestResult object containing the test result.
     """
-    correctness_evaluator = CorrectnessEvaluator(rng_seed=rng_seed)
+    correctness_evaluator = CorrectnessEvaluator(llm_seed=rng_seed)
     eval_result = correctness_evaluator.evaluate(model, dataset)
     output_ds = list()
+
     if not eval_result.passed:
-        failed_indices = [
-            idx
-            for idx, status in zip(dataset.df.index, eval_result.details.results)
-            if status == TestResultStatus.FAILED
-        ]
+        failed_indices = [s["sample"]["meta"]["__sample_id"] for s in eval_result.failure_examples]
 
         output_ds.append(dataset.slice(lambda df: df.loc[failed_indices], row_level=False))
 
-    passed = bool(eval_result.passed_ratio > threshold)
+    passed = eval_result.passed_ratio > threshold
 
     return TestResult(
         passed=passed,

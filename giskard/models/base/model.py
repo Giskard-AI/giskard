@@ -1,13 +1,17 @@
-from typing import Iterable, List, Optional, Tuple, Type, Union
+from __future__ import annotations
+
+from typing import TYPE_CHECKING, Iterable, List, Optional, Tuple, Type, Union
 
 import builtins
 import importlib
+import json
 import logging
 import platform
 import posixpath
 import tempfile
 import uuid
 from abc import ABC, abstractmethod
+from dataclasses import asdict
 from pathlib import Path
 
 import cloudpickle
@@ -16,6 +20,7 @@ import pandas as pd
 import yaml
 
 from giskard.client.dtos import ModelMetaInfo
+from giskard.core.errors import GiskardInstallationError
 
 from ...client.giskard_client import GiskardClient
 from ...core.core import ModelMeta, ModelType, SupportedModelTypes
@@ -30,6 +35,9 @@ from ...utils.logging_utils import Timer
 from ..cache import get_cache_enabled
 from ..utils import np_types_to_native
 from .model_prediction import ModelPredictionResults
+
+if TYPE_CHECKING:
+    from ...scanner.report import ScanReport
 
 META_FILENAME = "giskard-model-meta.yaml"
 
@@ -464,7 +472,7 @@ class BaseModel(ABC):
         return str(self.id)
 
     @classmethod
-    def download(cls, client: Optional[GiskardClient], project_key, model_id, *_args, **_kwargs):
+    def download(cls, client: GiskardClient, project_key, model_id, *_args, **_kwargs):
         """
         Downloads the specified model from the Giskard hub and loads it into memory.
 
@@ -480,29 +488,24 @@ class BaseModel(ABC):
             AssertionError: If the local directory where the model should be saved does not exist.
         """
         local_dir = settings.home_dir / settings.cache_dir / "models" / model_id
-        if client is None:
-            # internal worker case, no token based http client [deprecated, to be removed]
-            assert local_dir.exists(), f"Cannot find existing model {project_key}.{model_id} in {local_dir}"
-            meta_response, meta = cls.read_meta_from_local_dir(local_dir)
-        else:
-            client.load_artifact(local_dir, posixpath.join("models", model_id))
-            meta_response: ModelMetaInfo = client.load_model_meta(project_key, model_id)
-            # internal worker case, no token based http client
-            if not local_dir.exists():
-                raise RuntimeError(f"Cannot find existing model {project_key}.{model_id} in {local_dir}")
-            with (Path(local_dir) / META_FILENAME).open(encoding="utf-8") as f:
-                file_meta = yaml.load(f, Loader=yaml.Loader)
-                classification_labels = cls.cast_labels(meta_response)
-                meta = ModelMeta(
-                    name=meta_response.name,
-                    description=meta_response.description,
-                    model_type=SupportedModelTypes[meta_response.modelType],
-                    feature_names=meta_response.featureNames,
-                    classification_labels=classification_labels,
-                    classification_threshold=meta_response.threshold,
-                    loader_module=file_meta["loader_module"],
-                    loader_class=file_meta["loader_class"],
-                )
+        client.load_artifact(local_dir, posixpath.join("models", model_id))
+        meta_response: ModelMetaInfo = client.load_model_meta(project_key, model_id)
+        # internal worker case, no token based http client
+        if not local_dir.exists():
+            raise RuntimeError(f"Cannot find existing model {project_key}.{model_id} in {local_dir}")
+        with (Path(local_dir) / META_FILENAME).open(encoding="utf-8") as f:
+            file_meta = yaml.load(f, Loader=yaml.Loader)
+            classification_labels = cls.cast_labels(meta_response)
+            meta = ModelMeta(
+                name=meta_response.name,
+                description=meta_response.description,
+                model_type=SupportedModelTypes[meta_response.modelType],
+                feature_names=meta_response.featureNames,
+                classification_labels=classification_labels,
+                classification_threshold=meta_response.threshold,
+                loader_module=file_meta["loader_module"],
+                loader_class=file_meta["loader_class"],
+            )
 
         model_py_ver = (
             tuple(meta_response.languageVersion.split(".")) if "PYTHON" == meta_response.language.upper() else None
@@ -598,3 +601,152 @@ class BaseModel(ABC):
         if self.name:  # handle both None and empty string
             return f"{self.name}({self.id})"
         return super().__str__()  # default to `<giskard.models.base.Model object at ...>`
+
+    def _get_available_tools(self, dataset: Dataset, scan_report: ScanReport) -> dict:
+        """Get the dictionary with available tools.
+
+        Parameters
+        ----------
+        dataset : Dataset
+            Giskard Dataset to be analysed by Tools.
+        scan_report : ScanReport
+            Giskard Scan Report to be analysed by Tools.
+
+        Returns
+        -------
+        dict[str, BaseTool]
+            The dictionary with Tools' names and related instances.
+        """
+        try:
+            from ...llm.talk.tools import (
+                IssuesScannerTool,
+                MetricTool,
+                PredictTool,
+                SHAPExplanationTool,
+            )
+        except ImportError as err:
+            raise GiskardInstallationError(flavor="talk") from err
+
+        return {
+            PredictTool.default_name: PredictTool(model=self, dataset=dataset),
+            MetricTool.default_name: MetricTool(model=self, dataset=dataset),
+            SHAPExplanationTool.default_name: SHAPExplanationTool(model=self, dataset=dataset),
+            IssuesScannerTool.default_name: IssuesScannerTool(scan_report=scan_report),
+        }
+
+    @staticmethod
+    def _gather_context(message_list: list) -> str:
+        """Gather context into a single string.
+
+        Given the list of OpenAI's messages, extracts and joins their contents into a single string.
+
+        Parameters
+        ----------
+        message_list : list
+            The list of OpenAI's messages.
+
+        Returns
+        -------
+        str
+            The string with the joined messages' contents.
+        """
+        return "\n".join([json.dumps(asdict(msg)) for msg in message_list])
+
+    def talk(self, question: str, dataset: Dataset, scan_report: ScanReport = None, context: str = ""):
+        """Perform the 'talk' to the model.
+
+        Given `question`, allows to ask the model about prediction result, explanation, model performance, issues, etc.
+
+        Parameters
+        ----------
+        question : str
+            User input query.
+        dataset : Dataset
+            Giskard Dataset to be analysed by the 'talk'.
+        context : str
+            Context of the previous 'talk' results. Necessary to keep context between sequential 'talk' calls.
+        scan_report : ScanReport
+            Giskard Scan Report to be analysed by the 'talk'.
+
+        Returns
+        -------
+        TalkResult
+            The response for the user's prompt.
+        """
+        try:
+            from ...llm.client.copilot import GiskardCopilotClient, ToolChatMessage
+            from ...llm.talk.config import (
+                ERROR_RESPONSE,
+                MODEL_INSTRUCTION,
+                SUMMARY_PROMPT,
+                TALK_CLIENT_CONFIG,
+            )
+            from ..talk_result import TalkResult
+        except ImportError as err:
+            raise GiskardInstallationError(flavor="talk") from err
+
+        client = GiskardCopilotClient()
+
+        available_tools = self._get_available_tools(dataset, scan_report)
+
+        system_prompt = MODEL_INSTRUCTION.format(
+            tools_description="\n".join([tool.description for tool in list(available_tools.values())]),
+            model_name=self.meta.name,
+            model_description=self.meta.description,
+            feature_names=self.meta.feature_names,
+            context=context,
+        )
+
+        messages = [
+            ToolChatMessage(role="system", content=system_prompt),
+            ToolChatMessage(role="user", content=question),
+        ]
+        response = client.complete(
+            messages=messages,
+            tools=[tool.specification for tool in list(available_tools.values())],
+            tool_choice="auto",
+            **TALK_CLIENT_CONFIG,
+        )
+
+        if hasattr(response, "content") and response.content:
+            messages.append(ToolChatMessage(role="assistant", content=response.content))
+
+        # Store exceptions raised by tool execution.
+        tool_errors = list()
+
+        if hasattr(response, "tool_calls") and response.tool_calls:
+            tool_calls = response.tool_calls
+            response.tool_calls = [json.loads(tool_call.json()) for tool_call in tool_calls]
+            messages.append(response)
+
+            for tool_call in tool_calls:
+                tool_name = tool_call.function.name
+                tool_args = json.loads(tool_call.function.arguments)
+
+                # Get the reference to the chosen callable tool.
+                tool = available_tools[tool_name]
+
+                try:
+                    tool_response = tool(**tool_args)
+                except Exception as error_msg:
+                    tool_response = ERROR_RESPONSE.format(
+                        tool_name=tool_name, tool_args=tool_args, error_msg=error_msg.args[:1]
+                    )
+                    tool_errors.append(error_msg)
+
+                # Append the tool's response to the conversation.
+                messages.append(
+                    ToolChatMessage(role="tool", name=tool_name, tool_call_id=tool_call.id, content=tool_response)
+                )
+
+            # Get the final model's response, based on the tool's output.
+            response = client.complete(messages=messages, **TALK_CLIENT_CONFIG)
+            messages.append(ToolChatMessage(role="assistant", content=response.content))
+
+        # Summarise the conversation.
+        context = self._gather_context(messages)
+        summary = client.complete(
+            messages=[ToolChatMessage(role="user", content=SUMMARY_PROMPT.format(context=context))],
+            **TALK_CLIENT_CONFIG,
+        )
+        return TalkResult(response, summary, tool_errors)

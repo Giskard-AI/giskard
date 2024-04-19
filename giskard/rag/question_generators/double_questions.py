@@ -1,6 +1,7 @@
 import uuid
 
 from ..knowledge_base import KnowledgeBase
+from ..testset import QuestionSample
 from .base import GenerateFromSingleQuestionMixin, _LLMBasedQuestionGenerator
 from .prompt import QAGenerationPrompt
 
@@ -90,7 +91,9 @@ class DoubleQuestionsGenerator(GenerateFromSingleQuestionMixin, _LLMBasedQuestio
 
     _question_type = "double"
 
-    def generate_single_question(self, knowledge_base: KnowledgeBase, agent_description: str, language: str) -> dict:
+    def generate_single_question(
+        self, knowledge_base: KnowledgeBase, agent_description: str, language: str
+    ) -> QuestionSample:
         seed_document = knowledge_base.get_random_document()
         context_documents = knowledge_base.get_neighbors(
             seed_document, self._context_neighbors, self._context_similarity_threshold
@@ -127,14 +130,14 @@ class DoubleQuestionsGenerator(GenerateFromSingleQuestionMixin, _LLMBasedQuestio
         )
         out = self._llm_complete(messages=messages)
 
-        question = {
-            "id": str(uuid.uuid4()),
-            "question": out["question"],
-            "reference_answer": out["answer"],
-            "reference_context": reference_context,
-            "conversation_history": [],
-            "metadata": question_metadata,
-        }
+        question = QuestionSample(
+            id=str(uuid.uuid4()),
+            question=out["question"],
+            reference_answer=out["answer"],
+            reference_context=reference_context,
+            conversation_history=[],
+            metadata=question_metadata,
+        )
 
         return question
 

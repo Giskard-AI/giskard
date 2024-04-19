@@ -1,4 +1,5 @@
 from ..knowledge_base import KnowledgeBase
+from ..testset import QuestionSample
 from .base import _BaseModifierGenerator
 from .prompt import QAGenerationPrompt
 from .simple_questions import SimpleQuestionsGenerator
@@ -54,8 +55,8 @@ class DistractingQuestionsGenerator(_BaseModifierGenerator):
     _question_type = "distracting element"
 
     def _modify_question(
-        self, question: dict, knowledge_base: KnowledgeBase, agent_description: str, language: str
-    ) -> dict:
+        self, question: QuestionSample, knowledge_base: KnowledgeBase, agent_description: str, language: str
+    ) -> QuestionSample:
         distracting_context = knowledge_base.get_random_document().content
         messages = self._prompt.to_messages(
             system_prompt_input={
@@ -63,15 +64,15 @@ class DistractingQuestionsGenerator(_BaseModifierGenerator):
                 "language": language,
             },
             user_input={
-                "question": question["question"],
-                "answer": question["reference_answer"],
+                "question": question.question,
+                "answer": question.reference_answer,
                 "context": distracting_context,
             },
         )
-        question["metadata"]["question_type"] = self._question_type
-        question["metadata"]["distracting_context"] = distracting_context
+        question.metadata["question_type"] = self._question_type
+        question.metadata["distracting_context"] = distracting_context
         out = self._llm_complete(messages=messages)
-        question["question"] = out["question"]
+        question.question = out["question"]
         return question
 
 

@@ -1,14 +1,14 @@
 # 🎯 RAGET Testset Generation 
 
-> ⚠️ **The RAG Evaluation Toolkit (RAGET) is currently in early version and is subject to change**. Feel free to reach
-out on our [Discord server](https://discord.gg/fkv7CAr3FE) if you have any trouble or to provide feedback.
-
 
 Waiting to collect data from production to evaluate your RAG agents extensively is a risky business. But building 
 an in-house evaluation dataset is a painful task that requires manual curation and review. 
 
 To help with this, the Giskard python library provides **RAGET: RAG Evaluation Toolkit**, a toolkit to evaluate RAG 
-agents **automatically**.
+agents **automatically**. 
+
+> ℹ️ You can find a [tutorial](../../../reference/notebooks/RAGET.ipynb) where we demonstrate the capabilities of RAGET with a simple RAG agent build with LlamaIndex 
+on the IPCC report.  
 
 
 (q_types)=
@@ -16,7 +16,7 @@ agents **automatically**.
 
 RAGET can generate automatically a list of `question`, `reference_answer` and `reference_context` from the knowledge 
 base of the RAG. It relies on a chain of LLM operations to generate realistic questions across different types.
-You can then use this **generated test set is to evaluate your RAG agent**. 
+You can then use this **generated test set to evaluate your RAG agent**. 
 
 By default, RAGET will create multiple types of questions. Each of them are designed to target and evaluate specific
 components of the RAG system (for example: the retriever, the generation, or the quality of your knowledge base
@@ -64,7 +64,7 @@ These are the question types currently supported by RAGET:
     *Example: What is the capital and the population of France?*
   - `Generator`, `Rewriter`
 * - **Conversational questions**
-  - Questions made as part of a conversation, first message describe the context of the question that is ask in the last message, also tests the rewriter
+  - Questions made as part of a conversation, first message describes the context of the question that is asked in the last message, also tests the rewriter
 
     *Example: (two separate messages)* 
       - *I would like to know some information about France.* 
@@ -82,28 +82,31 @@ Before starting, make sure you have installed the LLM flavor of Giskard:
 pip install "giskard[llm]"
 ```
 
-To use the RAG test set generation and evaluation tools, you'll need an OpenAI API key. You can set it in your notebook
+To use the RAG test set generation and evaluation tools, you'll need an API key from the LLM provider that you are using. You can set this API key in your notebook.
 like this:
 
 :::::::{tab-set}
 ::::::{tab-item} OpenAI
 
 ```python
+import giskard
 import os
+from giskard.llm.client.openai import OpenAIClient
 
 os.environ["OPENAI_API_KEY"] = "sk-…"
-```
 
+giskard.llm.set_llm_api("openai")
+oc = OpenAIClient(model="gpt-4-turbo-preview")
+giskard.llm.set_default_client(oc)
+```
 ::::::
 ::::::{tab-item} Azure OpenAI
 
-Requires `openai>=1.0.0`.
-Make sure that both the LLM and Embeddings models are deployed on the Azure endpoint. The default embedding model used 
-by the Giskard client is `text-embedding-ada-002`. 
+Require `openai>=1.0.0`
 
 ```python
 import os
-from giskard.llm import set_llm_model, set_llm_api
+from giskard.llm import set_llm_model
 
 os.environ['AZURE_OPENAI_API_KEY'] = '...'
 os.environ['AZURE_OPENAI_ENDPOINT'] = 'https://xxx.openai.azure.com'
@@ -112,8 +115,89 @@ os.environ['OPENAI_API_VERSION'] = '2023-07-01-preview'
 
 # You'll need to provide the name of the model that you've deployed
 # Beware, the model provided must be capable of using function calls
-set_llm_api('azure')
 set_llm_model('my-gpt-4-model')
+```
+
+::::::
+::::::{tab-item} Mistral
+```python
+import os
+from giskard.llm.client.mistral import MistralClient
+
+os.environ["MISTRAL_API_KEY"] = "sk-…"
+
+mc = MistralClient()
+giskard.llm.set_default_client(mc)
+```
+
+::::::
+::::::{tab-item} Ollama
+```python
+from openai import OpenAI
+from giskard.llm.client.openai import OpenAIClient
+from giskard.llm.client.mistral import MistralClient
+
+# Setup the Ollama client with API key and base URL
+_client = OpenAI(base_url="http://localhost:11434/v1/", api_key="ollama")
+oc = OpenAIClient(model="gemma:2b", client=_client)
+giskard.llm.set_default_client(oc)
+```
+::::::
+::::::{tab-item} Custom Client
+```python
+import giskard
+from typing import Sequence, Optional
+from giskard.llm.client import set_default_client
+from giskard.llm.client.base import LLMClient, ChatMessage
+
+
+
+class MyLLMClient(LLMClient):
+    def __init__(self, my_client):
+        self._client = my_client
+
+    def complete(
+            self,
+            messages: Sequence[ChatMessage],
+            temperature: float = 1,
+            max_tokens: Optional[int] = None,
+            caller_id: Optional[str] = None,
+            seed: Optional[int] = None,
+            format=None,
+    ) -> ChatMessage:
+        # Create the prompt
+        prompt = ""
+        for msg in messages:
+            if msg.role.lower() == "assistant":
+                prefix = "\n\nAssistant: "
+            else:
+                prefix = "\n\nHuman: "
+
+            prompt += prefix + msg.content
+
+        prompt += "\n\nAssistant: "
+
+        # Create the body
+        params = {
+            "prompt": prompt,
+            "max_tokens_to_sample": max_tokens or 1000,
+            "temperature": temperature,
+            "top_p": 0.9,
+        }
+        body = json.dumps(params)
+
+        response = self._client.invoke_model(
+            body=body,
+            modelId=self._model_id,
+            accept="application/json",
+            contentType="application/json",
+        )
+        data = json.loads(response.get("body").read())
+
+        return ChatMessage(role="assistant", message=data["completion"])
+
+set_default_client(MyLLMClient())
+
 ```
 
 ::::::
@@ -215,9 +299,9 @@ Detailed instructions can be found in the [RAGET Evaluation](../rag_evaluation/i
 
 ## Frequently Asked Questions
 
-> #### ℹ️ What data are being sent to OpenAI/Azure OpenAI
+> #### ℹ️ What data are being sent to LLM Providers
 > 
-> In order to perform the question generation, we will be sending the following information to OpenAI/Azure OpenAI:
+> In order to perform tasks with language model-assisted detectors, we send the following information to the selected language model provider (e.g., OpenAI, Azure OpenAI, Ollama, Mistral, etc):
 > 
 > - Data provided in your knowledge base
 > - Text generated by your model

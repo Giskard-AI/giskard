@@ -434,7 +434,7 @@ def test_download_suite_run_and_upload_results():
                 "projectKey": "test_project",
             },
         )
-        register_uri_for_artifact_meta_info(mr, test_auc)
+        register_uri_for_artifact_meta_info(mr, test_auc, "test_project")
 
         mr.register_uri(requests_mock.GET, UPLOAD_RESULTS_URL, json={})
 

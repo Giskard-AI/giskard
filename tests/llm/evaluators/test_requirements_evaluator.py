@@ -1,9 +1,7 @@
 from unittest.mock import Mock
 
-import pandas as pd
-
-from giskard.llm.client import LLMFunctionCall, LLMMessage, LLMToolCall
-from giskard.llm.evaluators import PerRowRequirementEvaluator, RequirementEvaluator
+from giskard.llm.client import ChatMessage
+from giskard.llm.evaluators import RequirementEvaluator
 from tests.llm.evaluators.utils import make_eval_dataset, make_mock_model
 
 
@@ -13,35 +11,13 @@ def test_evaluator_prompt_contains_requirements():
 
     client = Mock()
     client.complete.side_effect = [
-        LLMMessage(
+        ChatMessage(
             role="assistant",
-            content=None,
-            function_call=None,
-            tool_calls=[
-                LLMToolCall(
-                    id="call_abc123",
-                    type="function",
-                    function=LLMFunctionCall(
-                        name="evaluate_model",
-                        arguments={"passed_test": True},
-                    ),
-                )
-            ],
+            content='{"eval_passed": true}',
         ),
-        LLMMessage(
+        ChatMessage(
             role="assistant",
-            content=None,
-            function_call=None,
-            tool_calls=[
-                LLMToolCall(
-                    id="call_abc123",
-                    type="function",
-                    function=LLMFunctionCall(
-                        name="evaluate_model",
-                        arguments={"passed_test": False, "reason": "For some reason"},
-                    ),
-                )
-            ],
+            content='{"eval_passed": false, "reason": "For some reason"}',
         ),
     ]
 
@@ -49,55 +25,32 @@ def test_evaluator_prompt_contains_requirements():
     evaluator.evaluate(model, eval_dataset)
 
     args = client.complete.call_args_list[0]
-    assert "This is my test requirement" in args[0][0][0]["content"]
+    assert "This is my test requirement" in args[0][0][-1].content
 
 
 def test_evaluator_prompt_contains_row_requirements():
+    reqs = ["This is the first test requirement", "This is the second test requirement"]
     eval_dataset = make_eval_dataset()
+    eval_dataset.df["req"] = reqs
     model = make_mock_model()
 
     client = Mock()
     client.complete.side_effect = [
-        LLMMessage(
+        ChatMessage(
             role="assistant",
-            content=None,
-            function_call=None,
-            tool_calls=[
-                LLMToolCall(
-                    id="call_abc123",
-                    type="function",
-                    function=LLMFunctionCall(
-                        name="evaluate_model",
-                        arguments={"passed_test": True},
-                    ),
-                )
-            ],
+            content='{"eval_passed": true}',
         ),
-        LLMMessage(
+        ChatMessage(
             role="assistant",
-            content=None,
-            function_call=None,
-            tool_calls=[
-                LLMToolCall(
-                    id="call_abc123",
-                    type="function",
-                    function=LLMFunctionCall(
-                        name="evaluate_model",
-                        arguments={"passed_test": False, "reason": "For some reason"},
-                    ),
-                )
-            ],
+            content='{"eval_passed": false, "reason": "For some reason"}',
         ),
     ]
 
-    requirement_df = pd.DataFrame(
-        {"req": ["This is the first test requirement", "This is the second test requirement"]}
-    )
-    evaluator = PerRowRequirementEvaluator(requirement_df, llm_client=client)
+    evaluator = RequirementEvaluator(requirement_col="req", llm_client=client)
     evaluator.evaluate(model, eval_dataset)
 
     args = client.complete.call_args_list[0]
-    assert requirement_df.iloc[0]["req"] in args[0][0][0]["content"]
+    assert reqs[0] in args[0][0][-1].content
 
     args = client.complete.call_args_list[1]
-    assert requirement_df.iloc[1]["req"] in args[0][0][0]["content"]
+    assert reqs[1] in args[0][0][-1].content

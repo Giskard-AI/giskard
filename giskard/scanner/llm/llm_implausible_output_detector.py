@@ -7,6 +7,7 @@ from giskard.scanner import logger
 from ...datasets.base import Dataset
 from ...llm.evaluators import PlausibilityEvaluator
 from ...llm.generators import ImplausibleDataGenerator
+from ...llm.utils import format_chat_messages
 from ...models.base.model import BaseModel
 from ...testing.tests.llm.hallucination import test_llm_output_plausibility
 from ..decorators import detector
@@ -71,6 +72,16 @@ class LLMImplausibleOutputDetector(Detector):
         evaluator = PlausibilityEvaluator()
         eval_result = evaluator.evaluate(model, eval_dataset)
 
+        examples = pd.DataFrame(
+            [
+                {
+                    "Conversation": format_chat_messages(r["sample"].get("conversation", [])),
+                    "Reason": r.get("reason", "No reason provided."),
+                }
+                for r in eval_result.failure_examples
+            ]
+        )
+
         if eval_result.failed:
             return [
                 Issue(
@@ -86,7 +97,7 @@ class LLMImplausibleOutputDetector(Detector):
                         "deviation": "The model produces implausible output.",
                         "hide_index": True,
                     },
-                    examples=pd.DataFrame(eval_result.failure_examples),
+                    examples=examples,
                     tests=_generate_implausible_output_tests,
                     taxonomy=["avid-effect:performance:P0204"],
                 )
