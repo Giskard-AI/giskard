@@ -16,19 +16,18 @@ class Metric(ABC):
     @abstractmethod
     def __call__(self, question_sample: dict, answer: str):
         """
-        Compute the metric on the test set and the answers.
+        Compute the metric on a single question and its associated answer.
 
         Parameters
         ----------
-        testset : QATestset
-            The test set to compare the answers with.
-        answers : Sequence[str]
-            The answers of the agent to evaluate.
+        question_sample : dict
+            A question sample from a QATestset.
+        answer : Sequence[str]
+            The agent answer on that question.
 
         Returns
         -------
         dict
-            The result of the metric. The keys should be the name of the metrics and the
-            values should be the result of the metric for each question/answer pair.
+            The result of the metric. The keys should be the names of the metrics computed.
         """
         pass
