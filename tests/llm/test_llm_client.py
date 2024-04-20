@@ -1,4 +1,5 @@
-from unittest.mock import Mock
+from unittest.mock import Mock, MagicMock
+import json
 
 from mistralai.models.chat_completion import ChatCompletionResponse, ChatCompletionResponseChoice
 from mistralai.models.chat_completion import ChatMessage as MistralChatMessage
@@ -10,6 +11,7 @@ from openai.types.chat.chat_completion import Choice
 from giskard.llm.client import ChatMessage
 from giskard.llm.client.mistral import MistralClient
 from giskard.llm.client.openai import OpenAIClient
+from giskard.llm.client.bedrock import ClaudeBedrockClient
 
 DEMO_OPENAI_RESPONSE = ChatCompletion(
     id="chatcmpl-abc123",
@@ -73,5 +75,50 @@ def test_mistral_client():
     assert client.chat.call_args[1]["temperature"] == 0.11
     assert client.chat.call_args[1]["max_tokens"] == 12
 
+    assert isinstance(res, ChatMessage)
+    assert res.content == "This is a test!"
+
+
+def test_claude_bedrock_client():
+    # Mock the bedrock_runtime_client
+    bedrock_runtime_client = Mock()
+    bedrock_runtime_client.invoke_model = MagicMock(return_value={
+        'body': MagicMock(read=MagicMock(return_value=json.dumps({
+            "id": "chatcmpl-abc123",
+            "model": "anthropic.claude-3-sonnet-20240229-v1:0",
+            "type": "message",
+            "role": "assistant",
+            "content": [
+                {
+                    "type": "text",
+                    "text": "This is a test!"
+                }
+            ],
+            "stop_reason": "end_turn",
+            "usage": {
+                "input_tokens": 9,
+                "output_tokens": 89,
+            },
+        })))
+    })
+
+    # Initialize the ClaudeBedrockClient with the mocked bedrock_runtime_client
+    client = ClaudeBedrockClient(
+        bedrock_runtime_client,
+        model="anthropic.claude-3-sonnet-20240229-v1:0",
+        anthropic_version="bedrock-2023-05-31"
+    )
+
+    # Call the complete method
+    res = client.complete(
+        [ChatMessage(role="user", content="Hello")], 
+        temperature=0.11, 
+        max_tokens=12
+    )
+
+    # Assert that the invoke_model method was called with the correct arguments
+    bedrock_runtime_client.invoke_model.assert_called_once()
+
+    # Assert that the response is a ChatMessage and has the correct content
     assert isinstance(res, ChatMessage)
     assert res.content == "This is a test!"
