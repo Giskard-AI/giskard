@@ -8,8 +8,9 @@ These detectors are generally based on some form of metamorphic invariance testi
 to the input data that is not supposed to affect the output significantly, and compare the output of the model before
 and after the transformation.
 """
-from .base_detector import BaseTextPerturbationDetector
+from .base_detector import BaseTextPerturbationDetector, BaseCategorialPertubationDetector
 from .ethical_bias_detector import EthicalBiasDetector
 from .text_perturbation_detector import TextPerturbationDetector
+from .switch_detector import SwitchAllDetector
 
-__all__ = ["EthicalBiasDetector", "TextPerturbationDetector", "BaseTextPerturbationDetector"]
+__all__ = ["EthicalBiasDetector", "TextPerturbationDetector", "BaseTextPerturbationDetector", "BaseCategorialTransformation", "SwitchAllDetector"]
