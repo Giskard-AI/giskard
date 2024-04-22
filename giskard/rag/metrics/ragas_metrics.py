@@ -20,7 +20,6 @@ try:
     from ragas.metrics.base import Metric as BaseRagasMetric
     from ragas.run_config import RunConfig
 
-
 except ImportError as err:
     raise ImportError(
         f"Package {err.name} is missing, it is required for the computation of RAGAS metrics. You can install it with `pip install {err.name}`."
@@ -62,17 +61,6 @@ class RagasEmbeddingsWrapper(BaseRagasEmbeddings):
 
 
 class RagasMetric(Metric):
-    """
-    A wrapper for RAGAS metrics, so they can be used inside the `~giskard.rag.evaluate` function.
-
-    Parameters
-    ----------
-    name : str
-        The name of the metric.
-    metrics : Union[BaseRagasMetric, Sequence[BaseRagasMetric]]
-        The list of RAGAS metrics to use.
-    """
-
     def __init__(
         self, name: str, metric: BaseRagasMetric, context_window_length: int = 8192, llm_client: LLMClient = None
     ) -> None:
@@ -81,7 +69,7 @@ class RagasMetric(Metric):
         self.context_window_length = context_window_length
         self._llm_client = llm_client
 
-    def __call__(self, question_sample, answer) -> dict:
+    def __call__(self, question_sample: dict, answer: str) -> dict:
         llm_client = self._llm_client or get_default_client()
         ragas_llm = RagasLLMWrapper(llm_client, self.context_window_length)
         ragas_embedddings = RagasEmbeddingsWrapper(llm_client)
