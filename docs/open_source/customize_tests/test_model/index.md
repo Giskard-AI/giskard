@@ -388,3 +388,6 @@ Upload your suite to the Giskard hub to:
 * Debug your tests to further diagnose issues
 * Create more domain-specific tests that integrate business feedback
 * Share the test results with your team
+
+To upload your test suite to the Giskard Hub, go to the [upload object](../../../giskard_hub/upload/index.md) page.
+

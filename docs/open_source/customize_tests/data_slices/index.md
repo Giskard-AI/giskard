@@ -142,6 +142,8 @@ Saving your slicing functions to the Giskard hub will enable you to:
 * Further debug the examples inside your data slices using explanation
 * Apply the saved slicing functions to other datasets (new production data, etc.)
 
+To upload your slicing function to the Giskard hub, go to [upload objects](../../../giskard_hub/upload/index.md).
+
 <br>
 
   ![](../../../_static/catalog_slice.png)

@@ -8,7 +8,7 @@ getting_started/quickstart/index
 ```
 
 ```{toctree}
-:caption: Guides
+:caption: Open-Source Library
 :maxdepth: 1
 :hidden:
 
@@ -21,7 +21,20 @@ open_source/integrate_tests/index
 ```
 
 ```{toctree}
-:caption: Notebook Tutorials
+:caption: Giskard Hub
+:maxdepth: 1
+:hidden:
+
+giskard_hub/installation_hub/index
+giskard_hub/upload/index
+giskard_hub/write_and_debug_tests/index
+giskard_hub/inspect/index
+giskard_hub/compare_models/index
+giskard_hub/collaborate/index
+```
+
+```{toctree}
+:caption: Tutorials
 :maxdepth: 1
 :hidden:
 
@@ -99,13 +112,19 @@ community/contribution_guidelines/index
 :img-bottom: assets/intro/coffee.png
 ::::
 
-::::{grid-item-card} <h3> Guides </h3>
+::::{grid-item-card} <h3> Open-Source Library </h3>
 :text-align: center
 :link: open_source/index.rst
 :img-bottom: assets/intro/ninja.png
 ::::
 
-::::{grid-item-card} <h3> Notebook Tutorials </h3>
+::::{grid-item-card} <h3> Giskard Hub </h3>
+:text-align: center
+:link: giskard_hub/index.rst
+:img-bottom: assets/intro/Giskard_Turtle_SK8.png
+::::
+
+::::{grid-item-card} <h3> Tutorials </h3>
 :text-align: center
 :link: tutorials/index.md
 :img-bottom: assets/intro/test_turtle.png

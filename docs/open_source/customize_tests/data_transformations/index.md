@@ -167,6 +167,8 @@ Saving your transformation function to the local Giskard hub will enable you to:
 * Use the saved transformations to debug your dataset
 * Use the saved transformations to augment your dataset
 
+To upload your transformation function to the Giskard hub, go to [upload objects](../../../giskard_hub/upload/index.md).
+
 <br>
 
   ![](../../../_static/catalog_example.png)
