@@ -1,7 +1,8 @@
 from typing import Sequence
 
-import numpy as np
 import json
+
+import numpy as np
 
 from .base import BaseEmbedding
 
@@ -20,8 +21,7 @@ class BedrockEmbedding(BaseEmbedding):
         self.client = client
 
     def embed(self, texts: Sequence[str]) -> np.ndarray:
-
-        if 'titan' not in self.model:
+        if "titan" not in self.model:
             raise ValueError(f"Only titan embedding models are supported currently, got {self.model} instead")
 
         if isinstance(texts, str):
@@ -32,9 +32,7 @@ class BedrockEmbedding(BaseEmbedding):
         embeddings = []
         for text in texts:
             body = json.dumps({"inputText": text})
-            response = self.client.invoke_model(
-                body=body, modelId=self.model, accept=accept, contentType=contentType
-            )
+            response = self.client.invoke_model(body=body, modelId=self.model, accept=accept, contentType=contentType)
             response_body = json.loads(response.get("body").read())
             embedding = response_body.get("embedding")
             embeddings.append(embedding)
