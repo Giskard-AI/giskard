@@ -59,6 +59,8 @@ def get_model_properties(model):
 
     return {
         "model_id": str(model.id),
+        "model_description": anonymize(model.description),
+        "model_name": anonymize(model.name),
         "model_type": model.model_type.value,
         "model_class": fullname(model),
         "model_inner_class": inner_model_class,
@@ -72,9 +74,12 @@ def get_dataset_properties(dataset):
 
     column_types = {anonymize(k): v for k, v in dataset.column_types.items()} if dataset.column_types else {}
     column_dtypes = {anonymize(k): v for k, v in dataset.column_dtypes.items()}
+    # Helps to identify giskard's demo datasets and exclude them from the analytics
+    data_signature = anonymize(dataset.df.sample(5, random_state=1337).to_csv())
 
     return {
         "dataset_id": str(dataset.id) if dataset is not None else "none",
+        "data_signature": data_signature,
         "dataset_rows": dataset.df.shape[0],
         "dataset_cols": dataset.df.shape[1],
         "dataset_column_types": column_types,
