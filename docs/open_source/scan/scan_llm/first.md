@@ -101,14 +101,29 @@ giskard.llm.set_default_client(mc)
 ::::::{tab-item} Ollama
 
 ```python
+import giskard
 from openai import OpenAI
 from giskard.llm.client.openai import OpenAIClient
-from giskard.llm.client.mistral import MistralClient
 
 # Setup the Ollama client with API key and base URL
 _client = OpenAI(base_url="http://localhost:11434/v1/", api_key="ollama")
 oc = OpenAIClient(model="gemma:2b", client=_client)
 giskard.llm.set_default_client(oc)
+```
+
+::::::
+::::::{tab-item} Claude 3
+
+```python
+import os
+import boto3
+import giskard
+
+from giskard.llm.client.bedrock import ClaudeBedrockClient
+
+bedrock_runtime = boto3.client("bedrock-runtime", region_name=os.environ["AWS_DEFAULT_REGION"])
+claude_client = ClaudeBedrockClient(bedrock_runtime, model="anthropic.claude-3-haiku-20240307-v1:0")
+giskard.llm.set_default_client(claude_client)
 ```
 
 ::::::
