@@ -11,7 +11,13 @@ def titanic_model_data_raw():
 
 @pytest.fixture()
 def titanic_model(titanic_model_data_raw):
-    return Model(titanic_model_data_raw[0], model_type="classification", name="Titanic model")
+    return Model(
+        titanic_model_data_raw[0],
+        model_type="classification",
+        name="Titanic binary classification model",
+        description="The binary classification model, which predicts, whether the passenger survived or not in the Titanic incident. \n"
+        "The model outputs yes, if the person survived, and no - if he died.",
+    )
 
 
 @pytest.fixture()

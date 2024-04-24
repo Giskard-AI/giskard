@@ -1,5 +1,5 @@
 RAG Evaluation Toolkit
-=============
+======================
 
 .. toctree::
    :maxdepth: 2

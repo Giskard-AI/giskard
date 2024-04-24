@@ -36,7 +36,7 @@ class TextSlicer(BaseSlicer):
         self.abs_deviation = abs_deviation
         self.slicer = slicer
 
-    def find_slices(self, features, target=None):
+    def find_slices(self, features, target=None, min_samples=None):
         target = target or self.target
 
         if len(features) > 1:
@@ -44,14 +44,14 @@ class TextSlicer(BaseSlicer):
         (feature,) = features
 
         # Make metadata slices
-        metadata_slices = self.find_metadata_slices(feature, target)
+        metadata_slices = self.find_metadata_slices(feature, target, min_samples=min_samples)
 
         # Make top token slices
         token_slices = self.find_token_based_slices(feature, target)
 
         return metadata_slices + token_slices
 
-    def find_metadata_slices(self, feature, target):
+    def find_metadata_slices(self, feature, target, min_samples=None):
         slices = []
         data = self.dataset.column_meta[feature, "text"].copy()
         data[target] = self.dataset.df[target]
@@ -63,7 +63,7 @@ class TextSlicer(BaseSlicer):
         # Run a slicer for numeric
         slicer = get_slicer(self.slicer, meta_dataset, target=target)
         for col in filter(lambda x: column_types[x] == "numeric", column_types.keys()):
-            slices.extend(slicer.find_slices([col]))
+            slices.extend(slicer.find_slices([col], min_samples=min_samples))
 
         # Run a slicer for categorical
         slicer = CategorySlicer(meta_dataset, target=target)
