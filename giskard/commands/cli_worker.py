@@ -89,6 +89,14 @@ def start_options(func):
         help="Number of processes to use for parallelism (None for number of cpu)",
     )
     @click.option(
+        "--daemon",
+        "-d",
+        "is_daemon",
+        is_flag=True,
+        default=False,
+        help="Should ML Worker be started as a Daemon in a background",
+    )
+    @click.option(
         "--log-level",
         "log_level",
         default=logging.getLevelName(logging.INFO),
@@ -113,7 +121,7 @@ def start_options(func):
 @common_options
 @start_stop_options
 @start_options
-def start_command(url: AnyHttpUrl, is_server, api_key, hf_token, nb_workers, worker_name, log_level):
+def start_command(url: AnyHttpUrl, is_server, api_key, is_daemon, hf_token, nb_workers, worker_name, log_level):
     """\b
     Start ML Worker.
 
@@ -137,7 +145,9 @@ def start_command(url: AnyHttpUrl, is_server, api_key, hf_token, nb_workers, wor
         # Create a Giskard client and request to start an ML worker with given name
         _start_server_command(worker_name, url, api_key, hf_token)
     else:
-        _start_command(worker_name, url, api_key, hf_token, int(nb_workers) if nb_workers is not None else None)
+        _start_command(
+            worker_name, url, api_key, is_daemon, hf_token, int(nb_workers) if nb_workers is not None else None
+        )
 
 
 def initialize_api_key(api_key):
@@ -162,11 +172,15 @@ def _start_server_command(worker_name, url: AnyHttpUrl, api_key, hf_token=None):
     client.start_managed_worker(worker_name)
 
 
-def _start_command(worker_name, url: AnyHttpUrl, api_key, hf_token=None, nb_workers=None):
+def _start_command(worker_name, url: AnyHttpUrl, api_key, is_daemon, hf_token=None, nb_workers=None):
     from giskard.ml_worker.ml_worker import MLWorker
 
+    start_msg = f"Starting ML Worker {worker_name}"
+    if is_daemon:
+        start_msg += " daemon"
+    logger.info(start_msg)
+
     os.environ["TQDM_DISABLE"] = "1"
-    logger.info("Starting ML Worker %s", worker_name)
     logger.info("Python: %s (%s)", sys.executable, platform.python_version())
     logger.info("Giskard Home: %s", settings.home_dir)
 
@@ -175,6 +189,9 @@ def _start_command(worker_name, url: AnyHttpUrl, api_key, hf_token=None, nb_work
 
     pid_file = PIDLockFile(pid_file_path)
     remove_stale_pid_file(pid_file)
+
+    log_path = get_log_path(worker_name=worker_name)
+    logger.info(f"Writing logs to {log_path}")
 
     ml_worker: Optional[MLWorker] = None
     try:
@@ -185,14 +202,39 @@ def _start_command(worker_name, url: AnyHttpUrl, api_key, hf_token=None, nb_work
         else:
             logger.info("Using uvloop to run jobs")
             from uvloop import run
-        run(_start_worker(worker_name, url, api_key, hf_token, nb_workers))
+
+        if is_daemon:
+            from daemon import DaemonContext
+            from daemon.daemon import change_working_directory
+
+            # Releasing the lock because it will be re-acquired by a daemon process
+            pid_file.release()
+
+            # If on windows, throw error and exit
+            if sys.platform == "win32":
+                logger.error("Daemon mode is not supported on Windows.")
+                return
+
+            with DaemonContext(pidfile=pid_file, stdout=open(log_path, "w+t")):
+                # For some reason requests.utils.should_bypass_proxies that's called inside every request made by requests
+                # hangs when the process runs as a daemon. A dirty temporary fix is to disable proxies for daemon mode.
+                # True reasons for this to happen to be investigated
+                os.environ["no_proxy"] = "*"
+
+                workdir = settings.home_dir / "tmp" / f"daemon-run-{os.getpid()}"
+                workdir.mkdir(exist_ok=True, parents=True)
+                change_working_directory(workdir)
+
+                logger.info(f"Daemon PID: {os.getpid()}")
+                run(_start_worker(worker_name, url, api_key, hf_token, nb_workers))
+        else:
+            run(_start_worker(worker_name, url, api_key, hf_token, nb_workers))
     except KeyboardInterrupt:
         logger.info("Exiting")
         if ml_worker:
             ml_worker.stop()
     except lockfile.AlreadyLocked:
         existing_pid = read_pid_from_pidfile(pid_file_path)
-        # TODO(Bazire) : update the info to include worker_name
         logger.warning(
             f"Another ML Worker {_ml_worker_description(worker_name, url)} "
             f"is already running with PID: {existing_pid}. "
@@ -259,7 +301,7 @@ def _restart_server_command(worker_name, url: AnyHttpUrl, api_key, hf_token=None
 @common_options
 @start_stop_options
 @start_options
-def restart_command(url: AnyHttpUrl, is_server, api_key, hf_token, nb_workers, worker_name, log_level):
+def restart_command(url: AnyHttpUrl, is_server, api_key, is_daemon, hf_token, nb_workers, worker_name, log_level):
     analytics.track(
         "giskard-worker:restart",
         {"url": anonymize(url)},
@@ -272,7 +314,7 @@ def restart_command(url: AnyHttpUrl, is_server, api_key, hf_token, nb_workers, w
 
     # Restart the local worker
     _find_and_stop(worker_name, url)
-    _start_command(worker_name, url, api_key, hf_token=hf_token, nb_workers=nb_workers)
+    _start_command(worker_name, url, api_key, is_daemon, hf_token=hf_token, nb_workers=nb_workers)
 
 
 def _stop_pid_fname(pid_path: Path):
