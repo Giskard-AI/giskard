@@ -5,7 +5,7 @@
 groups = ["default", "dev", "doc", "hub", "llm", "ml_runtime", "talk", "test"]
 strategy = ["cross_platform", "inherit_metadata"]
 lock_version = "4.4.1"
-content_hash = "sha256:75e0ec711546da1aabafac4a559c46ba1a796e4528ae4c1277b6abfa3209fdc2"
+content_hash = "sha256:324b377cac4afd4511f10739a6da902926381320532f3f0f2f8706a2f0aeb8cc"
 
 [[package]]
 name = "absl-py"
@@ -1316,7 +1316,7 @@ files = [
 
 [[package]]
 name = "faker"
-version = "24.11.0"
+version = "24.14.0"
 requires_python = ">=3.8"
 summary = "Faker is a Python package that generates fake data for you."
 groups = ["test"]
@@ -1324,8 +1324,8 @@ dependencies = [
     "python-dateutil>=2.4",
 ]
 files = [
-    {file = "Faker-24.11.0-py3-none-any.whl", hash = "sha256:adb98e771073a06bdc5d2d6710d8af07ac5da64c8dc2ae3b17bb32319e66fd82"},
-    {file = "Faker-24.11.0.tar.gz", hash = "sha256:34b947581c2bced340c39b35f89dbfac4f356932cfff8fe893bde854903f0e6e"},
+    {file = "Faker-24.14.0-py3-none-any.whl", hash = "sha256:7692aa95155109b9348ab94afddd9049df41db64baa4ba6736653e947b52378e"},
+    {file = "Faker-24.14.0.tar.gz", hash = "sha256:13676b71346608350accc56e302d55ab7fca0db3f739145c3a3157d9623658a5"},
 ]
 
 [[package]]
@@ -2680,7 +2680,7 @@ files = [
 
 [[package]]
 name = "lightgbm"
-version = "4.3.0"
+version = "4.2.0"
 requires_python = ">=3.6"
 summary = "LightGBM Python Package"
 groups = ["ml_runtime"]
@@ -2689,11 +2689,11 @@ dependencies = [
     "scipy",
 ]
 files = [
-    {file = "lightgbm-4.3.0-py3-none-macosx_10_15_x86_64.macosx_11_6_x86_64.macosx_12_5_x86_64.whl", hash = "sha256:7e7c84e30607d043cc07ab7c0ffe3109120bde8e7e126f6a6151ca010c40fe3f"},
-    {file = "lightgbm-4.3.0-py3-none-manylinux2014_aarch64.whl", hash = "sha256:25eb3dd661d75ccf8a46de686b07def3a2e06eacab7da5937d82543732183688"},
-    {file = "lightgbm-4.3.0-py3-none-manylinux_2_28_x86_64.whl", hash = "sha256:104496a3404cb2452d3412cbddcfbfadbef9c372ea91e3a9b8794bcc5183bf07"},
-    {file = "lightgbm-4.3.0-py3-none-win_amd64.whl", hash = "sha256:89bc9ef2b97552bfa07523416513d27cf3344bedf9bcb1f286e636ebe169ed51"},
-    {file = "lightgbm-4.3.0.tar.gz", hash = "sha256:006f5784a9bcee43e5a7e943dc4f02de1ba2ee7a7af1ee5f190d383f3b6c9ebe"},
+    {file = "lightgbm-4.2.0-py3-none-macosx_10_15_x86_64.macosx_11_6_x86_64.macosx_12_5_x86_64.whl", hash = "sha256:2ebf5b53e4a74d5b484698f11d13c5598e5640a8665b146ad16a173c9724a803"},
+    {file = "lightgbm-4.2.0-py3-none-manylinux2014_aarch64.whl", hash = "sha256:450e645879fad4060858e9e856a1669d6ff058f69857786bd5a2c24d3136cbc0"},
+    {file = "lightgbm-4.2.0-py3-none-manylinux_2_28_x86_64.whl", hash = "sha256:4a767795253ea5872abc7cc4e0892120af9b48a10e151c03cd62116bc2f099ab"},
+    {file = "lightgbm-4.2.0-py3-none-win_amd64.whl", hash = "sha256:a532d5dd0261b0f648c570f25edd8a03e7e85084b18acc77bd603a3a04476cb7"},
+    {file = "lightgbm-4.2.0.tar.gz", hash = "sha256:8a4d051df2ab2218998a16f7712e843ee9e96d8b09ffbfcc18533da127e0da02"},
 ]
 
 [[package]]
@@ -5430,16 +5430,17 @@ files = [
 
 [[package]]
 name = "sentry-sdk"
-version = "1.45.0"
+version = "2.0.0"
+requires_python = ">=3.6"
 summary = "Python client for Sentry (https://sentry.io)"
 groups = ["default", "ml_runtime"]
 dependencies = [
     "certifi",
-    "urllib3>=1.26.11; python_version >= \"3.6\"",
+    "urllib3>=1.26.11",
 ]
 files = [
-    {file = "sentry-sdk-1.45.0.tar.gz", hash = "sha256:509aa9678c0512344ca886281766c2e538682f8acfa50fd8d405f8c417ad0625"},
-    {file = "sentry_sdk-1.45.0-py2.py3-none-any.whl", hash = "sha256:1ce29e30240cc289a027011103a8c83885b15ef2f316a60bcc7c5300afa144f1"},
+    {file = "sentry_sdk-2.0.0-py2.py3-none-any.whl", hash = "sha256:15033ab12894b5a41a5b84a4fdf57229e196932b8a3c9b6b54a9a0d313127117"},
+    {file = "sentry_sdk-2.0.0.tar.gz", hash = "sha256:cf4a21ecb1d23bbcb17cc4124ef9b67aeecd4e7e4f0d3b256bc22f644b7974bc"},
 ]
 
 [[package]]
@@ -6308,7 +6309,7 @@ files = [
 
 [[package]]
 name = "textual"
-version = "0.57.1"
+version = "0.58.0"
 requires_python = "<4.0,>=3.8"
 summary = "Modern Text User Interface framework"
 groups = ["test"]
@@ -6319,8 +6320,8 @@ dependencies = [
     "typing-extensions<5.0.0,>=4.4.0",
 ]
 files = [
-    {file = "textual-0.57.1-py3-none-any.whl", hash = "sha256:7a0a660525b207dd2ef5d95b7b9585f13d59ec0112de4c8f0a8dd0ffb2b9a6c4"},
-    {file = "textual-0.57.1.tar.gz", hash = "sha256:91029212b28c0cc73adad1e8b9fcda0b53947d4d81a1e8df4efbcb1346638744"},
+    {file = "textual-0.58.0-py3-none-any.whl", hash = "sha256:9daddf713cb64d186fa1ae647fea482dc84b643c9284132cd87adb99cd81d638"},
+    {file = "textual-0.58.0.tar.gz", hash = "sha256:5c8c3322308e2b932c4550b0ae9f70daebc39716de3f920831cda96d1640b383"},
 ]
 
 [[package]]
