@@ -12,7 +12,6 @@ from pathlib import Path
 from urllib.parse import urljoin
 from uuid import UUID
 
-import importlib_metadata
 from requests import Response
 from requests.adapters import HTTPAdapter
 from requests.auth import AuthBase
@@ -29,7 +28,7 @@ from giskard.client.dtos import (
 )
 from giskard.client.io_utils import GiskardJSONSerializer
 from giskard.client.project import Project
-from giskard.client.python_utils import EXCLUDED_PYLIBS, format_pylib_extras, warning
+from giskard.client.python_utils import EXCLUDED_PYLIBS, freeze_dependency_list, warning
 from giskard.core.core import SMT, DatasetMeta, ModelMeta, TestFunctionMeta
 from giskard.utils.analytics_collector import analytics, anonymize
 from giskard.utils.environment_detector import COLAB, EnvironmentDetector
@@ -214,12 +213,9 @@ class GiskardClient:
         )
 
         kernels = self._session.get("kernels").json()
-        frozen_dependencies = [
-            f"{dist.name}{format_pylib_extras(dist.name) if exact_deps or dist.name == 'giskard' else ''}=={dist.version}"
-            for dist in importlib_metadata.distributions()
-            if dist.name not in excludes and (not only_giskard or dist.name == "giskard")
-        ]
-
+        frozen_dependencies = freeze_dependency_list(
+            exact_deps=exact_deps, excludes=excludes, only_giskard=only_giskard
+        )
         existing_kernel = next((kernel for kernel in kernels if kernel["name"] == kernel_name), None)
 
         if (
@@ -259,6 +255,39 @@ class GiskardClient:
                 "type": "PROCESS",
                 "version": 0,
             },
+        )
+
+    def sync_kernel(
+        self,
+        kernel_name: str,
+        exact_deps: bool = False,
+        excludes: List[str] = EXCLUDED_PYLIBS,
+        only_giskard: bool = False,
+    ):
+        kernels = self._session.get("kernels").json()
+        existing_kernel = next((kernel for kernel in kernels if kernel["name"] == kernel_name), None)
+        if existing_kernel:
+            if existing_kernel["type"] != "PROCESS":
+                print(
+                    f'Cannot synchronize the current environment with {existing_kernel["type"]} kernel {kernel_name}. Please clone it as a managed kernel.'
+                )
+                return
+
+            frozen_dependencies = freeze_dependency_list(
+                exact_deps=exact_deps, excludes=excludes, only_giskard=only_giskard
+            )
+            if set(frozen_dependencies) == set(existing_kernel["frozenDependencies"].split("\n")):
+                # Do not need to synchronize
+                return
+        else:
+            frozen_dependencies = freeze_dependency_list(
+                exact_deps=exact_deps, excludes=excludes, only_giskard=only_giskard
+            )
+
+        self.create_kernel(
+            kernel_name=kernel_name,
+            python_version=f"{sys.version_info[0]}.{sys.version_info[1]}",
+            frozen_dependencies=frozen_dependencies,
         )
 
     def start_managed_worker(self, kernel_name: str):
