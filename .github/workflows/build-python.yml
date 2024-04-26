@@ -134,6 +134,10 @@ jobs:
         run: |
           df -h
 
+      - name: Install libomp for lightgbm on MacOS
+        if: ${{ matrix.os == 'macos-latest' }}
+        run: |
+          brew install libomp
       - name: Install dependencies
         run: |
           pdm install -G :all
