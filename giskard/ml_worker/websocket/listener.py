@@ -170,7 +170,7 @@ async def dispatch_action(
         "callback": callback,
         "action": action,
         "params": params,
-        "ml_worker": worker_id,
+        "worker_id": worker_id,
         "client_params": client_params,
     }
     if execute_in_pool and settings.use_pool:
