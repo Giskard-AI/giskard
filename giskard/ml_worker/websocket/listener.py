@@ -11,7 +11,6 @@ import traceback
 from collections import defaultdict
 from concurrent.futures import CancelledError, Future
 from copy import copy
-from dataclasses import dataclass
 from pathlib import Path
 from uuid import UUID
 
@@ -61,20 +60,15 @@ logger = logging.getLogger(__name__)
 MAX_STOMP_ML_WORKER_REPLY_SIZE = 1500
 
 
-@dataclass
-class MLWorkerInfo:
-    id: str
-
-
-def websocket_log_actor(ml_worker: MLWorkerInfo, req: ActionPayload, *args, **kwargs):
-    logger.info("ML Worker %s performing %s params: %s", {ml_worker.id}, {req.action}, {req.param})
+def websocket_log_actor(worker_id: str, req: ActionPayload, *args, **kwargs):
+    logger.info("ML Worker %s performing %s params: %s", {worker_id}, {req.action}, {req.param})
 
 
 WEBSOCKET_ACTORS = dict((action.name, websocket_log_actor) for action in MLWorkerAction)
 
 
 def wrapped_handle_result(
-    action: MLWorkerAction, start: float, job_id: Optional[UUID], worker_info: MLWorkerInfo, ignore_timeout: bool
+    action: MLWorkerAction, start: float, job_id: Optional[UUID], worker_id: str, ignore_timeout: bool
 ):
     async def handle_result(future: Union[Future, Callable[..., websocket.WorkerReply]]):
         info = None  # Needs to be defined in case of cancellation
@@ -110,7 +104,7 @@ def wrapped_handle_result(
                 "mlworker:websocket:action",
                 {
                     "name": action.name,
-                    "worker": worker_info.id,
+                    "worker": worker_id,
                     "language": "PYTHON",
                     "type": "ERROR" if isinstance(info, websocket.ErrorReply) else "SUCCESS",
                     "action_time": time.process_time() - start,
@@ -132,12 +126,12 @@ def parse_and_execute(
     callback: Callable,
     action: MLWorkerAction,
     params,
-    ml_worker: MLWorkerInfo,
+    worker_id: str,
     client_params: Dict[str, str],
 ) -> websocket.WorkerReply:
     action_params = parse_action_param(action, params)
     return callback(
-        ml_worker=ml_worker,
+        worker_id=worker_id,
         client=GiskardClient(**client_params),
         action=action.name,
         params=action_params,
@@ -149,7 +143,7 @@ async def dispatch_action(
     action: MLWorkerAction,
     req: ActionPayload,
     client_params: Dict[str, Any],
-    worker_info: MLWorkerInfo,
+    worker_id: str,
     execute_in_pool: bool,
     timeout: Optional[float] = None,
     ignore_timeout=False,
@@ -164,19 +158,19 @@ async def dispatch_action(
         "mlworker:websocket:action:type",
         {
             "name": action.name,
-            "worker": worker_info.id,
+            "worker": worker_id,
             "language": "PYTHON",
         },
     )
     start = time.process_time()
 
-    result_handler = wrapped_handle_result(action, start, job_id, worker_info, ignore_timeout=ignore_timeout)
+    result_handler = wrapped_handle_result(action, start, job_id, worker_id, ignore_timeout=ignore_timeout)
     # If execution should be done in a pool
     kwargs = {
         "callback": callback,
         "action": action,
         "params": params,
-        "ml_worker": worker_info,
+        "ml_worker": worker_id,
         "client_params": client_params,
     }
     if execute_in_pool and settings.use_pool:
@@ -226,7 +220,7 @@ def on_abort(params: websocket.AbortParams, *args, **kwargs):
 
 
 @websocket_actor(MLWorkerAction.getInfo, execute_in_pool=False)
-def on_ml_worker_get_info(ml_worker: MLWorkerInfo, params: GetInfoParam, *args, **kwargs) -> websocket.GetInfo:
+def on_ml_worker_get_info(worker_id: str, params: GetInfoParam, *args, **kwargs) -> websocket.GetInfo:
     logger.info("Collecting ML Worker info from WebSocket")
     # TODO(Bazire): seems to be deprecated https://setuptools.pypa.io/en/latest/pkg_resources.html#workingset-objects
     installed_packages = {p.project_name: p.version for p in pkg_resources.working_set} if params.list_packages else {}
@@ -246,7 +240,7 @@ def on_ml_worker_get_info(ml_worker: MLWorkerInfo, params: GetInfoParam, *args, 
         interpreter=sys.executable,
         interpreterVersion=platform.python_version(),
         installedPackages=installed_packages,
-        kernelName=ml_worker.id,
+        kernelName=worker_id,
     )
 
 

@@ -13,7 +13,7 @@ from giskard.ml_worker.stomp.client import StompWSClient
 from giskard.ml_worker.stomp.constants import HeaderType
 from giskard.ml_worker.stomp.parsing import Frame, StompFrame
 from giskard.ml_worker.websocket.action import ActionPayload, ConfigPayload, MLWorkerAction
-from giskard.ml_worker.websocket.listener import WEBSOCKET_ACTORS, MLWorkerInfo
+from giskard.ml_worker.websocket.listener import WEBSOCKET_ACTORS
 from giskard.ml_worker.websocket.utils import fragment_message
 from giskard.registry.registry import load_plugins
 from giskard.settings import settings
@@ -63,8 +63,6 @@ class MLWorker(StompWSClient):
         self._ws_max_reply_payload_size = MAX_STOMP_ML_WORKER_REPLY_SIZE
         self._api_key = api_key
         self._hf_token = hf_token
-        # TODO(Bazire): Cleanup this
-        self._worker_info = MLWorkerInfo(id=self._worker_name)
 
     async def config_handler(self, frame: Frame) -> List[Frame]:
         payload = ConfigPayload.parse_raw(frame.body)
@@ -88,7 +86,7 @@ class MLWorker(StompWSClient):
             self.stop()
 
         payload: Optional[Union[str, Frame]] = await WEBSOCKET_ACTORS[data.action.name](
-            data, client_params, self._worker_info
+            data, client_params, self._worker_name
         )
         # If no rep_id
         if payload is None:
@@ -103,7 +101,7 @@ class MLWorker(StompWSClient):
             "mlworker:websocket:action:reply",
             {
                 "name": data.action.name,
-                "worker": self._worker_info.id,
+                "worker": self._worker_name,
                 "language": "PYTHON",
                 "frag_len": self._ws_max_reply_payload_size,
                 "frag_count": frag_count,
