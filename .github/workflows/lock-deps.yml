@@ -24,6 +24,9 @@ jobs:
     name: "Lock dependencies using PDM"
     runs-on: ubuntu-latest
     continue-on-error: false # https://ncorti.com/blog/howto-github-actions-build-matrix
+    strategy:
+      matrix:
+        os: [ubuntu-latest, macos-latest]
     steps:
       - name: Check if organization member
         id: is_organization_member
@@ -58,7 +61,11 @@ jobs:
           cache: false
 
       - name: Install dependencies
+        if: ${{ matrix.os != 'macos-latest' }}
         run: rm -rf pdm.lock && pdm lock -G :all
+      - name: Install dependencies for macOS
+        if: ${{ matrix.os == 'macos-latest' }}
+        run: rm -rf pdm.lock && pdm lock -G :all -L pdm.macos.lock
 
       - name: Configure git
         run:  |
@@ -66,9 +73,15 @@ jobs:
           git config --global user.email 'bot.locker@users.noreply.github.com'
 
       - name: Adding file
+        if: ${{ matrix.os != 'macos-latest' }}
         run:  |
           git add pdm.lock
           git commit -m "Regenerating pdm.lock" --allow-empty
+      - name: Adding file for macOS lockfile
+        if: ${{ matrix.os == 'macos-latest' }}
+        run:  |
+          git add pdm.macos.lock
+          git commit -m "Regenerating pdm.macos.lock" --allow-empty
 
       - name: Remove label
         if: ${{ github.event.pull_request}}
