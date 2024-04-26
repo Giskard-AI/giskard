@@ -6,7 +6,7 @@ The Giskard python library provides an automatic scan functionality designed to 
 
 ## Before starting
 
-Before starting, make sure you have installed the vision library of Giskard:
+Before starting, make sure you have installed both the base and vision libraries of Giskard:
 
 ```bash
 pip install giskard giskard-vision
@@ -14,7 +14,10 @@ pip install giskard giskard-vision
 
 ## Step 1: Wrap your dataset
 
-To scan your model, start by **wrapping your dataset** with `DataLoaderBase`. Your class should implement `get_image` that loads an image as a `np.ndarray` and `get_marks` that returns landmark coordinates from a file.
+To scan your model, start by **wrapping your dataset** with `DataLoaderBase`. Your class should override:
+
+- `load_image_from_file` that loads an image as a `np.ndarray`
+- `load_marks_from_file` that returns landmark coordinates from a file.
 
 > ### ⚠️ Warning
 >
@@ -22,39 +25,23 @@ To scan your model, start by **wrapping your dataset** with `DataLoaderBase`. Yo
 > the scan results.
 
 ```python
-from giskard-vision.landmark_detection.dataloaders.base
+from giskard_vision.landmark_detection.dataloaders.base
 
 
 class DataLoaderLandmarkDetection(DataLoaderBase):
-    """Your data loader for landmark detection
-    """
 
-    def get_image(self, idx: int) -> np.ndarray:
-        """
-        Gets an image for a specific index.
+    @classmethod
+    def load_image_from_file(cls, image_file: Path) -> np.ndarray:
+        # use image_file to read the image into a numpy array
+        return cv2.imread(str(image_file))
 
-        Args:
-            idx (int): Index of the data.
-
-        Returns:
-            np.ndarray: Image data for the given index.
-        """
-        return dataloader.get_image(idx)
-
-    def get_marks(self, idx: int) -> np.ndarray:
-        """
-        Gets marks for a specific index.
-
-        Args:
-            idx (int): Index of the data.
-
-        Returns:
-            np.ndarray: Marks for the given index.
-        """
-        return dataloader.get_marks(idx)
+    @classmethod
+    def load_marks_from_file(cls, mark_file: Path):
+        # use mark_file path to populate the numpy array
+        return np.array(..., dtype=float)
 
 
-giskard_dataset = DataLoaderLandmarkDetection()
+giskard_dataset = DataLoaderLandmarkDetection(images_dir_path=..., landmarks_dir_path=...)
 ```
 
 ## Step 2: Wrap your model
@@ -62,46 +49,33 @@ giskard_dataset = DataLoaderLandmarkDetection()
 Next, **wrap your model** with `FaceLandmarksModelBase`. It should contain a method `predict_image` that returns landmarks as `np.ndarray`, as shown here:
 
 ```python
-from giskard-vision.landmark_detection.models.base import FaceLandmarksModelBase
+from giskard_vision.landmark_detection.models.base import FaceLandmarksModelBase
 
 
 class ModelLandmarkDetection(FaceLandmarksModelBase):
-    """Wrapper class for facial landmarks detection.
-    """
     def __init__(self, model):
-        """
-        Initialize the ModelLandmarkDetection.
-
-        Args:
-            model: The model object.
-
-        """
         super().__init__(n_landmarks=68, n_dimensions=2, name="MyModel")
         self.model = model
 
     def predict_image(self, image: np.ndarray) -> np.ndarray:
-        """
-        Predict facial landmarks for a given image.
-
-        Args:
-            image: The input image.
-
-        Returns:
-            np.ndarray: Predicted facial landmarks.
-
-        """
         return self.model.predict_image(image)
 
-
-giskard_model = ModelLandmarkDetection()
+mymodel = ...
+giskard_model = ModelLandmarkDetection(model = mymodel)
 ```
 
 ## Step 3: Scan your model
 
-Now you can scan your model and display your scan report:
+You can now scan your model. For this guide, we'll use a demo dataloader and an OpenCV model. After completing steps 1 and 2, you can replace them with your own dataloader and model wrapper.
 
 ```python
-scan_results = giskard-vision.scan(giskard_model, giskard_dataset)
+from giskard_vision.landmark_detection.models.wrappers import OpenCVWrapper
+from giskard_vision.landmark_detection.demo import get_300W
+
+giskard_model = OpenCVWrapper()
+giskard_dataset = get_300W()
+
+scan_results = giskard_vision.scan(giskard_model, giskard_dataset)
 display(scan_results)  # in your notebook
 ```
 
