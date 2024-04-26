@@ -1,10 +1,16 @@
 # 📸 Vision model scan
 
-**The giskard-vision extension is under development. For now, only landmark detection models are available.**
-
+**The giskard-vision library is under development. For now, only landmark detection models are available.**
 
 The Giskard python library provides an automatic scan functionality designed to automatically detect [potential vulnerabilities](https://docs.giskard.ai/en/latest/knowledge/key_vulnerabilities/index.html) affecting your ML model. It enables you to proactively identify and address key issues to ensure the reliability, fairness, and robustness of your Machine Learning models.
 
+## Before starting
+
+Before starting, make sure you have installed the vision library of Giskard:
+
+```bash
+pip install giskard giskard-vision
+```
 
 ## Step 1: Wrap your dataset
 
@@ -17,9 +23,6 @@ To scan your model, start by **wrapping your dataset** with `DataLoaderBase`. Yo
 
 ```python
 from giskard-vision.landmark_detection.dataloaders.base
-from giskard_vision.landmark_detection.demo import get_300W
-
-dataloader = get_300W()
 
 
 class DataLoaderLandmarkDetection(DataLoaderBase):
@@ -60,14 +63,21 @@ Next, **wrap your model** with `FaceLandmarksModelBase`. It should contain a met
 
 ```python
 from giskard-vision.landmark_detection.models.base import FaceLandmarksModelBase
-from giskard_vision.landmark_detection.models.wrappers import OpenCVWrapper
-
-model = OpenCVWrapper()
 
 
 class ModelLandmarkDetection(FaceLandmarksModelBase):
     """Wrapper class for facial landmarks detection.
     """
+    def __init__(self, model):
+        """
+        Initialize the ModelLandmarkDetection.
+
+        Args:
+            model: The model object.
+
+        """
+        super().__init__(n_landmarks=68, n_dimensions=2, name="MyModel")
+        self.model = model
 
     def predict_image(self, image: np.ndarray) -> np.ndarray:
         """
@@ -80,7 +90,7 @@ class ModelLandmarkDetection(FaceLandmarksModelBase):
             np.ndarray: Predicted facial landmarks.
 
         """
-        return model.predict_image(image)
+        return self.model.predict_image(image)
 
 
 giskard_model = ModelLandmarkDetection()
