@@ -1,5 +1,7 @@
 """Various utility functions to manage Python environments"""
 
+from typing import List
+
 import os
 import sys
 import warnings
@@ -40,3 +42,18 @@ def format_pylib_extras(name):
         return ""
     else:
         return f"[{', '.join(extras)}]"
+
+
+def freeze_dependency_list(exact_deps: bool = False, excludes: List[str] = EXCLUDED_PYLIBS, only_giskard: bool = False):
+    return [
+        f"{dep}=={ver}"
+        for dep, ver in freeze_dependencies(exact_deps=exact_deps, excludes=excludes, only_giskard=only_giskard).items()
+    ]
+
+
+def freeze_dependencies(exact_deps: bool = False, excludes: List[str] = EXCLUDED_PYLIBS, only_giskard: bool = False):
+    return {
+        f"{dist.name}{format_pylib_extras(dist.name) if exact_deps or dist.name == 'giskard' else ''}": "{dist.version}"
+        for dist in importlib_metadata.distributions()
+        if dist.name not in excludes and (not only_giskard or dist.name == "giskard")
+    }

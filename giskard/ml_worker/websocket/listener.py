@@ -17,11 +17,11 @@ from uuid import UUID
 
 import numpy as np
 import pandas as pd
-import pkg_resources
 import psutil
 
 import giskard
 from giskard.client.giskard_client import GiskardClient
+from giskard.client.python_utils import freeze_dependencies
 from giskard.core.savable import RegistryArtifact
 from giskard.core.suite import Suite, generate_test_partial
 from giskard.datasets.base import Dataset
@@ -228,8 +228,7 @@ def on_abort(params: websocket.AbortParams, *args, **kwargs):
 @websocket_actor(MLWorkerAction.getInfo, execute_in_pool=False)
 def on_ml_worker_get_info(ml_worker: MLWorkerInfo, params: GetInfoParam, *args, **kwargs) -> websocket.GetInfo:
     logger.info("Collecting ML Worker info from WebSocket")
-    # TODO(Bazire): seems to be deprecated https://setuptools.pypa.io/en/latest/pkg_resources.html#workingset-objects
-    installed_packages = {p.project_name: p.version for p in pkg_resources.working_set} if params.list_packages else {}
+    installed_packages = freeze_dependencies(excludes=[]) if params.list_packages else {}
     current_process = psutil.Process(os.getpid())
     return websocket.GetInfo(
         platform=websocket.Platform(
