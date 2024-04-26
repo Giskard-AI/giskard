@@ -1,5 +1,5 @@
 Evaluation
-======
+==========
 
 .. autofunction:: giskard.rag.evaluate
 

@@ -44,8 +44,8 @@ class RAGReport:
         The testset used to evaluate the agent.
     results : Sequence[dict]
         The evaluation results of the agent's answers. Should be a list of dictionaries with the following keys: "evaluation", "reason", "agent_answer".
-    metrics_results : pd.DataFrame, optional
-        The additional metrics computed during the evaluation. If provided, these metrics will be included in the report.
+    metrics_results : dict, optional
+        The additional metrics computed during the evaluation. If provided, these metrics will be included in the report. The dict should have the following structure: `{"question_id": {"correctness": bool, "correctness_reason": str, "additional_metric": value, ...}}`.
     knowledge_base : KnowledgeBase
         The knowledge base used to create the testset.
     """
