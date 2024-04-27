@@ -11,8 +11,9 @@ from ...models.base import BaseModel
 from ..issues import Issue, IssueLevel, Robustness
 from ..logger import logger
 from ..registry import Detector
-from .text_transformations import TextTransformation
 from .feature_transformation import CategorialTransformation
+from .text_transformations import TextTransformation
+
 
 class BaseTextPerturbationDetector(Detector):
     """Base class for metamorphic detectors based on text transformations."""
@@ -218,20 +219,21 @@ class BaseTextPerturbationDetector(Detector):
 
 class BaseCategorialPertubationDetector(Detector):
     """Base class for metamorphic detectors based on categorial feature"""
+
     _issue_group = Robustness
     # @TODO : Reserch for the adapted value for the taxonomy.
-    _taxonomy = None 
+    _taxonomy = None
 
     def __init__(
-            self, 
-            transformations: Optional[Sequence[CategorialTransformation]] = None, 
-            threshold: Optional[float] = None, 
-            output_sensitivity: Optional[float] = None, 
-            num_samples: Optional[int] = None,
+        self,
+        transformations: Optional[Sequence[CategorialTransformation]] = None,
+        threshold: Optional[float] = None,
+        output_sensitivity: Optional[float] = None,
+        num_samples: Optional[int] = None,
     ):
         """
-        Create a new instance of the detector 
-        Parameters 
+        Create a new instance of the detector
+        Parameters
         ----------
         transformations: Optional[Sequence[CategorialTransformation]]
             The categorial transformation used in the metamorphic test. If not provided, a default set of transformation will be used.
@@ -254,33 +256,30 @@ class BaseCategorialPertubationDetector(Detector):
         self.output_sensitivity = output_sensitivity
 
     def run(self, model: BaseModel, dataset: Dataset, features: Sequence[str]) -> Sequence[Issue]:
-        transformations = self.transformations or self._get_default_transformations(model, dataset) 
-        # Only analyze categorials features 
-        cat_features = [
-            f for f in features 
-            if dataset.column_types[f] == "category"
-        ]
+        transformations = self.transformations or self._get_default_transformations(model, dataset)
+        # Only analyze categorials features
+        cat_features = [f for f in features if dataset.column_types[f] == "category"]
         logger.info(
             f"{self.__class__.__name__}: Running with transformations={[t.name for t in transformations]} "
             f"threshold={self.threshold} output_sensitivity={self.output_sensitivity} num_samples={self.num_samples}"
         )
-        
-        issues = [] 
+
+        issues = []
         for transformation in transformations:
             issues.extend(self._detect_issues(model, dataset, transformation, cat_features))
 
         return [i for i in issues if i]
 
-
     @abstractmethod
     def _get_default_transformations(self, model: BaseModel, dataset: Dataset) -> Sequence[CategorialTransformation]:
         ...
-    
-    def _detect_issues(self, 
-        model: BaseModel, 
-        dataset: Dataset, 
-        transformation: CategorialTransformation, 
-        features: Sequence[Union[str, int]]
+
+    def _detect_issues(
+        self,
+        model: BaseModel,
+        dataset: Dataset,
+        transformation: CategorialTransformation,
+        features: Sequence[Union[str, int]],
     ) -> Sequence[Issue]:
         num_samples = self.num_samples if self.num_samples is not None else _get_default_num_samples(model)
         output_sensitivity = (
@@ -291,19 +290,18 @@ class BaseCategorialPertubationDetector(Detector):
         issues = []
         # @TODO: integrate this with Giskard metamorphic tests already present
         for feature in features:
-            transformation_fn = transformation(column=feature) 
-            transformed = dataset.transform(transformation_fn) 
+            transformation_fn = transformation(column=feature)
+            transformed = dataset.transform(transformation_fn)
 
             changed_idx = dataset.df.index[transformed.df[feature] != dataset.df[feature]]
 
             if changed_idx.empty:
-                continue 
-                
+                continue
+
             # Select a random subset of the changed records
             if len(changed_idx) > num_samples:
                 rng = np.random.default_rng(747)
                 changed_idx = changed_idx[rng.choice(len(changed_idx), num_samples, replace=False)]
-            
 
             original_data = Dataset(
                 dataset.df.loc[changed_idx],
@@ -321,7 +319,7 @@ class BaseCategorialPertubationDetector(Detector):
             # Calculate predictions
             original_pred = model.predict(original_data)
             perturbed_pred = model.predict(perturbed_data)
-    
+
             if model.is_classification:
                 passed = original_pred.raw_prediction == perturbed_pred.raw_prediction
             elif model.is_regression:
@@ -411,7 +409,7 @@ class BaseCategorialPertubationDetector(Detector):
                 issues.append(issue)
 
         return issues
-    
+
 
 def _generate_robustness_tests(issue: Issue):
     from ...testing.tests.metamorphic import test_metamorphic_invariance
