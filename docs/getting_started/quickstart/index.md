@@ -8,18 +8,17 @@
 quickstart_llm
 quickstart_tabular
 quickstart_nlp
+quickstart_vision
 ```
-
 
 :::::{grid} 1 1 2 2
 
-
-::::{grid-item-card} <br/><h3>📚  LLM Quickstart</h3>
+::::{grid-item-card} <br/><h3>📚 LLM Quickstart</h3>
 :text-align: center
 :link: quickstart_llm.ipynb
 ::::
 
-::::{grid-item-card} <br/><h3>📊  Tabular Quickstart</h3>
+::::{grid-item-card} <br/><h3>📊 Tabular Quickstart</h3>
 :text-align: center
 :link: quickstart_tabular.ipynb
 ::::
@@ -27,6 +26,11 @@ quickstart_nlp
 ::::{grid-item-card} <br/><h3>🗣️ NLP Quickstart</h3>
 :text-align: center
 :link: quickstart_nlp.ipynb
+::::
+
+::::{grid-item-card} <br/><h3>📸 Vision Quickstart</h3>
+:text-align: center
+:link: quickstart_vision.ipynb
 ::::
 
 :::::
