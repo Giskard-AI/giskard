@@ -1,6 +1,8 @@
 # 📚  LLM scan
 
-The Giskard python library provides an automatic scan functionality designed to automatically detect [potential vulnerabilities](https://docs.giskard.ai/en/latest/knowledge/llm_vulnerabilities/index.html) affecting your LLMs.
+The Giskard python library provides an automatic scan functionality designed to automatically
+detect [potential vulnerabilities](https://docs.giskard.ai/en/stable/knowledge/llm_vulnerabilities/index.html) affecting
+your LLMs.
 
 ## How does it work?
 
@@ -338,7 +340,8 @@ scan_results.to_html("model_scan_results.html")
 
 >  #### 💡 Customize your scan
 >
-> Check our [Advanced scan usage page](https://docs.giskard.ai/en/latest/open_source/scan/advanced_scan/index.html), if you want to:
+> Check our [Advanced scan usage page](https://docs.giskard.ai/en/stable/open_source/scan/advanced_scan/index.html), if
+> you want to:
 >   - Scan with only some **specific detectors**
 >   - Make the scan **faster**
 
@@ -357,7 +360,9 @@ test_suite = scan_results.generate_test_suite("My first test suite")
 test_suite.run()
 ```
 
-Jump to the [test customization](https://docs.giskard.ai/en/latest/open_source/customize_tests/index.html) and [test integration](https://docs.giskard.ai/en/latest/open_source/integrate_tests/index.html) sections to find out everything you can do with test suites.
+Jump to the [test customization](https://docs.giskard.ai/en/stable/open_source/customize_tests/index.html)
+and [test integration](https://docs.giskard.ai/en/stable/open_source/integrate_tests/index.html) sections to find out
+everything you can do with test suites.
 
 ### 2. Upload your test suite to the Giskard Hub to:
 * Compare the quality of different models and prompts to decide which one to promote
