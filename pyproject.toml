@@ -82,13 +82,13 @@ ml_runtime = [
     "torchtext>=0.15.1",
     "tensorflow-macos==2.15.0; sys_platform == 'darwin' and platform_machine == 'arm64'",
     "tensorflow==2.15.0; sys_platform != 'windows' and (sys_platform != 'darwin' or platform_machine != 'arm64')",
-    "tensorflow==2.11.0; sys_platform == 'windows'",
+    "tensorflow==2.11.0; sys_platform == 'windows'", # tesnsorflow 2.11.x is compatible with tensorflow-io-gcs-filesystem==0.31 https://pypi.org/project/tensorflow-io-gcs-filesystem/
     # tensorflow-text is only available on linux or mac, but not for arm64 nor windows
     "tensorflow-text==2.15.0; python_version < '3.11' and (sys_platform == 'linux' or sys_platform == 'darwin') and platform_machine == 'x86_64'",
     "mlflow>2,<2.12", # version 2.12 throws error with imbalance-learn
     "wandb",
     "tensorflow-io-gcs-filesystem==0.36; sys_platform != 'windows'",
-    "tensorflow-io-gcs-filesystem==0.31; sys_platform == 'windows'",
+    "tensorflow-io-gcs-filesystem==0.31; sys_platform == 'windows'", # only tensorflow-io-gcs-filesystem<0.32 works on windows
 ]
 test = [
     "pytest-cov>=4.0.0",
