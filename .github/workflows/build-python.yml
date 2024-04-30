@@ -134,6 +134,11 @@ jobs:
         run: |
           df -h
 
+      - name: Install OpenMP library on macos
+        if: ${{ matrix.os == 'macos-latest' }}
+        run: |
+          brew install libomp
+
       - name: Install dependencies
         run: |
           pdm install -G :all
