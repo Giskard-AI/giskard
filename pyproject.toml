@@ -84,7 +84,7 @@ ml_runtime = [
     "tensorflow>=2.12; sys_platform != 'windows' and (sys_platform != 'darwin' or platform_machine != 'arm64')",
     "tensorflow<2.12; sys_platform == 'windows'", # tesnsorflow>2.12.x is compatible with tensorflow-io-gcs-filesystem>0.32 https://pypi.org/project/tensorflow-io-gcs-filesystem/
     # tensorflow-text is only available on linux or mac, but not for arm64 nor windows
-    "tensorflow-text==2.15.0; python_version < '3.11' and (sys_platform == 'linux' or sys_platform == 'darwin') and platform_machine == 'x86_64'",
+    "tensorflow-text>=2.15.0; python_version < '3.11' and (sys_platform == 'linux' or sys_platform == 'darwin') and platform_machine == 'x86_64'",
     "tensorflow-text<2.12; sys_platform == 'windows'",
     "mlflow>2,<2.12", # version 2.12 throws error with imbalance-learn
     "wandb",
