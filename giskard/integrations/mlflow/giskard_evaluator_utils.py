@@ -63,7 +63,7 @@ def setup_dataset(dataset, evaluator_config):
     raise ValueError(
         f"The provided parameters {config_set - sign_set} in dataset_config are not valid. "
         "Make sure to pass only the attributes of giskard.Dataset "
-        "(see https://docs.giskard.ai/en/latest/reference/datasets)."
+        "(see https://docs.giskard.ai/en/stable/reference/datasets)."
     )
 
 
@@ -99,7 +99,7 @@ def setup_model(model, model_type, feature_names, evaluator_config):
     raise ValueError(
         f"The provided parameters {config_set - sign_set} in model_config are not valid. "
         "Make sure to pass only the attributes of giskard.Model "
-        "(see https://docs.giskard.ai/en/latest/reference/models)."
+        "(see https://docs.giskard.ai/en/stable/reference/models)."
     )
 
 

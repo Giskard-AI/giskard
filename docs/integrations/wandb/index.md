@@ -49,13 +49,16 @@ To use Giskard with Weights and Biases, you need to follow these steps:
      ```
 
 2. Setup Giskard:
-   - install the giskard library by following these [instructions](https://docs.giskard.ai/en/latest/guides/installation_library/index.html).
+    - install the giskard library by following
+      these [instructions](https://docs.giskard.ai/en/stable/open_source/installation_library/index.html).
 
 ## Logging from Giskard to Weights and Biases
 In order to get the most out this integration, you would need to follow these three steps to diagnose your ML model:
-- wrap your dataset by following this [guide](https://docs.giskard.ai/en/latest/guides/wrap_dataset/index.html).
-- wrap your ML model by following this [guide](https://docs.giskard.ai/en/latest/guides/wrap_model/index.html).
-- scan your ML model for vulnerabilities by following this [guide](https://docs.giskard.ai/en/latest/guides/scan/index.html).
+
+- wrap your dataset by following this [guide](https://docs.giskard.ai/en/stable/guides/wrap_dataset/index.html).
+- wrap your ML model by following this [guide](https://docs.giskard.ai/en/stable/guides/wrap_model/index.html).
+- scan your ML model for vulnerabilities by following
+  this [guide](https://docs.giskard.ai/en/stable/guides/scan/index.html).
 
 Once the above steps are done, you can know log the results into Weights and Biases by doing the following:
 ```python

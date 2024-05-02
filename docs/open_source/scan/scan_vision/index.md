@@ -2,7 +2,10 @@
 
 **The giskard-vision library is under development. For now, only landmark detection models are available.**
 
-The Giskard python library provides an automatic scan functionality designed to automatically detect [potential vulnerabilities](https://docs.giskard.ai/en/latest/knowledge/key_vulnerabilities/index.html) affecting your ML model. It enables you to proactively identify and address key issues to ensure the reliability, fairness, and robustness of your Machine Learning models.
+The Giskard python library provides an automatic scan functionality designed to automatically
+detect [potential vulnerabilities](https://docs.giskard.ai/en/stable/knowledge/key_vulnerabilities/index.html) affecting
+your ML model. It enables you to proactively identify and address key issues to ensure the reliability, fairness, and
+robustness of your Machine Learning models.
 
 ## Before starting
 
