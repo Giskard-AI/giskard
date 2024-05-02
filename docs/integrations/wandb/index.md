@@ -50,7 +50,7 @@ To use Giskard with Weights and Biases, you need to follow these steps:
 
 2. Setup Giskard:
     - install the giskard library by following
-      these [instructions](https://docs.giskard.ai/en/stable/guides/installation_library/index.html).
+      these [instructions](https://docs.giskard.ai/en/stable/open_source/installation_library/index.html).
 
 ## Logging from Giskard to Weights and Biases
 In order to get the most out this integration, you would need to follow these three steps to diagnose your ML model:
