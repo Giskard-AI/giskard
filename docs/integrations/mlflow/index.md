@@ -34,7 +34,8 @@ Integrating Giskard with MLflow offers several compelling advantages for managin
 In order to use the plugin, you would first need to:
 
 - Install `mlflow` to access to the [`mlflow.evaluate()` API](https://mlflow.org/docs/latest/python_api/mlflow.html#mlflow.evaluate).
-- Install `giskard` (follow these [instructions](https://docs.giskard.ai/en/latest/open_source/installation_library/index.html))
+- Install `giskard` (follow
+  these [instructions](https://docs.giskard.ai/en/stable/open_source/installation_library/index.html))
   to access to the [`giskard` evaluator](https://mlflow.org/docs/latest/plugins.html#model-evaluation-plugins).
 
 After completing the installation process, you will be able to observe giskard as part of mlflow’s evaluators:
@@ -46,9 +47,13 @@ mlflow.models.list_evaluators() # ['default', 'giskard']
 
 The configuration of the giskard evaluator can be done entirely through the `evaluator_config` argument that can yield 3 keys:
 
-- `model_config`: to be filled according to our [guides](https://docs.giskard.ai/en/latest/open_source/scan/index.html) with the help of our [model API reference](https://docs.giskard.ai/en/latest/reference/models/index.html).
-- `dataset_config`: to be filled according to our [guides](https://docs.giskard.ai/en/latest/open_source/scan/index.html) with the help of our [dataset API reference](https://docs.giskard.ai/en/latest/reference/datasets/index.html).
-- `scan_config`: to be filled according to our [guides](https://docs.giskard.ai/en/latest/open_source/scan/index.html) with the help of our [scan API reference](https://docs.giskard.ai/en/latest/reference/scan/index.html).
+- `model_config`: to be filled according to our [guides](https://docs.giskard.ai/en/stable/open_source/scan/index.html)
+  with the help of our [model API reference](https://docs.giskard.ai/en/stable/reference/models/index.html).
+- `dataset_config`: to be filled according to
+  our [guides](https://docs.giskard.ai/en/stable/open_source/scan/index.html) with the help of
+  our [dataset API reference](https://docs.giskard.ai/en/stable/reference/datasets/index.html).
+- `scan_config`: to be filled according to our [guides](https://docs.giskard.ai/en/stable/open_source/scan/index.html)
+  with the help of our [scan API reference](https://docs.giskard.ai/en/stable/reference/scan/index.html).
 
 Here's the integration in a nutshell:
 ```python
@@ -88,10 +93,10 @@ For more complete examples, check our notebook examples below.
 ## Logging giskard objects to MLflow
 It is possible to log 4 giskard objects into MLflow:
 
-- A giskard [dataset](https://docs.giskard.ai/en/latest/guides/wrap_dataset/index.html)
-- A giskard [model](https://docs.giskard.ai/en/latest/guides/wrap_model/index.html)
-- The [scan](https://docs.giskard.ai/en/latest/guides/scan/index.html) results
-- The [test-suite](https://docs.giskard.ai/en/latest/guides/scan/index.html) results
+- A giskard [dataset](https://docs.giskard.ai/en/stable/guides/wrap_dataset/index.html)
+- A giskard [model](https://docs.giskard.ai/en/stable/guides/wrap_model/index.html)
+- The [scan](https://docs.giskard.ai/en/stable/guides/scan/index.html) results
+- The [test-suite](https://docs.giskard.ai/en/stable/guides/scan/index.html) results
 
 Here are two options on how to achieve this.
 
