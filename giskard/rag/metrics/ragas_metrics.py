@@ -77,19 +77,23 @@ class RagasMetric(Metric):
         self._llm_client = llm_client
         self._embedding_model = embedding_model
         self.requires_context = requires_context
+        self.ragas_llm = None
+        self.ragas_embeddings = None
 
     def __call__(self, question_sample: dict, answer: ModelOutput) -> dict:
         llm_client = self._llm_client or get_default_client()
         embedding_model = self._embedding_model or get_default_embedding()
-        ragas_llm = RagasLLMWrapper(llm_client, self.context_window_length)
-        ragas_embedddings = RagasEmbeddingsWrapper(embedding_model)
+        if self.ragas_llm is None:
+            self.ragas_llm = RagasLLMWrapper(llm_client, self.context_window_length)
+        if self.ragas_embeddings is None:
+            self.ragas_embeddings = RagasEmbeddingsWrapper(embedding_model)
 
         run_config = RunConfig()
 
         if hasattr(self.metric, "llm"):
-            self.metric.llm = ragas_llm
+            self.metric.llm = self.ragas_llm
         if hasattr(self.metric, "embeddings"):
-            self.metric.embeddings = ragas_embedddings
+            self.metric.embeddings = self.ragas_embeddings
 
         self.metric.init(run_config)
         if self.requires_context and answer.documents is None:
