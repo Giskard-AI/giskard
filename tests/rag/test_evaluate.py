@@ -6,6 +6,7 @@ import pytest
 
 from giskard.llm.client.base import ChatMessage
 from giskard.rag import KnowledgeBase, QATestset, evaluate
+from giskard.rag.evaluate import _compute_answers
 from tests.rag.test_qa_testset import make_testset_samples
 from tests.utils import DummyEmbedding
 
@@ -232,3 +233,31 @@ def test_user_friendly_error_if_parameters_are_swapped():
 
     with pytest.raises(ValueError, match="must be a KnowledgeBase object"):
         evaluate([], knowledge_base, testset, llm_client=llm_client)
+
+
+def test_compute_answers():
+    testset = QATestset(make_testset_samples())
+
+    def answer_fn(x, history=None):
+        return "Dummy answer"
+
+    model_outputs = _compute_answers(answer_fn, testset)
+    assert len(model_outputs) == 6
+    assert all([output.message == "Dummy answer" for output in model_outputs])
+
+    def answer_fn(x, history=None):
+        return "Dummy answer", ["doc1", "doc2"]
+
+    model_outputs = _compute_answers(answer_fn, testset)
+    assert len(model_outputs) == 6
+    assert all([output.message == "Dummy answer" for output in model_outputs])
+    assert all([output.documents == ["doc1", "doc2"] for output in model_outputs])
+
+    def answer_fn(x, history=None):
+        return "Dummy answer", ["doc1", "doc2"], False
+
+    with pytest.raises(
+        ValueError,
+        match="The answer function should return a string with the model answer to a question or a tuple containing the answer",
+    ):
+        model_outputs = _compute_answers(answer_fn, testset)
