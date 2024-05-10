@@ -1,6 +1,15 @@
+from typing import Sequence
+
 from abc import ABC, abstractmethod
+from dataclasses import dataclass, field
 
 from ...llm.client.base import LLMClient
+
+
+@dataclass
+class ModelOutput:
+    message: str
+    documents: Sequence[str] = field(default_factory=list)
 
 
 class Metric(ABC):
@@ -14,7 +23,7 @@ class Metric(ABC):
         self._llm_client = llm_client
 
     @abstractmethod
-    def __call__(self, question_sample: dict, answer: str):
+    def __call__(self, question_sample: dict, answer: ModelOutput):
         """
         Compute the metric on a single question and its associated answer.
 
@@ -28,6 +37,6 @@ class Metric(ABC):
         Returns
         -------
         dict
-            The result of the metric. The keys should be the names of the metrics computed.
+            The result of the metric computation. The keys should be the names of the metrics computed.
         """
         pass

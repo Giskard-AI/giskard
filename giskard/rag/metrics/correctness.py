@@ -3,7 +3,7 @@ from typing import Optional
 from ...llm.client import ChatMessage, LLMClient, get_default_client
 from ...llm.errors import LLMGenerationError
 from ..question_generators.utils import parse_json_output
-from .base import Metric
+from .base import Metric, ModelOutput
 
 CORRECTNESS_EVALUATION_SYSTEM_PROMPT = """Your role is to test AI agents. Your task consists in assessing whether a agent output correctly answers a question. 
 You are provided with the ground truth answer to the question. Your task is then to evaluate if the agent answer is close to the ground thruth answer. 
@@ -55,7 +55,22 @@ class CorrectnessMetric(Metric):
         self._llm_client = llm_client
         self.agent_description = agent_description or "This agent is a chatbot that answers question from users."
 
-    def __call__(self, question_sample: dict, answer: str) -> dict:
+    def __call__(self, question_sample: dict, answer: ModelOutput) -> dict:
+        """
+        Compute the correctness between the agent answer and the reference answer from QATestset.
+
+        Parameters
+        ----------
+        question_sample : dict
+            A question sample from a QATestset.
+        answer : ModelOutput
+            The answer of the agent on the question.
+
+        Returns
+        -------
+        dict
+            The result of the correctness evaluation. It contains the keys 'correctness' and 'correctness_reason'.
+        """
         llm_client = self._llm_client or get_default_client()
         try:
             out = llm_client.complete(
@@ -72,7 +87,7 @@ class CorrectnessMetric(Metric):
                         role="user",
                         content=CORRECTNESS_INPUT_TEMPLATE.format(
                             question=question_sample.question,
-                            agent_answer=answer,
+                            agent_answer=answer.message,
                             ground_truth=question_sample.reference_answer,
                         ),
                     ),

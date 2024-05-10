@@ -1,13 +1,14 @@
-from typing import Callable, Optional, Sequence, Union
+from typing import Callable, Optional, Sequence, Tuple, Union
 
 import logging
 from collections import defaultdict
 from inspect import signature
+from itertools import zip_longest
 
 from ..llm.client import LLMClient, get_default_client
 from ..utils.analytics_collector import analytics
 from .knowledge_base import KnowledgeBase
-from .metrics import CorrectnessMetric, Metric
+from .metrics import CorrectnessMetric, Metric, ModelOutput
 from .question_generators.utils import maybe_tqdm
 from .recommendation import get_rag_recommendation
 from .report import RAGReport
@@ -26,6 +27,7 @@ def evaluate(
     llm_client: Optional[LLMClient] = None,
     agent_description: str = "This agent is a chatbot that answers question from users.",
     metrics: Optional[Sequence[Callable]] = None,
+    retrieved_documents: Sequence[Sequence[str]] = None,
 ) -> RAGReport:
     """Evaluate an agent by comparing its answers on a QATestset.
 
@@ -72,7 +74,23 @@ def evaluate(
     if testset is None:
         testset = generate_testset(knowledge_base)
 
-    answers = answer_fn if isinstance(answer_fn, Sequence) else _compute_answers(answer_fn, testset)
+    if (
+        isinstance(answer_fn, Sequence)
+        and retrieved_documents is not None
+        and len(answer_fn) != len(retrieved_documents)
+    ):
+        raise ValueError(
+            f"'answer_fn' and 'retrieved_documents' parameters of the evaluate function should be sequences of the same length, got {len(answer_fn)} and {len(retrieved_documents)}"
+        )
+
+    if retrieved_documents is None:
+        retrieved_documents = []
+
+    model_outputs = (
+        [ModelOutput(answer, documents) for answer, documents in zip_longest(answer_fn, retrieved_documents)]
+        if isinstance(answer_fn, Sequence)
+        else _compute_answers(answer_fn, testset)
+    )
 
     llm_client = llm_client or get_default_client()
 
@@ -92,12 +110,13 @@ def evaluate(
         )
 
         for sample, answer in maybe_tqdm(
-            zip(testset.to_pandas().to_records(index=True), answers),
+            zip(testset.to_pandas().to_records(index=True), model_outputs),
             desc=f"{metric_name} evaluation",
-            total=len(answers),
+            total=len(model_outputs),
         ):
             metrics_results[sample["id"]].update(metric(sample, answer))
 
+    answers = [output.message for output in model_outputs]
     report = RAGReport(testset, answers, metrics_results, knowledge_base)
     recommendation = get_rag_recommendation(
         report.topics,
@@ -121,7 +140,7 @@ def evaluate(
 
 
 def _compute_answers(answer_fn, testset):
-    answers = []
+    model_outputs = []
     needs_history = (
         len(signature(answer_fn).parameters) > 1 and ANSWER_FN_HISTORY_PARAM in signature(answer_fn).parameters
     )
@@ -132,5 +151,16 @@ def _compute_answers(answer_fn, testset):
         if needs_history:
             kwargs[ANSWER_FN_HISTORY_PARAM] = sample.conversation_history
 
-        answers.append(answer_fn(sample.question, **kwargs))
-    return answers
+        answer = answer_fn(sample.question, **kwargs)
+
+        if isinstance(answer, str):
+            model_outputs.append(ModelOutput(answer))
+        elif isinstance(answer, Tuple) and len(answer) == 2:
+            model_outputs.append(ModelOutput(*answer))
+        else:
+            raise ValueError(
+                "The answer function should return a string with the model answer to a question or a tuple containing the answer"
+                "and a list of retrieved documents. Retrieved documents are only used to compute metrics such as RAGAS context relevancy."
+            )
+
+    return model_outputs
