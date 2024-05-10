@@ -46,6 +46,8 @@ def evaluate(
         Description of the agent to be tested.
     metrics : Optional[Sequence[Callable]], optional
         Metrics to compute on the test set.
+    retrieved_documents : Sequence[Sequence[str]], optional
+        The list of documents retrieved by the agents for each question in the testset. This is used to compute metrics such as RAGAS context relevancy.
 
     Returns
     -------

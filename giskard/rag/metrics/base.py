@@ -1,7 +1,7 @@
-from typing import Sequence
+from typing import Optional, Sequence
 
 from abc import ABC, abstractmethod
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 
 from ...llm.client.base import LLMClient
 
@@ -9,7 +9,7 @@ from ...llm.client.base import LLMClient
 @dataclass
 class ModelOutput:
     message: str
-    documents: Sequence[str] = field(default_factory=list)
+    documents: Optional[Sequence[str]] = None
 
 
 class Metric(ABC):

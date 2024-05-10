@@ -94,7 +94,7 @@ class RagasMetric(Metric):
         self.metric.init(run_config)
         if self.requires_context and answer.documents is None:
             logger.warn(
-                "No retrieved documents are passed to the evaluation function, computation of {self.name} cannot be done without it."
+                f"No retrieved documents are passed to the evaluation function, computation of {self.name} cannot be done without it."
                 "Make sure you pass 'retrieved_documents' to the evaluate function or that the 'answer_fn' return documents alongside the answer."
             )
             return {self.name: 0}
@@ -110,5 +110,5 @@ class RagasMetric(Metric):
 
 ragas_context_precision = RagasMetric(name="RAGAS Context Precision", metric=context_precision, requires_context=True)
 ragas_faithfulness = RagasMetric(name="RAGAS Faithfulness", metric=faithfulness, requires_context=True)
-ragas_answer_relevancy = RagasMetric(name="RAGAS Answer Relevancy", metric=answer_relevancy)
+ragas_answer_relevancy = RagasMetric(name="RAGAS Answer Relevancy", metric=answer_relevancy, requires_context=True)
 ragas_context_recall = RagasMetric(name="RAGAS Context Recall", metric=context_recall, requires_context=True)
