@@ -97,13 +97,31 @@ We currently provide [RAGAS metrics](https://docs.ragas.io/en/latest/concepts/me
 The results of your metrics will be displayed in the report object as histograms and will be available inside the report main `DataFrame`. 
 ![image](../../../_static/ragas_metrics.png)
 
-To include RAGAS metrics in evaluation, make sure to have installed the `ragas>=0.1.5` library, then use the following code:
+To include RAGAS metrics in evaluation, make sure to have installed the `ragas>=0.1.5` library. Some of the RAGAS metrics need access to the contexts retrieved by the RAG agent for each question. These can be returned by the `get_answer_fn` function along with the answer to the question: 
+
+```python
+def get_answer_fn(question: str, history=None) -> str:
+    """A function representing your RAG agent."""
+    # Format appropriately the history for your RAG agent
+    messages = history if history else []
+    messages.append({"role": "user", "content": question})
+
+    # Get the answer and the documents
+    agent_output = get_answer_from_agent(messages)
+
+    # Following llama_index syntax, you can get the answer and the retrieved documents
+    answer = agent_output.text
+    documents = agent_output.source_nodes
+    return answer, documents
+```
+
+Then, you can include the RAGAS metrics in the evaluation:
 
 ```python
 from giskard.rag.metrics.ragas_metrics import ragas_context_recall, ragas_faithfulness
 
 report = evaluate(
-    answer_fn,
+    get_answer_fn,
     testset=testset,
     knowledge_base=knowledge_base,
     metrics=[ragas_context_recall, ragas_faithfulness]
@@ -112,6 +130,8 @@ report = evaluate(
 
 Built-in metrics include `ragas_context_precision`, `ragas_faithfulness`, `ragas_answer_relevancy`,
 `ragas_context_recall`. Note that including these metrics can significantly increase the evaluation time and LLM usage.
+
+Alternatively, you can directly pass a list of answers instead of `get_answer_fn` to the `evaluate` function, you can then pass the retrieved documents as an optional argument `retrieved_documents` to compute the RAGAS metrics.
 
 
 
