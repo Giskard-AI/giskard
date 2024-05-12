@@ -49,15 +49,16 @@ class GeminiClient(LLMClient):
 
         try:
             completion = self._client.generate_content(
-                messages=_to_content_dict(messages),
+                contents=_to_content_dict(messages),
+                generation_config=genai.types.GenerationConfig(
                 temperature=temperature,
-                max_tokens=max_tokens,
-                **extra_params,
+                max_output_tokens=max_tokens,
+                **extra_params,)
             )
         except RuntimeError as err:
             raise LLMConfigurationError("Could not get response from Gemini API") from err
 
-        prompt_tokens = self._client.count_tokens(messages)
+        prompt_tokens = self._client.count_tokens([m.content for m in messages])
         completion_tokens = self._client.count_tokens(completion.text)
         
         self.logger.log_call(
