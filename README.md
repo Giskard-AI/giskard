@@ -16,7 +16,7 @@
 
 </div>
 <h3 align="center">
-   <a href="https://docs.giskard.ai/en/latest/getting_started/index.html"><b>Docs</b></a> &bull;
+   <a href="https://docs.giskard.ai/en/stable/getting_started/index.html"><b>Docs</b></a> &bull;
    <a href="https://www.giskard.ai/knowledge-categories/news/?utm_source=github&utm_medium=github&utm_campaign=github_readme&utm_id=readmeblog"><b>Blog</b></a> &bull;
   <a href="https://www.giskard.ai/?utm_source=github&utm_medium=github&utm_campaign=github_readme&utm_id=readmeblog"><b>Website</b></a> &bull;
   <a href="https://gisk.ar/discord"><b>Discord</b></a>
