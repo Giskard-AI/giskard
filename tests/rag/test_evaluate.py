@@ -123,7 +123,8 @@ def test_evaluate_from_answer_fn():
     assert len(report.failures) == 3
     assert len(report.get_failures(topic="Cheese_1")) == 1
     assert len(report.get_failures(topic="Cheese_2")) == 2
-    assert report._answers == ["Cheesy answer"] * 5 + ["Conversation answer"]
+    assert all([output.message == "Cheesy answer" for output in report._model_outputs[:5]])
+    assert report._model_outputs[-1].message == "Conversation answer"
 
     assert len(report.get_failures(question_type="simple")) == 1
     assert len(report.get_failures(question_type="complex")) == 0

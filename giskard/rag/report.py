@@ -14,6 +14,7 @@ from ..llm.embeddings.base import BaseEmbedding
 from ..llm.errors import LLMImportError
 from ..visualization.widget import get_template
 from .knowledge_base import KnowledgeBase
+from .metrics import ModelOutput
 from .question_generators import COMPONENT_DESCRIPTIONS, QUESTION_ATTRIBUTION, RAGComponents
 from .testset import QATestset, QuestionSample
 
@@ -42,7 +43,7 @@ class RAGReport:
     ----------
     testset : QATestset
         The testset used to evaluate the agent.
-    results : Sequence[dict]
+    model_outputs : Sequence[ModelOutput]
         The evaluation results of the agent's answers. Should be a list of dictionaries with the following keys: "evaluation", "reason", "agent_answer".
     metrics_results : dict, optional
         The additional metrics computed during the evaluation. If provided, these metrics will be included in the report. The dict should have the following structure: `{"question_id": {"correctness": bool, "correctness_reason": str, "additional_metric": value, ...}}`.
@@ -53,19 +54,19 @@ class RAGReport:
     def __init__(
         self,
         testset: QATestset,
-        answers: Sequence[str],
+        model_outputs: Sequence[ModelOutput],
         metrics_results: dict,
         knowledge_base: Optional[KnowledgeBase] = None,
     ):
         self._testset = testset
-        self._answers = answers
+        self._model_outputs = model_outputs
         self._metrics_results = metrics_results
         self._knowledge_base = knowledge_base
 
         self._recommendation = "Placeholder for the recommmendation."
 
         self._dataframe = testset.to_pandas().copy()
-        self._dataframe["agent_answer"] = answers
+        self._dataframe["agent_answer"] = [answer.message for answer in model_outputs]
 
         metric_df = pd.DataFrame.from_dict(metrics_results, orient="index")
         self.metric_names = [
@@ -162,7 +163,7 @@ class RAGReport:
             json.dump(self._knowledge_base.get_savable_data(), f)
 
         with open(path / "agent_answer.json", "w", encoding="utf-8") as f:
-            json.dump(self._answers, f)
+            json.dump([{"message": output.message, "documents": output.documents} for output in self._model_outputs], f)
 
         if self._metrics_results is not None:
             with open(path / "metrics_results.json", "w", encoding="utf-8") as f:
@@ -191,6 +192,7 @@ class RAGReport:
         testset = QATestset.load(path / "testset.json")
 
         answers = json.load(open(path / "agent_answer.json", "r"))
+        model_outputs = [ModelOutput(**answer) for answer in answers]
 
         topics = {int(k): topic for k, topic in knowledge_base_meta.pop("topics", None).items()}
         documents_topics = [int(topic_id) for topic_id in knowledge_base_meta.pop("documents_topics", None)]
@@ -210,7 +212,7 @@ class RAGReport:
         report_details = json.load(open(path / "report_details.json", "r"))
         testset._dataframe.index = testset._dataframe.index.astype(str)
 
-        report = cls(testset, answers, metrics_results, knowledge_base)
+        report = cls(testset, model_outputs, metrics_results, knowledge_base)
         report._recommendation = report_details["recommendation"]
         return report
 

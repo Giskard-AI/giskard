@@ -8,7 +8,7 @@ from itertools import zip_longest
 from ..llm.client import LLMClient, get_default_client
 from ..utils.analytics_collector import analytics
 from .knowledge_base import KnowledgeBase
-from .metrics import CorrectnessMetric, Metric, ModelOutput
+from .metrics import CorrectnessMetric, ModelOutput
 from .question_generators.utils import maybe_tqdm
 from .recommendation import get_rag_recommendation
 from .report import RAGReport
@@ -107,9 +107,10 @@ def evaluate(
     metrics_results = defaultdict(dict)
 
     for metric in metrics:
-        metric_name = getattr(
-            metric, "name", metric.__class__.__name__ if isinstance(metric, Metric) else metric.__name__
-        )
+        try:
+            metric_name = metric.__class__.__name__
+        except AttributeError:
+            metric_name = metric.__name__
 
         for sample, answer in maybe_tqdm(
             zip(testset.to_pandas().to_records(index=True), model_outputs),
@@ -118,8 +119,7 @@ def evaluate(
         ):
             metrics_results[sample["id"]].update(metric(sample, answer))
 
-    answers = [output.message for output in model_outputs]
-    report = RAGReport(testset, answers, metrics_results, knowledge_base)
+    report = RAGReport(testset, model_outputs, metrics_results, knowledge_base)
     recommendation = get_rag_recommendation(
         report.topics,
         report.correctness_by_question_type().to_dict()[metrics[0].name],
