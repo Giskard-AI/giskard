@@ -4,8 +4,8 @@ After automatically generating a test set for your RAG agent using RAGET, you ca
 of the agent's answers** compared to the reference answers (using a LLM-as-a-judge approach). The main purpose
 of this evaluation is to help you **identify the weakest components in your RAG agent**.
 
-> ℹ️ You can find a [tutorial](../../../reference/notebooks/RAGET.ipynb) where we demonstrate the capabilities of RAGET with a simple RAG agent build with LlamaIndex 
-on the IPCC report.  
+> ℹ️ You can find a [tutorial](../../../reference/notebooks/RAGET.ipynb) where we demonstrate the capabilities of RAGET with a simple RAG agent build with LlamaIndex
+> on the IPCC report.  
 
 ## Correctness Evaluation on the Generated Test Set
 
@@ -135,7 +135,9 @@ Note that you can split the test suite on the question metadata values, for inst
 test_suite_by_question_types = testset.to_test_suite("Split test suite", slicing_metadata=["question_type"])
 ```
 
-Jump to the [test customization](https://docs.giskard.ai/en/latest/open_source/customize_tests/index.html) and [test integration](https://docs.giskard.ai/en/latest/open_source/integrate_tests/index.html) sections to find out everything you can do with test suites.
+Jump to the [test customization](https://docs.giskard.ai/en/stable/open_source/customize_tests/index.html)
+and [test integration](https://docs.giskard.ai/en/stable/open_source/integrate_tests/index.html) sections to find out
+everything you can do with test suites.
 
 ### Step 2: Wrap your model
 Before evaluating your model with a test suite, you must wrap it as a `giskard.Model`. This step is necessary to ensure a common format for your model and its metadata. You can wrap anything as long as you can represent it in a Python function (for example an API call to Azure, OpenAI, Mistral, Ollama etc...). We also have pre-built wrappers for LangChain objects, or you can create your own wrapper by extending the `giskard.Model` class if you need to wrap a complex object such as a custom-made RAG communicating with a vectorstore.

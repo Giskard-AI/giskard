@@ -48,7 +48,9 @@ An awesome feature request addresses the following points:
 
 ## Style guide
 
-We use `black` to format the code and `isort` to sort the imports. You can automatically enforce this style using the pre-commit hooks. You can find the instructions to install the pre-commit hooks [here](https://docs.giskard.ai/en/latest/community/contribution_guidelines/dev-environment.html).
+We use `black` to format the code and `isort` to sort the imports. You can automatically enforce this style using the
+pre-commit hooks. You can find the instructions to install the pre-commit
+hooks [here](https://docs.giskard.ai/en/stable/community/contribution_guidelines/dev-environment.html).
 
 For documentation strings, Giskard follows the [numpydoc](https://numpydoc.readthedocs.io/en/latest/format.html#docstring-standard) style.
 

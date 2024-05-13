@@ -64,7 +64,8 @@ Alternatively, provide your HF access token through the Giskard Settings.
 
 ### 4. Wrap your model and scan it in your Python environment
 
-For detailed guidance on this step, refer to [our documentation](https://docs.giskard.ai/en/latest/guides/scan/index.html).
+For detailed guidance on this step, refer
+to [our documentation](https://docs.giskard.ai/en/stable/guides/scan/index.html).
 
 ### 5. Upload your test suite by creating a Giskard Client for your HF Space
 
