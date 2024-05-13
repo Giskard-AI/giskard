@@ -17,7 +17,9 @@ In summary, DagsHub is a comprehensive solution for data science projects, promo
 ## Why integrating Giskard?
 Through their own integrations with MLflow, Giskard and Dagshub can be combined to offer a rich environment for ML projects visualisation, tracking and collaboration.
 
-As discussed on this [page](https://docs.giskard.ai/en/latest/integrations/mlflow/index.html), The Giskard-MLflow integration via the evaluation API aims to provide the user with an **automated vulnerability detection** for tabular and NLP models as well as LLMs.
+As discussed on this [page](https://docs.giskard.ai/en/stable/integrations/mlflow/index.html), The Giskard-MLflow
+integration via the evaluation API aims to provide the user with an **automated vulnerability detection** for tabular
+and NLP models as well as LLMs.
 
 In conjunction, DagsHub provides a free hosted MLflow server with team-based access control for every repository. You can log experiments with MLflow to it, view the information under the experiment tab, and manage your trained models from the full-fledged MLflow UI built into your DagsHub project. See this [page](https://dagshub.com/docs/integration_guide/mlflow_tracking/) for more details.
 
@@ -36,7 +38,9 @@ import dagshub
 # This will work if you have write access to the repo below, if you cloned it, please change the repo_owner to your user name
 dagshub.init(repo_name="your_repo_name", repo_owner="your_username")
 ```
-Once this is done, you can perform the evaluation of your model via (see [page](https://docs.giskard.ai/en/latest/integrations/mlflow/index.html)):
+
+Once this is done, you can perform the evaluation of your model via (
+see [page](https://docs.giskard.ai/en/stable/integrations/mlflow/index.html)):
 ```python
 with mlflow.start_run() as run:
         mlflow.evaluate(model_uri, ..., evaluators="giskard")

@@ -1,6 +1,9 @@
 # 🗣️ NLP model scan
 
-The Giskard python library provides an automatic scan functionality designed to automatically detect [potential vulnerabilities](https://docs.giskard.ai/en/latest/knowledge/key_vulnerabilities/index.html) affecting your ML model. It enables you to proactively identify and address key issues to ensure the reliability, fairness, and robustness of your Machine Learning models.
+The Giskard python library provides an automatic scan functionality designed to automatically
+detect [potential vulnerabilities](https://docs.giskard.ai/en/stable/knowledge/key_vulnerabilities/index.html) affecting
+your ML model. It enables you to proactively identify and address key issues to ensure the reliability, fairness, and
+robustness of your Machine Learning models.
 
 ## Step 1: Wrap your dataset
 
@@ -22,7 +25,8 @@ giskard_dataset = giskard.Dataset(
 )
 ```
 
-For further examples, check out the [tutorials section](https://docs.giskard.ai/en/latest/tutorials/tabular_tutorials/index.html).
+For further examples, check out
+the [tutorials section](https://docs.giskard.ai/en/stable/tutorials/tabular_tutorials/index.html).
 
 <details>
 <summary>Click to view parameter details</summary>
@@ -71,7 +75,9 @@ giskard_model = giskard.Model(
     # classification_threshold=0.5, # Optional: Default: 0.5
 )
 ```
-For further examples, check out the [tutorials section](https://docs.giskard.ai/en/latest/tutorials/tabular_tutorials/index.html).
+
+For further examples, check out
+the [tutorials section](https://docs.giskard.ai/en/stable/tutorials/tabular_tutorials/index.html).
 
 <details>
 <summary>Click to view parameter details</summary>
@@ -127,14 +133,18 @@ giskard_model = MyCustomModel(
     # **kwargs # Additional model-specific arguments
 )
 ```
-For further examples, check out the [tutorials section](https://docs.giskard.ai/en/latest/tutorials/tabular_tutorials/index.html).
+
+For further examples, check out
+the [tutorials section](https://docs.giskard.ai/en/stable/tutorials/tabular_tutorials/index.html).
 
 <details>
 <summary>Click to view parameter details</summary>
 
 * <mark style="color:red;">**`Mandatory parameters`**</mark>
     * `model`: Any model from `sklearn`, `catboost`, `pytorch`, `tensorflow`, `huggingface` (check
-      the [tutorials](https://docs.giskard.ai/en/latest/tutorials/tabular_tutorials/index.html)). If none of these libraries apply to you, we try to serialize your model with `cloudpickle`. If that also does not work, we ask you to provide us with your own serialization method.
+      the [tutorials](https://docs.giskard.ai/en/stable/tutorials/tabular_tutorials/index.html)). If none of these
+      libraries apply to you, we try to serialize your model with `cloudpickle`. If that also does not work, we ask you
+      to provide us with your own serialization method.
     * `model_type`: The type of model, either `regression`, `classification` or `text_generation`.
     * `classification_labels`: The list of unique categories for your dataset's target variable. If `classification_labels`
       is a list of $m$ elements, make sure that `prediction_function` is returning a ($n\times m$) array of probabilities and `classification_labels` have the same order as the output of the prediction function.
@@ -148,7 +158,8 @@ For further examples, check out the [tutorials section](https://docs.giskard.ai/
       returns any object that could be directly fed to `model`.
     * `model_postprocessing_function`: A function that takes a `model` output as input, applies post-processing and returns
       an object of the same type and shape as the `model` output.
-    * `**kwargs`: Additional model-specific arguments (See [Models](https://docs.giskard.ai/en/latest/reference/index.html)).
+  * `**kwargs`: Additional model-specific arguments (
+    See [Models](https://docs.giskard.ai/en/stable/reference/index.html)).
 
 </details>
 
@@ -175,7 +186,8 @@ scan_results.to_html("model_scan_results.html")
 ```
 >  #### 💡 Customize your scan
 >
-> Check our [Advanced scan usage page](https://docs.giskard.ai/en/latest/open_source/scan/advanced_scan/index.html), if you want to:
+> Check our [Advanced scan usage page](https://docs.giskard.ai/en/stable/open_source/scan/advanced_scan/index.html), if
+> you want to:
 >   - Scan with only some **specific detectors**
 >   - Make the scan **faster**
 
@@ -194,7 +206,9 @@ test_suite = scan_results.generate_test_suite("My first test suite")
 test_suite.run()
 ```
 
-Jump to the [test customization](https://docs.giskard.ai/en/latest/open_source/customize_tests/index.html) and [test integration](https://docs.giskard.ai/en/latest/open_source/integrate_tests/index.html) sections to find out everything you can do with test suites.
+Jump to the [test customization](https://docs.giskard.ai/en/stable/open_source/customize_tests/index.html)
+and [test integration](https://docs.giskard.ai/en/stable/open_source/integrate_tests/index.html) sections to find out
+everything you can do with test suites.
 
 ### 2. Upload your test suite to the Giskard Hub to:
 * Debug your tests to diagnose the identified issues
