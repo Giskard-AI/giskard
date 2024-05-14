@@ -4,8 +4,9 @@ After automatically generating a test set for your RAG agent using RAGET, you ca
 of the agent's answers** compared to the reference answers (using a LLM-as-a-judge approach). The main purpose
 of this evaluation is to help you **identify the weakest components in your RAG agent**.
 
-> ℹ️ You can find a [tutorial](../../../reference/notebooks/RAGET.ipynb) where we demonstrate the capabilities of RAGET with a simple RAG agent build with LlamaIndex
-> on the IPCC report.  
+> ℹ️ You can find a [tutorial](../../../reference/notebooks/RAGET.ipynb) where we demonstrate the capabilities of RAGET
+> with a simple RAG agent build with LlamaIndex
+> on the IPCC report.
 
 ## Correctness Evaluation on the Generated Test Set
 
@@ -142,7 +143,9 @@ everything you can do with test suites.
 ### Step 2: Wrap your model
 Before evaluating your model with a test suite, you must wrap it as a `giskard.Model`. This step is necessary to ensure a common format for your model and its metadata. You can wrap anything as long as you can represent it in a Python function (for example an API call to Azure, OpenAI, Mistral, Ollama etc...). We also have pre-built wrappers for LangChain objects, or you can create your own wrapper by extending the `giskard.Model` class if you need to wrap a complex object such as a custom-made RAG communicating with a vectorstore.
 
-To do so, you can follow the instructions from the [LLM Scan feature](../scan/scan_llm/index.md#step-1-wrap-your-model). Make sure that you pass `feature_names = "question"` when wrapping your model, so that it matches the question column of the test set.
+To do so, you can follow the instructions from
+the [LLM Scan feature](../scan/scan_llm/index.rst#step-1-wrap-your-model). Make sure that you
+pass `feature_names = "question"` when wrapping your model, so that it matches the question column of the test set.
 
 Detailed examples can also be found on our {doc}`LLM tutorials section </tutorials/llm_tutorials/index>`.
 
@@ -167,7 +170,12 @@ test_suite.upload(giskard_client, project_id)  # project_id should be the id of 
 giskard_model.upload(giskard_client, project_id)
 ```
 
-> ⚠️ To upload your model to the hub, it must be pickleable. If your model is not, you must extend the `giskard.Model` class and override the `save_model` and `load_model` methods to properly save and load the non-pickleable parts of your model (e.g. the vector store). You can find an [example here](../scan/scan_llm/index.md#step-1-wrap-your-model) inside the "Wrap a custom RAG" tab.
+> ⚠️ To upload your model to the hub, it must be pickleable. If your model is not, you must extend the `giskard.Model`
+> class and override the `save_model` and `load_model` methods to properly save and load the non-pickleable parts of
+> your
+> model (e.g. the vector store). You can find an [example here](../scan/scan_llm/index.rst#step-1-wrap-your-model)
+> inside
+> the "Wrap a custom RAG" tab.
 
 [Here's a demo](https://huggingface.co/spaces/giskardai/giskard) of the Giskard Hub in action.
 

@@ -62,7 +62,3 @@ An Enterprise Hub for teams to collaborate on top of the open-source Giskard lib
 - 💬 **Collect business feedback** and **share your model results** with data scientists, QA teams and auditors.
   <br><br>
   ![](../assets/credit_scoring_comment.png)
-
-
-Get started **now** with our [demo HuggingFace Space](https://huggingface.co/spaces/giskardai/giskard) or
-by following [installation instructions](../getting_started/quickstart/index.md)! 🐢
