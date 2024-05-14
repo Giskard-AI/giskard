@@ -198,7 +198,13 @@ class RAGReport:
         documents_topics = [int(topic_id) for topic_id in knowledge_base_meta.pop("documents_topics", None)]
 
         knowledge_base = KnowledgeBase(
-            knowledge_base_data, llm_client=llm_client, embedding_model=embedding_model, **knowledge_base_meta
+            knowledge_base_data,
+            llm_client=llm_client,
+            embedding_model=embedding_model,
+            columns=knowledge_base_meta.pop("columns", None),
+            min_topic_size=knowledge_base_meta.pop("min_topic_size", None),
+            chunk_size=knowledge_base_meta.pop("chunk_size", None),
+            seed=knowledge_base_meta.pop("seed", None),
         )
         knowledge_base._topics_inst = topics
 
