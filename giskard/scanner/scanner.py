@@ -113,6 +113,7 @@ class Scanner:
 
             # Collect the detectors
             detectors = self.get_detectors(tags=[model.meta.model_type.value])
+            detectors_names = [detector.__class__.__name__ for detector in detectors]
 
             # Print cost estimate
             if verbose:
@@ -135,7 +136,7 @@ class Scanner:
 
             self._collect_analytics(model, dataset, issues, elapsed, model_validation_time, detectors)
 
-        return ScanReport(issues, model=model, dataset=dataset)
+        return ScanReport(issues, model=model, dataset=dataset, detectors_names=detectors_names)
 
     def _run_detectors(self, detectors, model, dataset, features, verbose=True, raise_exceptions=False):
         if not detectors:
@@ -150,6 +151,8 @@ class Scanner:
             detector_start = perf_counter()
             try:
                 detected_issues = detector.run(model, dataset, features=features)
+                for issue in detected_issues:
+                    issue.set_detector_name(detector.__class__.__name__)
             except Exception as err:
                 logger.exception(f"Detector {detector.__class__.__name__} failed with error: {err}")
                 errors.append((detector, err))

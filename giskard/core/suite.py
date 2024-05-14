@@ -3,6 +3,7 @@ from __future__ import annotations
 from typing import TYPE_CHECKING, Any, Callable, Dict, List, Optional, Union
 
 import inspect
+import json
 import logging
 import traceback
 import warnings
@@ -218,6 +219,16 @@ class TestSuiteResult:
             executionDate=self.execution_date.isoformat(),
             completionDate=self.completion_date.isoformat(),
         )
+
+    def to_json(self, filename=None):
+        results = {}
+        for suite_result in self.results:
+            results[suite_result.test_name] = "Passed" if suite_result.result.passed else "Failed"
+        if filename is not None:
+            with open(filename, "w") as json_file:
+                json.dump(results, json_file, indent=4)
+        else:
+            return results
 
     def to_mlflow(self, mlflow_client: MlflowClient = None, mlflow_run_id: str = None):
         import mlflow
@@ -574,6 +585,7 @@ class Suite:
 
                 if isinstance(result, bool):
                     result = TestResult(passed=result)
+                print("TEMP: ", test_partial.test_id, result.passed)
 
                 results.append(SuiteResult(test_partial.test_id, result, test_params, test_partial))
                 if verbose:
