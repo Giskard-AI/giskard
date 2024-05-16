@@ -264,7 +264,8 @@ class GiskardClient:
         excludes: List[str] = EXCLUDED_PYLIBS,
         only_giskard: bool = False,
     ):
-        kernels = self._session.get("kernels").json()
+        # TODO: handle 404 not found if kernel does not exists 
+        kernel = self._session.get(f"kernels/{kernel_name}").json()
         existing_kernel = next((kernel for kernel in kernels if kernel["name"] == kernel_name), None)
         if existing_kernel:
             if existing_kernel["type"] != "PROCESS":
