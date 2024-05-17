@@ -14,6 +14,7 @@ import hashlib
 
 import numpy as np
 import pandas as pd
+from pandas.api.types import is_any_real_numeric_dtype
 
 from giskard.core.core import SupportedModelTypes
 from giskard.datasets.base import Dataset
@@ -121,7 +122,7 @@ def _apply_perturbation(
     ds_slice_copy = ds_slice.copy()
 
     # Apply the transformation
-    if col_type == SupportedPerturbationType.NUMERIC and ds.df.dtypes[feature] in ["int64", "float64"]:
+    if col_type == SupportedPerturbationType.NUMERIC and is_any_real_numeric_dtype(ds_slice.df[feature]):
         passed = _numeric(
             ds,
             ds_slice,
