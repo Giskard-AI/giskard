@@ -121,7 +121,7 @@ def _apply_perturbation(
     ds_slice_copy = ds_slice.copy()
 
     # Apply the transformation
-    if col_type == SupportedPerturbationType.NUMERIC:
+    if col_type == SupportedPerturbationType.NUMERIC and ds.df.dtypes[feature] in ["int64", "float64"]:
         passed = _numeric(
             ds,
             ds_slice,
