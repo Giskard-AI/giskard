@@ -64,6 +64,22 @@ oc = OpenAIClient(model="gemma:2b", client=_client)
 giskard.llm.set_default_client(oc)
 ```
 
+## Claude 3 Client Setup
+
+The Claude 3 setup involves configuring a Bedrock client:
+
+```python
+import os
+import boto3
+import giskard
+
+from giskard.llm.client.bedrock import ClaudeBedrockClient
+
+bedrock_runtime = boto3.client("bedrock-runtime", region_name=os.environ["AWS_DEFAULT_REGION"])
+claude_client = ClaudeBedrockClient(bedrock_runtime, model="anthropic.claude-3-haiku-20240307-v1:0")
+giskard.llm.set_default_client(claude_client)
+```
+
 ## Custom Client Setup
 
 ```python
