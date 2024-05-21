@@ -1,8 +1,7 @@
 from abc import ABC, abstractmethod
 
-from giskard.rag.base import AgentAnswer
-
 from ...llm.client.base import LLMClient
+from ..base import AgentAnswer
 
 
 class Metric(ABC):
