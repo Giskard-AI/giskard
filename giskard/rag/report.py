@@ -13,8 +13,8 @@ from ..llm.client.base import LLMClient
 from ..llm.embeddings.base import BaseEmbedding
 from ..llm.errors import LLMImportError
 from ..visualization.widget import get_template
+from .base import AgentAnswer
 from .knowledge_base import KnowledgeBase
-from .metrics import ModelOutput
 from .question_generators import COMPONENT_DESCRIPTIONS, QUESTION_ATTRIBUTION, RAGComponents
 from .testset import QATestset, QuestionSample
 
@@ -54,7 +54,7 @@ class RAGReport:
     def __init__(
         self,
         testset: QATestset,
-        model_outputs: Sequence[ModelOutput],
+        model_outputs: Sequence[AgentAnswer],
         metrics_results: dict,
         knowledge_base: Optional[KnowledgeBase] = None,
     ):
@@ -192,7 +192,7 @@ class RAGReport:
         testset = QATestset.load(path / "testset.json")
 
         answers = json.load(open(path / "agent_answer.json", "r"))
-        model_outputs = [ModelOutput(**answer) for answer in answers]
+        model_outputs = [AgentAnswer(**answer) for answer in answers]
 
         topics = {int(k): topic for k, topic in knowledge_base_meta.pop("topics", None).items()}
         documents_topics = [int(topic_id) for topic_id in knowledge_base_meta.pop("documents_topics", None)]

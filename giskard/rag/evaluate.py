@@ -1,14 +1,14 @@
-from typing import Callable, Optional, Sequence, Tuple, Union
+from typing import Callable, Optional, Sequence, Union
 
 import logging
 from collections import defaultdict
 from inspect import signature
-from itertools import zip_longest
 
 from ..llm.client import LLMClient, get_default_client
 from ..utils.analytics_collector import analytics
+from .base import AgentAnswer
 from .knowledge_base import KnowledgeBase
-from .metrics import CorrectnessMetric, ModelOutput
+from .metrics import CorrectnessMetric
 from .question_generators.utils import maybe_tqdm
 from .recommendation import get_rag_recommendation
 from .report import RAGReport
@@ -21,19 +21,18 @@ ANSWER_FN_HISTORY_PARAM = "history"
 
 
 def evaluate(
-    answer_fn: Union[Callable, Sequence[str]],
+    answer_fn: Union[Callable, Sequence[Union[AgentAnswer, str]]],
     testset: Optional[QATestset] = None,
     knowledge_base: Optional[KnowledgeBase] = None,
     llm_client: Optional[LLMClient] = None,
     agent_description: str = "This agent is a chatbot that answers question from users.",
     metrics: Optional[Sequence[Callable]] = None,
-    retrieved_documents: Sequence[Sequence[str]] = None,
 ) -> RAGReport:
     """Evaluate an agent by comparing its answers on a QATestset.
 
     Parameters
     ----------
-    answers_fn : Union[Callable, Sequence[str]]
+    answers_fn : Union[Callable, Sequence[Union[AgentAnswer,str]]]
         The prediction function of the agent to evaluate or a list of precalculated answers on the testset.
     testset : QATestset, optional
         The test set to evaluate the agent on. If not provided, a knowledge base must be provided and a default testset will be created from the knowledge base.
@@ -46,8 +45,6 @@ def evaluate(
         Description of the agent to be tested.
     metrics : Optional[Sequence[Callable]], optional
         Metrics to compute on the test set.
-    retrieved_documents : Sequence[Sequence[str]], optional
-        The list of documents retrieved by the agents for each question in the testset. This is used to compute metrics such as RAGAS context relevancy.
 
     Returns
     -------
@@ -76,20 +73,8 @@ def evaluate(
     if testset is None:
         testset = generate_testset(knowledge_base)
 
-    if (
-        isinstance(answer_fn, Sequence)
-        and retrieved_documents is not None
-        and len(answer_fn) != len(retrieved_documents)
-    ):
-        raise ValueError(
-            f"'answer_fn' and 'retrieved_documents' parameters of the evaluate function should be sequences of the same length, got {len(answer_fn)} and {len(retrieved_documents)}"
-        )
-
-    if retrieved_documents is None:
-        retrieved_documents = []
-
     model_outputs = (
-        [ModelOutput(answer, documents) for answer, documents in zip_longest(answer_fn, retrieved_documents)]
+        [_cast_to_agent_answer(ans) for ans in answer_fn]
         if isinstance(answer_fn, Sequence)
         else _compute_answers(answer_fn, testset)
     )
@@ -154,15 +139,16 @@ def _compute_answers(answer_fn, testset):
             kwargs[ANSWER_FN_HISTORY_PARAM] = sample.conversation_history
 
         answer = answer_fn(sample.question, **kwargs)
-
-        if isinstance(answer, str):
-            model_outputs.append(ModelOutput(answer))
-        elif isinstance(answer, Tuple) and len(answer) == 2:
-            model_outputs.append(ModelOutput(*answer))
-        else:
-            raise ValueError(
-                "The answer function should return a string with the model answer to a question or a tuple containing the answer"
-                "and a list of retrieved documents. Retrieved documents are only used to compute metrics such as RAGAS context relevancy."
-            )
+        model_outputs.append(_cast_to_agent_answer(answer))
 
     return model_outputs
+
+
+def _cast_to_agent_answer(answer) -> AgentAnswer:
+    if isinstance(answer, AgentAnswer):
+        return answer
+
+    if isinstance(answer, str):
+        return AgentAnswer(message=answer)
+
+    raise ValueError(f"The answer function must return a string or an AgentAnswer object. Got {type(answer)} instead.")

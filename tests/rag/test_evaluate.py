@@ -6,6 +6,7 @@ import pytest
 
 from giskard.llm.client.base import ChatMessage
 from giskard.rag import KnowledgeBase, QATestset, evaluate
+from giskard.rag.base import AgentAnswer
 from giskard.rag.evaluate import _compute_answers
 from tests.rag.test_qa_testset import make_testset_samples
 from tests.utils import DummyEmbedding
@@ -179,7 +180,7 @@ def test_evaluate_from_answer_fn():
         ),
     ]
 
-    report = evaluate(answer_fn, testset, knowledge_base, llm_client=llm_client)
+    report = evaluate(answer_fn_no_conv, testset, knowledge_base, llm_client=llm_client)
     assert len(report.failures) == 3
 
 
@@ -247,7 +248,7 @@ def test_compute_answers():
     assert all([output.message == "Dummy answer" for output in model_outputs])
 
     def answer_fn(x, history=None):
-        return "Dummy answer", ["doc1", "doc2"]
+        return AgentAnswer(message="Dummy answer", documents=["doc1", "doc2"])
 
     model_outputs = _compute_answers(answer_fn, testset)
     assert len(model_outputs) == 6
@@ -259,6 +260,6 @@ def test_compute_answers():
 
     with pytest.raises(
         ValueError,
-        match="The answer function should return a string with the model answer to a question or a tuple containing the answer",
+        match="The answer function must return a string or an AgentAnswer object",
     ):
         model_outputs = _compute_answers(answer_fn, testset)

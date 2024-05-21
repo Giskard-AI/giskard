@@ -1,16 +1,7 @@
 import logging
-import sys
-from unittest.mock import MagicMock, patch
+from unittest.mock import MagicMock, Mock, patch
 
-from giskard.rag.metrics.base import ModelOutput
-
-sys.modules["ragas"] = MagicMock()
-sys.modules["ragas.embeddings"] = MagicMock()
-sys.modules["ragas.llms"] = MagicMock()
-sys.modules["ragas.llms.prompt"] = MagicMock()
-sys.modules["ragas.metrics"] = MagicMock()
-sys.modules["ragas.metrics.base"] = MagicMock()
-sys.modules["ragas.run_config"] = MagicMock()
+from giskard.rag.base import AgentAnswer
 
 logger = logging.getLogger(__name__)
 
@@ -22,10 +13,10 @@ def test_ragas_metric_computation(ragas_llm_wrapper, ragas_embeddings_wrapper):
 
     ragas_metric = MagicMock()
     ragas_metric.score.return_value = 0.5
-    metric = RagasMetric("test", ragas_metric)
+    metric = RagasMetric("test", ragas_metric, llm_client=Mock(), embedding_model=Mock())
 
     question_sample = {"question": "What is the capital of France?", "reference_answer": "Paris"}
-    answer = ModelOutput("The capital of France is Paris.")
+    answer = AgentAnswer("The capital of France is Paris.")
     result = metric(question_sample, answer)
 
     assert result == {"test": 0.5}
@@ -38,10 +29,10 @@ def test_ragas_metric_computation_with_context(ragas_llm_wrapper, ragas_embeddin
 
     ragas_metric = MagicMock()
     ragas_metric.score.return_value = 0.5
-    metric = RagasMetric("test", ragas_metric, requires_context=True)
+    metric = RagasMetric("test", ragas_metric, requires_context=True, llm_client=Mock(), embedding_model=Mock())
 
     question_sample = {"question": "What is the capital of France?", "reference_answer": "Paris"}
-    answer = ModelOutput("The capital of France is Paris.", documents=["Paris"])
+    answer = AgentAnswer("The capital of France is Paris.", documents=["Paris"])
     result = metric(question_sample, answer)
 
     assert result == {"test": 0.5}
@@ -54,10 +45,10 @@ def test_ragas_metric_computation_with_missing_context(ragas_llm_wrapper, ragas_
 
     ragas_metric = MagicMock()
     ragas_metric.score.return_value = 0.5
-    metric = RagasMetric("test", ragas_metric, requires_context=True)
+    metric = RagasMetric("test", ragas_metric, requires_context=True, llm_client=Mock(), embedding_model=Mock())
 
     question_sample = {"question": "What is the capital of France?", "reference_answer": "Paris"}
-    answer = ModelOutput("The capital of France is Paris.")
+    answer = AgentAnswer("The capital of France is Paris.")
 
     with caplog.at_level(logging.WARNING):
         result = metric(question_sample, answer)

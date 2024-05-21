@@ -2,13 +2,11 @@ from typing import Optional, Sequence
 
 import logging
 
-import nest_asyncio
-
 from ...llm.client import ChatMessage, LLMClient, get_default_client
 from ...llm.embeddings import BaseEmbedding, get_default_embedding
-from .base import Metric, ModelOutput
+from ..base import AgentAnswer
+from .base import Metric
 
-nest_asyncio.apply()
 logger = logging.getLogger(__name__)
 
 try:
@@ -25,6 +23,15 @@ except ImportError as err:
     raise ImportError(
         f"Package {err.name} is missing, it is required for the computation of RAGAS metrics. You can install it with `pip install {err.name}`."
     ) from err
+
+
+try:
+    # RAGAS has async functions, we try to apply nest_asyncio to avoid issues in notebooks
+    import nest_asyncio
+
+    nest_asyncio.apply()
+except:  # noqa
+    pass
 
 
 class RagasLLMWrapper(BaseRagasLLM):
@@ -80,7 +87,7 @@ class RagasMetric(Metric):
         self.ragas_llm = None
         self.ragas_embeddings = None
 
-    def __call__(self, question_sample: dict, answer: ModelOutput) -> dict:
+    def __call__(self, question_sample: dict, answer: AgentAnswer) -> dict:
         llm_client = self._llm_client or get_default_client()
         embedding_model = self._embedding_model or get_default_embedding()
         if self.ragas_llm is None:

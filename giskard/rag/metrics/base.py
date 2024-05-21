@@ -1,15 +1,8 @@
-from typing import Optional, Sequence
-
 from abc import ABC, abstractmethod
-from dataclasses import dataclass
+
+from giskard.rag.base import AgentAnswer
 
 from ...llm.client.base import LLMClient
-
-
-@dataclass
-class ModelOutput:
-    message: str
-    documents: Optional[Sequence[str]] = None
 
 
 class Metric(ABC):
@@ -23,7 +16,7 @@ class Metric(ABC):
         self._llm_client = llm_client
 
     @abstractmethod
-    def __call__(self, question_sample: dict, answer: ModelOutput):
+    def __call__(self, question_sample: dict, answer: AgentAnswer):
         """
         Compute the metric on a single question and its associated answer.
 
@@ -31,7 +24,7 @@ class Metric(ABC):
         ----------
         question_sample : dict
             A question sample from a QATestset.
-        answer : Sequence[str]
+        answer : AgentAnswer
             The agent answer on that question.
 
         Returns
