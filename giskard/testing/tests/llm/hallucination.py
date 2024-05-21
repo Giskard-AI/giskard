@@ -13,7 +13,6 @@ def test_llm_output_coherency(
     model: BaseModel,
     dataset_1: Dataset,
     dataset_2: Optional[Dataset] = None,
-    eval_prompt: Optional[str] = None,
     rng_seed: int = 1729,
 ):
     """Tests that the model output is coherent for multiple inputs.
@@ -29,16 +28,13 @@ def test_llm_output_coherency(
     dataset_2 : Optional[Dataset]
         Another sample dataset of inputs, with same index as ``dataset_1``. If
         not passed, we will rerun the model on ``dataset_1``.
-    eval_prompt : Optional[str]
-        Optional custom prompt to use for evaluation. If not provided, the
-        default prompt of :class:`.CoherencyEvaluator` will be used.
 
     Returns
     -------
     TestResult
         The test result.
     """
-    evaluator = CoherencyEvaluator(eval_prompt=eval_prompt, llm_seed=rng_seed)
+    evaluator = CoherencyEvaluator(llm_seed=rng_seed)
     eval_result = evaluator.evaluate(model, dataset_1, dataset_2)
 
     return TestResult(
@@ -50,7 +46,7 @@ def test_llm_output_coherency(
 
 
 @test(name="LLM Plausibility", tags=["llm", "hallucination"])
-def test_llm_output_plausibility(model: BaseModel, dataset: Dataset, eval_prompt: Optional[str] = None):
+def test_llm_output_plausibility(model: BaseModel, dataset: Dataset):
     """Tests that the model output is plausible.
 
     Parameters
@@ -59,16 +55,13 @@ def test_llm_output_plausibility(model: BaseModel, dataset: Dataset, eval_prompt
         The model to test.
     dataset : Dataset
         A sample dataset of inputs.
-    eval_prompt : Optional[str]
-        Optional custom prompt to use for evaluation. If not provided, the
-        default prompt of `CoherencyEvaluator` will be used.
 
     Returns
     -------
     TestResult
         The test result.
     """
-    evaluator = PlausibilityEvaluator(eval_prompt=eval_prompt)
+    evaluator = PlausibilityEvaluator()
     eval_result = evaluator.evaluate(model, dataset)
 
     return TestResult(

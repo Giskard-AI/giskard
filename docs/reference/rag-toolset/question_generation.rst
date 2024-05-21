@@ -18,3 +18,6 @@ Question Generation
 
 .. autoclass:: giskard.rag.question_generators.ConversationalQuestionsGenerator
     :members:
+
+.. autoclass:: giskard.rag.question_generators.OutOfScopeGenerator
+    :members:

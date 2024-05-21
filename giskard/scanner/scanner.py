@@ -198,13 +198,13 @@ class Scanner:
         if not isinstance(model, BaseModel):
             raise ValueError(
                 "The model object you provided is not valid. Please wrap it with the `giskard.Model` class. "
-                "See the instructions here: https://docs.giskard.ai/en/latest/guides/wrap_model/index.html"
+                "See the instructions here: https://docs.giskard.ai/en/stable/guides/wrap_model/index.html"
             )
 
         if dataset is not None and not isinstance(dataset, Dataset):
             raise ValueError(
                 "The dataset object you provided is not valid. Please wrap your dataframe with `giskard.Dataset`. "
-                "You can follow the docs here: https://docs.giskard.ai/en/latest/guides/wrap_dataset/index.html"
+                "You can follow the docs here: https://docs.giskard.ai/en/stable/guides/wrap_dataset/index.html"
             )
 
         model, dataset = self._prepare_model_dataset(model, dataset)
@@ -257,7 +257,7 @@ class Scanner:
                 "are you sure this is correct? The giskard.Dataset should be created from raw data *before* "
                 "pre-processing (categorical encoding, vectorization, etc.). "
                 "You can also limit the number of features to scan by setting the `features` argument. "
-                "Check https://docs.giskard.ai/en/latest/guides/wrap_dataset/index.html for more details."
+                "Check https://docs.giskard.ai/en/stable/guides/wrap_dataset/index.html for more details."
             )
 
         return list(features)

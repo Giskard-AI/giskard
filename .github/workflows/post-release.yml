@@ -117,7 +117,7 @@ jobs:
       - name: "@slack Share release process completion"
         # cancellable always() https://docs.github.com/en/actions/learn-github-actions/expressions#status-check-functions
         if: ${{ !cancelled() }}
-        uses: slackapi/slack-github-action@v1.25.0
+        uses: slackapi/slack-github-action@v1.26.0
         env:
           SLACK_BOT_TOKEN: ${{ secrets.SLACK_BOT_TOKEN }}
           ON_SUCCESS: |-
