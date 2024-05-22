@@ -45,7 +45,7 @@ class ClaudeBedrockClient(LLMClient):
         for msg in messages:
             if msg.role.lower() == "system":
                 system_prompts = system_prompts.append(msg.content)
-            if msg.role.lower() == "assistant":
+            elif msg.role.lower() == "assistant":
                 input_msg_prompt.append({"role": "assistant", "content": [{"type": "text", "text": msg.content}]})
             else:
                 input_msg_prompt.append({"role": "user", "content": [{"type": "text", "text": msg.content}]})
