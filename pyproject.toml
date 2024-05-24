@@ -95,7 +95,6 @@ test = [
     "polyfactory",
     "pytest-env>=1.1.0",
     "openai>=1",
-    "ragas>=0.1.5",
     "pytest-memray; sys_platform == 'linux' or sys_platform == 'darwin'",
     "pytest-reportlog>=0.4.0",
     "shap<0.45",                                                          # Fixing this to avoid changed on insights
