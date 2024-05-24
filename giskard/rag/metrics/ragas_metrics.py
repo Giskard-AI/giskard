@@ -30,7 +30,7 @@ try:
     import nest_asyncio
 
     nest_asyncio.apply()
-except:  # noqa
+except ImportError:
     pass
 
 
