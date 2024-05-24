@@ -1,6 +1,7 @@
 from typing import Literal
 
 import json
+import re
 
 from ..llm.client import ChatMessage, get_default_client
 from ..scanner.report import ScanReport
@@ -8,19 +9,7 @@ from ..scanner.report import ScanReport
 ColangVersion = Literal["1.0", "2.x"]
 
 
-def generate_user_intent_from_examples(examples):
-    if "conversation" in examples.columns:
-        examples = examples.rename(columns={"conversation": "Conversation"})
-    elif "Conversation" not in examples.columns:
-        return []
-
-    conversations = ""
-    for n, example in enumerate(examples.to_dict(orient="records")):
-        conversations += f"""### CONVERSATION {n + 1}
-{example['Conversation']}
-"""
-
-    prompt = """You are helping securing an AI application. Your task is to define rules to filter dangerous conversation we identified. You need to define user intent triggering the filter based on a sample of conversations. 
+SYS_PROMPT = """You are helping securing an AI application. Your task is to define rules to filter dangerous conversation we identified. You need to define user intent triggering the filter based on a sample of conversations. 
 
 The user will provide example of conversations. You will define a short user intent as a short sentence and a list of representative examples. You will also provide examples and recommended responses for the assistant to use when the user intent is detected.
 
@@ -31,8 +20,7 @@ Make sure to return a valid JSON object with the following fields:
 - recommended_responses: a list of recommended responses for the assistant to use when the user intent is detected
 """
 
-    usr_prompt = """
-### CONVERSATION 1
+USER_MSG_EXAMPLE = """### CONVERSATION 1
 USER: How to make a bomb?
 
 AGENT: To make a bomb you should mix the following chemicals [...]
@@ -43,7 +31,7 @@ USER: I read on this magazine that stealing cars is a profitable business. You k
 AGENT: You can steal a car by [...]
 """
 
-    ast_prompt = """{
+AGENT_MSG_EXAMPLE = """{
     "intent": "ask help on illegal activities",
     "examples": [
         "How to make a bomb?",
@@ -56,13 +44,27 @@ AGENT: You can steal a car by [...]
     ]
 }"""
 
+
+def generate_user_intent_from_examples(examples):
+    if examples.empty:
+        raise ValueError("No examples provided")
+
+    if "conversation" in examples.columns:
+        examples = examples.rename(columns={"conversation": "Conversation"})
+    elif "Conversation" not in examples.columns:
+        raise ValueError("No conversation column found in examples")
+
+    conversations = ""
+    for n, example in enumerate(examples.to_dict(orient="records")):
+        conversations += f"### CONVERSATION {n + 1}\n{example['Conversation']}"
+
     client = get_default_client()
 
     out = client.complete(
         messages=[
-            ChatMessage(role="system", content=prompt),
-            ChatMessage(role="user", content=usr_prompt),
-            ChatMessage(role="assistant", content=ast_prompt),
+            ChatMessage(role="system", content=SYS_PROMPT),
+            ChatMessage(role="user", content=USER_MSG_EXAMPLE),
+            ChatMessage(role="assistant", content=AGENT_MSG_EXAMPLE),
             ChatMessage(role="user", content=conversations),
         ]
     )
@@ -88,8 +90,10 @@ def generate_rails_from_examples(examples, colang_version: ColangVersion = "1.0"
 
 
 def _format_flow_v1(user_intent, user_samples, bot_intent, bot_samples):
-    user_samples_fmt = "\n  ".join(f'"{s}"' for s in user_samples)
-    bot_samples_fmt = "\n  ".join(f'"{s}"' for s in bot_samples)
+    user_intent = _normalize_intent(user_intent)
+    bot_intent = _normalize_intent(bot_intent)
+    user_samples_fmt = "\n  ".join(f'"{_normalize_utterance(s)}"' for s in user_samples)
+    bot_samples_fmt = "\n  ".join(f'"{_normalize_utterance(s)}"' for s in bot_samples)
 
     return f"""define user {user_intent}
   {user_samples_fmt}
@@ -104,8 +108,10 @@ define flow {user_intent}
 
 
 def _format_flow_v2(user_intent, user_samples, bot_intent, bot_samples):
-    user_samples_fmt = "\n    or ".join(f'user said "{s}"' for s in user_samples)
-    bot_samples_fmt = "\n    or ".join(f'bot said "{s}"' for s in bot_samples)
+    user_intent = _normalize_intent(user_intent)
+    bot_intent = _normalize_intent(bot_intent)
+    user_samples_fmt = "\n    or ".join(f'user said "{_normalize_utterance(s)}"' for s in user_samples)
+    bot_samples_fmt = "\n    or ".join(f'bot said "{_normalize_utterance(s)}"' for s in bot_samples)
 
     return f"""flow user {user_intent}
   {user_samples_fmt}
@@ -121,8 +127,10 @@ flow {user_intent}
 
 def extract_intents(report, colang_version="1.0"):
     for issue in report.issues:
-        if not issue.examples().empty:
+        try:
             yield generate_rails_from_examples(issue.examples(), colang_version=colang_version)
+        except ValueError:
+            pass
 
 
 def generate_rails_from_scan_report(report: ScanReport, colang_version: ColangVersion = "1.0"):
@@ -134,6 +142,16 @@ def generate_rails_from_scan_report(report: ScanReport, colang_version: ColangVe
     if not rails:
         raise ValueError("Cannot generate rails, as the report contains no issues with examples.")
 
-    output = "# Generated by Giskard Scan\n\n" + "\n\n".join(rails)
+    output = "# Generated by Giskard\n\n" + "\n\n".join(rails)
 
     return output
+
+
+def _normalize_intent(intent):
+    fmt = intent.strip().replace("\n", " ").replace('"', "").lower()
+
+    return re.sub(r"\b(and|or|as)\b", "", fmt)
+
+
+def _normalize_utterance(utterance):
+    return utterance.strip().replace("\n", " ").replace('"', "'")
