@@ -365,7 +365,7 @@ def test_statistical_parity_difference(
     unprotected_proba = np.count_nonzero(unprotected_predictions) / len(unprotected_ds.df)
     statistical_parity_difference = abs(protected_proba - unprotected_proba)
 
-    messages = [TestMessage(type=TestMessageLevel.INFO, text=f"thresh = {threshold}")]
+    messages = [TestMessage(type=TestMessageLevel.INFO, text=f"threshold = {threshold}")]
 
     passed = bool(statistical_parity_difference < threshold)
 
