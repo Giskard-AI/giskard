@@ -94,6 +94,7 @@ class CorrectnessMetric(Metric):
                     ),
                 ],
                 temperature=0,
+                format="json",
             )
             return parse_json_output(
                 out.content,
