@@ -2,10 +2,10 @@
 # It is not intended for manual editing.
 
 [metadata]
-groups = ["default", "dev", "doc", "hub", "llm", "ml_runtime", "talk", "test"]
+groups = ["default", "llm", "ml_runtime", "doc", "dev", "hub", "talk", "test"]
 strategy = ["cross_platform", "inherit_metadata"]
 lock_version = "4.4.1"
-content_hash = "sha256:6ecae768b464304491737c7c607f878fdac0384d7568726b4d080eba6ce20f3e"
+content_hash = "sha256:466e50c8aa9e787bba004afded475dff8aba10fb8dacea9dad636cd21ca35d16"
 
 [[package]]
 name = "absl-py"
@@ -13,7 +13,7 @@ version = "2.1.0"
 requires_python = ">=3.7"
 summary = "Abseil Python Common Libraries, see https://github.com/abseil/abseil-py."
 groups = ["ml_runtime"]
-marker = "sys_platform != \"win32\""
+marker = "platform_system != \"Windows\" and sys_platform != \"win32\" or sys_platform == \"darwin\" and python_version < \"3.11\" and (platform_machine == \"x86_64\" or platform_machine == \"arm64\") or sys_platform == \"darwin\" and platform_machine == \"arm64\" or (sys_platform == \"linux\" or sys_platform == \"darwin\") and platform_machine == \"x86_64\" and python_version < \"3.11\""
 files = [
     {file = "absl-py-2.1.0.tar.gz", hash = "sha256:7820790efbb316739cde8b4e19357243fc3608a152024288513dd968d7d959ff"},
     {file = "absl_py-2.1.0-py3-none-any.whl", hash = "sha256:526a04eadab8b4ee719ce68f204172ead1027549089702d99b9059f129ff1308"},
@@ -268,7 +268,7 @@ name = "astunparse"
 version = "1.6.3"
 summary = "An AST unparser for Python"
 groups = ["ml_runtime"]
-marker = "sys_platform != \"win32\""
+marker = "platform_system != \"Windows\" and sys_platform != \"win32\" or sys_platform == \"darwin\" and python_version < \"3.11\" and (platform_machine == \"x86_64\" or platform_machine == \"arm64\") or sys_platform == \"darwin\" and platform_machine == \"arm64\" or (sys_platform == \"linux\" or sys_platform == \"darwin\") and platform_machine == \"x86_64\" and python_version < \"3.11\""
 dependencies = [
     "six<2.0,>=1.6.1",
     "wheel<1.0,>=0.23.0",
@@ -1366,7 +1366,7 @@ name = "flatbuffers"
 version = "24.3.25"
 summary = "The FlatBuffers serialization format for Python"
 groups = ["ml_runtime"]
-marker = "sys_platform != \"win32\""
+marker = "platform_system != \"Windows\" and sys_platform != \"win32\" or sys_platform == \"darwin\" and python_version < \"3.11\" and (platform_machine == \"x86_64\" or platform_machine == \"arm64\") or sys_platform == \"darwin\" and platform_machine == \"arm64\" or (sys_platform == \"linux\" or sys_platform == \"darwin\") and platform_machine == \"x86_64\" and python_version < \"3.11\""
 files = [
     {file = "flatbuffers-24.3.25-py2.py3-none-any.whl", hash = "sha256:8dbdec58f935f3765e4f7f3cf635ac3a77f83568138d6a2311f524ec96364812"},
     {file = "flatbuffers-24.3.25.tar.gz", hash = "sha256:de2ec5b203f21441716617f38443e0a8ebf3d25bf0d9c0bb0ce68fa00ad546a4"},
@@ -1524,7 +1524,7 @@ version = "0.5.4"
 requires_python = ">=2.7, !=3.0.*, !=3.1.*, !=3.2.*, !=3.3.*"
 summary = "Python AST that abstracts the underlying Python version"
 groups = ["ml_runtime"]
-marker = "sys_platform != \"win32\""
+marker = "platform_system != \"Windows\" and sys_platform != \"win32\" or sys_platform == \"darwin\" and python_version < \"3.11\" and (platform_machine == \"x86_64\" or platform_machine == \"arm64\") or sys_platform == \"darwin\" and platform_machine == \"arm64\" or (sys_platform == \"linux\" or sys_platform == \"darwin\") and platform_machine == \"x86_64\" and python_version < \"3.11\""
 files = [
     {file = "gast-0.5.4-py3-none-any.whl", hash = "sha256:6fc4fa5fa10b72fb8aab4ae58bcb023058386e67b6fa2e3e34cec5c769360316"},
     {file = "gast-0.5.4.tar.gz", hash = "sha256:9c270fe5f4b130969b54174de7db4e764b09b4f7f67ccfc32480e29f78348d97"},
@@ -1564,7 +1564,7 @@ version = "2.29.0"
 requires_python = ">=3.7"
 summary = "Google Authentication Library"
 groups = ["ml_runtime"]
-marker = "sys_platform != \"win32\""
+marker = "platform_system != \"Windows\" and sys_platform != \"win32\" or sys_platform == \"darwin\" and python_version < \"3.11\" and (platform_machine == \"x86_64\" or platform_machine == \"arm64\") or sys_platform == \"darwin\" and platform_machine == \"arm64\" or (sys_platform == \"linux\" or sys_platform == \"darwin\") and platform_machine == \"x86_64\" and python_version < \"3.11\""
 dependencies = [
     "cachetools<6.0,>=2.0.0",
     "pyasn1-modules>=0.2.1",
@@ -1581,7 +1581,7 @@ version = "1.0.0"
 requires_python = ">=3.6"
 summary = "Google Authentication Library"
 groups = ["ml_runtime"]
-marker = "sys_platform != \"win32\""
+marker = "platform_system != \"Windows\" and sys_platform != \"win32\" or sys_platform == \"darwin\" and python_version < \"3.11\" and (platform_machine == \"x86_64\" or platform_machine == \"arm64\") or sys_platform == \"darwin\" and platform_machine == \"arm64\" or (sys_platform == \"linux\" or sys_platform == \"darwin\") and platform_machine == \"x86_64\" and python_version < \"3.11\""
 dependencies = [
     "google-auth>=2.15.0",
     "requests-oauthlib>=0.7.0",
@@ -1596,7 +1596,7 @@ name = "google-pasta"
 version = "0.2.0"
 summary = "pasta is an AST-based Python refactoring library"
 groups = ["ml_runtime"]
-marker = "sys_platform != \"win32\""
+marker = "platform_system != \"Windows\" and sys_platform != \"win32\" or sys_platform == \"darwin\" and python_version < \"3.11\" and (platform_machine == \"x86_64\" or platform_machine == \"arm64\") or sys_platform == \"darwin\" and platform_machine == \"arm64\" or (sys_platform == \"linux\" or sys_platform == \"darwin\") and platform_machine == \"x86_64\" and python_version < \"3.11\""
 dependencies = [
     "six",
 ]
@@ -1715,7 +1715,7 @@ version = "1.64.0"
 requires_python = ">=3.8"
 summary = "HTTP/2-based RPC framework"
 groups = ["ml_runtime"]
-marker = "sys_platform != \"win32\""
+marker = "platform_system != \"Windows\" and sys_platform != \"win32\" or sys_platform == \"darwin\" and python_version < \"3.11\" and (platform_machine == \"x86_64\" or platform_machine == \"arm64\") or sys_platform == \"darwin\" and platform_machine == \"arm64\" or (sys_platform == \"linux\" or sys_platform == \"darwin\") and platform_machine == \"x86_64\" and python_version < \"3.11\""
 files = [
     {file = "grpcio-1.64.0-cp310-cp310-linux_armv7l.whl", hash = "sha256:3b09c3d9de95461214a11d82cc0e6a46a6f4e1f91834b50782f932895215e5db"},
     {file = "grpcio-1.64.0-cp310-cp310-macosx_12_0_universal2.whl", hash = "sha256:7e013428ab472892830287dd082b7d129f4d8afef49227a28223a77337555eaa"},
@@ -1779,7 +1779,7 @@ version = "3.11.0"
 requires_python = ">=3.8"
 summary = "Read and write HDF5 files from Python"
 groups = ["ml_runtime"]
-marker = "sys_platform != \"win32\""
+marker = "platform_system != \"Windows\" and sys_platform != \"win32\" or sys_platform == \"darwin\" and python_version < \"3.11\" and (platform_machine == \"x86_64\" or platform_machine == \"arm64\") or sys_platform == \"darwin\" and platform_machine == \"arm64\" or (sys_platform == \"linux\" or sys_platform == \"darwin\") and platform_machine == \"x86_64\" and python_version < \"3.11\""
 dependencies = [
     "numpy>=1.17.3",
 ]
@@ -2462,7 +2462,7 @@ version = "2.14.0"
 requires_python = ">=3.9"
 summary = "Deep learning for humans."
 groups = ["ml_runtime"]
-marker = "sys_platform != \"win32\""
+marker = "platform_system != \"Windows\" and sys_platform != \"win32\" or sys_platform == \"darwin\" and python_version < \"3.11\" and (platform_machine == \"x86_64\" or platform_machine == \"arm64\") or sys_platform == \"darwin\" and platform_machine == \"arm64\" or (sys_platform == \"linux\" or sys_platform == \"darwin\") and platform_machine == \"x86_64\" and python_version < \"3.11\""
 files = [
     {file = "keras-2.14.0-py3-none-any.whl", hash = "sha256:d7429d1d2131cc7eb1f2ea2ec330227c7d9d38dab3dfdf2e78defee4ecc43fcd"},
     {file = "keras-2.14.0.tar.gz", hash = "sha256:22788bdbc86d9988794fe9703bb5205141da797c4faeeb59497c58c3d94d34ed"},
@@ -2651,7 +2651,7 @@ name = "libclang"
 version = "18.1.1"
 summary = "Clang Python Bindings, mirrored from the official LLVM repo: https://github.com/llvm/llvm-project/tree/main/clang/bindings/python, to make the installation process easier."
 groups = ["ml_runtime"]
-marker = "sys_platform != \"win32\""
+marker = "platform_system != \"Windows\" and sys_platform != \"win32\" or sys_platform == \"darwin\" and python_version < \"3.11\" and (platform_machine == \"x86_64\" or platform_machine == \"arm64\") or sys_platform == \"darwin\" and platform_machine == \"arm64\" or (sys_platform == \"linux\" or sys_platform == \"darwin\") and platform_machine == \"x86_64\" and python_version < \"3.11\""
 files = [
     {file = "libclang-18.1.1-py2.py3-none-macosx_10_9_x86_64.whl", hash = "sha256:6f14c3f194704e5d09769108f03185fce7acaf1d1ae4bbb2f30a72c2400cb7c5"},
     {file = "libclang-18.1.1-py2.py3-none-macosx_11_0_arm64.whl", hash = "sha256:83ce5045d101b669ac38e6da8e58765f12da2d3aafb3b9b98d88b286a60964d8"},
@@ -3110,7 +3110,7 @@ version = "0.2.0"
 requires_python = ">=3.7"
 summary = ""
 groups = ["ml_runtime"]
-marker = "sys_platform != \"win32\""
+marker = "platform_system != \"Windows\" and sys_platform != \"win32\" or sys_platform == \"darwin\" and python_version < \"3.11\" and (platform_machine == \"x86_64\" or platform_machine == \"arm64\") or sys_platform == \"darwin\" and platform_machine == \"arm64\" or (sys_platform == \"linux\" or sys_platform == \"darwin\") and platform_machine == \"x86_64\" and python_version < \"3.11\""
 dependencies = [
     "numpy>1.20",
     "numpy>=1.21.2; python_version > \"3.9\"",
@@ -3767,7 +3767,7 @@ version = "3.2.2"
 requires_python = ">=3.6"
 summary = "A generic, spec-compliant, thorough implementation of the OAuth request-signing logic"
 groups = ["ml_runtime"]
-marker = "sys_platform != \"win32\""
+marker = "platform_system != \"Windows\" and sys_platform != \"win32\" or sys_platform == \"darwin\" and python_version < \"3.11\" and (platform_machine == \"x86_64\" or platform_machine == \"arm64\") or sys_platform == \"darwin\" and platform_machine == \"arm64\" or (sys_platform == \"linux\" or sys_platform == \"darwin\") and platform_machine == \"x86_64\" and python_version < \"3.11\""
 files = [
     {file = "oauthlib-3.2.2-py3-none-any.whl", hash = "sha256:8139f29aac13e25d502680e9e19963e83f16838d48a0d71c287fe40e7067fbca"},
     {file = "oauthlib-3.2.2.tar.gz", hash = "sha256:9859c40929662bec5d64f34d01c99e093149682a3f38915dc0655d5a633dd918"},
@@ -3841,7 +3841,7 @@ version = "3.3.0"
 requires_python = ">=3.5"
 summary = "Optimizing numpys einsum function"
 groups = ["ml_runtime"]
-marker = "sys_platform != \"win32\""
+marker = "platform_system != \"Windows\" and sys_platform != \"win32\" or sys_platform == \"darwin\" and python_version < \"3.11\" and (platform_machine == \"x86_64\" or platform_machine == \"arm64\") or sys_platform == \"darwin\" and platform_machine == \"arm64\" or (sys_platform == \"linux\" or sys_platform == \"darwin\") and platform_machine == \"x86_64\" and python_version < \"3.11\""
 dependencies = [
     "numpy>=1.7",
 ]
@@ -5016,7 +5016,7 @@ version = "2.0.0"
 requires_python = ">=3.4"
 summary = "OAuthlib authentication support for Requests."
 groups = ["ml_runtime"]
-marker = "sys_platform != \"win32\""
+marker = "platform_system != \"Windows\" and sys_platform != \"win32\" or sys_platform == \"darwin\" and python_version < \"3.11\" and (platform_machine == \"x86_64\" or platform_machine == \"arm64\") or sys_platform == \"darwin\" and platform_machine == \"arm64\" or (sys_platform == \"linux\" or sys_platform == \"darwin\") and platform_machine == \"x86_64\" and python_version < \"3.11\""
 dependencies = [
     "oauthlib>=3.0.0",
     "requests>=2.0.0",
@@ -5169,7 +5169,7 @@ version = "4.9"
 requires_python = ">=3.6,<4"
 summary = "Pure-Python RSA implementation"
 groups = ["ml_runtime"]
-marker = "sys_platform != \"win32\""
+marker = "platform_system != \"Windows\" and sys_platform != \"win32\" or sys_platform == \"darwin\" and python_version < \"3.11\" and (platform_machine == \"x86_64\" or platform_machine == \"arm64\") or sys_platform == \"darwin\" and platform_machine == \"arm64\" or (sys_platform == \"linux\" or sys_platform == \"darwin\") and platform_machine == \"x86_64\" and python_version < \"3.11\""
 dependencies = [
     "pyasn1>=0.1.3",
 ]
@@ -6011,7 +6011,7 @@ version = "2.14.1"
 requires_python = ">=3.9"
 summary = "TensorBoard lets you watch Tensors Flow"
 groups = ["ml_runtime"]
-marker = "sys_platform != \"win32\""
+marker = "platform_system != \"Windows\" and sys_platform != \"win32\" or sys_platform == \"darwin\" and python_version < \"3.11\" and (platform_machine == \"x86_64\" or platform_machine == \"arm64\") or sys_platform == \"darwin\" and platform_machine == \"arm64\" or (sys_platform == \"linux\" or sys_platform == \"darwin\") and platform_machine == \"x86_64\" and python_version < \"3.11\""
 dependencies = [
     "absl-py>=0.4",
     "google-auth-oauthlib<1.1,>=0.5",
@@ -6036,7 +6036,7 @@ version = "0.7.2"
 requires_python = ">=3.7"
 summary = "Fast data loading for TensorBoard"
 groups = ["ml_runtime"]
-marker = "sys_platform != \"win32\""
+marker = "platform_system != \"Windows\" and sys_platform != \"win32\" or sys_platform == \"darwin\" and python_version < \"3.11\" and (platform_machine == \"x86_64\" or platform_machine == \"arm64\") or sys_platform == \"darwin\" and platform_machine == \"arm64\" or (sys_platform == \"linux\" or sys_platform == \"darwin\") and platform_machine == \"x86_64\" and python_version < \"3.11\""
 files = [
     {file = "tensorboard_data_server-0.7.2-py3-none-any.whl", hash = "sha256:7e0610d205889588983836ec05dc098e80f97b7e7bbff7e994ebb78f578d0ddb"},
     {file = "tensorboard_data_server-0.7.2-py3-none-macosx_10_9_x86_64.whl", hash = "sha256:9fe5d24221b29625dbc7328b0436ca7fc1c23de4acf4d272f1180856e32f9f60"},
@@ -6049,7 +6049,7 @@ version = "2.14.0"
 requires_python = ">=3.9"
 summary = "TensorFlow is an open source machine learning framework for everyone."
 groups = ["ml_runtime"]
-marker = "sys_platform != \"win32\""
+marker = "platform_system != \"Windows\" and sys_platform != \"win32\" or (sys_platform == \"linux\" or sys_platform == \"darwin\") and platform_machine == \"x86_64\" and python_version < \"3.11\""
 dependencies = [
     "absl-py>=1.0.0",
     "astunparse>=1.6.0",
@@ -6137,7 +6137,7 @@ version = "2.14.0"
 requires_python = ">=3.7"
 summary = "TensorFlow Estimator."
 groups = ["ml_runtime"]
-marker = "sys_platform != \"win32\""
+marker = "platform_system != \"Windows\" and sys_platform != \"win32\" or sys_platform == \"darwin\" and python_version < \"3.11\" and (platform_machine == \"x86_64\" or platform_machine == \"arm64\") or sys_platform == \"darwin\" and platform_machine == \"arm64\" or (sys_platform == \"linux\" or sys_platform == \"darwin\") and platform_machine == \"x86_64\" and python_version < \"3.11\""
 files = [
     {file = "tensorflow_estimator-2.14.0-py2.py3-none-any.whl", hash = "sha256:820bf57c24aa631abb1bbe4371739ed77edb11361d61381fd8e790115ac0fd57"},
 ]
@@ -6147,7 +6147,7 @@ name = "tensorflow-hub"
 version = "0.16.1"
 summary = "TensorFlow Hub is a library to foster the publication, discovery, and consumption of reusable parts of machine learning models."
 groups = ["ml_runtime"]
-marker = "sys_platform != \"win32\""
+marker = "platform_system != \"Windows\" and sys_platform != \"win32\" or (sys_platform == \"linux\" or sys_platform == \"darwin\") and python_version < \"3.11\" and platform_machine == \"x86_64\""
 dependencies = [
     "numpy>=1.12.0",
     "protobuf>=3.19.6",
@@ -6163,7 +6163,7 @@ version = "2.14.0"
 requires_python = ">=3.9"
 summary = "TensorFlow is an open source machine learning framework for everyone."
 groups = ["ml_runtime"]
-marker = "platform_system == \"Windows\" and sys_platform != \"win32\""
+marker = "(sys_platform == \"linux\" or sys_platform == \"darwin\") and platform_machine == \"x86_64\" and python_version < \"3.11\" and platform_system == \"Windows\""
 dependencies = [
     "absl-py>=1.0.0",
     "astunparse>=1.6.0",
@@ -6200,7 +6200,7 @@ version = "0.31.0"
 requires_python = ">=3.7, <3.12"
 summary = "TensorFlow IO"
 groups = ["ml_runtime"]
-marker = "sys_platform != \"win32\""
+marker = "platform_system != \"Windows\" and sys_platform != \"win32\" or sys_platform == \"darwin\" and python_version < \"3.11\" and (platform_machine == \"x86_64\" or platform_machine == \"arm64\") or sys_platform == \"darwin\" and platform_machine == \"arm64\" or (sys_platform == \"linux\" or sys_platform == \"darwin\") and platform_machine == \"x86_64\" and python_version < \"3.11\""
 files = [
     {file = "tensorflow_io_gcs_filesystem-0.31.0-cp310-cp310-macosx_10_14_x86_64.whl", hash = "sha256:a71421f8d75a093b6aac65b4c8c8d2f768c3ca6215307cf8c16192e62d992bcf"},
     {file = "tensorflow_io_gcs_filesystem-0.31.0-cp310-cp310-manylinux_2_12_x86_64.manylinux2010_x86_64.whl", hash = "sha256:359134ecbd3bf938bb0cf65be4526106c30da461b2e2ce05446a229ed35f6832"},
@@ -6279,7 +6279,7 @@ version = "2.4.0"
 requires_python = ">=3.8"
 summary = "ANSI color formatting for output in terminal"
 groups = ["ml_runtime"]
-marker = "sys_platform != \"win32\""
+marker = "platform_system != \"Windows\" and sys_platform != \"win32\" or sys_platform == \"darwin\" and python_version < \"3.11\" and (platform_machine == \"x86_64\" or platform_machine == \"arm64\") or sys_platform == \"darwin\" and platform_machine == \"arm64\" or (sys_platform == \"linux\" or sys_platform == \"darwin\") and platform_machine == \"x86_64\" and python_version < \"3.11\""
 files = [
     {file = "termcolor-2.4.0-py3-none-any.whl", hash = "sha256:9297c0df9c99445c2412e832e882a7884038a25617c60cea2ad69488d4040d63"},
     {file = "termcolor-2.4.0.tar.gz", hash = "sha256:aab9e56047c8ac41ed798fa36d892a37aca6b3e9159f3e0c24bc64a9b3ac7b7a"},
@@ -6324,7 +6324,7 @@ version = "2.15.0"
 requires_python = ">=3.8"
 summary = "Deep learning for humans."
 groups = ["ml_runtime"]
-marker = "sys_platform != \"win32\""
+marker = "platform_system != \"Windows\" and sys_platform != \"win32\" or (sys_platform == \"linux\" or sys_platform == \"darwin\") and python_version < \"3.11\" and platform_machine == \"x86_64\""
 files = [
     {file = "tf_keras-2.15.0-py3-none-any.whl", hash = "sha256:48607ee60a4d1fa7c09d6a44293a803faf3136e7a43f92df089ac094117547d2"},
     {file = "tf_keras-2.15.0.tar.gz", hash = "sha256:d7559c2ba40667679fcb2105d3e4b68bbc07ecafbf1037462ce7b3974c3c6798"},
@@ -6803,7 +6803,7 @@ version = "0.19.0"
 requires_python = ">=3.8.0"
 summary = "Fast implementation of asyncio event loop on top of libuv"
 groups = ["hub"]
-marker = "sys_platform != \"win32\""
+marker = "sys_platform != \"win32\" and platform_system != \"Windows\""
 files = [
     {file = "uvloop-0.19.0-cp310-cp310-macosx_10_9_universal2.whl", hash = "sha256:de4313d7f575474c8f5a12e163f6d89c0a878bc49219641d49e6f1444369a90e"},
     {file = "uvloop-0.19.0-cp310-cp310-macosx_10_9_x86_64.whl", hash = "sha256:5588bd21cf1fcf06bded085f37e43ce0e00424197e7c10e77afd4bbefffef428"},
@@ -7080,7 +7080,7 @@ version = "0.43.0"
 requires_python = ">=3.8"
 summary = "A built-package format for Python"
 groups = ["ml_runtime"]
-marker = "sys_platform != \"win32\""
+marker = "platform_system != \"Windows\" and sys_platform != \"win32\" or sys_platform == \"darwin\" and python_version < \"3.11\" and (platform_machine == \"x86_64\" or platform_machine == \"arm64\") or sys_platform == \"darwin\" and platform_machine == \"arm64\" or (sys_platform == \"linux\" or sys_platform == \"darwin\") and platform_machine == \"x86_64\" and python_version < \"3.11\""
 files = [
     {file = "wheel-0.43.0-py3-none-any.whl", hash = "sha256:55c570405f142630c6b9f72fe09d9b67cf1477fcf543ae5b8dcb1f5b7377da81"},
     {file = "wheel-0.43.0.tar.gz", hash = "sha256:465ef92c69fa5c5da2d1cf8ac40559a8c940886afcef87dcf14b9470862f1d85"},
