@@ -1,3 +1,5 @@
+import pytest
+
 from giskard.models.automodel import Model
 
 
@@ -49,7 +51,7 @@ def test_pytorch():
 
 
 def test_tensorflow():
-    import tensorflow as tf
+    tf = pytest.importorskip("tensorflow")
     from tensorflow import keras
 
     from giskard.models.tensorflow import TensorFlowModel
