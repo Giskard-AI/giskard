@@ -176,7 +176,8 @@ def test_disparate_impact(
     unprotected_slicing_function: SlicingFunction,
     positive_outcome: str,
     slicing_function: Optional[SlicingFunction] = None,
-    threshold: float = 0.2,
+    min_threshold: float = 0.8,
+    max_threshold: float = 1.25,
 ) -> TestResult:
     """Tests for disparate impact on a protected data slice.
 
@@ -218,7 +219,6 @@ def test_disparate_impact(
         Threshold below which the DI test is considered to fail, by default 0.8
     max_threshold : float
         Threshold above which the DI test is considered to fail, by default 1.25
-
     Returns
     -------
     TestResult
@@ -261,11 +261,11 @@ def test_disparate_impact(
 
     messages = [
         TestMessage(
-            type=TestMessageLevel.INFO, text=f"min_threshold = {1 - threshold}, max_threshold = {1 + threshold}"
+            type=TestMessageLevel.INFO, text=f"min_threshold = {min_threshold}, max_threshold = {max_threshold}"
         )
     ]
 
-    passed = bool((disparate_impact_score > 1 - threshold) * (disparate_impact_score < 1 + threshold))
+    passed = bool((disparate_impact_score > min_threshold) * (disparate_impact_score < max_threshold))
 
     # --- debug ---
     output_ds = list()
@@ -319,10 +319,8 @@ def test_statistical_parity_difference(
         The target value that is considered a positive outcome in the dataset
     slicing_function : Optional[SlicingFunction]
         Slicing function to be applied on the dataset (Default value = None)
-    min_threshold : float
-        Threshold below which the DI test is considered to fail, by default 0.8
-    max_threshold : float
-        Threshold above which the DI test is considered to fail, by default 1.25
+    threshold : float
+        Threshold below which the SPD test is considered to fail, by default 0.1
 
 
     Returns
