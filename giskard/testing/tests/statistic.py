@@ -176,15 +176,14 @@ def test_disparate_impact(
     unprotected_slicing_function: SlicingFunction,
     positive_outcome: str,
     slicing_function: Optional[SlicingFunction] = None,
-    min_threshold: float = 0.8,
-    max_threshold: float = 1.25,
+    threshold: float = 0.2,
 ) -> TestResult:
     """Tests for disparate impact on a protected data slice.
 
     Tests if the model is biased more towards an unprotected slice of the dataset over a protected slice.
-    Note that this test reflects only a possible bias in the model while being agnostic to any biaas in the dataset
+    Note that this test reflects only a possible bias in the model while being agnostic to any bias in the dataset
     it trained on. The Disparate Impact (DI) is only valid for classification models and is computed as the ratio
-    between the average count of correct predictions for the protected slice over the unprotected one given a
+    between the average count of correct predictions for the protected slice and the unprotected one given a
     certain positive_outcome.
 
     Calculate the Disparate Impact between a protected and unprotected slice of a dataset. Otherwise
@@ -219,10 +218,6 @@ def test_disparate_impact(
         Threshold below which the DI test is considered to fail, by default 0.8
     max_threshold : float
         Threshold above which the DI test is considered to fail, by default 1.25
-    debug : bool
-        If True and the test fails,
-        a dataset will be provided containing the rows from the protected and unprotected slices that were
-        incorrectly predicted on a specific positive outcome. (Default value = False)
 
     Returns
     -------
@@ -266,11 +261,11 @@ def test_disparate_impact(
 
     messages = [
         TestMessage(
-            type=TestMessageLevel.INFO, text=f"min_threshold = {min_threshold}, max_threshold = {max_threshold}"
+            type=TestMessageLevel.INFO, text=f"min_threshold = {1 - threshold}, max_threshold = {1 + threshold}"
         )
     ]
 
-    passed = bool((disparate_impact_score > min_threshold) * (disparate_impact_score < max_threshold))
+    passed = bool((disparate_impact_score > 1 - threshold) * (disparate_impact_score < 1 + threshold))
 
     # --- debug ---
     output_ds = list()
@@ -288,7 +283,7 @@ def test_disparate_impact(
 
 
 @test(
-    name="Disparate impact",
+    name="Statistical parity difference",
     tags=["heuristic", "classification"],
     debug_description=debug_description_prefix + "that are <b>incorrectly predicted on the positive outcome "
     "from both the protected and unprotected slices</b>.",
@@ -300,14 +295,14 @@ def test_statistical_parity_difference(
     unprotected_slicing_function: SlicingFunction,
     positive_outcome: str,
     slicing_function: Optional[SlicingFunction] = None,
-    thresh: float = 0.1,
+    threshold: float = 0.1,
 ) -> TestResult:
     """Tests for Statistical Parity Difference (SPD) on a protected data slice.
 
     Tests if the model is biased more towards an unprotected slice of the dataset over a protected slice.
-    Note that this test reflects only a possible bias in the model while being agnostic to any biaas in the dataset
+    Note that this test reflects only a possible bias in the model while being agnostic to any bias in the dataset
     it trained on. The SPD is only valid for classification models and is computed as the absolute difference
-    between the average count of correct predictions for the protected slice over the unprotected one given a
+    between the average count of correct predictions for the protected slice and the unprotected one given a
     certain positive_outcome.
 
     Parameters
@@ -328,10 +323,7 @@ def test_statistical_parity_difference(
         Threshold below which the DI test is considered to fail, by default 0.8
     max_threshold : float
         Threshold above which the DI test is considered to fail, by default 1.25
-    debug : bool
-        If True and the test fails,
-        a dataset will be provided containing the rows from the protected and unprotected slices that were
-        incorrectly predicted on a specific positive outcome. (Default value = False)
+
 
     Returns
     -------
@@ -375,9 +367,9 @@ def test_statistical_parity_difference(
     unprotected_proba = np.count_nonzero(unprotected_predictions) / len(unprotected_ds.df)
     statistical_parity_difference = abs(protected_proba - unprotected_proba)
 
-    messages = [TestMessage(type=TestMessageLevel.INFO, text=f"thresh = {thresh}")]
+    messages = [TestMessage(type=TestMessageLevel.INFO, text=f"thresh = {threshold}")]
 
-    passed = bool(statistical_parity_difference < thresh)
+    passed = bool(statistical_parity_difference < threshold)
 
     # --- debug ---
     output_ds = list()
