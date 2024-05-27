@@ -68,6 +68,7 @@ dev = [
 ]
 ml_runtime = [
     "langchain>=0.0.275",
+    "langchain-community",
     "nltk>=3.8.1",
     "xgboost>=1.7.5",
     "lightgbm>=3.3.5",
