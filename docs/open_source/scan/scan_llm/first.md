@@ -327,17 +327,17 @@ For further examples, check out the {doc}`LLM tutorials section </tutorials/llm_
 <details>
 <summary>Click to view parameter details</summary>
 
-* <mark style="color:red;">**`Mandatory parameters`**</mark>
-    * `model`: A prediction function that takes a `pandas.DataFrame` as input and returns a string.
-    * `model_type`: The type of model, either `regression`, `classification` or `text_generation`. For LLMs, this is
-      always `text_generation`.
-    * `name`: A descriptive name to the wrapped model to identify it in metadata. E.g. "Climate Change Question
-      Answering".
-    * `description`: A detailed description of what the model does, this is used to generate prompts to test during the
-      scan.
-    * `feature_names`: A list of the column names of your feature. By default, `feature_names` are all the columns in
-      your
-      dataset. Make sure these features are all present and in the same order as they are in your training dataset.
+- <mark style="color:red;">**`Mandatory parameters`**</mark>
+  - `model`: A prediction function that takes a `pandas.DataFrame` as input and returns a string.
+  - `model_type`: The type of model, either `regression`, `classification` or `text_generation`. For LLMs, this is
+    always `text_generation`.
+  - `name`: A descriptive name to the wrapped model to identify it in metadata. E.g. "Climate Change Question
+    Answering".
+  - `description`: A detailed description of what the model does, this is used to generate prompts to test during the
+    scan.
+  - `feature_names`: A list of the column names of your feature. By default, `feature_names` are all the columns in
+    your
+    dataset. Make sure these features are all present and in the same order as they are in your training dataset.
 
 </details>
 
@@ -358,12 +358,13 @@ If you are not working in a notebook or want to save the results for later, you 
 scan_results.to_html("model_scan_results.html")
 ```
 
->  #### 💡 Customize your scan
+> #### 💡 Customize your scan
 >
 > Check our [Advanced scan usage page](https://docs.giskard.ai/en/stable/open_source/scan/advanced_scan/index.html), if
 > you want to:
->   - Scan with only some **specific detectors**
->   - Make the scan **faster**
+>
+> - Scan with only some **specific detectors**
+> - Make the scan **faster**
 
 ## What's next?
 
@@ -371,7 +372,7 @@ Your scan results may have highlighted important vulnerabilities. There are 2 im
 
 ### 1. Generate a test suite from your scan results to:
 
-* Turn the issues you found into actionable tests that you can save and reuse in further iterations
+- Turn the issues you found into actionable tests that you can save and reuse in further iterations
 
 ```python
 test_suite = scan_results.generate_test_suite("My first test suite")
@@ -384,19 +385,17 @@ Jump to the [test customization](https://docs.giskard.ai/en/stable/open_source/c
 and [test integration](https://docs.giskard.ai/en/stable/open_source/integrate_tests/index.html) sections to find out
 everything you can do with test suites.
 
-### 2. Upload your test suite to the Giskard Hub to:
-* Compare the quality of different models and prompts to decide which one to promote
-* Create more tests relevant to your use case, combining input prompts that make your model fail and custom evaluation criteria
-* Share results, and collaborate with your team to integrate business feedback
+### 2. Run the test suite with a different model:
 
-To upload your test suite, you must have created a project on Giskard Hub and instantiated a Giskard Python client.
-
-Then, upload your test suite like this:
 ```python
-test_suite.upload(giskard_client, project_key)
+# wrap a different model
+giskard_model_2 = giskard.Model(...)
+
+# run the test suite with the new model
+test_suite.run(model=giskard_model_2)
 ```
 
-[Here's a demo](https://huggingface.co/spaces/giskardai/giskard) of the Giskard Hub in action.
+Check the [test suite documentation](https://docs.giskard.ai/en/stable/reference/suite/index.html#giskard.Suite) to learn more.
 
 ## Troubleshooting
 
