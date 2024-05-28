@@ -27,8 +27,6 @@ The :class:`giskard.Model` class
    .. automethod:: predict
    .. automethod:: save_model
    .. automethod:: load_model
-   .. automethod:: upload
-   .. automethod:: download
 
 
 
