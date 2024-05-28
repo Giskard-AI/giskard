@@ -6,6 +6,7 @@
 
 cicd/index
 mlflow/index
+nemoguardrails/index
 wandb/index
 dagshub/index
 huggingface/index
@@ -29,6 +30,11 @@ pytest/index
 :::{grid-item-card} <br/><h3>🏃 MLflow</h3>
 :text-align: center
 :link: mlflow/index.html
+:::
+
+:::{grid-item-card} <br/><h3>🟩 NeMo Guardrails</h3>
+:text-align: center
+:link: nemoguardrails/index.html
 :::
 
 :::{grid-item-card} <br/><h3>🐝 Weights & Biases</h3>
