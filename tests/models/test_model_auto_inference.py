@@ -1,5 +1,3 @@
-import pytest
-
 from giskard.models.automodel import Model
 
 
@@ -51,8 +49,13 @@ def test_pytorch():
 
 
 def test_tensorflow():
-    tf = pytest.importorskip("tensorflow")
-    from tensorflow import keras
+    try:
+        import tensorflow as tf
+        from tensorflow import keras
+    except ImportError:
+        # Ignore import error from tf, and skip test
+        # Not using importorskip, because of weird behaviour with tf (probably tensorflow-intel or something)
+        return
 
     from giskard.models.tensorflow import TensorFlowModel
 

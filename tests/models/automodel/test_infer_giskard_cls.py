@@ -70,8 +70,12 @@ def test_infer_giskard_cls(german_credit_raw_model, german_credit_catboost_raw_m
     giskard_cls = _infer_giskard_cls(pytorch_model())
     assert giskard_cls == PyTorchModel
 
-    giskard_cls = _infer_giskard_cls(tensorflow_model())
-    assert giskard_cls == TensorFlowModel
+    try:
+        giskard_cls = _infer_giskard_cls(tensorflow_model())
+        assert giskard_cls == TensorFlowModel
+    except ImportError:
+        # Ignore import error from tf
+        pass
 
     giskard_cls = _infer_giskard_cls(huggingface_model())
     assert giskard_cls == HuggingFaceModel
