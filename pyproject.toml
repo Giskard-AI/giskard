@@ -24,6 +24,8 @@ giskard = [
 
 
 
+
+
 [tool.pdm.scripts]
 _.env = { GSK_DISABLE_ANALYTICS = "True", GISKARD_DEV_MODE = "True" }
 # add "-n auto" to the pytest command to parallelize the execution
@@ -100,6 +102,7 @@ test = [
     "pytest-memray; sys_platform == 'linux' or sys_platform == 'darwin'",
     "pytest-reportlog>=0.4.0",
     "shap<0.45",                                                          # Fixing this to avoid changed on insights
+    "nemoguardrails>=0.9.0",
 ]
 doc = [
     "furo>=2023.5.20",
