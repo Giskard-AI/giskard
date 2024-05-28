@@ -182,9 +182,9 @@ def test_disparate_impact(
     """Tests for disparate impact on a protected data slice.
 
     Tests if the model is biased more towards an unprotected slice of the dataset over a protected slice.
-    Note that this test reflects only a possible bias in the model while being agnostic to any biaas in the dataset
+    Note that this test reflects only a possible bias in the model while being agnostic to any bias in the dataset
     it trained on. The Disparate Impact (DI) is only valid for classification models and is computed as the ratio
-    between the average count of correct predictions for the protected slice over the unprotected one given a
+    between the average count of correct predictions for the protected slice and the unprotected one given a
     certain positive_outcome.
 
     Calculate the Disparate Impact between a protected and unprotected slice of a dataset. Otherwise
@@ -219,11 +219,6 @@ def test_disparate_impact(
         Threshold below which the DI test is considered to fail, by default 0.8
     max_threshold : float
         Threshold above which the DI test is considered to fail, by default 1.25
-    debug : bool
-        If True and the test fails,
-        a dataset will be provided containing the rows from the protected and unprotected slices that were
-        incorrectly predicted on a specific positive outcome. (Default value = False)
-
     Returns
     -------
     TestResult
@@ -285,6 +280,108 @@ def test_disparate_impact(
     # ---
 
     return TestResult(metric=disparate_impact_score, passed=passed, messages=messages, output_ds=output_ds)
+
+
+@test(
+    name="Statistical parity difference",
+    tags=["heuristic", "classification"],
+    debug_description=debug_description_prefix + "that are <b>incorrectly predicted on the positive outcome "
+    "from both the protected and unprotected slices</b>.",
+)
+def test_statistical_parity_difference(
+    model: BaseModel,
+    dataset: Dataset,
+    protected_slicing_function: SlicingFunction,
+    unprotected_slicing_function: SlicingFunction,
+    positive_outcome: str,
+    slicing_function: Optional[SlicingFunction] = None,
+    threshold: float = 0.1,
+) -> TestResult:
+    """Tests for Statistical Parity Difference (SPD) on a protected data slice.
+
+    Tests if the model is biased more towards an unprotected slice of the dataset over a protected slice.
+    Note that this test reflects only a possible bias in the model while being agnostic to any bias in the dataset
+    it trained on. The SPD is only valid for classification models and is computed as the absolute difference
+    between the average count of correct predictions for the protected slice and the unprotected one given a
+    certain positive_outcome.
+
+    Parameters
+    ----------
+    model : BaseModel
+        Model used to compute the test
+    dataset : Dataset
+        Dataset used to compute the test
+    protected_slicing_function : SlicingFunction
+        Slicing function that defines the protected group from the full dataset given
+    unprotected_slicing_function : SlicingFunction
+        Slicing function that defines the unprotected group from the full dataset given
+    positive_outcome : str
+        The target value that is considered a positive outcome in the dataset
+    slicing_function : Optional[SlicingFunction]
+        Slicing function to be applied on the dataset (Default value = None)
+    threshold : float
+        Threshold below which the SPD test is considered to fail, by default 0.1
+
+
+    Returns
+    -------
+    TestResult
+        The test result.
+
+    """
+    if slicing_function:
+        dataset = dataset.slice(slicing_function)
+        check_slice_not_empty(
+            sliced_dataset=dataset, dataset_name="dataset", test_name="test_statistical_parity_difference"
+        )
+
+    # Try to automatically cast `positive_outcome` to the right type
+    if isinstance(model.meta.classification_labels[0], numbers.Number):
+        try:
+            positive_outcome = float(positive_outcome)
+        except ValueError:
+            pass
+
+    if positive_outcome not in list(model.meta.classification_labels):
+        raise ValueError(
+            f"The positive outcome chosen {positive_outcome} is not part of the dataset target values {list(model.meta.classification_labels)}."
+        )
+
+    protected_ds = dataset.slice(protected_slicing_function)
+    unprotected_ds = dataset.slice(unprotected_slicing_function)
+
+    if protected_ds.df.equals(unprotected_ds.df):
+        raise ValueError(
+            "The protected and unprotected datasets are equal. Please check that you chose different slices."
+        )
+
+    _protected_predictions = model.predict(protected_ds).prediction
+    _unprotected_predictions = model.predict(unprotected_ds).prediction
+
+    protected_predictions = np.squeeze(_protected_predictions == positive_outcome)
+    unprotected_predictions = np.squeeze(_unprotected_predictions == positive_outcome)
+
+    protected_proba = np.count_nonzero(protected_predictions) / len(protected_ds.df)
+    unprotected_proba = np.count_nonzero(unprotected_predictions) / len(unprotected_ds.df)
+    statistical_parity_difference = abs(protected_proba - unprotected_proba)
+
+    messages = [TestMessage(type=TestMessageLevel.INFO, text=f"threshold = {threshold}")]
+
+    passed = bool(statistical_parity_difference < threshold)
+
+    # --- debug ---
+    output_ds = list()
+    if not passed:
+        failed_protected = list(_protected_predictions != protected_ds.df[dataset.target])
+        failed_unprotected = list(_unprotected_predictions != unprotected_ds.df[dataset.target])
+        failed_idx_protected = [i for i, x in enumerate(failed_protected) if x]
+        failed_idx_unprotected = [i for i, x in enumerate(failed_unprotected) if x]
+        output_ds.append(
+            dataset.slice(lambda df: df.iloc[failed_idx_protected + failed_idx_unprotected], row_level=False)
+        )
+    # ---
+
+    return TestResult(metric=statistical_parity_difference, passed=passed, messages=messages, output_ds=output_ds)
 
 
 def _cramer_v(x, y):
