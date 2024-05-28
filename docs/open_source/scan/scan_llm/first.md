@@ -258,8 +258,7 @@ giskard_model = giskard.Model(
 ::::::{tab-item} Wrap a custom RAG
 
 Wrap your RAG-based LLM app in an extension of Giskard's `Model` class. This example uses a FAISS vector store, a
-langchain chain and an OpenAI model. Extending the `giskard.Model` class allows for persistence and upload to the
-Giskard Hub of complex models which cannot be automatically serialized with `pickle`.
+langchain chain and an OpenAI model.
 
 You will have to implement just three methods:
 
