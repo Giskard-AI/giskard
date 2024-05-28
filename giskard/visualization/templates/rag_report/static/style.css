@@ -162,6 +162,10 @@ label {
   justify-content: center;
 }
 
+#gsk-metrics{
+  width:100%;
+}
+
 #recommendation {
   margin-top: 20px;
   padding: 20px;

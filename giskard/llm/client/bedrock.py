@@ -39,17 +39,13 @@ class ClaudeBedrockClient(LLMClient):
         if "claude-3" not in self.model:
             raise LLMConfigurationError(f"Only claude-3 models are supported as of now, got {self.model}")
 
-        # extract system prompt from messages
-        system_prompt = ""
-        if len(messages) > 1:
-            if messages[0].role.lower() == "user" and messages[1].role.lower() == "user":
-                system_prompt = messages[0].content
-                messages = messages[1:]
-
         # Create the messages format needed for bedrock specifically
         input_msg_prompt = []
+        system_prompts = []
         for msg in messages:
-            if msg.role.lower() == "assistant":
+            if msg.role.lower() == "system":
+                system_prompts.append(msg.content)
+            elif msg.role.lower() == "assistant":
                 input_msg_prompt.append({"role": "assistant", "content": [{"type": "text", "text": msg.content}]})
             else:
                 input_msg_prompt.append({"role": "user", "content": [{"type": "text", "text": msg.content}]})
@@ -60,7 +56,7 @@ class ClaudeBedrockClient(LLMClient):
                 "anthropic_version": "bedrock-2023-05-31",
                 "max_tokens": max_tokens,
                 "temperature": temperature,
-                "system": system_prompt,
+                "system": "\n".join(system_prompts),
                 "messages": input_msg_prompt,
             }
         )

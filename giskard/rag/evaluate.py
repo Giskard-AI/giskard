@@ -6,8 +6,9 @@ from inspect import signature
 
 from ..llm.client import LLMClient, get_default_client
 from ..utils.analytics_collector import analytics
+from .base import AgentAnswer
 from .knowledge_base import KnowledgeBase
-from .metrics import CorrectnessMetric, Metric
+from .metrics import CorrectnessMetric
 from .question_generators.utils import maybe_tqdm
 from .recommendation import get_rag_recommendation
 from .report import RAGReport
@@ -20,7 +21,7 @@ ANSWER_FN_HISTORY_PARAM = "history"
 
 
 def evaluate(
-    answer_fn: Union[Callable, Sequence[str]],
+    answer_fn: Union[Callable, Sequence[Union[AgentAnswer, str]]],
     testset: Optional[QATestset] = None,
     knowledge_base: Optional[KnowledgeBase] = None,
     llm_client: Optional[LLMClient] = None,
@@ -31,7 +32,7 @@ def evaluate(
 
     Parameters
     ----------
-    answers_fn : Union[Callable, Sequence[str]]
+    answers_fn : Union[Callable, Sequence[Union[AgentAnswer,str]]]
         The prediction function of the agent to evaluate or a list of precalculated answers on the testset.
     testset : QATestset, optional
         The test set to evaluate the agent on. If not provided, a knowledge base must be provided and a default testset will be created from the knowledge base.
@@ -72,7 +73,11 @@ def evaluate(
     if testset is None:
         testset = generate_testset(knowledge_base)
 
-    answers = answer_fn if isinstance(answer_fn, Sequence) else _compute_answers(answer_fn, testset)
+    model_outputs = (
+        [_cast_to_agent_answer(ans) for ans in answer_fn]
+        if isinstance(answer_fn, Sequence)
+        else _compute_answers(answer_fn, testset)
+    )
 
     llm_client = llm_client or get_default_client()
 
@@ -87,18 +92,19 @@ def evaluate(
     metrics_results = defaultdict(dict)
 
     for metric in metrics:
-        metric_name = getattr(
-            metric, "name", metric.__class__.__name__ if isinstance(metric, Metric) else metric.__name__
-        )
+        try:
+            metric_name = metric.__class__.__name__
+        except AttributeError:
+            metric_name = metric.__name__
 
         for sample, answer in maybe_tqdm(
-            zip(testset.to_pandas().to_records(index=True), answers),
+            zip(testset.to_pandas().to_records(index=True), model_outputs),
             desc=f"{metric_name} evaluation",
-            total=len(answers),
+            total=len(model_outputs),
         ):
             metrics_results[sample["id"]].update(metric(sample, answer))
 
-    report = RAGReport(testset, answers, metrics_results, knowledge_base)
+    report = RAGReport(testset, model_outputs, metrics_results, knowledge_base)
     recommendation = get_rag_recommendation(
         report.topics,
         report.correctness_by_question_type().to_dict()[metrics[0].name],
@@ -121,7 +127,7 @@ def evaluate(
 
 
 def _compute_answers(answer_fn, testset):
-    answers = []
+    model_outputs = []
     needs_history = (
         len(signature(answer_fn).parameters) > 1 and ANSWER_FN_HISTORY_PARAM in signature(answer_fn).parameters
     )
@@ -132,5 +138,17 @@ def _compute_answers(answer_fn, testset):
         if needs_history:
             kwargs[ANSWER_FN_HISTORY_PARAM] = sample.conversation_history
 
-        answers.append(answer_fn(sample.question, **kwargs))
-    return answers
+        answer = answer_fn(sample.question, **kwargs)
+        model_outputs.append(_cast_to_agent_answer(answer))
+
+    return model_outputs
+
+
+def _cast_to_agent_answer(answer) -> AgentAnswer:
+    if isinstance(answer, AgentAnswer):
+        return answer
+
+    if isinstance(answer, str):
+        return AgentAnswer(message=answer)
+
+    raise ValueError(f"The answer function must return a string or an AgentAnswer object. Got {type(answer)} instead.")

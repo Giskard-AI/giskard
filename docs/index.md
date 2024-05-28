@@ -48,6 +48,7 @@ knowledge/catalogs/index
 
 integrations/cicd/index
 integrations/mlflow/index
+integrations/nemoguardrails/index
 integrations/wandb/index
 integrations/dagshub/index
 integrations/huggingface/index
