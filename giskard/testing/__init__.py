@@ -10,6 +10,7 @@ __all__ = [
     "test_right_label",
     "test_output_in_range",
     "test_disparate_impact",
+    "test_statistical_parity_difference",
     "test_nominal_association",
     "test_cramer_v",
     "test_mutual_information",
@@ -113,5 +114,6 @@ from giskard.testing.tests.statistic import (
     test_nominal_association,
     test_output_in_range,
     test_right_label,
+    test_statistical_parity_difference,
     test_theil_u,
 )
