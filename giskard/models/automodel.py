@@ -39,6 +39,9 @@ def _infer_giskard_cls(model: Any):
                 base_libs = [_get_class(*_base_lib) for _base_lib in _base_libs]
                 if isinstance(model, tuple(base_libs)):
                     return giskard_cls
+            except AttributeError:
+                logger.warning("Error while getting giskard model & associated framework", exc_info=1)
+                pass
             except ImportError:
                 pass
     return None
