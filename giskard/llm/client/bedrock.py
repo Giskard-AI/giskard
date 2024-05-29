@@ -100,7 +100,7 @@ class LLamaBedrockClient(LLMClient):
         seed: Optional[int] = None,
         format=None,
     ) -> ChatMessage:
-        # only supporting claude 3 to start
+        # only supporting llama
         if "llama" not in self.model:
             raise LLMConfigurationError(f"Only Llama models are supported as of now, got {self.model}")
 
