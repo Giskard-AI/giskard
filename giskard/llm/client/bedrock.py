@@ -80,3 +80,61 @@ class ClaudeBedrockClient(LLMClient):
 
         msg = completion["content"][0]["text"]
         return ChatMessage(role="assistant", content=msg)
+
+
+class LLamaBedrockClient(LLMClient):
+    def __init__(
+        self,
+        bedrock_runtime_client,
+        model: str = "meta.llama3-8b-instruct-v1:0",
+    ):
+        self._client = bedrock_runtime_client
+        self.model = model
+
+    def complete(
+        self,
+        messages: Sequence[ChatMessage],
+        temperature: float = 1,
+        max_tokens: Optional[int] = 1000,
+        caller_id: Optional[str] = None,
+        seed: Optional[int] = None,
+        format=None,
+    ) -> ChatMessage:
+        # only supporting claude 3 to start
+        if "llama" not in self.model:
+            raise LLMConfigurationError(f"Only Llama models are supported as of now, got {self.model}")
+
+        # Create the messages format needed for llama bedrock specifically
+        prompts = []
+        for msg in messages:
+            prompts.append(f"# {msg.role}:\n{msg.content}\n")
+
+        # create the json body to send to the API
+        messages = "\n".join(prompts)
+        body = json.dumps(
+            {
+                "max_gen_len": max_tokens,
+                "temperature": temperature,
+                "prompt": f"{messages}\n# assistant:\n",
+            }
+        )
+
+        # invoke the model and get the response
+        try:
+            accept = "application/json"
+            contentType = "application/json"
+            response = self._client.invoke_model(body=body, modelId=self.model, accept=accept, contentType=contentType)
+            completion = json.loads(response.get("body").read())
+        except RuntimeError as err:
+            raise LLMConfigurationError("Could not get response from Bedrock API") from err
+
+        self.logger.log_call(
+            prompt_tokens=completion["prompt_token_count"],
+            sampled_tokens=completion["generation_token_count"],
+            model=self.model,
+            client_class=self.__class__.__name__,
+            caller_id=caller_id,
+        )
+
+        msg = completion["generation"]
+        return ChatMessage(role="assistant", content=msg)
