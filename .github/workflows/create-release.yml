@@ -69,12 +69,12 @@ jobs:
         env:
           SLACK_BOT_TOKEN: ${{ secrets.SLACK_BOT_TOKEN }}
 
-      - name: Trigger release process in giskard-hub
+      - name: Trigger release process in legacy-hub
         uses: peter-evans/repository-dispatch@v3
         with:
           token: ${{ secrets.RELEASE_PAT_TOKEN }}
           event-type: create-release
-          repository: ${{ github.repository_owner }}/giskard-hub
+          repository: ${{ github.repository_owner }}/legacy-hub
           client-payload: |
             {
               "version_name": "v${{ inputs.version }}",

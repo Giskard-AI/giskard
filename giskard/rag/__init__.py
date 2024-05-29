@@ -1,3 +1,4 @@
+from .base import AgentAnswer
 from .evaluate import evaluate
 from .knowledge_base import KnowledgeBase
 from .report import RAGReport
@@ -11,4 +12,5 @@ __all__ = [
     "KnowledgeBase",
     "evaluate",
     "RAGReport",
+    "AgentAnswer",
 ]

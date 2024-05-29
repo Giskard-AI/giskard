@@ -74,10 +74,14 @@ import boto3
 import giskard
 
 from giskard.llm.client.bedrock import ClaudeBedrockClient
+from giskard.llm.embeddings.bedrock import BedrockEmbedding
+from giskard.llm.embeddings import set_default_embedding
 
 bedrock_runtime = boto3.client("bedrock-runtime", region_name=os.environ["AWS_DEFAULT_REGION"])
 claude_client = ClaudeBedrockClient(bedrock_runtime, model="anthropic.claude-3-haiku-20240307-v1:0")
+embed_client = BedrockEmbedding(bedrock_runtime, model="amazon.titan-embed-text-v1")
 giskard.llm.set_default_client(claude_client)
+set_default_embedding(embed_client)
 ```
 
 ## Custom Client Setup
