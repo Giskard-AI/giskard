@@ -8,7 +8,6 @@ from .base import Metric
 
 
 def format_conversation(conversation: list[dict]):
-    print(conversation)
     return "\n\n".join([f"<{msg['role'].lower()}>{msg['content']}</{msg['role'].lower()}>" for msg in conversation])
 
 
