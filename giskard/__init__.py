@@ -6,7 +6,6 @@
 from importlib import metadata as importlib_metadata
 
 from . import demo
-from .client.giskard_client import GiskardClient
 from .client.project import Project
 from .core.suite import Suite, SuiteInput
 from .core.test_result import TestResult
@@ -49,7 +48,6 @@ analytics.track("Initialized giskard library")
 __all__ = [
     "Project",
     "Dataset",
-    "GiskardClient",
     "test",
     "Model",
     "Suite",
