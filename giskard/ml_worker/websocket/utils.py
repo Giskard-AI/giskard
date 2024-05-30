@@ -1,16 +1,11 @@
 from typing import Any, Callable, Dict, List, Optional
 
 import logging
-import uuid
-from collections import defaultdict
 
 import pandas as pd
 
-from giskard.client.giskard_client import GiskardClient
 from giskard.core.suite import DatasetInput, ModelInput, SuiteInput
-from giskard.core.test_result import TestMessageLevel, TestResult
 from giskard.datasets.base import Dataset
-from giskard.exceptions.IllegalArgumentError import IllegalArgumentError
 from giskard.ml_worker import websocket
 from giskard.ml_worker.websocket import (
     AbortParams,
@@ -160,115 +155,6 @@ def _get_or_load(loaded_artifacts: Dict[str, Dict[str, Any]], type: str, uuid: s
         loaded_artifacts[type][uuid] = load_fn()
 
     return loaded_artifacts[type][uuid]
-
-
-def parse_function_arguments(
-    client: GiskardClient,
-    request_arguments: List[websocket.FuncArgument],
-    loaded_artifacts: Optional[Dict[str, Dict[str, Any]]] = None,
-):
-    if loaded_artifacts is None:
-        loaded_artifacts = defaultdict(dict)
-
-    arguments = dict()
-
-    # Processing empty list
-    if not request_arguments:
-        return arguments
-
-    for arg in request_arguments:
-        if arg.is_none:
-            continue
-        if arg.dataset is not None:
-            arguments[arg.name] = _get_or_load(
-                loaded_artifacts,
-                "Dataset",
-                arg.dataset.id,
-                lambda: Dataset.download(
-                    client,
-                    arg.dataset.project_key,
-                    arg.dataset.id,
-                    arg.dataset.sample,
-                ),
-            )
-        elif arg.model is not None:
-            arguments[arg.name] = _get_or_load(
-                loaded_artifacts,
-                "BaseModel",
-                arg.model.id,
-                lambda: BaseModel.download(client, arg.model.project_key, arg.model.id),
-            )
-        elif arg.slicingFunction is not None:
-            arguments[arg.name] = SlicingFunction.download(
-                arg.slicingFunction.id, client, arg.slicingFunction.project_key
-            )(**parse_function_arguments(client, arg.args, loaded_artifacts))
-        elif arg.transformationFunction is not None:
-            arguments[arg.name] = TransformationFunction.download(
-                arg.transformationFunction.id, client, arg.transformationFunction.project_key
-            )(**parse_function_arguments(client, arg.args, loaded_artifacts))
-        elif arg.float_arg is not None:
-            arguments[arg.name] = float(arg.float_arg)
-        elif arg.int_arg is not None:
-            arguments[arg.name] = int(arg.int_arg)
-        elif arg.str_arg is not None:
-            arguments[arg.name] = str(arg.str_arg)
-        elif arg.bool_arg is not None:
-            arguments[arg.name] = bool(arg.bool_arg)
-        elif arg.kwargs is not None:
-            kwargs = dict()
-            exec(arg.kwargs, {"kwargs": kwargs})
-            arguments[arg.name] = kwargs
-        else:
-            raise IllegalArgumentError("Unknown argument type")
-    return arguments
-
-
-def map_result_to_single_test_result_ws(
-    result,
-    datasets: Dict[uuid.UUID, Dataset],
-    client: GiskardClient,
-    project_key: Optional[str] = None,
-) -> websocket.SingleTestResult:
-    if isinstance(result, TestResult):
-        result.output_ds = result.output_ds or []
-
-        if result.output_df is not None:
-            _upload_generated_output_df(client, datasets, project_key, result)
-
-        return websocket.SingleTestResult(
-            passed=bool(result.passed),
-            is_error=result.is_error,
-            messages=[
-                websocket.TestMessage(
-                    type=websocket.TestMessageType.ERROR
-                    if message.type == TestMessageLevel.ERROR.value
-                    else websocket.TestMessageType.INFO,
-                    text=message.text,
-                )
-                for message in result.messages
-            ]
-            if result.messages is not None
-            else [],
-            props=result.props,
-            metric=result.metric,
-            metric_name=result.metric_name,
-            failed_indexes={
-                str(dataset.original_id): list(datasets[dataset.original_id].df.index.get_indexer_for(dataset.df.index))
-                for dataset in result.output_ds
-            },
-            details=None
-            if not result.details
-            else websocket.SingleTestResultDetails(
-                inputs=result.details.inputs,
-                outputs=result.details.outputs,
-                results=result.details.results,
-                metadata=result.details.metadata,
-            ),
-        )
-    elif isinstance(result, bool):
-        return websocket.SingleTestResult(passed=result)
-    else:
-        raise ValueError("Result of test can only be 'TestResult' or 'bool'")
 
 
 def _upload_generated_output_df(client, datasets, project_key, result):
