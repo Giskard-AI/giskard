@@ -139,6 +139,7 @@ report = evaluate(
 Built-in metrics include `ragas_context_precision`, `ragas_faithfulness`, `ragas_answer_relevancy`,
 `ragas_context_recall`. Note that including these metrics can significantly increase the evaluation time and LLM usage.
 
+Alternatively, you can directly pass a list of answers instead of `get_answer_fn` to the `evaluate` function, you can then pass the retrieved documents as an optional argument `retrieved_documents` to compute the RAGAS metrics.
 
 ## Troubleshooting
 
