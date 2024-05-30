@@ -115,9 +115,6 @@ doc = [
     "requests",
 ]
 
-[project.scripts]
-giskard = "giskard.cli:cli"
-
 [project.entry-points."mlflow.model_evaluator"]
 giskard = "giskard.integrations.mlflow.giskard_evaluator:GiskardEvaluator"
 
