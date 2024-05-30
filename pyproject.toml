@@ -22,8 +22,6 @@ giskard = [
 
 
 
-
-
 [tool.pdm.scripts]
 _.env = { GSK_DISABLE_ANALYTICS = "True", GISKARD_DEV_MODE = "True" }
 # add "-n auto" to the pytest command to parallelize the execution
@@ -100,6 +98,8 @@ test = [
     "pytest-memray; sys_platform == 'linux' or sys_platform == 'darwin'",
     "pytest-reportlog>=0.4.0",
     "shap<0.45",                                                          # Fixing this to avoid changed on insights
+    "ragas>=0.1.5",
+    "nemoguardrails>=0.9.0",
 ]
 doc = [
     "furo>=2023.5.20",
@@ -140,7 +140,7 @@ giskard = "giskard.integrations.mlflow.giskard_evaluator:GiskardEvaluator"
 name = "giskard"
 readme = "README.md"
 license = { text = "Apache Software License 2.0" }
-version = "2.12.0"
+version = "2.13.0"
 description = "The testing framework dedicated to ML models, from tabular to LLMs"
 authors = [{ name = "Giskard AI", email = "hello@giskard.ai" }]
 keywords = ["Artificial Intelligence", "Machine Learning", "Quality", "MLOps"]
