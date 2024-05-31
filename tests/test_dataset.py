@@ -4,10 +4,8 @@ import numpy as np
 import pandas as pd
 import pytest
 
-from giskard.client.dtos import DatasetMetaInfo
 from giskard.core.dataset_validation import validate_optional_target
 from giskard.datasets.base import Dataset
-from tests.communications.test_dto_serialization import get_fields, get_name, is_required
 
 MANDATORY_FIELDS = [
     "id",
@@ -184,17 +182,3 @@ def test_infer_column_types():
     assert Dataset(pd.DataFrame({"f": ["a", "b"]})).column_types["f"] == "text"
     assert Dataset(pd.DataFrame({"f": [1]})).column_types["f"] == "numeric"
     assert Dataset(pd.DataFrame({"f": ["a"]})).column_types["f"] == "text"
-
-
-def test_dataset_meta_info():
-    klass = DatasetMetaInfo
-    mandatory_field_names = []
-    optional_field_names = []
-    for name, field in get_fields(klass).items():
-        (
-            mandatory_field_names.append(get_name(name, field))
-            if is_required(field)
-            else optional_field_names.append(get_name(name, field))
-        )
-    assert set(mandatory_field_names) == set(MANDATORY_FIELDS)
-    assert set(optional_field_names) == set(OPTIONAL_FIELDS)
