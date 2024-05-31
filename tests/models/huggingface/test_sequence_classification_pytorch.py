@@ -41,5 +41,5 @@ def test_sequence_classification_distilbert_base_uncased_pytorch():
 
     my_test_dataset = Dataset(test_df, name="test dataset", target="label")
 
-    my_model.predict(my_test_dataset)
-    # TODO: add assertions
+    predictions = my_model.predict(my_test_dataset).prediction
+    assert list(model_distilbert_base_uncased(my_test_dataset.df)) == list(predictions)

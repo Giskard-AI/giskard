@@ -74,8 +74,8 @@ def test_email_classification_bert_custom_model(dataset_name, request):
         data_filtered.head(5), name="test dataset", target="Target", cat_columns=["Week_day", "Month"]
     )
 
-    my_model.predict(my_test_dataset)
-    # TODO: add assertions
+    predictions = my_model.predict(my_test_dataset).prediction
+    assert list(model(my_test_dataset.df)) == list(predictions)
 
     # ---------------------------------------------------------------------------------------
 
@@ -89,5 +89,5 @@ def test_email_classification_bert_custom_model(dataset_name, request):
         model_postprocessing_function=my_softmax,
     )
 
-    my_auto_model.predict(my_test_dataset)
-    # TODO: add assertions
+    predictions = my_auto_model.predict(my_test_dataset).prediction
+    assert list(model(my_test_dataset.df)) == list(predictions)

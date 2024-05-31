@@ -3,7 +3,6 @@ import pandas as pd
 import pytest
 from transformers import pipeline
 
-import tests.utils
 from giskard import Dataset
 from giskard.models.huggingface import HuggingFaceModel
 
@@ -40,7 +39,8 @@ def test_sequence_classification_distilbert_base_uncased_pytorch_pipeline():
 
     my_test_dataset = Dataset(test_df, name="test dataset", target="label")
 
-    tests.utils.verify_model_upload(my_model, my_test_dataset)
+    predictions = my_model.predict(my_test_dataset).prediction
+    assert list(my_classifier(my_test_dataset.df)) == list(predictions)
 
     # Try with multiple samples
     text2 = "Give me a label 0!"
@@ -51,5 +51,5 @@ def test_sequence_classification_distilbert_base_uncased_pytorch_pipeline():
     test_df = pd.DataFrame(raw_data, columns=["text", "label"])
     my_test_dataset = Dataset(test_df, name="test dataset", target="label")
 
-    my_model.predict(my_test_dataset)
-    # TODO: add assertions
+    predictions = my_model.predict(my_test_dataset).prediction
+    assert list(my_classifier(my_test_dataset.df)) == list(predictions)
