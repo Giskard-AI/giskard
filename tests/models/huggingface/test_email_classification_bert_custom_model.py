@@ -75,7 +75,7 @@ def test_email_classification_bert_custom_model(dataset_name, request):
     )
 
     predictions = my_model.predict(my_test_dataset).prediction
-    assert list(model(my_test_dataset.df)) == list(predictions)
+    assert list(my_test_dataset.df["Target"]) == list(predictions)
 
     # ---------------------------------------------------------------------------------------
 
@@ -90,4 +90,4 @@ def test_email_classification_bert_custom_model(dataset_name, request):
     )
 
     predictions = my_auto_model.predict(my_test_dataset).prediction
-    assert list(model(my_test_dataset.df)) == list(predictions)
+    assert list(my_test_dataset.df["Target"]) == list(predictions)
