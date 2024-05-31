@@ -44,4 +44,4 @@ def test_sequence_classification_distilbert_base_uncased_tensorflow():
     my_test_dataset = Dataset(test_df, name="test dataset", target="label")
 
     predictions = my_model.predict(my_test_dataset).prediction
-    assert list(model_distilbert_base_uncased(my_test_dataset.df)) == list(predictions)
+    assert list(my_test_dataset.df["label"]) == list(predictions)

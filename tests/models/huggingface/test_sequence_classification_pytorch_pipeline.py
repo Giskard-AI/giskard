@@ -40,7 +40,7 @@ def test_sequence_classification_distilbert_base_uncased_pytorch_pipeline():
     my_test_dataset = Dataset(test_df, name="test dataset", target="label")
 
     predictions = my_model.predict(my_test_dataset).prediction
-    assert list(my_classifier(my_test_dataset.df)) == list(predictions)
+    assert list(my_test_dataset.df["label"]) == list(predictions)
 
     # Try with multiple samples
     text2 = "Give me a label 0!"
@@ -52,4 +52,4 @@ def test_sequence_classification_distilbert_base_uncased_pytorch_pipeline():
     my_test_dataset = Dataset(test_df, name="test dataset", target="label")
 
     predictions = my_model.predict(my_test_dataset).prediction
-    assert list(my_classifier(my_test_dataset.df)) == list(predictions)
+    assert list(my_test_dataset.df["label"]) == list(predictions)
