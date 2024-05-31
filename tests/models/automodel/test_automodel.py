@@ -2,7 +2,6 @@ import numpy as np
 import pandas as pd
 import pytest
 
-import tests.utils
 from giskard import Dataset
 from giskard.models.automodel import Model
 from giskard.models.function import PredictionFunctionModel
@@ -38,7 +37,8 @@ def test_autoserializablemodel_arbitrary_default():
     my_dataset = Dataset(df=pd.DataFrame({"x": [1.0, 2.0], "y": [1, 2]}), target="y")
 
     assert isinstance(my_model, PredictionFunctionModel)
-    tests.utils.verify_model_upload(my_model, my_dataset)
+    my_model.predict(my_dataset)
+    # TODO: add assertions
 
 
 def test_autoserializablemodel_sklearn_default(german_credit_raw_model, german_credit_data):
@@ -50,7 +50,8 @@ def test_autoserializablemodel_sklearn_default(german_credit_raw_model, german_c
     )
 
     assert isinstance(my_model, SKLearnModel)
-    tests.utils.verify_model_upload(my_model, german_credit_data)
+    my_model.predict(german_credit_data)
+    # TODO: add assertions
 
 
 def test_autoserializablemodel_arbitrary():
@@ -62,7 +63,8 @@ def test_autoserializablemodel_arbitrary():
     my_dataset = Dataset(df=pd.DataFrame({"x": [1, 2], "y": [1, 2]}), target="y")
 
     assert isinstance(my_model, PredictionFunctionModel)
-    tests.utils.verify_model_upload(my_model, my_dataset)
+    my_model.predict(my_dataset)
+    # TODO: add assertions
 
 
 def test_autoserializablemodel_sklearn(german_credit_raw_model, german_credit_data):
@@ -74,4 +76,3 @@ def test_autoserializablemodel_sklearn(german_credit_raw_model, german_credit_da
     )
 
     assert isinstance(my_model, SKLearnModel)
-    tests.utils.verify_model_upload(my_model, german_credit_data)

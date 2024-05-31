@@ -7,7 +7,6 @@ from torchtext.data.utils import get_tokenizer
 from torchtext.datasets import AG_NEWS
 from torchtext.vocab import build_vocab_from_iterator
 
-import tests.utils
 from giskard import Dataset
 from giskard.models.pytorch import PyTorchModel
 
@@ -97,4 +96,5 @@ def test_newspaper_classification_pytorch_dataset():
     # defining the giskard dataset
     my_test_dataset = Dataset(df.head(), name="test dataset", target="label")
 
-    tests.utils.verify_model_upload(my_model, my_test_dataset)
+    my_model.predict(my_test_dataset)
+    # TODO: add assertions

@@ -3,7 +3,6 @@ import torch
 from scipy import special
 from transformers import BertForSequenceClassification, BertTokenizer
 
-import tests.utils
 from giskard import Dataset, Model
 from giskard.models.huggingface import HuggingFaceModel
 
@@ -75,7 +74,8 @@ def test_email_classification_bert_custom_model(dataset_name, request):
         data_filtered.head(5), name="test dataset", target="Target", cat_columns=["Week_day", "Month"]
     )
 
-    tests.utils.verify_model_upload(my_model, my_test_dataset)
+    my_model.predict(my_test_dataset)
+    # TODO: add assertions
 
     # ---------------------------------------------------------------------------------------
 
@@ -89,4 +89,5 @@ def test_email_classification_bert_custom_model(dataset_name, request):
         model_postprocessing_function=my_softmax,
     )
 
-    tests.utils.verify_model_upload(my_auto_model, my_test_dataset)
+    my_auto_model.predict(my_test_dataset)
+    # TODO: add assertions

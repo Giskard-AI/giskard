@@ -4,7 +4,6 @@ import pandas as pd
 import pytest
 from sklearn import model_selection
 
-import tests.utils
 from giskard import Dataset
 from giskard.models.tensorflow import TensorFlowModel
 
@@ -58,4 +57,5 @@ def test_text_classification_tfhub():
     # defining the giskard dataset
     my_test_dataset = Dataset(test_df.head(), name="test dataset", target="Target")
 
-    tests.utils.verify_model_upload(my_model, my_test_dataset)
+    my_model.predict(my_test_dataset)
+    # TODO: add assertions

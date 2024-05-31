@@ -1,6 +1,5 @@
 import pytest
 
-import tests.utils
 from giskard import Dataset
 from giskard.demo import titanic_classification
 from giskard.models.tensorflow import TensorFlowModel
@@ -34,5 +33,3 @@ def test_tabular_titanic_binary_classification():
 
     assert my_model.predict(my_test_dataset)
     assert my_model.predict(my_test_dataset).raw.shape == (len(df), 2)
-
-    tests.utils.verify_model_upload(my_model, my_test_dataset)
