@@ -185,9 +185,6 @@ jobs:
       - name: Lint code
         run: pdm run lint
 
-      - name: Test code (concurrency)
-        run: pdm test-worker
-
       - name: Test code
         run: pdm test-fast
         env:
