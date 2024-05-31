@@ -37,8 +37,9 @@ def test_autoserializablemodel_arbitrary_default():
     my_dataset = Dataset(df=pd.DataFrame({"x": [1.0, 2.0], "y": [1, 2]}), target="y")
 
     assert isinstance(my_model, PredictionFunctionModel)
-    my_model.predict(my_dataset)
-    # TODO: add assertions
+
+    predictions = my_model.predict(my_dataset).prediction
+    assert list(predictions) == list(my_dataset.df["x"] ** 2)
 
 
 def test_autoserializablemodel_sklearn_default(german_credit_raw_model, german_credit_data):
@@ -50,8 +51,9 @@ def test_autoserializablemodel_sklearn_default(german_credit_raw_model, german_c
     )
 
     assert isinstance(my_model, SKLearnModel)
-    my_model.predict(german_credit_data)
-    # TODO: add assertions
+
+    predictions = my_model.predict(german_credit_data).prediction
+    assert list(german_credit_raw_model.predict(german_credit_data.df)) == list(predictions)
 
 
 def test_autoserializablemodel_arbitrary():
@@ -63,8 +65,9 @@ def test_autoserializablemodel_arbitrary():
     my_dataset = Dataset(df=pd.DataFrame({"x": [1, 2], "y": [1, 2]}), target="y")
 
     assert isinstance(my_model, PredictionFunctionModel)
-    my_model.predict(my_dataset)
-    # TODO: add assertions
+
+    predictions = my_model.predict(my_dataset).prediction
+    assert list(predictions) == list(my_dataset.df["y"])
 
 
 def test_autoserializablemodel_sklearn(german_credit_raw_model, german_credit_data):
