@@ -1,8 +1,9 @@
 import pytest
 
-import tests.utils
 from giskard import Dataset
 from giskard.models.tensorflow import TensorFlowModel
+from giskard.core.model_validation import validate_model
+
 
 tf = pytest.importorskip("tensorflow")
 
@@ -50,4 +51,4 @@ def test_mnist():
 
     my_test_dataset = Dataset(train_images, name="dataset")
 
-    tests.utils.verify_model_upload(my_model, my_test_dataset)
+    validate_model(my_model, validate_ds=my_test_dataset)
