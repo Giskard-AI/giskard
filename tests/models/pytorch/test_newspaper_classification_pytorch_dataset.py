@@ -9,6 +9,7 @@ from torchtext.vocab import build_vocab_from_iterator
 
 from giskard import Dataset
 from giskard.models.pytorch import PyTorchModel
+from giskard.core.model_validation import validate_model
 
 torch_softmax = nn.Softmax(dim=1)
 train_iter = AG_NEWS(split="train")
@@ -96,5 +97,4 @@ def test_newspaper_classification_pytorch_dataset():
     # defining the giskard dataset
     my_test_dataset = Dataset(df.head(), name="test dataset", target="label")
 
-    my_model.predict(my_test_dataset)
-    # TODO: add assertions
+    validate_model(my_model, validate_ds=my_test_dataset)

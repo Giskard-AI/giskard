@@ -8,6 +8,7 @@ from torch.utils.data.dataset import random_split
 
 from giskard import Dataset
 from giskard.models.pytorch import PyTorchModel
+from giskard.core.model_validation import validate_model
 
 
 class ManualLinearRegression(nn.Module):
@@ -120,5 +121,4 @@ def test_linear_regression_pytorch_dataframe():
 
     my_test_dataset = Dataset(df.head(), name="test dataset", target="y")
 
-    my_model.predict(my_test_dataset)
-    # TODO: add assertions
+    validate_model(my_model, validate_ds=my_test_dataset)
