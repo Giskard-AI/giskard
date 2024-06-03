@@ -28,8 +28,8 @@ _.env = { GSK_DISABLE_ANALYTICS = "True", GISKARD_DEV_MODE = "True" }
 test.cmd = "pdm base-test tests/"
 # for some reason github runners don't work when calling 'pdm test -m "not slow"'
 base-test.cmd = "pytest -c pyproject.toml --cov=giskard --cov-report=xml --cov-append --disable-warnings --no-header -vv --durations=0"
-test-fast.cmd = "pdm base-test -n auto -m 'not slow and not concurrency' --use-subprocess tests"
-test-slow.cmd = "pdm base-test -m 'slow and not concurrency' --use-subprocess"
+test-fast.cmd = "pdm base-test -n auto -m 'not slow' --use-subprocess tests"
+test-slow.cmd = "pdm base-test -m 'slow' --use-subprocess"
 lint = "ruff giskard tests"
 doc = "sphinx-build docs docs/_build/html"
 #  -W --keep-going -n => temporary disable
@@ -220,7 +220,6 @@ exclude = '''
     | dist
     | env
     | venv
-    | giskard/ml_worker/generated
 )/
 '''
 
@@ -301,7 +300,6 @@ doctest_optionflags = [
 ]
 markers = [
     "slow: marks tests as slow (deselect with '-m \"not slow\"')",
-    "concurrency: run MLWorker pool tests",
     "memory_expensive: memory consuming tests",
 ]
 

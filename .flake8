@@ -11,7 +11,6 @@ extend-ignore =
 exclude =
     .git
     __pycache__
-    giskard/ml_worker/generated
     giskard/models/vectorstore/__init__.py
     giskard/__init__.py
 
