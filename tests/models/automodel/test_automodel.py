@@ -6,6 +6,7 @@ from giskard import Dataset
 from giskard.models.automodel import Model
 from giskard.models.function import PredictionFunctionModel
 from giskard.models.sklearn import SKLearnModel
+from giskard.core.model_validation import validate_model
 
 
 class MyArbitraryModel(Model):
@@ -19,8 +20,7 @@ class MySklearnModel(Model):
 
 
 def test_autoserializablemodel_abstract():
-    class UnsupportedModel:
-        ...
+    class UnsupportedModel: ...
 
     unsupported_model = UnsupportedModel()
     with pytest.raises(NotImplementedError) as e:
@@ -41,6 +41,8 @@ def test_autoserializablemodel_arbitrary_default():
     predictions = my_model.predict(my_dataset).prediction
     assert list(predictions) == list(my_dataset.df["x"] ** 2)
 
+    validate_model(my_model, my_dataset)
+
 
 def test_autoserializablemodel_sklearn_default(german_credit_raw_model, german_credit_data):
     my_model = Model(
@@ -54,6 +56,8 @@ def test_autoserializablemodel_sklearn_default(german_credit_raw_model, german_c
 
     predictions = my_model.predict(german_credit_data).prediction
     assert list(german_credit_raw_model.predict(german_credit_data.df)) == list(predictions)
+
+    validate_model(my_model, german_credit_data)
 
 
 def test_autoserializablemodel_arbitrary():
@@ -69,6 +73,8 @@ def test_autoserializablemodel_arbitrary():
     predictions = my_model.predict(my_dataset).prediction
     assert list(predictions) == list(my_dataset.df["y"])
 
+    validate_model(my_model, my_dataset)
+
 
 def test_autoserializablemodel_sklearn(german_credit_raw_model, german_credit_data):
     my_model = MySklearnModel(
@@ -79,3 +85,5 @@ def test_autoserializablemodel_sklearn(german_credit_raw_model, german_credit_da
     )
 
     assert isinstance(my_model, SKLearnModel)
+
+    validate_model(my_model)
