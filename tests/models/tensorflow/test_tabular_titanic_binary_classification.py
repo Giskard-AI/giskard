@@ -1,9 +1,9 @@
 import pytest
 
 from giskard import Dataset
+from giskard.core.model_validation import validate_model
 from giskard.demo import titanic_classification
 from giskard.models.tensorflow import TensorFlowModel
-from giskard.core.model_validation import validate_model
 
 tf = pytest.importorskip("tensorflow")
 

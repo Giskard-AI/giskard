@@ -1,9 +1,8 @@
 import pytest
 
 from giskard import Dataset
-from giskard.models.tensorflow import TensorFlowModel
 from giskard.core.model_validation import validate_model
-
+from giskard.models.tensorflow import TensorFlowModel
 
 tf = pytest.importorskip("tensorflow")
 

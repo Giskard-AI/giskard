@@ -3,10 +3,10 @@ import pandas as pd
 import pytest
 
 from giskard import Dataset
+from giskard.core.model_validation import validate_model
 from giskard.models.automodel import Model
 from giskard.models.function import PredictionFunctionModel
 from giskard.models.sklearn import SKLearnModel
-from giskard.core.model_validation import validate_model
 
 
 class MyArbitraryModel(Model):
@@ -20,7 +20,8 @@ class MySklearnModel(Model):
 
 
 def test_autoserializablemodel_abstract():
-    class UnsupportedModel: ...
+    class UnsupportedModel:
+        ...
 
     unsupported_model = UnsupportedModel()
     with pytest.raises(NotImplementedError) as e:

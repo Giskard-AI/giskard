@@ -8,8 +8,8 @@ from torchtext.datasets import AG_NEWS
 from torchtext.vocab import build_vocab_from_iterator
 
 from giskard import Dataset
-from giskard.models.pytorch import PyTorchModel
 from giskard.core.model_validation import validate_model
+from giskard.models.pytorch import PyTorchModel
 
 torch_softmax = nn.Softmax(dim=1)
 train_iter = AG_NEWS(split="train")

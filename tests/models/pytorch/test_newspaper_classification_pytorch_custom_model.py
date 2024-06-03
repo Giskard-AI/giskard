@@ -9,8 +9,8 @@ from torchtext.datasets import AG_NEWS
 from torchtext.vocab import build_vocab_from_iterator
 
 from giskard import Dataset, Model
-from giskard.models.pytorch import PyTorchModel
 from giskard.core.model_validation import validate_model
+from giskard.models.pytorch import PyTorchModel
 
 
 class MyPyTorchModel(PyTorchModel):
