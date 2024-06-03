@@ -12,10 +12,8 @@ from functools import singledispatchmethod
 from xml.dom import minidom
 from xml.etree.ElementTree import Element, SubElement, tostring
 
-from giskard.client.dtos import TestInputDTO
 from giskard.core.core import TestFunctionMeta
 from giskard.core.errors import GiskardImportError
-from giskard.core.savable import Artifact
 from giskard.core.test_result import TestMessage, TestMessageLevel, TestResult
 from giskard.datasets.base import Dataset
 from giskard.models.base import BaseModel
@@ -26,7 +24,6 @@ from giskard.registry.transformation_function import TransformationFunction
 
 from ..client.python_utils import warning
 from ..utils.analytics_collector import analytics
-from ..utils.artifacts import serialize_parameter
 
 if TYPE_CHECKING:
     from mlflow import MlflowClient
@@ -301,49 +298,6 @@ class TestPartial:
 
 def single_binary_result(test_results: List):
     return all(res.passed for res in test_results)
-
-
-def build_test_input_dto(client, p, pname, ptype, project_key, uploaded_uuid_status: Dict[str, bool]):
-    if issubclass(type(p), Dataset) or issubclass(type(p), BaseModel):
-        if _try_upload_artifact(p, client, project_key, uploaded_uuid_status):
-            return TestInputDTO(name=pname, value=str(p.id), type=ptype)
-        else:
-            return TestInputDTO(name=pname, value=pname, is_alias=True, type=ptype)
-    elif issubclass(type(p), Artifact):
-        if not _try_upload_artifact(p, client, None if "giskard" in p.meta.tags else project_key, uploaded_uuid_status):
-            return TestInputDTO(name=pname, value=pname, is_alias=True, type=ptype)
-
-        kwargs_params = [
-            f"kwargs[{pname}] = {repr(value)}" for pname, value in p.params.items() if pname not in p.meta.args
-        ]
-        kwargs_param = (
-            []
-            if len(kwargs_params) == 0
-            else (TestInputDTO(name="kwargs", value="\n".join(kwargs_params), type="Kwargs"))
-        )
-
-        return TestInputDTO(
-            name=pname,
-            value=str(p.meta.uuid),
-            type=ptype,
-            params=[
-                build_test_input_dto(
-                    client,
-                    value,
-                    pname,
-                    p.meta.args[pname].type,
-                    project_key,
-                    uploaded_uuid_status,
-                )
-                for pname, value in p.params.items()
-                if pname in p.meta.args
-            ]
-            + kwargs_param,
-        )
-    elif isinstance(p, SuiteInput):
-        return TestInputDTO(name=pname, value=p.name, is_alias=True, type=ptype)
-    else:
-        return TestInputDTO(name=pname, value=str(p), type=ptype)
 
 
 def generate_test_partial(
@@ -719,7 +673,7 @@ class Suite:
         ):
             return
 
-        self.add_test(GiskardTest.download(test_func.uuid, None, None)(**suite_args))
+        self.add_test(test_func, **suite_args)
 
     def _contains_test(self, test: TestFunctionMeta):
         return any(t.giskard_test == test for t in self.tests)
@@ -734,19 +688,3 @@ def format_test_result(result: Union[bool, TestResult]) -> str:
         return f"{{{'passed' if result.passed else 'failed'}, metric={result.metric}}}"
     else:
         return "passed" if result else "failed"
-
-
-def _try_upload_artifact(artifact, client, project_key: str, uploaded_uuid_status: Dict[str, bool]) -> bool:
-    artifact_id = serialize_parameter(artifact)
-
-    if artifact_id not in uploaded_uuid_status:
-        try:
-            artifact.upload(client, project_key)
-            uploaded_uuid_status[artifact_id] = True
-        except:  # noqa NOSONAR
-            warning(
-                f"Failed to upload {str(artifact)} used in the test suite. The test suite will be partially uploaded."
-            )
-            uploaded_uuid_status[artifact_id] = False
-
-    return uploaded_uuid_status[artifact_id]

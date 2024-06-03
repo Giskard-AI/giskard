@@ -1,25 +1,6 @@
-from typing import Any, Dict, List, Optional
-
-from pydantic import Field
+from typing import Dict, List, Optional
 
 from giskard.core.validation import ConfiguredBaseModel
-from giskard.utils.artifacts import serialize_parameter
-
-
-class TestInputDTO(ConfiguredBaseModel):
-    name: str
-    value: str
-    type: str
-    params: List["TestInputDTO"] = Field(default_factory=list)
-    is_alias: bool = False
-    is_default_value: bool = False
-
-    @classmethod
-    def from_inputs_dict(cls, inputs: Dict[str, Any]) -> List["TestInputDTO"]:
-        return [
-            cls(name=name, value=str(serialize_parameter(value)), type=type(value).__qualname__)
-            for name, value in inputs.items()
-        ]
 
 
 class ServerInfo(ConfiguredBaseModel):
