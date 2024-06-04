@@ -69,7 +69,7 @@ class ClaudeBedrockClient(BaseBedrockClient):
         anthropic_version: str = "bedrock-2023-05-31",
     ):
         # only supporting claude 3
-        if "claude-3" not in self.model:
+        if "claude-3" not in model:
             raise LLMConfigurationError(f"Only claude-3 models are supported as of now, got {self.model}")
 
         super().__init__(bedrock_runtime_client, model)
@@ -111,7 +111,7 @@ class ClaudeBedrockClient(BaseBedrockClient):
                 "max_tokens": max_tokens,
                 "temperature": temperature,
                 "system": "\n".join(system_prompts),
-                "messages": messages,
+                "messages": input_msg_prompt,
             }
         )
 
@@ -131,7 +131,7 @@ class ClaudeBedrockClient(BaseBedrockClient):
 class LLamaBedrockClient(BaseBedrockClient):
     def __init__(self, bedrock_runtime_client, model: str = "meta.llama3-8b-instruct-v1:0"):
         # only supporting llama
-        if "llama" not in self.model:
+        if "llama" not in model:
             raise LLMConfigurationError(f"Only Llama models are supported as of now, got {self.model}")
 
         super().__init__(bedrock_runtime_client, model)
