@@ -1,4 +1,4 @@
-from typing import Optional, Sequence
+from typing import List, Optional, Sequence
 
 import json
 
@@ -13,6 +13,31 @@ except ImportError as err:
     raise LLMImportError(
         flavor="llm", msg="To use Bedrock models, please install the `boto3` package with `pip install boto3`"
     ) from err
+
+
+def _format_messages_claude(messages: Sequence[ChatMessage]):
+    input_msg_prompt: List = []
+    system_prompts = []
+
+    for msg in messages:
+        # System prompt is a specific parameter in Claude
+        if msg.role.lower() == "system":
+            system_prompts.append(msg.content)
+            continue
+
+        # Only role user and assistant are allowed
+        role = msg.role.lower()
+        role = role if role in ["assistant", "user"] else "user"
+
+        # Consecutive messages need to be grouped
+        last_message = None if len(input_msg_prompt) == 0 else input_msg_prompt[-1]
+        if last_message is not None and last_message["role"] == role:
+            last_message["content"].append({"type": "text", "text": msg.content})
+            continue
+
+        input_msg_prompt.append({"role": role, "content": [{"type": "text", "text": msg.content}]})
+
+    return input_msg_prompt, "\n".join(system_prompts)
 
 
 class ClaudeBedrockClient(LLMClient):
@@ -39,16 +64,7 @@ class ClaudeBedrockClient(LLMClient):
         if "claude-3" not in self.model:
             raise LLMConfigurationError(f"Only claude-3 models are supported as of now, got {self.model}")
 
-        # Create the messages format needed for bedrock specifically
-        input_msg_prompt = []
-        system_prompts = []
-        for msg in messages:
-            if msg.role.lower() == "system":
-                system_prompts.append(msg.content)
-            elif msg.role.lower() == "assistant":
-                input_msg_prompt.append({"role": "assistant", "content": [{"type": "text", "text": msg.content}]})
-            else:
-                input_msg_prompt.append({"role": "user", "content": [{"type": "text", "text": msg.content}]})
+        messages, system = _format_messages_claude(messages)
 
         # create the json body to send to the API
         body = json.dumps(
@@ -56,8 +72,8 @@ class ClaudeBedrockClient(LLMClient):
                 "anthropic_version": "bedrock-2023-05-31",
                 "max_tokens": max_tokens,
                 "temperature": temperature,
-                "system": "\n".join(system_prompts),
-                "messages": input_msg_prompt,
+                "system": system,
+                "messages": messages,
             }
         )
 
