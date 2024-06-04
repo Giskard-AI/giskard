@@ -1,6 +1,7 @@
 from abc import ABC, abstractmethod
 
 from ...llm.client.base import LLMClient
+from ..base import AgentAnswer
 
 
 class Metric(ABC):
@@ -14,7 +15,7 @@ class Metric(ABC):
         self._llm_client = llm_client
 
     @abstractmethod
-    def __call__(self, question_sample: dict, answer: str):
+    def __call__(self, question_sample: dict, answer: AgentAnswer):
         """
         Compute the metric on a single question and its associated answer.
 
@@ -22,12 +23,12 @@ class Metric(ABC):
         ----------
         question_sample : dict
             A question sample from a QATestset.
-        answer : Sequence[str]
+        answer : AgentAnswer
             The agent answer on that question.
 
         Returns
         -------
         dict
-            The result of the metric. The keys should be the names of the metrics computed.
+            The result of the metric computation. The keys should be the names of the metrics computed.
         """
         pass

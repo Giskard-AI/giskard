@@ -5,6 +5,7 @@ import numpy as np
 from bokeh.plotting import figure
 
 from giskard.rag import QATestset, RAGReport
+from giskard.rag.base import AgentAnswer
 from giskard.rag.knowledge_base import KnowledgeBase
 from tests.rag.test_qa_testset import make_testset_samples
 from tests.utils import DummyEmbedding
@@ -17,7 +18,7 @@ def test_report_plots():
 
     testset = QATestset(make_testset_samples())
 
-    answers = ["Default answer"] * 6
+    answers = [AgentAnswer(message="Default answer")] * 6
 
     metrics_results = {
         "1": {
@@ -103,7 +104,7 @@ def test_report_save_load(tmp_path):
 
     knowledge_base._documents
 
-    answers = ["Default answer"] * 6
+    answers = [AgentAnswer(message="Default answer", documents=["Doc 1: example", "Doc 2: example"])] * 6
 
     metrics_results = {
         "1": {
@@ -173,3 +174,4 @@ def test_report_save_load(tmp_path):
         ]
     )
     assert all(report._dataframe["agent_answer"] == loaded_report._dataframe["agent_answer"])
+    assert report._model_outputs == loaded_report._model_outputs
