@@ -68,15 +68,3 @@ jobs:
             <${{ github.server_url }}/${{ github.actor }}|@${{ github.actor }}> | <${{ github.server_url }}/${{ github.repository }}/commit/${{ github.sha }}|commit> <!channel>
         env:
           SLACK_BOT_TOKEN: ${{ secrets.SLACK_BOT_TOKEN }}
-
-      - name: Trigger release process in legacy-hub
-        uses: peter-evans/repository-dispatch@v3
-        with:
-          token: ${{ secrets.RELEASE_PAT_TOKEN }}
-          event-type: create-release
-          repository: ${{ github.repository_owner }}/legacy-hub
-          client-payload: |
-            {
-              "version_name": "v${{ inputs.version }}",
-              "slack_thread_id": "${{ steps.slack.outputs.thread_ts }}"
-            }
