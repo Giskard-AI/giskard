@@ -82,10 +82,12 @@ class ScanReport:
         results = {}
         if self.detectors_names is not None:
             for detector_name in self.detectors_names:
-                results[detector_name] = []
+                results[detector_name] = {}
                 for issue in self.issues:
                     if issue.detector_name == detector_name:
-                        results[detector_name].append(issue.description)
+                        if issue.level not in results[detector_name]:
+                            results[detector_name][issue.level] = []
+                        results[detector_name][issue.level].append(issue.description)
         if filename is not None:
             with open(filename, "w") as json_file:
                 json.dump(results, json_file, indent=4)
