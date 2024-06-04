@@ -54,17 +54,6 @@ jobs:
           python-version: '3.10'
           cache: false
 
-      - name: Build release candidate wheel
-        run: pdm build
-
-      - name: Upload RC wheel artifact
-        uses: actions/upload-artifact@v4
-        with:
-          name: rc-wheel-${{ env.VERSION_NUMBER }}
-          path: dist/*whl
-          if-no-files-found: error
-          retention-days: 1
-
       - name: "@slack Release process started"
         id: slack
         uses: slackapi/slack-github-action@v1.26.0
@@ -93,16 +82,9 @@ jobs:
           git push origin main
           git push origin ${{ env.VERSION_NAME }}
 
-      - name: Download wheel (release candidate)
-        working-directory: dist
-        run: gh -R ${{ github.repository_owner }}/giskard run download -n rc-wheel-${{ env.VERSION_NUMBER }}
-        env:
-          GH_TOKEN: ${{ github.token }}
-
       # build .tar.gz sdist tarball
-      # --no-clean preserves the previously downloaded wheel in dist/
       - name: Build source distribution tarball
-        run: pdm build --no-wheel --no-clean
+        run: pdm build --no-clean
 
       - name: Create Github Release
         id: github-release
