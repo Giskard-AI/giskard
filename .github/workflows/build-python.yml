@@ -291,7 +291,7 @@ jobs:
           cd ./install-test
           pdm init --python 3.10 -n .
           sed -i 's/^\(requires-python *= *\).*$/\1">=3.10,<3.12"/' pyproject.toml
-          pdm add "$(ls ../dist/*.whl)[hub]"
+          pdm add "$(ls ../dist/*.whl)"
           pdm run python -c "import giskard"
       - name: Create new project, install wheel and import (PDM)
         run: |
