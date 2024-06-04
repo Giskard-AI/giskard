@@ -6,8 +6,6 @@ Slicing functions
 .. autoclass:: giskard.registry.slicing_function.SlicingFunction
 
    .. automethod:: execute
-   .. automethod:: upload
-   .. automethod:: download
 
 Textual slicing
 ---------------
