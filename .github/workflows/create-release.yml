@@ -84,7 +84,7 @@ jobs:
 
       # build .tar.gz sdist tarball
       - name: Build source distribution tarball
-        run: pdm build --no-clean
+        run: pdm build
 
       - name: Create Github Release
         id: github-release
