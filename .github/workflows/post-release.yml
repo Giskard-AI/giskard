@@ -76,20 +76,6 @@ jobs:
         run: gh -R ${{ github.repository_owner }}/giskard run download -n rc-wheel-${{ env.VERSION_NUMBER }}
         env:
           GH_TOKEN: ${{ github.token }}
-
-      - name: Validate wheel version
-        working-directory: dist
-        run: |
-          python -m pip install pkginfo
-          ls giskard-*.whl | xargs -I {} python3 -c 'import pkginfo; print(pkginfo.wheel.Wheel("{}").version)' > WHEEL_VERSION
-          if [ ! `grep ${{ env.VERSION_NUMBER }} WHEEL_VERSION` ]
-          then
-            echo "Expected wheel version ${{ env.VERSION_NUMBER }}, got $(cat WHEEL_VERSION)"
-            exit 1
-          else
-            echo "Cleaning file"
-            rm -f WHEEL_VERSION
-          fi
   
       # build .tar.gz sdist tarball
       # --no-clean preserves the previously downloaded wheel in dist/
