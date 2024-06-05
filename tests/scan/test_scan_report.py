@@ -63,7 +63,7 @@ def test_scan_report_to_json():
     json_report = report.to_json()
 
     assert json_report is not None
-    assert isinstance(json_report, dict)
+    assert isinstance(json_report, str)
 
     # Save to a file
     with tempfile.TemporaryDirectory() as tmpdir:
@@ -72,3 +72,4 @@ def test_scan_report_to_json():
 
         assert dest.exists()
         assert dest.is_file()
+        assert dest.read_text() == json_report
