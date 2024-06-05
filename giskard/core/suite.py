@@ -588,7 +588,6 @@ class Suite:
 
                 if isinstance(result, bool):
                     result = TestResult(passed=result)
-                print("TEMP: ", test_partial.test_id, result.passed)
 
                 results.append(SuiteResult(test_partial.test_id, result, test_params, test_partial))
                 if verbose:
