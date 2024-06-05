@@ -151,8 +151,6 @@ class Scanner:
             detector_start = perf_counter()
             try:
                 detected_issues = detector.run(model, dataset, features=features)
-                for issue in detected_issues:
-                    issue.set_detector_name(detector.__class__.__name__)
             except Exception as err:
                 logger.exception(f"Detector {detector.__class__.__name__} failed with error: {err}")
                 errors.append((detector, err))

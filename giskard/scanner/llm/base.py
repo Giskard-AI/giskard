@@ -117,6 +117,7 @@ class RequirementBasedDetector(Detector):
             },
             tests=_generate_output_requirement_tests,
             taxonomy=self._taxonomy,
+            detector_name=self.__class__.__name__,
         )
 
 

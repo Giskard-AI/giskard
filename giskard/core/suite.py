@@ -223,7 +223,10 @@ class TestSuiteResult:
     def to_json(self, filename=None):
         results = {}
         for suite_result in self.results:
-            results[suite_result.test_name] = "Passed" if suite_result.result.passed else "Failed"
+            results[suite_result.test_name] = {
+                "result": "Passed" if suite_result.result.passed else "Failed",
+                "metric_value": suite_result.result.metric,
+            }
         if filename is not None:
             with open(filename, "w") as json_file:
                 json.dump(results, json_file, indent=4)

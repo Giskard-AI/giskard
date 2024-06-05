@@ -54,6 +54,7 @@ class DataLeakageDetector(Detector):
                     examples=fail_samples,
                     meta={"domain": "Whole dataset"},
                     taxonomy=["avid-effect:performance:P0103"],
+                    detector_name=self.__class__.__name__,
                 )
             ]
 
