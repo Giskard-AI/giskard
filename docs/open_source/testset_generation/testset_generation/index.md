@@ -7,8 +7,9 @@ an in-house evaluation dataset is a painful task that requires manual curation a
 To help with this, the Giskard python library provides **RAGET: RAG Evaluation Toolkit**, a toolkit to evaluate RAG 
 agents **automatically**. 
 
-> ℹ️ You can find a [tutorial](../../../reference/notebooks/RAGET.ipynb) where we demonstrate the capabilities of RAGET with a simple RAG agent build with LlamaIndex 
-on the IPCC report.  
+> ℹ️ You can find a [tutorial](../../../reference/notebooks/RAGET.ipynb) where we demonstrate the capabilities of RAGET
+> with a simple RAG agent build with LlamaIndex
+> on the IPCC report.
 
 
 (q_types)=
@@ -142,6 +143,25 @@ _client = OpenAI(base_url="http://localhost:11434/v1/", api_key="ollama")
 oc = OpenAIClient(model="gemma:2b", client=_client)
 giskard.llm.set_default_client(oc)
 ```
+::::::
+::::::{tab-item} Claude 3
+
+```python
+import os
+import boto3
+import giskard
+
+from giskard.llm.client.bedrock import ClaudeBedrockClient
+from giskard.llm.embeddings.bedrock import BedrockEmbedding
+from giskard.llm.embeddings import set_default_embedding
+
+bedrock_runtime = boto3.client("bedrock-runtime", region_name=os.environ["AWS_DEFAULT_REGION"])
+claude_client = ClaudeBedrockClient(bedrock_runtime, model="anthropic.claude-3-haiku-20240307-v1:0")
+embed_client = BedrockEmbedding(bedrock_runtime, model="amazon.titan-embed-text-v1")
+giskard.llm.set_default_client(claude_client)
+set_default_embedding(embed_client)
+```
+
 ::::::
 ::::::{tab-item} Custom Client
 ```python
