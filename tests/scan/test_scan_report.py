@@ -59,7 +59,7 @@ def test_scan_report_to_json():
 
     report = ScanReport(
         issues=[Issue(model, dataset, Robustness, IssueLevel.MAJOR, detector_name="RobustnessDetector")],
-        detectors_names=["RobustnessDetector"]
+        detectors_names=["RobustnessDetector"],
     )
 
     # JSON report
