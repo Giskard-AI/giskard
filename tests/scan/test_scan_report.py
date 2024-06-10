@@ -57,13 +57,17 @@ def test_scan_report_to_json():
     model = Mock()
     dataset = Mock()
 
-    report = ScanReport(issues=[Issue(model, dataset, Robustness, IssueLevel.MAJOR)])
+    report = ScanReport(
+        issues=[Issue(model, dataset, Robustness, IssueLevel.MAJOR, detector_name="RobustnessDetector")],
+        detectors_names=["RobustnessDetector"]
+    )
 
     # JSON report
     json_report = report.to_json()
 
     assert json_report is not None
     assert isinstance(json_report, str)
+    assert "RobustnessDetector" in json_report
 
     # Save to a file
     with tempfile.TemporaryDirectory() as tmpdir:

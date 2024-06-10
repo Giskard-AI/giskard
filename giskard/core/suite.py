@@ -231,7 +231,7 @@ class TestSuiteResult:
             with open(filename, "w") as json_file:
                 json.dump(results, json_file, indent=4)
         else:
-            return results
+            return json.dumps(results, indent=4)
 
     def to_mlflow(self, mlflow_client: MlflowClient = None, mlflow_run_id: str = None):
         import mlflow
