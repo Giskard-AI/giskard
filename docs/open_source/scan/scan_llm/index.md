@@ -353,7 +353,9 @@ scan_results = giskard.scan(giskard_model)
 display(scan_results)  # in your notebook
 ```
 
-![LLM scan results](../../../assets/scan_llm.png)
+```{eval-rst}
+.. include:: ./html.rst
+```
 
 If you are not working in a notebook or want to save the results for later, you can save them to an HTML file like this:
 
