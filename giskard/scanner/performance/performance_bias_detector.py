@@ -241,6 +241,7 @@ class IssueFinder:
                     importance=-relative_delta if metric.greater_is_better else relative_delta,
                     tests=_generate_performance_tests,
                     taxonomy=["avid-effect:performance:P0204"],
+                    detector_name="PerformanceBiasDetector",
                 )
 
                 # Add failure examples
