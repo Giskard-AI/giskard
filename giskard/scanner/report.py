@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING, Optional
 
+import os
 import random
 import string
 import tempfile
@@ -92,6 +93,63 @@ class ScanReport:
             return
 
         return html
+
+    def to_doc(self, dir: Optional[str] = "doc_scan"):
+        """
+        Generates a doc from the scan report results
+
+        Parameters
+        ----------
+        dir : Optional[str]
+            If provided, the docs will be written in the specified folder.
+        """
+
+        # Group issues by type
+        issue_groups = {}
+        for elt in self.issues:
+            if elt.group.name not in issue_groups:
+                issue_groups[elt.group.name] = {"description": elt.group.description, "issues": []}
+            issue_groups[elt.group.name]["issues"].append({"level": elt.level.value, "description": elt.description})
+
+        # Create simple report content from issue group name anddescription,
+        # and issues level and description
+        content_issues = {}
+        for issue_group in issue_groups:
+            current_content = f"Category: {issue_group} \n\n"
+            current_content += f"Description: {issue_groups[issue_group]['description']} \n\n"
+            for issue in issue_groups[issue_group]["issues"]:
+                current_content += f"LEVEL {issue['level']} - {issue['description']}\n"
+            content_issues[issue_group] = current_content
+
+        # Generate complete report
+        results = {}
+        for issue_group in content_issues:
+            results[issue_group] = {
+                "status": 0 if "major" in content_issues[issue_group] else 1,
+                "summary": content_issues[issue_group],
+            }
+
+        final_results = {"context_requirement": [], "rejection_reason": [], "checklist": []}
+
+        for elt in results:
+            final_results["context_requirement"].append(results[elt]["status"])
+            final_results["rejection_reason"].append(results[elt]["summary"])
+            final_results["checklist"].append(elt)
+
+        final_results = pd.DataFrame(final_results)
+
+        # Create folder and markdown documents from generated reports
+        os.makedirs(dir, exist_ok=True)
+
+        for _, row in final_results.iterrows():
+            content_md = f"## Requirement on {row['checklist']}\n\n"
+            content_md += f"### Requirement result: **{'Passed' if row['context_requirement'] else 'Failed'}**\n\n"
+            content_md += row["rejection_reason"]
+
+            with open(f"{dir}/{row['checklist']}.md", "w") as filename:
+                filename.write(content_md)
+
+        return
 
     def to_markdown(self, filename=None, template="summary"):
         """Renders the scan report as markdown.
