@@ -5,7 +5,7 @@
 groups = ["default", "dev", "doc", "hub", "llm", "ml_runtime", "talk", "test"]
 strategy = ["cross_platform", "inherit_metadata"]
 lock_version = "4.4.1"
-content_hash = "sha256:86ff9c605f896cdc57516168fbd62b898857af115c23e18551e45fdcd59858b6"
+content_hash = "sha256:dec3aefdb685865b20f4969f98fdbc5ef8c1e18bd4b48527518d7678eafe6c83"
 
 [[package]]
 name = "absl-py"
@@ -13,7 +13,7 @@ version = "2.1.0"
 requires_python = ">=3.7"
 summary = "Abseil Python Common Libraries, see https://github.com/abseil/abseil-py."
 groups = ["ml_runtime"]
-marker = "python_version < \"3.12\" and sys_platform != \"win32\" and (platform_system != \"Windows\" or sys_platform == \"darwin\" or platform_machine == \"x86_64\") and (platform_system != \"Windows\" or platform_machine == \"x86_64\" or platform_machine == \"arm64\") and (platform_system != \"Windows\" or sys_platform == \"linux\" or sys_platform == \"darwin\") and (platform_system != \"Windows\" or python_version < \"3.11\" or sys_platform == \"darwin\") and (platform_system != \"Windows\" or python_version < \"3.11\" or platform_machine == \"arm64\")"
+marker = "platform_system != \"Windows\" and sys_platform != \"win32\" or (sys_platform == \"linux\" or sys_platform == \"darwin\") and platform_machine == \"x86_64\" and python_version < \"3.12\""
 files = [
     {file = "absl-py-2.1.0.tar.gz", hash = "sha256:7820790efbb316739cde8b4e19357243fc3608a152024288513dd968d7d959ff"},
     {file = "absl_py-2.1.0-py3-none-any.whl", hash = "sha256:526a04eadab8b4ee719ce68f204172ead1027549089702d99b9059f129ff1308"},
@@ -302,7 +302,7 @@ name = "astunparse"
 version = "1.6.3"
 summary = "An AST unparser for Python"
 groups = ["ml_runtime"]
-marker = "python_version < \"3.12\" and sys_platform != \"win32\" and (platform_system != \"Windows\" or sys_platform == \"darwin\" or platform_machine == \"x86_64\") and (platform_system != \"Windows\" or platform_machine == \"x86_64\" or platform_machine == \"arm64\") and (platform_system != \"Windows\" or sys_platform == \"linux\" or sys_platform == \"darwin\") and (platform_system != \"Windows\" or python_version < \"3.11\" or sys_platform == \"darwin\") and (platform_system != \"Windows\" or python_version < \"3.11\" or platform_machine == \"arm64\")"
+marker = "platform_system != \"Windows\" and sys_platform != \"win32\" or (sys_platform == \"linux\" or sys_platform == \"darwin\") and platform_machine == \"x86_64\" and python_version < \"3.12\""
 dependencies = [
     "six<2.0,>=1.6.1",
     "wheel<1.0,>=0.23.0",
@@ -1760,7 +1760,7 @@ version = "0.5.4"
 requires_python = ">=2.7, !=3.0.*, !=3.1.*, !=3.2.*, !=3.3.*"
 summary = "Python AST that abstracts the underlying Python version"
 groups = ["ml_runtime"]
-marker = "python_version < \"3.12\" and sys_platform != \"win32\" and (platform_system != \"Windows\" or sys_platform == \"darwin\" or platform_machine == \"x86_64\") and (platform_system != \"Windows\" or platform_machine == \"x86_64\" or platform_machine == \"arm64\") and (platform_system != \"Windows\" or sys_platform == \"linux\" or sys_platform == \"darwin\") and (platform_system != \"Windows\" or python_version < \"3.11\" or sys_platform == \"darwin\") and (platform_system != \"Windows\" or python_version < \"3.11\" or platform_machine == \"arm64\")"
+marker = "platform_system != \"Windows\" and sys_platform != \"win32\" or (sys_platform == \"linux\" or sys_platform == \"darwin\") and platform_machine == \"x86_64\" and python_version < \"3.12\""
 files = [
     {file = "gast-0.5.4-py3-none-any.whl", hash = "sha256:6fc4fa5fa10b72fb8aab4ae58bcb023058386e67b6fa2e3e34cec5c769360316"},
     {file = "gast-0.5.4.tar.gz", hash = "sha256:9c270fe5f4b130969b54174de7db4e764b09b4f7f67ccfc32480e29f78348d97"},
@@ -1800,7 +1800,7 @@ version = "2.30.0"
 requires_python = ">=3.7"
 summary = "Google Authentication Library"
 groups = ["ml_runtime"]
-marker = "python_version < \"3.12\" and sys_platform != \"win32\" and (platform_system != \"Windows\" or sys_platform == \"darwin\" or platform_machine == \"x86_64\") and (platform_system != \"Windows\" or platform_machine == \"x86_64\" or platform_machine == \"arm64\") and (platform_system != \"Windows\" or sys_platform == \"linux\" or sys_platform == \"darwin\") and (platform_system != \"Windows\" or python_version < \"3.11\" or sys_platform == \"darwin\") and (platform_system != \"Windows\" or python_version < \"3.11\" or platform_machine == \"arm64\")"
+marker = "platform_system != \"Windows\" and sys_platform != \"win32\" or (sys_platform == \"linux\" or sys_platform == \"darwin\") and platform_machine == \"x86_64\" and python_version < \"3.12\""
 dependencies = [
     "cachetools<6.0,>=2.0.0",
     "pyasn1-modules>=0.2.1",
@@ -1813,18 +1813,18 @@ files = [
 
 [[package]]
 name = "google-auth-oauthlib"
-version = "1.0.0"
+version = "1.2.0"
 requires_python = ">=3.6"
 summary = "Google Authentication Library"
 groups = ["ml_runtime"]
-marker = "python_version < \"3.12\" and sys_platform != \"win32\" and (platform_system != \"Windows\" or sys_platform == \"darwin\" or platform_machine == \"x86_64\") and (platform_system != \"Windows\" or platform_machine == \"x86_64\" or platform_machine == \"arm64\") and (platform_system != \"Windows\" or sys_platform == \"linux\" or sys_platform == \"darwin\") and (platform_system != \"Windows\" or python_version < \"3.11\" or sys_platform == \"darwin\") and (platform_system != \"Windows\" or python_version < \"3.11\" or platform_machine == \"arm64\")"
+marker = "platform_system != \"Windows\" and sys_platform != \"win32\" or (sys_platform == \"linux\" or sys_platform == \"darwin\") and platform_machine == \"x86_64\" and python_version < \"3.12\""
 dependencies = [
     "google-auth>=2.15.0",
     "requests-oauthlib>=0.7.0",
 ]
 files = [
-    {file = "google-auth-oauthlib-1.0.0.tar.gz", hash = "sha256:e375064964820b47221a7e1b7ee1fd77051b6323c3f9e3e19785f78ab67ecfc5"},
-    {file = "google_auth_oauthlib-1.0.0-py2.py3-none-any.whl", hash = "sha256:95880ca704928c300f48194d1770cf5b1462835b6e49db61445a520f793fd5fb"},
+    {file = "google-auth-oauthlib-1.2.0.tar.gz", hash = "sha256:292d2d3783349f2b0734a0a0207b1e1e322ac193c2c09d8f7c613fb7cc501ea8"},
+    {file = "google_auth_oauthlib-1.2.0-py2.py3-none-any.whl", hash = "sha256:297c1ce4cb13a99b5834c74a1fe03252e1e499716718b190f56bcb9c4abc4faf"},
 ]
 
 [[package]]
@@ -1832,7 +1832,7 @@ name = "google-pasta"
 version = "0.2.0"
 summary = "pasta is an AST-based Python refactoring library"
 groups = ["ml_runtime"]
-marker = "python_version < \"3.12\" and sys_platform != \"win32\" and (platform_system != \"Windows\" or sys_platform == \"darwin\" or platform_machine == \"x86_64\") and (platform_system != \"Windows\" or platform_machine == \"x86_64\" or platform_machine == \"arm64\") and (platform_system != \"Windows\" or sys_platform == \"linux\" or sys_platform == \"darwin\") and (platform_system != \"Windows\" or python_version < \"3.11\" or sys_platform == \"darwin\") and (platform_system != \"Windows\" or python_version < \"3.11\" or platform_machine == \"arm64\")"
+marker = "platform_system != \"Windows\" and sys_platform != \"win32\" or (sys_platform == \"linux\" or sys_platform == \"darwin\") and platform_machine == \"x86_64\" and python_version < \"3.12\""
 dependencies = [
     "six",
 ]
@@ -1960,7 +1960,7 @@ version = "1.64.1"
 requires_python = ">=3.8"
 summary = "HTTP/2-based RPC framework"
 groups = ["ml_runtime"]
-marker = "python_version < \"3.12\" and sys_platform != \"win32\" and (platform_system != \"Windows\" or sys_platform == \"darwin\" or platform_machine == \"x86_64\") and (platform_system != \"Windows\" or platform_machine == \"x86_64\" or platform_machine == \"arm64\") and (platform_system != \"Windows\" or sys_platform == \"linux\" or sys_platform == \"darwin\") and (platform_system != \"Windows\" or python_version < \"3.11\" or sys_platform == \"darwin\") and (platform_system != \"Windows\" or python_version < \"3.11\" or platform_machine == \"arm64\")"
+marker = "platform_system != \"Windows\" and sys_platform != \"win32\" or (sys_platform == \"linux\" or sys_platform == \"darwin\") and platform_machine == \"x86_64\" and python_version < \"3.12\""
 files = [
     {file = "grpcio-1.64.1-cp310-cp310-linux_armv7l.whl", hash = "sha256:55697ecec192bc3f2f3cc13a295ab670f51de29884ca9ae6cd6247df55df2502"},
     {file = "grpcio-1.64.1-cp310-cp310-macosx_12_0_universal2.whl", hash = "sha256:3b64ae304c175671efdaa7ec9ae2cc36996b681eb63ca39c464958396697daff"},
@@ -2033,7 +2033,7 @@ version = "3.11.0"
 requires_python = ">=3.8"
 summary = "Read and write HDF5 files from Python"
 groups = ["ml_runtime"]
-marker = "python_version < \"3.12\" and sys_platform != \"win32\" and (platform_system != \"Windows\" or sys_platform == \"darwin\" or platform_machine == \"x86_64\") and (platform_system != \"Windows\" or platform_machine == \"x86_64\" or platform_machine == \"arm64\") and (platform_system != \"Windows\" or sys_platform == \"linux\" or sys_platform == \"darwin\") and (platform_system != \"Windows\" or python_version < \"3.11\" or sys_platform == \"darwin\") and (platform_system != \"Windows\" or python_version < \"3.11\" or platform_machine == \"arm64\")"
+marker = "platform_system != \"Windows\" and sys_platform != \"win32\" or (sys_platform == \"linux\" or sys_platform == \"darwin\") and platform_machine == \"x86_64\" and python_version < \"3.12\""
 dependencies = [
     "numpy>=1.17.3",
 ]
@@ -2783,14 +2783,14 @@ files = [
 
 [[package]]
 name = "keras"
-version = "2.14.0"
-requires_python = ">=3.9"
+version = "2.15.0"
+requires_python = ">=3.8"
 summary = "Deep learning for humans."
 groups = ["ml_runtime"]
-marker = "python_version < \"3.12\" and sys_platform != \"win32\" and (platform_system != \"Windows\" or sys_platform == \"darwin\" or platform_machine == \"x86_64\") and (platform_system != \"Windows\" or platform_machine == \"x86_64\" or platform_machine == \"arm64\") and (platform_system != \"Windows\" or sys_platform == \"linux\" or sys_platform == \"darwin\") and (platform_system != \"Windows\" or python_version < \"3.11\" or sys_platform == \"darwin\") and (platform_system != \"Windows\" or python_version < \"3.11\" or platform_machine == \"arm64\")"
+marker = "platform_system != \"Windows\" and sys_platform != \"win32\" or (sys_platform == \"linux\" or sys_platform == \"darwin\") and platform_machine == \"x86_64\" and python_version < \"3.12\""
 files = [
-    {file = "keras-2.14.0-py3-none-any.whl", hash = "sha256:d7429d1d2131cc7eb1f2ea2ec330227c7d9d38dab3dfdf2e78defee4ecc43fcd"},
-    {file = "keras-2.14.0.tar.gz", hash = "sha256:22788bdbc86d9988794fe9703bb5205141da797c4faeeb59497c58c3d94d34ed"},
+    {file = "keras-2.15.0-py3-none-any.whl", hash = "sha256:2dcc6d2e30cf9c951064b63c1f4c404b966c59caf09e01f3549138ec8ee0dd1f"},
+    {file = "keras-2.15.0.tar.gz", hash = "sha256:81871d298c064dc4ac6b58440fdae67bfcf47c8d7ad28580fab401834c06a575"},
 ]
 
 [[package]]
@@ -3019,7 +3019,7 @@ name = "libclang"
 version = "18.1.1"
 summary = "Clang Python Bindings, mirrored from the official LLVM repo: https://github.com/llvm/llvm-project/tree/main/clang/bindings/python, to make the installation process easier."
 groups = ["ml_runtime"]
-marker = "python_version < \"3.12\" and sys_platform != \"win32\" and (platform_system != \"Windows\" or sys_platform == \"darwin\" or platform_machine == \"x86_64\") and (platform_system != \"Windows\" or platform_machine == \"x86_64\" or platform_machine == \"arm64\") and (platform_system != \"Windows\" or sys_platform == \"linux\" or sys_platform == \"darwin\") and (platform_system != \"Windows\" or python_version < \"3.11\" or sys_platform == \"darwin\") and (platform_system != \"Windows\" or python_version < \"3.11\" or platform_machine == \"arm64\")"
+marker = "platform_system != \"Windows\" and sys_platform != \"win32\" or (sys_platform == \"linux\" or sys_platform == \"darwin\") and platform_machine == \"x86_64\" and python_version < \"3.12\""
 files = [
     {file = "libclang-18.1.1-py2.py3-none-macosx_10_9_x86_64.whl", hash = "sha256:6f14c3f194704e5d09769108f03185fce7acaf1d1ae4bbb2f30a72c2400cb7c5"},
     {file = "libclang-18.1.1-py2.py3-none-macosx_11_0_arm64.whl", hash = "sha256:83ce5045d101b669ac38e6da8e58765f12da2d3aafb3b9b98d88b286a60964d8"},
@@ -3556,30 +3556,35 @@ files = [
 
 [[package]]
 name = "ml-dtypes"
-version = "0.2.0"
-requires_python = ">=3.7"
+version = "0.3.2"
+requires_python = ">=3.9"
 summary = ""
 groups = ["ml_runtime"]
-marker = "python_version < \"3.12\" and sys_platform != \"win32\" and (platform_system != \"Windows\" or sys_platform == \"darwin\" or platform_machine == \"x86_64\") and (platform_system != \"Windows\" or platform_machine == \"x86_64\" or platform_machine == \"arm64\") and (platform_system != \"Windows\" or sys_platform == \"linux\" or sys_platform == \"darwin\") and (platform_system != \"Windows\" or python_version < \"3.11\" or sys_platform == \"darwin\") and (platform_system != \"Windows\" or python_version < \"3.11\" or platform_machine == \"arm64\")"
+marker = "platform_system != \"Windows\" and sys_platform != \"win32\" or (sys_platform == \"linux\" or sys_platform == \"darwin\") and platform_machine == \"x86_64\" and python_version < \"3.12\""
 dependencies = [
     "numpy>1.20",
-    "numpy>=1.21.2; python_version > \"3.9\"",
-    "numpy>=1.23.3; python_version > \"3.10\"",
+    "numpy>=1.21.2; python_version >= \"3.10\"",
+    "numpy>=1.23.3; python_version >= \"3.11\"",
+    "numpy>=1.26.0; python_version >= \"3.12\"",
 ]
 files = [
-    {file = "ml_dtypes-0.2.0-cp310-cp310-macosx_10_9_universal2.whl", hash = "sha256:df6a76e1c8adf484feb138ed323f9f40a7b6c21788f120f7c78bec20ac37ee81"},
-    {file = "ml_dtypes-0.2.0-cp310-cp310-manylinux_2_17_aarch64.manylinux2014_aarch64.whl", hash = "sha256:bc29a0524ef5e23a7fbb8d881bdecabeb3fc1d19d9db61785d077a86cb94fab2"},
-    {file = "ml_dtypes-0.2.0-cp310-cp310-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:f08c391c2794f2aad358e6f4c70785a9a7b1df980ef4c232b3ccd4f6fe39f719"},
-    {file = "ml_dtypes-0.2.0-cp310-cp310-win_amd64.whl", hash = "sha256:75015818a7fccf99a5e8ed18720cb430f3e71a8838388840f4cdf225c036c983"},
-    {file = "ml_dtypes-0.2.0-cp311-cp311-macosx_10_9_universal2.whl", hash = "sha256:e70047ec2c83eaee01afdfdabee2c5b0c133804d90d0f7db4dd903360fcc537c"},
-    {file = "ml_dtypes-0.2.0-cp311-cp311-manylinux_2_17_aarch64.manylinux2014_aarch64.whl", hash = "sha256:36d28b8861a8931695e5a31176cad5ae85f6504906650dea5598fbec06c94606"},
-    {file = "ml_dtypes-0.2.0-cp311-cp311-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:e85ba8e24cf48d456e564688e981cf379d4c8e644db0a2f719b78de281bac2ca"},
-    {file = "ml_dtypes-0.2.0-cp311-cp311-win_amd64.whl", hash = "sha256:832a019a1b6db5c4422032ca9940a990fa104eee420f643713241b3a518977fa"},
-    {file = "ml_dtypes-0.2.0-cp39-cp39-macosx_10_9_universal2.whl", hash = "sha256:f00c71c8c63e03aff313bc6a7aeaac9a4f1483a921a6ffefa6d4404efd1af3d0"},
-    {file = "ml_dtypes-0.2.0-cp39-cp39-manylinux_2_17_aarch64.manylinux2014_aarch64.whl", hash = "sha256:80d304c836d73f10605c58ccf7789c171cc229bfb678748adfb7cea2510dfd0e"},
-    {file = "ml_dtypes-0.2.0-cp39-cp39-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:32107e7fa9f62db9a5281de923861325211dfff87bd23faefb27b303314635ab"},
-    {file = "ml_dtypes-0.2.0-cp39-cp39-win_amd64.whl", hash = "sha256:1749b60348da71fd3c2ab303fdbc1965958dc50775ead41f5669c932a341cafd"},
-    {file = "ml_dtypes-0.2.0.tar.gz", hash = "sha256:6488eb642acaaf08d8020f6de0a38acee7ac324c1e6e92ee0c0fea42422cb797"},
+    {file = "ml_dtypes-0.3.2-cp310-cp310-macosx_10_9_universal2.whl", hash = "sha256:7afde548890a92b41c0fed3a6c525f1200a5727205f73dc21181a2726571bb53"},
+    {file = "ml_dtypes-0.3.2-cp310-cp310-manylinux_2_17_aarch64.manylinux2014_aarch64.whl", hash = "sha256:d1a746fe5fb9cd974a91070174258f0be129c592b93f9ce7df6cc336416c3fbd"},
+    {file = "ml_dtypes-0.3.2-cp310-cp310-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:961134ea44c7b8ca63eda902a44b58cd8bd670e21d62e255c81fba0a8e70d9b7"},
+    {file = "ml_dtypes-0.3.2-cp310-cp310-win_amd64.whl", hash = "sha256:6b35c4e8ca957c877ac35c79ffa77724ecc3702a1e4b18b08306c03feae597bb"},
+    {file = "ml_dtypes-0.3.2-cp311-cp311-macosx_10_9_universal2.whl", hash = "sha256:763697ab8a88d47443997a7cdf3aac7340049aed45f7521f6b0ec8a0594821fe"},
+    {file = "ml_dtypes-0.3.2-cp311-cp311-manylinux_2_17_aarch64.manylinux2014_aarch64.whl", hash = "sha256:b89b194e9501a92d289c1ffd411380baf5daafb9818109a4f49b0a1b6dce4462"},
+    {file = "ml_dtypes-0.3.2-cp311-cp311-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:2c34f2ba9660b21fe1034b608308a01be82bbef2a92fb8199f24dc6bad0d5226"},
+    {file = "ml_dtypes-0.3.2-cp311-cp311-win_amd64.whl", hash = "sha256:6604877d567a29bfe7cc02969ae0f2425260e5335505cf5e7fefc3e5465f5655"},
+    {file = "ml_dtypes-0.3.2-cp312-cp312-macosx_10_9_universal2.whl", hash = "sha256:93b78f53431c93953f7850bb1b925a17f0ab5d97527e38a7e865b5b4bc5cfc18"},
+    {file = "ml_dtypes-0.3.2-cp312-cp312-manylinux_2_17_aarch64.manylinux2014_aarch64.whl", hash = "sha256:3a17ef2322e60858d93584e9c52a5be7dd6236b056b7fa1ec57f1bb6ba043e33"},
+    {file = "ml_dtypes-0.3.2-cp312-cp312-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:e8505946df1665db01332d885c2020b4cb9e84a8b1241eb4ba69d59591f65855"},
+    {file = "ml_dtypes-0.3.2-cp312-cp312-win_amd64.whl", hash = "sha256:f47619d978ab1ae7dfdc4052ea97c636c6263e1f19bd1be0e42c346b98d15ff4"},
+    {file = "ml_dtypes-0.3.2-cp39-cp39-macosx_10_9_universal2.whl", hash = "sha256:c7b3fb3d4f6b39bcd4f6c4b98f406291f0d681a895490ee29a0f95bab850d53c"},
+    {file = "ml_dtypes-0.3.2-cp39-cp39-manylinux_2_17_aarch64.manylinux2014_aarch64.whl", hash = "sha256:7a4c3fcbf86fa52d0204f07cfd23947ef05b4ad743a1a988e163caa34a201e5e"},
+    {file = "ml_dtypes-0.3.2-cp39-cp39-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:91f8783fd1f2c23fd3b9ee5ad66b785dafa58ba3cdb050c4458021fa4d1eb226"},
+    {file = "ml_dtypes-0.3.2-cp39-cp39-win_amd64.whl", hash = "sha256:7ba8e1fafc7fff3e643f453bffa7d082df1678a73286ce8187d3e825e776eb94"},
+    {file = "ml_dtypes-0.3.2.tar.gz", hash = "sha256:533059bc5f1764fac071ef54598db358c167c51a718f68f5bb55e3dee79d2967"},
 ]
 
 [[package]]
@@ -4354,7 +4359,7 @@ version = "3.2.2"
 requires_python = ">=3.6"
 summary = "A generic, spec-compliant, thorough implementation of the OAuth request-signing logic"
 groups = ["ml_runtime"]
-marker = "python_version < \"3.12\" and sys_platform != \"win32\" and (platform_system != \"Windows\" or sys_platform == \"darwin\" or platform_machine == \"x86_64\") and (platform_system != \"Windows\" or platform_machine == \"x86_64\" or platform_machine == \"arm64\") and (platform_system != \"Windows\" or sys_platform == \"linux\" or sys_platform == \"darwin\") and (platform_system != \"Windows\" or python_version < \"3.11\" or sys_platform == \"darwin\") and (platform_system != \"Windows\" or python_version < \"3.11\" or platform_machine == \"arm64\")"
+marker = "platform_system != \"Windows\" and sys_platform != \"win32\" or (sys_platform == \"linux\" or sys_platform == \"darwin\") and platform_machine == \"x86_64\" and python_version < \"3.12\""
 files = [
     {file = "oauthlib-3.2.2-py3-none-any.whl", hash = "sha256:8139f29aac13e25d502680e9e19963e83f16838d48a0d71c287fe40e7067fbca"},
     {file = "oauthlib-3.2.2.tar.gz", hash = "sha256:9859c40929662bec5d64f34d01c99e093149682a3f38915dc0655d5a633dd918"},
@@ -4501,7 +4506,7 @@ version = "3.3.0"
 requires_python = ">=3.5"
 summary = "Optimizing numpys einsum function"
 groups = ["ml_runtime"]
-marker = "python_version < \"3.12\" and sys_platform != \"win32\" and (platform_system != \"Windows\" or sys_platform == \"darwin\" or platform_machine == \"x86_64\") and (platform_system != \"Windows\" or platform_machine == \"x86_64\" or platform_machine == \"arm64\") and (platform_system != \"Windows\" or sys_platform == \"linux\" or sys_platform == \"darwin\") and (platform_system != \"Windows\" or python_version < \"3.11\" or sys_platform == \"darwin\") and (platform_system != \"Windows\" or python_version < \"3.11\" or platform_machine == \"arm64\")"
+marker = "platform_system != \"Windows\" and sys_platform != \"win32\" or (sys_platform == \"linux\" or sys_platform == \"darwin\") and platform_machine == \"x86_64\" and python_version < \"3.12\""
 dependencies = [
     "numpy>=1.7",
 ]
@@ -5836,7 +5841,7 @@ version = "2.0.0"
 requires_python = ">=3.4"
 summary = "OAuthlib authentication support for Requests."
 groups = ["ml_runtime"]
-marker = "python_version < \"3.12\" and sys_platform != \"win32\" and (platform_system != \"Windows\" or sys_platform == \"darwin\" or platform_machine == \"x86_64\") and (platform_system != \"Windows\" or platform_machine == \"x86_64\" or platform_machine == \"arm64\") and (platform_system != \"Windows\" or sys_platform == \"linux\" or sys_platform == \"darwin\") and (platform_system != \"Windows\" or python_version < \"3.11\" or sys_platform == \"darwin\") and (platform_system != \"Windows\" or python_version < \"3.11\" or platform_machine == \"arm64\")"
+marker = "platform_system != \"Windows\" and sys_platform != \"win32\" or (sys_platform == \"linux\" or sys_platform == \"darwin\") and platform_machine == \"x86_64\" and python_version < \"3.12\""
 dependencies = [
     "oauthlib>=3.0.0",
     "requests>=2.0.0",
@@ -6001,7 +6006,7 @@ version = "4.9"
 requires_python = ">=3.6,<4"
 summary = "Pure-Python RSA implementation"
 groups = ["ml_runtime"]
-marker = "python_version < \"3.12\" and sys_platform != \"win32\" and (platform_system != \"Windows\" or sys_platform == \"darwin\" or platform_machine == \"x86_64\") and (platform_system != \"Windows\" or platform_machine == \"x86_64\" or platform_machine == \"arm64\") and (platform_system != \"Windows\" or sys_platform == \"linux\" or sys_platform == \"darwin\") and (platform_system != \"Windows\" or python_version < \"3.11\" or sys_platform == \"darwin\") and (platform_system != \"Windows\" or python_version < \"3.11\" or platform_machine == \"arm64\")"
+marker = "platform_system != \"Windows\" and sys_platform != \"win32\" or (sys_platform == \"linux\" or sys_platform == \"darwin\") and platform_machine == \"x86_64\" and python_version < \"3.12\""
 dependencies = [
     "pyasn1>=0.1.3",
 ]
@@ -6925,19 +6930,19 @@ files = [
 
 [[package]]
 name = "tensorboard"
-version = "2.14.1"
+version = "2.15.2"
 requires_python = ">=3.9"
 summary = "TensorBoard lets you watch Tensors Flow"
 groups = ["ml_runtime"]
-marker = "python_version < \"3.12\" and sys_platform != \"win32\" and (platform_system != \"Windows\" or sys_platform == \"darwin\" or platform_machine == \"x86_64\") and (platform_system != \"Windows\" or platform_machine == \"x86_64\" or platform_machine == \"arm64\") and (platform_system != \"Windows\" or sys_platform == \"linux\" or sys_platform == \"darwin\") and (platform_system != \"Windows\" or python_version < \"3.11\" or sys_platform == \"darwin\") and (platform_system != \"Windows\" or python_version < \"3.11\" or platform_machine == \"arm64\")"
+marker = "platform_system != \"Windows\" and sys_platform != \"win32\" or (sys_platform == \"linux\" or sys_platform == \"darwin\") and platform_machine == \"x86_64\" and python_version < \"3.12\""
 dependencies = [
     "absl-py>=0.4",
-    "google-auth-oauthlib<1.1,>=0.5",
+    "google-auth-oauthlib<2,>=0.5",
     "google-auth<3,>=1.6.3",
     "grpcio>=1.48.2",
     "markdown>=2.6.8",
     "numpy>=1.12.0",
-    "protobuf>=3.19.6",
+    "protobuf!=4.24.0,>=3.19.6",
     "requests<3,>=2.21.0",
     "setuptools>=41.0.0",
     "six>1.9",
@@ -6945,7 +6950,7 @@ dependencies = [
     "werkzeug>=1.0.1",
 ]
 files = [
-    {file = "tensorboard-2.14.1-py3-none-any.whl", hash = "sha256:3db108fb58f023b6439880e177743c5f1e703e9eeb5fb7d597871f949f85fd58"},
+    {file = "tensorboard-2.15.2-py3-none-any.whl", hash = "sha256:a6f6443728064d962caea6d34653e220e34ef8df764cb06a8212c17e1a8f0622"},
 ]
 
 [[package]]
@@ -6954,7 +6959,7 @@ version = "0.7.2"
 requires_python = ">=3.7"
 summary = "Fast data loading for TensorBoard"
 groups = ["ml_runtime"]
-marker = "python_version < \"3.12\" and sys_platform != \"win32\" and (platform_system != \"Windows\" or sys_platform == \"darwin\" or platform_machine == \"x86_64\") and (platform_system != \"Windows\" or platform_machine == \"x86_64\" or platform_machine == \"arm64\") and (platform_system != \"Windows\" or sys_platform == \"linux\" or sys_platform == \"darwin\") and (platform_system != \"Windows\" or python_version < \"3.11\" or sys_platform == \"darwin\") and (platform_system != \"Windows\" or python_version < \"3.11\" or platform_machine == \"arm64\")"
+marker = "platform_system != \"Windows\" and sys_platform != \"win32\" or (sys_platform == \"linux\" or sys_platform == \"darwin\") and platform_machine == \"x86_64\" and python_version < \"3.12\""
 files = [
     {file = "tensorboard_data_server-0.7.2-py3-none-any.whl", hash = "sha256:7e0610d205889588983836ec05dc098e80f97b7e7bbff7e994ebb78f578d0ddb"},
     {file = "tensorboard_data_server-0.7.2-py3-none-macosx_10_9_x86_64.whl", hash = "sha256:9fe5d24221b29625dbc7328b0436ca7fc1c23de4acf4d272f1180856e32f9f60"},
@@ -6963,11 +6968,11 @@ files = [
 
 [[package]]
 name = "tensorflow"
-version = "2.14.0"
+version = "2.15.1"
 requires_python = ">=3.9"
 summary = "TensorFlow is an open source machine learning framework for everyone."
 groups = ["ml_runtime"]
-marker = "python_version < \"3.12\" and sys_platform != \"win32\" and platform_system != \"Windows\" or platform_machine == \"x86_64\" and (sys_platform == \"linux\" or sys_platform == \"darwin\") and python_version < \"3.11\""
+marker = "platform_system != \"Windows\" and sys_platform != \"win32\" or (sys_platform == \"linux\" or sys_platform == \"darwin\") and platform_machine == \"x86_64\" and python_version < \"3.12\""
 dependencies = [
     "absl-py>=1.0.0",
     "astunparse>=1.6.0",
@@ -6976,49 +6981,49 @@ dependencies = [
     "google-pasta>=0.1.1",
     "grpcio<2.0,>=1.24.3",
     "h5py>=2.9.0",
-    "keras<2.15,>=2.14.0",
+    "keras<2.16,>=2.15.0",
     "libclang>=13.0.0",
-    "ml-dtypes==0.2.0",
-    "numpy>=1.23.5",
+    "ml-dtypes~=0.3.1",
+    "numpy<2.0.0,>=1.23.5",
     "opt-einsum>=2.3.2",
     "packaging",
     "protobuf!=4.21.0,!=4.21.1,!=4.21.2,!=4.21.3,!=4.21.4,!=4.21.5,<5.0.0dev,>=3.20.3",
     "setuptools",
     "six>=1.12.0",
-    "tensorboard<2.15,>=2.14",
-    "tensorflow-cpu-aws==2.14.0; (platform_machine == \"arm64\" or platform_machine == \"aarch64\") and platform_system == \"Linux\"",
-    "tensorflow-estimator<2.15,>=2.14.0",
-    "tensorflow-intel==2.14.0; platform_system == \"Windows\"",
+    "tensorboard<2.16,>=2.15",
+    "tensorflow-cpu-aws==2.15.1; (platform_machine == \"arm64\" or platform_machine == \"aarch64\") and platform_system == \"Linux\"",
+    "tensorflow-estimator<2.16,>=2.15.0",
+    "tensorflow-intel==2.15.1; platform_system == \"Windows\"",
     "tensorflow-io-gcs-filesystem>=0.23.1",
     "termcolor>=1.1.0",
     "typing-extensions>=3.6.6",
     "wrapt<1.15,>=1.11.0",
 ]
 files = [
-    {file = "tensorflow-2.14.0-cp310-cp310-macosx_10_15_x86_64.whl", hash = "sha256:318b21b18312df6d11f511d0f205d55809d9ad0f46d5f9c13d8325ce4fe3b159"},
-    {file = "tensorflow-2.14.0-cp310-cp310-macosx_12_0_arm64.whl", hash = "sha256:927868c9bd4b3d2026ac77ec65352226a9f25e2d24ec3c7d088c68cff7583c9b"},
-    {file = "tensorflow-2.14.0-cp310-cp310-manylinux_2_17_aarch64.manylinux2014_aarch64.whl", hash = "sha256:c3870063433aebbd1b8da65ed4dcb09495f9239397f8cb5a8822025b6bb65e04"},
-    {file = "tensorflow-2.14.0-cp310-cp310-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:0c9c1101269efcdb63492b45c8e83df0fc30c4454260a252d507dfeaebdf77ff"},
-    {file = "tensorflow-2.14.0-cp310-cp310-win_amd64.whl", hash = "sha256:0b7eaab5e034f1695dc968f7be52ce7ccae4621182d1e2bf6d5b3fab583be98c"},
-    {file = "tensorflow-2.14.0-cp311-cp311-macosx_10_15_x86_64.whl", hash = "sha256:00c42e7d8280c660b10cf5d0b3164fdc5e38fd0bf16b3f9963b7cd0e546346d8"},
-    {file = "tensorflow-2.14.0-cp311-cp311-macosx_12_0_arm64.whl", hash = "sha256:c92f5526c2029d31a036be06eb229c71f1c1821472876d34d0184d19908e318c"},
-    {file = "tensorflow-2.14.0-cp311-cp311-manylinux_2_17_aarch64.manylinux2014_aarch64.whl", hash = "sha256:c224c076160ef9f60284e88f59df2bed347d55e64a0ca157f30f9ca57e8495b0"},
-    {file = "tensorflow-2.14.0-cp311-cp311-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:a80cabe6ab5f44280c05533e5b4a08e5b128f0d68d112564cffa3b96638e28aa"},
-    {file = "tensorflow-2.14.0-cp311-cp311-win_amd64.whl", hash = "sha256:0587ece626c4f7c4fcb2132525ea6c77ad2f2f5659a9b0f4451b1000be1b5e16"},
-    {file = "tensorflow-2.14.0-cp39-cp39-macosx_10_15_x86_64.whl", hash = "sha256:6d65b54f6928490e2b6ff51836b97f88f5d5b29b5943fe81d8ac5d8c809ccca4"},
-    {file = "tensorflow-2.14.0-cp39-cp39-macosx_12_0_arm64.whl", hash = "sha256:e2840b549686080bfb824cc1578b5a15d5ec416badacc0c327d93f8762ee6b56"},
-    {file = "tensorflow-2.14.0-cp39-cp39-manylinux_2_17_aarch64.manylinux2014_aarch64.whl", hash = "sha256:4fb16641092b04a37ec2916c30412f986ca6adf969e6062057839efb788985f8"},
-    {file = "tensorflow-2.14.0-cp39-cp39-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:2ba2ee1f9fe7f453bcd27d39a36928142de75a427ac2097dee2db1516387c9d5"},
-    {file = "tensorflow-2.14.0-cp39-cp39-win_amd64.whl", hash = "sha256:6531e76276b1421f43e008280107ba215256d4570cc56fd54856db7ff45e58f7"},
+    {file = "tensorflow-2.15.1-cp310-cp310-macosx_10_15_x86_64.whl", hash = "sha256:91b51a507007d63a70b65be307d701088d15042a6399c0e2312b53072226e909"},
+    {file = "tensorflow-2.15.1-cp310-cp310-macosx_12_0_arm64.whl", hash = "sha256:10132acc072d59696c71ce7221d2d8e0e3ff1e6bc8688dbac6d7aed8e675b710"},
+    {file = "tensorflow-2.15.1-cp310-cp310-manylinux_2_17_aarch64.manylinux2014_aarch64.whl", hash = "sha256:30c5ef9c758ec9ff7ce2aff76b71c980bc5119b879071c2cc623b1591a497a1a"},
+    {file = "tensorflow-2.15.1-cp310-cp310-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:ea290e435464cf0794f657b48786e5fa413362abe55ed771c172c25980d070ce"},
+    {file = "tensorflow-2.15.1-cp310-cp310-win_amd64.whl", hash = "sha256:8e5431d45ceb416c2b1b6de87378054fbac7d2ed35d45b102d89a786613fffdc"},
+    {file = "tensorflow-2.15.1-cp311-cp311-macosx_10_15_x86_64.whl", hash = "sha256:6761efe511e6ee0f893f60738fefbcc51d6dc386eeaaafea59d21899ef369ffd"},
+    {file = "tensorflow-2.15.1-cp311-cp311-macosx_12_0_arm64.whl", hash = "sha256:aa926114d1e13ffe5b2ea59c3f195216f26646d7fe36e9e5207b291e4b7902ff"},
+    {file = "tensorflow-2.15.1-cp311-cp311-manylinux_2_17_aarch64.manylinux2014_aarch64.whl", hash = "sha256:e73d43dbc68d8c711e70edecc4ac70472799a25ec4ec18a84d479ee18033d3c5"},
+    {file = "tensorflow-2.15.1-cp311-cp311-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:bb0edd69103c154245c5f209f0507355cc68ba7e4de350084bc31edc562478e4"},
+    {file = "tensorflow-2.15.1-cp311-cp311-win_amd64.whl", hash = "sha256:a49f8755c74a89553294a99ab25aa87ab1cddbfa40fe58387e09f64f0578cedc"},
+    {file = "tensorflow-2.15.1-cp39-cp39-macosx_10_15_x86_64.whl", hash = "sha256:f8e85821317c9c0fbf1256e9f721cfb1400ba1e09becb844b3ddd91f744805fc"},
+    {file = "tensorflow-2.15.1-cp39-cp39-macosx_12_0_arm64.whl", hash = "sha256:b75815b6a601edad52b4181e9805c8fcd04813a6ab1d5cd8127188dfd2788e20"},
+    {file = "tensorflow-2.15.1-cp39-cp39-manylinux_2_17_aarch64.manylinux2014_aarch64.whl", hash = "sha256:432788ac5d1234b9e9b7c7f73603a5655271a28c293329c52c7c0b9434a1184e"},
+    {file = "tensorflow-2.15.1-cp39-cp39-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:89b5aa1022dec47e567512eaf4e1271b8e6c1ff1984e30d0d9127bd1093ed4c5"},
+    {file = "tensorflow-2.15.1-cp39-cp39-win_amd64.whl", hash = "sha256:aaf3cfa290597ebbdf19d1a78729e3f555e459506cd58f8d7399359ac5e02a05"},
 ]
 
 [[package]]
 name = "tensorflow-cpu-aws"
-version = "2.14.0"
+version = "2.15.1"
 requires_python = ">=3.9"
 summary = "TensorFlow is an open source machine learning framework for everyone."
 groups = ["ml_runtime"]
-marker = "(platform_machine == \"arm64\" or platform_machine == \"aarch64\") and platform_system == \"Linux\" and python_version < \"3.12\" and sys_platform != \"win32\""
+marker = "(platform_machine == \"arm64\" or platform_machine == \"aarch64\") and platform_system == \"Linux\" and sys_platform != \"win32\""
 dependencies = [
     "absl-py>=1.0.0",
     "astunparse>=1.6.0",
@@ -7027,37 +7032,37 @@ dependencies = [
     "google-pasta>=0.1.1",
     "grpcio<2.0,>=1.24.3",
     "h5py>=2.9.0",
-    "keras<2.15,>=2.14.0",
+    "keras<2.16,>=2.15.0",
     "libclang>=13.0.0",
-    "ml-dtypes==0.2.0",
-    "numpy>=1.23.5",
+    "ml-dtypes~=0.3.1",
+    "numpy<2.0.0,>=1.23.5",
     "opt-einsum>=2.3.2",
     "packaging",
     "protobuf!=4.21.0,!=4.21.1,!=4.21.2,!=4.21.3,!=4.21.4,!=4.21.5,<5.0.0dev,>=3.20.3",
     "setuptools",
     "six>=1.12.0",
-    "tensorboard<2.15,>=2.14",
-    "tensorflow-estimator<2.15,>=2.14.0",
+    "tensorboard<2.16,>=2.15",
+    "tensorflow-estimator<2.16,>=2.15.0",
     "tensorflow-io-gcs-filesystem>=0.23.1",
     "termcolor>=1.1.0",
     "typing-extensions>=3.6.6",
     "wrapt<1.15,>=1.11.0",
 ]
 files = [
-    {file = "tensorflow_cpu_aws-2.14.0-cp310-cp310-manylinux_2_17_aarch64.manylinux2014_aarch64.whl", hash = "sha256:947b83ca3bfc22d6fc292364be456f2f56507169890e8c6db21399009bda8ab0"},
-    {file = "tensorflow_cpu_aws-2.14.0-cp311-cp311-manylinux_2_17_aarch64.manylinux2014_aarch64.whl", hash = "sha256:497b400494fa693e8037fa0e2892714aecc257a5752a878b210b3a512b66668c"},
-    {file = "tensorflow_cpu_aws-2.14.0-cp39-cp39-manylinux_2_17_aarch64.manylinux2014_aarch64.whl", hash = "sha256:114526a11d38246fc94c1573e0088a8bf7381ac8b1d549a5f7423b2afa7bbb84"},
+    {file = "tensorflow_cpu_aws-2.15.1-cp310-cp310-manylinux_2_17_aarch64.manylinux2014_aarch64.whl", hash = "sha256:c781d95cb8c58d47cb012b7b4e77b2f3e8d4d47b45926bc54976506fa0c037cc"},
+    {file = "tensorflow_cpu_aws-2.15.1-cp311-cp311-manylinux_2_17_aarch64.manylinux2014_aarch64.whl", hash = "sha256:d4c3a3a9363bf42999adedbbd514e3a133be2d62f61fee9cfa46aaefb087c09e"},
+    {file = "tensorflow_cpu_aws-2.15.1-cp39-cp39-manylinux_2_17_aarch64.manylinux2014_aarch64.whl", hash = "sha256:e9a25f2b9da4740074fdd89bd2a4cf280a9d40b1d26a973ef079e6673c1bf7de"},
 ]
 
 [[package]]
 name = "tensorflow-estimator"
-version = "2.14.0"
+version = "2.15.0"
 requires_python = ">=3.7"
 summary = "TensorFlow Estimator."
 groups = ["ml_runtime"]
-marker = "python_version < \"3.12\" and sys_platform != \"win32\" and (platform_system != \"Windows\" or sys_platform == \"darwin\" or platform_machine == \"x86_64\") and (platform_system != \"Windows\" or platform_machine == \"x86_64\" or platform_machine == \"arm64\") and (platform_system != \"Windows\" or sys_platform == \"linux\" or sys_platform == \"darwin\") and (platform_system != \"Windows\" or python_version < \"3.11\" or sys_platform == \"darwin\") and (platform_system != \"Windows\" or python_version < \"3.11\" or platform_machine == \"arm64\")"
+marker = "platform_system != \"Windows\" and sys_platform != \"win32\" or (sys_platform == \"linux\" or sys_platform == \"darwin\") and platform_machine == \"x86_64\" and python_version < \"3.12\""
 files = [
-    {file = "tensorflow_estimator-2.14.0-py2.py3-none-any.whl", hash = "sha256:820bf57c24aa631abb1bbe4371739ed77edb11361d61381fd8e790115ac0fd57"},
+    {file = "tensorflow_estimator-2.15.0-py2.py3-none-any.whl", hash = "sha256:aedf21eec7fb2dc91150fc91a1ce12bc44dbb72278a08b58e79ff87c9e28f153"},
 ]
 
 [[package]]
@@ -7065,7 +7070,7 @@ name = "tensorflow-hub"
 version = "0.16.1"
 summary = "TensorFlow Hub is a library to foster the publication, discovery, and consumption of reusable parts of machine learning models."
 groups = ["ml_runtime"]
-marker = "platform_system != \"Windows\" and sys_platform != \"win32\" or (sys_platform == \"linux\" or sys_platform == \"darwin\") and python_version < \"3.11\" and platform_machine == \"x86_64\""
+marker = "platform_system != \"Windows\" and sys_platform != \"win32\" or (sys_platform == \"linux\" or sys_platform == \"darwin\") and python_version < \"3.12\" and platform_machine == \"x86_64\""
 dependencies = [
     "numpy>=1.12.0",
     "protobuf>=3.19.6",
@@ -7077,11 +7082,11 @@ files = [
 
 [[package]]
 name = "tensorflow-intel"
-version = "2.14.0"
+version = "2.15.1"
 requires_python = ">=3.9"
 summary = "TensorFlow is an open source machine learning framework for everyone."
 groups = ["ml_runtime"]
-marker = "platform_machine == \"x86_64\" and (sys_platform == \"linux\" or sys_platform == \"darwin\") and python_version < \"3.11\" and platform_system == \"Windows\""
+marker = "(sys_platform == \"linux\" or sys_platform == \"darwin\") and platform_machine == \"x86_64\" and python_version < \"3.12\" and platform_system == \"Windows\" or sys_platform == \"darwin\" and platform_machine == \"arm64\" and platform_system == \"Windows\""
 dependencies = [
     "absl-py>=1.0.0",
     "astunparse>=1.6.0",
@@ -7090,26 +7095,26 @@ dependencies = [
     "google-pasta>=0.1.1",
     "grpcio<2.0,>=1.24.3",
     "h5py>=2.9.0",
-    "keras<2.15,>=2.14.0",
+    "keras<2.16,>=2.15.0",
     "libclang>=13.0.0",
-    "ml-dtypes==0.2.0",
-    "numpy>=1.23.5",
+    "ml-dtypes~=0.3.1",
+    "numpy<2.0.0,>=1.23.5",
     "opt-einsum>=2.3.2",
     "packaging",
     "protobuf!=4.21.0,!=4.21.1,!=4.21.2,!=4.21.3,!=4.21.4,!=4.21.5,<5.0.0dev,>=3.20.3",
     "setuptools",
     "six>=1.12.0",
-    "tensorboard<2.15,>=2.14",
-    "tensorflow-estimator<2.15,>=2.14.0",
+    "tensorboard<2.16,>=2.15",
+    "tensorflow-estimator<2.16,>=2.15.0",
     "tensorflow-io-gcs-filesystem>=0.23.1",
     "termcolor>=1.1.0",
     "typing-extensions>=3.6.6",
     "wrapt<1.15,>=1.11.0",
 ]
 files = [
-    {file = "tensorflow_intel-2.14.0-cp310-cp310-win_amd64.whl", hash = "sha256:f4824c9ff48f9a89b0df494fe61795db05304c95f0e0d661b8d1fd6b855c0324"},
-    {file = "tensorflow_intel-2.14.0-cp311-cp311-win_amd64.whl", hash = "sha256:51f96c729d61ff8e2e340df5b3b4db81a938258f1c9282ab09277896d0c408ae"},
-    {file = "tensorflow_intel-2.14.0-cp39-cp39-win_amd64.whl", hash = "sha256:a9d0b57170993b717bad7bc0c07c2df7fe6f9fb5ce946c2a48f8535d49d119fe"},
+    {file = "tensorflow_intel-2.15.1-cp310-cp310-win_amd64.whl", hash = "sha256:9f305142b3c5e239c82c463429b1f88726dd27d9f23523871f825493a9ffc5f4"},
+    {file = "tensorflow_intel-2.15.1-cp311-cp311-win_amd64.whl", hash = "sha256:4f05059493f8203285ac5cea3b1955887a7903c1ca6f7a29e4b6ef912b1f934b"},
+    {file = "tensorflow_intel-2.15.1-cp39-cp39-win_amd64.whl", hash = "sha256:921f18f7eb9cf59769e9668b3935fe178c990e2973d8013870dae5e3b58de079"},
 ]
 
 [[package]]
@@ -7118,7 +7123,7 @@ version = "0.31.0"
 requires_python = ">=3.7, <3.12"
 summary = "TensorFlow IO"
 groups = ["ml_runtime"]
-marker = "python_version < \"3.12\" and (platform_machine != \"arm64\" or sys_platform != \"win32\") and (platform_machine != \"arm64\" or platform_system != \"Windows\" or sys_platform == \"darwin\")"
+marker = "python_version < \"3.12\" and platform_machine != \"arm64\" or platform_system != \"Windows\" and sys_platform != \"win32\""
 files = [
     {file = "tensorflow_io_gcs_filesystem-0.31.0-cp310-cp310-macosx_10_14_x86_64.whl", hash = "sha256:a71421f8d75a093b6aac65b4c8c8d2f768c3ca6215307cf8c16192e62d992bcf"},
     {file = "tensorflow_io_gcs_filesystem-0.31.0-cp310-cp310-manylinux_2_12_x86_64.manylinux2010_x86_64.whl", hash = "sha256:359134ecbd3bf938bb0cf65be4526106c30da461b2e2ce05446a229ed35f6832"},
@@ -7136,59 +7141,40 @@ files = [
 
 [[package]]
 name = "tensorflow-macos"
-version = "2.14.0"
+version = "2.15.1"
 requires_python = ">=3.9"
 summary = "TensorFlow is an open source machine learning framework for everyone."
 groups = ["ml_runtime"]
-marker = "python_version < \"3.12\" and sys_platform == \"darwin\" and platform_machine == \"arm64\""
+marker = "sys_platform == \"darwin\" and platform_machine == \"arm64\""
 dependencies = [
-    "absl-py>=1.0.0",
-    "astunparse>=1.6.0",
-    "flatbuffers>=23.5.26",
-    "gast!=0.5.0,!=0.5.1,!=0.5.2,>=0.2.1",
-    "google-pasta>=0.1.1",
-    "grpcio<2.0,>=1.24.3",
-    "h5py>=2.9.0",
-    "keras<2.15,>=2.14.0",
-    "libclang>=13.0.0",
-    "ml-dtypes==0.2.0",
-    "numpy>=1.23.5",
-    "opt-einsum>=2.3.2",
-    "packaging",
-    "protobuf!=4.21.0,!=4.21.1,!=4.21.2,!=4.21.3,!=4.21.4,!=4.21.5,<5.0.0dev,>=3.20.3",
-    "setuptools",
-    "six>=1.12.0",
-    "tensorboard<2.15,>=2.14",
-    "tensorflow-estimator<2.15,>=2.14.0",
-    "tensorflow-io-gcs-filesystem>=0.23.1",
-    "termcolor>=1.1.0",
-    "typing-extensions>=3.6.6",
-    "wrapt<1.15,>=1.11.0",
+    "tensorflow-cpu-aws==2.15.1; (platform_machine == \"arm64\" or platform_machine == \"aarch64\") and platform_system == \"Linux\"",
+    "tensorflow-intel==2.15.1; platform_system == \"Windows\"",
+    "tensorflow-macos==2.15.1; platform_system == \"Darwin\" and platform_machine == \"arm64\"",
 ]
 files = [
-    {file = "tensorflow_macos-2.14.0-cp310-cp310-macosx_12_0_arm64.whl", hash = "sha256:31fa670b0afd2a52b3ad15bab97a0d0aae28c4ea2a96ab7f0a91e8844390bfb0"},
-    {file = "tensorflow_macos-2.14.0-cp311-cp311-macosx_12_0_arm64.whl", hash = "sha256:064e98b67d7a89e72c37c90254c0a322a0b8d0ce9b68f23286816210e3ef6685"},
-    {file = "tensorflow_macos-2.14.0-cp39-cp39-macosx_12_0_arm64.whl", hash = "sha256:7b3e4e01721bfc0105c99275113531a659e89fd6512340a7b8970593676e0114"},
+    {file = "tensorflow_macos-2.15.1-cp310-cp310-macosx_12_0_arm64.whl", hash = "sha256:b8f01d7615fe4ff3b15a12f84471bd5344fed187543c4a091da3ddca51b6dc26"},
+    {file = "tensorflow_macos-2.15.1-cp311-cp311-macosx_12_0_arm64.whl", hash = "sha256:58fca6399665f19e599c591c421672d9bc8b705409d43ececd0931d1d3bc6a7e"},
+    {file = "tensorflow_macos-2.15.1-cp39-cp39-macosx_12_0_arm64.whl", hash = "sha256:cca3c9ba5b96face05716792cb1bcc70d84c5e0c34bfb7735b39c65d0334b699"},
 ]
 
 [[package]]
 name = "tensorflow-text"
-version = "2.14.0"
+version = "2.15.0"
 summary = "TF.Text is a TensorFlow library of text related ops, modules, and subgraphs."
 groups = ["ml_runtime"]
-marker = "(sys_platform == \"linux\" or sys_platform == \"darwin\") and python_version < \"3.11\" and platform_machine == \"x86_64\""
+marker = "(sys_platform == \"linux\" or sys_platform == \"darwin\") and python_version < \"3.12\" and platform_machine == \"x86_64\""
 dependencies = [
     "tensorflow-hub>=0.13.0",
-    "tensorflow-macos<2.15,>=2.14.0; platform_machine == \"arm64\" and platform_system == \"Darwin\"",
-    "tensorflow<2.15,>=2.14.0; platform_machine != \"arm64\" or platform_system != \"Darwin\"",
+    "tensorflow-macos<2.16,>=2.15.0; platform_machine == \"arm64\" and platform_system == \"Darwin\"",
+    "tensorflow<2.16,>=2.15.0; platform_machine != \"arm64\" or platform_system != \"Darwin\"",
 ]
 files = [
-    {file = "tensorflow_text-2.14.0-cp310-cp310-macosx_10_9_x86_64.whl", hash = "sha256:705f55e651ff95c815a817eb52ee37c4dfd5b8830620eed3667050559ec4fdfa"},
-    {file = "tensorflow_text-2.14.0-cp310-cp310-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:2c68c74bacff493c38be2b2e45f0f1530049a900162670c96443b5ca6a839e8a"},
-    {file = "tensorflow_text-2.14.0-cp311-cp311-macosx_10_9_x86_64.whl", hash = "sha256:c0df6676bf336974579799df05c402e6481db83aec18cc26daaebc0629cfa46b"},
-    {file = "tensorflow_text-2.14.0-cp311-cp311-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:4faa428eccdfb9b445a6c076b2b4cc8468372b7c8a3daa64b41cbe17fa04a26c"},
-    {file = "tensorflow_text-2.14.0-cp39-cp39-macosx_10_9_x86_64.whl", hash = "sha256:ef7d1c0e1b0743abbeeaaca89f7f1dd638c989c8abdbc5fb8818465cbdc3aeaf"},
-    {file = "tensorflow_text-2.14.0-cp39-cp39-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:249e8858ebb7c5e59548595d95c08611ecb16d677d487c584408a0f1faf4ddbf"},
+    {file = "tensorflow_text-2.15.0-cp310-cp310-macosx_10_9_x86_64.whl", hash = "sha256:db09ada839eb92aa23afc6c4e37257e6665d64ae048cfdce6374b5aa33f8f006"},
+    {file = "tensorflow_text-2.15.0-cp310-cp310-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:0f522ab8511f3a0cf782cd3e22bc3d863d7cbf0b4ccc02a7de92abf0deea0df4"},
+    {file = "tensorflow_text-2.15.0-cp311-cp311-macosx_10_9_x86_64.whl", hash = "sha256:751f4a260e2b1a03db1ec9871473922219d82dccabc305cc79f1dec5d8283014"},
+    {file = "tensorflow_text-2.15.0-cp311-cp311-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:31e5499282e787022cb078ac182c2bbe1a30438451dafb8bce7a81258017bfbb"},
+    {file = "tensorflow_text-2.15.0-cp39-cp39-macosx_10_9_x86_64.whl", hash = "sha256:2f87b23c7dd87c9581557a3f425ded96bfc4f969c52996ac491b99c4c2bb04b0"},
+    {file = "tensorflow_text-2.15.0-cp39-cp39-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:66dc8c11d97278f19997171b8e3f7f8d0a12a67760028646a7b3a163fab1c3d3"},
 ]
 
 [[package]]
@@ -7197,7 +7183,7 @@ version = "2.4.0"
 requires_python = ">=3.8"
 summary = "ANSI color formatting for output in terminal"
 groups = ["ml_runtime"]
-marker = "python_version < \"3.12\" and sys_platform != \"win32\" and (platform_system != \"Windows\" or sys_platform == \"darwin\" or platform_machine == \"x86_64\") and (platform_system != \"Windows\" or platform_machine == \"x86_64\" or platform_machine == \"arm64\") and (platform_system != \"Windows\" or sys_platform == \"linux\" or sys_platform == \"darwin\") and (platform_system != \"Windows\" or python_version < \"3.11\" or sys_platform == \"darwin\") and (platform_system != \"Windows\" or python_version < \"3.11\" or platform_machine == \"arm64\")"
+marker = "platform_system != \"Windows\" and sys_platform != \"win32\" or (sys_platform == \"linux\" or sys_platform == \"darwin\") and platform_machine == \"x86_64\" and python_version < \"3.12\""
 files = [
     {file = "termcolor-2.4.0-py3-none-any.whl", hash = "sha256:9297c0df9c99445c2412e832e882a7884038a25617c60cea2ad69488d4040d63"},
     {file = "termcolor-2.4.0.tar.gz", hash = "sha256:aab9e56047c8ac41ed798fa36d892a37aca6b3e9159f3e0c24bc64a9b3ac7b7a"},
@@ -7238,14 +7224,17 @@ files = [
 
 [[package]]
 name = "tf-keras"
-version = "2.15.0"
+version = "2.15.1"
 requires_python = ">=3.8"
 summary = "Deep learning for humans."
 groups = ["ml_runtime"]
-marker = "platform_system != \"Windows\" and sys_platform != \"win32\" or (sys_platform == \"linux\" or sys_platform == \"darwin\") and python_version < \"3.11\" and platform_machine == \"x86_64\""
+marker = "platform_system != \"Windows\" and sys_platform != \"win32\" or (sys_platform == \"linux\" or sys_platform == \"darwin\") and python_version < \"3.12\" and platform_machine == \"x86_64\""
+dependencies = [
+    "tensorflow<2.16,>=2.15",
+]
 files = [
-    {file = "tf_keras-2.15.0-py3-none-any.whl", hash = "sha256:48607ee60a4d1fa7c09d6a44293a803faf3136e7a43f92df089ac094117547d2"},
-    {file = "tf_keras-2.15.0.tar.gz", hash = "sha256:d7559c2ba40667679fcb2105d3e4b68bbc07ecafbf1037462ce7b3974c3c6798"},
+    {file = "tf_keras-2.15.1-py3-none-any.whl", hash = "sha256:8beaef46b8b4f1158de1410e7c0cf82f008b9e8c4ab3443f54ac1aaef9c2ad74"},
+    {file = "tf_keras-2.15.1.tar.gz", hash = "sha256:40ab605cecc7759c657cb2bccd9efaacd6fc2369a6c1eba8053890afeac46886"},
 ]
 
 [[package]]
@@ -8231,7 +8220,7 @@ version = "0.43.0"
 requires_python = ">=3.8"
 summary = "A built-package format for Python"
 groups = ["ml_runtime"]
-marker = "python_version < \"3.12\" and sys_platform != \"win32\" and (platform_system != \"Windows\" or sys_platform == \"darwin\" or platform_machine == \"x86_64\") and (platform_system != \"Windows\" or platform_machine == \"x86_64\" or platform_machine == \"arm64\") and (platform_system != \"Windows\" or sys_platform == \"linux\" or sys_platform == \"darwin\") and (platform_system != \"Windows\" or python_version < \"3.11\" or sys_platform == \"darwin\") and (platform_system != \"Windows\" or python_version < \"3.11\" or platform_machine == \"arm64\")"
+marker = "platform_system != \"Windows\" and sys_platform != \"win32\" or (sys_platform == \"linux\" or sys_platform == \"darwin\") and platform_machine == \"x86_64\" and python_version < \"3.12\""
 files = [
     {file = "wheel-0.43.0-py3-none-any.whl", hash = "sha256:55c570405f142630c6b9f72fe09d9b67cf1477fcf543ae5b8dcb1f5b7377da81"},
     {file = "wheel-0.43.0.tar.gz", hash = "sha256:465ef92c69fa5c5da2d1cf8ac40559a8c940886afcef87dcf14b9470862f1d85"},
