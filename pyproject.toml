@@ -80,8 +80,8 @@ ml_runtime = [
     "torchdata>=0.6.0",
     "portalocker>=2.0.0",                                                                 # Needed by torchdata for test_newspaper_classification_pytorch_dataset
     "torchtext>=0.15.1",
-    "tensorflow-macos==2.14.0; sys_platform == 'darwin' and platform_machine == 'arm64'",
-    "tensorflow==2.14.0; sys_platform != 'win32' and platform_system !='Windows'",
+    "tensorflow-macos==2.14.0; python_version < '3.12' and sys_platform == 'darwin' and platform_machine == 'arm64'",
+    "tensorflow==2.14.0; python_version < '3.12' and sys_platform != 'win32' and platform_system !='Windows'",
     # tensorflow-text is only available on linux or mac, but not for arm64 nor windows
     "tensorflow-text==2.14.0; python_version < '3.11' and (sys_platform == 'linux' or sys_platform == 'darwin') and platform_machine == 'x86_64'",
     "mlflow>2,<2.12", # version 2.12 throws error with imbalance-learn
