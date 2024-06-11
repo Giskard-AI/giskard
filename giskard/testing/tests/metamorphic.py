@@ -4,22 +4,27 @@ import numpy as np
 import pandas as pd
 
 from giskard.core.core import SupportedModelTypes
+from giskard.core.test_result import TestMessage, TestMessageLevel, TestResult
 from giskard.datasets.base import Dataset
 from giskard.llm import LLMImportError
-from giskard.ml_worker.testing.registry.decorators import test
-from giskard.ml_worker.testing.registry.slicing_function import SlicingFunction
-from giskard.ml_worker.testing.registry.transformation_function import TransformationFunction
-from giskard.ml_worker.testing.stat_utils import (
+from giskard.models.base import BaseModel
+from giskard.models.utils import fix_seed
+from giskard.registry.decorators import test
+from giskard.registry.slicing_function import SlicingFunction
+from giskard.registry.transformation_function import TransformationFunction
+from giskard.testing.utils.stat_utils import (
     equivalence_t_test,
     equivalence_wilcoxon,
     paired_t_test,
     paired_wilcoxon,
 )
-from giskard.ml_worker.testing.test_result import TestMessage, TestMessageLevel, TestResult
-from giskard.ml_worker.testing.utils import Direction, check_slice_not_empty, validate_classification_label
-from giskard.ml_worker.utils.logging import timer
-from giskard.models.base import BaseModel
-from giskard.models.utils import fix_seed
+from giskard.testing.utils.utils import (
+    Direction,
+    check_slice_not_empty,
+    validate_classification_label,
+)
+from giskard.utils.logging_utils import timer
+
 from . import debug_description_prefix
 
 
@@ -218,43 +223,45 @@ def test_metamorphic_invariance(
     threshold: float = 0.5,
     output_sensitivity: float = None,
 ):
-    """
-    Summary: Tests if the model prediction is invariant when the feature values are perturbed
+    """Tests if model prediction is invariant to perturbations
 
-    Description: -
-    For classification: Test if the predicted classification label remains the same after
-    feature values perturbation.
-    For regression: Check whether the predicted output remains the same at the output_sensibility
-    level after feature values perturbation.
+    For classification: Test if the predicted classification label remains the
+    same after feature values perturbation.
+    For regression: Check whether the predicted output remains the same at the
+    ``output_sensibility`` level after feature values perturbation.
 
-    The test is passed when the ratio of invariant rows is higher than the threshold
+    The test is passed when the ratio of invariant rows is higher than the
+    threshold.
 
-    Example : The test is passed when, after switching gender from male to female,
-    more than 50%(threshold 0.5) of males have unchanged outputs
+    Example: The test is passed when, by switching gender from male to female,
+    more than 50%(threshold 0.5) of males have unchanged outputs.
 
-    Args:
-        model(BaseModel):
-          Model used to compute the test
-        dataset(Dataset):
-          Dataset used to compute the test
-        transformation_function(TransformationFunction):
-          Function performing the perturbations to be applied on dataset.
-        slicing_function(Optional[SlicingFunction]):
-          Slicing function to be applied on dataset
-        output_sensitivity(float):
-            Optional. The threshold for ratio between the difference between perturbed prediction and actual prediction over
-            the actual prediction for a regression model. We consider there is a prediction difference for
-            regression if the ratio is above the output_sensitivity of 0.1
+    Parameters
+    ----------
+    model : BaseModel
+        Model used to compute the test
+    dataset : Dataset
+        Dataset used to compute the test
+    transformation_function : TransformationFunction
+        Function performing the perturbations to be applied on dataset.
+    slicing_function : Optional[SlicingFunction]
+        Slicing function to be applied on dataset.
+    threshold : float
+        The threshold value for the ratio of invariant rows.
+    output_sensitivity : float
+        For regression models. The threshold for ratio between the difference
+        between perturbed prediction and actual prediction over the actual
+        prediction for a regression model. We consider there is a prediction
+        difference for regression if the ratio is above the output_sensitivity
+        of 0.1.
+    debug : bool
+        If True and the test fails, a dataset will be provided containing the
+        non-invariant rows.
 
-    Returns:
-        actual_slices_size:
-          Length of dataset tested
-        message:
-          Test result message
-        metric:
-          The ratio of unchanged rows over the perturbed rows
-        passed:
-          TRUE if metric > threshold
+    Returns
+    -------
+    TestResult
+        A TestResult object containing the test result.
     """
     if slicing_function:
         dataset = dataset.slice(slicing_function)
@@ -284,41 +291,44 @@ def test_metamorphic_increasing(
     threshold: float = 0.5,
     classification_label: str = None,
 ):
-    """
-    Summary: Tests if the model probability increases when the feature values are perturbed
+    """Tests if the model prediction increases when the features are perturbed.
 
-    Description: -
-    - For classification: Test if the model probability of a given classification_label is
-    increasing after feature values perturbation.
+    For classification models, it tests if the model probability of a given
+    ``classification_label`` is increasing after feature values perturbation.
 
-    - For regression: Test if the model prediction is increasing after feature values perturbation.
+    For regression models, it tests if the model prediction is increasing after
+    feature values perturbation.
 
-    The test is passed when the percentage of rows that are increasing is higher than the threshold
+    The test is passed when the percentage of rows that are increasing is higher
+    than the threshold.
 
-    Example : For a credit scoring model, the test is passed when a decrease of wage by 10%,
-     default probability is increasing for more than 50% of people in the dataset
+    Example: For a credit scoring model, the test is passed when a decrease of
+    wage by 10%, default probability is increasing for more than 50% of people
+    in the dataset.
 
-    Args:
-        model(BaseModel):
-          Model used to compute the test
-        dataset(Dataset):
-          Dataset used to compute the test
-        transformation_function(TransformationFunction):
-          Function performing the perturbations to be applied on dataset.
-        slicing_function(Optional[SlicingFunction]):
-          Slicing function to be applied on dataset
-        classification_label(str):
-          Optional.One specific label value from the target column
+    Parameters
+    ----------
+    model : BaseModel
+        Model used to compute the test
+    dataset : Dataset
+        Dataset used to compute the test
+    transformation_function : TransformationFunction
+        Function performing the perturbations to be applied on dataset.
+    slicing_function : Optional[SlicingFunction]
+        Slicing function to be applied on dataset (Default value = None)
+    threshold : float
+        The threshold value for the ratio of increasing rows. Default is 0.5.
+    classification_label : str
+        One specific label value from the target column (only for classification
+        models).
+    debug : bool
+        If True and the test fails, a dataset will be provided containing the
+        non-increasing rows.
 
-    Returns:
-        actual_slices_size:
-          Length of dataset tested
-        message:
-          Test result message
-        metric:
-          The ratio of increasing rows over the perturbed rows
-        passed:
-          TRUE if metric > threshold
+    Returns
+    -------
+    TestResult
+        A TestResult object containing the test result.
     """
     if slicing_function:
         dataset = dataset.slice(slicing_function)
@@ -347,43 +357,43 @@ def test_metamorphic_decreasing(
     threshold: float = 0.5,
     classification_label: str = None,
 ):
-    """
-    Summary: Tests if the model probability decreases when the feature values are perturbed
+    """Tests if the model prediction decreases when features are perturbed
 
-    Description: -
-    - For classification: Test if the model probability of a given classification_label is
-    decreasing after feature values perturbation.
+    For classification models, it tests if the model probability of a given
+    ``classification_label`` is decreasing after feature values perturbation.
 
-    - For regression: Test if the model prediction is decreasing after feature values perturbation.
+    For regression models, it tests if the model prediction is decreasing after
+    feature values perturbation.
 
-    The test is passed when the percentage of rows that are decreasing is higher than the threshold
+    The test is passed when the percentage of rows that are decreasing is higher
+    than the threshold.
 
-    Example : For a credit scoring model, the test is passed when an increase of wage by 10%,
-     default probability is decreasing for more than 50% of people in the dataset
+    Example: For a credit scoring model, the test is passed when an increase of
+    wage by 10%, default probability is decreasing for more than 50% of people
+    in the dataset.
 
-    Args:
-        model(BaseModel):
-          Model used to compute the test
-        dataset(Dataset):
-          Dataset used to compute the test
-        transformation_function(TransformationFunction):
-          Function performing the perturbations to be applied on dataset.
-        slicing_function(Optional[SlicingFunction]):
-          Slicing function to be applied on dataset
-        threshold(float):
-          Threshold of the ratio of decreasing rows
-        classification_label(str):
-          Optional. One specific label value from the target column
+    Parameters
+    ----------
+    model : BaseModel
+        Model used to compute the test
+    dataset : Dataset
+        Dataset used to compute the test
+    transformation_function : TransformationFunction
+        Function performing the perturbations to be applied on dataset.
+    slicing_function : Optional[SlicingFunction]
+        Slicing function to be applied on dataset
+    threshold : float
+        Threshold of the ratio of decreasing rows
+    classification_label : str
+        Optional. One specific label value from the target column
+    debug : bool
+        If True and the test fails, a dataset will be provided containing the
+        non-decreasing rows.
 
-    Returns:
-        actual_slices_size:
-          Length of dataset tested
-        message:
-          Test result message
-        metric:
-          The ratio of decreasing rows over the perturbed rows
-        passed:
-          TRUE if metric > threshold
+    Returns
+    -------
+    TestResult
+        A TestResult object containing the test result.
     """
     if slicing_function:
         dataset = dataset.slice(slicing_function)
@@ -460,38 +470,45 @@ def test_metamorphic_decreasing_t_test(
     critical_quantile: float = 0.05,
     classification_label: str = None,
 ):
-    """
-    Summary: Tests if the model probability decreases when the feature values are perturbed
+    """Tests if the model prediction decreases when the feature are perturbed
 
-    Description: Calculate the t-test on TWO RELATED samples. Sample (A) is the original probability predictions
-    while sample (B) is the probabilities after perturbation of one or more of the features.
-    This test computes the decreasing test to study if mean(B) < mean(A)
-    The test is passed when the p-value of the t-test between (A) and (B) is below the critical quantile
+    Performs a t-test on two related samples. Sample A is constituted by the
+    original predictions (probability of ``classification_label`` for
+    classification models, or predicted value for regression models). Sample B
+    is constituted by the predictions after perturbation of one or more of the
+    features (by ``tranformation_function``).
 
-    Example: For a credit scoring model, the test is passed when a decrease of wage by 10%,
-             causes a statistically significant probability decrease.
+    It performs a t-test to study if mean(B) < mean(A).
 
-    Args:
-        model(BaseModel):
-            Model used to compute the test
-        dataset(Dataset):
-            Dataset used to compute the test
-        transformation_function(TransformationFunction):
-            Function performing the perturbations to be applied on dataset.
-        slicing_function(Optional[SlicingFunction]):
-          Slicing function to be applied on dataset
-        critical_quantile(float):
-            Critical quantile above which the null hypothesis cannot be rejected
+    The test is passed when the p-value of the t-test between (A) and (B) is
+    below the critical quantile.
 
-    Returns:
-        actual_slices_size:
-            Length of dataset tested
-        message:
-            Test result message
-        metric:
-            The t-test in terms of p-value between unchanged rows over the perturbed rows
-        passed:
-            TRUE if the p-value of the t-test between (A) and (B) is below the critical value
+    Example: For a credit scoring model, the test is passed when an increase of
+    wage by 10%, causes a statistically significant decrease of the default
+    probability.
+
+    Parameters
+    ----------
+    model : BaseModel
+        Model used to compute the test
+    dataset : Dataset
+        Dataset used to compute the test
+    transformation_function : TransformationFunction
+        Function performing the perturbations to be applied on dataset.
+    slicing_function : Optional[SlicingFunction]
+        Slicing function to be applied on dataset
+    critical_quantile : float
+        Critical quantile above which the null hypothesis cannot be rejected
+    classification_label : str
+         (Default value = None)
+    debug : bool
+        If True and the test fails, a dataset will be provided containing the
+        non-decreasing rows.
+
+    Returns
+    -------
+    TestResult
+        A TestResult object containing the test result.
     """
     if slicing_function:
         dataset = dataset.slice(slicing_function)
@@ -523,38 +540,52 @@ def test_metamorphic_increasing_t_test(
     critical_quantile: float = 0.05,
     classification_label: str = None,
 ):
-    """
-    Summary: Tests if the model probability increases when the feature values are perturbed
+    """Tests if the model prediction increases when feature values are perturbed
 
-    Description: Calculate the t-test on TWO RELATED samples. Sample (A) is the original probability predictions
-    while sample (B) is the probabilities after perturbation of one or more of the features.
-    This test computes the increasing test to study if mean(A) < mean(B)
-    The test is passed when the p-value of the t-test between (A) and (B) is below the critical quantile
+    Performs a t-test on two related samples. Sample A is constituted by the
+    original predictions (probability of ``classification_label`` for
+    classification models, or predicted value for regression models). Sample B
+    is constituted by the predictions after perturbation of one or more of the
+    features (by ``tranformation_function``).
 
-    Example: For a credit scoring model, the test is passed when a decrease of wage by 10%,
-             causes a statistically significant probability increase.
+    It performs a t-test to study if mean(B) > mean(A).
 
-    Args:
-        model(BaseModel):
-            Model used to compute the test
-        dataset(Dataset):
-            Dataset used to compute the test
-        transformation_function(TransformationFunction):
-            Function performing the perturbations to be applied on dataset.
-        slicing_function(Optional[SlicingFunction]):
-          Slicing function to be applied on dataset
-        critical_quantile(float):
-            Critical quantile above which the null hypothesis cannot be rejected
+    The test is passed when the p-value of the t-test between (A) and (B) is
+    below the critical quantile.
 
-    Returns:
-        actual_slices_size:
-            Length of dataset tested
-        message:
-            Test result message
-        metric:
-            The t-test in terms of p-value between unchanged rows over the perturbed rows
-        passed:
-            TRUE if the p-value of the t-test between (A) and (B) is below the critical value
+    Example: For a credit scoring model, the test is passed when a decrease of
+    wage by 10%, causes a statistically significant increase of the default
+    probability.
+
+    Parameters
+    ----------
+    model : BaseModel
+        Model used to compute the test
+    dataset : Dataset
+        Dataset used to compute the test
+    transformation_function : TransformationFunction
+        Function performing the perturbations to be applied on dataset.
+    slicing_function : Optional[SlicingFunction]
+        Slicing function to be applied on dataset (Default value = None)
+    critical_quantile : float
+        Critical quantile above which the null hypothesis cannot be rejected
+    classification_label : str
+        Only required for classification models.
+    debug : bool
+        If True and the test fails, a dataset will be provided containing the
+        non-increasing rows.
+
+    Returns
+    -------
+    actual_slices_size
+        Length of dataset tested
+    message
+        Test result message
+    metric
+        The t-test in terms of p-value between unchanged rows over the perturbed rows
+    passed
+        TRUE if the p-value of the t-test between (A) and (B) is below the critical value
+
     """
     if slicing_function:
         dataset = dataset.slice(slicing_function)
@@ -585,43 +616,52 @@ def test_metamorphic_invariance_t_test(
     window_size: float = 0.2,
     critical_quantile: float = 0.05,
 ) -> TestResult:
-    """
-    Summary: Tests if the model predictions are statistically invariant when the feature values are perturbed.
+    """Tests if the model predictions are statistically invariant when the feature values are perturbed.
 
-    Description: Calculate the t-test on TWO RELATED samples. Sample (A) is the original probability predictions
-    while sample (B) is the probabilities after perturbation of one or more of the features.
-    This test computes the equivalence test to show that mean(B) - window_size/2 < mean(A) < mean(B) + window_size/2
+    Performs a t-test on two related samples. Sample A is constituted by the
+    original predictions (probability of ``classification_label`` for
+    classification models, or predicted value for regression models). Sample B
+    is constituted by the predictions after perturbation of one or more of the
+    features (by ``tranformation_function``).
+
+    It performs a t-test to study if mean(A) is between mean(B) - window_size/2
+    and mean(B) + window_size/2.
+
     The test is passed when the following tests pass:
-      - the p-value of the t-test between (A) and (B)+window_size/2 is below the critical quantile
-      - the p-value of the t-test between (B)-window_size/2 and (A) is below the critical quantile
+      - the p-value of the t-test between (A) and (B) + window_size/2 is below the critical quantile
+      - the p-value of the t-test between (B) - window_size/2 and (A) is below the critical quantile
 
-    Example: The test is passed when, after switching gender from male to female,
-    the probability distributions remains statistically invariant. In other words, the test is passed if the mean of the
-    perturbed sample is statistically within a window determined by the user.
+    The test is passed when the p-value of the t-test between (A) and (B) is
+    below the critical quantile.
 
-    Args:
-          model(BaseModel):
-              Model used to compute the test
-          dataset(Dataset):
-              Dataset used to compute the test
-          transformation_function(TransformationFunction):
-              Function performing the perturbations to be applied on dataset.
-          slicing_function(Optional[SlicingFunction]):
-              Slicing function to be applied on dataset
-          window_size(float):
-              Probability window in which the mean of the perturbed sample can be in
-          critical_quantile(float):
-              Critical quantile above which the null hypothesis cannot be rejected
+    Example: The test is passed when, by switching gender from male to female,
+    the probability distributions remains statistically invariant. In other
+    words, the test is passed if the mean of the perturbed sample is
+    statistically within a window determined by the user.
 
-    Returns:
-          actual_slices_size:
-              Length of dataset tested
-          message:
-              Test result message
-          metric:
-              The t-test in terms of p-value between unchanged rows over the perturbed rows
-          passed:
-              TRUE if the p-value of the t-test between (A) and (B)+window_size/2 < critical_quantile && the p-value of the t-test between (B)-window_size/2 and (A) < critical_quantile
+    Parameters
+    ----------
+    model : BaseModel
+        Model used to compute the test
+    dataset : Dataset
+        Dataset used to compute the test
+    transformation_function : TransformationFunction
+        Function performing the perturbations to be applied on dataset.
+    slicing_function : Optional[SlicingFunction]
+        Slicing function to be applied on dataset (Default value = None)
+    window_size : float
+        Probability window in which the mean of the perturbed sample can be in
+        order to pass the test
+    critical_quantile : float
+        Critical quantile above which the null hypothesis cannot be rejected
+    debug : bool
+        If True and the test fails, a dataset will be provided containing the
+        non-invariant rows.
+
+    Returns
+    -------
+    TestResult
+        A TestResult object containing the test result.
     """
     if slicing_function:
         dataset = dataset.slice(slicing_function)
@@ -675,38 +715,44 @@ def test_metamorphic_decreasing_wilcoxon(
     critical_quantile: float = 0.05,
     classification_label: str = None,
 ):
-    """
-    Summary: Tests if the model probability decreases when the feature values are perturbed
+    """Tests if the model prediction decreases when feature values are perturbed
 
-    Description: Calculate the Wilcoxon signed-rank test on TWO RELATED samples. Sample (A) is the original probability predictions
-    while sample (B) is the probabilities after perturbation of one or more of the features.
+    Performs the Wilcoxon signed-rank test on two related samples. Sample (A) is
+    constituted by the original predictions (probability of
+    ``classification_label`` for classification models, or predicted value for
+    regression models). Sample B is constituted by the predictions after
+    perturbation of one or more features by ``tranformation_function``.
+
     This test computes the decreasing test to study if mean(B) < mean(A)
-    The test is passed when the p-value of the Wilcoxon signed-rank test between (A) and (B) is below the critical quantile
+    The test is passed when the p-value of the Wilcoxon signed-rank test
+    between (A) and (B) is below the critical quantile.
 
-    Example: For a credit scoring model, the test is passed when a decrease of wage by 10%,
-             causes a statistically significant probability decrease.
+    Example: For a credit scoring model, the test is passed when a decrease of
+    wage by 10% causes a statistically significant probability decrease of the
+    default probability.
 
-    Args:
-        model(BaseModel):
-            Model used to compute the test
-        dataset(Dataset):
-            Dataset used to compute the test
-        transformation_function(TransformationFunction):
-            Function performing the perturbations to be applied on dataset.
-        slicing_function(Optional[SlicingFunction]):
-            Slicing function to be applied on dataset
-        critical_quantile(float):
-            Critical quantile above which the null hypothesis cannot be rejected
+    Parameters
+    ----------
+    model : BaseModel
+        Model used to compute the test
+    dataset : Dataset
+        Dataset used to compute the test
+    transformation_function : TransformationFunction
+        Function performing the perturbations to be applied on dataset.
+    slicing_function : Optional[SlicingFunction]
+        Slicing function to be applied on dataset
+    critical_quantile : float
+        Critical quantile above which the null hypothesis cannot be rejected
+    classification_label : str
+        Only required for classification models.
+    debug : bool
+        If True and the test fails, a dataset will be provided containing the
+        non-decreasing rows. (Default value = False)
 
-    Returns:
-        actual_slices_size:
-            Length of dataset tested
-        message:
-            Test result message
-        metric:
-            The Wilcoxon signed-rank test in terms of p-value between unchanged rows over the perturbed rows
-        passed:
-            TRUE if the p-value of the Wilcoxon signed-rank test between (A) and (B) is below the critical value
+    Returns
+    -------
+    TestResult
+        A TestResult object containing the test result.
     """
     if slicing_function:
         dataset = dataset.slice(slicing_function)
@@ -738,38 +784,44 @@ def test_metamorphic_increasing_wilcoxon(
     critical_quantile: float = 0.05,
     classification_label: str = None,
 ):
-    """
-    Summary: Tests if the model probability increases when the feature values are perturbed
+    """Tests if the model prediction increases when feature values are perturbed
 
-    Description: Calculate the Wilcoxon signed-rank test on TWO RELATED samples. Sample (A) is the original probability predictions
-    while sample (B) is the probabilities after perturbation of one or more of the features.
-    This test computes the increasing test to study if mean(A) < mean(B)
-    The test is passed when the p-value of the Wilcoxon signed-rank test between (A) and (B) is below the critical quantile
+    Performs the Wilcoxon signed-rank test on two related samples. Sample (A) is
+    constituted by the original predictions (probability of
+    ``classification_label`` for classification models, or predicted value for
+    regression models). Sample B is constituted by the predictions after
+    perturbation of one or more features by ``tranformation_function``.
 
-    Example: For a credit scoring model, the test is passed when a decrease of wage by 10%,
-             causes a statistically significant probability increase.
+    This test computes the decreasing test to study if mean(B) > mean(A)
+    The test is passed when the p-value of the Wilcoxon signed-rank test
+    between (A) and (B) is below the critical quantile.
 
-    Args:
-        model(BaseModel):
-            Model used to compute the test
-        dataset(Dataset):
-            Dataset used to compute the test
-        transformation_function(TransformationFunction):
-            Function performing the perturbations to be applied on dataset.
-        slicing_function(Optional[SlicingFunction]):
-            Slicing function to be applied on dataset
-        critical_quantile(float):
-            Critical quantile above which the null hypothesis cannot be rejected
+    Example: For a credit scoring model, the test is passed when a decrease of
+    wage by 10% causes a statistically significant probability increase of the
+    default probability.
 
-    Returns:
-        actual_slices_size:
-            Length of dataset tested
-        message:
-            Test result message
-        metric:
-            The Wilcoxon signed-rank test in terms of p-value between unchanged rows over the perturbed rows
-        passed:
-            TRUE if the p-value of the Wilcoxon signed-rank test between (A) and (B) is below the critical value
+    Parameters
+    ----------
+    model : BaseModel
+        Model used to compute the test
+    dataset : Dataset
+        Dataset used to compute the test
+    transformation_function : TransformationFunction
+        Function performing the perturbations to be applied on dataset.
+    slicing_function : Optional[SlicingFunction]
+        Slicing function to be applied on dataset
+    critical_quantile : float
+        Critical quantile above which the null hypothesis cannot be rejected
+    classification_label : str
+        Only required for classification models.
+    debug : bool
+        If True and the test fails, a dataset will be provided containing the
+        non-increasing rows.
+
+    Returns
+    -------
+    TestResult
+        A TestResult object containing the test result.
     """
     if slicing_function:
         dataset = dataset.slice(slicing_function)
@@ -800,43 +852,47 @@ def test_metamorphic_invariance_wilcoxon(
     window_size: float = 0.2,
     critical_quantile: float = 0.05,
 ) -> TestResult:
-    """
-    Summary: Tests if the model predictions are statistically invariant when the feature values are perturbed.
+    """Tests if the model predictions are statistically invariant when the feature values are perturbed
 
-    Description: Calculate the Wilcoxon signed-rank test on TWO RELATED samples. Sample (A) is the original probability predictions
-    while sample (B) is the probabilities after perturbation of one or more of the features.
+    Performs the Wilcoxon signed-rank test on two related samples. Sample (A) is
+    constituted by the original predictions (probability of
+    ``classification_label`` for classification models, or predicted value for
+    regression models). Sample B is constituted by the predictions after
+    perturbation of one or more features by ``tranformation_function``.
+
     This test computes the equivalence test to show that mean(B) - window_size/2 < mean(A) < mean(B) + window_size/2
+
     The test is passed when the following tests pass:
     - the p-value of the t-test between (A) and (B)+window_size/2 is below the critical quantile
     - the p-value of the t-test between (B)-window_size/2 and (A) is below the critical quantile
 
-    Example: The test is passed when, after switching gender from male to female,
-    the probability distributions remains statistically invariant. In other words, the test is passed if the mean of the
-    perturbed sample is statistically within a window determined by the user.
+    Example: The test is passed when, by switching gender from male to female,
+    the probability distributions remains statistically invariant. In other
+    words, the test is passed if the mean of the perturbed sample is
+    statistically within a window determined by the user.
 
-    Args:
-        model(BaseModel):
-            Model used to compute the test
-        dataset(Dataset):
-            Dataset used to compute the test
-        transformation_function(TransformationFunction):
-            Function performing the perturbations to be applied on dataset.
-        slicing_function(Optional[SlicingFunction]):
-            Slicing function to be applied on dataset
-        window_size(float):
-            Probability window in which the mean of the perturbed sample can be in
-        critical_quantile(float):
-            Critical quantile above which the null hypothesis cannot be rejected
+    Parameters
+    ----------
+    model : BaseModel
+        Model used to compute the test
+    dataset : Dataset
+        Dataset used to compute the test
+    transformation_function : TransformationFunction
+        Function performing the perturbations to be applied on dataset.
+    slicing_function : Optional[SlicingFunction]
+        Slicing function to be applied on dataset (Default value = None)
+    window_size : float
+        Probability window in which the mean of the perturbed sample can be in
+    critical_quantile : float
+        Critical quantile above which the null hypothesis cannot be rejected
+    debug : bool
+        If True and the test fails, a dataset will be provided containing the
+        non-invariant rows. (Default value = False)
 
-    Returns:
-        actual_slices_size:
-            Length of dataset tested
-        message:
-            Test result message
-        metric:
-            The t-test in terms of p-value between unchanged rows over the perturbed rows
-        passed:
-            TRUE if the p-value of the Wilcoxon signed-rank test between (A) and (B)+window_size/2 < critical_quantile && the p-value of the t-test between (B)-window_size/2 and (A) < critical_quantile
+    Returns
+    -------
+    TestResult
+        A TestResult object containing the test result.
     """
     if slicing_function:
         dataset = dataset.slice(slicing_function)

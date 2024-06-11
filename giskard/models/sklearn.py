@@ -1,11 +1,11 @@
-from typing import Any, Callable, Iterable, Optional
+from typing import Any, Callable, Iterable, Optional, Tuple
 
 import mlflow
 import pandas as pd
 
-from .base.serialization import MLFlowSerializableModel
 from ..core.core import ModelType, SupportedModelTypes
 from ..core.validation import configured_validate_arguments
+from .base.serialization import MLFlowSerializableModel
 
 
 class SKLearnModel(MLFlowSerializableModel):
@@ -60,13 +60,13 @@ class SKLearnModel(MLFlowSerializableModel):
         else:
             raise ValueError("Unsupported model type")
 
-    def save_model(self, local_path, mlflow_meta):
+    def save_model(self, local_path, mlflow_meta, *args, **kwargs):
         mlflow.sklearn.save_model(
             self.model, path=local_path, pyfunc_predict_fn=self._get_pyfunc_predict_fn(), mlflow_model=mlflow_meta
         )
 
     @classmethod
-    def load_model(cls, local_dir):
+    def load_model(cls, local_dir, model_py_ver: Optional[Tuple[str, str, str]] = None, *args, **kwargs):
         return mlflow.sklearn.load_model(local_dir)
 
     def model_predict(self, df):

@@ -16,7 +16,6 @@ Regression tests
   - :func:`~.giskard.testing.test_mae`
   - :func:`~.giskard.testing.test_rmse`
   - :func:`~.giskard.testing.test_diff_rmse`
-  - :func:`~.giskard.testing.test_diff_reference_actual_rmse`
   - :func:`~.giskard.testing.test_r2`
 
 - **Drift tests**
@@ -25,3 +24,7 @@ Regression tests
   - :func:`~.giskard.testing.test_drift_prediction_chi_square`
   - :func:`~.giskard.testing.test_drift_prediction_ks`
   - :func:`~.giskard.testing.test_drift_prediction_earth_movers_distance`
+
+- **Stability tests**
+  - :func:`~.giskard.testing.test_smoothness`
+  - :func:`~.giskard.testing.test_monotonicity`

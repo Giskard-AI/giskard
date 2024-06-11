@@ -1,15 +1,18 @@
+from typing import Optional, Sequence
+
 import logging
+import random
+
 import numpy as np
 import pandas as pd
 from scipy import stats
-from typing import Optional, Sequence
+from sklearn.model_selection import GridSearchCV
 from sklearn.tree import DecisionTreeClassifier, DecisionTreeRegressor
 from sklearn.tree._tree import Tree as SklearnTree
-from sklearn.model_selection import GridSearchCV
 
+from ..utils.analytics_collector import analytics
 from .base import BaseSlicer
-from .slice import Query, LowerThan, GreaterThan, QueryBasedSliceFunction
-
+from .slice import GreaterThan, LowerThan, Query, QueryBasedSliceFunction
 
 logger = logging.getLogger(__name__)
 
@@ -44,7 +47,7 @@ def make_slices_from_tree(tree: SklearnTree, feature_names: Optional[Sequence] =
 
 
 class DecisionTreeSlicer(BaseSlicer):
-    def find_slices(self, features, target=None):
+    def find_slices(self, features, target=None, min_samples=None):
         target = target or self.target
         data = self.dataset.df
 
@@ -53,7 +56,7 @@ class DecisionTreeSlicer(BaseSlicer):
 
         data = data.loc[:, features + [target]].dropna()
 
-        min_samples = max(int(0.01 * len(data)), 30)  # min 1% of the data or 30 samples
+        min_samples = min_samples or max(int(0.01 * len(data)), 30)  # min 1% of the data or 30 samples
 
         if len(data) < min_samples:
             return []
@@ -78,6 +81,8 @@ class DecisionTreeSlicer(BaseSlicer):
                     "min_impurity_decrease": np.linspace(data_var / 100, data_var / 10, 10)
                 },
             )
+            gs.fit(data.loc[:, features], data.loc[:, target])
+            dt = gs.best_estimator_
         else:
             logger.debug("Target is not numeric, using a classification tree.")
             dt = DecisionTreeClassifier(
@@ -85,16 +90,30 @@ class DecisionTreeSlicer(BaseSlicer):
                 splitter="best",
                 min_samples_leaf=min_samples,
                 max_leaf_nodes=20,
+                min_impurity_decrease=0,
             )
-            gs = GridSearchCV(dt, {"min_impurity_decrease": np.linspace(0.001, 0.1, 10)})
-
-        gs.fit(data.loc[:, features], data.loc[:, target])
-        dt = gs.best_estimator_
+            dt.fit(data.loc[:, features], data.loc[:, target])
 
         # Need at least a split, otherwise return now.
         if dt.tree_.node_count < 2:
             logger.debug("No split found, stopping now.")
             return []
+
+        # Telemetry (10% of samples)
+        if random.random() < 0.1:
+            try:
+                analytics.track(
+                    "scan:tree_slicer_params",
+                    {
+                        "n_samples": len(data),
+                        "min_samples": min_samples,
+                        "node_count": dt.tree_.node_count,
+                        "impurity": dt.tree_.impurity.tolist(),
+                        "class": dt.__class__.__name__,
+                    },
+                )
+            except AttributeError:
+                logger.debug("Error accessing tree parameters for analytics.")
 
         # Make test slices
         slice_candidates = make_slices_from_tree(dt.tree_, features)

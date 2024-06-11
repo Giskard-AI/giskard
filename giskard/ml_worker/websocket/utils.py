@@ -1,28 +1,28 @@
+from typing import Any, Callable, Dict, List, Optional
+
 import logging
-import os
-import shutil
 import uuid
-from typing import Any, Dict, List, Optional
+from collections import defaultdict
 
 import pandas as pd
-from mlflow.store.artifact.artifact_repo import verify_artifact_path
 
 from giskard.client.giskard_client import GiskardClient
 from giskard.core.suite import DatasetInput, ModelInput, SuiteInput
+from giskard.core.test_result import TestMessageLevel, TestResult
 from giskard.datasets.base import Dataset
+from giskard.exceptions.IllegalArgumentError import IllegalArgumentError
 from giskard.ml_worker import websocket
-from giskard.ml_worker.exceptions.IllegalArgumentError import IllegalArgumentError
-from giskard.ml_worker.testing.registry.registry import tests_registry
-from giskard.ml_worker.testing.registry.slicing_function import SlicingFunction
-from giskard.ml_worker.testing.registry.transformation_function import TransformationFunction
-from giskard.ml_worker.testing.test_result import TestMessageLevel, TestResult
 from giskard.ml_worker.websocket import (
+    AbortParams,
+    CreateDatasetParam,
     CreateSubDatasetParam,
     DatasetProcessingParam,
+    Documentation,
     EchoMsg,
     ExplainParam,
     ExplainTextParam,
     GetInfoParam,
+    GetLogsParams,
     GetPushParam,
     RunAdHocTestParam,
     RunModelForDataFrameParam,
@@ -31,13 +31,17 @@ from giskard.ml_worker.websocket import (
 )
 from giskard.ml_worker.websocket.action import MLWorkerAction
 from giskard.models.base import BaseModel
-from giskard.path_utils import projects_dir
+from giskard.registry.registry import tests_registry
+from giskard.registry.slicing_function import SlicingFunction
+from giskard.registry.transformation_function import TransformationFunction
 
 logger = logging.getLogger(__name__)
 
 
 def parse_action_param(action: MLWorkerAction, params):
     # TODO: Sort by usage frequency from future MixPanel metrics #NOSONAR
+    if action == MLWorkerAction.abort:
+        return AbortParams.parse_obj(params)
     if action == MLWorkerAction.getInfo:
         return GetInfoParam.parse_obj(params)
     elif action == MLWorkerAction.runAdHocTest:
@@ -60,6 +64,10 @@ def parse_action_param(action: MLWorkerAction, params):
         return GetPushParam.parse_obj(params)
     elif action == MLWorkerAction.createSubDataset:
         return CreateSubDatasetParam.parse_obj(params)
+    elif action == MLWorkerAction.createDataset:
+        return CreateDatasetParam.parse_obj(params)
+    elif action == MLWorkerAction.getLogs:
+        return GetLogsParams.parse_obj(params)
     return params
 
 
@@ -90,7 +98,9 @@ def map_function_meta_ws(callable_type):
             name=test.name,
             displayName=test.display_name,
             module=test.module,
-            doc=test.doc,
+            doc=None
+            if test.doc is None
+            else Documentation(description=test.doc.description, parameters=test.doc.parameters),
             code=test.code,
             moduleDoc=test.module_doc,
             tags=test.tags,
@@ -112,21 +122,6 @@ def map_function_meta_ws(callable_type):
     }
 
 
-def log_artifact_local(local_file, artifact_path=None):
-    # Log artifact locally from an internal worker
-    verify_artifact_path(artifact_path)
-
-    file_name = os.path.basename(local_file)
-
-    if artifact_path:
-        artifact_file = projects_dir / artifact_path / file_name
-    else:
-        artifact_file = projects_dir / file_name
-    artifact_file.parent.mkdir(parents=True, exist_ok=True)
-
-    shutil.copy(local_file, artifact_file)
-
-
 def map_dataset_process_function_meta_ws(callable_type):
     return {
         test.uuid: websocket.DatasetProcessFunctionMeta(
@@ -134,7 +129,9 @@ def map_dataset_process_function_meta_ws(callable_type):
             name=test.name,
             displayName=test.display_name,
             module=test.module,
-            doc=test.doc,
+            doc=None
+            if test.doc is None
+            else Documentation(description=test.doc.description, parameters=test.doc.parameters),
             code=test.code,
             moduleDoc=test.module_doc,
             tags=test.tags,
@@ -158,7 +155,21 @@ def map_dataset_process_function_meta_ws(callable_type):
     }
 
 
-def parse_function_arguments(client: Optional[GiskardClient], request_arguments: List[websocket.FuncArgument]):
+def _get_or_load(loaded_artifacts: Dict[str, Dict[str, Any]], type: str, uuid: str, load_fn: Callable[[], Any]) -> Any:
+    if uuid not in loaded_artifacts[type]:
+        loaded_artifacts[type][uuid] = load_fn()
+
+    return loaded_artifacts[type][uuid]
+
+
+def parse_function_arguments(
+    client: GiskardClient,
+    request_arguments: List[websocket.FuncArgument],
+    loaded_artifacts: Optional[Dict[str, Dict[str, Any]]] = None,
+):
+    if loaded_artifacts is None:
+        loaded_artifacts = defaultdict(dict)
+
     arguments = dict()
 
     # Processing empty list
@@ -169,22 +180,32 @@ def parse_function_arguments(client: Optional[GiskardClient], request_arguments:
         if arg.is_none:
             continue
         if arg.dataset is not None:
-            arguments[arg.name] = Dataset.download(
-                client,
-                arg.dataset.project_key,
+            arguments[arg.name] = _get_or_load(
+                loaded_artifacts,
+                "Dataset",
                 arg.dataset.id,
-                arg.dataset.sample,
+                lambda: Dataset.download(
+                    client,
+                    arg.dataset.project_key,
+                    arg.dataset.id,
+                    arg.dataset.sample,
+                ),
             )
         elif arg.model is not None:
-            arguments[arg.name] = BaseModel.download(client, arg.model.project_key, arg.model.id)
+            arguments[arg.name] = _get_or_load(
+                loaded_artifacts,
+                "BaseModel",
+                arg.model.id,
+                lambda: BaseModel.download(client, arg.model.project_key, arg.model.id),
+            )
         elif arg.slicingFunction is not None:
             arguments[arg.name] = SlicingFunction.download(
                 arg.slicingFunction.id, client, arg.slicingFunction.project_key
-            )(**parse_function_arguments(client, arg.args))
+            )(**parse_function_arguments(client, arg.args, loaded_artifacts))
         elif arg.transformationFunction is not None:
             arguments[arg.name] = TransformationFunction.download(
                 arg.transformationFunction.id, client, arg.transformationFunction.project_key
-            )(**parse_function_arguments(client, arg.args))
+            )(**parse_function_arguments(client, arg.args, loaded_artifacts))
         elif arg.float_arg is not None:
             arguments[arg.name] = float(arg.float_arg)
         elif arg.int_arg is not None:
@@ -205,7 +226,7 @@ def parse_function_arguments(client: Optional[GiskardClient], request_arguments:
 def map_result_to_single_test_result_ws(
     result,
     datasets: Dict[uuid.UUID, Dataset],
-    client: Optional[GiskardClient] = None,
+    client: GiskardClient,
     project_key: Optional[str] = None,
 ) -> websocket.SingleTestResult:
     if isinstance(result, TestResult):
@@ -230,24 +251,19 @@ def map_result_to_single_test_result_ws(
             else [],
             props=result.props,
             metric=result.metric,
-            missing_count=result.missing_count,
-            missing_percent=result.missing_percent,
-            unexpected_count=result.unexpected_count,
-            unexpected_percent=result.unexpected_percent,
-            unexpected_percent_total=result.unexpected_percent_total,
-            unexpected_percent_nonmissing=result.unexpected_percent_nonmissing,
-            partial_unexpected_index_list=[
-                websocket.PartialUnexpectedCounts(value=puc.value, count=puc.count)
-                for puc in result.partial_unexpected_index_list
-            ],
-            unexpected_index_list=result.unexpected_index_list,
-            number_of_perturbed_rows=result.number_of_perturbed_rows,
-            actual_slices_size=result.actual_slices_size,
-            reference_slices_size=result.reference_slices_size,
+            metric_name=result.metric_name,
             failed_indexes={
                 str(dataset.original_id): list(datasets[dataset.original_id].df.index.get_indexer_for(dataset.df.index))
                 for dataset in result.output_ds
             },
+            details=None
+            if not result.details
+            else websocket.SingleTestResultDetails(
+                inputs=result.details.inputs,
+                outputs=result.details.outputs,
+                results=result.details.results,
+                metadata=result.details.metadata,
+            ),
         )
     elif isinstance(result, bool):
         return websocket.SingleTestResult(passed=result)
@@ -267,9 +283,6 @@ def _upload_generated_output_df(client, datasets, project_key, result):
     )
 
     if result.output_df.original_id not in datasets.keys():
-        if not client:
-            raise RuntimeError("Legacy test debugging using `output_df` is not supported internal ML worker")
-
         if not project_key:
             raise ValueError("Unable to upload debug dataset due to missing `project_key`")
 
@@ -281,7 +294,7 @@ def _upload_generated_output_df(client, datasets, project_key, result):
 
 def do_run_adhoc_test(arguments, test):
     logger.info(f"Executing {test.meta.display_name or f'{test.meta.module}.{test.meta.name}'}")
-    return test.get_builder()(**arguments).execute()
+    return test(**arguments).execute()
 
 
 def map_suite_input_ws(i: websocket.SuiteInput):
@@ -358,3 +371,7 @@ def do_create_sub_dataset(datasets: Dict[str, Dataset], name: Optional[str], row
         column_types=dataset_list[0].column_types,
         validation=False,
     )
+
+
+def do_create_dataset(name: Optional[str], headers: List[str], rows: List[List[str]]):
+    return Dataset(pd.DataFrame(rows, columns=headers), name=name, validation=False)

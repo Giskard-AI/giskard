@@ -3,8 +3,8 @@ from typing import Sequence
 import pandas as pd
 
 from ...datasets import Dataset
-from ...ml_worker.testing.registry.slicing_function import SlicingFunction
 from ...models.base import BaseModel
+from ...registry.slicing_function import SlicingFunction
 from ...testing.tests.calibration import _calculate_underconfidence_score
 from ..common.examples import ExampleExtractor
 from ..common.loss_based_detector import LossBasedDetector
@@ -17,20 +17,21 @@ from ..logger import logger
 class UnderconfidenceDetector(LossBasedDetector):
     _needs_target = False
 
-    def __init__(self, threshold=0.1, p_threshold=0.95, method="tree"):
+    def __init__(self, threshold=0.1, p_threshold=0.95, method="tree", **kwargs):
         self.threshold = threshold
         self.p_threshold = p_threshold
         self.method = method
+        super().__init__(**kwargs)
 
     @property
     def _numerical_slicer_method(self):
         return self.method
 
-    def run(self, model: BaseModel, dataset: Dataset, **kwargs):
+    def run(self, model: BaseModel, dataset: Dataset, features: Sequence[str]):
         if not model.is_classification:
             raise ValueError("Underconfidence detector only works for classification models.")
 
-        return super().run(model, dataset)
+        return super().run(model, dataset, features)
 
     def _calculate_loss(self, model: BaseModel, dataset: Dataset) -> pd.DataFrame:
         return _calculate_underconfidence_score(model, dataset).to_frame(self.LOSS_COLUMN_NAME)
@@ -80,7 +81,7 @@ class UnderconfidenceDetector(LossBasedDetector):
                 description = (
                     "For records in your dataset where {slicing_fn}, we found a significantly higher number of "
                     "underconfident predictions ({num_underconfident_samples} samples, corresponding to "
-                    "{metric_value_perc:.1f}% of the predictions in the data slice)."
+                    "{metric_value_perc:.2f}% of the predictions in the data slice)."
                 )
                 issue = Issue(
                     model,
@@ -90,7 +91,7 @@ class UnderconfidenceDetector(LossBasedDetector):
                     description=description,
                     slicing_fn=slice_fn,
                     meta={
-                        "metric": "Overconfidence rate",
+                        "metric": "Underconfidence rate",
                         "metric_value": slice_rate,
                         "metric_value_perc": slice_rate * 100,
                         "metric_reference_value": reference_rate,
@@ -104,6 +105,7 @@ class UnderconfidenceDetector(LossBasedDetector):
                     importance=relative_delta,
                     tests=_generate_underconfidence_tests,
                     taxonomy=["avid-effect:performance:P0204"],
+                    detector_name=self.__class__.__name__,
                 )
 
                 # Add examples

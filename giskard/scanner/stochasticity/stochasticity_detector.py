@@ -19,7 +19,7 @@ class StochasticityDetector(Detector):
     same output.
     """
 
-    def run(self, model: BaseModel, dataset: Dataset):
+    def run(self, model: BaseModel, dataset: Dataset, features=None):
         logger.info("StochasticityDetector: Running")
         sample_size = min(100, len(dataset))
         reduced_dataset = dataset.slice(lambda df: df.sample(sample_size), row_level=False)
@@ -55,5 +55,6 @@ class StochasticityDetector(Detector):
                 },
                 examples=fail_samples,
                 taxonomy=["avid-effect:performance:P0201"],
+                detector_name=self.__class__.__name__,
             )
         ]

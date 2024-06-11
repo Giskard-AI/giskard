@@ -17,8 +17,8 @@ from sklearn.preprocessing import OneHotEncoder, StandardScaler
 
 from giskard.core.core import SupportedModelTypes
 from giskard.datasets.base import Dataset
-from giskard.ml_worker.utils.logging import Timer
 from giskard.models.sklearn import SKLearnModel
+from giskard.utils.logging_utils import Timer
 from tests import path
 from tests.utils import get_email_files
 
@@ -152,7 +152,7 @@ def enron_raw_model(enron_raw_data: pd.DataFrame) -> Tuple[Pipeline, List[str]]:
     categorical_transformer = Pipeline(
         [
             ("imputer", SimpleImputer(strategy="constant", fill_value="missing")),
-            ("onehot", OneHotEncoder(handle_unknown="ignore", sparse=False)),
+            ("onehot", OneHotEncoder(handle_unknown="ignore", sparse_output=False)),
         ]
     )
 

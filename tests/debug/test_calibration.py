@@ -1,6 +1,6 @@
 import pytest
 
-from giskard.testing import test_underconfidence_rate, test_overconfidence_rate
+from giskard.testing import test_overconfidence_rate, test_underconfidence_rate
 
 
 @pytest.mark.parametrize(
@@ -30,7 +30,7 @@ def test_confidence(model, dataset, request):
     rest_dataset_underconfidence.df = rest_dataset_underconfidence.df.drop(underconfidence_ds.df.index)
     rest_predictions_underconfidence = model.predict(rest_dataset_underconfidence)
 
-    assert len(underconfidence_ds.df.index) == 45
+    assert len(underconfidence_ds.df.index) == 46
     assert 0.45 < underconfidence_predictions.probabilities.mean()
     assert 0.55 > underconfidence_predictions.probabilities.mean()
     assert max(underconfidence_predictions.probabilities) < min(rest_predictions_underconfidence.probabilities)

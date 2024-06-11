@@ -9,6 +9,7 @@ class EnableAnalytics:
     """
     Context manager to enable/disable analytics on demand, disregarding the global settings
     """
+
     def __init__(self, do_enable=True):
         self.new_value = do_enable
         self.original_value = settings.disable_analytics
@@ -23,6 +24,7 @@ class EnableAnalytics:
 def test_tracking_doesnt_throw_errors():
     with EnableAnalytics():
         ac = GiskardAnalyticsCollector()
+        ac._lazy_init()
         ac.mp._consumer = Consumer(events_url="https://invalid.url")
         ac.track("test")
 

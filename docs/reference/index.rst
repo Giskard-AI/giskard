@@ -4,7 +4,6 @@ API Reference
 .. toctree::
    :maxdepth: 1
 
-   ../cli/index
    models/index
    datasets/index
    scan/index
@@ -13,3 +12,4 @@ API Reference
    transformation-functions/index
    push/index
    suite/index
+   rag-toolset/index

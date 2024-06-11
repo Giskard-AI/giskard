@@ -67,11 +67,11 @@
         </div>
         {% endif %}
 
-        {% if "p_value" in issue.meta %}
+        {% if "p_value" in issue.meta and issue.meta["p_value"] is not none %}
         <h4 class="font-bold text-sm mt-4">Significance</h4>
         <p class="text-sm my-2">
             The hypothesis that the <em>{{ issue.meta.metric }}</em> on the data slice was different with respect
-            to the rest of the data was asserted with p-value = {{ issue.meta.p_value }}.
+            to the rest of the data was asserted with p-value = {{ issue.meta.p_value|format_metric }}.
         </p>
         {% endif %}
 

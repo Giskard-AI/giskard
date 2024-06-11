@@ -1,27 +1,25 @@
+from typing import Any, Callable, Iterable, List, Optional, Union
+
 import tempfile
-from typing import List, Iterable, Union, Callable, Any, Optional
 
 import numpy as np
 import pandas as pd
 import yaml
 
 from giskard.client.python_utils import warning
-from giskard.core.core import ModelMeta, ModelType
-from giskard.core.core import SupportedModelTypes
-from giskard.core.validation import validate_is_pandasdataframe, configured_validate_arguments
+from giskard.core.core import ModelMeta, ModelType, SupportedModelTypes
+from giskard.core.validation import configured_validate_arguments, validate_is_pandasdataframe
 from giskard.datasets.base import Dataset
-from giskard.ml_worker.testing.registry.slicing_function import SlicingFunction
 from giskard.models.base import BaseModel, WrapperModel
+from giskard.registry.slicing_function import SlicingFunction
+
 from ..utils import fullname
 from ..utils.analytics_collector import analytics, get_dataset_properties, get_model_properties
-from .dataset_validation import validate_optional_target
 
 
 @configured_validate_arguments
 def validate_model(model: BaseModel, validate_ds: Optional[Dataset] = None, print_validation_message: bool = True):
     try:
-        if model.meta.model_type != SupportedModelTypes.TEXT_GENERATION and validate_ds is not None:
-            validate_optional_target(validate_ds)
         _do_validate_model(model, validate_ds)
     except (ValueError, TypeError) as err:
         _track_validation_error(err, model, validate_ds)
@@ -41,7 +39,7 @@ def _track_validation_error(err, model, dataset):
 
 
 def _do_validate_model(model: BaseModel, validate_ds: Optional[Dataset] = None):
-    model_type = model.meta.model_type
+    model_type = model.model_type
 
     if isinstance(model, WrapperModel) and model.data_preprocessing_function is not None:
         validate_data_preprocessing_function(model.data_preprocessing_function)
@@ -49,18 +47,18 @@ def _do_validate_model(model: BaseModel, validate_ds: Optional[Dataset] = None):
     if isinstance(model, WrapperModel) and model.model_postprocessing_function is not None:
         validate_model_postprocessing_function(model.model_postprocessing_function)
 
-    validate_classification_labels(model.meta.classification_labels, model_type)
+    validate_classification_labels(model.classification_labels, model_type)
 
     if model.is_classification:
-        validate_classification_threshold_label(model.meta.classification_labels, model.meta.classification_threshold)
+        validate_classification_threshold_label(model.classification_labels, model.classification_threshold)
 
-    assert model.meta.feature_names is None or isinstance(
-        model.meta.feature_names, list
+    assert model.feature_names is None or isinstance(
+        model.feature_names, list
     ), "Invalid feature_names parameter. Please provide the feature names as a list."
 
     if validate_ds is not None:
         validate_is_pandasdataframe(validate_ds.df)
-        validate_features(feature_names=model.meta.feature_names, validate_df=validate_ds.df)
+        validate_features(feature_names=model.feature_names, validate_df=validate_ds.df)
 
         if model.is_regression:
             validate_model_execution(model, validate_ds)
@@ -68,14 +66,12 @@ def _do_validate_model(model: BaseModel, validate_ds: Optional[Dataset] = None):
             validate_model_execution(model, validate_ds, False)
         elif model.is_classification and validate_ds.target is not None:
             target_values = validate_ds.df[validate_ds.target].unique()
-            validate_label_with_target(
-                model.meta.name, model.meta.classification_labels, target_values, validate_ds.target
-            )
+            validate_label_with_target(model.name, model.classification_labels, target_values, validate_ds.target)
             validate_model_execution(model, validate_ds)
         else:  # Classification with target = None
             validate_model_execution(model, validate_ds)
 
-        if model.meta.model_type == SupportedModelTypes.CLASSIFICATION and validate_ds.target is not None:
+        if model.model_type == SupportedModelTypes.CLASSIFICATION and validate_ds.target is not None:
             validate_order_classifcation_labels(model, validate_ds)
 
 
@@ -91,7 +87,7 @@ def validate_model_execution(model: BaseModel, dataset: Dataset, deterministic: 
     try:
         prediction = model.predict(validation_ds)
     except Exception as e:
-        features = model.meta.feature_names if model.meta.feature_names is not None else validation_ds.df.columns
+        features = model.feature_names if model.feature_names is not None else validation_ds.df.columns
         number_of_features = len(features)
 
         # Some models (mostly sklearn) expect a 1-dimensional ndarray or pd.Series as input in the case they're
@@ -127,16 +123,14 @@ def validate_model_execution(model: BaseModel, dataset: Dataset, deterministic: 
 
     if deterministic:
         validate_deterministic_model(model, validation_ds, prediction)
-    validate_prediction_output(validation_ds, model.meta.model_type, prediction.raw)
+    validate_prediction_output(validation_ds, model.model_type, prediction.raw)
     if model.is_classification:
-        validate_classification_prediction(model.meta.classification_labels, prediction.raw)
+        validate_classification_prediction(model.classification_labels, prediction.raw)
 
 
 @configured_validate_arguments
 def validate_deterministic_model(model: BaseModel, validate_ds: Dataset, prev_prediction):
-    """
-    Asserts if the model is deterministic by asserting previous and current prediction on same data
-    """
+    """Asserts if the model is deterministic by asserting previous and current prediction on same data are same"""
     new_prediction = model.predict(validate_ds)
 
     if not np.allclose(prev_prediction.raw, new_prediction.raw):
@@ -148,9 +142,7 @@ def validate_deterministic_model(model: BaseModel, validate_ds: Dataset, prev_pr
 
 @configured_validate_arguments
 def validate_model_loading_and_saving(model: BaseModel):
-    """
-    Validates if the model can be serialised and deserialised
-    """
+    """Validates if the model can be serialised and deserialised from local disk"""
     try:
         with tempfile.TemporaryDirectory(prefix="giskard-model-") as f:
             model.save(f)
@@ -317,7 +309,7 @@ def validate_order_classifcation_labels(model, dataset):
     y_true = dataset.df[dataset.target]
     y_pred = model.predict(dataset).prediction
     balanced_accuracy = balanced_accuracy_score(y_true, y_pred)
-    num_classes = len(model.meta.classification_labels)
+    num_classes = len(model.classification_labels)
 
     if balanced_accuracy <= 1 / num_classes:
         warning(

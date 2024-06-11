@@ -1,18 +1,17 @@
-import pandas as pd
-import numpy as np
-from pydantic import ValidationError
-import pytest
 import uuid
+import warnings
 
+import numpy as np
+import pandas as pd
+import pytest
 import requests_mock
+from pydantic import ValidationError
 
-from giskard.datasets.base import Dataset
-from giskard.core.dataset_validation import validate_optional_target
 from giskard.client.dtos import DatasetMetaInfo
-
+from giskard.core.dataset_validation import validate_optional_target
+from giskard.datasets.base import Dataset
 from tests import utils
-from tests.communications.test_dto_serialization import is_required, get_fields, get_name
-
+from tests.communications.test_dto_serialization import get_fields, get_name, is_required
 
 # FIXME: conflict on `name` between Giskard Hub (@NotBlank) and Python client (optional in DatasetMeta and DatasetMetaInfo)
 MANDATORY_FIELDS = [
@@ -57,8 +56,7 @@ def test_factory():
     assert isinstance(my_dataset, Dataset)
 
 
-def test_valid_df_column_types():
-    # Option 0: none of column_types, cat_columns, infer_column_types = True are provided
+def test_validate_optional_target():
     with pytest.warns(
         UserWarning,
         match=r"You did not provide the optional argument 'target'\. 'target' is the column name "
@@ -66,6 +64,21 @@ def test_valid_df_column_types():
     ):
         my_dataset = Dataset(valid_df)
         validate_optional_target(my_dataset)
+
+    # https://docs.pytest.org/en/latest/how-to/capture-warnings.html#additional-use-cases-of-warnings-in-tests
+    with warnings.catch_warnings():
+        warnings.simplefilter("error")
+
+        my_dataset = Dataset(valid_df, target=None)
+        validate_optional_target(my_dataset)
+
+        my_dataset = Dataset(valid_df, target="text_column")
+        validate_optional_target(my_dataset)
+
+
+def test_valid_df_column_types():
+    # Option 0: none of column_types, cat_columns, infer_column_types = True are provided
+    my_dataset = Dataset(valid_df)
     assert my_dataset.column_types == {
         "categorical_column": "category",
         "text_column": "text",
@@ -158,7 +171,6 @@ def test_numeric_column_names():
 
 
 def test_infer_column_types():
-
     # if df_size >= 100     ==> category_threshold = floor(log10(df_size))
     assert Dataset(pd.DataFrame({"f": [1, 2] * 50})).column_types["f"] == "category"
     assert Dataset(pd.DataFrame({"f": ["a", "b"] * 50})).column_types["f"] == "category"
@@ -183,9 +195,9 @@ def test_dataset_download_with_cache(request):
     dataset: Dataset = request.getfixturevalue("enron_data")
     project_key = str(uuid.uuid4())
 
-    with utils.MockedProjectCacheDir(project_key):
+    with utils.MockedProjectCacheDir():
         # Save the dataset to cache dir
-        utils.local_save_dataset_under_giskard_home_cache(dataset, project_key=project_key)
+        utils.local_save_dataset_under_giskard_home_cache(dataset)
 
         with utils.MockedClient(mock_all=False) as (client, mr):
             # The dataset can be then loaded from the cache, without further requests
@@ -205,7 +217,7 @@ def test_dataset_download(request):
     dataset: Dataset = request.getfixturevalue("enron_data")
     project_key = str(uuid.uuid4())
 
-    with utils.MockedProjectCacheDir(project_key):
+    with utils.MockedProjectCacheDir():
         with utils.MockedClient(mock_all=False) as (client, mr):
             # The dataset needs to request files
             requested_urls = []
@@ -228,8 +240,11 @@ def test_dataset_meta_info():
     mandatory_field_names = []
     optional_field_names = []
     for name, field in get_fields(klass).items():
-        mandatory_field_names.append(get_name(name, field)) if is_required(field) else \
-            optional_field_names.append(get_name(name, field))
+        (
+            mandatory_field_names.append(get_name(name, field))
+            if is_required(field)
+            else optional_field_names.append(get_name(name, field))
+        )
     assert set(mandatory_field_names) == set(MANDATORY_FIELDS)
     assert set(optional_field_names) == set(OPTIONAL_FIELDS)
 
@@ -242,7 +257,9 @@ def test_fetch_dataset_meta(request):
         with utils.MockedClient(mock_all=False) as (client, mr):
             meta_info = utils.mock_dataset_meta_info(dataset, project_key)
             meta_info.pop(op)
-            mr.register_uri(method=requests_mock.GET, url=utils.get_url_for_dataset(dataset, project_key), json=meta_info)
+            mr.register_uri(
+                method=requests_mock.GET, url=utils.get_url_for_dataset(dataset, project_key), json=meta_info
+            )
 
             # Should not raise
             client.load_dataset_meta(project_key, uuid=str(dataset.id))
@@ -251,7 +268,9 @@ def test_fetch_dataset_meta(request):
         with utils.MockedClient(mock_all=False) as (client, mr):
             meta_info = utils.mock_dataset_meta_info(dataset, project_key)
             meta_info.pop(op)
-            mr.register_uri(method=requests_mock.GET, url=utils.get_url_for_dataset(dataset, project_key), json=meta_info)
+            mr.register_uri(
+                method=requests_mock.GET, url=utils.get_url_for_dataset(dataset, project_key), json=meta_info
+            )
 
             # Should raise due to missing of values
             with pytest.raises(ValidationError):

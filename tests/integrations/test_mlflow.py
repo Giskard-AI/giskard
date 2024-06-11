@@ -1,8 +1,10 @@
+import os
+from pathlib import Path
+from tempfile import TemporaryDirectory
+
 import mlflow
 import pytest
-from pathlib import Path
 
-from tempfile import TemporaryDirectory
 from giskard.core.core import SupportedModelTypes
 
 mlflow_model_types = {
@@ -14,19 +16,22 @@ mlflow_model_types = {
 
 def _evaluate(dataset, model, evaluator_config):
     import platform
-    import os
 
     with TemporaryDirectory() as f:
+        # MLFlow logic for windows seems to say : "Start with drive, no need for file:"
+        # https://github.com/mlflow/mlflow/blob/b414a22bdead12a1865a0ab59460eb6b158db7d0/mlflow/utils/uri.py#L65C1-L66C1
+        # Since it's not working, let's just skip it for windows..
         if platform.system() == "Windows":
-            f = f.replace(os.sep, "/")
-            f = "file://" + f
-        mlflow.set_tracking_uri(Path(f))
+            f = "file:/" + f.replace(os.sep, "/")
+            mlflow.set_tracking_uri(f)
+        else:
+            mlflow.set_tracking_uri(Path(f))
         experiment_id = mlflow.create_experiment("test", artifact_location=f)
         with mlflow.start_run(experiment_id=experiment_id):
             model_info = model.to_mlflow()
             mlflow.evaluate(
                 model=model_info.model_uri,
-                model_type=mlflow_model_types[model.meta.model_type],
+                model_type=mlflow_model_types[model.model_type],
                 data=dataset.df,
                 targets=dataset.target,
                 evaluators="giskard",
@@ -66,7 +71,7 @@ def test_slow(dataset_name, model_name, request):
 def _run_test(dataset_name, model_name, request):
     dataset = request.getfixturevalue(dataset_name)
     model = request.getfixturevalue(model_name)
-    evaluator_config = {"model_config": {"classification_labels": model.meta.classification_labels}}
+    evaluator_config = {"model_config": {"classification_labels": model.classification_labels}}
     _evaluate(dataset, model, evaluator_config)
 
 
@@ -74,12 +79,12 @@ def _run_test(dataset_name, model_name, request):
 def test_errors(dataset_name, model_name, request):
     dataset = request.getfixturevalue(dataset_name)
     model = request.getfixturevalue(model_name)
-    evaluator_config = {"model_config": {"classification_labels": model.meta.classification_labels}}
+    evaluator_config = {"model_config": {"classification_labels": model.classification_labels}}
 
     # dataset type error
     dataset_copy = dataset.copy()
     dataset_copy.df = [[0.6, 0.4]]
-    dataset_copy.target = [1]
+    dataset_copy._target = [1]
 
     with pytest.raises(Exception) as e:
         _evaluate(dataset_copy, model, evaluator_config)
@@ -103,7 +108,7 @@ def test_errors(dataset_name, model_name, request):
 
     # scan error
     dataset_copy = dataset.copy()
-    cl = model.meta.classification_labels
+    cl = model.classification_labels
     cl.append("unknown_label")
     evaluator_config = {"model_config": {"classification_labels": cl}}
 

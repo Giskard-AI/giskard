@@ -4,8 +4,10 @@ import pandas as pd
 
 from ...datasets.base import Dataset
 from ...llm.evaluators import RequirementEvaluator
+from ...llm.evaluators.base import EvaluationResult
 from ...llm.generators import AdversarialDataGenerator
 from ...llm.testcase import TestcaseRequirementsGenerator
+from ...llm.utils import format_chat_messages
 from ...models.base.model import BaseModel
 from ...testing.tests.llm import test_llm_output_against_requirement
 from ..issues import Issue
@@ -16,9 +18,10 @@ from ..scanner import logger
 class RequirementBasedDetector(Detector):
     _taxonomy = []
 
-    def __init__(self, num_requirements=4, num_samples=5):
+    def __init__(self, num_requirements=4, num_samples=5, llm_seed: int = 1729):
         self.num_requirements = num_requirements
         self.num_samples = num_samples
+        self.llm_seed = llm_seed
 
     def get_cost_estimate(self, model: BaseModel, dataset: Dataset) -> dict:
         counts = _estimate_base_token_counts(model, dataset)
@@ -54,7 +57,7 @@ class RequirementBasedDetector(Detector):
             "llm_sampled_tokens": num_sampled_tokens,
         }
 
-    def run(self, model: BaseModel, dataset: Dataset) -> Sequence[Issue]:
+    def run(self, model: BaseModel, dataset: Dataset, features=None) -> Sequence[Issue]:
         issue_description = self.get_issue_description()
 
         logger.info(f"{self.__class__.__name__}: Generating test case requirements")
@@ -65,16 +68,19 @@ class RequirementBasedDetector(Detector):
         issues = []
         for requirement in requirements:
             logger.info(f"{self.__class__.__name__}: Evaluating requirement: {requirement}")
-            dg = AdversarialDataGenerator(issue_description=issue_description, requirement=requirement)
+
+            languages = dataset.extract_languages(columns=model.meta.feature_names)
+
+            dg = AdversarialDataGenerator(
+                issue_description=issue_description, requirement=requirement, languages=languages
+            )
             eval_dataset = dg.generate_dataset(model, self.num_samples)
 
             evaluator = RequirementEvaluator([requirement])
             eval_result = evaluator.evaluate(model, eval_dataset)
 
             if eval_result.failed:
-                issues.append(
-                    self.make_issue(model, eval_dataset, requirement, pd.DataFrame(eval_result.failure_examples))
-                )
+                issues.append(self.make_issue(model, eval_dataset, requirement, eval_result))
                 logger.info(
                     f"{self.__class__.__name__}: Test case failed ({len(eval_result.failure_examples)} failed examples)"
                 )
@@ -83,7 +89,17 @@ class RequirementBasedDetector(Detector):
 
         return issues
 
-    def make_issue(self, model: BaseModel, dataset: Dataset, requirement: str, examples: pd.DataFrame) -> Issue:
+    def make_issue(self, model: BaseModel, dataset: Dataset, requirement: str, eval_result: EvaluationResult) -> Issue:
+        examples = pd.DataFrame(
+            [
+                {
+                    "Conversation": format_chat_messages(ex["sample"].get("conversation", [])),
+                    "Reason": ex.get("reason", "No reason provided."),
+                }
+                for ex in eval_result.failure_examples
+            ]
+        )
+
         return Issue(
             model,
             dataset,
@@ -92,13 +108,16 @@ class RequirementBasedDetector(Detector):
             description="The model does not satisfy the following requirement: " + requirement,
             examples=examples,
             meta={
+                "metric": "Failing samples",
+                "metric_value": len(examples),
                 "domain": requirement,
                 "requirement": requirement,
-                "deviation": f"{len(examples)} failing sample{'s' if len(examples) > 1 else ''} found",
+                "deviation": f"Found {len(examples)} model output{'s' if len(examples) > 1 else ''} not meeting the requirement",
                 "hide_index": True,
             },
             tests=_generate_output_requirement_tests,
             taxonomy=self._taxonomy,
+            detector_name=self.__class__.__name__,
         )
 
 

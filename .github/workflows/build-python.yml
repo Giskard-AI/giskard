@@ -10,29 +10,29 @@ on:
   workflow_dispatch:
     inputs:
       run-integration-tests:
-        description: 'If integration test should be run'
+        description: "If integration test should be run"
         required: true
         type: boolean
         default: false
       use-cache:
-        description: 'If cache should be used'
+        description: "If cache should be used"
         required: true
         type: boolean
         default: true
       is-dispatch:
-        description: 'Just to identify manual dispatch'
+        description: "Just to identify manual dispatch"
         required: true
         type: boolean
         default: true
   workflow_call:
     inputs:
       run-integration-tests:
-        description: 'If integration test should be run'
+        description: "If integration test should be run"
         required: true
         type: boolean
         default: false
       use-cache:
-        description: 'If cache should be used'
+        description: "If cache should be used"
         required: true
         type: boolean
         default: false
@@ -43,6 +43,7 @@ concurrency:
   cancel-in-progress: true
 env:
   GSK_DISABLE_ANALYTICS: true
+  GSK_DISABLE_SENTRY: true
 defaults:
   run:
     shell: bash
@@ -53,25 +54,25 @@ jobs:
     strategy:
       fail-fast: false # Do not stop when any job fails
       matrix:
-        python-version: [ "3.9", "3.10", "3.11", "3.12" ]
+        python-version: ["3.9", "3.10", "3.11", "3.12"]
         os: [ubuntu-latest]
         pydantic_v1: [false]
         pandas_v1: [false]
         langchain_minimal: [false]
         # https://docs.github.com/en/actions/using-github-hosted-runners/about-github-hosted-runners#supported-runners-and-hardware-resources
         include:
-          - python-version: "3.10"
-            os: windows-2019
-            pydantic_v1: false
-            pandas_v1: false
-            langchain_minimal: false
+          # - python-version: "3.10" # Deactivating windows-2019, since it's trying to use python 3.7 to install PDM. Maybe try to reactivate later ?
+          #   os: windows-2019
+          #   pydantic_v1: false
+          #   pandas_v1: false
+          #   langchain_minimal: false
           - python-version: "3.10"
             os: windows-2022
             pydantic_v1: false
             pandas_v1: false
             langchain_minimal: false
           - python-version: "3.10"
-            os: macos-latest
+            os: macos-12
             pydantic_v1: false
             pandas_v1: false
             langchain_minimal: false
@@ -92,37 +93,58 @@ jobs:
             langchain_minimal: true
     continue-on-error: false # https://ncorti.com/blog/howto-github-actions-build-matrix
     steps:
+      - name: Check disk space
+        run: |
+          df -h
+      - name: Free disk space
+        if: ${{ matrix.os == 'ubuntu-latest' }}
+        run: |
+          sudo swapoff -a
+          sudo rm -f /swapfile
+          sudo rm -rf /usr/local/lib/android
+          sudo apt update && sudo apt remove -y \
+          google-cloud-cli microsoft-edge-stable dotnet-sdk-* llvm-* google-chrome-stable temurin-*
+          sudo apt autoremove -y
+          sudo apt autoclean -y
+
+      - name: Check new disk space
+        run: |
+          df -h
+
       - name: Checkout code
         uses: actions/checkout@v4.1.0
         with:
           fetch-depth: 0
 
       - name: Setup PDM
-        uses: pdm-project/setup-pdm@v3
+        uses: pdm-project/setup-pdm@v4
         with:
           python-version: ${{ matrix.python-version }}
-          cache: true
-
-      - name: Set up Pandoc (needed for doc)
-        uses: r-lib/actions/setup-pandoc@v2
-        with:
-          pandoc-version: '3.1.7' # https://github.com/jgm/pandoc/releases
+          cache: false
 
       - name: Cache Giskard test resources
-        uses: actions/cache@v3
+        uses: actions/cache@v4
         if: ${{ github.event_name == 'pull_request' || inputs.use-cache }}
         with:
           path: ~/.giskard
           key: ${{ matrix.os }}-${{ matrix.python-version }}-python-test-resources-${{ hashFiles('tests/fixtures/**/*py')}}
           restore-keys: ${{ matrix.os }}-${{ matrix.python-version }}-python-giskard-test-resources
 
-      - name: Install dependencies
-        run: pdm install -G :all
+      - name: Check again new disk space
+        run: |
+          df -h
 
-      - name: Lint code
-        run: pdm run lint
+      - name: Install dependencies
+        run: |
+          pdm install -G :all
+          pdm list
+
+      - name: Check yet again new disk space
+        run: |
+          df -h
+
       - name: Re-install lightgbm from sources for MacOS
-        if: ${{ matrix.os == 'macos-latest' }}
+        if: ${{ matrix.os == 'macos-12' }}
         run: |
           pdm run pip uninstall lightgbm -y
           pdm run pip install --no-binary lightgbm lightgbm --config-settings=cmake.define.USE_OPENMP=OFF
@@ -160,21 +182,8 @@ jobs:
           pdm run pip freeze | grep '^pandas'
           pdm run pip freeze | grep -q '^pandas==${{ matrix.pandas_v1 && '1' || '2' }}\.'
 
-      - name: Test code (RAM expensive in tests/models, tests/testing, tests/test_metamorphic_invariance.py)
-        if: ${{ startsWith(matrix.os, 'windows') }}
-        run: pdm test-ram tests/models tests/testing tests/test_metamorphic_invariance.py
-
-      - name: Test code (RAM expensive, /tests/models and /tests/testing)
-        if: ${{ !startsWith(matrix.os, 'windows') }}
-        run: pdm test-ram --memray tests/models tests/testing tests/test_metamorphic_invariance.py
-
-      - name: Test code (RAM expensive, others)
-        if: ${{ startsWith(matrix.os, 'windows') }}
-        run: pdm test-ram tests/ --ignore=tests/models  --ignore=tests/testing --ignore=tests/test_metamorphic_invariance.py
-
-      - name: Test code (RAM expensive, others)
-        if: ${{ !startsWith(matrix.os, 'windows') }}
-        run: pdm test-ram --memray tests/ --ignore=tests/models --ignore=tests/testing --ignore=tests/test_metamorphic_invariance.py
+      - name: Lint code
+        run: pdm run lint
 
       - name: Test code (concurrency)
         run: pdm test-worker
@@ -185,22 +194,19 @@ jobs:
           PYTEST_XDIST_AUTO_NUM_WORKERS: 2
 
       - name: SonarCloud Scan
-        if: ${{ matrix.os == 'ubuntu-latest' && matrix.python-version == '3.10' && !matrix.langchain_minimal && !matrix.pandas_v1 && !matrix.pydantic_v1 && (github.event.ref == 'refs/heads/main' || github.event_name == 'pull_request')}}
-        uses: SonarSource/sonarcloud-github-action@v2.0.2
+        if: ${{ matrix.os == 'ubuntu-latest' && matrix.python-version == '3.10' && !matrix.langchain_minimal && !matrix.pandas_v1 && !matrix.pydantic_v1 && (github.event.ref == 'refs/heads/main' || github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name == github.repository) }}
+        uses: SonarSource/sonarcloud-github-action@v2.1.1
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
-
-      - name: Build doc
-        if : ${{ matrix.os == 'ubuntu-latest' && matrix.python-version == '3.10'}}
-        run: pdm run doc
 
       - name: Build
         run: pdm build
 
       - name: "Python client: archive built artifacts"
-        if: ${{ github.event_name == 'push' && matrix.os == 'ubuntu-latest' && matrix.python-version == '3.10' }}
-        uses: actions/upload-artifact@v3
+        # Upload needs to be done only once by workflo run, so we need to select one only in the matrix
+        if: ${{ github.event_name == 'push' && matrix.os == 'ubuntu-latest' && matrix.python-version == '3.10' && !matrix.langchain_minimal && !matrix.pandas_v1 && !matrix.pydantic_v1 }}
+        uses: actions/upload-artifact@v4
         with:
           path: dist/*whl
 
@@ -208,17 +214,11 @@ jobs:
         if: ${{ inputs.run-integration-tests }}
         env:
           PYTEST_XDIST_AUTO_NUM_WORKERS: 2
-        run: pdm test-slow tests/integrations
-
-      - name: Run integration tests for python
-        if: ${{ inputs.run-integration-tests }}
-        env:
-          PYTEST_XDIST_AUTO_NUM_WORKERS: 2
-        run: pdm test-slow tests/ --ignore=tests/integrations
+        run: pdm test-slow tests/
 
       - name: "Memory csv"
         if: ${{ always() && matrix.os == 'ubuntu-latest' && matrix.python-version == '3.10' && !matrix.langchain_minimal && !matrix.pandas_v1 && !matrix.pydantic_v1 }}
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           path: memory*.csv
           name: memory-usage
@@ -231,20 +231,14 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4.1.0
       - name: Setup PDM
-        uses: pdm-project/setup-pdm@v3
+        uses: pdm-project/setup-pdm@v4
         with:
-          python-version: '3.10'
+          python-version: "3.10"
           cache: false
       - name: Build wheel
         run: pdm build
       - name: Install Poetry
         uses: snok/install-poetry@v1
-      - name: Create new project and install server wheel (Poetry)
-        run: |
-          poetry new ./install-test
-          cd ./install-test
-          sed -i 's/^\(python *= *\).*$/\1">=3.10,<3.12"/' pyproject.toml
-          poetry add "$(ls ../dist/*.whl)[hub]"
       - name: Create new project, install wheel and import (Poetry)
         run: |
           poetry new ./install-run
@@ -259,9 +253,9 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4.1.0
       - name: Setup PDM
-        uses: pdm-project/setup-pdm@v3
+        uses: pdm-project/setup-pdm@v4
         with:
-          python-version: '3.10'
+          python-version: "3.10"
           cache: false
       - name: Build wheel
         run: pdm build
@@ -278,20 +272,13 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4.1.0
       - name: Setup PDM
-        uses: pdm-project/setup-pdm@v3
+        uses: pdm-project/setup-pdm@v4
         with:
-          python-version: '3.10'
+          python-version: "3.10"
+          version: "2.10.4" # Fix to repair the CI, use latest version when fixed on pdm
           cache: false
       - name: Build wheel
         run: pdm build
-      - name: Create new project, install server wheel (PDM)
-        run: |
-          mkdir ./install-test
-          cd ./install-test
-          pdm init --python 3.10 -n .
-          sed -i 's/^\(requires-python *= *\).*$/\1">=3.10,<3.12"/' pyproject.toml
-          pdm add "$(ls ../dist/*.whl)[hub]"
-          pdm run python -c "import giskard"
       - name: Create new project, install wheel and import (PDM)
         run: |
           mkdir ./install-run
@@ -300,3 +287,54 @@ jobs:
           sed -i 's/^\(requires-python *= *\).*$/\1">=3.10,<3.12"/' pyproject.toml
           pdm add "$(ls ../dist/*.whl)"
           pdm run python -c "import giskard"
+  check-doc:
+    name: "Build and check doc"
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check disk space
+        run: |
+          df -h
+
+      - name: Free disk space
+        run: |
+          sudo swapoff -a
+          sudo rm -f /swapfile
+          sudo rm -rf /usr/local/lib/android
+          docker rmi $(docker image ls -aq)
+          sudo apt update && sudo apt remove -y \
+          google-cloud-cli microsoft-edge-stable dotnet-sdk-* llvm-* google-chrome-stable temurin-*
+          sudo apt autoremove -y
+          sudo apt autoclean -y
+
+      - name: Check new disk space
+        run: |
+          df -h
+
+      - name: Checkout code
+        uses: actions/checkout@v4.1.0
+        with:
+          fetch-depth: 0
+
+      - name: Setup PDM
+        uses: pdm-project/setup-pdm@v4
+        with:
+          python-version: "3.10"
+          cache: false
+
+      - name: Set up Pandoc (needed for doc)
+        uses: r-lib/actions/setup-pandoc@v2
+        with:
+          pandoc-version: "3.1.7" # https://github.com/jgm/pandoc/releases
+
+      - name: Install dependencies
+        run: pdm install -G :all
+
+      - name: Check new disk space
+        run: |
+          df -h
+
+      - name: Build doc
+        run: pdm  doc
+
+      - name: Check doc
+        run: pdm check-doc

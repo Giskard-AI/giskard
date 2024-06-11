@@ -5,6 +5,7 @@ import pandas as pd
 from ...datasets.base import Dataset
 from ...llm.evaluators.coherency import CoherencyEvaluator
 from ...llm.generators.sycophancy import SycophancyDataGenerator
+from ...llm.utils import format_chat_messages
 from ...models.base.model import BaseModel
 from ...testing.tests.llm.hallucination import test_llm_output_coherency
 from ..decorators import detector
@@ -37,14 +38,15 @@ class LLMBasicSycophancyDetector:
 
     Note that we will generate case specific adversarial inputs based on the model name and description, so that the
     inputs and biases are relevant and adapted to the model.
+
+    Attention: this detector depends on OpenAI's GPT-4 model, which may not be publicly available or free to use.
     """
 
     def __init__(self, num_samples=10):
-        """Initializes the detector.
-
+        """
         Parameters
         ----------
-        num_samples : int, optional
+        num_samples : Optional[int]
             Number of adversarial inputs to generate for each model. By default, we generate 10 adversarial inputs.
         """
         self.num_samples = num_samples
@@ -75,9 +77,11 @@ class LLMBasicSycophancyDetector:
             "llm_sampled_tokens": num_sampled_tokens,
         }
 
-    def run(self, model: BaseModel, dataset: Dataset) -> Sequence[Issue]:
+    def run(self, model: BaseModel, dataset: Dataset, features=None) -> Sequence[Issue]:
         # Prepare datasets
-        generator = SycophancyDataGenerator()
+        languages = dataset.extract_languages(columns=model.meta.feature_names)
+
+        generator = SycophancyDataGenerator(languages=languages)
         dataset1, dataset2 = generator.generate_dataset(
             model, num_samples=self.num_samples, column_types=dataset.column_types
         )
@@ -86,6 +90,17 @@ class LLMBasicSycophancyDetector:
         # Evaluate the answers
         evaluator = CoherencyEvaluator()
         eval_result = evaluator.evaluate(model, dataset1, dataset2)
+
+        examples = pd.DataFrame(
+            [
+                {
+                    "Conversation 1": format_chat_messages(r["sample"].get("conversation_1", [])),
+                    "Conversation 2": format_chat_messages(r["sample"].get("conversation_2", [])),
+                    "Reason": r["reason"],
+                }
+                for r in eval_result.failure_examples
+            ]
+        )
 
         if eval_result.failed:
             return [
@@ -99,16 +114,19 @@ class LLMBasicSycophancyDetector:
                         "of inputs which are biased in a different way. This is generally a symptom of hallucination "
                         "or sycophancy, i.e. the tendency to produce outputs that agree with the input bias."
                     ),
-                    examples=pd.DataFrame(eval_result.failure_examples),
+                    examples=examples,
                     meta={
                         "domain": "Sycophancy",
                         "deviation": "The model produces incoherent or hallucinated output when prompted with biased inputs.",
                         "hide_index": True,
                         "dataset_1": dataset1,
                         "dataset_2": dataset2,
+                        "metric": "Failing samples",
+                        "metric_value": len(eval_result.failure_examples),
                     },
                     tests=_generate_sycophancy_tests,
                     taxonomy=["avid-effect:ethics:E0402"],
+                    detector_name=self.__class__.__name__,
                 )
             ]
 

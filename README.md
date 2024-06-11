@@ -1,9 +1,9 @@
 <p align="center">
-  <img alt="giskardlogo" src="readme/giskard_logo.png#gh-light-mode-only">
-  <img alt="giskardlogo" src="readme/giskard_logo_green.png#gh-dark-mode-only">
+  <img alt="giskardlogo" src="https://raw.githubusercontent.com/giskard-ai/giskard/main/readme/giskard_logo.png#gh-light-mode-only">
+  <img alt="giskardlogo" src="https://raw.githubusercontent.com/giskard-ai/giskard/main/readme/giskard_logo_green.png#gh-dark-mode-only">
 </p>
-<h1 align="center" weight='300' >The testing framework dedicated to ML models, from tabular to LLMs</h1>
-<h3 align="center" weight='300' >Scan AI models to detect risks of biases, performance issues and errors. In 4 lines of code. </h3>
+<h1 align="center" weight='300' >The Evaluation & Testing framework for LLMs & ML models</h1>
+<h3 align="center" weight='300' >Control risks of performance, bias and security issues in AI models</h3>
 <div align="center">
 
   [![GitHub release](https://img.shields.io/github/v/release/Giskard-AI/giskard)](https://github.com/Giskard-AI/giskard/releases)
@@ -16,18 +16,17 @@
 
 </div>
 <h3 align="center">
-   <a href="https://docs.giskard.ai/en/latest/index.html"><b>Documentation</b></a> &bull;
-   <a href="https://www.giskard.ai/knowledge-categories/blog/?utm_source=github&utm_medium=github&utm_campaign=github_readme&utm_id=readmeblog"><b>Blog</b></a> &bull;
+   <a href="https://docs.giskard.ai/en/stable/getting_started/index.html"><b>Docs</b></a> &bull;
+   <a href="https://www.giskard.ai/knowledge-categories/news/?utm_source=github&utm_medium=github&utm_campaign=github_readme&utm_id=readmeblog"><b>Blog</b></a> &bull;
   <a href="https://www.giskard.ai/?utm_source=github&utm_medium=github&utm_campaign=github_readme&utm_id=readmeblog"><b>Website</b></a> &bull;
-  <a href="https://gisk.ar/discord"><b>Discord Community</b></a> &bull;
-  <a href="https://www.giskard.ai/about?utm_source=github&utm_medium=github&utm_campaign=github_readme&utm_id=readmeblog#advisors"><b>Advisors</b></a>
+  <a href="https://gisk.ar/discord"><b>Discord</b></a>
  </h3>
 <br />
 
 ## Install Giskard 🐢
-You can install the latest version of Giskard from PyPi using pip :
+Install the latest version of Giskard from PyPi using pip:
 ```sh
-pip install giskard -U
+pip install "giskard[llm]" -U
 ```
 We officially support Python 3.9, 3.10 and 3.11.
 ## Try in Colab 📙
@@ -35,208 +34,206 @@ We officially support Python 3.9, 3.10 and 3.11.
 
 ______________________________________________________________________
 
+Giskard is an open-source Python library that **automatically detects performance, bias & security issues in AI applications**. The library covers LLM-based applications such as RAG agents, all the way to traditional ML models for tabular data. 
+
+## Scan: Automatically assess your LLM-based agents for performance, bias & security issues ⤵️
+
+Issues detected include: 
+- Hallucinations
+- Harmful content generation
+- Prompt injection
+- Robustness issues
+- Sensitive information disclosure
+- Stereotypes & discrimination
+- many more...
+
 <p align="center">
-  <img src="readme/architechture_giskard.png" alt="Giskard Architechture" width="800">
+  <img src="https://raw.githubusercontent.com/giskard-ai/giskard/main/readme/scan_updates.gif" alt="Scan Example" width="800">
 </p>
 
-Giskard is a Python library that automatically **detects vulnerabilities** in AI models, from tabular models to LLM, including performance biases, data leakage, spurious correlation, hallucination, toxicity, security issues and many more.
+## RAG Evaluation Toolkit (RAGET): Automatically generate evaluation datasets & evaluate RAG application answers ⤵️
 
-It's a powerful tool that helps data scientists **save time and effort** drilling down on model issues, and produce more **reliable and trustworthy models**.
+If you're testing a RAG application, you can get an even more in-depth assessment using **RAGET**, Giskard's RAG Evaluation Toolkit.
 
+- **RAGET** can generate automatically a list of `question`, `reference_answer` and `reference_context` from the knowledge base of the RAG. You can then use this generated test set to evaluate your RAG agent.
+- **RAGET** computes scores *for each component of the RAG agent*. The scores are computed by aggregating the correctness of the agent’s answers on different question types.
+
+  - Here is the list of components evaluated with **RAGET**:
+    - `Generator`: the LLM used inside the RAG to generate the answers
+    - `Retriever`: fetch relevant documents from the knowledge base according to a user query
+    - `Rewriter`: rewrite the user query to make it more relevant to the knowledge base or to account for chat history
+    - `Router`: filter the query of the user based on his intentions
+    - `Knowledge Base`: the set of documents given to the RAG to generate the answers
+  
 <p align="center">
-  <img src="readme/scan_example.gif" alt="Scan Example" width="800">
-</p>
-
-Instantaneously generate test suites for your models ⤵️
-
-<p align="center">
-  <img src="readme/suite_example.png" alt="Test Suite Example" width="800">
+  <img src="https://raw.githubusercontent.com/giskard-ai/giskard/main/readme/RAGET_updated.gif" alt="Test Suite Example" width="800">
 </p>
 
 
 Giskard works with any model, in any environment and integrates seamlessly with your favorite tools ⤵️ <br/>
-
+ 
 <p align="center">
-  <img width='600' src="readme/tools.png">
+  <img width='600' src="https://raw.githubusercontent.com/giskard-ai/giskard/main/readme/tools_updated.png">
 </p>
 <br/>
 
-
 # Contents
 
-1. 🤸‍♀️ **[Quickstart](#%EF%B8%8F-quickstart)**
-2. ⭐️ **[Premium features](#%EF%B8%8F-premium-features)**
-3. ❓ **[FAQ](#-faq)**
-4. 👋 **[Community](#-community)**
+- 🤸‍♀️ **[Quickstart](#quickstart)**
+    - **1**. 🏗️ [Build a LLM agent](#build-a-llm-agent)
+    - **2**. 🔎 [Scan your model for issues](#scan-your-model-for-issues)
+    - **3**. 🪄 [Automatically generate an evaluation dataset for your RAG applications](#automatically-generate-an-evaluation-dataset-for-your-rag-applications)
+- 👋 **[Community](#community)**
+
+<h1 id="quickstart">🤸‍♀️ Quickstart</h1>
+
+<h2 id="build-a-llm-agent">1. 🏗️ Build a LLM agent</h2>
+
+Let's build an agent that answers questions about climate change, based on the 2023 Climate Change Synthesis Report by the IPCC.
+
+Before starting let's install the required libraries:
+```sh
+pip install langchain tiktoken "pypdf<=3.17.0"
+```
 
 
-# 🤸‍♀️ Quickstart
+```python
+from langchain import OpenAI, FAISS, PromptTemplate
+from langchain.embeddings import OpenAIEmbeddings
+from langchain.document_loaders import PyPDFLoader
+from langchain.chains import RetrievalQA
+from langchain.text_splitter import RecursiveCharacterTextSplitter
 
-## 1. 🔎 Scan your model
-Here's an example of a Giskard scan on the famous Titanic survival prediction dataset:
+# Prepare vector store (FAISS) with IPPC report
+text_splitter = RecursiveCharacterTextSplitter(chunk_size=1000, chunk_overlap=100, add_start_index=True)
+loader = PyPDFLoader("https://www.ipcc.ch/report/ar6/syr/downloads/report/IPCC_AR6_SYR_LongerReport.pdf")
+db = FAISS.from_documents(loader.load_and_split(text_splitter), OpenAIEmbeddings())
+
+# Prepare QA chain
+PROMPT_TEMPLATE = """You are the Climate Assistant, a helpful AI assistant made by Giskard.
+Your task is to answer common questions on climate change.
+You will be given a question and relevant excerpts from the IPCC Climate Change Synthesis Report (2023).
+Please provide short and clear answers based on the provided context. Be polite and helpful.
+
+Context:
+{context}
+
+Question:
+{question}
+
+Your answer:
+"""
+
+llm = OpenAI(model="gpt-3.5-turbo-instruct", temperature=0)
+prompt = PromptTemplate(template=PROMPT_TEMPLATE, input_variables=["question", "context"])
+climate_qa_chain = RetrievalQA.from_llm(llm=llm, retriever=db.as_retriever(), prompt=prompt)
+```
+
+<h2 id="scan-your-model-for-issues">2. 🔎 Scan your model for issues</h2>
+
+Next, wrap your agent to prepare it for Giskard's scan:
 
 ```python
 import giskard
+import pandas as pd
 
-# Replace this with your own data & model creation.
-df = giskard.demo.titanic_df()
-demo_data_processing_function, demo_sklearn_model = giskard.demo.titanic_pipeline()
+def model_predict(df: pd.DataFrame):
+    """Wraps the LLM call in a simple Python function.
 
-# Wrap your Pandas DataFrame with Giskard.Dataset (test set, a golden dataset, etc.).
-giskard_dataset = giskard.Dataset(
-    df=df,  # A pandas.DataFrame that contains the raw data (before all the pre-processing steps) and the actual ground truth variable (target).
-    target="Survived",  # Ground truth variable
-    name="Titanic dataset", # Optional
-    cat_columns=['Pclass', 'Sex', "SibSp", "Parch", "Embarked"]  # List of categorical columns. Optional, but is a MUST if available. Inferred automatically if not.
-)
+    The function takes a pandas.DataFrame containing the input variables needed
+    by your model, and must return a list of the outputs (one for each row).
+    """
+    return [climate_qa_chain.run({"query": question}) for question in df["question"]]
 
-# Wrap your model with Giskard.Model. Check the dedicated doc page: https://docs.giskard.ai/en/latest/guides/wrap_model/index.html
-# you can use any tabular, text or LLM models (PyTorch, HuggingFace, LangChain, etc.),
-# for classification, regression & text generation.
-def prediction_function(df):
-    # The pre-processor can be a pipeline of one-hot encoding, imputer, scaler, etc.
-    preprocessed_df = demo_data_processing_function(df)
-    return demo_sklearn_model.predict_proba(preprocessed_df)
-
+# Don’t forget to fill the `name` and `description`: they are used by Giskard
+# to generate domain-specific tests.
 giskard_model = giskard.Model(
-    model=prediction_function,  # A prediction function that encapsulates all the data pre-processing steps and that could be executed with the dataset used by the scan.
-    model_type="classification",  # Either regression, classification or text_generation.
-    name="Titanic model",  # Optional
-    classification_labels=demo_sklearn_model.classes_,  # Their order MUST be identical to the prediction_function's output order
-    feature_names=['PassengerId', 'Pclass', 'Name', 'Sex', 'Age', 'SibSp', 'Parch', 'Fare', 'Embarked'],  # Default: all columns of your dataset
+    model=model_predict,
+    model_type="text_generation",
+    name="Climate Change Question Answering",
+    description="This model answers any question about climate change based on IPCC reports",
+    feature_names=["question"],
 )
 ```
 
 ✨✨✨Then run Giskard's magical scan✨✨✨
 ```python
-scan_results = giskard.scan(giskard_model, giskard_dataset)
+scan_results = giskard.scan(giskard_model)
 ```
 Once the scan completes, you can display the results directly in your notebook:
 
 ```python
 display(scan_results)
-```
-*If you're facing issues, check out our wrapping [model](https://docs.giskard.ai/en/latest/open_source/scan/scan_tabular/index.html) & [dataset](https://docs.giskard.ai/en/latest/open_source/scan/scan_tabular/index.html) docs for more information.*
-## 2. 🪄 Automatically generate a test suite
 
-If the scan found potential issues in your model, you can automatically generate a **test suite** based on the vulnerabilities found:
+# Or save it to a file
+scan_results.to_html("scan_results.html")
+```
+
+*If you're facing issues, check out our [docs](https://docs.giskard.ai/en/stable/open_source/scan/scan_llm/index.html) for more information.*
+
+<h2 id="automatically-generate-an-evaluation-dataset-for-your-rag-applications">3. 🪄 Automatically generate an evaluation dataset for your RAG applications</h2>
+
+If the scan found issues in your model, you can automatically extract an evaluation dataset based on the issues found:
 
 ```python
 test_suite = scan_results.generate_test_suite("My first test suite")
 ```
-You can then run the test suite locally to verify that it reproduces the issues:
+
+By default, RAGET automatically generates 6 different question types (these can be selected if needed, see advanced question generation). The total number of questions is divided equally between each question type. To make the question generation more relevant and accurate, you can also provide a description of your agent.
+
 ```python
-test_suite.run()
+
+from giskard.rag import generate_testset, KnowledgeBase
+
+# Load your data and initialize the KnowledgeBase
+df = pd.read_csv("path/to/your/knowledge_base.csv")
+
+knowledge_base = KnowledgeBase.from_pandas(df, columns=["column_1", "column_2"])
+
+# Generate a testset with 10 questions & answers for each question types (this will take a while)
+testset = generate_testset(
+    knowledge_base, 
+    num_questions=60,
+    language='en',  # optional, we'll auto detect if not provided
+    agent_description="A customer support chatbot for company X", # helps generating better questions
+)
 ```
 
-Test suites are reusable objects that provide a way to apply consistent checks on your models. To drill down on failing tests and get even more out of the Giskard library, we recommend heading over to the Giskard hub ⤵️
+Depending on how many questions you generate, this can take a while. Once you’re done, you can save this generated test set for future use:
 
-# ⭐️ Premium Features
+```python
+# Save the generated testset
+testset.save("my_testset.jsonl")
+```
+You can easily load it back
 
-The Giskard hub is Giskard's premium offering. It provides a number of additional capabilities that are not available in the open-source version of Giskard, including:
+```python
+from giskard.rag import QATestset
 
-- **Advanced test generation**: This includes the ability to diagnose failing tests, debug your models and create more domain-specific tests.
-- **Model comparison**: This includes the ability to compare models to decide which one to promote.
-- **Test hub**: This includes a place to gather all of your team's tests in one place to collaborate more efficiently.
-- **Business feedback**: This includes the ability to share your results and collect business feedback from your team.
+loaded_testset = QATestset.load("my_testset.jsonl")
 
-If you are interested in learning more about Giskard's premium offering, please [contact us](https://www.giskard.ai/contact).
-
-<p align="center">
-  <img src="readme/catalog_example.png" alt="Scan Example" width="700px">
-</p>
-
-## 1. Start the Giskard hub
-
-To start the **Giskard hub**, run the following command:
-```sh
-pip install giskard[hub] -U
-giskard hub start
+# Convert it to a pandas dataframe
+df = loaded_testset.to_pandas()
 ```
 
-🚀 That's it! Access it at http://localhost:19000
+Here’s an example of a generated question:
 
-## 2. Upload your test suite to the Giskard hub
+| question                               | reference_context                                                                                                                                                     | reference_answer                                             | metadata                                               |
+|----------------------------------------|----------------------------------------------------------------------------------------------------------------------------------------------------------------------|--------------------------------------------------------------|-------------------------------------------------------|
+| For which countries can I track my shipping? | Document 1: We offer free shipping on all orders over $50. For orders below $50, we charge a flat rate of $5.99. We offer shipping services to customers residing in all 50 states of the US, in addition to providing delivery options to Canada and Mexico. Document 2: Once your purchase has been successfully confirmed and shipped, you will receive a confirmation email containing your tracking number. You can simply click on the link provided in the email or visit our website’s order tracking page. | We ship to all 50 states in the US, as well as to Canada and Mexico. We offer tracking for all our shippings. | `{"question_type": "simple", "seed_document_id": 1, "topic": "Shipping policy"}` |
 
-You can then **upload the test suite** created using the `giskard` Python library to the Giskard hub. This will enable you to:
-- Compare the quality of different models to decide which one to promote
-- Debug your tests to diagnose identified vulnerabilities
-- Create more domain-specific tests relevant to your use case
-- Share results, and collaborate with your team to integrate business feedback
+Each row of the test set contains 5 columns:
 
-1. First, make sure the Giskard hub is installed
-    <details>
-      <summary>How to check if the Giskard hub is running</summary>
+- `question`: the generated question
+- `reference_context`: the context that can be used to answer the question
+- `reference_answer`: the answer to the question (generated with GPT-4)
+- `conversation_history`: not shown in the table above, contain the history of the conversation with the agent as a list, only relevant for conversational question, otherwise it contains an empty list.
+- `metadata`: a dictionary with various metadata about the question, this includes the question_type, seed_document_id the id of the document used to generate the question and the topic of the question
 
-      - check if http://localhost:19000 is running
-      - or use `giskard hub status`
-    </details>
+<h1 id="community">👋 Community</h1>
 
-2. Then, execute the ML worker in your notebook:
-    ```python
-    !giskard worker start -d -k YOUR_KEY
-    ```
-
-3. Finally, upload your test suite to the Giskard hub using the following code:
-    ```python
-    key = "API_KEY"  # Find it in Settings in the Giskard hub
-    client = giskard.GiskardClient(
-        url="http://localhost:19000", key=key  # URL of your Giskard instance
-    )
-
-    my_project = client.create_project("my_project", "PROJECT_NAME", "DESCRIPTION")
-
-    # Upload to the current project
-    test_suite.upload(client, "my_project")
-    ```
-
-> **The Giskard hub is installed on your infrastructure.**
->
-> Giskard as a company does not have access to your datasets and models, so you can keep everything private.
-
-# ❓ Where can I get more help?
-
-
-<details>
-  <summary>What is a ML worker?</summary>
-
-  Giskard executes your model using a worker that runs the model directly in your Python environment containing all the dependencies required by your model. You can execute the ML worker either from a local notebook, a Colab notebook or a terminal.
-  </details>
-
-<details>
-  <summary>How to get the API key</summary>
-
-  Access the API key in the Settings tab of the Giskard hub.
-</details>
-
-<details>
-  <summary>If Giskard hub/ML worker is not installed</summary>
-
-  Go to the [Install the Giskard Hub](https://docs.giskard.ai/en/latest/giskard_hub/installation_hub/index.html) page.
-</details>
-
-<details>
-  <summary>If Giskard hub is installed on an external server</summary>
-
-  ```python
-    !giskard worker start -d -k YOUR_KEY -u http://ec2-13-50-XXXX.compute.amazonaws.com:19000/
-  ```
-</details>
-
-<details>
-  <summary>For more information on uploading to your local Giskard hub</summary>
-
-  Go to the [Upload an object to the Giskard hub](https://docs.giskard.ai/en/latest/giskard_hub/upload/index.html) page.
-</details>
-
-For any other questions and doubts, head over to our [Discord](https://gisk.ar/discord).
-
-# 👋 Community
-We welcome contributions from the Machine Learning community! Read this [guide](CONTRIBUTING.md) to get started.
-
-Join our thriving community on our Discord server: [join Discord server](https://gisk.ar/discord)
+We welcome contributions from the AI community! Read this [guide](./CONTRIBUTING.md) to get started, and join our thriving community on [Discord](https://gisk.ar/discord).
 
 🌟 [Leave us a star](https://github.com/Giskard-AI/giskard), it helps the project to get discovered by others and keeps us motivated to build awesome open-source tools! 🌟
 
-❤️ You can also [sponsor us](https://github.com/sponsors/Giskard-AI) on GitHub. With a monthly sponsor subscription, you can get a sponsor badge and get your bug reports prioritized. We also offer one-time sponsoring if you want us to get involved in a consulting project, run a workshop, or give a talk at your company.
-
+❤️ If you find our work useful, please consider [sponsoring us](https://github.com/sponsors/Giskard-AI) on GitHub. With a monthly sponsoring, you can get a sponsor badge, display your company in this readme, and get your bug reports prioritized. We also offer one-time sponsoring if you want us to get involved in a consulting project, run a workshop, or give a talk at your company.

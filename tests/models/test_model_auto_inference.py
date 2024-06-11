@@ -38,7 +38,9 @@ def test_huggingface():
 
 def test_pytorch():
     from giskard.models.pytorch import PyTorchModel
-    from tests.models.pytorch.test_linear_regression_pytorch_dataframe import FeedforwardNeuralNetModel
+    from tests.models.pytorch.test_linear_regression_pytorch_dataframe import (
+        FeedforwardNeuralNetModel,
+    )
 
     my_model = FeedforwardNeuralNetModel(1, 1, 1)
     kwargs = {"model": my_model, "model_type": "regression"}
@@ -47,8 +49,13 @@ def test_pytorch():
 
 
 def test_tensorflow():
-    import tensorflow as tf
-    from tensorflow import keras
+    try:
+        import tensorflow as tf
+        from tensorflow import keras
+    except ImportError:
+        # Ignore import error from tf, and skip test
+        # Not using importorskip, because of weird behaviour with tf (probably tensorflow-intel or something)
+        return
 
     from giskard.models.tensorflow import TensorFlowModel
 

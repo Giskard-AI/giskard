@@ -1,24 +1,25 @@
 import itertools
 import json
-import random
 import re
+import unicodedata
 from pathlib import Path
 
 import numpy as np
 import pandas as pd
+from num2words import num2words
 
 from ...core.core import DatasetProcessFunctionMeta
 from ...datasets import Dataset
-from ...ml_worker.testing.functions.transformation import gruber
-from ...ml_worker.testing.registry.registry import get_object_uuid
-from ...ml_worker.testing.registry.transformation_function import TransformationFunction
+from ...functions.transformation import gruber
+from ...registry.registry import get_object_uuid
+from ...registry.transformation_function import TransformationFunction
 
 
 class TextTransformation(TransformationFunction):
     name: str
 
-    def __init__(self, column):
-        super().__init__(None, row_level=False, cell_level=False)
+    def __init__(self, column, needs_dataset=False):
+        super().__init__(None, row_level=False, cell_level=False, needs_dataset=needs_dataset)
         self.column = column
         self.meta = DatasetProcessFunctionMeta(type="TRANSFORMATION")
         self.meta.uuid = get_object_uuid(self)
@@ -26,7 +27,7 @@ class TextTransformation(TransformationFunction):
         self.meta.name = self.name
         self.meta.display_name = self.name
         self.meta.tags = ["pickle", "scan"]
-        self.meta.doc = "Automatically generated transformation function"
+        self.meta.doc = self.meta.default_doc("Automatically generated transformation function")
 
     def __str__(self):
         return self.name
@@ -70,7 +71,7 @@ class TextTitleCase(TextTransformation):
 class TextTypoTransformation(TextTransformation):
     name = "Add typos"
 
-    def __init__(self, column, rate=0.05, min_length=10, rng_seed=None):
+    def __init__(self, column, rate=0.05, min_length=10, rng_seed=1729):
         super().__init__(column)
         from .entity_swap import typos
 
@@ -124,6 +125,53 @@ class TextTypoTransformation(TextTransformation):
         return char
 
 
+class TextFromOCRTypoTransformation(TextTransformation):
+    name = "Add typos from OCR"
+
+    def __init__(self, column, rate=0.05, min_length=10, rng_seed=1729):
+        super().__init__(column)
+        from .entity_swap import ocr_typos
+
+        self.rate = rate
+        self.min_length = min_length
+        self._ocr_typos = ocr_typos
+        self.rng = np.random.default_rng(seed=rng_seed)
+
+    def make_perturbation(self, x):
+        # Check if the input is None
+        if x is None:
+            return None
+        # Skip if the text is too short
+        if len(x) < self.min_length:
+            return x
+
+        # OCR typos consist only of replacements and deletions
+        category_prob = [0.8, 0.2]  # Probability [replacement, deletion]
+
+        # How many typos to introduce
+        num_typos = self.rng.poisson(self.rate * len(re.sub(r"\s+", "", x)))
+
+        # Are they replacement or deletion?
+        pos_cat = self.rng.choice(2, size=num_typos, p=category_prob, replace=True)
+
+        for cat in pos_cat:
+            # Get a random position avoiding spaces for deletion
+            i = self.rng.integers(0, len(x))
+            if cat == 0:  # Replacement
+                if x[i].lower() in self._ocr_typos:
+                    x = x[:i] + self._random_ocr_typo(x[i]) + x[i + 1 :]
+            elif cat == 1:  # Deletion
+                if not x[i].isspace():  # Don’t delete spaces
+                    x = x[:i] + x[i + 1 :]
+        return x
+
+    def _random_ocr_typo(self, char):
+        if char.lower() in self._ocr_typos:
+            typo = self.rng.choice(self._ocr_typos[char.lower()])
+            return typo if char.islower() else typo.upper()
+        return char
+
+
 class TextPunctuationRemovalTransformation(TextTransformation):
     name = "Punctuation Removal"
 
@@ -147,13 +195,28 @@ class TextPunctuationRemovalTransformation(TextTransformation):
         return "".join(pieces)
 
 
-class TextLanguageBasedTransformation(TextTransformation):
-    needs_dataset = True
+class TextAccentRemovalTransformation(TextTransformation):
+    name = "Accent Removal"
 
-    def __init__(self, column):
+    def __init__(self, column, rate=1.0, rng_seed=1729):
         super().__init__(column)
+        self.rate = rate
+        self.rng = np.random.default_rng(seed=rng_seed)
+
+    def make_perturbation(self, text):
+        return "".join(
+            char
+            for char in unicodedata.normalize("NFD", text)
+            if unicodedata.category(char) != "Mn" or self.rng.random() > self.rate
+        )
+
+
+class TextLanguageBasedTransformation(TextTransformation):
+    def __init__(self, column, rng_seed=1729):
+        super().__init__(column, needs_dataset=True)
         self._lang_dictionary = dict()
         self._load_dictionaries()
+        self.rng = np.random.default_rng(seed=rng_seed)
 
     def _load_dictionaries(self):
         raise NotImplementedError()
@@ -209,6 +272,33 @@ class TextGenderTransformation(TextLanguageBasedTransformation):
             return None
 
 
+class TextNumberToWordTransformation(TextLanguageBasedTransformation):
+    name = "Transform numbers to words"
+
+    def _load_dictionaries(self):
+        # Regex to match numbers in text
+        self._regex = re.compile(r"(?<!\d/)(?<!\d\.)\b\d+(?:\.\d+)?\b(?!(?:\.\d+)?@|\d?/?\d)")
+
+    def make_perturbation(self, row):
+        # Replace numbers with words
+        value = row[self.column]
+        if pd.isna(value):
+            return value
+        lang = row["language__gsk__meta"] if not pd.isna(row["language__gsk__meta"]) else "en"
+
+        if lang == "fa" or lang == "id":
+            # In num2words, the convertor of "fa" and "id" are buggy,
+            # see https://github.com/savoirfairelinux/num2words/issues/476
+            # Give up doing this now, wait for merging https://github.com/savoirfairelinux/num2words/pull/524
+            return value
+
+        try:
+            return self._regex.sub(lambda x: num2words(x.group(), lang=lang), value)
+        except NotImplementedError:
+            # Fallback to english in case of unimplemented
+            return self._regex.sub(lambda x: num2words(x.group(), lang="en"), value)
+
+
 class TextReligionTransformation(TextLanguageBasedTransformation):
     name = "Switch Religion"
 
@@ -236,7 +326,7 @@ class TextReligionTransformation(TextLanguageBasedTransformation):
                 mask_value = f"__GSK__ENT__RELIGION__{n_list}__{n_term}__"
                 text, num_rep = re.subn(rf"\b{re.escape(term)}(s?)\b", rf"{mask_value}\1", text, flags=re.IGNORECASE)
                 if num_rep > 0:
-                    i = (n_term + 1 + random.randrange(len(term_list) - 1)) % len(term_list)
+                    i = (n_term + 1 + self.rng.choice(len(term_list) - 1)) % len(term_list)
                     replacement = term_list[i]
                     replacements.append((mask_value, replacement))
 
@@ -278,7 +368,7 @@ class TextNationalityTransformation(TextLanguageBasedTransformation):
                 )
                 if num_rep > 0:
                     r_income_type = "low-income" if income_type == "high-income" else "high-income"
-                    replacement = random.choice(nationalities_word_dict[entity_type][r_income_type])
+                    replacement = self.rng.choice(nationalities_word_dict[entity_type][r_income_type])
                     replacements.append((mask_value, replacement))
 
         # Replace masks
@@ -286,3 +376,63 @@ class TextNationalityTransformation(TextLanguageBasedTransformation):
             text = text.replace(mask, replacement)
 
         return text
+
+
+class TextFromSpeechTypoTransformation(TextLanguageBasedTransformation):
+    name = "Add text from speech typos"
+
+    def __init__(self, column, rng_seed=1729, min_length=10):
+        super().__init__(column, rng_seed=rng_seed)
+
+        self.min_length = min_length
+
+    def _load_dictionaries(self):
+        from .entity_swap import speech_typos
+
+        self._word_typos = speech_typos
+
+    def make_perturbation(self, row):
+        text = row[self.column]
+        language = row["language__gsk__meta"]
+
+        # Skip if the text is too short
+        if len(text) < self.min_length:
+            return text
+        # Skip if language isn't supported
+        if language != "en":
+            return text
+
+        # We are considering homophones
+        # Split the input text by spaces to get the words
+        words = text.split()
+        transformed_words = []
+
+        # Iterate over each word in the input text
+        for word in words:
+            # Normalize the word to handle cases
+            normalized_word = word.lower()
+
+            # Check if the current word is present in _word_typos dictionary
+            if normalized_word in self._word_typos:
+                # Choose a random typo for the current word
+                typo_options = self._word_typos[normalized_word]
+                chosen_typo = self.rng.choice(typo_options)
+
+                # Retain original word case
+                if word.istitle():
+                    chosen_typo = chosen_typo.capitalize()
+                elif word.isupper():
+                    chosen_typo = chosen_typo.upper()
+                else:
+                    # Keep typo as it is in the typo dictionary
+                    pass
+
+                # Append the typo to the transformed words list
+                transformed_words.append(chosen_typo)
+            else:
+                # The word is not in the dictionary, keep it as is
+                transformed_words.append(word)
+
+        # Reconstruct the transformed text from the words
+        transformed_text = " ".join(transformed_words)
+        return transformed_text

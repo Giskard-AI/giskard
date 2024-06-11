@@ -4,7 +4,7 @@ import pytest
 import giskard
 import giskard.testing.tests.metamorphic as metamorphic
 from giskard.datasets.base import Dataset
-from giskard.ml_worker.testing.registry.transformation_function import transformation_function
+from giskard.registry.transformation_function import transformation_function
 
 
 def _test_metamorphic_increasing_regression(ds: Dataset, model, threshold):
@@ -47,7 +47,7 @@ def _test_metamorphic_increasing_classification(df, model, threshold):
         dataset=df,
         transformation_function=perturbation,
         threshold=threshold,
-        classification_label=model.meta.classification_labels[0],
+        classification_label=model.classification_labels[0],
     ).execute()
 
     assert results.actual_slices_size[0] == 1000
@@ -66,7 +66,7 @@ def _test_metamorphic_decreasing_classification(df, model, threshold):
         dataset=df,
         transformation_function=perturbation,
         threshold=threshold,
-        classification_label=model.meta.classification_labels[0],
+        classification_label=model.classification_labels[0],
     ).execute()
 
     assert results.actual_slices_size[0] == 1000

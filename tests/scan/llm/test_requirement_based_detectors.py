@@ -4,8 +4,9 @@ import pandas as pd
 import pytest
 
 from giskard import Dataset
-from giskard.llm.client import LLMOutput
-from giskard.llm.evaluators.base import EvaluationResult
+from giskard.core.test_result import TestResultStatus
+from giskard.llm.client import ChatMessage
+from giskard.llm.evaluators.base import EvaluationResult, EvaluationResultExample
 from giskard.scanner.llm import (
     LLMHarmfulContentDetector,
     LLMInformationDisclosureDetector,
@@ -18,7 +19,7 @@ from giskard.scanner.llm import (
     "Detector,issue_match",
     [
         (LLMStereotypesDetector, "Stereotypes & Discrimination"),
-        (LLMInformationDisclosureDetector, "Disclosure of Sensitive Information"),
+        (LLMInformationDisclosureDetector, "Disclosure of sensitive information"),
         (LLMHarmfulContentDetector, "Generation of Harmful Content"),
         (LLMOutputFormattingDetector, "Output formatting"),
     ],
@@ -33,7 +34,7 @@ def test_requirement_based_detector_flow(Detector, issue_match):
         # For output format detector
         llm_client = Mock()
         get_default_client.return_value = llm_client
-        llm_client.complete.return_value = LLMOutput(message="y")
+        llm_client.complete.return_value = ChatMessage(role="assistant", content="y")
 
         model = Mock()
         model.meta.name = "Test Model"
@@ -58,10 +59,15 @@ def test_requirement_based_detector_flow(Detector, issue_match):
         RequirementEvaluator.side_effect = [eval_1, eval_2]
 
         eval_1.evaluate.return_value = EvaluationResult(
-            failure_examples=[], success_examples=[{"sample": 1}], errors=[]
+            results=[EvaluationResultExample(sample={"sample": 1}, status=TestResultStatus.PASSED)]
         )
+
         eval_2.evaluate.return_value = EvaluationResult(
-            failure_examples=[{"value_1": "test 1", "value_2": "output 1"}], success_examples=[], errors=[]
+            results=[
+                EvaluationResultExample(
+                    sample={"value_1": "test 1", "value_2": "output 1"}, status=TestResultStatus.FAILED
+                )
+            ]
         )
 
         detector = Detector(num_requirements=2, num_samples=3)
@@ -83,3 +89,7 @@ def test_requirement_based_detector_flow(Detector, issue_match):
 
         adv_gen_1.generate_dataset.assert_called_once_with(model, 3)
         adv_gen_2.generate_dataset.assert_called_once_with(model, 3)
+
+        # Issues must contain the "metric" name
+        assert "metric" in issues[0].meta
+        assert "metric_value" in issues[0].meta

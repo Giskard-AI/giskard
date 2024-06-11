@@ -1,14 +1,18 @@
+from __future__ import annotations
+
+from typing import TYPE_CHECKING, Iterable, List, Optional, Tuple, Type, Union
+
 import builtins
 import importlib
+import json
 import logging
-import pickle
 import platform
 import posixpath
 import tempfile
 import uuid
 from abc import ABC, abstractmethod
+from dataclasses import asdict
 from pathlib import Path
-from typing import Iterable, List, Optional, Type, Union
 
 import cloudpickle
 import numpy as np
@@ -16,19 +20,24 @@ import pandas as pd
 import yaml
 
 from giskard.client.dtos import ModelMetaInfo
+from giskard.core.errors import GiskardInstallationError
 
 from ...client.giskard_client import GiskardClient
 from ...core.core import ModelMeta, ModelType, SupportedModelTypes
 from ...core.validation import configured_validate_arguments
 from ...datasets.base import Dataset
-from ...ml_worker.exceptions.giskard_exception import GiskardException
-from ...ml_worker.utils.logging import Timer
+from ...exceptions.giskard_exception import GiskardException, python_env_exception_helper
 from ...models.cache import ModelCache
 from ...path_utils import get_size
+from ...registry.utils import dump_by_value
 from ...settings import settings
+from ...utils.logging_utils import Timer
 from ..cache import get_cache_enabled
 from ..utils import np_types_to_native
 from .model_prediction import ModelPredictionResults
+
+if TYPE_CHECKING:
+    from ...scanner.report import ScanReport
 
 META_FILENAME = "giskard-model-meta.yaml"
 
@@ -60,15 +69,17 @@ class BaseModel(ABC):
 
     Attributes:
        model (Any):
-           Could be any function or ML model. The standard model output required for Giskard is:
+            Could be any function or ML model. The standard model output required for Giskard is:
 
-           * if classification: an array (nxm) of probabilities corresponding to n data entries
-             (rows of pandas.DataFrame)
-             and m classification_labels. In the case of binary classification, an array of (nx1) probabilities is
-             also accepted.
-             Make sure that the probability provided is for the second label provided in classification_labels.
-           * if regression or text_generation: an array of predictions corresponding to data entries
-             (rows of pandas.DataFrame) and outputs.
+            * if classification:
+                an array (nxm) of probabilities corresponding to n data entries (rows of pandas.DataFrame)
+                and m classification_labels. In the case of binary classification, an array of (nx1) probabilities is
+                also accepted.
+                Make sure that the probability provided is for the second label provided in classification_labels.
+            * if regression or text_generation:
+                an array of predictions corresponding to data entries
+                (rows of pandas.DataFrame) and outputs.
+
        name (Optional[str]):
             the name of the model.
        model_type (ModelType):
@@ -110,11 +121,11 @@ class BaseModel(ABC):
 
         Parameters:
             model_type (ModelType): Type of the model, either ModelType.REGRESSION or ModelType.CLASSIFICATION.
-            name (str, optional): Name of the model. If not provided, defaults to the class name.
-            description (str, optional): Description of the model's task. Mandatory for non-langchain text_generation models.
-            feature_names (Iterable, optional): A list of names of the input features.
-            classification_threshold (float, optional): Threshold value used for classification models. Defaults to 0.5.
-            classification_labels (Iterable, optional): A list of labels for classification models.
+            name (Optional[str]): Name of the model. If not provided, defaults to the class name.
+            description (Optional[str]): Description of the model's task. Mandatory for non-langchain text_generation models.
+            feature_names (Optional[Iterable]): A list of names of the input features.
+            classification_threshold (Optional[float]): Threshold value used for classification models. Defaults to 0.5.
+            classification_labels (Optional[Iterable]): A list of labels for classification models.
 
         Raises:
             ValueError: If an invalid model_type value is provided.
@@ -123,7 +134,9 @@ class BaseModel(ABC):
         Notes:
             This class uses the @configured_validate_arguments decorator to validate the input arguments.
             The initialized object contains the following attributes:
-                - meta: a ModelMeta object containing metadata about the model.
+
+            - meta: a ModelMeta object containing metadata about the model.
+
         """
         self.id = uuid.UUID(id) if id is not None else uuid.UUID(kwargs.get("id", uuid.uuid4().hex))
         if isinstance(model_type, str):
@@ -140,7 +153,12 @@ class BaseModel(ABC):
             if len(classification_labels) != len(set(classification_labels)):
                 raise ValueError("Duplicates are found in 'classification_labels', please only provide unique values.")
 
-        self._cache = ModelCache(model_type, str(self.id), cache_dir=kwargs.get("prediction_cache_dir"))
+        self._cache = ModelCache(
+            model_type,
+            str(self.id),
+            persist_cache=kwargs.get("persist_cache", False),
+            cache_dir=kwargs.get("prediction_cache_dir"),
+        )
 
         # sklearn and catboost will fill classification_labels before this check
         if model_type == SupportedModelTypes.CLASSIFICATION and not classification_labels:
@@ -165,77 +183,125 @@ class BaseModel(ABC):
         return self.meta.name if self.meta.name is not None else self.__class__.__name__
 
     @property
-    def is_classification(self):
-        """
-        Returns True if the model is of type classification, False otherwise.
-        """
-        return self.meta.model_type == SupportedModelTypes.CLASSIFICATION
+    def description(self):
+        return self.meta.description
 
     @property
-    def is_binary_classification(self):
-        """
-        Returns True if the model is of type binary classification, False otherwise.
-        """
-        return self.is_classification and len(self.meta.classification_labels) == 2
+    def model_type(self):
+        return self.meta.model_type
 
     @property
-    def is_regression(self):
-        """
-        Returns True if the model is of type regression, False otherwise.
-        """
-        return self.meta.model_type == SupportedModelTypes.REGRESSION
+    def feature_names(self):
+        return self.meta.feature_names
 
     @property
-    def is_text_generation(self):
+    def classification_labels(self):
+        return self.meta.classification_labels
+
+    @property
+    def loader_class(self):
+        return self.meta.loader_class
+
+    @property
+    def loader_module(self):
+        return self.meta.loader_module
+
+    @property
+    def classification_threshold(self):
+        return self.meta.classification_threshold
+
+    @property
+    def is_classification(self) -> bool:
+        """Compute if the model is of type classification.
+
+        Returns:
+            bool: True if the model is of type classification, False otherwise
         """
-        Returns True if the model is of type text generation, False otherwise.
+        return self.model_type == SupportedModelTypes.CLASSIFICATION
+
+    @property
+    def is_binary_classification(self) -> bool:
+        """Compute if the model is of type binary classification.
+
+        Returns:
+            bool: True if the model is of type binary classification, False otherwise.
         """
-        return self.meta.model_type == SupportedModelTypes.TEXT_GENERATION
+
+        return self.is_classification and len(self.classification_labels) == 2
+
+    @property
+    def is_regression(self) -> bool:
+        """Compute if the model is of type regression.
+
+        Returns:
+            bool: True if the model is of type regression, False otherwise.
+        """
+        return self.model_type == SupportedModelTypes.REGRESSION
+
+    @property
+    def is_text_generation(self) -> bool:
+        """Compute if the model is of type text generation.
+
+        Returns:
+            bool: True if the model is of type text generation, False otherwise.
+        """
+        return self.model_type == SupportedModelTypes.TEXT_GENERATION
 
     @classmethod
-    def determine_model_class(cls, meta, local_dir):
+    def get_model_class(cls, class_file: Path, model_py_ver: Optional[Tuple[str, str, str]] = None):
+        with open(class_file, "rb") as f:
+            try:
+                # According to https://github.com/cloudpipe/cloudpickle#cloudpickle:
+                # Cloudpickle can only be used to send objects between the exact same version of Python.
+                clazz = cloudpickle.load(f)
+            except Exception as e:
+                raise python_env_exception_helper(cls.__name__, e, required_py_ver=model_py_ver)
+            if not issubclass(clazz, BaseModel):
+                raise ValueError(f"Unknown model class: {clazz}. Models should inherit from 'BaseModel' class")
+            return clazz
+
+    @classmethod
+    def determine_model_class(
+        cls, meta, local_dir, model_py_ver: Optional[Tuple[str, str, str]] = None, *_args, **_kwargs
+    ):
         class_file = Path(local_dir) / MODEL_CLASS_PKL
         if class_file.exists():
-            with open(class_file, "rb") as f:
-                clazz = cloudpickle.load(f)
-                if not issubclass(clazz, BaseModel):
-                    raise ValueError(f"Unknown model class: {clazz}. Models should inherit from 'BaseModel' class")
-                return clazz
+            return cls.get_model_class(class_file, model_py_ver)
         else:
             return getattr(importlib.import_module(meta.loader_module), meta.loader_class)
 
-    def save_meta(self, local_path):
+    def save_meta(self, local_path, *_args, **_kwargs):
         with (Path(local_path) / META_FILENAME).open(mode="w", encoding="utf-8") as f:
             yaml.dump(
                 {
                     "language_version": platform.python_version(),
                     "language": "PYTHON",
-                    "model_type": self.meta.model_type.name.upper(),
-                    "threshold": self.meta.classification_threshold,
-                    "feature_names": self.meta.feature_names,
-                    "classification_labels": self.meta.classification_labels,
-                    "loader_module": self.meta.loader_module,
-                    "loader_class": self.meta.loader_class,
+                    "model_type": self.model_type.name.upper(),
+                    "threshold": self.classification_threshold,
+                    "feature_names": self.feature_names,
+                    "classification_labels": self.classification_labels,
+                    "loader_module": self.loader_module,
+                    "loader_class": self.loader_class,
                     "id": str(self.id),
-                    "name": self.meta.name,
-                    "description": self.meta.description,
+                    "name": self.name,
+                    "description": self.description,
                     "size": get_size(local_path),
                 },
                 f,
                 default_flow_style=False,
             )
 
-    def save(self, local_path: Union[str, Path]) -> None:
+    def save(self, local_path: Union[str, Path], *_args, **_kwargs) -> None:
         if self.should_save_model_class:
             self.save_model_class(local_path)
         self.save_meta(local_path)
 
-    def save_model_class(self, local_path):
+    def save_model_class(self, local_path, *_args, **_kwargs):
         class_file = Path(local_path) / MODEL_CLASS_PKL
         with open(class_file, "wb") as f:
-            cloudpickle.dump(self.__class__, f, protocol=pickle.DEFAULT_PROTOCOL)
+            dump_by_value(self.__class__, f)
 
-    def prepare_dataframe(self, df, column_dtypes=None, target=None):
+    def prepare_dataframe(self, df, column_dtypes=None, target=None, *_args, **_kwargs):
         """
         Prepares a Pandas DataFrame for inference by ensuring the correct columns are present and have the correct data types.
 
@@ -262,18 +328,18 @@ class BaseModel(ABC):
                 df.drop(target, axis=1, inplace=True)
             if column_dtypes and target in column_dtypes:
                 del column_dtypes[target]
-            if target and self.meta.feature_names and target in self.meta.feature_names:
-                self.meta.feature_names.remove(target)
+            if target and self.feature_names and target in self.feature_names:
+                self.feature_names.remove(target)
 
-        if self.meta.feature_names:
-            if set(self.meta.feature_names) > set(df.columns):
-                column_names = set(self.meta.feature_names) - set(df.columns)
+        if self.feature_names:
+            if set(self.feature_names) > set(df.columns):
+                column_names = set(self.feature_names) - set(df.columns)
                 raise ValueError(
                     f"The following columns are not found in the dataset: {', '.join(sorted(column_names))}"
                 )
-            df = df[self.meta.feature_names]
+            df = df[self.feature_names]
             if column_dtypes:
-                column_dtypes = {k: v for k, v in column_dtypes.items() if k in self.meta.feature_names}
+                column_dtypes = {k: v for k, v in column_dtypes.items() if k in self.feature_names}
 
         for cname, ctype in column_dtypes.items():
             if cname not in df:
@@ -283,27 +349,28 @@ class BaseModel(ABC):
             df = Dataset.cast_column_to_dtypes(df, column_dtypes)
         return df
 
-    def predict(self, dataset: Dataset) -> ModelPredictionResults:
-        """
-        Generates predictions for the input giskard dataset.
+    def predict(self, dataset: Dataset, *_args, **_kwargs) -> ModelPredictionResults:
+        """Generates predictions for the input giskard dataset.
         This method uses the `prepare_dataframe()` method to preprocess the input dataset before making predictions.
         The `predict_df()` method is used to generate raw predictions for the preprocessed data.
         The type of predictions generated by this method depends on the model type:
+
         * For regression models, the `prediction` field of the returned `ModelPredictionResults` object will contain the same
-          values as the `raw_prediction` field.
+            values as the `raw_prediction` field.
         * For binary or multiclass classification models, the `prediction` field of the returned `ModelPredictionResults` object
-          will contain the predicted class labels for each example in the input dataset.
-          The `probabilities` field will contain the predicted probabilities for the predicted class label.
-          The `all_predictions` field will contain the predicted probabilities for all class labels for each example in the input dataset.
+            will contain the predicted class labels for each example in the input dataset.
+            The `probabilities` field will contain the predicted probabilities for the predicted class label.
+            The `all_predictions` field will contain the predicted probabilities for all class labels for each example in the input dataset.
+
 
         Args:
             dataset (Dataset): The input dataset to make predictions on.
 
-        Returns:
-            ModelPredictionResults: The prediction results for the input dataset.
-
         Raises:
             ValueError: If the prediction task is not supported by the model.
+
+        Returns:
+            ModelPredictionResults: The prediction results for the input dataset.
         """
         if not len(dataset.df):
             return ModelPredictionResults()
@@ -321,8 +388,8 @@ class BaseModel(ABC):
                 prediction=raw_prediction, raw_prediction=raw_prediction, raw=raw_prediction
             )
         elif self.is_classification:
-            labels = np.array(self.meta.classification_labels)
-            threshold = self.meta.classification_threshold
+            labels = np.array(self.classification_labels)
+            threshold = self.classification_threshold
 
             if threshold is not None and len(labels) == 2:
                 predicted_lbl_idx = (raw_prediction[:, 1] > threshold).astype(int)
@@ -342,12 +409,12 @@ class BaseModel(ABC):
                 all_predictions=all_predictions,
             )
         else:
-            raise ValueError(f"Prediction task is not supported: {self.meta.model_type}")
+            raise ValueError(f"Prediction task is not supported: {self.model_type}")
         timer.stop(f"Predicted dataset with shape {dataset.df.shape}")
         return result
 
     @abstractmethod
-    def predict_df(self, df: pd.DataFrame):
+    def predict_df(self, df: pd.DataFrame, *args, **kwargs):
         """
         Inner method that does the actual inference of a prepared dataframe
         :param df: dataframe to predict
@@ -371,7 +438,7 @@ class BaseModel(ABC):
         # TODO: check if there is a better solution
         return np.array(np.array(cached_predictions).tolist())
 
-    def upload(self, client: GiskardClient, project_key, validate_ds=None) -> str:
+    def upload(self, client: GiskardClient, project_key, validate_ds=None, *_args, **_kwargs) -> str:
         """
         Uploads the model to a Giskard project using the provided Giskard client. Also validates the model
         using the given validation dataset, if any.
@@ -379,7 +446,7 @@ class BaseModel(ABC):
         Args:
             client (GiskardClient): A Giskard client instance to use for uploading the model.
             project_key (str): The project key to use for the upload.
-            validate_ds (Dataset, optional): A validation dataset to use for validating the model. Defaults to None.
+            validate_ds (Optional[Dataset]): A validation dataset to use for validating the model. Defaults to None.
 
         Notes:
             This method saves the model to a temporary directory before uploading it. The temporary directory
@@ -400,13 +467,12 @@ class BaseModel(ABC):
             self.save(f)
 
             if client is not None:
-                client.log_artifacts(f, posixpath.join(project_key, "models", str(self.id)))
+                client.log_artifacts(f, posixpath.join("models", str(self.id)))
                 client.save_model_meta(project_key, self.id, self.meta, platform.python_version(), get_size(f))
-
         return str(self.id)
 
     @classmethod
-    def download(cls, client: Optional[GiskardClient], project_key, model_id):
+    def download(cls, client: GiskardClient, project_key, model_id, *_args, **_kwargs):
         """
         Downloads the specified model from the Giskard hub and loads it into memory.
 
@@ -421,32 +487,31 @@ class BaseModel(ABC):
         Raises:
             AssertionError: If the local directory where the model should be saved does not exist.
         """
-        local_dir = settings.home_dir / settings.cache_dir / project_key / "models" / model_id
-        if client is None:
-            # internal worker case, no token based http client [deprecated, to be removed]
-            assert local_dir.exists(), f"Cannot find existing model {project_key}.{model_id} in {local_dir}"
-            _, meta = cls.read_meta_from_local_dir(local_dir)
-        else:
-            client.load_artifact(local_dir, posixpath.join(project_key, "models", model_id))
-            meta_response: ModelMetaInfo = client.load_model_meta(project_key, model_id)
-            # internal worker case, no token based http client
-            if not local_dir.exists():
-                raise RuntimeError(f"Cannot find existing model {project_key}.{model_id} in {local_dir}")
-            with (Path(local_dir) / META_FILENAME).open(encoding="utf-8") as f:
-                file_meta = yaml.load(f, Loader=yaml.Loader)
-                classification_labels = cls.cast_labels(meta_response)
-                meta = ModelMeta(
-                    name=meta_response.name,
-                    description=meta_response.description,
-                    model_type=SupportedModelTypes[meta_response.modelType],
-                    feature_names=meta_response.featureNames,
-                    classification_labels=classification_labels,
-                    classification_threshold=meta_response.threshold,
-                    loader_module=file_meta["loader_module"],
-                    loader_class=file_meta["loader_class"],
-                )
+        local_dir = settings.home_dir / settings.cache_dir / "models" / model_id
+        client.load_artifact(local_dir, posixpath.join("models", model_id))
+        meta_response: ModelMetaInfo = client.load_model_meta(project_key, model_id)
+        # internal worker case, no token based http client
+        if not local_dir.exists():
+            raise RuntimeError(f"Cannot find existing model {project_key}.{model_id} in {local_dir}")
+        with (Path(local_dir) / META_FILENAME).open(encoding="utf-8") as f:
+            file_meta = yaml.load(f, Loader=yaml.Loader)
+            classification_labels = cls.cast_labels(meta_response)
+            meta = ModelMeta(
+                name=meta_response.name,
+                description=meta_response.description,
+                model_type=SupportedModelTypes[meta_response.modelType],
+                feature_names=meta_response.featureNames,
+                classification_labels=classification_labels,
+                classification_threshold=meta_response.threshold,
+                loader_module=file_meta["loader_module"],
+                loader_class=file_meta["loader_class"],
+            )
 
-        clazz = cls.determine_model_class(meta, local_dir)
+        model_py_ver = (
+            tuple(meta_response.languageVersion.split(".")) if "PYTHON" == meta_response.language.upper() else None
+        )
+
+        clazz = cls.determine_model_class(meta, local_dir, model_py_ver=model_py_ver)
 
         constructor_params = meta.__dict__
         constructor_params["id"] = str(model_id)
@@ -454,11 +519,11 @@ class BaseModel(ABC):
         del constructor_params["loader_module"]
         del constructor_params["loader_class"]
 
-        model = clazz.load(local_dir, **constructor_params)
+        model = clazz.load(local_dir, model_py_ver=model_py_ver, **constructor_params)
         return model
 
     @classmethod
-    def read_meta_from_local_dir(cls, local_dir):
+    def read_meta_from_local_dir(cls, local_dir, *_args, **_kwargs) -> Tuple[ModelMetaInfo, ModelMeta]:
         with (Path(local_dir) / META_FILENAME).open(encoding="utf-8") as f:
             file_meta = yaml.load(f, Loader=yaml.Loader)
             meta = ModelMeta(
@@ -471,11 +536,29 @@ class BaseModel(ABC):
                 loader_module=file_meta["loader_module"],
                 loader_class=file_meta["loader_class"],
             )
-        # dirty implementation to return id like this, to be decided if meta properties can just be BaseModel properties
-        return file_meta["id"], meta
+
+            # Bring more information, such as language and language version
+            extra_meta = ModelMetaInfo(
+                id=file_meta["id"],
+                name=meta.name,
+                modelType=file_meta["model_type"],
+                featureNames=meta.feature_names if meta.feature_names is not None else [],
+                threshold=meta.classification_threshold,
+                description=meta.description,
+                classificationLabels=meta.classification_labels
+                if meta.classification_labels is None
+                else list(map(str, meta.classification_labels)),
+                languageVersion=file_meta["language_version"],
+                language=file_meta["language"],
+                size=file_meta["size"],
+                classificationLabelsDtype=None,
+                createdDate="",
+                projectId=-1,
+            )
+        return extra_meta, meta
 
     @classmethod
-    def cast_labels(cls, meta_response: ModelMetaInfo) -> List[Union[str, Type]]:
+    def cast_labels(cls, meta_response: ModelMetaInfo, *_args, **_kwargs) -> List[Union[str, Type]]:
         labels_ = meta_response.classificationLabels
         labels_dtype = meta_response.classificationLabelsDtype
         if labels_ and labels_dtype and builtins.hasattr(builtins, labels_dtype):
@@ -484,18 +567,23 @@ class BaseModel(ABC):
         return labels_
 
     @classmethod
-    def load(cls, local_dir, **kwargs):
+    def load(cls, local_dir, model_py_ver: Optional[Tuple[str, str, str]] = None, *_args, **kwargs):
         class_file = Path(local_dir) / MODEL_CLASS_PKL
-        model_id, meta = cls.read_meta_from_local_dir(local_dir)
+        model_meta_info, meta = cls.read_meta_from_local_dir(local_dir)
 
         constructor_params = meta.__dict__
-        constructor_params["id"] = model_id
+        constructor_params["id"] = model_meta_info.id
         del constructor_params["loader_module"]
         del constructor_params["loader_class"]
 
         if class_file.exists():
             with open(class_file, "rb") as f:
-                clazz = cloudpickle.load(f)
+                try:
+                    # According to https://github.com/cloudpipe/cloudpickle#cloudpickle:
+                    # Cloudpickle can only be used to send objects between the exact same version of Python.
+                    clazz = cloudpickle.load(f)
+                except Exception as e:
+                    raise python_env_exception_helper(cls.__name__, e, required_py_ver=model_py_ver)
                 clazz_kwargs = {}
                 clazz_kwargs.update(constructor_params)
                 clazz_kwargs.update(kwargs)
@@ -506,5 +594,159 @@ class BaseModel(ABC):
                 f"{MODEL_CLASS_PKL} file not found and 'load' method isn't overriden"
             )
 
-    def to_mlflow(self):
+    def to_mlflow(self, *_args, **_kwargs):
         raise NotImplementedError()
+
+    def __str__(self) -> str:
+        if self.name:  # handle both None and empty string
+            return f"{self.name}({self.id})"
+        return super().__str__()  # default to `<giskard.models.base.Model object at ...>`
+
+    def _get_available_tools(self, dataset: Dataset, scan_report: ScanReport) -> dict:
+        """Get the dictionary with available tools.
+
+        Parameters
+        ----------
+        dataset : Dataset
+            Giskard Dataset to be analysed by Tools.
+        scan_report : ScanReport
+            Giskard Scan Report to be analysed by Tools.
+
+        Returns
+        -------
+        dict[str, BaseTool]
+            The dictionary with Tools' names and related instances.
+        """
+        try:
+            from ...llm.talk.tools import (
+                IssuesScannerTool,
+                MetricTool,
+                PredictTool,
+                SHAPExplanationTool,
+            )
+        except ImportError as err:
+            raise GiskardInstallationError(flavor="talk") from err
+
+        return {
+            PredictTool.default_name: PredictTool(model=self, dataset=dataset),
+            MetricTool.default_name: MetricTool(model=self, dataset=dataset),
+            SHAPExplanationTool.default_name: SHAPExplanationTool(model=self, dataset=dataset),
+            IssuesScannerTool.default_name: IssuesScannerTool(scan_report=scan_report),
+        }
+
+    @staticmethod
+    def _gather_context(message_list: list) -> str:
+        """Gather context into a single string.
+
+        Given the list of OpenAI's messages, extracts and joins their contents into a single string.
+
+        Parameters
+        ----------
+        message_list : list
+            The list of OpenAI's messages.
+
+        Returns
+        -------
+        str
+            The string with the joined messages' contents.
+        """
+        return "\n".join([json.dumps(asdict(msg)) for msg in message_list])
+
+    def talk(self, question: str, dataset: Dataset, scan_report: ScanReport = None, context: str = ""):
+        """Perform the 'talk' to the model.
+
+        Given `question`, allows to ask the model about prediction result, explanation, model performance, issues, etc.
+
+        Parameters
+        ----------
+        question : str
+            User input query.
+        dataset : Dataset
+            Giskard Dataset to be analysed by the 'talk'.
+        context : str
+            Context of the previous 'talk' results. Necessary to keep context between sequential 'talk' calls.
+        scan_report : ScanReport
+            Giskard Scan Report to be analysed by the 'talk'.
+
+        Returns
+        -------
+        TalkResult
+            The response for the user's prompt.
+        """
+        try:
+            from ...llm.client.copilot import GiskardCopilotClient, ToolChatMessage
+            from ...llm.talk.config import (
+                ERROR_RESPONSE,
+                MODEL_INSTRUCTION,
+                SUMMARY_PROMPT,
+                TALK_CLIENT_CONFIG,
+            )
+            from ..talk_result import TalkResult
+        except ImportError as err:
+            raise GiskardInstallationError(flavor="talk") from err
+
+        client = GiskardCopilotClient()
+
+        available_tools = self._get_available_tools(dataset, scan_report)
+
+        system_prompt = MODEL_INSTRUCTION.format(
+            tools_description="\n".join([tool.description for tool in list(available_tools.values())]),
+            model_name=self.meta.name,
+            model_description=self.meta.description,
+            feature_names=self.meta.feature_names,
+            context=context,
+        )
+
+        messages = [
+            ToolChatMessage(role="system", content=system_prompt),
+            ToolChatMessage(role="user", content=question),
+        ]
+        response = client.complete(
+            messages=messages,
+            tools=[tool.specification for tool in list(available_tools.values())],
+            tool_choice="auto",
+            **TALK_CLIENT_CONFIG,
+        )
+
+        if hasattr(response, "content") and response.content:
+            messages.append(ToolChatMessage(role="assistant", content=response.content))
+
+        # Store exceptions raised by tool execution.
+        tool_errors = list()
+
+        if hasattr(response, "tool_calls") and response.tool_calls:
+            tool_calls = response.tool_calls
+            response.tool_calls = [json.loads(tool_call.json()) for tool_call in tool_calls]
+            messages.append(response)
+
+            for tool_call in tool_calls:
+                tool_name = tool_call.function.name
+                tool_args = json.loads(tool_call.function.arguments)
+
+                # Get the reference to the chosen callable tool.
+                tool = available_tools[tool_name]
+
+                try:
+                    tool_response = tool(**tool_args)
+                except Exception as error_msg:
+                    tool_response = ERROR_RESPONSE.format(
+                        tool_name=tool_name, tool_args=tool_args, error_msg=error_msg.args[:1]
+                    )
+                    tool_errors.append(error_msg)
+
+                # Append the tool's response to the conversation.
+                messages.append(
+                    ToolChatMessage(role="tool", name=tool_name, tool_call_id=tool_call.id, content=tool_response)
+                )
+
+            # Get the final model's response, based on the tool's output.
+            response = client.complete(messages=messages, **TALK_CLIENT_CONFIG)
+            messages.append(ToolChatMessage(role="assistant", content=response.content))
+
+        # Summarise the conversation.
+        context = self._gather_context(messages)
+        summary = client.complete(
+            messages=[ToolChatMessage(role="user", content=SUMMARY_PROMPT.format(context=context))],
+            **TALK_CLIENT_CONFIG,
+        )
+        return TalkResult(response, summary, tool_errors)

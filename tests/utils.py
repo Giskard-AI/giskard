@@ -1,28 +1,29 @@
+from typing import Optional
+
 import glob
 import logging
 import os
-import re
-import shutil
-import tarfile
-from pathlib import Path
-from typing import Optional
-import posixpath
-import tempfile
 import platform
+import posixpath
+import re
+import tarfile
+import tempfile
+from pathlib import Path
 
+import numpy as np
 import requests
 import requests_mock
-from giskard.ml_worker.core.savable import Artifact
-from giskard.ml_worker.utils.file_utils import get_file_name
-from giskard.path_utils import get_size
 
 import tests.utils
-from giskard.client.giskard_client import GiskardClient
 from giskard.client import dtos
+from giskard.client.giskard_client import GiskardClient
+from giskard.core.savable import Artifact
 from giskard.datasets.base import Dataset
-from giskard.ml_worker import ml_worker
+from giskard.llm.embeddings.base import BaseEmbedding
 from giskard.models.base.model import BaseModel
+from giskard.path_utils import get_size
 from giskard.settings import settings
+from giskard.utils.file_utils import get_file_name
 
 logger = logging.getLogger(__name__)
 resource_dir: Path = Path.home() / ".giskard"
@@ -33,6 +34,8 @@ CALLABLE_FUNCTION_PKL_CACHE = "data.pkl"
 CALLABLE_FUNCTION_META_CACHE = "meta.yaml"
 
 CLIENT_BASE_URL = "http://giskard-host:12345/api/v2"
+
+TEST_UUID = "00000000-0000-0000-0000-000000000000"
 
 
 def match_model_id(my_model_id):
@@ -58,7 +61,7 @@ def is_url_requested(last_requests, url):
 
 class MockedClient:
     artifact_url_pattern = re.compile(
-        "http://giskard-host:12345/api/v2/artifacts/test-project/models/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/.*"
+        "http://giskard-host:12345/api/v2/artifacts/models/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/.*"
     )
     models_url_pattern = re.compile("http://giskard-host:12345/api/v2/project/test-project/models")
     settings_url_pattern = re.compile("http://giskard-host:12345/api/v2/settings")
@@ -103,7 +106,7 @@ class MockedClient:
 
 def verify_model_upload(my_model, my_data):
     artifact_url_pattern = re.compile(
-        "http://giskard-host:12345/api/v2/artifacts/test-project/models/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/.*"
+        "http://giskard-host:12345/api/v2/artifacts/models/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/.*"
     )
     models_url_pattern = re.compile("http://giskard-host:12345/api/v2/project/test-project/models")
     settings_url_pattern = re.compile("http://giskard-host:12345/api/v2/settings")
@@ -133,7 +136,7 @@ def get_email_files():
     out_path = Path.home() / ".giskard"
     enron_path = out_path / "enron_with_categories"
     if not enron_path.exists():
-        url = "http://bailando.sims.berkeley.edu/enron/enron_with_categories.tar.gz"
+        url = "https://bailando.berkeley.edu/enron/enron_with_categories.tar.gz"
         logger.info(f"Downloading test data from: {url}")
         response = requests.get(url, stream=True)
         file = tarfile.open(fileobj=response.raw, mode="r|gz")
@@ -143,76 +146,70 @@ def get_email_files():
 
 
 class MockedWebSocketMLWorker:
-    def __init__(self, is_server=False, backend_url= None, api_key=None, hf_token=None) -> None:
-        client = None if is_server else MockedClient(mock_all=True)
+    def __init__(self, backend_url=None, api_key=None, hf_token=None, worker_name=None) -> None:
+        client = MockedClient(mock_all=True)
         self.client = client
 
         self.backend_url = backend_url
         self.api_key = api_key
         self.hf_token = hf_token
-
-        self.ml_worker_id = ml_worker.INTERNAL_WORKER_ID if is_server else ml_worker.EXTERNAL_WORKER_ID
-
-    def is_remote_worker(self):
-        return self.ml_worker_id is not ml_worker.INTERNAL_WORKER_ID
+        self._worker_name = worker_name
 
 
 class MockedProjectCacheDir:
-    def __init__(self, project_key=None):
-        self.local_path_root = get_local_cache_project(project_key)
+    def __init__(self):
+        self.initial_cache = settings.cache_dir
+        self.mocked_cache = tempfile.TemporaryDirectory(suffix="cache", dir=settings.home_dir)
+        settings.cache_dir = self.mocked_cache.name
 
     def __enter__(self):
-        self.local_path_root.mkdir(parents=True)
-        return self.local_path_root
+        return self.mocked_cache.__enter__()
 
     def __exit__(self, exc_type, exc_val, exc_tb):
-        shutil.rmtree(str(self.local_path_root), ignore_errors=True)
+        self.mocked_cache.__exit__(exc_type, exc_val, exc_tb)
+        settings.cache_dir = self.initial_cache
 
 
 def get_local_cache_base():
     return settings.home_dir / settings.cache_dir
 
 
-def get_local_cache_project(project_key: Optional[str]):
-    return get_local_cache_base() / (project_key or "global")
+def get_local_cache_artifact(name: str, uuid: str):
+    return get_local_cache_base() / name / uuid
 
 
-def get_local_cache_artifact(project_key: Optional[str], name: str, uuid: str):
-    return get_local_cache_project(project_key) / name / uuid
+def get_local_cache_callable_artifact(artifact: Artifact):
+    return get_local_cache_artifact(artifact._get_name(), artifact.meta.uuid)
 
 
-def get_local_cache_callable_artifact(project_key: Optional[str], artifact: Artifact):
-    return get_local_cache_artifact(project_key, artifact._get_name(), artifact.meta.uuid)
-
-
-def local_save_model_under_giskard_home_cache(model: BaseModel, project_key: str):
-    local_path_model = get_local_cache_artifact(project_key, "models", str(model.id))
+def local_save_model_under_giskard_home_cache(model: BaseModel):
+    local_path_model = get_local_cache_artifact("models", str(model.id))
     local_path_model.mkdir(parents=True)
     model.save(local_path=local_path_model)
 
 
-def local_save_dataset_under_giskard_home_cache(dataset: Dataset, project_key: str):
-    local_path_dataset = get_local_cache_artifact(project_key, "datasets", str(dataset.id))
+def local_save_dataset_under_giskard_home_cache(dataset: Dataset):
+    local_path_dataset = get_local_cache_artifact("datasets", str(dataset.id))
     local_path_dataset.mkdir(parents=True)
     dataset.save(local_path=local_path_dataset, dataset_id=dataset.id)
 
 
-def local_save_artifact_under_giskard_home_cache(artifact: Artifact, project_key: Optional[str]):
-    local_path = get_local_cache_callable_artifact(project_key, artifact)
+def local_save_artifact_under_giskard_home_cache(artifact: Artifact):
+    local_path = get_local_cache_callable_artifact(artifact)
     local_path.mkdir(parents=True)
     artifact.save(local_dir=local_path)
 
 
 def fixup_mocked_artifact_meta_version(meta_info):
-    meta_info.update({
-        "displayName": meta_info.pop("display_name"),
-        "moduleDoc": meta_info.pop("module_doc"),
-        "version": 1,
-    })
+    meta_info.update(
+        {
+            "displayName": meta_info.pop("display_name"),
+            "moduleDoc": meta_info.pop("module_doc"),
+            "version": 1,
+        }
+    )
     for arg in meta_info["args"] if meta_info["args"] else []:
-        arg.update({
-            "defaultValue": arg.pop("default")
-        })
+        arg.update({"defaultValue": arg.pop("default")})
     return meta_info
 
 
@@ -263,20 +260,18 @@ def mock_model_meta_info(model: BaseModel, project_key: str):
         languageVersion=platform.python_version(),
         language="PYTHON",
         size=size,
-        createdDate="now",   # The field createdDate is not nullable but not used
-        projectId=0,    # Mock a project ID
+        createdDate="now",  # The field createdDate is not nullable but not used
+        projectId=0,  # Mock a project ID
     )
     return model_meta_info.dict()
 
 
-def get_url_for_artifact_meta_info(cf: Artifact, project_key:Optional[str] = None):
-    return posixpath.join(CLIENT_BASE_URL, "project", project_key, cf._get_name(), cf.meta.uuid) if project_key \
-        else posixpath.join(CLIENT_BASE_URL, cf._get_name(), cf.meta.uuid)
+def get_url_for_artifact_meta_info(cf: Artifact, project_key: str):
+    return posixpath.join(CLIENT_BASE_URL, "project", project_key, cf._get_name(), cf.meta.uuid)
 
 
-def get_url_for_artifacts_base(cf: Artifact, project_key:Optional[str] = None):
-    return posixpath.join(CLIENT_BASE_URL, "artifacts", project_key, cf._get_name(), cf.meta.uuid) if project_key \
-        else posixpath.join(CLIENT_BASE_URL, "artifacts", "global", cf._get_name(), cf.meta.uuid)
+def get_url_for_artifacts_base(cf: Artifact):
+    return posixpath.join(CLIENT_BASE_URL, "artifacts", cf._get_name(), cf.meta.uuid)
 
 
 def get_url_for_dataset(dataset: Dataset, project_key: str):
@@ -287,7 +282,7 @@ def get_url_for_model(model: BaseModel, project_key: str):
     return posixpath.join(CLIENT_BASE_URL, "project", project_key, "models", str(model.id))
 
 
-def register_uri_for_artifact_meta_info(mr: requests_mock.Mocker, cf: Artifact, project_key:Optional[str] = None):
+def register_uri_for_artifact_meta_info(mr: requests_mock.Mocker, cf: Artifact, project_key: str):
     url = get_url_for_artifact_meta_info(cf, project_key)
     # Fixup the differences from Backend
     meta_info = fixup_mocked_artifact_meta_version(cf.meta.to_json())
@@ -296,9 +291,12 @@ def register_uri_for_artifact_meta_info(mr: requests_mock.Mocker, cf: Artifact, 
     return [url]
 
 
-def register_uri_for_artifact_info(mr: requests_mock.Mocker, cf: Artifact, project_key:Optional[str] = None):
-    artifact_info_url = posixpath.join(CLIENT_BASE_URL, "artifact-info", project_key, cf._get_name(), cf.meta.uuid) if project_key \
-        else posixpath.join(CLIENT_BASE_URL, "artifact-info", "global", cf._get_name(), cf.meta.uuid)
+def register_uri_for_artifact_info(mr: requests_mock.Mocker, cf: Artifact, project_key: Optional[str] = None):
+    artifact_info_url = (
+        posixpath.join(CLIENT_BASE_URL, "artifact-info", cf._get_name(), cf.meta.uuid)
+        if project_key
+        else posixpath.join(CLIENT_BASE_URL, "artifact-info", cf._get_name(), cf.meta.uuid)
+    )
     artifacts = [
         CALLABLE_FUNCTION_PKL_CACHE,
         CALLABLE_FUNCTION_META_CACHE,
@@ -307,7 +305,9 @@ def register_uri_for_artifact_info(mr: requests_mock.Mocker, cf: Artifact, proje
     return [artifact_info_url]
 
 
-def register_uri_for_artifacts_under_dir(mr: requests_mock.Mocker, dir_path: Path, artifacts_base_url, register_file_contents: bool = False):
+def register_uri_for_artifacts_under_dir(
+    mr: requests_mock.Mocker, dir_path: Path, artifacts_base_url, register_file_contents: bool = False
+):
     artifacts = []
     artifact_urls = []
     for f in dir_path.iterdir():
@@ -315,7 +315,9 @@ def register_uri_for_artifacts_under_dir(mr: requests_mock.Mocker, dir_path: Pat
         if register_file_contents:
             with f.open("rb") as content:
                 # Read the entire file can use a lot of memory
-                mr.register_uri(method=requests_mock.GET, url=posixpath.join(artifacts_base_url, f.name), content=content.read())
+                mr.register_uri(
+                    method=requests_mock.GET, url=posixpath.join(artifacts_base_url, f.name), content=content.read()
+                )
                 artifact_urls.append(posixpath.join(artifacts_base_url, f.name))
     return artifacts, artifact_urls
 
@@ -327,15 +329,19 @@ def register_uri_for_dataset_meta_info(mr: requests_mock.Mocker, dataset: Datase
     return [dataset_url]
 
 
-def register_uri_for_dataset_artifact_info(mr: requests_mock.Mocker, dataset: Dataset, project_key: str, register_file_contents: bool = False):
-    artifact_info_url = posixpath.join(CLIENT_BASE_URL, "artifact-info", project_key, "datasets", str(dataset.id))
-    artifacts_base_url = posixpath.join(CLIENT_BASE_URL, "artifacts", project_key, "datasets", str(dataset.id))
+def register_uri_for_dataset_artifact_info(
+    mr: requests_mock.Mocker, dataset: Dataset, project_key: str, register_file_contents: bool = False
+):
+    artifact_info_url = posixpath.join(CLIENT_BASE_URL, "artifact-info", "datasets", str(dataset.id))
+    artifacts_base_url = posixpath.join(CLIENT_BASE_URL, "artifacts", "datasets", str(dataset.id))
     artifacts = []
     artifact_urls = []
     with tempfile.TemporaryDirectory() as tmpdir:
         tmpdir_path = Path(tmpdir)
         dataset.save(Path(tmpdir), dataset.id)  # Save dataset in temp dir
-        artifacts, artifact_urls = register_uri_for_artifacts_under_dir(mr, tmpdir_path, artifacts_base_url, register_file_contents)
+        artifacts, artifact_urls = register_uri_for_artifacts_under_dir(
+            mr, tmpdir_path, artifacts_base_url, register_file_contents
+        )
 
     mr.register_uri(method=requests_mock.GET, url=artifact_info_url, json=artifacts)
     artifact_urls.extend([artifact_info_url])
@@ -343,11 +349,9 @@ def register_uri_for_dataset_artifact_info(mr: requests_mock.Mocker, dataset: Da
 
 
 def register_uri_for_any_tests_artifact_info_upload(mr: requests_mock.Mocker, register_files=False):
-    meta_info_pattern = re.compile(
-        "http://giskard-host:12345/api/v2/project/.*/tests"
-    )
+    meta_info_pattern = re.compile("http://giskard-host:12345/api/v2/project/.*/tests")
     artifacts_url_pattern = re.compile(
-        "http://giskard-host:12345/api/v2/artifacts/.*/tests/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/.*"
+        "http://giskard-host:12345/api/v2/artifacts/tests/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/.*"
     )
     mr.register_uri(method=requests_mock.PUT, url=meta_info_pattern, json={})
     if register_files:
@@ -355,11 +359,9 @@ def register_uri_for_any_tests_artifact_info_upload(mr: requests_mock.Mocker, re
 
 
 def register_uri_for_any_slices_artifact_info_upload(mr: requests_mock.Mocker, register_files=False):
-    meta_info_pattern = re.compile(
-        "http://giskard-host:12345/api/v2/project/.*/slices"
-    )
+    meta_info_pattern = re.compile("http://giskard-host:12345/api/v2/project/.*/slices")
     artifacts_url_pattern = re.compile(
-        "http://giskard-host:12345/api/v2/artifacts/.*/slices/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/.*"
+        "http://giskard-host:12345/api/v2/artifacts/slices/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/.*"
     )
     mr.register_uri(method=requests_mock.PUT, url=meta_info_pattern, json={})
     if register_files:
@@ -367,11 +369,9 @@ def register_uri_for_any_slices_artifact_info_upload(mr: requests_mock.Mocker, r
 
 
 def register_uri_for_any_transforms_artifact_info_upload(mr: requests_mock.Mocker, register_files=False):
-    meta_info_pattern = re.compile(
-        "http://giskard-host:12345/api/v2/project/.*/transformations"
-    )
+    meta_info_pattern = re.compile("http://giskard-host:12345/api/v2/project/.*/transformations")
     artifacts_url_pattern = re.compile(
-        "http://giskard-host:12345/api/v2/artifacts/.*/transformations/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/.*"
+        "http://giskard-host:12345/api/v2/artifacts/transformations/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/.*"
     )
     mr.register_uri(method=requests_mock.PUT, url=meta_info_pattern, json={})
     if register_files:
@@ -379,11 +379,9 @@ def register_uri_for_any_transforms_artifact_info_upload(mr: requests_mock.Mocke
 
 
 def register_uri_for_any_dataset_artifact_info_upload(mr: requests_mock.Mocker, register_files=False):
-    meta_info_pattern = re.compile(
-        "http://giskard-host:12345/api/v2/project/.*/datasets"
-    )
+    meta_info_pattern = re.compile("http://giskard-host:12345/api/v2/project/.*/datasets")
     artifacts_url_pattern = re.compile(
-        "http://giskard-host:12345/api/v2/artifacts/.*/datasets/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/.*"
+        "http://giskard-host:12345/api/v2/artifacts/datasets/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/.*"
     )
     mr.register_uri(method=requests_mock.POST, url=meta_info_pattern)
     if register_files:
@@ -397,15 +395,19 @@ def register_uri_for_model_meta_info(mr: requests_mock.Mocker, model: BaseModel,
     return [model_url]
 
 
-def register_uri_for_model_artifact_info(mr: requests_mock.Mocker, model: BaseModel, project_key: str, register_file_contents: bool = False):
-    artifact_info_url = posixpath.join(CLIENT_BASE_URL, "artifact-info", project_key, "models", str(model.id))
-    artifacts_base_url = posixpath.join(CLIENT_BASE_URL, "artifacts", project_key, "models", str(model.id))
+def register_uri_for_model_artifact_info(
+    mr: requests_mock.Mocker, model: BaseModel, project_key: str, register_file_contents: bool = False
+):
+    artifact_info_url = posixpath.join(CLIENT_BASE_URL, "artifact-info", "models", str(model.id))
+    artifacts_base_url = posixpath.join(CLIENT_BASE_URL, "artifacts", "models", str(model.id))
     artifacts = []
     artifact_urls = []
     with tempfile.TemporaryDirectory() as tmpdir:
         tmpdir_path = Path(tmpdir)
         model.save(Path(tmpdir))  # Save dataset in temp dir
-        artifacts, artifact_urls = register_uri_for_artifacts_under_dir(mr, tmpdir_path, artifacts_base_url, register_file_contents)
+        artifacts, artifact_urls = register_uri_for_artifacts_under_dir(
+            mr, tmpdir_path, artifacts_base_url, register_file_contents
+        )
 
     mr.register_uri(method=requests_mock.GET, url=artifact_info_url, json=artifacts)
     artifact_urls.extend([artifact_info_url])
@@ -413,8 +415,13 @@ def register_uri_for_model_artifact_info(mr: requests_mock.Mocker, model: BaseMo
 
 
 def register_uri_for_inspection(mr: requests_mock.Mocker, project_key: str, inspection_id: int, sample: bool):
-    url = posixpath.join(CLIENT_BASE_URL, "artifacts", f"{project_key}/models/inspections/{inspection_id}")
+    url = posixpath.join(CLIENT_BASE_URL, "artifacts", f"models/inspections/{inspection_id}")
     calculated_url = posixpath.join(url, get_file_name("calculated", "csv", sample))
     predictions_url = posixpath.join(url, get_file_name("predictions", "csv", sample))
     mr.register_uri(method=requests_mock.POST, url=calculated_url, json={})
     mr.register_uri(method=requests_mock.POST, url=predictions_url, json={})
+
+
+class DummyEmbedding(BaseEmbedding):
+    def embed(self, texts):
+        return np.random.uniform(size=(len(texts), 768))

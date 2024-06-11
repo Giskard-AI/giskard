@@ -3,7 +3,8 @@ from unittest.mock import Mock, patch, sentinel
 import pandas as pd
 
 from giskard import Dataset
-from giskard.llm.evaluators.base import EvaluationResult
+from giskard.core.test_result import TestResultStatus
+from giskard.llm.evaluators.base import EvaluationResult, EvaluationResultExample
 from giskard.scanner.llm.llm_implausible_output_detector import LLMImplausibleOutputDetector
 
 
@@ -24,8 +25,8 @@ def test_implausible_output_detector_flow(PlausibilityEvaluator, ImplausibleData
     eval_dataset = Dataset(pd.DataFrame({"feat": ["input 1", "input 2", "input 3"]}))
     generator.generate_dataset.return_value = eval_dataset
     evaluator.evaluate.side_effect = [
-        EvaluationResult(failure_examples=[], success_examples=[{"sample": 1}], errors=[]),
-        EvaluationResult(failure_examples=[{"sample": 1}], success_examples=[], errors=[]),
+        EvaluationResult(results=[EvaluationResultExample(sample={"sample": 1}, status=TestResultStatus.PASSED)]),
+        EvaluationResult(results=[EvaluationResultExample(sample={"sample": 1}, status=TestResultStatus.FAILED)]),
     ]
 
     detector = LLMImplausibleOutputDetector(num_samples=13892)
@@ -39,3 +40,7 @@ def test_implausible_output_detector_flow(PlausibilityEvaluator, ImplausibleData
     assert len(issues) == 1
     assert issues[0].generate_tests()[0]
     assert issues[0].dataset == eval_dataset
+
+    # Issues must contain the "metric" name
+    assert "metric" in issues[0].meta
+    assert "metric_value" in issues[0].meta

@@ -10,6 +10,8 @@ from giskard import Dataset, GiskardClient, Model
 from giskard.core.core import ModelMeta, SupportedModelTypes
 from giskard.core.suite import Suite
 from giskard.scanner import Scanner
+from giskard.scanner.correlation.spurious_correlation_detector import SpuriousCorrelationDetector
+from giskard.scanner.performance import PerformanceBiasDetector
 from giskard.scanner.report import ScanReport
 
 
@@ -50,7 +52,7 @@ def _test_scanner_returns_non_empty_scan_result(dataset_name, model_name, reques
     dataset = request.getfixturevalue(dataset_name)
     model = request.getfixturevalue(model_name)
 
-    result = scanner.analyze(model, dataset, raise_exceptions=True)
+    result = scanner.analyze(model, dataset, features=model.feature_names, raise_exceptions=True)
 
     assert isinstance(result, ScanReport)
     assert result.to_html()
@@ -66,7 +68,9 @@ def _test_scanner_returns_non_empty_scan_result(dataset_name, model_name, reques
 def test_scanner_should_work_with_empty_model_feature_names(german_credit_data, german_credit_model):
     scanner = Scanner()
     german_credit_model.meta.feature_names = None
-    result = scanner.analyze(german_credit_model, german_credit_data, raise_exceptions=True)
+    result = scanner.analyze(
+        german_credit_model, german_credit_data, features=german_credit_model.feature_names, raise_exceptions=True
+    )
 
     assert isinstance(result, ScanReport)
     assert result.has_issues()
@@ -83,7 +87,9 @@ def test_scanner_raises_exception_if_no_detectors_available(german_credit_data, 
 def test_scanner_works_if_dataset_has_no_target(titanic_model, titanic_dataset):
     scanner = Scanner()
     no_target_dataset = Dataset(titanic_dataset.df, target=None)
-    result = scanner.analyze(titanic_model, no_target_dataset, raise_exceptions=True)
+    result = scanner.analyze(
+        titanic_model, no_target_dataset, features=titanic_model.feature_names, raise_exceptions=True
+    )
 
     assert isinstance(result, ScanReport)
     assert result.has_issues()
@@ -214,20 +220,96 @@ def test_scanner_warns_if_too_many_features():
 
     # Model with no feature names
     model = Model(lambda x: np.ones(len(x)), model_type="classification", classification_labels=[0, 1])
-    dataset = Dataset(pd.DataFrame(np.ones((10, 120)), columns=map(str, np.arange(120))), target="0")
+    dataset = Dataset(pd.DataFrame(np.ones((10, 121)), columns=map(str, np.arange(121))), target="0")
 
     with pytest.warns(
         UserWarning, match=re.escape("It looks like your dataset has a very large number of features (120)")
     ):
         scanner.analyze(model, dataset)
 
-    # Model specifying few feature names should not raise a warning
+    # Model specifying few feature names should not raise the warning
     model = Model(
         lambda x: np.ones(len(x)),
         model_type="classification",
         classification_labels=[0, 1],
         feature_names=["1", "2", "3"],
     )
-    with warnings.catch_warnings():
-        warnings.simplefilter("error")
+
+    with warnings.catch_warnings(record=True) as record:
         scanner.analyze(model, dataset)
+    msg = "It looks like your dataset has a very large number of features"
+    assert not [r for r in record if msg in str(r.message)]
+
+
+def test_can_limit_features_to_subset():
+    scanner = Scanner()
+
+    # Model with no feature names
+    model = Model(lambda x: np.ones(len(x)), model_type="classification", classification_labels=[0, 1])
+    dataset = Dataset(pd.DataFrame(np.ones((123, 4)), columns=["feat1", "feat2", "feat3", "label"]), target="label")
+
+    # Mock method
+    detector = mock.Mock()
+    detector.run.return_value = []
+    scanner.get_detectors = lambda *args, **kwargs: [detector]
+
+    scanner.analyze(model, dataset, features=["feat1", "feat2"])
+    detector.run.assert_called_once_with(model, dataset, features=["feat1", "feat2"])
+
+    detector.run.reset_mock()
+    scanner.analyze(model, dataset)
+    detector.run.assert_called_once_with(model, dataset, features=["feat1", "feat2", "feat3"])
+
+    detector.run.reset_mock()
+    scanner.analyze(model, dataset)
+    detector.run.assert_called_once_with(model, dataset, features=["feat1", "feat2", "feat3"])
+
+    with pytest.raises(ValueError, match=r"The `features` argument contains invalid feature names: does-not-exist"):
+        scanner.analyze(model, dataset, features=["feat1", "does-not-exist"])
+
+    with pytest.raises(ValueError, match=r"No features to scan"):
+        scanner.analyze(model, dataset, features=[])
+
+
+@mock.patch("giskard.scanner.scanner.get_default_client")
+def test_scanner_does_not_break_if_llm_client_not_set(get_default_client):
+    """For scans that do not require the LLM client, the scanner must not break if the client is not set."""
+    get_default_client.side_effect = ValueError("No client set")
+
+    scanner = Scanner()
+
+    def fake_model(*args, **kwargs):
+        return None
+
+    model = Model(
+        model=fake_model,
+        model_type=SupportedModelTypes.TEXT_GENERATION,
+        name="test",
+        description="test",
+        feature_names=["query"],
+        target="query",
+    )
+
+    dataset = Dataset(pd.DataFrame({"query": ["test"]}))
+
+    scanner.analyze(model, dataset)
+
+
+@pytest.mark.memory_expensive
+def test_min_slice_size(titanic_model, titanic_dataset):
+    # By default, it uses a 0.01 min slice size
+    detector = PerformanceBiasDetector()
+    issues = detector.run(titanic_model, titanic_dataset, features=titanic_model.feature_names)
+    assert len(issues) == 10
+
+    detector = PerformanceBiasDetector(min_slice_size=2000)
+    issues = detector.run(titanic_model, titanic_dataset, features=titanic_model.feature_names)
+    assert len(issues) == 0
+
+    detector = SpuriousCorrelationDetector()
+    issues = detector.run(titanic_model, titanic_dataset, features=titanic_model.feature_names)
+    assert len(issues) == 3
+
+    detector = SpuriousCorrelationDetector(min_slice_size=2000)
+    issues = detector.run(titanic_model, titanic_dataset, features=titanic_model.feature_names)
+    assert len(issues) == 0

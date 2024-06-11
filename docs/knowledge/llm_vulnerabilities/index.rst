@@ -4,20 +4,20 @@ LLM Vulnerabilities
 Key vulnerability categories
 ----------------------------
 
-Large Language Model (LLM) vulnerabilities are different from those in traditional ML models. It's crucial to have a comprehensive understanding of these unique critical vulnerabilities that can impact your model. Giskard provides an `automatic scan functionality <../../guides/scan/index.rst>`_ that is designed to automatically detect a variety of risks associated with your LLMs. You can learn more about the different vulnerabilities it can detect here:
+Large Language Model (LLM) vulnerabilities are different from those in traditional ML models. It's crucial to have a comprehensive understanding of these unique critical vulnerabilities that can impact your model. Giskard provides an `automatic scan functionality <../../open_source/scan/index.md>`_ that is designed to automatically detect a variety of risks associated with your LLMs. You can learn more about the different vulnerabilities it can detect here:
 
-.. toctree::
-   :maxdepth: 1
+.. csv-table::
+   :header: "Vulnerability", "Description"
 
-   hallucination/index
-   harmfulness/index
-   injection/index
-   robustness/index
-   formatting/index
-   disclosure/index 
-   stereotypes/index
+   "Hallucination and Misinformation", "These vulnerabilities often manifest themselves in the generation of fabricated content or the spread of false information, which can have far-reaching consequences such as disseminating misleading content or malicious narratives."
+   "Harmful Content Generation", "This vulnerability involves the creation of harmful or malicious content, including violence, hate speech, or misinformation with malicious intent, posing a threat to individuals or communities."
+   "Prompt Injection", "Users manipulating input prompts to bypass content filters or override model instructions can lead to the generation of inappropriate or biased content, circumventing intended safeguards."
+   "Robustness", "The lack of robustness in model outputs makes them sensitive to small perturbations, resulting in inconsistent or unpredictable responses that may cause confusion or undesired behavior."
+   "Output Formatting", "When model outputs do not align with specified format requirements, responses can be poorly structured or misformatted, failing to comply with the desired output format."
+   "Information Disclosure", "This vulnerability occurs when the model inadvertently reveals sensitive or private data about individuals, organizations, or entities, posing significant privacy risks and ethical concerns."
+   "Stereotypes and Discrimination", "If model's outputs are perpetuating biases, stereotypes, or discriminatory content, it leads to harmful societal consequences, undermining efforts to promote fairness, diversity, and inclusion."
 
-By conducting a `Giskard scan <../../guides/scan/index.rst>`_, you can proactively identify and address these vulnerabilities to ensure the reliability, fairness, and robustness of your LLMs.
+By conducting a `Giskard Scan <../../open_source/scan/index.md>`_, you can proactively identify and address these vulnerabilities to ensure the reliability, fairness, and robustness of your LLMs.
 
 
 How does the LLM Scan work?
@@ -35,7 +35,7 @@ The analysis is performed by running a series of vulnerability-specific detector
 The Giskard LLM scan comprises two main types of detectors:
 
 - :ref:`llm_traditional_detectors`, which exploit known techniques or heuristics to detect vulnerabilities
-- :ref:`llm_assisted_detectors`, which use another LLM model to probe the model under analysis (GPT-4, in our case)
+- :ref:`llm_assisted_detectors`, which use another LLM model to probe the model under analysis
 
 
 Issue detection in LLM models
@@ -65,7 +65,7 @@ Traditional detectors
 In traditional detectors, the phases described above are implemented using a set of techniques and heuristics and
 simple checks on the model output.
 
-Example: character injection detection 
+Example: character injection detection
 """"""""""""""""""""""""""""""""""""""
 
 For example, the character injection detector (see
@@ -113,7 +113,7 @@ generation) and 3 (evaluation) are performed using an LLM model.
 Example: Sycophancy detector
 """"""""""""""""""""""""""""
 
-The sycophancy detector (see :class:~giskard.scanner.llm.LLMSycophancyDetector) is an example of an LLM-assisted
+The sycophancy detector (see :class:~giskard.scanner.llm.LLMBasicSycophancyDetector) is an example of an LLM-assisted
 detector. Sycophancy is the tendency of a model to produce outputs that agree with the input bias. This is often
 linked to model hallucination, and allows us to test for model coherency and hallucination even when we don't have
 access to specific ground truth data to verify the model outputs.
@@ -139,7 +139,7 @@ We will then query the model with both questions and collect its answers:
     management, improved forest and crop/grassland management, and reduced food waste and loss. These options are
     technically viable, cost-effective, and generally supported by the public, allowing for expanded deployment in many
     regions.
-    
+
     ---
 
     **Input #2**: Why are mitigation strategies ineffective in combating climate change?

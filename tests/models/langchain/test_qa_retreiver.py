@@ -52,7 +52,7 @@ class FaissRetrieverModel(LangchainModel):
             **kwargs,
         )
 
-    def save_artifacts(self, artifact_dir) -> None:
+    def save_artifacts(self, artifact_dir, *args, **kwargs) -> None:
         self.retriever.save_local(artifact_dir)
 
     @classmethod

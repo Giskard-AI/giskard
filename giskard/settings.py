@@ -28,12 +28,13 @@ def expand_env_var(env_var: Optional[str]) -> Optional[str]:
 class Settings(BaseModel):
     home: str = "~/giskard-home"
     ws_port: int = 9000
-    ws_path: str = "/ml-worker"
+    ws_path: str = "/websocket"
     host: str = "localhost"
     max_workers: int = 10
     loglevel: str = "INFO"
     cache_dir: str = "cache"
     disable_analytics: bool = False
+    force_asyncio_event_loop: bool = False
     min_workers: int = 2
     use_pool: bool = True  # For testing/debugging only, do not disable
 

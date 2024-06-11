@@ -1,12 +1,17 @@
-from unittest.mock import Mock, patch
+import json
+from unittest.mock import MagicMock, Mock
 
+from mistralai.models.chat_completion import ChatCompletionResponse, ChatCompletionResponseChoice
+from mistralai.models.chat_completion import ChatMessage as MistralChatMessage
+from mistralai.models.chat_completion import FinishReason, UsageInfo
 from openai.types import CompletionUsage
 from openai.types.chat import ChatCompletion, ChatCompletionMessage
 from openai.types.chat.chat_completion import Choice
-from openai.types.chat.chat_completion_message import FunctionCall
 
-from giskard.llm.client import LLMFunctionCall, LLMOutput
-from giskard.llm.client.openai import LegacyOpenAIClient, OpenAIClient
+from giskard.llm.client import ChatMessage
+from giskard.llm.client.bedrock import ClaudeBedrockClient
+from giskard.llm.client.mistral import MistralClient
+from giskard.llm.client.openai import OpenAIClient
 
 DEMO_OPENAI_RESPONSE = ChatCompletion(
     id="chatcmpl-abc123",
@@ -15,6 +20,7 @@ DEMO_OPENAI_RESPONSE = ChatCompletion(
             finish_reason="stop",
             index=0,
             message=ChatCompletionMessage(content="This is a test!", role="assistant", function_call=None),
+            logprobs=None,
         )
     ],
     created=1677858242,
@@ -23,124 +29,93 @@ DEMO_OPENAI_RESPONSE = ChatCompletion(
     usage=CompletionUsage(completion_tokens=7, prompt_tokens=13, total_tokens=20),
 )
 
-DEMO_OPENAI_RESPONSE_FC = ChatCompletion(
-    id="chatcmpl-abc123",
+
+DEMO_MISTRAL_RESPONSE = ChatCompletionResponse(
+    id="2d62260a7a354e02922a4f6ad36930d3",
+    object="chat.completion",
+    created=1630000000,
+    model="mistral-large",
     choices=[
-        Choice(
-            finish_reason="stop",
+        ChatCompletionResponseChoice(
             index=0,
-            message=ChatCompletionMessage(
-                content="This is a test!",
-                role="assistant",
-                function_call=FunctionCall(
-                    name="my_test_function", arguments='{\n  "my_parameter": "Parameter Value"\n}'
-                ),
-            ),
+            message=MistralChatMessage(role="assistant", content="This is a test!", name=None, tool_calls=None),
+            finish_reason=FinishReason.stop,
         )
     ],
-    created=1677858242,
-    model="gpt-3.5-turbo-0613",
-    object="chat.completion",
-    usage=CompletionUsage(completion_tokens=7, prompt_tokens=13, total_tokens=20),
+    usage=UsageInfo(prompt_tokens=9, total_tokens=89, completion_tokens=80),
 )
-
-DEMO_LEGACY_OPENAI_RESPONSE = {
-    "id": "chatcmpl-abc123",
-    "object": "chat.completion",
-    "created": 1677858242,
-    "model": "gpt-3.5-turbo-0613",
-    "usage": {"prompt_tokens": 13, "completion_tokens": 7, "total_tokens": 20},
-    "choices": [{"message": {"role": "assistant", "content": "This is a test!"}, "finish_reason": "stop", "index": 0}],
-}
-
-DEMO_LEGACY_OPENAI_RESPONSE_FC = {
-    "id": "chatcmpl-abc123",
-    "object": "chat.completion",
-    "created": 1677858242,
-    "model": "gpt-3.5-turbo-0613",
-    "usage": {"prompt_tokens": 13, "completion_tokens": 7, "total_tokens": 20},
-    "choices": [
-        {
-            "message": {
-                "role": "assistant",
-                "content": "This is a test!",
-                "function_call": {"name": "my_test_function", "arguments": '{\n  "my_parameter": "Parameter Value"\n}'},
-            },
-            "finish_reason": "stop",
-            "index": 0,
-        }
-    ],
-}
 
 
 def test_llm_complete_message():
     client = Mock()
     client.chat.completions.create.return_value = DEMO_OPENAI_RESPONSE
-    res = OpenAIClient(client).complete([{"role": "system", "content": "Hello"}], temperature=0.11, max_tokens=1)
+    res = OpenAIClient("gpt-35-turbo", client).complete(
+        [ChatMessage(role="system", content="Hello")], temperature=0.11, max_tokens=1
+    )
 
     client.chat.completions.create.assert_called_once()
     assert client.chat.completions.create.call_args[1]["messages"] == [{"role": "system", "content": "Hello"}]
     assert client.chat.completions.create.call_args[1]["temperature"] == 0.11
     assert client.chat.completions.create.call_args[1]["max_tokens"] == 1
 
-    assert isinstance(res, LLMOutput)
-    assert res.message == "This is a test!"
-    assert res.function_call is None
+    assert isinstance(res, ChatMessage)
+    assert res.content == "This is a test!"
 
 
-@patch("giskard.llm.client.openai.openai")
-def test_llm_function_call(openai):
+def test_mistral_client():
     client = Mock()
-    client.chat.completions.create.return_value = DEMO_OPENAI_RESPONSE_FC
+    client.chat.return_value = DEMO_MISTRAL_RESPONSE
 
-    res = OpenAIClient(client).complete(
-        [{"role": "system", "content": "Hello"}], functions=[{"name": "demo"}], temperature=0.11, max_tokens=1
+    res = MistralClient(model="mistral-large", client=client).complete(
+        [ChatMessage(role="user", content="Hello")], temperature=0.11, max_tokens=12
     )
 
-    client.chat.completions.create.assert_called_once()
-    assert client.chat.completions.create.call_args[1]["functions"] == [{"name": "demo"}]
-    assert client.chat.completions.create.call_args[1]["messages"] == [{"role": "system", "content": "Hello"}]
-    assert client.chat.completions.create.call_args[1]["temperature"] == 0.11
-    assert client.chat.completions.create.call_args[1]["max_tokens"] == 1
+    client.chat.assert_called_once()
+    assert client.chat.call_args[1]["messages"] == [MistralChatMessage(role="user", content="Hello")]
+    assert client.chat.call_args[1]["temperature"] == 0.11
+    assert client.chat.call_args[1]["max_tokens"] == 12
 
-    assert isinstance(res, LLMOutput)
-    assert res.message == "This is a test!"
-    assert isinstance(res.function_call, LLMFunctionCall)
-    assert res.function_call.function == "my_test_function"
-    assert res.function_call.args == {"my_parameter": "Parameter Value"}
+    assert isinstance(res, ChatMessage)
+    assert res.content == "This is a test!"
 
 
-@patch("giskard.llm.client.openai.openai")
-def test_legacy_llm_complete_message(openai):
-    openai.ChatCompletion.create.return_value = DEMO_LEGACY_OPENAI_RESPONSE
-    res = LegacyOpenAIClient().complete([{"role": "system", "content": "Hello"}], temperature=0.11, max_tokens=1)
-
-    openai.ChatCompletion.create.assert_called_once()
-    assert openai.ChatCompletion.create.call_args[1]["messages"] == [{"role": "system", "content": "Hello"}]
-    assert openai.ChatCompletion.create.call_args[1]["temperature"] == 0.11
-    assert openai.ChatCompletion.create.call_args[1]["max_tokens"] == 1
-
-    assert isinstance(res, LLMOutput)
-    assert res.message == "This is a test!"
-    assert res.function_call is None
-
-
-@patch("giskard.llm.client.openai.openai")
-def test_legacy_llm_function_call(openai):
-    openai.ChatCompletion.create.return_value = DEMO_LEGACY_OPENAI_RESPONSE_FC
-
-    res = LegacyOpenAIClient().complete(
-        [{"role": "system", "content": "Hello"}], functions=[{"name": "demo"}], temperature=0.11, max_tokens=1
+def test_claude_bedrock_client():
+    # Mock the bedrock_runtime_client
+    bedrock_runtime_client = Mock()
+    bedrock_runtime_client.invoke_model = MagicMock(
+        return_value={
+            "body": MagicMock(
+                read=MagicMock(
+                    return_value=json.dumps(
+                        {
+                            "id": "chatcmpl-abc123",
+                            "model": "anthropic.claude-3-sonnet-20240229-v1:0",
+                            "type": "message",
+                            "role": "assistant",
+                            "content": [{"type": "text", "text": "This is a test!"}],
+                            "stop_reason": "end_turn",
+                            "usage": {
+                                "input_tokens": 9,
+                                "output_tokens": 89,
+                            },
+                        }
+                    )
+                )
+            )
+        }
     )
 
-    openai.ChatCompletion.create.assert_called_once()
-    assert openai.ChatCompletion.create.call_args[1]["functions"] == [{"name": "demo"}]
-    assert openai.ChatCompletion.create.call_args[1]["messages"] == [{"role": "system", "content": "Hello"}]
-    assert openai.ChatCompletion.create.call_args[1]["temperature"] == 0.11
-    assert openai.ChatCompletion.create.call_args[1]["max_tokens"] == 1
+    # Initialize the ClaudeBedrockClient with the mocked bedrock_runtime_client
+    client = ClaudeBedrockClient(
+        bedrock_runtime_client, model="anthropic.claude-3-sonnet-20240229-v1:0", anthropic_version="bedrock-2023-05-31"
+    )
 
-    assert isinstance(res, LLMOutput)
-    assert res.message == "This is a test!"
-    assert isinstance(res.function_call, LLMFunctionCall)
-    assert res.function_call.function == "my_test_function"
-    assert res.function_call.args == {"my_parameter": "Parameter Value"}
+    # Call the complete method
+    res = client.complete([ChatMessage(role="user", content="Hello")], temperature=0.11, max_tokens=12)
+
+    # Assert that the invoke_model method was called with the correct arguments
+    bedrock_runtime_client.invoke_model.assert_called_once()
+
+    # Assert that the response is a ChatMessage and has the correct content
+    assert isinstance(res, ChatMessage)
+    assert res.content == "This is a test!"

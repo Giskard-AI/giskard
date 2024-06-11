@@ -8,6 +8,7 @@ from uuid import uuid4
 
 import pytest
 
+import giskard
 from giskard.utils.worker_pool import GiskardMLWorkerException, PoolState, WorkerPoolExecutor
 
 
@@ -66,7 +67,7 @@ def sleep_add_one(timer, value):
 def print_stuff():
     print("stuff stdout")
     print("other stuff", file=sys.stderr)
-    logging.getLogger().info("info log")
+    logging.getLogger(giskard.__name__).info("info log")
     logging.getLogger("truc").error("toto")
     logging.getLogger(__name__).warning("Warning")
     return
@@ -117,10 +118,10 @@ def test_submit_one_task(one_worker_pool: WorkerPoolExecutor):
 
 @pytest.mark.concurrency
 def test_task_should_be_cancelled(one_worker_pool: WorkerPoolExecutor):
-    future = one_worker_pool.schedule(sleep_add_one, [180, 1], timeout=1)
+    future = one_worker_pool.schedule(uuid4(), sleep_add_one, [180, 1], timeout=1)
     with pytest.raises(TimeoutError) as exc_info:
         future.result()
-    assert "Task took too long" in str(exc_info)
+    assert "Task killed with reason: TIMEOUT" in str(exc_info)
     assert len(one_worker_pool.futures_mapping) == 0
 
 
@@ -128,17 +129,17 @@ def test_task_should_be_cancelled(one_worker_pool: WorkerPoolExecutor):
 def test_after_cancel_should_work(one_worker_pool: WorkerPoolExecutor):
     pid = set(one_worker_pool.processes.keys())
     assert len(pid) == 1
-    future = one_worker_pool.schedule(sleep_add_one, [100, 1], timeout=10)
+    future = one_worker_pool.schedule(uuid4(), sleep_add_one, [100, 1], timeout=10)
     with pytest.raises(TimeoutError) as exc_info:
         future.result()
-    assert "Task took too long" in str(exc_info)
+    assert "Task killed with reason: TIMEOUT" in str(exc_info)
     sleep(8)
     new_pid = set(one_worker_pool.processes.keys())
     assert len(new_pid) == 1
     assert pid != new_pid
-    future = one_worker_pool.schedule(sleep_add_one, [2, 2], timeout=10)
+    future = one_worker_pool.schedule(uuid4(), sleep_add_one, [2, 2], timeout=10)
     assert future.result() == 3
-    future = one_worker_pool.schedule(add_one, [2])
+    future = one_worker_pool.schedule(uuid4(), add_one, [2])
     assert future.result() == 3
     future = one_worker_pool.submit(add_one, 4)
     assert future.result() == 5
@@ -148,11 +149,11 @@ def test_after_cancel_should_work(one_worker_pool: WorkerPoolExecutor):
 def test_after_cancel_should_shutdown_nicely():
     one_worker_pool = WorkerPoolExecutor(nb_workers=1)
     pid = set(one_worker_pool.processes.keys())
-    future = one_worker_pool.schedule(sleep_add_one, [100, 1], timeout=10)
+    future = one_worker_pool.schedule(uuid4(), sleep_add_one, [100, 1], timeout=10)
     sleep(3)
     with pytest.raises(TimeoutError) as exc_info:
         future.result()
-    assert "Task took too long" in str(exc_info)
+    assert "Task killed with reason: TIMEOUT" in str(exc_info)
     sleep(8)
     new_pid = set(one_worker_pool.processes.keys())
     assert pid != new_pid
@@ -171,7 +172,7 @@ def test_many_tasks_should_shutdown_nicely(many_worker_pool: WorkerPoolExecutor)
     sleep(3)
     futures = []
     for _ in range(100):
-        futures.append(many_worker_pool.schedule(sleep_add_one, [2, 2], timeout=20))
+        futures.append(many_worker_pool.schedule(uuid4(), sleep_add_one, [2, 2], timeout=20))
     sleep(30)
     exit_codes = many_worker_pool.shutdown(wait=True, timeout=60)
     assert len([code is not None for code in exit_codes]) == 4
@@ -186,7 +187,7 @@ def test_many_tasks_shutdown_while_running(one_worker_pool: WorkerPoolExecutor):
     sleep(3)
     futures = []
     for _ in range(1):
-        futures.append(one_worker_pool.schedule(sleep_add_one, [10, 2], timeout=20))
+        futures.append(one_worker_pool.schedule(uuid4(), sleep_add_one, [10, 2], timeout=20))
     sleep(1)
     exit_codes = one_worker_pool.shutdown(wait=True, timeout=60)
     assert len([code is not None for code in exit_codes]) == 1
@@ -199,7 +200,7 @@ def test_many_tasks_shutdown_while_running(one_worker_pool: WorkerPoolExecutor):
 def test_submit_many_task(many_worker_pool: WorkerPoolExecutor):
     futures = []
     for i in range(100):
-        futures.append(many_worker_pool.schedule(sleep_add_one, [0.1, i], timeout=20))
+        futures.append(many_worker_pool.schedule(uuid4(), sleep_add_one, [0.1, i], timeout=20))
     for i in range(100, 200):
         futures.append(many_worker_pool.submit(add_one, i))
 
@@ -211,7 +212,7 @@ def test_submit_many_task(many_worker_pool: WorkerPoolExecutor):
 def test_task_already_cancelled(one_worker_pool: WorkerPoolExecutor):
     for _ in range(10):
         # Saturate the pool with tasks
-        one_worker_pool.schedule(sleep_add_one, [180, 1], timeout=3)
+        one_worker_pool.schedule(uuid4(), sleep_add_one, [180, 1], timeout=3)
     # Schedule an easy task
     temp_path = Path(tempfile.gettempdir()) / str(uuid4())
     temp_path.touch()
@@ -240,5 +241,5 @@ def test_pool_should_break(one_worker_pool: WorkerPoolExecutor):
     sleep(2)
     assert one_worker_pool._state == PoolState.BROKEN
     with pytest.raises(RuntimeError) as exc_info:
-        one_worker_pool.schedule(sleep_add_one, [180, 1], timeout=1)
+        one_worker_pool.schedule(uuid4(), sleep_add_one, [180, 1], timeout=1)
     assert "Cannot submit when pool is BROKEN" in str(exc_info)

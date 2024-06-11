@@ -6,7 +6,7 @@ The main classes are:
 - Push: Base push class
 - ExamplePush: Push based on example data
 - OverconfidencePush: Push for overconfidence cases
-- BorderlinePush: Push for borderline/underconfidence cases
+- UnderconfidencePush: Push for underconfidence cases
 - ContributionPush: Push for high contribution features
 - PerturbationPush: Push for perturbation analysis
 
@@ -195,9 +195,9 @@ class OverconfidencePush(ExamplePush):
         self.details = res["details"]
 
 
-class BorderlinePush(ExamplePush):
+class UnderconfidencePush(ExamplePush):
     """
-    Recommend actions for borderline/underconfidence cases.
+    Recommend actions for underconfidence cases.
 
     Description:
         Tag examples that are classified with very low confidence,
@@ -219,8 +219,8 @@ class BorderlinePush(ExamplePush):
     """
 
     def __init__(self, training_label, training_label_proba, dataset_row, rate):
-        self._borderline()
-        self.pushkind = PushKind.BORDERLINE
+        self._underconfidence()
+        self.pushkind = PushKind.UNDERCONFIDENCE
 
         self.training_label_proba = training_label_proba
         self.training_label = training_label
@@ -236,9 +236,9 @@ class BorderlinePush(ExamplePush):
         #     ),
         # ]
 
-    def _borderline(self):
+    def _underconfidence(self):
         """
-        Generate borderline push title and details.
+        Generate underconfidence push title and details.
         """
         res = {
             "push_title": "This example was predicted with very low confidence",
@@ -254,7 +254,7 @@ class BorderlinePush(ExamplePush):
                     "action": "Inspect similar examples",
                     "explanation": "It will filter this debugging session to show similar examples with underconfidence",
                     "button": "Inspect similar examples",
-                    "cta": CallToActionKind.OPEN_DEBUGGER_BORDERLINE,
+                    "cta": CallToActionKind.OPEN_DEBUGGER_UNDERCONFIDENCE,
                 },
                 # Disabled temporarily
                 # {
@@ -355,7 +355,7 @@ class ContributionPush(FeaturePush):
             self.details = [
                 {
                     "action": "Generate a performance test on similar examples",
-                    "explanation": "Performance (RMSE or F1) test will help you check if this slice performs better than the rest of the dataset",
+                    "explanation": "Performance (RMSE or F1) test will help you check if this slice performs worse than the rest of the dataset",
                     "button": "Add Test to a test suite",
                     "cta": CallToActionKind.CREATE_TEST,
                 },

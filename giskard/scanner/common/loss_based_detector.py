@@ -1,13 +1,16 @@
+from typing import Optional, Sequence
+
 import datetime
 from abc import abstractmethod
 from time import perf_counter
-from typing import Sequence
 
 import pandas as pd
 
+from giskard.scanner.common.utils import get_dataset_subsample
+
 from ...datasets.base import Dataset
-from ...ml_worker.testing.registry.slicing_function import SlicingFunction
 from ...models.base import BaseModel
+from ...registry.slicing_function import SlicingFunction
 from ...slicing.slice_finder import SliceFinder
 from ..issues import Issue
 from ..logger import logger
@@ -21,7 +24,11 @@ class LossBasedDetector(Detector):
 
     _needs_target = True
 
-    def run(self, model: BaseModel, dataset: Dataset, **kwargs):
+    def __init__(self, max_dataset_size: Optional[int] = None, min_slice_size: Optional[float] = None):
+        self.max_dataset_size = max_dataset_size
+        self.min_slice_size = min_slice_size
+
+    def run(self, model: BaseModel, dataset: Dataset, features: Sequence[str]):
         if self._needs_target and dataset.target is None:
             logger.info(f"{self.__class__.__name__}: Skipping detection because the dataset has no target column.")
             return []
@@ -37,10 +44,10 @@ class LossBasedDetector(Detector):
             return []
 
         # If the dataset is very large, limit to a subsample
-        max_data_size = self.MAX_DATASET_SIZE // len(model.meta.feature_names or dataset.columns)
-        if len(dataset) > max_data_size:
-            logger.info(f"{self.__class__.__name__}: Limiting dataset size to {max_data_size} samples.")
-            dataset = dataset.slice(lambda df: df.sample(max_data_size, random_state=42), row_level=False)
+        self.max_dataset_size = self.max_dataset_size or self.MAX_DATASET_SIZE // len(features)
+        if len(dataset) > self.max_dataset_size:
+            logger.info(f"{self.__class__.__name__}: Limiting dataset size to {self.max_dataset_size} samples.")
+            dataset = get_dataset_subsample(dataset, model, self.max_dataset_size)
 
         # Calculate loss
         logger.info(f"{self.__class__.__name__}: Calculating loss")
@@ -52,7 +59,7 @@ class LossBasedDetector(Detector):
         # Find slices
         logger.info(f"{self.__class__.__name__}: Finding data slices")
         start = perf_counter()
-        slices = self._find_slices(model, dataset, meta)
+        slices = self._find_slices(model, dataset, features, meta)
         elapsed = perf_counter() - start
         logger.info(
             f"{self.__class__.__name__}: {len(slices)} slices found (took {datetime.timedelta(seconds=elapsed)})"
@@ -73,9 +80,7 @@ class LossBasedDetector(Detector):
     def _numerical_slicer_method(self):
         return "tree"
 
-    def _find_slices(self, model: BaseModel, dataset: Dataset, meta: pd.DataFrame):
-        features = model.meta.feature_names or dataset.columns.drop(dataset.target, errors="ignore")
-
+    def _find_slices(self, model: BaseModel, dataset: Dataset, features: Sequence[str], meta: pd.DataFrame):
         df_with_meta = dataset.df.join(meta, how="right")
 
         column_types = dataset.column_types.copy()
@@ -92,7 +97,7 @@ class LossBasedDetector(Detector):
 
         # Find slices
         sf = SliceFinder(numerical_slicer=self._numerical_slicer_method)
-        sliced = sf.run(dataset_with_meta, features, target=self.LOSS_COLUMN_NAME)
+        sliced = sf.run(dataset_with_meta, features, target=self.LOSS_COLUMN_NAME, min_slice_size=self.min_slice_size)
         slices = sum(sliced.values(), start=[])
 
         # Keep only slices of size at least 5% of the dataset or 20 samples (whatever is larger) and conversely exclude

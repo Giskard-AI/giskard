@@ -1,21 +1,18 @@
-import asyncio
 import collections
 import functools
 import hashlib
 import logging
 import os
 import sys
+from pathlib import Path
 from time import sleep
 
 import click
-from lockfile.pidlockfile import PIDLockFile
 from pydantic import AnyHttpUrl, parse_obj_as
 
 from giskard.path_utils import run_dir
-from giskard.settings import settings
 
 logger = logging.getLogger(__name__)
-logging.getLogger().setLevel(logging.INFO)
 logging.getLogger("giskard").setLevel(logging.INFO)
 
 
@@ -58,15 +55,13 @@ def is_pid_stale(pid):
         return False
 
 
-def create_pid_file_path(is_server, url):
-    hash_value = ml_worker_id(is_server, url)
+def create_pid_file_path(worker_name, url):
+    hash_value = ml_worker_id(worker_name, url)
     return run_dir / f"ml-worker-{hash_value}.pid"
 
 
-def ml_worker_id(is_server, url):
-    key = f"{sys.executable}"
-    if not is_server:
-        key += str(url)
+def ml_worker_id(worker_name, url):
+    key = f"{sys.executable}{str(url)}{worker_name}"
     hash_value = hashlib.sha1(key.encode()).hexdigest()
     return hash_value
 
@@ -75,36 +70,14 @@ def validate_url(_ctx, _param, value) -> AnyHttpUrl:
     return parse_obj_as(AnyHttpUrl, value)
 
 
-def run_daemon(is_server, url, api_key, hf_token):
-    from giskard.ml_worker.ml_worker import MLWorker
-    from daemon import DaemonContext
-    from daemon.daemon import change_working_directory
-
-    log_path = get_log_path()
-    logger.info(f"Writing logs to {log_path}")
-    pid_file = PIDLockFile(create_pid_file_path(is_server, url))
-
-    with DaemonContext(pidfile=pid_file, stdout=open(log_path, "w+t")):
-        # For some reason requests.utils.should_bypass_proxies that's called inside every request made by requests
-        # hangs when the process runs as a daemon. A dirty temporary fix is to disable proxies for daemon mode.
-        # True reasons for this to happen to be investigated
-        os.environ["no_proxy"] = "*"
-
-        workdir = settings.home_dir / "tmp" / f"daemon-run-{os.getpid()}"
-        workdir.mkdir(exist_ok=True, parents=True)
-        change_working_directory(workdir)
-
-        logger.info(f"Daemon PID: {os.getpid()}")
-        asyncio.get_event_loop().run_until_complete(MLWorker(is_server, url, api_key, hf_token).start())
-
-
-def get_log_path():
-    return run_dir / "ml-worker.log"
+def get_log_path(worker_name=None):
+    return run_dir / (f"ml-worker-{worker_name}.log" if worker_name else "ml-worker.log")
 
 
 def tail(filename, n=100):
     """Return the last n lines of a file"""
-    return collections.deque(open(filename), n)
+    with Path(filename).open("r", encoding="utf-8") as fp:
+        return collections.deque(fp, n)
 
 
 def follow_file(filename):
@@ -113,7 +86,7 @@ def follow_file(filename):
         return
 
     wait = 1
-    with open(filename) as fp:
+    with Path(filename).open("r", encoding="utf-8") as fp:
         exit_pooling = False
         skip_existing = True
         while not exit_pooling:

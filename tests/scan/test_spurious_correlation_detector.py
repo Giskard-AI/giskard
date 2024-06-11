@@ -24,7 +24,7 @@ def _make_titanic_biased_model(minimal=False):
 def test_spurious_correlation_is_detected(titanic_dataset):
     model = _make_titanic_biased_model()
     detector = SpuriousCorrelationDetector()
-    issues = detector.run(model, titanic_dataset)
+    issues = detector.run(model, titanic_dataset, features=["Sex"])
 
     assert len(issues) > 0
     assert '`Sex` == "male"' in [str(i.slicing_fn) for i in issues]
@@ -40,7 +40,7 @@ def test_spurious_correlation_is_detected(titanic_dataset):
         model_type="classification",
         classification_labels=["no", "yes"],
     )
-    issues = detector.run(random_model, titanic_dataset)
+    issues = detector.run(random_model, titanic_dataset, features=["Sex", "Name"])
 
     assert not issues
 
@@ -48,11 +48,11 @@ def test_spurious_correlation_is_detected(titanic_dataset):
 @pytest.mark.memory_expensive
 def test_threshold(titanic_model, titanic_dataset):
     detector = SpuriousCorrelationDetector(threshold=0.6)
-    issues = detector.run(titanic_model, titanic_dataset)
+    issues = detector.run(titanic_model, titanic_dataset, features=titanic_model.feature_names)
     assert len(issues) > 0
 
     detector = SpuriousCorrelationDetector(threshold=0.9)
-    issues = detector.run(titanic_model, titanic_dataset)
+    issues = detector.run(titanic_model, titanic_dataset, features=titanic_model.feature_names)
     assert not issues
 
 
@@ -71,13 +71,13 @@ def test_can_choose_association_measures(method, expected_name, expected_value, 
     biased_model = _make_titanic_biased_model()
 
     detector = SpuriousCorrelationDetector(method=method)
-    issues = detector.run(biased_model, titanic_dataset)
+    issues = detector.run(biased_model, titanic_dataset, features=["Sex"])
     assert len(issues) > 0
     assert issues[0].meta["metric_value"] == pytest.approx(1)
     assert expected_name in issues[0].meta["metric"]
 
     detector = SpuriousCorrelationDetector(method=method)
-    issues = detector.run(titanic_model, titanic_dataset)
+    issues = detector.run(titanic_model, titanic_dataset, features=["Sex"])
     assert len(issues) > 0
     assert issues[0].meta["metric_value"] == pytest.approx(expected_value, abs=0.01)
     assert expected_name in issues[0].meta["metric"]
@@ -86,4 +86,4 @@ def test_can_choose_association_measures(method, expected_name, expected_value, 
 def test_raises_error_for_invalid_measure_method(titanic_model, titanic_dataset):
     with pytest.raises(ValueError):
         detector = SpuriousCorrelationDetector(method="this does not exist!")
-        detector.run(titanic_model, titanic_dataset)
+        detector.run(titanic_model, titanic_dataset, features=["Sex"])

@@ -1,21 +1,20 @@
-import os
-import copy
 from typing import Optional, Sequence
+
+import copy
+import os
 
 import numpy as np
 import pandas as pd
 
-from ..ml_worker.testing.registry.registry import get_object_uuid
-
-from ..core.core import DatasetProcessFunctionMeta
-
-from .base import BaseSlicer
-from .slice import Query, QueryBasedSliceFunction, ContainsWord
-from .utils import get_slicer
 from ..client.python_utils import warning
+from ..core.core import DatasetProcessFunctionMeta
 from ..datasets.base import Dataset
-from ..ml_worker.testing.registry.slicing_function import SlicingFunction
+from ..registry.registry import get_object_uuid
+from ..registry.slicing_function import SlicingFunction
 from ..slicing.category_slicer import CategorySlicer
+from .base import BaseSlicer
+from .slice import ContainsWord, Query, QueryBasedSliceFunction
+from .utils import get_slicer
 
 
 class TextSlicer(BaseSlicer):
@@ -37,7 +36,7 @@ class TextSlicer(BaseSlicer):
         self.abs_deviation = abs_deviation
         self.slicer = slicer
 
-    def find_slices(self, features, target=None):
+    def find_slices(self, features, target=None, min_samples=None):
         target = target or self.target
 
         if len(features) > 1:
@@ -45,14 +44,14 @@ class TextSlicer(BaseSlicer):
         (feature,) = features
 
         # Make metadata slices
-        metadata_slices = self.find_metadata_slices(feature, target)
+        metadata_slices = self.find_metadata_slices(feature, target, min_samples=min_samples)
 
         # Make top token slices
         token_slices = self.find_token_based_slices(feature, target)
 
         return metadata_slices + token_slices
 
-    def find_metadata_slices(self, feature, target):
+    def find_metadata_slices(self, feature, target, min_samples=None):
         slices = []
         data = self.dataset.column_meta[feature, "text"].copy()
         data[target] = self.dataset.df[target]
@@ -64,7 +63,7 @@ class TextSlicer(BaseSlicer):
         # Run a slicer for numeric
         slicer = get_slicer(self.slicer, meta_dataset, target=target)
         for col in filter(lambda x: column_types[x] == "numeric", column_types.keys()):
-            slices.extend(slicer.find_slices([col]))
+            slices.extend(slicer.find_slices([col], min_samples=min_samples))
 
         # Run a slicer for categorical
         slicer = CategorySlicer(meta_dataset, target=target)
@@ -93,8 +92,9 @@ class TextSlicer(BaseSlicer):
         return [QueryBasedSliceFunction(Query([ContainsWord(feature, token)])) for token in tokens]
 
     def _get_top_tokens(self, feature, target):
-        vectorizer = _make_vectorizer(self.dataset.df[feature], tfidf=True)
-        tfidf = vectorizer.transform(self.dataset.df[feature])
+        data = self.dataset.df[feature].astype(str)
+        vectorizer = _make_vectorizer(data, tfidf=True)
+        tfidf = vectorizer.transform(data)
 
         # Get top tokens by TF-IDF
         order = np.argsort(tfidf.max(axis=0).toarray().squeeze())[::-1]
@@ -106,8 +106,9 @@ class TextSlicer(BaseSlicer):
         from scipy import stats
 
         max_tokens = self.MAX_TOKENS
-        vectorizer = _make_vectorizer(self.dataset.df[feature], tfidf=True)
-        tfidf = vectorizer.transform(self.dataset.df[feature])
+        data = self.dataset.df[feature].astype(str)
+        vectorizer = _make_vectorizer(data, tfidf=True)
+        tfidf = vectorizer.transform(data)
 
         lrank = self.dataset.df[target].rank(pct=True)
 
@@ -128,8 +129,9 @@ class TextSlicer(BaseSlicer):
     def _get_deviant_tokens(self, feature, target):
         from scipy import stats
 
-        vectorizer = _make_vectorizer(self.dataset.df[feature], tfidf=False, binary=True)
-        X = vectorizer.transform(self.dataset.df[feature])
+        data = self.dataset.df[feature].astype(str)
+        vectorizer = _make_vectorizer(data, tfidf=False, binary=True)
+        X = vectorizer.transform(data)
 
         critical_target = self.dataset.df[target].quantile(0.75)
         y = self.dataset.df[target] > critical_target
@@ -159,7 +161,8 @@ class VectorizerError(ValueError):
 
 
 def _make_vectorizer(data: pd.Series, tfidf=False, **kwargs):
-    from sklearn.feature_extraction.text import TfidfVectorizer, CountVectorizer
+    from sklearn.feature_extraction.text import CountVectorizer, TfidfVectorizer
+
     from .stop_words import sw_en, sw_fr
 
     raw_stopwords = sw_en + sw_fr
@@ -192,7 +195,7 @@ class MetadataSliceFunction(SlicingFunction):
         self.meta.name = str(self)
         self.meta.display_name = str(self)
         self.meta.tags = ["pickle", "scan"]
-        self.meta.doc = "Automatically generated slicing function"
+        self.meta.doc = self.meta.default_doc("Automatically generated slicing function")
 
     def execute(self, dataset: Dataset) -> pd.DataFrame:
         metadata = dataset.column_meta[self.feature, self.provider]
@@ -201,7 +204,7 @@ class MetadataSliceFunction(SlicingFunction):
         return dataset.df[mask]
 
     def __str__(self):
-        # Clauses should have format like "avg_word_length(my_column) > x"
+        # Clauses should have format like "text_length(my_column) > x"
         q = copy.deepcopy(self.query)
         for c in q.get_all_clauses():
             c.column += f"({self.feature})"

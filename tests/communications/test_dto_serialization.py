@@ -1,6 +1,7 @@
+from typing import Dict, List, Optional, Type
+
 import json
 from pathlib import Path
-from typing import Dict, List, Optional, Type
 
 import pydantic
 import pytest
@@ -21,8 +22,10 @@ else:
 FILTERED_CLASSES = [BaseModel, ConfiguredBaseModel]
 
 MANDATORY_FIELDS = {
+    "AbortParams": ["job_id"],
     "ArtifactRef": ["id"],
     "Catalog": ["tests", "slices", "transformations"],
+    "CreateDatasetParam": ["projectKey", "name", "headers", "rows"],
     "CreateSubDataset": ["datasetUuid"],
     "CreateSubDatasetParam": ["projectKey", "sample", "name", "copiedRows"],
     "DataFrame": ["rows"],
@@ -33,7 +36,9 @@ MANDATORY_FIELDS = {
     "DatasetProcessingFunction": [],
     "DatasetProcessingParam": ["dataset"],
     "DatasetRowModificationResult": ["rowId", "modifications"],
+    "Documentation": ["description", "parameters"],
     "EchoMsg": ["msg"],
+    "EchoResponse": ["msg", "job_ids"],
     "Empty": [],
     "ErrorReply": ["error_str", "error_type"],
     "Explain": ["explanations"],
@@ -52,13 +57,14 @@ MANDATORY_FIELDS = {
         "interpreter",
         "interpreterVersion",
         "installedPackages",
-        "mlWorkerId",
-        "isRemote",
+        "kernelName",
         "pid",
         "processStartTime",
         "giskardClientVersion",
     ],
     "GetInfoParam": ["list_packages"],
+    "GetLogs": ["logs"],
+    "GetLogsParams": ["job_id", "nb_last_lines"],
     "GetPushParam": ["model", "dataset", "column_types", "column_dtypes", "rowIdx"],
     "GetPushResponse": [],
     "IdentifierSingleTestResult": ["id", "result"],
@@ -75,19 +81,21 @@ MANDATORY_FIELDS = {
     "RunModelForDataFrameParam": ["model", "dataframe", "column_types", "column_dtypes"],
     "RunModelParam": ["model", "dataset", "inspectionId", "project_key"],
     "SingleTestResult": ["passed"],
+    "SingleTestResultDetails": ["inputs", "outputs", "results", "metadata"],
     "SuiteInput": ["name", "type"],
     "SuiteTestArgument": ["id", "testUuid"],
     "TestFunctionArgument": ["name", "type", "optional", "default", "argOrder"],
     "TestMessage": ["type", "text"],
-    "TestSuite": ["is_error", "is_pass", "logs"],
-    "TestSuiteParam": [],
+    "TestSuite": ["is_error", "is_pass"],
+    "TestSuiteParam": ["projectKey"],
     "WeightsPerFeature": [],
     "WorkerReply": [],
 }
-
 OPTIONAL_FIELDS = {
+    "AbortParams": [],
     "ArtifactRef": ["project_key", "sample"],
     "Catalog": [],
+    "CreateDatasetParam": [],
     "CreateSubDataset": [],
     "CreateSubDatasetParam": [],
     "DataFrame": [],
@@ -109,7 +117,9 @@ OPTIONAL_FIELDS = {
     "DatasetProcessingFunction": ["slicingFunction", "transformationFunction", "arguments"],
     "DatasetProcessingParam": ["functions"],
     "DatasetRowModificationResult": [],
+    "Documentation": [],
     "EchoMsg": [],
+    "EchoResponse": [],
     "Empty": [],
     "ErrorReply": ["detail"],
     "Explain": [],
@@ -146,8 +156,10 @@ OPTIONAL_FIELDS = {
     "GeneratedTestSuite": ["inputs"],
     "GetInfo": [],
     "GetInfoParam": [],
+    "GetLogs": [],
+    "GetLogsParams": [],
     "GetPushParam": ["dataframe", "target", "push_kind", "cta_kind"],
-    "GetPushResponse": ["contribution", "perturbation", "overconfidence", "borderline", "action"],
+    "GetPushResponse": ["contribution", "perturbation", "overconfidence", "underconfidence", "action"],
     "IdentifierSingleTestResult": ["arguments"],
     "ModelMeta": ["model_type"],
     "NamedSingleTestResult": [],
@@ -166,21 +178,11 @@ OPTIONAL_FIELDS = {
         "messages",
         "props",
         "metric",
-        "missing_count",
-        "missing_percent",
-        "unexpected_count",
-        "unexpected_percent",
-        "unexpected_percent_total",
-        "unexpected_percent_nonmissing",
-        "partial_unexpected_index_list",
-        "partial_unexpected_counts",
-        "unexpected_index_list",
-        "number_of_perturbed_rows",
-        "actual_slices_size",
-        "reference_slices_size",
-        "output_df_id",
+        "metric_name",
         "failed_indexes",
+        "details",
     ],
+    "SingleTestResultDetails": [],
     "SuiteInput": ["modelMeta", "datasetMeta"],
     "SuiteTestArgument": ["arguments"],
     "TestFunctionArgument": [],
@@ -379,7 +381,17 @@ def generate_serialisation_data():
 
 
 if __name__ == "__main__":
+    print("MANDATORY_FIELDS")
+    print()
     print_all_mandatory_values()
+    print()
+    print("OPTIONAL_FIELDS")
+    print()
     print_all_optional_values()
+    print()
+    print("ALIASED_FIELDS")
+    print()
     print_all_mapping()
+    print()
+    print("Generating some fake data...")
     generate_serialisation_data()

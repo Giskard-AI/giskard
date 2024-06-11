@@ -1,3 +1,7 @@
+from __future__ import annotations
+
+from typing import TYPE_CHECKING, Dict, Hashable, List, Optional, Union
+
 import inspect
 import logging
 import posixpath
@@ -5,13 +9,11 @@ import tempfile
 import uuid
 from functools import cached_property
 from pathlib import Path
-from typing import Dict, Hashable, List, Optional, Union
 
 import numpy as np
 import pandas
 import pandas as pd
 import yaml
-from mlflow import MlflowClient
 from pandas.api.types import is_list_like, is_numeric_dtype
 from xxhash import xxh3_128_hexdigest
 from zstandard import ZstdDecompressor
@@ -19,23 +21,22 @@ from zstandard import ZstdDecompressor
 from giskard.client.giskard_client import GiskardClient
 from giskard.client.io_utils import compress, save_df
 from giskard.client.python_utils import warning
-from giskard.core.core import DatasetMeta, SupportedColumnTypes
+from giskard.core.core import NOT_GIVEN, DatasetMeta, NotGivenOr, SupportedColumnTypes
 from giskard.core.errors import GiskardImportError
 from giskard.core.validation import configured_validate_arguments
-from giskard.ml_worker.testing.registry.slicing_function import SlicingFunction, SlicingFunctionType
-from giskard.ml_worker.testing.registry.transformation_function import (
+from giskard.registry.slicing_function import SlicingFunction, SlicingFunctionType
+from giskard.registry.transformation_function import (
     TransformationFunction,
     TransformationFunctionType,
 )
 from giskard.settings import settings
+
+from ...utils.analytics_collector import analytics
+from ...utils.file_utils import get_file_name
 from ..metadata.indexing import ColumnMetadataMixin
-from ...ml_worker.utils.file_utils import get_file_name
 
-try:
-    import wandb  # noqa
-except ImportError:
-    pass
-
+if TYPE_CHECKING:
+    from mlflow import MlflowClient
 
 SAMPLE_SIZE = 1000
 
@@ -77,8 +78,11 @@ class DataProcessor:
             self.pipeline.append(processor)
         return self
 
-    def apply(self, dataset: "Dataset", apply_only_last=False, get_mask: bool = False):
-        ds = dataset.copy()
+    def apply(self, dataset: "Dataset", apply_only_last=False, get_mask: bool = False, copy: bool = True):
+        if copy:
+            ds = dataset.copy()
+        else:
+            ds = dataset
         is_slicing_only = True
 
         while len(self.pipeline):
@@ -139,12 +143,10 @@ class Dataset(ColumnMetadataMixin):
         column_types (Optional[Dict[str, str]]):
             A dictionary of column names and their types (numeric, category or text) for all columns of df. If not provided,
             the categorical columns will be automatically inferred.
-        data_processor (DataProcessor):
-            An instance of the `DataProcessor` class used for data processing.
     """
 
     name: Optional[str]
-    target: Optional[str]
+    _target: NotGivenOr[Optional[str]]
     column_types: Dict[str, str]
     df: pd.DataFrame
     id: uuid.UUID
@@ -156,7 +158,7 @@ class Dataset(ColumnMetadataMixin):
         self,
         df: pd.DataFrame,
         name: Optional[str] = None,
-        target: Optional[Hashable] = None,
+        target: NotGivenOr[Optional[Hashable]] = NOT_GIVEN,
         cat_columns: Optional[List[str]] = None,
         column_types: Optional[Dict[Hashable, str]] = None,
         id: Optional[uuid.UUID] = None,
@@ -169,7 +171,7 @@ class Dataset(ColumnMetadataMixin):
         Args:
             df (pd.DataFrame): The input dataset as a pandas DataFrame.
             name (Optional[str]): The name of the dataset.
-            target (Optional[str]): The column name in df corresponding to the actual target variable (ground truth).
+            target (Optional[str]): The column name in df corresponding to the actual target variable (ground truth). The target needs to be explicitly set to `None` if the dataset doesn't have any target variable.
             cat_columns (Optional[List[str]]): A list of column names that are categorical.
             column_types (Optional[Dict[str, str]]): A dictionary mapping column names to their types.
             id (Optional[uuid.UUID]): A UUID that uniquely identifies this dataset.
@@ -186,13 +188,12 @@ class Dataset(ColumnMetadataMixin):
 
         self.name = name
         self.df = pd.DataFrame(df)
-        self.target = target
+        self._target = target
 
         if validation:
-            from giskard.core.dataset_validation import validate_dtypes, validate_target_exists
+            from giskard.core.dataset_validation import validate_dataset
 
-            validate_dtypes(self)
-            validate_target_exists(self)
+            validate_dataset(self)
 
         self.column_dtypes = self.extract_column_dtypes(self.df)
 
@@ -226,10 +227,16 @@ class Dataset(ColumnMetadataMixin):
         }
 
         self.data_processor = DataProcessor()
+        if validation:
+            logger.info("Your 'pandas.DataFrame' is successfully wrapped by Giskard's 'Dataset' wrapper class.")
 
-        logger.info("Your 'pandas.DataFrame' is successfully wrapped by Giskard's 'Dataset' wrapper class.")
+    @property
+    def is_target_given(self) -> bool:
+        return self._target is not NOT_GIVEN
 
-        self.data_processor = DataProcessor()
+    @property
+    def target(self) -> Optional[str]:
+        return self._target or None
 
     def add_slicing_function(self, slicing_function: SlicingFunction):
         """
@@ -325,7 +332,9 @@ class Dataset(ColumnMetadataMixin):
                 **{key: value for key, value in slicing_function.params.items() if key != "column_name"},
             )
 
-        return self.data_processor.add_step(slicing_function).apply(self, apply_only_last=True, get_mask=get_mask)
+        return self.data_processor.add_step(slicing_function).apply(
+            self, apply_only_last=True, get_mask=get_mask, copy=False
+        )
 
     @configured_validate_arguments
     def transform(
@@ -492,7 +501,7 @@ class Dataset(ColumnMetadataMixin):
 
         with tempfile.TemporaryDirectory(prefix="giskard-dataset-") as local_path:
             original_size_bytes, compressed_size_bytes = self.save(Path(local_path), dataset_id)
-            client.log_artifacts(local_path, posixpath.join(project_key, "datasets", dataset_id))
+            client.log_artifacts(local_path, posixpath.join("datasets", dataset_id))
             client.save_dataset_meta(
                 project_key,
                 dataset_id,
@@ -501,6 +510,26 @@ class Dataset(ColumnMetadataMixin):
                 compressed_size_bytes=compressed_size_bytes,
             )
         return dataset_id
+
+    def extract_languages(self, columns=None):
+        """
+        Extracts all languages present in the dataset 'text' column.
+
+        Args:
+            list[str]: a list of columns from which languages should be extracted.
+
+        Returns:
+            list[str]: a list of language codes (according to  ISO 639-1) containing all languages in the dataset.
+        """
+        columns = columns if columns is not None else self.columns
+
+        langs_per_feature = [
+            self.column_meta[col, "text"]["language"].dropna().unique()
+            for col, col_type in self.column_types.items()
+            if (col_type == "text" and col in columns)
+        ]
+
+        return list(set().union(*langs_per_feature))
 
     @property
     def meta(self):
@@ -528,9 +557,7 @@ class Dataset(ColumnMetadataMixin):
     def load(cls, local_path: str):
         with open(local_path, "rb") as ds_stream:
             return pd.read_csv(
-                ZstdDecompressor().stream_reader(ds_stream),
-                keep_default_na=False,
-                na_values=["_GSK_NA_"],
+                ZstdDecompressor().stream_reader(ds_stream), keep_default_na=False, na_values=["_GSK_NA_"]
             )
 
     @classmethod
@@ -550,7 +577,7 @@ class Dataset(ColumnMetadataMixin):
         Returns:
             Dataset: A Dataset object that represents the downloaded dataset.
         """
-        local_dir = settings.home_dir / settings.cache_dir / project_key / "datasets" / dataset_id
+        local_dir = settings.home_dir / settings.cache_dir / "datasets" / dataset_id
 
         if client is None:
             # internal worker case, no token based http client
@@ -566,7 +593,7 @@ class Dataset(ColumnMetadataMixin):
                     category_features=saved_meta["category_features"],
                 )
         else:
-            client.load_artifact(local_dir, posixpath.join(project_key, "datasets", dataset_id))
+            client.load_artifact(local_dir, posixpath.join("datasets", dataset_id))
             meta: DatasetMeta = client.load_dataset_meta(project_key, dataset_id)
 
         df = cls.load(local_dir / get_file_name("data", "csv.zst", sample))
@@ -711,7 +738,6 @@ class Dataset(ColumnMetadataMixin):
         except ImportError as e:
             raise GiskardImportError("wandb") from e
         from ...integrations.wandb.wandb_utils import get_wandb_run
-        from ...utils.analytics_collector import analytics
 
         run = get_wandb_run(run)
 
@@ -727,6 +753,11 @@ class Dataset(ColumnMetadataMixin):
                 "dataset_text_col_cnt": len([c for c, t in self.column_types.items() if t == "text"]),
             },
         )
+
+    def __str__(self) -> str:
+        if self.name:  # handle both None and empty string
+            return f"{self.name}({self.id})"
+        return super().__str__()  # default to `<giskard.datasets.base.Dataset object at ...>`
 
 
 def _cast_to_list_like(object):

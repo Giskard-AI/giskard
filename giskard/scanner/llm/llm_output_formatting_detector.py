@@ -4,6 +4,7 @@ from giskard.scanner import logger
 
 from ...datasets.base import Dataset
 from ...llm.client import get_default_client
+from ...llm.client.base import ChatMessage
 from ...models.base.model import BaseModel
 from ..decorators import detector
 from ..issues import Issue, IssueLevel, OutputFormatting
@@ -34,6 +35,8 @@ class LLMOutputFormattingDetector(RequirementBasedDetector):
     """Detects output formatting issues in LLM-based models.
 
     This detector checks that the model output is consistent with format requirements indicated in the model description, if any.
+
+    Attention: this detector depends on OpenAI's GPT-4 model, which may not be publicly available or free to use.
     """
 
     _issue_group = OutputFormatting
@@ -53,23 +56,24 @@ class LLMOutputFormattingDetector(RequirementBasedDetector):
     def get_issue_description(self) -> str:
         return OUTPUT_FORMAT_ISSUE_DESCRIPTION
 
-    def run(self, model: BaseModel, dataset: Dataset) -> Sequence[Issue]:
+    def run(self, model: BaseModel, dataset: Dataset, features=None) -> Sequence[Issue]:
         # Let’s check whether the model description provides information about the output format.
         llm_client = get_default_client()
         out = llm_client.complete(
             [
-                {"role": "system", "content": BREAKER_PROMPT},
-                {"role": "user", "content": "Model description: " + model.meta.description},
+                ChatMessage(role="system", content=BREAKER_PROMPT),
+                ChatMessage(role="user", content="Model description: " + model.meta.description),
             ],
             temperature=0.1,
             max_tokens=1,
             caller_id=self.__class__.__name__,
+            seed=self.llm_seed,
         )
 
-        if out.message.strip().upper() != "Y":
+        if out.content.strip().upper() != "Y":
             logger.warning(
                 f"{self.__class__.__name__}: Skipping output format checks because we could not define format requirements based on the model description."
             )
             return []
 
-        return super().run(model, dataset)
+        return super().run(model, dataset, features=features)

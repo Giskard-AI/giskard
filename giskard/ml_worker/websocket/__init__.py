@@ -1,5 +1,7 @@
+from typing import Any, Dict, List, Optional
+
 from enum import Enum
-from typing import Dict, List, Optional
+from uuid import UUID
 
 import pydantic
 from packaging import version
@@ -38,6 +40,11 @@ class TestFunctionArgument(ConfiguredBaseModel):
     argOrder: int
 
 
+class Documentation(ConfiguredBaseModel):
+    description: str
+    parameters: Dict[str, str]
+
+
 # CallableMeta shows that all fields can be none,
 # but we have a pre-check here for Database constraints except auto-created "version":
 # referring to `ai.giskard.domain.Callable` and `ai.giskard.domain.TestFunction`.
@@ -47,7 +54,7 @@ class FunctionMeta(ConfiguredBaseModel):
     displayName: Optional[str] = None
     version: Optional[int] = None
     module: Optional[str] = None
-    doc: Optional[str] = None
+    doc: Optional[Documentation] = None
     moduleDoc: Optional[str] = None
     args: Optional[List[TestFunctionArgument]] = None
     tags: Optional[List[str]] = None
@@ -66,7 +73,7 @@ class DatasetProcessFunctionMeta(ConfiguredBaseModel):
     displayName: Optional[str] = None
     version: Optional[int] = None
     module: Optional[str] = None
-    doc: Optional[str] = None
+    doc: Optional[Documentation] = None
     moduleDoc: Optional[str] = None
     args: Optional[List[TestFunctionArgument]] = None
     tags: Optional[List[str]] = None
@@ -131,6 +138,11 @@ class DatasetProcessingParam(ConfiguredBaseModel):
 
 class EchoMsg(WorkerReply):
     msg: str
+
+
+class EchoResponse(WorkerReply):
+    msg: str
+    job_ids: List[UUID]
 
 
 class Explanation(ConfiguredBaseModel):
@@ -217,8 +229,7 @@ class GetInfo(WorkerReply):
     interpreter: str
     interpreterVersion: str
     installedPackages: Dict[str, str]
-    mlWorkerId: str
-    isRemote: bool
+    kernelName: str
     pid: int
     processStartTime: int
     giskardClientVersion: str
@@ -228,9 +239,22 @@ class GetInfoParam(ConfiguredBaseModel):
     list_packages: bool
 
 
-class TestMessageType(Enum):
-    ERROR = 0
-    INFO = 1
+class AbortParams(ConfiguredBaseModel):
+    job_id: UUID
+
+
+class GetLogsParams(ConfiguredBaseModel):
+    job_id: UUID
+    nb_last_lines: int
+
+
+class GetLogs(ConfiguredBaseModel):
+    logs: str
+
+
+class TestMessageType(str, Enum):
+    ERROR = "ERROR"
+    INFO = "INFO"
 
 
 class TestMessage(ConfiguredBaseModel):
@@ -243,26 +267,22 @@ class PartialUnexpectedCounts(ConfiguredBaseModel):
     count: int
 
 
+class SingleTestResultDetails(ConfiguredBaseModel):
+    inputs: Dict[str, List[Any]]
+    outputs: List[Any]
+    results: List[Any]
+    metadata: Dict[str, List[Any]]
+
+
 class SingleTestResult(ConfiguredBaseModel):
     passed: bool
     is_error: Optional[bool] = None
     messages: Optional[List[TestMessage]] = None
     props: Optional[Dict[str, str]] = None
     metric: Optional[float] = None
-    missing_count: Optional[int] = None
-    missing_percent: Optional[float] = None
-    unexpected_count: Optional[int] = None
-    unexpected_percent: Optional[float] = None
-    unexpected_percent_total: Optional[float] = None
-    unexpected_percent_nonmissing: Optional[float] = None
-    partial_unexpected_index_list: Optional[List[int]] = None
-    partial_unexpected_counts: Optional[List[PartialUnexpectedCounts]] = None
-    unexpected_index_list: Optional[List[int]] = None
-    number_of_perturbed_rows: Optional[int] = None
-    actual_slices_size: Optional[List[int]] = None
-    reference_slices_size: Optional[List[int]] = None
-    output_df_id: Optional[str] = None
+    metric_name: Optional[str] = None
     failed_indexes: Optional[Dict[str, List[int]]] = None
+    details: Optional[SingleTestResultDetails] = None
 
 
 class IdentifierSingleTestResult(ConfiguredBaseModel):
@@ -319,34 +339,34 @@ class TestSuite(WorkerReply):
     is_error: bool
     is_pass: bool
     results: Optional[List[IdentifierSingleTestResult]] = None
-    logs: str
 
 
 class TestSuiteParam(ConfiguredBaseModel):
+    projectKey: str
     tests: Optional[List[SuiteTestArgument]] = None
     globalArguments: Optional[List[FuncArgument]] = None
 
 
-class PushKind(Enum):
-    PERTURBATION = 1
-    CONTRIBUTION = 2
-    OVERCONFIDENCE = 3
-    BORDERLINE = 4
+class PushKind(str, Enum):
+    PERTURBATION = "PERTURBATION"
+    CONTRIBUTION = "CONTRIBUTION"
+    OVERCONFIDENCE = "OVERCONFIDENCE"
+    UNDERCONFIDENCE = "UNDERCONFIDENCE"
 
 
-class CallToActionKind(Enum):
-    NONE = 0
-    CREATE_SLICE = 1
-    CREATE_TEST = 2
-    CREATE_PERTURBATION = 3
-    SAVE_PERTURBATION = 4
-    CREATE_ROBUSTNESS_TEST = 5
-    CREATE_SLICE_OPEN_DEBUGGER = 6
-    OPEN_DEBUGGER_BORDERLINE = 7
-    ADD_TEST_TO_CATALOG = 8
-    SAVE_EXAMPLE = 9
-    OPEN_DEBUGGER_OVERCONFIDENCE = 10
-    CREATE_UNIT_TEST = 11
+class CallToActionKind(str, Enum):
+    NONE = "NONE"
+    CREATE_SLICE = "CREATE_SLICE"
+    CREATE_TEST = "CREATE_TEST"
+    CREATE_PERTURBATION = "CREATE_PERTURBATION"
+    SAVE_PERTURBATION = "SAVE_PERTURBATION"
+    CREATE_ROBUSTNESS_TEST = "CREATE_ROBUSTNESS_TEST"
+    CREATE_SLICE_OPEN_DEBUGGER = "CREATE_SLICE_OPEN_DEBUGGER"
+    OPEN_DEBUGGER_UNDERCONFIDENCE = "OPEN_DEBUGGER_UNDERCONFIDENCE"
+    ADD_TEST_TO_CATALOG = "ADD_TEST_TO_CATALOG"
+    SAVE_EXAMPLE = "SAVE_EXAMPLE"
+    OPEN_DEBUGGER_OVERCONFIDENCE = "OPEN_DEBUGGER_OVERCONFIDENCE"
+    CREATE_UNIT_TEST = "CREATE_UNIT_TEST"
 
 
 class GetPushParam(ConfiguredBaseModel):
@@ -385,7 +405,7 @@ class GetPushResponse(ConfiguredBaseModel):
     contribution: Optional[Push] = None
     perturbation: Optional[Push] = None
     overconfidence: Optional[Push] = None
-    borderline: Optional[Push] = None
+    underconfidence: Optional[Push] = None
     action: Optional[PushAction] = None
 
 
@@ -394,6 +414,13 @@ class CreateSubDatasetParam(ConfiguredBaseModel):
     sample: bool
     name: str
     copiedRows: Dict[str, List[int]]
+
+
+class CreateDatasetParam(ConfiguredBaseModel):
+    projectKey: str
+    name: str
+    headers: List[str]
+    rows: List[List[str]]
 
 
 class CreateSubDataset(WorkerReply):

@@ -2,7 +2,7 @@ from unittest.mock import Mock
 
 import pytest
 
-from giskard.llm.client import LLMFunctionCall, LLMOutput
+from giskard.llm.client import ChatMessage
 from giskard.llm.evaluators.base import LLMBasedEvaluator
 from giskard.llm.evaluators.plausibility import PlausibilityEvaluator
 from giskard.llm.evaluators.requirements import RequirementEvaluator
@@ -10,34 +10,38 @@ from tests.llm.evaluators.utils import make_eval_dataset, make_mock_model
 
 
 @pytest.mark.parametrize(
-    "Evaluator,args,kwargs",
+    "Evaluator,args,kwargs,additional_metadata",
     [
         (
             LLMBasedEvaluator,
             [],
-            {"eval_prompt": "Test this: {model_name} {model_description} {input_vars} {model_output}"},
+            {"prompt": "You need to evaluate this model"},
+            {},
         ),
-        (RequirementEvaluator, [["Requirement to fulfill"]], {}),
-        (PlausibilityEvaluator, [], {}),
+        (RequirementEvaluator, [["Requirement to fulfill"]], {}, {}),
+        (
+            RequirementEvaluator,
+            [],
+            {"requirement_col": "req"},
+            {"req": ["This is the first test requirement", "This is the second test requirement"]},
+        ),
+        (PlausibilityEvaluator, [], {}, {}),
     ],
 )
-def test_evaluator_correctly_flags_examples(Evaluator, args, kwargs):
+def test_evaluator_correctly_flags_examples(Evaluator, args, kwargs, additional_metadata):
     eval_dataset = make_eval_dataset()
+    eval_dataset.df = eval_dataset.df.assign(**additional_metadata)
     model = make_mock_model()
 
     client = Mock()
     client.complete.side_effect = [
-        LLMOutput(
-            function_call=LLMFunctionCall(
-                function="evaluate_model",
-                args={"passed_test": True},
-            )
+        ChatMessage(
+            role="assistant",
+            content='{"eval_passed": true}',
         ),
-        LLMOutput(
-            function_call=LLMFunctionCall(
-                function="evaluate_model",
-                args={"passed_test": False, "reason": "For some reason"},
-            )
+        ChatMessage(
+            role="assistant",
+            content='{"eval_passed": false, "reason": "For some reason"}',
         ),
     ]
 
@@ -48,22 +52,20 @@ def test_evaluator_correctly_flags_examples(Evaluator, args, kwargs):
     assert len(result.failure_examples) == 1
 
     assert result.failure_examples[0]["reason"] == "For some reason"
-    assert result.failure_examples[0]["input_vars"] == {
+    assert result.failure_examples[0]["sample"]["conversation"][0]["content"] == {
         "question": "What is the airspeed velocity of an unladen swallow?",
         "other": "pass",
     }
-    assert result.failure_examples[0]["model_output"] == "What do you mean? An African or European swallow?"
-
-    # Check LLM client calls arguments
-    args = client.complete.call_args_list[0]
-    assert "This is a model for testing purposes" in args[0][0][0]["content"]
-    assert args[1]["functions"][0]["name"] == "evaluate_model"
+    assert (
+        result.failure_examples[0]["sample"]["conversation"][1]["content"]
+        == "What do you mean? An African or European swallow?"
+    )
 
 
 @pytest.mark.parametrize(
     "Evaluator,args,kwargs",
     [
-        (LLMBasedEvaluator, [], {"eval_prompt": "Tell me if the model was any good"}),
+        (LLMBasedEvaluator, [], {"prompt": "Tell me if the model was any good"}),
         (RequirementEvaluator, [["Requirement to fulfill"]], {}),
         (PlausibilityEvaluator, [], {}),
     ],
@@ -74,17 +76,13 @@ def test_evaluator_handles_generation_errors(Evaluator, args, kwargs):
 
     client = Mock()
     client.complete.side_effect = [
-        LLMOutput(
-            function_call=LLMFunctionCall(
-                function="evaluate_model",
-                args={"passed_test": True},
-            )
+        ChatMessage(
+            role="assistant",
+            content='{"eval_passed": true}',
         ),
-        LLMOutput(
-            function_call=LLMFunctionCall(
-                function="evaluate_model",
-                args={"model_did_pass_the_test": False},
-            )
+        ChatMessage(
+            role="assistant",
+            content='{"model_did_pass_the_test": false}',
         ),
     ]
 
@@ -95,4 +93,4 @@ def test_evaluator_handles_generation_errors(Evaluator, args, kwargs):
     assert len(result.success_examples) == 1
     assert len(result.failure_examples) == 0
     assert len(result.errors) == 1
-    assert result.errors[0]["message"] == "Invalid function call arguments received"
+    assert result.errors[0]["error"] == "Could not parse evaluator output"

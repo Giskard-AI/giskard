@@ -1,9 +1,13 @@
 import re
-import pytest
+
+import numpy as np
 import pandas as pd
+import pytest
+import sklearn
+
 import giskard.testing.tests.performance as performance
-from giskard.ml_worker.testing.utils import Direction
-from giskard.ml_worker.testing.registry.slicing_function import SlicingFunction, slicing_function
+from giskard.registry.slicing_function import SlicingFunction, slicing_function
+from giskard.testing.utils.utils import Direction
 
 
 @pytest.mark.parametrize(
@@ -106,6 +110,28 @@ def test_recall(model, data, threshold, expected_metric, actual_slices_size, req
     assert results.actual_slices_size[0] == actual_slices_size
     assert round(results.metric, 2) == expected_metric
     assert results.passed
+
+
+@pytest.mark.parametrize(
+    "model,data,threshold,expected_metric,actual_slices_size",
+    [
+        ("german_credit_model", "german_credit_data", 0.5, 0.15, 1000),
+    ],
+)
+def test_brier(model, data, threshold, expected_metric, actual_slices_size, request):
+    giskard_model = request.getfixturevalue(model)
+    giskard_dataset = request.getfixturevalue(data)
+    results = performance.test_brier(model=giskard_model, dataset=giskard_dataset, threshold=threshold).execute()
+
+    assert results.actual_slices_size[0] == actual_slices_size
+    assert round(results.metric, 2) == expected_metric
+    assert results.passed
+    sklearn_metric = sklearn.metrics.brier_score_loss(
+        giskard_dataset.df[giskard_dataset.target],
+        np.array(giskard_model.predict(giskard_dataset).raw[:, 1]),
+        pos_label=giskard_model.classification_labels[1],
+    )
+    assert results.metric == sklearn_metric
 
 
 @pytest.mark.parametrize(

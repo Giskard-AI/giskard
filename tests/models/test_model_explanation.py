@@ -4,10 +4,10 @@ import pytest
 from giskard.datasets.base import Dataset
 from giskard.models.base import BaseModel
 from giskard.models.model_explanation import (
+    _calculate_dataset_shap_values,
+    _calculate_sample_shap_values,
     explain,
     explain_text,
-    _calculate_sample_shap_values,
-    _calculate_dataset_shap_values,
 )
 
 
@@ -31,14 +31,14 @@ def test_explain(ds_name: str, model_name: str, include_feature_names: bool, req
 
     # Try without feature names, it should also work
     if not include_feature_names:
-        model.feature_names = None
+        model.meta.feature_names = None
 
     explanations = explain(model, ds, ds.df.iloc[0].to_dict())
 
     assert explanations and explanations.get("explanations")
 
     if model.is_classification:
-        for label in model.meta.classification_labels:
+        for label in model.classification_labels:
             label_explanation = explanations.get("explanations").get(label)
             assert label_explanation
             for i, e in label_explanation.items():
@@ -51,7 +51,7 @@ def test_explain(ds_name: str, model_name: str, include_feature_names: bool, req
 
 
 def test_explain_shuffle_columns(german_credit_test_data, german_credit_model):
-    german_credit_model.feature_names = None
+    german_credit_model.meta.feature_names = None
     ds = german_credit_test_data
     # change column order
     res = explain(german_credit_model, ds, ds.df.iloc[0][ds.df.columns[::-1]].to_dict())

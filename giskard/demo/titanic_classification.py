@@ -1,15 +1,9 @@
+from typing import Any, Tuple
+
 import os
 from enum import Enum
-from typing import Tuple
 
 import pandas as pd
-from sklearn import model_selection
-from sklearn.pipeline import Pipeline
-from sklearn.impute import SimpleImputer
-from sklearn.compose import ColumnTransformer
-from sklearn.linear_model import LogisticRegression
-from sklearn.feature_extraction.text import TfidfVectorizer
-from sklearn.preprocessing import OneHotEncoder, StandardScaler
 
 
 class ModelTypes(str, Enum):
@@ -26,6 +20,8 @@ def get_df():
 
 
 def get_test_df():
+    from sklearn import model_selection
+
     df = pd.read_csv(os.path.join(os.path.dirname(__file__), "titanic.csv"))
     df.drop(["Ticket", "Cabin"], axis=1, inplace=True)
     _classification_labels = {0: "no", 1: "yes"}
@@ -39,7 +35,15 @@ def get_test_df():
     return test_df
 
 
-def get_model_and_df(model: str = ModelTypes.LOGISTIC_REGRESSION, max_iter: int = 100) -> Tuple[Pipeline, pd.DataFrame]:
+def get_model_and_df(model: str = ModelTypes.LOGISTIC_REGRESSION, max_iter: int = 100) -> Tuple[Any, pd.DataFrame]:
+    from sklearn import model_selection
+    from sklearn.compose import ColumnTransformer
+    from sklearn.feature_extraction.text import TfidfVectorizer
+    from sklearn.impute import SimpleImputer
+    from sklearn.linear_model import LogisticRegression
+    from sklearn.pipeline import Pipeline
+    from sklearn.preprocessing import OneHotEncoder, StandardScaler
+
     df = get_df()
     cat_cols = ["Pclass", "Sex", "SibSp", "Parch", "Embarked"]
     num_cols = ["PassengerId", "Age", "Fare"]
@@ -56,7 +60,7 @@ def get_model_and_df(model: str = ModelTypes.LOGISTIC_REGRESSION, max_iter: int 
     cat_transormer = Pipeline(
         [
             ("imputer", SimpleImputer(strategy="constant", fill_value="missing")),
-            ("onehot", OneHotEncoder(handle_unknown="ignore", sparse=False)),
+            ("onehot", OneHotEncoder(handle_unknown="ignore", sparse_output=False)),
         ]
     )
 
@@ -74,6 +78,7 @@ def get_model_and_df(model: str = ModelTypes.LOGISTIC_REGRESSION, max_iter: int 
         clf = Pipeline(steps=[("preprocessor", preprocessor), ("classifier", LogisticRegression(max_iter=max_iter))])
     elif model.lower() == ModelTypes.LGBM_CLASSIFIER.lower():
         from lightgbm import LGBMClassifier
+
         clf = Pipeline(steps=[("preprocessor", preprocessor), ("classifier", LGBMClassifier(n_estimators=max_iter))])
     else:
         raise NotImplementedError(f"The model type '{model}' is not supported!")

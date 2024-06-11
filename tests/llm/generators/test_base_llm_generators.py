@@ -1,12 +1,13 @@
+import json
 from unittest.mock import Mock
 
 import pytest
 
 from giskard.datasets.base import Dataset
-from giskard.llm.client import LLMFunctionCall, LLMOutput
+from giskard.llm.client import ChatMessage
 from giskard.llm.errors import LLMGenerationError
 from giskard.llm.generators.adversarial import AdversarialDataGenerator
-from giskard.llm.generators.base import BaseDataGenerator
+from giskard.llm.generators.base import LLMBasedDataGenerator
 from giskard.llm.generators.implausible import ImplausibleDataGenerator
 from giskard.llm.generators.sycophancy import SycophancyDataGenerator
 
@@ -14,7 +15,13 @@ from giskard.llm.generators.sycophancy import SycophancyDataGenerator
 @pytest.mark.parametrize(
     "Generator,args,kwargs",
     [
-        (BaseDataGenerator, [], {}),
+        (
+            LLMBasedDataGenerator,
+            [],
+            {
+                "prompt": "You need to generate data for this model: {model.description} with features {model.feature_names}"
+            },
+        ),
         (ImplausibleDataGenerator, [], {}),
         (AdversarialDataGenerator, ["demo", "demo"], {}),
     ],
@@ -22,32 +29,32 @@ from giskard.llm.generators.sycophancy import SycophancyDataGenerator
 def test_generator_returns_dataset(Generator, args, kwargs):
     llm_client = Mock()
     llm_client.complete.side_effect = [
-        LLMOutput(
-            None,
-            LLMFunctionCall(
-                "generate_inputs",
+        ChatMessage(
+            role="assistant",
+            content=json.dumps(
                 {
                     "inputs": [
                         {"question": "What is the meaning of life?", "other_feature": "test"},
-                        {"question": "What is the airspeed velocity of an unladen swallow?", "other_feature": "pass"},
+                        {
+                            "question": "What is the airspeed velocity of an unladen swallow?",
+                            "other_feature": "pass",
+                        },
                     ]
-                },
+                }
             ),
         )
     ]
 
     model = Mock()
-    model.meta.feature_names = ["question", "other_feature"]
-    model.meta.name = "Mock model for test"
-    model.meta.description = "This is a model for testing purposes"
+    model.feature_names = ["question", "other_feature"]
+    model.name = "Mock model for test"
+    model.description = "This is a model for testing purposes"
 
     generator = Generator(
         *args,
         **kwargs,
         llm_client=llm_client,
         llm_temperature=1.416,
-        llm_model="gpt-99",
-        prompt="My custom prompt {model_name} {model_description} {feature_names}, with {num_samples} samples",
     )
 
     dataset = generator.generate_dataset(model, num_samples=2)
@@ -59,53 +66,52 @@ def test_generator_returns_dataset(Generator, args, kwargs):
 
     llm_client.complete.assert_called_once()
 
-    called_prompt = llm_client.complete.call_args[1]["messages"][0]["content"]
+    called_prompt = llm_client.complete.call_args[1]["messages"][-1].content
     called_temperature = llm_client.complete.call_args[1]["temperature"]
-    called_model = llm_client.complete.call_args[1]["model"]
-    called_functions = llm_client.complete.call_args[1]["functions"]
 
-    assert (
-        called_prompt
-        == "My custom prompt Mock model for test This is a model for testing purposes question, other_feature, with 2 samples"
-    )
+    assert model.description in called_prompt
+    assert "This is a model for testing purposes" in called_prompt
+    assert "other_feature" in called_prompt
     assert called_temperature == 1.416
-    assert called_model == "gpt-99"
-    assert len(called_functions) == 1
-    assert called_functions[0]["name"] == "generate_inputs"
 
 
 @pytest.mark.parametrize(
     "Generator,args,kwargs",
     [
-        (BaseDataGenerator, [], {}),
+        (LLMBasedDataGenerator, [], {"prompt": "Dummy prompt for {model.name}"}),
         (ImplausibleDataGenerator, [], {}),
         (SycophancyDataGenerator, [], {}),
         (AdversarialDataGenerator, ["demo", "demo"], {}),
     ],
 )
-def test_generator_raises_generation_error_if_function_call_fails(Generator, args, kwargs):
-    # Missing function call
+def test_generator_raises_generation_error_if_parsing_fails(Generator, args, kwargs):
+    # Missing tool call
     llm_client = Mock()
-    llm_client.complete.side_effect = [LLMOutput("Sorry, I can't.", None)]
+    llm_client.complete.side_effect = [ChatMessage("assistant", "Sorry, I can't.")]
 
     model = Mock()
-    model.meta.feature_names = ["question", "other_feature"]
-    model.meta.name = "Mock model for test"
-    model.meta.description = "This is a model for testing purposes"
+    model.feature_names = ["question", "other_feature"]
+    model.name = "Mock model for test"
+    model.description = "This is a model for testing purposes"
 
     generator = Generator(*args, **kwargs, llm_client=llm_client)
 
     with pytest.raises(LLMGenerationError):
         generator.generate_dataset(model, num_samples=2)
 
-    # Wrong function call
+    # Wrong tool call
     llm_client = Mock()
-    llm_client.complete.side_effect = [LLMOutput(None, LLMFunctionCall("wrong_function", {"have_no_inputs": True}))]
+    llm_client.complete.side_effect = [
+        ChatMessage(
+            role="assistant",
+            content=json.dumps({"wrong_key": "wrong_value"}),
+        )
+    ]
 
     model = Mock()
-    model.meta.feature_names = ["question", "other_feature"]
-    model.meta.name = "Mock model for test"
-    model.meta.description = "This is a model for testing purposes"
+    model.feature_names = ["question", "other_feature"]
+    model.name = "Mock model for test"
+    model.description = "This is a model for testing purposes"
 
     generator = Generator(*args, **kwargs, llm_client=llm_client)
 
@@ -116,17 +122,16 @@ def test_generator_raises_generation_error_if_function_call_fails(Generator, arg
 @pytest.mark.parametrize(
     "Generator,args,kwargs",
     [
-        (BaseDataGenerator, [], {}),
+        (LLMBasedDataGenerator, [], {"prompt": "Dummy prompt for {model.name}"}),
         (ImplausibleDataGenerator, [], {}),
     ],
 )
 def test_generator_casts_based_on_column_types(Generator, args, kwargs):
     llm_client = Mock()
     llm_client.complete.side_effect = [
-        LLMOutput(
-            None,
-            LLMFunctionCall(
-                "generate_inputs",
+        ChatMessage(
+            role="assistant",
+            content=json.dumps(
                 {
                     "inputs": [
                         {"question": True, "other_feature": 1},
@@ -138,19 +143,11 @@ def test_generator_casts_based_on_column_types(Generator, args, kwargs):
     ] * 2
 
     model = Mock()
-    model.meta.feature_names = ["question", "other_feature"]
-    model.meta.name = "Mock model for test"
-    model.meta.description = "This is a model for testing purposes"
+    model.feature_names = ["question", "other_feature"]
+    model.name = "Mock model for test"
+    model.description = "This is a model for testing purposes"
 
-    generator = Generator(
-        *args,
-        **kwargs,
-        llm_client=llm_client,
-        llm_temperature=1.416,
-        llm_model="gpt-99",
-        prompt="My custom prompt {model_name} {model_description} {feature_names}, with {num_samples} samples",
-    )
-    generator = BaseDataGenerator(llm_client=llm_client)
+    generator = Generator(*args, **kwargs, llm_client=llm_client)
 
     dataset = generator.generate_dataset(model, num_samples=2)
 
@@ -163,3 +160,103 @@ def test_generator_casts_based_on_column_types(Generator, args, kwargs):
 
     assert dataset.column_types["question"] == "text"
     assert dataset.column_types["other_feature"] == "numeric"
+
+
+@pytest.mark.parametrize(
+    "Generator,args,kwargs",
+    [
+        (LLMBasedDataGenerator, [], {"prompt": "Dummy prompt for {model.name}\n### LANGUAGES\n{languages}"}),
+        (ImplausibleDataGenerator, [], {}),
+        (AdversarialDataGenerator, ["demo", "demo"], {}),
+    ],
+)
+def test_generator_adds_languages_requirements_in_prompts(Generator, args, kwargs):
+    llm_client = Mock()
+    llm_client.complete.side_effect = [
+        ChatMessage(
+            role="assistant",
+            content=json.dumps(
+                {
+                    "inputs": [
+                        {"question": "What is the meaning of life?", "other_feature": "test"},
+                        {
+                            "question": "Quel est le rôle des gaz à effet de serre dans le réchauffement climatique??",
+                            "other_feature": "pass",
+                        },
+                    ]
+                }
+            ),
+        )
+    ]
+
+    model = Mock()
+    model.feature_names = ["question", "other_feature"]
+    model.name = "Mock model for test"
+    model.description = "This is a model for testing purposes"
+
+    generator = Generator(
+        *args,
+        **kwargs,
+        llm_client=llm_client,
+        llm_temperature=1.416,
+        languages=["en", "fr"],
+    )
+
+    dataset = generator.generate_dataset(model, num_samples=2)
+
+    llm_client.complete.assert_called_once()
+
+    called_prompt = llm_client.complete.call_args[1]["messages"][-1].content
+
+    assert isinstance(dataset, Dataset)
+    assert "### LANGUAGES\nen, fr" in called_prompt
+
+
+@pytest.mark.parametrize(
+    "Generator,args,kwargs",
+    [
+        (LLMBasedDataGenerator, [], {"prompt": "Dummy prompt for {model.name}\n### LANGUAGES\n{languages}"}),
+        (ImplausibleDataGenerator, [], {}),
+        (AdversarialDataGenerator, ["demo", "demo"], {}),
+    ],
+)
+def test_generator_empty_languages_requirements(Generator, args, kwargs):
+    llm_client = Mock()
+    llm_client.complete.side_effect = [
+        ChatMessage(
+            role="assistant",
+            content=json.dumps(
+                {
+                    "inputs": [
+                        {"question": "What is the meaning of life?", "other_feature": "test"},
+                        {
+                            "question": "Quel est le rôle des gaz à effet de serre dans le réchauffement climatique??",
+                            "other_feature": "pass",
+                        },
+                    ]
+                }
+            ),
+        )
+    ]
+
+    model = Mock()
+    model.feature_names = ["question", "other_feature"]
+    model.name = "Mock model for test"
+    model.description = "This is a model for testing purposes"
+
+    generator = Generator(
+        *args,
+        **kwargs,
+        llm_client=llm_client,
+        llm_temperature=1.416,
+        languages=[],
+    )
+
+    dataset = generator.generate_dataset(model, num_samples=2)
+
+    llm_client.complete.assert_called_once()
+
+    called_prompt = llm_client.complete.call_args[1]["messages"][-1].content
+
+    assert isinstance(dataset, Dataset)
+    assert "### LANGUAGES\nen" in called_prompt

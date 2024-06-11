@@ -1,4 +1,3 @@
-import random
 import re
 
 import pandas as pd
@@ -115,6 +114,135 @@ def test_punctuation_strip_transformation():
     assert transformed_text[5] == "comma separated list"
 
 
+def test_number_to_words_transformation_exception():
+    datasets = [
+        _dataset_from_dict(
+            {
+                "text": [
+                    "Negara seperti Italia, yang diikuti tanda baca",
+                ],
+                "language__gsk__meta": "id",
+            }
+        ),
+        _dataset_from_dict(
+            {
+                "text": [
+                    "کشورهایی مانند ایتالیا که با علائم نگارشی دنبال می شوند",
+                ],
+                "language__gsk__meta": "fa",
+            }
+        ),
+    ]
+
+    from giskard.scanner.robustness.text_transformations import TextNumberToWordTransformation
+
+    t = TextNumberToWordTransformation(column="text")
+
+    for dataset in datasets:
+        # No more exception here now
+        transformed = dataset.transform(t)
+        # Nothing should have been changed
+        assert transformed.df.text.values[0] == dataset.df.text.values[0]
+
+
+def test_number_to_words_transformation():
+    dataset = _dataset_from_dict(
+        {
+            "text": [
+                "We have scheduled the meeting for 12/15/2023 at our office.",  # Don't transform dates
+                "You can access the report at https://www.example123.com/report2023.",  # Don't transform URLs
+                "The serial number of the device is XC1234-AB56. Please send your queries to contact123@service4u.com.",  # Don't transform emails
+                "The dataset contains approximately 1500 entries spanning 5 years.",
+                "The total cost of the project is estimated to be around $4,500.75.",
+                "For more information, call us at +1-800-555-0199.",
+                "Der Zug soll um 09:45 Uhr ankommen.",  # German
+                "Die Gesamtkosten der Artikel betragen 45,67 Dollar.",  # German
+                "La tasa de éxito de este procedimiento es del 98,6%.",  # Spanish
+                "Hoy corrió 13,2 millas en el maratón.",  # Spanish
+                "Son anniversaire est le 22 du mois.",  # French
+                "Le coût total des articles était de 157,23 $.",  # French
+            ]
+        }
+    )
+
+    from giskard.scanner.robustness.text_transformations import TextNumberToWordTransformation
+
+    t = TextNumberToWordTransformation(column="text")
+
+    transformed = dataset.transform(t)
+    transformed_text = transformed.df.text.values[:6]
+    # English tests
+    assert transformed_text[0] == "We have scheduled the meeting for 12/15/2023 at our office."
+    assert transformed_text[1] == "You can access the report at https://www.example123.com/report2023."
+    assert (
+        transformed_text[2]
+        == "The serial number of the device is XC1234-AB56. Please send your queries to contact123@service4u.com."
+    )
+    assert (
+        transformed_text[3]
+        == "The dataset contains approximately one thousand, five hundred entries spanning five years."
+    )
+    assert (
+        transformed_text[4]
+        == "The total cost of the project is estimated to be around $four,five hundred point seven five."
+    )
+    assert (
+        transformed_text[5]
+        == "For more information, call us at +one-eight hundred-five hundred and fifty-five-one hundred and ninety-nine."
+    )
+
+    # German tests
+    t = TextNumberToWordTransformation(column="text")
+
+    transformed = dataset.transform(t)
+    transformed_text = transformed.df.text.values[6:8]
+    assert transformed_text[0] == "Der Zug soll um neun:fünfundvierzig Uhr ankommen."
+    assert transformed_text[1] == "Die Gesamtkosten der Artikel betragen fünfundvierzig,siebenundsechzig Dollar."
+
+    # Spanish tests
+    t = TextNumberToWordTransformation(column="text")
+
+    transformed = dataset.transform(t)
+    transformed_text = transformed.df.text.values[8:10]
+    assert transformed_text[0] == "La tasa de éxito de este procedimiento es del noventa y ocho,seis%."
+    assert transformed_text[1] == "Hoy corrió trece,dos millas en el maratón."
+
+    # French tests
+    t = TextNumberToWordTransformation(column="text")
+
+    transformed = dataset.transform(t)
+    transformed_text = transformed.df.text.values[10:12]
+    assert transformed_text[0] == "Son anniversaire est le vingt-deux du mois."
+    assert transformed_text[1] == "Le coût total des articles était de cent cinquante-sept,vingt-trois $."
+
+
+def test_accent_removal_transformation():
+    dataset = _dataset_from_dict(
+        {
+            "text": [
+                "C'est l'été",
+                "çà et là",
+                "Tiếng Việt",
+                "État",
+                "你好",
+            ]
+        }
+    )
+
+    from giskard.scanner.robustness.text_transformations import TextAccentRemovalTransformation
+
+    t = TextAccentRemovalTransformation(column="text")
+
+    transformed = dataset.transform(t)
+    transformed_text = transformed.df.text.values
+
+    assert transformed_text[0] == "C'est l'ete"
+    assert transformed_text[1] == "ca et la"
+    assert transformed_text[2] == "Tieng Viet"
+    assert transformed_text[3] == "Etat"
+    assert transformed_text[4] == "你好"
+
+
 def test_religion_based_transformation():
     dataset = _dataset_from_dict(
         {
@@ -131,9 +259,8 @@ def test_religion_based_transformation():
     )
     from giskard.scanner.robustness.text_transformations import TextReligionTransformation
 
-    t = TextReligionTransformation(column="text")
+    t = TextReligionTransformation(column="text", rng_seed=10)
 
-    random.seed(0)
     transformed = dataset.transform(t)
     transformed_text = transformed.df.text.values
 
@@ -142,12 +269,12 @@ def test_religion_based_transformation():
         "mois de ramadan."
     )
     assert (
-        transformed_text[1] == "Une partie des chrétiens commémorent ce vendredi 5 mai la naissance, l’éveil et la "
-        "mort de muhammad, dit « le Bouddha »"
+        transformed_text[1] == "Une partie des hindous commémorent ce vendredi 5 mai la naissance, l’éveil et la "
+        "mort de abraham, dit « le Bouddha »"
     )
     assert (
         transformed_text[2] == "Signs have also been placed in the direction of kumbh mela along one of the Peak "
-        "District’s most popular hiking routes, Cave Dale, to help christians combine prayer "
+        "District’s most popular hiking routes, Cave Dale, to help jews combine prayer "
         "with enjoying the outdoors."
     )
     assert (
@@ -157,9 +284,6 @@ def test_religion_based_transformation():
 
 
 def test_country_based_transformation():
-    import random
-
-    random.seed(10)
     dataset = _dataset_from_dict(
         {
             "text": [
@@ -173,31 +297,30 @@ def test_country_based_transformation():
     )
     from giskard.scanner.robustness.text_transformations import TextNationalityTransformation
 
-    t = TextNationalityTransformation(column="text")
+    t = TextNationalityTransformation(column="text", rng_seed=0)
 
     transformed = dataset.transform(t)
     transformed_text = transformed.df.text.values
 
     assert (
-        transformed_text[0] == "Les musulmans de Eswatini fêtent vendredi 21 avril la fin du "
+        transformed_text[0] == "Les musulmans de Saint Thomas et Prince fêtent vendredi 21 avril la fin du "
         "jeûne pratiqué durant le mois de ramadan."
     )
-    assert transformed_text[1] == "Des incendies ravagent l'Congo depuis la fin août 2019."
+    assert transformed_text[1] == "Des incendies ravagent l'Liban depuis la fin août 2019."
     assert (
-        transformed_text[2] == "Bali is an Libyan island known for its forested volcanic mountains, iconic"
+        transformed_text[2] == "Bali is an Singaporean island known for its forested volcanic mountains, iconic"
         " rice paddies, beaches and coral reefs. The island is home to religious sites "
         "such as cliffside Uluwatu Temple"
     )
     assert (
         transformed_text[3]
-        == "President Joe Biden visited U.S.'s capital for the first time since Nigeria invaded the country"
+        == "President Joe Biden visited UAE's capital for the first time since Syria invaded the country"
     )
 
 
 def test_country_based_transformation_edge_cases():
     from giskard.scanner.robustness.text_transformations import TextNationalityTransformation
 
-    random.seed(0)
     df = pd.DataFrame(
         {
             "text": [
@@ -210,7 +333,7 @@ def test_country_based_transformation_edge_cases():
         }
     )
 
-    t = TextNationalityTransformation(column="text")
+    t = TextNationalityTransformation(column="text", rng_seed=0)
 
     t1 = t.make_perturbation(df.iloc[0])
     t2 = t.make_perturbation(df.iloc[1])
@@ -253,3 +376,38 @@ def test_typo_transformation():
     p = t.make_perturbation("If one doesn't know his mistakes, he won't want to correct them.")
 
     assert p == "If one doesn't know his misakes, he won't want to corrcet them."
+
+
+def test_ocr_typo_transformation():
+    from giskard.scanner.robustness.text_transformations import TextFromOCRTypoTransformation
+
+    t = TextFromOCRTypoTransformation(column="text", rng_seed=1, min_length=10)
+    p = t.make_perturbation("If one doesn't know his mistakes, he won't want to correct them.")
+    short_string = "Short"
+    p2 = t.make_perturbation(short_string)
+
+    assert p == "If one doesn't know his mi5takes, he won't want to corrct them."
+    assert p2 == short_string
+
+
+def test_text_to_speech_typo_transformation():
+    from giskard.scanner.robustness.text_transformations import TextFromSpeechTypoTransformation
+
+    df = pd.DataFrame(
+        {
+            "text": [
+                "If you two do it together, you will be able to do it.",
+                "To be",
+            ],
+            "language__gsk__meta": "en",
+        }
+    )
+
+    t = TextFromSpeechTypoTransformation(column="text", rng_seed=1)
+
+    p = t.make_perturbation(df.iloc[0])
+    assert p == "If u too due it together, yew will b able too due it."
+
+    # Small text aren't perturbed
+    p = t.make_perturbation(df.iloc[1])
+    assert p == "To be"

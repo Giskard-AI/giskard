@@ -11,7 +11,7 @@ import sys
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#project-information
 
 project = "Giskard"
-copyright = "2023, Giskard AI"
+copyright = "2024, Giskard AI"
 author = "Giskard AI"
 release = "2.0.0"
 
@@ -34,7 +34,7 @@ extensions = [
 
 autoclass_content = "both"
 
-# autodoc_mock_imports = ["giskard.ml_worker.generated"]
+autodoc_mock_imports = ["ragas", "langchain_core"]
 templates_path = ["_templates"]
 exclude_patterns = ["_build", "Thumbs.db", ".DS_Store"]
 
@@ -110,7 +110,7 @@ html_theme_options = {
 add_function_parentheses = False
 # Do not execute the notebooks when building the docs
 docs_version = os.getenv("READTHEDOCS_VERSION", "latest")
-if docs_version == "latest":
+if docs_version == "latest" or docs_version == "stable":
     branch = "main"
 else:
     branch = docs_version.replace("-", "/")
@@ -140,26 +140,39 @@ def linkcode_resolve(domain, info):
 
     modname = info["module"]
     fullname = info["fullname"]
+    print("##############")
+    print(f"modname:{modname}")
+    print(f"fullname:{fullname}")
 
     submod = sys.modules.get(modname)
-    print(submod)
+    # print(submod)
     if submod is None:
-        return None
+        print("##############")
 
+        return None
+    obj = submod
     for part in fullname.split("."):
         try:
-            obj = getattr(submod, part)
-            print(obj)
+            obj = getattr(obj, part)
+            print(f"obj:{obj}")
+
+            # print(obj)
         except:  # noqa: E722
+            print("##############")
             return None
 
     try:
-        fn = inspect.getsourcefile(obj.test_fn)  # TODO: generalise for other objects!
-        print(fn)
+        fn = inspect.getsourcefile(
+            obj.test_fn if hasattr(obj, "test_fn") else obj
+        )  # TODO: generalise for other objects!
+    # print(fn)
     except:  # noqa: E722
         fn = None
     if not fn:
+        print("##############")
+
         return None
+    print(f"fn:{fn}")
 
     try:
         source, lineno = inspect.getsourcelines(obj)
@@ -170,6 +183,9 @@ def linkcode_resolve(domain, info):
         linespec = "#L%d-L%d" % (lineno, lineno + len(source) - 1)
     else:
         linespec = ""
+    print(f"linespec:{linespec}")
 
-    filename = fn.split("main", 1)[-1]
-    return f"https://github.com/Giskard-AI/giskard/blob/main/{filename}{linespec}"
+    filename = fn.split("giskard")[-1]
+    print("##############")
+
+    return f"https://github.com/Giskard-AI/giskard/blob/main/giskard{filename}{linespec}"

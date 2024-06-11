@@ -1,3 +1,5 @@
+from typing import Any, Callable, Dict, Optional, Union
+
 import asyncio
 import logging
 import os
@@ -6,11 +8,11 @@ import sys
 import tempfile
 import time
 import traceback
+from collections import defaultdict
 from concurrent.futures import CancelledError, Future
 from copy import copy
-from dataclasses import dataclass
 from pathlib import Path
-from typing import Any, Callable, Dict, Optional, Union
+from uuid import UUID
 
 import numpy as np
 import pandas as pd
@@ -19,25 +21,20 @@ import psutil
 
 import giskard
 from giskard.client.giskard_client import GiskardClient
+from giskard.core.savable import RegistryArtifact
 from giskard.core.suite import Suite, generate_test_partial
 from giskard.datasets.base import Dataset
+from giskard.exceptions.giskard_exception import GiskardException
 from giskard.ml_worker import websocket
-from giskard.ml_worker.core.log_listener import LogListener
-from giskard.ml_worker.core.savable import RegistryArtifact
-from giskard.ml_worker.exceptions.giskard_exception import GiskardException
 from giskard.ml_worker.stomp.parsing import Frame
-from giskard.ml_worker.testing.registry.giskard_test import GiskardTest
-from giskard.ml_worker.testing.registry.slicing_function import SlicingFunction
-from giskard.ml_worker.testing.registry.transformation_function import TransformationFunction
 from giskard.ml_worker.utils.cache import CACHE
-from giskard.ml_worker.utils.file_utils import get_file_name
 from giskard.ml_worker.websocket import CallToActionKind, GetInfoParam, PushKind
 from giskard.ml_worker.websocket.action import ActionPayload, MLWorkerAction
 from giskard.ml_worker.websocket.utils import (
+    do_create_dataset,
     do_create_sub_dataset,
     do_run_adhoc_test,
     function_argument_to_ws,
-    log_artifact_local,
     map_dataset_process_function_meta_ws,
     map_function_meta_ws,
     map_result_to_single_test_result_ws,
@@ -49,31 +46,29 @@ from giskard.models.model_explanation import explain, explain_text
 from giskard.push import Push
 from giskard.push.contribution import create_contribution_push
 from giskard.push.perturbation import create_perturbation_push
-from giskard.push.prediction import create_borderline_push, create_overconfidence_push
+from giskard.push.prediction import create_overconfidence_push, create_underconfidence_push
+from giskard.registry.giskard_test import GiskardTest
+from giskard.registry.slicing_function import SlicingFunction
+from giskard.registry.transformation_function import TransformationFunction
 from giskard.settings import settings
-from giskard.utils import call_in_pool
+from giskard.utils import call_in_pool, cancel_in_pool, list_pool_job_ids
 from giskard.utils.analytics_collector import analytics
+from giskard.utils.file_utils import get_file_name, job_logs_path
 from giskard.utils.worker_pool import GiskardMLWorkerException
 
 logger = logging.getLogger(__name__)
 MAX_STOMP_ML_WORKER_REPLY_SIZE = 1500
 
 
-@dataclass
-class MLWorkerInfo:
-    id: str
-    is_remote: bool
-
-
-def websocket_log_actor(ml_worker: MLWorkerInfo, req: ActionPayload, *args, **kwargs):
-    logger.info("ML Worker %s performing %s params: %s", {ml_worker.id}, {req.action}, {req.param})
+def websocket_log_actor(worker_id: str, req: ActionPayload, *args, **kwargs):
+    logger.info("ML Worker %s performing %s params: %s", {worker_id}, {req.action}, {req.param})
 
 
 WEBSOCKET_ACTORS = dict((action.name, websocket_log_actor) for action in MLWorkerAction)
 
 
 def wrapped_handle_result(
-    action: MLWorkerAction, start: float, rep_id: Optional[str], worker_info: MLWorkerInfo, ignore_timeout: bool
+    action: MLWorkerAction, start: float, job_id: Optional[UUID], worker_id: str, ignore_timeout: bool
 ):
     async def handle_result(future: Union[Future, Callable[..., websocket.WorkerReply]]):
         info = None  # Needs to be defined in case of cancellation
@@ -109,7 +104,7 @@ def wrapped_handle_result(
                 "mlworker:websocket:action",
                 {
                     "name": action.name,
-                    "worker": worker_info.id,
+                    "worker": worker_id,
                     "language": "PYTHON",
                     "type": "ERROR" if isinstance(info, websocket.ErrorReply) else "SUCCESS",
                     "action_time": time.process_time() - start,
@@ -118,7 +113,7 @@ def wrapped_handle_result(
                 },
             )
 
-        if rep_id:
+        if job_id:
             if isinstance(info, Frame):
                 return info
             return info.json(by_alias=True) if info else "{}"
@@ -131,13 +126,13 @@ def parse_and_execute(
     callback: Callable,
     action: MLWorkerAction,
     params,
-    ml_worker: MLWorkerInfo,
-    client_params: Optional[Dict[str, str]],
+    worker_id: str,
+    client_params: Dict[str, str],
 ) -> websocket.WorkerReply:
     action_params = parse_action_param(action, params)
     return callback(
-        ml_worker=ml_worker,
-        client=GiskardClient(**client_params) if client_params is not None else None,
+        worker_id=worker_id,
+        client=GiskardClient(**client_params),
         action=action.name,
         params=action_params,
     )
@@ -148,13 +143,13 @@ async def dispatch_action(
     action: MLWorkerAction,
     req: ActionPayload,
     client_params: Dict[str, Any],
-    worker_info: MLWorkerInfo,
+    worker_id: str,
     execute_in_pool: bool,
     timeout: Optional[float] = None,
     ignore_timeout=False,
 ):
     # Parse the response ID
-    rep_id = req.id
+    job_id = req.id
     # Parse the param
     params = req.param
 
@@ -163,35 +158,33 @@ async def dispatch_action(
         "mlworker:websocket:action:type",
         {
             "name": action.name,
-            "worker": worker_info.id,
+            "worker": worker_id,
             "language": "PYTHON",
         },
     )
     start = time.process_time()
 
-    result_handler = wrapped_handle_result(action, start, rep_id, worker_info, ignore_timeout=ignore_timeout)
+    result_handler = wrapped_handle_result(action, start, job_id, worker_id, ignore_timeout=ignore_timeout)
     # If execution should be done in a pool
+    kwargs = {
+        "callback": callback,
+        "action": action,
+        "params": params,
+        "worker_id": worker_id,
+        "client_params": client_params,
+    }
     if execute_in_pool and settings.use_pool:
         logger.debug("Submitting for action %s '%s' into the pool", action.name, callback.__name__)
-        kwargs = {
-            "callback": callback,
-            "action": action,
-            "params": params,
-            "ml_worker": worker_info,
-            "client_params": client_params,
-        }
-
         future = call_in_pool(
-            parse_and_execute,
+            job_id=job_id,
+            fn=parse_and_execute,
             kwargs=kwargs,
             timeout=timeout,
         )
     else:
 
         def future():
-            return parse_and_execute(
-                callback=callback, action=action, params=params, ml_worker=worker_info, client_params=client_params
-            )
+            return parse_and_execute(**kwargs)
 
     return await result_handler(future)
 
@@ -220,10 +213,15 @@ def websocket_actor(
     return websocket_actor_callback
 
 
-@websocket_actor(MLWorkerAction.getInfo, execute_in_pool=False)
-def on_ml_worker_get_info(ml_worker: MLWorkerInfo, params: GetInfoParam, *args, **kwargs) -> websocket.GetInfo:
-    logger.info("Collecting ML Worker info from WebSocket")
+@websocket_actor(MLWorkerAction.abort, execute_in_pool=False)
+def on_abort(params: websocket.AbortParams, *args, **kwargs):
+    cancel_in_pool(params.job_id)
+    return websocket.AbortParams(job_id=params.job_id)
 
+
+@websocket_actor(MLWorkerAction.getInfo, execute_in_pool=False)
+def on_ml_worker_get_info(worker_id: str, params: GetInfoParam, *args, **kwargs) -> websocket.GetInfo:
+    logger.info("Collecting ML Worker info from WebSocket")
     # TODO(Bazire): seems to be deprecated https://setuptools.pypa.io/en/latest/pkg_resources.html#workingset-objects
     installed_packages = {p.project_name: p.version for p in pkg_resources.working_set} if params.list_packages else {}
     current_process = psutil.Process(os.getpid())
@@ -242,8 +240,7 @@ def on_ml_worker_get_info(ml_worker: MLWorkerInfo, params: GetInfoParam, *args, 
         interpreter=sys.executable,
         interpreterVersion=platform.python_version(),
         installedPackages=installed_packages,
-        mlWorkerId=ml_worker.id,
-        isRemote=ml_worker.is_remote,
+        kernelName=worker_id,
     )
 
 
@@ -256,9 +253,9 @@ def on_ml_worker_stop_worker(*args, **kwargs) -> None:
 
 def run_classification_mode(model, dataset, prediction_results):
     results = prediction_results.all_predictions
-    labels = {k: v for k, v in enumerate(model.meta.classification_labels)}
+    labels = {k: v for k, v in enumerate(model.classification_labels)}
     label_serie = dataset.df[dataset.target] if dataset.target else None
-    if len(model.meta.classification_labels) > 2 or model.meta.classification_threshold is None:
+    if len(model.classification_labels) > 2 or model.classification_threshold is None:
         preds_serie = prediction_results.all_predictions.idxmax(axis="columns")
         sorted_predictions = np.sort(prediction_results.all_predictions.values)
         abs_diff = pd.Series(
@@ -266,17 +263,17 @@ def run_classification_mode(model, dataset, prediction_results):
             name="absDiff",
         )
     else:
-        diff = prediction_results.all_predictions.iloc[:, 1] - model.meta.classification_threshold
+        diff = prediction_results.all_predictions.iloc[:, 1] - model.classification_threshold
         preds_serie = (diff >= 0).astype(int).map(labels).rename("predictions")
         abs_diff = pd.Series(diff.abs(), name="absDiff")
     calculated = pd.concat([preds_serie, label_serie, abs_diff], axis=1)
     return results, calculated
 
 
-def run_other_model(dataset, prediction_results):
+def run_other_model(dataset, prediction_results, is_text_generation):
     results = pd.Series(prediction_results.prediction)
     preds_serie = results
-    if dataset.target and dataset.target in dataset.df.columns:
+    if dataset.target and dataset.target in dataset.df.columns and not is_text_generation:
         target_serie = dataset.df[dataset.target]
         diff = preds_serie - target_serie
         diff_percent = pd.Series(
@@ -310,7 +307,7 @@ def run_other_model(dataset, prediction_results):
 
 
 @websocket_actor(MLWorkerAction.runModel)
-def run_model(client: Optional[GiskardClient], params: websocket.RunModelParam, *args, **kwargs) -> websocket.Empty:
+def run_model(client: GiskardClient, params: websocket.RunModelParam, *args, **kwargs) -> websocket.Empty:
     try:
         model = BaseModel.download(client, params.model.project_key, params.model.id)
         dataset = Dataset.download(
@@ -339,41 +336,29 @@ def run_model(client: Optional[GiskardClient], params: websocket.RunModelParam, 
     if model.is_classification:
         results, calculated = run_classification_mode(model, dataset, prediction_results)
     else:
-        results, calculated = run_other_model(dataset, prediction_results)
+        results, calculated = run_other_model(dataset, prediction_results, model.is_text_generation)
 
     with tempfile.TemporaryDirectory(prefix="giskard-") as f:
         tmp_dir = Path(f)
         predictions_csv = get_file_name("predictions", "csv", params.dataset.sample)
         results.to_csv(index=False, path_or_buf=tmp_dir / predictions_csv)
-        if client:
-            client.log_artifact(
-                tmp_dir / predictions_csv,
-                f"{params.project_key}/models/inspections/{params.inspectionId}",
-            )
-        else:
-            log_artifact_local(
-                tmp_dir / predictions_csv,
-                f"{params.project_key}/models/inspections/{params.inspectionId}",
-            )
+        client.log_artifact(
+            tmp_dir / predictions_csv,
+            f"models/inspections/{params.inspectionId}",
+        )
 
         calculated_csv = get_file_name("calculated", "csv", params.dataset.sample)
         calculated.to_csv(index=False, path_or_buf=tmp_dir / calculated_csv)
-        if client:
-            client.log_artifact(
-                tmp_dir / calculated_csv,
-                f"{params.project_key}/models/inspections/{params.inspectionId}",
-            )
-        else:
-            log_artifact_local(
-                tmp_dir / calculated_csv,
-                f"{params.project_key}/models/inspections/{params.inspectionId}",
-            )
+        client.log_artifact(
+            tmp_dir / calculated_csv,
+            f"models/inspections/{params.inspectionId}",
+        )
     return websocket.Empty()
 
 
 @websocket_actor(MLWorkerAction.runModelForDataFrame)
 def run_model_for_data_frame(
-    client: Optional[GiskardClient], params: websocket.RunModelForDataFrameParam, *args, **kwargs
+    client: GiskardClient, params: websocket.RunModelForDataFrameParam, *args, **kwargs
 ) -> websocket.RunModelForDataFrame:
     model = BaseModel.download(client, params.model.project_key, params.model.id)
     df = pd.DataFrame.from_records([r.columns for r in params.dataframe.rows])
@@ -403,7 +388,7 @@ def run_model_for_data_frame(
 
 
 @websocket_actor(MLWorkerAction.explain)
-def explain_ws(client: Optional[GiskardClient], params: websocket.ExplainParam, *args, **kwargs) -> websocket.Explain:
+def explain_ws(client: GiskardClient, params: websocket.ExplainParam, *args, **kwargs) -> websocket.Explain:
     model = BaseModel.download(client, params.model.project_key, params.model.id)
     dataset = Dataset.download(client, params.dataset.project_key, params.dataset.id, params.dataset.sample)
     explanations = explain(model, dataset, params.columns)
@@ -413,9 +398,18 @@ def explain_ws(client: Optional[GiskardClient], params: websocket.ExplainParam, 
     )
 
 
+@websocket_actor(MLWorkerAction.devJob)
+def dev_job(client: GiskardClient, params: websocket.Empty, *args, **kwargs) -> websocket.Empty:
+    for i in range(10000):
+        time.sleep(1)
+        logger.info(f"Sleeping for 100ms {i}")
+
+    return websocket.Empty()
+
+
 @websocket_actor(MLWorkerAction.explainText)
 def explain_text_ws(
-    client: Optional[GiskardClient], params: websocket.ExplainTextParam, *args, **kwargs
+    client: GiskardClient, params: websocket.ExplainTextParam, *args, **kwargs
 ) -> websocket.ExplainText:
     model = BaseModel.download(client, params.model.project_key, params.model.id)
     text_column = params.feature_name
@@ -424,12 +418,12 @@ def explain_text_ws(
         raise ValueError(f"Column {text_column} is not of type text")
     text_document = params.columns[text_column]
     input_df = pd.DataFrame({k: [v] for k, v in params.columns.items()})
-    if model.meta.feature_names:
-        input_df = input_df[model.meta.feature_names]
+    if model.feature_names:
+        input_df = input_df[model.feature_names]
     (list_words, list_weights) = explain_text(model, input_df, text_column, text_document)
     # Classification model contains classification labels, but regression model does not
-    classification_labels = model.meta.classification_labels if model.meta.classification_labels else ["WEIGHTS"]
-    list_weights = list_weights if model.meta.classification_labels else [list_weights]
+    classification_labels = model.classification_labels if model.classification_labels else ["WEIGHTS"]
+    list_weights = list_weights if model.classification_labels else [list_weights]
     map_features_weight = dict(zip(classification_labels, list_weights))
     return websocket.ExplainText(
         weights={
@@ -442,6 +436,11 @@ def explain_text_ws(
 
 @websocket_actor(MLWorkerAction.getCatalog)
 def get_catalog(*args, **kwargs) -> websocket.Catalog:
+    # import modules with artefact definition to populate the registry
+    from giskard import testing  # noqa
+    from giskard.functions import slicing, transformation  # noqa
+    from giskard.push.push_test_catalog import catalog  # noqa
+
     return websocket.Catalog(
         tests=map_function_meta_ws("TEST"),
         slices=map_dataset_process_function_meta_ws("SLICE"),
@@ -451,7 +450,7 @@ def get_catalog(*args, **kwargs) -> websocket.Catalog:
 
 @websocket_actor(MLWorkerAction.datasetProcessing)
 def dataset_processing(
-    client: Optional[GiskardClient], params: websocket.DatasetProcessingParam, *args, **kwargs
+    client: GiskardClient, params: websocket.DatasetProcessingParam, *args, **kwargs
 ) -> websocket.DatasetProcessing:
     dataset = Dataset.download(client, params.dataset.project_key, params.dataset.id, params.dataset.sample)
 
@@ -491,9 +490,9 @@ def dataset_processing(
 
 @websocket_actor(MLWorkerAction.runAdHocTest)
 def run_ad_hoc_test(
-    client: Optional[GiskardClient], params: websocket.RunAdHocTestParam, *args, **kwargs
+    client: GiskardClient, params: websocket.RunAdHocTestParam, *args, **kwargs
 ) -> websocket.RunAdHocTest:
-    test: GiskardTest = GiskardTest.download(params.testUuid, client, None)
+    test: GiskardTest = GiskardTest.download(params.testUuid, client, params.projectKey)
 
     arguments = parse_function_arguments(client, params.arguments)
     if params.debug:
@@ -516,21 +515,20 @@ def run_ad_hoc_test(
 
 
 @websocket_actor(MLWorkerAction.runTestSuite)
-def run_test_suite(
-    client: Optional[GiskardClient], params: websocket.TestSuiteParam, *args, **kwargs
-) -> websocket.TestSuite:
-    log_listener = LogListener()
+def run_test_suite(client: GiskardClient, params: websocket.TestSuiteParam, *args, **kwargs) -> websocket.TestSuite:
+    loaded_artifacts = defaultdict(dict)
+
     try:
         tests = [
             {
-                "test": GiskardTest.download(t.testUuid, client, None),
-                "arguments": parse_function_arguments(client, t.arguments),
+                "test": GiskardTest.download(t.testUuid, client, params.projectKey),
+                "arguments": parse_function_arguments(client, t.arguments, loaded_artifacts),
                 "id": t.id,
             }
             for t in params.tests
         ]
 
-        global_arguments = parse_function_arguments(client, params.globalArguments)
+        global_arguments = parse_function_arguments(client, params.globalArguments, loaded_artifacts)
 
         datasets = {arg.original_id: arg for arg in global_arguments.values() if isinstance(arg, Dataset)}
         for test in tests:
@@ -552,17 +550,17 @@ def run_test_suite(
                 test_args: Dict[str, Any] = copy(test_args)
                 test_args.update(**test_args.pop("kwargs"))
             updated_test_args.append(test_args)
-            suite.add_test(t["test"].get_builder()(**test_args), t["id"])
+            suite.add_test(t["test"](**test_args), t["id"])
 
         suite_result = suite.run(**global_arguments)
 
         identifier_single_test_results = []
-        for t, (identifier, result, _), test_args in zip(tests, suite_result.results, updated_test_args):
+        for t, test_result, test_args in zip(tests, suite_result.results, updated_test_args):
             arguments = Suite.create_test_params(generate_test_partial(t["test"], **test_args), global_arguments)
             identifier_single_test_results.append(
                 websocket.IdentifierSingleTestResult(
-                    id=identifier,
-                    result=map_result_to_single_test_result_ws(result, datasets),
+                    id=test_result.test_name,
+                    result=map_result_to_single_test_result_ws(test_result.result, datasets, client, params.projectKey),
                     arguments=function_argument_to_ws(arguments),
                 )
             )
@@ -571,21 +569,20 @@ def run_test_suite(
             is_error=False,
             is_pass=suite_result.passed,
             results=identifier_single_test_results,
-            logs=log_listener.close(),
         )
 
     except Exception as exc:
         logger.exception("An error occurred during the test suite execution: %s", exc)
-        return websocket.TestSuite(is_error=True, is_pass=False, results=[], logs=log_listener.close())
+        return websocket.TestSuite(is_error=True, is_pass=False, results=[])
 
 
 @websocket_actor(MLWorkerAction.echo, execute_in_pool=False)
-def echo(params: websocket.EchoMsg, *args, **kwargs) -> websocket.EchoMsg:
-    return params
+def echo(params: websocket.EchoMsg, *args, **kwargs) -> websocket.EchoResponse:
+    return websocket.EchoResponse(msg=params.msg, job_ids=list_pool_job_ids())
 
 
 def handle_cta(
-    client: Optional[GiskardClient],
+    client: GiskardClient,
     params: websocket.GetPushParam,
     push: Optional[Push],
     push_kind: PushKind,
@@ -626,9 +623,7 @@ def handle_cta(
 
 
 @websocket_actor(MLWorkerAction.getPush, timeout=30, ignore_timeout=True)
-def get_push(
-    client: Optional[GiskardClient], params: websocket.GetPushParam, *args, **kwargs
-) -> websocket.GetPushResponse:
+def get_push(client: GiskardClient, params: websocket.GetPushParam, *args, **kwargs) -> websocket.GetPushResponse:
     # Save cta_kind and push_kind and remove it from params
     cta_kind = params.cta_kind
     push_kind = params.push_kind
@@ -641,7 +636,7 @@ def get_push(
         else [
             PushKind.CONTRIBUTION,
             PushKind.OVERCONFIDENCE,
-            PushKind.BORDERLINE,
+            PushKind.UNDERCONFIDENCE,
             PushKind.PERTURBATION,
         ]
     )
@@ -672,7 +667,7 @@ def get_push(
         contribution=all_ws_res.get(PushKind.CONTRIBUTION),
         perturbation=all_ws_res.get(PushKind.PERTURBATION),
         overconfidence=all_ws_res.get(PushKind.OVERCONFIDENCE),
-        borderline=all_ws_res.get(PushKind.BORDERLINE),
+        underconfidence=all_ws_res.get(PushKind.UNDERCONFIDENCE),
         action=action,
     )
 
@@ -681,7 +676,7 @@ def push_to_ws(push: Push):
     return push.to_ws() if push is not None else None
 
 
-def get_push_objects(client: Optional[GiskardClient], params: websocket.GetPushParam):
+def get_push_objects(client: GiskardClient, params: websocket.GetPushParam):
     try:
         model = BaseModel.download(client, params.model.project_key, params.model.id)
         dataset = Dataset.download(client, params.dataset.project_key, params.dataset.id)
@@ -718,7 +713,7 @@ def get_push_objects(client: Optional[GiskardClient], params: websocket.GetPushP
         PushKind.CONTRIBUTION: create_contribution_push,
         PushKind.PERTURBATION: create_perturbation_push,
         PushKind.OVERCONFIDENCE: create_overconfidence_push,
-        PushKind.BORDERLINE: create_borderline_push,
+        PushKind.UNDERCONFIDENCE: create_underconfidence_push,
     }
 
     return push_functions[params.push_kind](model, dataset, df)
@@ -726,7 +721,7 @@ def get_push_objects(client: Optional[GiskardClient], params: websocket.GetPushP
 
 @websocket_actor(MLWorkerAction.createSubDataset)
 def create_sub_dataset(
-    client: Optional[GiskardClient], params: websocket.CreateSubDatasetParam, *arg, **kwargs
+    client: GiskardClient, params: websocket.CreateSubDatasetParam, *arg, **kwargs
 ) -> websocket.CreateSubDataset:
     datasets = {
         dateset_id: Dataset.download(
@@ -738,3 +733,43 @@ def create_sub_dataset(
     sub_dataset = do_create_sub_dataset(datasets, params.name, params.copiedRows)
 
     return websocket.CreateSubDataset(datasetUuid=sub_dataset.upload(client=client, project_key=params.projectKey))
+
+
+@websocket_actor(MLWorkerAction.createDataset)
+def create_dataset(
+    client: GiskardClient, params: websocket.CreateDatasetParam, *arg, **kwargs
+) -> websocket.CreateSubDataset:
+    dataset = do_create_dataset(params.name, params.headers, params.rows)
+
+    return websocket.CreateSubDataset(datasetUuid=dataset.upload(client=client, project_key=params.projectKey))
+
+
+def tail_file(file_path: Path, n_lines: int):
+    if not file_path.exists():
+        raise FileNotFoundError(f"File {file_path.name} does not exist")
+    if n_lines is None:
+        n_lines = -1
+    with open(file_path, "rb") as f:
+        for curr_line in range(n_lines):
+            try:
+                f.seek(-2, os.SEEK_END if curr_line == 0 else os.SEEK_CUR)
+                while f.read(1) != b"\n":
+                    f.seek(-2, os.SEEK_CUR)
+            except OSError:
+                f.seek(0)
+                break
+        return f.read().decode()
+
+
+@websocket_actor(MLWorkerAction.getLogs, execute_in_pool=False)
+def get_logs(params: websocket.GetLogsParams, *arg, **kwargs):
+    job_id = params.job_id
+    assert job_id, "Job ID is required"
+
+    try:
+        logs = tail_file(job_logs_path(job_id), params.nb_last_lines)
+    except Exception as e:
+        logger.exception(f"Failed to get logs for job {job_id}: {e}")
+        logs = str(e)
+
+    return websocket.GetLogs(logs=logs)

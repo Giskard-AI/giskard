@@ -92,9 +92,10 @@ from this behavior, you can provide a custom postprocessing function using
 the `model_postprocessing_function` argument. This function should take the
 raw output of your model and return a numpy array of probabilities.
 """
+from typing import Any, Callable, Iterable, Optional, Tuple, Union
+
 import logging
 from pathlib import Path
-from typing import Any, Callable, Iterable, Optional, Union
 
 import pandas as pd
 import yaml
@@ -103,6 +104,7 @@ from scipy import special
 from giskard.core.core import ModelType
 from giskard.core.validation import configured_validate_arguments
 from giskard.models.base import WrapperModel
+
 from ..client.python_utils import warning
 
 try:
@@ -146,19 +148,19 @@ class HuggingFaceModel(WrapperModel):
             (e.g. from the ``transformers`` library).
         model_type : ModelType
             The type of the model, either ``regression`` or ``classification``.
-        name : str, optional
+        name : Optional[str]
             The name of the model, used in the Giskard UI.
-        data_preprocessing_function : callable, optional
+        data_preprocessing_function : Optional[callable]
             A function to preprocess the input data.
-        model_postprocessing_function : callable, optional
+        model_postprocessing_function : Optional[callable]
             A function to postprocess the model output.
-        feature_names : iterable, optional
+        feature_names : Optional[iterable]
             The names of the model features.
-        classification_threshold : float, optional
+        classification_threshold : Optional[float]
             The classification probability threshold for binary classification models.
-        classification_labels : iterable, optional
+        classification_labels : Optional[iterable]
             The labels for classification models.
-        batch_size : int, optional
+        batch_size : Optional[int]
             The batch size used for inference. Default to 1. We recommend to increase the batch size to improve
             performance, but your mileage may vary. See *Notes* for more information.
 
@@ -194,7 +196,7 @@ class HuggingFaceModel(WrapperModel):
             pass
 
     @classmethod
-    def load_model(cls, local_path):
+    def load_model(cls, local_path, model_py_ver: Optional[Tuple[str, str, str]] = None, *args, **kwargs):
         huggingface_meta_file = Path(local_path) / "giskard-model-huggingface-meta.yaml"
         if huggingface_meta_file.exists():
             with open(huggingface_meta_file) as f:
@@ -205,7 +207,7 @@ class HuggingFaceModel(WrapperModel):
 
         return huggingface_meta["huggingface_module"].from_pretrained(local_path)
 
-    def save_huggingface_meta(self, local_path):
+    def save_huggingface_meta(self, local_path, *args, **kwargs):
         with open(Path(local_path) / "giskard-model-huggingface-meta.yaml", "w") as f:
             yaml.dump(
                 {
@@ -216,12 +218,12 @@ class HuggingFaceModel(WrapperModel):
                 default_flow_style=False,
             )
 
-    def save(self, local_path: Union[str, Path]) -> None:
-        super().save(local_path)
+    def save(self, local_path: Union[str, Path], *args, **kwargs) -> None:
+        super().save(local_path, *args, **kwargs)
         self.save_model(local_path)
         self.save_huggingface_meta(local_path)
 
-    def save_model(self, local_path):
+    def save_model(self, local_path, *args, **kwargs):
         self.model.save_pretrained(local_path)
 
     def model_predict(self, data):
@@ -251,7 +253,7 @@ class HuggingFaceModel(WrapperModel):
             if isinstance(data, pd.DataFrame):
                 data = data.to_dict(orient="records")
             _predictions = [{p["label"]: p["score"] for p in pl} for pl in self.model(data, top_k=None)]
-            return [[p[label] for label in self.meta.classification_labels] for p in _predictions]
+            return [[p[label] for label in self.classification_labels] for p in _predictions]
 
         if isinstance(self.model, torch.nn.Module):
             with torch.no_grad():

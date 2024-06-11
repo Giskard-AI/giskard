@@ -59,7 +59,7 @@ def test_underconfidence_issue_detection():
     model = giskard.Model(prediction_fn, model_type="classification", classification_labels=[0, 1])
 
     detector = UnderconfidenceDetector(p_threshold=0.94)
-    issues = detector.run(model, dataset)
+    issues = detector.run(model, dataset, features=["feat"])
 
     assert len(issues) == 1
 
@@ -78,9 +78,9 @@ def test_underconfidence_issue_detection():
 
     # model and dataset are set as default params in `Suite`
     assert "model" not in the_test.params
-    the_test.params.update({"model": model})
+    the_test.kwargs.update({"model": model})
     assert "dataset" not in the_test.params
-    the_test.params.update({"dataset": dataset})
+    the_test.kwargs.update({"dataset": dataset})
 
     assert the_test.params["p_threshold"] == approx(0.94)
 

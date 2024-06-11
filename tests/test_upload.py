@@ -4,8 +4,8 @@ import pandas as pd
 import pytest
 
 from giskard import Dataset, slicing_function, test, transformation_function
-from giskard.ml_worker.core.savable import Artifact
-from giskard.ml_worker.testing.test_result import TestResult as GiskardTestResult
+from giskard.core.savable import Artifact
+from giskard.core.test_result import TestResult as GiskardTestResult
 from giskard.models.sklearn import SKLearnModel
 from tests.utils import (
     CALLABLE_FUNCTION_META_CACHE,
@@ -17,11 +17,12 @@ from tests.utils import (
 )
 
 model_name = "uploaded model"
+PROJECT_KEY = "project_key"
 
 
 def test_upload_df(diabetes_dataset: Dataset, diabetes_dataset_with_target: Dataset):
     artifact_url_pattern = re.compile(
-        r"http://giskard-host:12345/api/v2/artifacts/test-project/datasets/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/[data.csv.zst|giskard\-dataset\-meta.yaml]"
+        r"http://giskard-host:12345/api/v2/artifacts/datasets/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/[data.csv.zst|giskard\-dataset\-meta.yaml]"
     )
     datasets_url_pattern = re.compile("http://giskard-host:12345/api/v2/project/test-project/datasets")
 
@@ -57,7 +58,7 @@ def test_upload_df(diabetes_dataset: Dataset, diabetes_dataset_with_target: Data
 
 def _test_upload_model(model: SKLearnModel, ds: Dataset):
     artifact_url_pattern = re.compile(
-        "http://giskard-host:12345/api/v2/artifacts/test-project/models/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/.*"
+        "http://giskard-host:12345/api/v2/artifacts/models/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/.*"
     )
     models_url_pattern = re.compile("http://giskard-host:12345/api/v2/project/test-project/models")
     with MockedClient() as (client, mr):
@@ -74,10 +75,10 @@ def _test_upload_model_exceptions(model: SKLearnModel, ds: Dataset):
         with pytest.raises(Exception) as e:
             SKLearnModel(
                 model=model.model,
-                model_type=model.meta.model_type,
+                model_type=model.model_type,
                 feature_names=["some"],
                 name=model_name,
-                classification_labels=model.meta.classification_labels,
+                classification_labels=model.classification_labels,
             ).upload(client, "test-project", ds)
         assert e.match("Value mentioned in feature_names is not available in validate_df")
 
@@ -86,8 +87,8 @@ def _test_upload_model_exceptions(model: SKLearnModel, ds: Dataset):
             with pytest.raises(Exception) as e:
                 SKLearnModel(
                     model=model.model,
-                    model_type=model.meta.model_type,
-                    feature_names=model.meta.feature_names,
+                    model_type=model.model_type,
+                    feature_names=model.feature_names,
                     name=model_name,
                     classification_labels=[0, 1],
                 ).upload(client, "test-project", ds)
@@ -146,14 +147,14 @@ def do_nothing(row):
 )
 def test_upload_callable_function(cf: Artifact):
     artifact_url_pattern = re.compile(
-        "http://giskard-host:12345/api/v2/artifacts/global/"
+        "http://giskard-host:12345/api/v2/artifacts/"
         + cf._get_name()
         + "/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/.*"
     )
     with MockedClient() as (client, mr):
-        cf.upload(client=client, project_key=None)
+        cf.upload(client=client, project_key=PROJECT_KEY)
         # Check local cache
-        cache_dir = get_local_cache_callable_artifact(project_key=None, artifact=cf)
+        cache_dir = get_local_cache_callable_artifact(artifact=cf)
         assert (cache_dir / CALLABLE_FUNCTION_PKL_CACHE).exists()
         assert (cache_dir / CALLABLE_FUNCTION_META_CACHE).exists()
         # Check requested URL
@@ -170,14 +171,14 @@ def test_upload_callable_function(cf: Artifact):
 )
 def test_upload_callable_function_to_project(cf: Artifact):
     artifact_url_pattern = re.compile(
-        "http://giskard-host:12345/api/v2/artifacts/test-project/"
+        "http://giskard-host:12345/api/v2/artifacts/"
         + cf._get_name()
         + "/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/.*"
     )
     with MockedClient() as (client, mr):
         cf.upload(client=client, project_key="test-project")
         # Check local cache
-        cache_dir = get_local_cache_callable_artifact(project_key="test-project", artifact=cf)
+        cache_dir = get_local_cache_callable_artifact(artifact=cf)
         assert (cache_dir / CALLABLE_FUNCTION_PKL_CACHE).exists()
         assert (cache_dir / CALLABLE_FUNCTION_META_CACHE).exists()
         # Check requested URL

@@ -29,6 +29,7 @@ from giskard.ml_worker.websocket import (
 from giskard.ml_worker.websocket.action import MLWorkerAction
 from giskard.models.base.model import META_FILENAME
 from giskard.settings import Settings
+from tests.utils import TEST_UUID
 
 
 @pytest.fixture(scope="function")
@@ -112,7 +113,7 @@ def wrapped_handler(received_messages: List[Frame], to_send: Callable[[str], Lis
                 },
                 body=json.dumps(
                     {
-                        "id": "stopping",
+                        "id": TEST_UUID,
                         "action": MLWorkerAction.stopWorker.name,
                         "param": {},
                     }
@@ -144,7 +145,7 @@ def info_frame(action_id: str):
             },
             body=json.dumps(
                 {
-                    "id": "info_frame",
+                    "id": TEST_UUID,
                     "action": MLWorkerAction.getInfo.name,
                     "param": {"list_packages": True},
                 }
@@ -154,7 +155,7 @@ def info_frame(action_id: str):
 
 
 def ensure_config_worker(requests_mock: requests_mock.Mocker) -> MLWorker:
-    worker = MLWorker(is_server=False, backend_url=validate_url(None, None, "http://127.0.0.1:6789"))
+    worker = MLWorker(worker_name="EXTERNAL", backend_url=validate_url(None, None, "http://127.0.0.1:6789"))
     # Make sure settings are patched
     assert worker._host_url == "ws://127.0.0.1:6789"
     requests_mock.get("http://127.0.0.1:6789/public-api/ml-worker-connect", json={})
@@ -213,8 +214,7 @@ async def test_ml_worker_get_info(requests_mock: requests_mock.Mocker, patch_set
         "interpreter",
         "interpreterVersion",
         "installedPackages",
-        "mlWorkerId",
-        "isRemote",
+        "kernelName",
         "pid",
         "processStartTime",
         "giskardClientVersion",
@@ -244,13 +244,13 @@ def remote_titanic_dataset(patch_settings: Settings, titanic_dataset: Dataset, r
         parsed_meta_dataset["createdDate"] = "toto"
         # Mock artifact info
         requests_mock.get(
-            f"http://{patch_settings.host}:{patch_settings.ws_port}/api/v2/artifact-info/test-ml-worker-key/datasets/{titanic_dataset.id.hex}",
+            f"http://{patch_settings.host}:{patch_settings.ws_port}/api/v2/artifact-info/datasets/{titanic_dataset.id.hex}",
             json=filenames_dataset,
         )
         # Mock artifacts
         for filename in filenames_dataset:
             requests_mock.get(
-                f"http://{patch_settings.host}:{patch_settings.ws_port}/api/v2/artifacts/test-ml-worker-key/datasets/{titanic_dataset.id.hex}/{filename}",
+                f"http://{patch_settings.host}:{patch_settings.ws_port}/api/v2/artifacts/datasets/{titanic_dataset.id.hex}/{filename}",
                 content=(dataset_dir / filename).read_bytes(),
             )
 
@@ -276,12 +276,12 @@ def remote_titanic_model(
         artifacts = list(temp_dir.glob("*"))
         filenames = [f.name for f in artifacts]
         requests_mock.get(
-            f"http://{patch_settings.host}:{patch_settings.ws_port}/api/v2/artifact-info/test-ml-worker-key/models/{model_id}",
+            f"http://{patch_settings.host}:{patch_settings.ws_port}/api/v2/artifact-info/models/{model_id}",
             json=filenames,
         )
         for filename in filenames:
             requests_mock.get(
-                f"http://{patch_settings.host}:{patch_settings.ws_port}/api/v2/artifacts/test-ml-worker-key/models/{model_id}/{filename}",
+                f"http://{patch_settings.host}:{patch_settings.ws_port}/api/v2/artifacts/models/{model_id}/{filename}",
                 content=(temp_dir / filename).read_bytes(),
             )
         with (temp_dir / META_FILENAME).open() as meta:
@@ -311,7 +311,7 @@ def run_model_frame(action_id: str, dataset_id: str, model_id: str):
             },
             body=json.dumps(
                 {
-                    "id": "run_model_frame",
+                    "id": TEST_UUID,
                     "action": MLWorkerAction.runModel.name,
                     "param": RunModelParam(
                         model=ArtifactRef(project_key="test-ml-worker-key", id=model_id),
@@ -339,11 +339,11 @@ async def test_ml_worker_model_run(
     worker = ensure_config_worker(requests_mock)
 
     mock_pred = requests_mock.post(
-        "http://127.0.0.1:6789/api/v2/artifacts/test-ml-worker-key/models/inspections/2/predictions.csv",
+        "http://127.0.0.1:6789/api/v2/artifacts/models/inspections/2/predictions.csv",
         json={},
     )
     mock_calculated = requests_mock.post(
-        "http://127.0.0.1:6789/api/v2/artifacts/test-ml-worker-key/models/inspections/2/calculated.csv",
+        "http://127.0.0.1:6789/api/v2/artifacts/models/inspections/2/calculated.csv",
         json={},
     )
 
@@ -379,7 +379,7 @@ def run_model_frame_dataframe(action_id: str, df: DataFrame, model_id: str):
             },
             body=json.dumps(
                 {
-                    "id": "run_model_dataframe_frame",
+                    "id": TEST_UUID,
                     "action": MLWorkerAction.runModelForDataFrame.name,
                     "param": RunModelForDataFrameParam(
                         model=ArtifactRef(project_key="test-ml-worker-key", id=model_id),
@@ -430,7 +430,7 @@ def run_model_explain(action_id: str, dataset_id: str, model_id: str, df: DataFr
             },
             body=json.dumps(
                 {
-                    "id": "explain_frame",
+                    "id": TEST_UUID,
                     "action": MLWorkerAction.explain.name,
                     "param": ExplainParam(
                         model=ArtifactRef(project_key="test-ml-worker-key", id=model_id),

@@ -12,9 +12,9 @@ from sklearn.preprocessing import OneHotEncoder, StandardScaler
 
 from giskard.core.core import SupportedModelTypes
 from giskard.datasets.base import Dataset
-from giskard.ml_worker.utils.logging import Timer
 from giskard.models.catboost import CatboostModel
 from giskard.models.sklearn import SKLearnModel
+from giskard.utils.logging_utils import Timer
 from tests import path
 
 logger = logging.getLogger(__name__)
@@ -112,7 +112,7 @@ def german_credit_raw_model(german_credit_raw_data):
     categorical_transformer = Pipeline(
         [
             ("imputer", SimpleImputer(strategy="constant", fill_value="missing")),
-            ("onehot", OneHotEncoder(handle_unknown="ignore", sparse=False)),
+            ("onehot", OneHotEncoder(handle_unknown="ignore", sparse_output=False)),
         ]
     )
 

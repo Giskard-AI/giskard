@@ -2,7 +2,7 @@
 
 After cloning the repository here are the useful commands to set up the local environment:
 
-### Pre-commit hooks installation
+## Pre-commit hooks installation
 Pre-commit hooks ensure that the basic code quality checks are performed before the code is committed
 
 The current pre-commit hool configuration is defined in `.pre-commit-config.yaml`
@@ -14,6 +14,12 @@ brew install pre-commit
 pre-commit install
 ```
 
+## Run pre-commit hook manually to fix easy issues
+In case the build is failing because of the pre-commit checks that don't pass it's possible to fix easy issues by running
+```sh
+pre-commit run --all-files
+```
+and then committing the fixed files
 
 ## Troubleshooting
 

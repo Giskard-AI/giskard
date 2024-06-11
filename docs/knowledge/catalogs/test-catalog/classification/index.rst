@@ -34,8 +34,7 @@ Classification tests
   - :func:`~.giskard.testing.test_diff_accuracy`
   - :func:`~.giskard.testing.test_diff_precision`
   - :func:`~.giskard.testing.test_diff_f1`
-  - :func:`~.giskard.testing.test_diff_reference_actual_accuracy`
-  - :func:`~.giskard.testing.test_diff_reference_actual_f1`
+  - :func:`~.giskard.testing.test_brier`
 
 - **Drift tests**
 
@@ -47,3 +46,7 @@ Classification tests
   - :func:`~.giskard.testing.test_drift_prediction_chi_square`
   - :func:`~.giskard.testing.test_drift_prediction_ks`
   - :func:`~.giskard.testing.test_drift_prediction_earth_movers_distance`
+
+- **Stability tests**
+  - :func:`~.giskard.testing.test_smoothness`
+  - :func:`~.giskard.testing.test_monotonicity`

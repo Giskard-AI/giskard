@@ -11,13 +11,14 @@ Functions:
 from typing import Optional
 
 import hashlib
+import numbers
 
 import numpy as np
 import pandas as pd
 
 from giskard.core.core import SupportedModelTypes
 from giskard.datasets.base import Dataset
-from giskard.ml_worker.testing.functions.transformation import add_value
+from giskard.functions.transformation import add_value
 from giskard.models.base.model import BaseModel
 from giskard.push.utils import (
     SupportedPerturbationType,
@@ -34,6 +35,14 @@ from giskard.scanner.robustness.text_transformations import (
 )
 
 from ..push import PerturbationPush
+
+try:
+    from pandas.api.types import is_any_real_numeric_dtype
+except ImportError:
+
+    def is_any_real_numeric_dtype(array: np.array) -> bool:
+        return issubclass(array.dtype.type, numbers.Real)
+
 
 text_transformation_list = [
     TextLowercase,
@@ -121,7 +130,7 @@ def _apply_perturbation(
     ds_slice_copy = ds_slice.copy()
 
     # Apply the transformation
-    if col_type == SupportedPerturbationType.NUMERIC:
+    if col_type == SupportedPerturbationType.NUMERIC and is_any_real_numeric_dtype(ds_slice.df[feature]):
         passed = _numeric(
             ds,
             ds_slice,

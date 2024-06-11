@@ -48,6 +48,10 @@ An awesome feature request addresses the following points:
 
 ## Style guide
 
-For documentation strings, Giskard follows the [google style](https://google.github.io/styleguide/pyguide.html).
+We use `black` to format the code and `isort` to sort the imports. You can automatically enforce this style using the
+pre-commit hooks. You can find the instructions to install the pre-commit
+hooks [here](https://docs.giskard.ai/en/stable/community/contribution_guidelines/dev-environment.html).
+
+For documentation strings, Giskard follows the [numpydoc](https://numpydoc.readthedocs.io/en/latest/format.html#docstring-standard) style.
 
 **This guide was heavily inspired by the awesome [HuggingFace guide to contributing](https://github.com/huggingface/transformers/blob/main/CONTRIBUTING.md).**

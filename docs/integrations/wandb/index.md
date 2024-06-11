@@ -1,6 +1,14 @@
 # 🐝 Weights & Biases
 **Giskard's automated vulnerability detection in conjunction with W&B's tracing tools creates the ideal combination for building and debugging ML apps from tabular to LLMs.**
+```{toctree}
+:caption: Table of Contents
+:maxdepth: 1
+:hidden:
 
+./wandb-llm-example.ipynb
+./wandb-tabular-example.ipynb
+
+```
 ## Why Weights & Biases?
 
 **[Weights and Biases](https://wandb.ai/)**, often referred to as **wandb** or even simply **W&B**, is an MLOps platform that helps AI developers streamline their ML workflow from end to end. With W&B, developers have access to:
@@ -39,15 +47,18 @@ To use Giskard with Weights and Biases, you need to follow these steps:
      ```shell
      pip install wandb
      ```
-     
+
 2. Setup Giskard:
-   - install the giskard library by following these [instructions](https://docs.giskard.ai/en/latest/guides/installation_library/index.html).
+    - install the giskard library by following
+      these [instructions](https://docs.giskard.ai/en/stable/open_source/installation_library/index.html).
 
 ## Logging from Giskard to Weights and Biases
 In order to get the most out this integration, you would need to follow these three steps to diagnose your ML model:
-- wrap your dataset by following this [guide](https://docs.giskard.ai/en/latest/guides/wrap_dataset/index.html).
-- wrap your ML model by following this [guide](https://docs.giskard.ai/en/latest/guides/wrap_model/index.html).
-- scan your ML model for vulnerabilities by following this [guide](https://docs.giskard.ai/en/latest/guides/scan/index.html).
+
+- wrap your dataset by following this [guide](https://docs.giskard.ai/en/stable/guides/wrap_dataset/index.html).
+- wrap your ML model by following this [guide](https://docs.giskard.ai/en/stable/guides/wrap_model/index.html).
+- scan your ML model for vulnerabilities by following
+  this [guide](https://docs.giskard.ai/en/stable/guides/scan/index.html).
 
 Once the above steps are done, you can know log the results into Weights and Biases by doing the following:
 ```python
@@ -63,25 +74,23 @@ run = wandb.init(project="my_project", name="my_run")
 giskard_dataset.to_wandb(run) # log your dataset as a table
 scan_results.to_wandb(run) # log scan results as an HTML report
 test_suite_results.to_wandb(run) # log test suite results as a table
-shap_results.to_wandb(run) # log shap results as plots 
+shap_results.to_wandb(run) # log shap results as plots
 
 run.finish()
 ```
 
 ## Notebook examples
 ::::::{grid} 1 1 2 2
-:gutter: 1
 
-:::::{grid-item}
-:::{card} <br><h3><center>📊 Tabular</center></h3>
+
+::::{grid-item-card} <br/><h3>📊 Tabular</h3>
+:text-align: center
 :link: wandb-tabular-example.ipynb
-:::
-:::::
+::::
 
-:::::{grid-item}
-:::{card} <br><h3><center>📝 LLM</center></h3>
+::::{grid-item-card} <br/><h3>📝 LLM</h3>
+:text-align: center
 :link: wandb-llm-example.ipynb
-:::
-:::::
+::::
 
 ::::::

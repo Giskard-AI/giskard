@@ -1,20 +1,25 @@
+from __future__ import annotations
+
+from typing import TYPE_CHECKING, Optional
+
+import json
 import random
 import string
 import tempfile
 import warnings
 from pathlib import Path
-from typing import Optional
 
-import mlflow
 import pandas as pd
-from mlflow import MlflowClient
 
 from giskard.core.errors import GiskardImportError
 from giskard.utils.analytics_collector import analytics, anonymize
 
+if TYPE_CHECKING:
+    from mlflow import MlflowClient
+
 
 class ScanReport:
-    def __init__(self, issues, model=None, dataset=None, as_html: bool = True):
+    def __init__(self, issues, model=None, dataset=None, detectors_names=None, as_html: bool = True):
         """The scan report contains the results of the scan.
 
         Note that this object is not meant to be instantiated directly. Instead, it is returned by the
@@ -28,6 +33,8 @@ class ScanReport:
             A Giskard model object.
         dataset : Dataset
             A Giskard dataset object.
+        detectors_names : list
+            A list of names corresponding to the detectors used
         as_html : bool
             Whether to render the report widget as HTML.
         """
@@ -35,6 +42,7 @@ class ScanReport:
         self.as_html = as_html
         self.model = model
         self.dataset = dataset
+        self.detectors_names = detectors_names
 
     def has_issues(self):
         return len(self.issues) > 0
@@ -63,6 +71,30 @@ class ScanReport:
     def _repr_markdown_(self):
         return self.to_markdown()
 
+    def to_json(self, filename=None):
+        """Renders the scan report as json
+
+        Parameters
+        ----------
+        filename : Optional[str]
+            If provided, the json will be written to the file.
+        """
+        results = {}
+        if self.detectors_names is None:
+            return results
+        for detector_name in self.detectors_names:
+            results[detector_name] = {}
+        for issue in self.issues:
+            if issue.detector_name in results:
+                if issue.level not in results[issue.detector_name]:
+                    results[issue.detector_name][issue.level] = []
+                results[issue.detector_name][issue.level].append(issue.description)
+        if filename is not None:
+            with open(filename, "w") as json_file:
+                json.dump(results, json_file, indent=4)
+        else:
+            return json.dumps(results, indent=4)
+
     def to_html(self, filename=None, embed=False):
         """Renders the scan report as HTML.
 
@@ -70,9 +102,9 @@ class ScanReport:
 
         Parameters
         ----------
-        filename : str, optional
+        filename : Optional[str]
             If provided, the HTML will be written to the file.
-        embed : bool, optional
+        embed : Optional[bool]
             Whether to configure the HTML to be embedded in an iframe.
         """
         from ..visualization.widget import ScanReportWidget
@@ -96,9 +128,9 @@ class ScanReport:
 
         Parameters
         ----------
-        filename : str, optional
+        filename : Optional[str]
             If provided, the markdown will be written to the file.
-        template : str, optional
+        template : Optional[str]
             The template to use. Currently, only ``summary`` is supported.
         """
         from ..visualization.widget import ScanReportWidget
@@ -140,11 +172,11 @@ class ScanReport:
         """Automatically generates tests from the scan results.
 
         This method provides a way to generate a list of tests automatically, based on the issues detected by the scan.
-        Usually you will want to generate a test suite directly, see :method:`generate_test_suite` for more details.
+        Usually you will want to generate a test suite directly, see :meth:`generate_test_suite` for more details.
 
         Parameters
         ----------
-        with_names : bool, optional
+        with_names : Optional[bool]
             Whether to return the test names as well. If ``True``, the method will return a list of tuples.
 
         Return
@@ -163,7 +195,7 @@ class ScanReport:
 
         Parameters
         ----------
-        name : str, optional
+        name : Optional[str]
             The name of the test suite. If not provided, a default name will be used. You can also change the name
             later by accessing the ``name`` attribute of the returned test suite.
 
@@ -208,7 +240,8 @@ class ScanReport:
     @staticmethod
     def get_scan_summary_for_mlflow(scan_results):
         results_df = scan_results.to_dataframe()
-        results_df.metric = results_df.metric.replace("=.*", "", regex=True)
+        if "metric" in results_df.columns:
+            results_df.metric = results_df.metric.replace("=.*", "", regex=True)
         return results_df
 
     def to_mlflow(
@@ -222,6 +255,8 @@ class ScanReport:
 
         Log the current scan results in an HTML format to the active MLflow run.
         """
+        import mlflow
+
         results_df = self.get_scan_summary_for_mlflow(self)
         if model_artifact_path != "":
             model_artifact_path = "-for-" + model_artifact_path
@@ -267,7 +302,6 @@ class ScanReport:
         except ImportError as e:
             raise GiskardImportError("wandb") from e
         from ..integrations.wandb.wandb_utils import get_wandb_run
-        from ..utils.analytics_collector import analytics
 
         run = get_wandb_run(run)
         try:
@@ -305,7 +339,7 @@ class ScanReport:
 
         Parameters
         ----------
-        filename : str, optional
+        filename : Optional[str]
             If provided, the AVID report will be written to the file.
         """
         from ..integrations import avid
@@ -321,3 +355,38 @@ class ScanReport:
             return
 
         return reports
+
+    def generate_rails(self, filename=None, colang_version="1.0"):
+        """Generates Rails from the scan report.
+
+        Saves or returns the Rails representation of the scan report.
+
+        Parameters
+        ----------
+        filename : Optional[str]
+            If provided, the Rails will be written to the file.
+        colang_version : Optional[str]
+            The version of the CoLang to use. Supported versions are ``1.0`` and ``2.x``.
+        """
+        from ..integrations.nemoguardrails import generate_rails_from_scan_report
+
+        _rails = generate_rails_from_scan_report(self, colang_version=colang_version)
+
+        if filename:
+            with open(filename, "a") as f:
+                f.write(_rails)
+            return
+
+        return _rails
+
+    def update_rails_config(self, filename):
+        """Updates the Rails configuration file.
+
+        Parameters
+        ----------
+        filename : str
+            The path to the Rails configuration file.
+        """
+        from ..integrations.nemoguardrails import generate_rails_config
+
+        generate_rails_config(self, Path(filename))

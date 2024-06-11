@@ -1,17 +1,18 @@
 # @TODO: simplify this module, don’t need this complexity.
+from typing import Callable, Dict, List, Sequence
+
 import itertools
 import operator
 import re
 import uuid
 from abc import ABC, abstractmethod
 from collections import defaultdict
-from typing import Callable, Sequence, List, Dict
 
 import numpy as np
 import pandas as pd
 
 from ..core.core import DatasetProcessFunctionMeta, DatasetProcessFunctionType
-from ..ml_worker.testing.registry.slicing_function import SlicingFunction
+from ..registry.slicing_function import SlicingFunction
 from ..utils.display import format_number
 
 
@@ -304,7 +305,7 @@ class QueryBasedSliceFunction(SlicingFunction):
         self.meta.name = str(self)
         self.meta.display_name = str(self)
         self.meta.tags = ["pickle", "scan"]
-        self.meta.doc = "Automatically generated slicing function"
+        self.meta.doc = self.meta.default_doc("Automatically generated slicing function")
         self.meta.uuid = str(uuid.uuid5(uuid.NAMESPACE_OID, self.meta.name))
 
     def execute(self, data: pd.DataFrame):

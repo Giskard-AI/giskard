@@ -6,8 +6,10 @@ Test suite
    .. automethod:: __init__
    .. automethod:: run
    .. automethod:: add_test
-   .. automethod:: upload
-   .. automethod:: download
+   .. automethod:: add_test
+   .. automethod:: remove_test
+   .. automethod:: upgrade_test
+   .. automethod:: update_test_params
 
 .. autoclass:: giskard.core.suite.SuiteInput
 
@@ -17,4 +19,4 @@ Test suite
 
 .. autoclass:: giskard.core.suite.TestSuiteResult
 
-.. autoclass:: giskard.ml_worker.testing.test_result.TestResult
+.. autoclass:: giskard.core.test_result.TestResult

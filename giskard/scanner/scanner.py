@@ -1,9 +1,11 @@
+from typing import Optional, Sequence
+
 import datetime
+import logging
 import uuid
 import warnings
 from collections import Counter
 from time import perf_counter
-from typing import Optional, Sequence
 
 import pandas as pd
 
@@ -15,7 +17,13 @@ from ..llm.errors import LLMGenerationError
 from ..llm.utils import generate_test_dataset
 from ..models.base import BaseModel
 from ..utils import fullname
-from ..utils.analytics_collector import analytics, analytics_method, get_dataset_properties, get_model_properties
+from ..utils.analytics_collector import (
+    analytics,
+    analytics_method,
+    get_dataset_properties,
+    get_model_properties,
+)
+from ..utils.logging_utils import TemporaryRootLogLevel
 from .issues import DataLeakage, Issue, Stochasticity
 from .logger import logger
 from .registry import DetectorRegistry
@@ -23,16 +31,12 @@ from .report import ScanReport
 
 MAX_ISSUES_PER_DETECTOR = 15
 
-COST_ESTIMATE_TEMPLATE = """This automatic scan will use LLM-assisted detectors based on GPT-4 to identify vulnerabilities in your model.
-These are the total estimated costs:
-Estimated calls to your model: ~{num_model_calls}
-Estimated OpenAI GPT-4 calls for evaluation: {num_llm_calls} (~{num_llm_prompt_tokens} prompt tokens and ~{num_llm_sampled_tokens} sampled tokens)
-OpenAI API costs for evaluation are estimated to ${estimated_usd:.2f}.
+COST_ESTIMATE_TEMPLATE = """Estimated calls to your model: ~{num_model_calls}
+Estimated LLM calls for evaluation: {num_llm_calls}
 """
 
 COST_SUMMARY_TEMPLATE = """LLM-assisted detectors have used the following resources:
-OpenAI GPT-4 calls for evaluation: {num_llm_calls} ({num_llm_prompt_tokens} prompt tokens and {num_llm_sampled_tokens} sampled tokens)
-OpenAI API costs for evaluation amount to ${estimated_usd:.2f} (standard pricing).
+OpenAI LLM calls for evaluation: {num_llm_calls} ({num_llm_prompt_tokens} prompt tokens and {num_llm_sampled_tokens} sampled tokens)
 """
 
 # Hardcoded for now…
@@ -63,7 +67,12 @@ class Scanner:
         self.uuid = uuid.uuid4()
 
     def analyze(
-        self, model: BaseModel, dataset: Optional[Dataset] = None, verbose=True, raise_exceptions=False
+        self,
+        model: BaseModel,
+        dataset: Optional[Dataset] = None,
+        features: Optional[Sequence[str]] = None,
+        verbose=True,
+        raise_exceptions=False,
     ) -> ScanReport:
         """Runs the analysis of a model and dataset, detecting issues.
 
@@ -73,6 +82,8 @@ class Scanner:
             A Giskard model object.
         dataset : Dataset
             A Giskard dataset object.
+        features : Sequence[str], optional
+            A list of features to analyze. If not provided, all model features will be analyzed.
         verbose : bool
             Whether to print detailed info messages. Enabled by default.
         raise_exceptions : bool
@@ -84,45 +95,50 @@ class Scanner:
         ScanReport
             A report object containing the detected issues and other information.
         """
+        with TemporaryRootLogLevel(logging.INFO if verbose else logging.NOTSET):
+            # Check that the model and dataset were appropriately wrapped with Giskard
+            model, dataset, model_validation_time = self._validate_model_and_dataset(model, dataset)
 
-        # Check that the model and dataset were appropriately wrapped with Giskard
-        model, dataset, model_validation_time = self._validate_model_and_dataset(model, dataset)
+            # Check that provided features are valid
+            features = self._validate_features(features, model, dataset)
 
-        # Initialize LLM logger if needed
-        if model.is_text_generation:
-            get_default_client().logger.reset()
+            # Initialize LLM logger if needed
+            if model.is_text_generation:
+                llm_logger = _maybe_get_llm_logger()
+                llm_logger is not None and llm_logger.reset()
 
-        # Good, we can start
-        maybe_print("🔎 Running scan…", verbose=verbose)
-        time_start = perf_counter()
+            # Good, we can start
+            maybe_print("🔎 Running scan…", verbose=verbose)
+            time_start = perf_counter()
 
-        # Collect the detectors
-        detectors = self.get_detectors(tags=[model.meta.model_type.value])
+            # Collect the detectors
+            detectors = self.get_detectors(tags=[model.meta.model_type.value])
+            detectors_names = [detector.__class__.__name__ for detector in detectors]
 
-        # Print cost estimate
-        if verbose:
-            self._print_cost_estimate(model, dataset, detectors)
+            # Print cost estimate
+            if verbose:
+                self._print_cost_estimate(model, dataset, detectors)
 
-        # @TODO: this should be selective to specific warnings
-        with warnings.catch_warnings():
-            warnings.simplefilter("ignore")
-            issues, errors = self._run_detectors(
-                detectors, model, dataset, verbose=verbose, raise_exceptions=raise_exceptions
-            )
+            # @TODO: this should be selective to specific warnings
+            with warnings.catch_warnings():
+                warnings.simplefilter("ignore")
+                issues, errors = self._run_detectors(
+                    detectors, model, dataset, features, verbose=verbose, raise_exceptions=raise_exceptions
+                )
 
-        issues = self._postprocess(issues)
+            issues = self._postprocess(issues)
 
-        # Scan completed
-        elapsed = perf_counter() - time_start
+            # Scan completed
+            elapsed = perf_counter() - time_start
 
-        if verbose:
-            self._print_execution_summary(model, issues, errors, elapsed)
+            if verbose:
+                self._print_execution_summary(model, issues, errors, elapsed)
 
-        self._collect_analytics(model, dataset, issues, elapsed, model_validation_time, detectors)
+            self._collect_analytics(model, dataset, issues, elapsed, model_validation_time, detectors)
 
-        return ScanReport(issues, model=model, dataset=dataset)
+        return ScanReport(issues, model=model, dataset=dataset, detectors_names=detectors_names)
 
-    def _run_detectors(self, detectors, model, dataset, verbose=True, raise_exceptions=False):
+    def _run_detectors(self, detectors, model, dataset, features, verbose=True, raise_exceptions=False):
         if not detectors:
             raise RuntimeError("No issue detectors available. Scan will not be performed.")
 
@@ -134,9 +150,9 @@ class Scanner:
             maybe_print(f"Running detector {detector.__class__.__name__}…", verbose=verbose)
             detector_start = perf_counter()
             try:
-                detected_issues = detector.run(model, dataset)
+                detected_issues = detector.run(model, dataset, features=features)
             except Exception as err:
-                logger.error(f"Detector {detector.__class__.__name__} failed with error: {err}")
+                logger.exception(f"Detector {detector.__class__.__name__} failed with error: {err}")
                 errors.append((detector, err))
                 analytics.track(
                     "scan:run-detector:error",
@@ -183,13 +199,13 @@ class Scanner:
         if not isinstance(model, BaseModel):
             raise ValueError(
                 "The model object you provided is not valid. Please wrap it with the `giskard.Model` class. "
-                "See the instructions here: https://docs.giskard.ai/en/latest/guides/wrap_model/index.html"
+                "See the instructions here: https://docs.giskard.ai/en/stable/guides/wrap_model/index.html"
             )
 
         if dataset is not None and not isinstance(dataset, Dataset):
             raise ValueError(
                 "The dataset object you provided is not valid. Please wrap your dataframe with `giskard.Dataset`. "
-                "You can follow the docs here: https://docs.giskard.ai/en/latest/guides/wrap_dataset/index.html"
+                "You can follow the docs here: https://docs.giskard.ai/en/stable/guides/wrap_dataset/index.html"
             )
 
         model, dataset = self._prepare_model_dataset(model, dataset)
@@ -213,16 +229,39 @@ class Scanner:
                 column_types=dataset.column_types,
             )
 
-        num_features = len(model.meta.feature_names) if model.meta.feature_names else len(dataset.columns)
-        if num_features > 100:
-            warning(
-                f"It looks like your dataset has a very large number of features ({num_features}), "
-                "are you sure this is correct? The giskard.Dataset should be created from raw data *before* "
-                "pre-processing (categorical encoding, vectorization, etc.). "
-                "Check https://docs.giskard.ai/en/latest/guides/wrap_dataset/index.html for more details."
+        return model, dataset, model_validation_time
+
+    def _validate_features(
+        self, features: Optional[Sequence[str]], model: BaseModel, dataset: Optional[Dataset] = None
+    ):
+        _default_features = model.meta.feature_names or dataset.columns.drop(dataset.target, errors="ignore")
+
+        if features is None:
+            features = _default_features
+        else:
+            if not set(features).issubset(_default_features):
+                raise ValueError(
+                    "The `features` argument contains invalid feature names: "
+                    f"{', '.join(set(features) - set(_default_features))}. "
+                    f"Valid features for this model are: {', '.join(_default_features)}."
+                )
+
+        if len(features) < 1:
+            raise ValueError(
+                "No features to scan. Please provide a non-empty list of features to scan,"
+                "and ensure that you correctly set the `features_names` argument when wrapping your model."
             )
 
-        return model, dataset, model_validation_time
+        if len(features) > 100:
+            warning(
+                f"It looks like your dataset has a very large number of features ({len(features)}), "
+                "are you sure this is correct? The giskard.Dataset should be created from raw data *before* "
+                "pre-processing (categorical encoding, vectorization, etc.). "
+                "You can also limit the number of features to scan by setting the `features` argument. "
+                "Check https://docs.giskard.ai/en/stable/guides/wrap_dataset/index.html for more details."
+            )
+
+        return list(features)
 
     def _prepare_model_dataset(self, model: BaseModel, dataset: Optional[Dataset]):
         if model.is_text_generation and dataset is None:
@@ -297,7 +336,10 @@ class Scanner:
         }
 
     def _get_cost_measure(self):
-        llm_logger = get_default_client().logger
+        llm_logger = _maybe_get_llm_logger()
+        if llm_logger is None:
+            return None
+
         num_calls = llm_logger.get_num_calls()
         num_prompt_tokens = llm_logger.get_num_prompt_tokens()
         num_sampled_tokens = llm_logger.get_num_sampled_tokens()
@@ -320,7 +362,8 @@ class Scanner:
         )
         if model.is_text_generation:
             measured = self._get_cost_measure()
-            print(COST_SUMMARY_TEMPLATE.format(**measured))
+            if measured is not None:
+                print(COST_SUMMARY_TEMPLATE.format(**measured))
         if errors:
             warning(
                 f"{len(errors)} errors were encountered while running detectors. Please check the log to understand what went wrong. "
@@ -331,3 +374,11 @@ class Scanner:
 def maybe_print(*args, **kwargs):
     if kwargs.pop("verbose", True):
         print(*args, **kwargs)
+
+
+def _maybe_get_llm_logger():
+    """Get the LLM client logger if available."""
+    try:
+        return get_default_client().logger
+    except Exception:
+        return None

@@ -7,6 +7,7 @@ from giskard.scanner import logger
 from ...datasets.base import Dataset
 from ...llm.evaluators import PlausibilityEvaluator
 from ...llm.generators import ImplausibleDataGenerator
+from ...llm.utils import format_chat_messages
 from ...models.base.model import BaseModel
 from ...testing.tests.llm.hallucination import test_llm_output_plausibility
 from ..decorators import detector
@@ -24,6 +25,8 @@ class LLMImplausibleOutputDetector(Detector):
 
     The detector will stimulate the model in producing outputs that are implausible or controversial by generating a
     set of ad hoc adversarial inputs. This can be seen as a proxy for hallucination and misinformation detection.
+
+    Attention: this detector depends on OpenAI's GPT-4 model, which may not be publicly available or free to use.
     """
 
     def __init__(self, num_samples=10):
@@ -55,9 +58,11 @@ class LLMImplausibleOutputDetector(Detector):
             "llm_sampled_tokens": num_sampled_tokens,
         }
 
-    def run(self, model: BaseModel, dataset: Dataset) -> Sequence[Issue]:
+    def run(self, model: BaseModel, dataset: Dataset, features=None) -> Sequence[Issue]:
         # Generate inputs
-        generator = ImplausibleDataGenerator(llm_temperature=0.1)
+        languages = dataset.extract_languages(columns=model.meta.feature_names)
+
+        generator = ImplausibleDataGenerator(llm_temperature=0.1, languages=languages)
         eval_dataset = generator.generate_dataset(
             model, num_samples=self.num_samples, column_types=dataset.column_types
         )
@@ -66,6 +71,16 @@ class LLMImplausibleOutputDetector(Detector):
         # Evaluate the model outputs
         evaluator = PlausibilityEvaluator()
         eval_result = evaluator.evaluate(model, eval_dataset)
+
+        examples = pd.DataFrame(
+            [
+                {
+                    "Conversation": format_chat_messages(r["sample"].get("conversation", [])),
+                    "Reason": r.get("reason", "No reason provided."),
+                }
+                for r in eval_result.failure_examples
+            ]
+        )
 
         if eval_result.failed:
             return [
@@ -76,13 +91,16 @@ class LLMImplausibleOutputDetector(Detector):
                     level=IssueLevel.MEDIUM,
                     description="The model produces implausible output.",
                     meta={
+                        "metric": "Failing samples",
+                        "metric_value": len(eval_result.failure_examples),
                         "domain": "Implausible or controversial output",
                         "deviation": "The model produces implausible output.",
                         "hide_index": True,
                     },
-                    examples=pd.DataFrame(eval_result.failure_examples),
+                    examples=examples,
                     tests=_generate_implausible_output_tests,
                     taxonomy=["avid-effect:performance:P0204"],
+                    detector_name=self.__class__.__name__,
                 )
             ]
 
