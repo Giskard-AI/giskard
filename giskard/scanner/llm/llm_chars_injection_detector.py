@@ -137,6 +137,7 @@ class LLMCharsInjectionDetector(Detector):
                 examples=examples,
                 tests=_generate_char_injection_tests,
                 taxonomy=["avid-effect:performance:P0201", "avid-effect:security:S0403"],
+                detector_name=self.__class__.__name__,
             )
 
             issues.append(issue)
