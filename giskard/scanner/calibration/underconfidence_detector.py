@@ -105,6 +105,7 @@ class UnderconfidenceDetector(LossBasedDetector):
                     importance=relative_delta,
                     tests=_generate_underconfidence_tests,
                     taxonomy=["avid-effect:performance:P0204"],
+                    detector_name=self.__class__.__name__,
                 )
 
                 # Add examples

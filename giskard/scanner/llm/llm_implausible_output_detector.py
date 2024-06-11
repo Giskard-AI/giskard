@@ -100,6 +100,7 @@ class LLMImplausibleOutputDetector(Detector):
                     examples=examples,
                     tests=_generate_implausible_output_tests,
                     taxonomy=["avid-effect:performance:P0204"],
+                    detector_name=self.__class__.__name__,
                 )
             ]
 
