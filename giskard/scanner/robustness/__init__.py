@@ -10,6 +10,13 @@ and after the transformation.
 """
 from .base_detector import BaseTextPerturbationDetector
 from .ethical_bias_detector import EthicalBiasDetector
+from .switch_detector import SwitchAllDetector
 from .text_perturbation_detector import TextPerturbationDetector
 
-__all__ = ["EthicalBiasDetector", "TextPerturbationDetector", "BaseTextPerturbationDetector"]
+__all__ = [
+    "EthicalBiasDetector",
+    "TextPerturbationDetector",
+    "BaseTextPerturbationDetector",
+    "BaseCategorialTransformation",
+    "SwitchAllDetector",
+]
