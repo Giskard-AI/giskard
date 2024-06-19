@@ -4,7 +4,6 @@ API Reference
 .. toctree::
    :maxdepth: 1
 
-   ../cli/index
    models/index
    datasets/index
    scan/index

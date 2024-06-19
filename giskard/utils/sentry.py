@@ -1,4 +1,4 @@
-from typing import Dict
+from typing import Dict, Optional
 
 import os
 import re
@@ -61,7 +61,17 @@ def scrub_stacktrace(stacktrace):
     return stacktrace
 
 
-def scrub_event(event, _hint) -> Dict[str, ABC]:
+def has_giskard_module_in_frames(stacktrace):
+    if "frames" not in stacktrace:
+        return False
+
+    return any(
+        "module" in frame and frame["module"] is not None and frame["module"].split(".")[0] == "giskard"
+        for frame in stacktrace["frames"]
+    )
+
+
+def scrub_event(event, _hint) -> Optional[Dict[str, ABC]]:
     if "exception" not in event:
         return event
 
@@ -71,6 +81,9 @@ def scrub_event(event, _hint) -> Dict[str, ABC]:
 
     for value in exception["values"]:
         if "stacktrace" in value:
+            if not has_giskard_module_in_frames(value["stacktrace"]):
+                return None  # Remove noise by filtering error that arise outside of giskard (ei. in jupiter notebook)
+
             value["stacktrace"] = scrub_stacktrace(value["stacktrace"])
 
     return event

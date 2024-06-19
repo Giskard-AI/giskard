@@ -106,6 +106,7 @@ class LLMPromptInjectionDetector(Detector):
                     examples=examples,
                     tests=_generate_prompt_injection_tests,
                     taxonomy=["avid-effect:security:S0403"],
+                    detector_name=self.__class__.__name__,
                 )
             )
         return issues

@@ -8,8 +8,6 @@ Transformation functions
 .. autoclass:: giskard.registry.transformation_function.TransformationFunction
 
    .. automethod:: execute
-   .. automethod:: upload
-   .. automethod:: download
 
 Textual transformation functions
 --------------------------------

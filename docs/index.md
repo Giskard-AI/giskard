@@ -48,6 +48,7 @@ knowledge/catalogs/index
 
 integrations/cicd/index
 integrations/mlflow/index
+integrations/nemoguardrails/index
 integrations/wandb/index
 integrations/dagshub/index
 integrations/huggingface/index
@@ -60,7 +61,6 @@ integrations/pytest/index
 :maxdepth: 1
 :hidden:
 
-cli/index
 reference/models/index
 reference/datasets/index
 reference/scan/index
@@ -89,7 +89,6 @@ community/contribution_guidelines/index
   <a href="https://gisk.ar/discord"><b>Discord</b></a>
  </p>
 <br />
-
 
 :::::{grid} 1 1 3 3
 
@@ -136,4 +135,3 @@ community/contribution_guidelines/index
 ::::
 
 :::::
-

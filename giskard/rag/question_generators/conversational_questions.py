@@ -15,7 +15,7 @@ Please respect the following rules to generate the question:
 - The second message should use demonstrative pronouns or other indirect references as much as possible.
 - The second message should not understandable without the first message, it should NOT be self-contained.
 - The messages and answer must be in this language: {language}.
-- Make sure that the meaning of the original question cannot be infered from the generated question.
+- Make sure that the meaning of the original question cannot be inferred from the generated question.
 
 You will be provided the original question between <question> and </question> tags.
 Your output should be a single JSON object, with keys 'introduction' and 'question'. Make sure you return a valid JSON object.
