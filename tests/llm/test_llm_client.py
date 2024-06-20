@@ -148,7 +148,7 @@ def test_gemini_client():
 
     # Assert that the generate_content method was called with the correct arguments
     gemini_api_client.generate_content.assert_called_once()
-    assert gemini_api_client.generate_content.call_args[1]["contents"] == ([ContentDict(role="user", parts="Hello")])
+    assert gemini_api_client.generate_content.call_args[1]["contents"] == ([ContentDict(role="user", parts=["Hello"])])
     assert gemini_api_client.generate_content.call_args[1]["generation_config"].temperature == 0.11
     assert gemini_api_client.generate_content.call_args[1]["generation_config"].max_output_tokens == 12
 
