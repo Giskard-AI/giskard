@@ -2,8 +2,6 @@ from typing import Optional, Sequence
 
 from logging import warning
 
-from google.generativeai.types import ContentDict
-
 from ..config import LLMConfigurationError
 from ..errors import LLMImportError
 from . import LLMClient
@@ -11,6 +9,7 @@ from .base import ChatMessage
 
 try:
     import google.generativeai as genai
+    from google.generativeai.types import ContentDict
 except ImportError as err:
     raise LLMImportError(
         flavor="llm",
