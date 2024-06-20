@@ -1,6 +1,8 @@
 import json
 from unittest.mock import MagicMock, Mock
 
+import pydantic
+import pytest
 from google.generativeai.types import ContentDict
 from mistralai.models.chat_completion import ChatCompletionResponse, ChatCompletionResponseChoice
 from mistralai.models.chat_completion import ChatMessage as MistralChatMessage
@@ -12,8 +14,9 @@ from openai.types.chat.chat_completion import Choice
 from giskard.llm.client import ChatMessage
 from giskard.llm.client.bedrock import ClaudeBedrockClient
 from giskard.llm.client.gemini import GeminiClient
-from giskard.llm.client.mistral import MistralClient
 from giskard.llm.client.openai import OpenAIClient
+
+PYDANTIC_V2 = pydantic.__version__.startswith("2.")
 
 DEMO_OPENAI_RESPONSE = ChatCompletion(
     id="chatcmpl-abc123",
@@ -64,9 +67,12 @@ def test_llm_complete_message():
     assert res.content == "This is a test!"
 
 
+@pytest.mark.skipif(not PYDANTIC_V2, reason="Mistral raise an error with pydantic < 2")
 def test_mistral_client():
     client = Mock()
     client.chat.return_value = DEMO_MISTRAL_RESPONSE
+
+    from giskard.llm.client.mistral import MistralClient
 
     res = MistralClient(model="mistral-large", client=client).complete(
         [ChatMessage(role="user", content="Hello")], temperature=0.11, max_tokens=12
