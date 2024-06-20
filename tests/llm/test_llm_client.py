@@ -65,7 +65,7 @@ def test_llm_complete_message():
     assert res.content == "This is a test!"
 
 
-@pytest.mark.skipif(not PYDANTIC_V2, reason="Cloudpickle only fails to save Pydantic BaseModel after v2")
+@pytest.mark.skipif(not PYDANTIC_V2, reason="Mistral raise an error with pydantic < 2")
 def test_mistral_client():
     client = Mock()
     client.chat.return_value = DEMO_MISTRAL_RESPONSE
