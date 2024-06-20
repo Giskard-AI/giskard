@@ -23,6 +23,34 @@ AUTH_ERROR_MESSAGE = (
 )
 
 
+def _format(messages: Sequence[ChatMessage]) -> Sequence[ContentDict]:
+    system_prompts = []
+    content = []
+
+    for message in messages:
+        if message.role == "system":
+            system_prompts.append(message.content)
+
+            if len(content) == 0:
+                content.append(ContentDict(role="model", parts=[]))
+
+            content[0]["parts"].insert(0, f"# System:\n{message.content}")
+
+            continue
+
+        role = "model" if message.role == "assistant" else "user"
+
+        # Consecutive messages need to be grouped
+        last_message = None if len(content) == 0 else content[-1]
+        if last_message is not None and last_message["role"] == role:
+            last_message["parts"].append(message.content)
+            continue
+
+        content.append(ContentDict(role=message.role, parts=[message.content]))
+
+    return content
+
+
 class GeminiClient(LLMClient):
     def __init__(self, model: str = "gemini-pro", _client=None):
         self.model = model
@@ -43,11 +71,10 @@ class GeminiClient(LLMClient):
 
         if format:
             warning(f"Unsupported format '{format}', ignoring.")
-            format = None
 
         try:
             completion = self._client.generate_content(
-                contents=[ContentDict(role=m.role, parts=m.content) for m in messages],
+                contents=_format(messages),
                 generation_config=genai.types.GenerationConfig(
                     temperature=temperature,
                     max_output_tokens=max_tokens,
