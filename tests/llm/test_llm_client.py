@@ -1,19 +1,19 @@
 import json
 from unittest.mock import MagicMock, Mock
 
+from google.generativeai.types import ContentDict
 from mistralai.models.chat_completion import ChatCompletionResponse, ChatCompletionResponseChoice
 from mistralai.models.chat_completion import ChatMessage as MistralChatMessage
 from mistralai.models.chat_completion import FinishReason, UsageInfo
 from openai.types import CompletionUsage
 from openai.types.chat import ChatCompletion, ChatCompletionMessage
 from openai.types.chat.chat_completion import Choice
-from google.generativeai.types import ContentDict
 
 from giskard.llm.client import ChatMessage
 from giskard.llm.client.bedrock import ClaudeBedrockClient
+from giskard.llm.client.gemini import GeminiClient
 from giskard.llm.client.mistral import MistralClient
 from giskard.llm.client.openai import OpenAIClient
-from giskard.llm.client.gemini import GeminiClient
 
 DEMO_OPENAI_RESPONSE = ChatCompletion(
     id="chatcmpl-abc123",
@@ -122,14 +122,12 @@ def test_claude_bedrock_client():
     assert isinstance(res, ChatMessage)
     assert res.content == "This is a test!"
 
+
 def test_gemini_client():
     # Mock the Gemini client
     gemini_api_client = Mock()
     gemini_api_client.generate_content = MagicMock(
-        return_value=Mock(
-            text="This is a test!",
-            candidates=[Mock(content=Mock(role="assistant"))]
-        )
+        return_value=Mock(text="This is a test!", candidates=[Mock(content=Mock(role="assistant"))])
     )
     gemini_api_client.count_tokens = MagicMock(
         side_effect=lambda text: sum(len(t.split()) for t in text) if isinstance(text, list) else len(text.split())
