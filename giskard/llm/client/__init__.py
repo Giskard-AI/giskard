@@ -53,7 +53,6 @@ def get_openai_instance():
     from openai import OpenAI
     """Return an OpenAI instance with or without a custom base URL."""
     if _default_llm_base_url:
-        print('***********************Using custom base URL***********************')
         return OpenAI(base_url=_default_llm_base_url)
     else:
         return OpenAI()
