@@ -192,6 +192,7 @@ class BaseTextPerturbationDetector(Detector):
                     importance=fail_rate,
                     tests=_generate_robustness_tests,
                     taxonomy=self._taxonomy,
+                    detector_name=self.__class__.__name__,
                 )
 
                 # Add examples

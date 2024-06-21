@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING, Optional
 
+import json
 import random
 import string
 import tempfile
@@ -18,7 +19,7 @@ if TYPE_CHECKING:
 
 
 class ScanReport:
-    def __init__(self, issues, model=None, dataset=None, as_html: bool = True):
+    def __init__(self, issues, model=None, dataset=None, detectors_names=None, as_html: bool = True):
         """The scan report contains the results of the scan.
 
         Note that this object is not meant to be instantiated directly. Instead, it is returned by the
@@ -32,6 +33,8 @@ class ScanReport:
             A Giskard model object.
         dataset : Dataset
             A Giskard dataset object.
+        detectors_names : list
+            A list of names corresponding to the detectors used
         as_html : bool
             Whether to render the report widget as HTML.
         """
@@ -39,6 +42,7 @@ class ScanReport:
         self.as_html = as_html
         self.model = model
         self.dataset = dataset
+        self.detectors_names = detectors_names
 
     def has_issues(self):
         return len(self.issues) > 0
@@ -66,6 +70,30 @@ class ScanReport:
 
     def _repr_markdown_(self):
         return self.to_markdown()
+
+    def to_json(self, filename=None):
+        """Renders the scan report as json
+
+        Parameters
+        ----------
+        filename : Optional[str]
+            If provided, the json will be written to the file.
+        """
+        results = {}
+        if self.detectors_names is None:
+            return results
+        for detector_name in self.detectors_names:
+            results[detector_name] = {}
+        for issue in self.issues:
+            if issue.detector_name in results:
+                if issue.level not in results[issue.detector_name]:
+                    results[issue.detector_name][issue.level] = []
+                results[issue.detector_name][issue.level].append(issue.description)
+        if filename is not None:
+            with open(filename, "w") as json_file:
+                json.dump(results, json_file, indent=4)
+        else:
+            return json.dumps(results, indent=4)
 
     def to_html(self, filename=None, embed=False):
         """Renders the scan report as HTML.
