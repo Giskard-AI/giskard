@@ -32,7 +32,7 @@ def set_llm_api(llm_api: str):
     _unset_default_client()
 
 
-def set_llm_base_url(llm_base_url: str):
+def set_llm_base_url(llm_base_url: Optional[str]):
     global _default_llm_base_url
     _default_llm_base_url = llm_base_url
     # If the model is set, we unset the default client
