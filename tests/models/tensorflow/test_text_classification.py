@@ -1,8 +1,8 @@
 import pandas as pd
 import pytest
 
-import tests.utils
 from giskard import Dataset
+from giskard.core.model_validation import validate_model
 from giskard.models.tensorflow import TensorFlowModel
 
 tf = pytest.importorskip("tensorflow")
@@ -70,7 +70,7 @@ def test_text_classification_1d_output(imdb_data):
 
     my_test_dataset = Dataset(test_df.head(), name="test dataset", target="Label")
 
-    tests.utils.verify_model_upload(my_model, my_test_dataset)
+    validate_model(my_model, validate_ds=my_test_dataset)
 
 
 @pytest.mark.slow
@@ -136,4 +136,4 @@ def test_text_classification_2d_output(imdb_data):
 
     my_test_dataset = Dataset(test_df.head(), name="test dataset", target="Label")
 
-    tests.utils.verify_model_upload(my_model, my_test_dataset)
+    validate_model(my_model, validate_ds=my_test_dataset)

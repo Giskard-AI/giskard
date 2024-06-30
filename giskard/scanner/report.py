@@ -191,7 +191,7 @@ class ScanReport:
         """Automatically generates a test suite from the scan results.
 
         This method provides a way to generate a test suite automatically, based on the issues detected by the scan.
-        The test suite can be used to reproduce the issues and can be uploaded to the Giskard Hub for debugging.
+        The test suite can be used to reproduce the issues.
 
         Parameters
         ----------

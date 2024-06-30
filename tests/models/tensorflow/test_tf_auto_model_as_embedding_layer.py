@@ -5,8 +5,8 @@ import pandas as pd
 import pytest
 from transformers import AutoTokenizer, TFAutoModel
 
-import tests.utils
 from giskard import Dataset
+from giskard.core.model_validation import validate_model
 from giskard.models.tensorflow import TensorFlowModel
 
 tf = pytest.importorskip("tensorflow")
@@ -145,4 +145,4 @@ def test_tf_auto_model_as_embedding_layer():
 
     my_test_dataset = Dataset(data.head(), name="test dataset", target="label")
 
-    tests.utils.verify_model_upload(my_model, my_test_dataset)
+    validate_model(my_model, validate_ds=my_test_dataset)

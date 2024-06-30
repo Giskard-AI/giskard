@@ -20,16 +20,6 @@ def test_prediction_function_model():
     assert (pred.raw[:, 1] == 1).all()
 
 
-def test_prediction_function_upload():
-    gsk_model = PredictionFunctionModel(
-        lambda df: np.ones(len(df)), model_type="classification", classification_labels=[0, 1]
-    )
-
-    import tests.utils
-
-    tests.utils.verify_model_upload(gsk_model, Dataset(df=pd.DataFrame({"x": [1, 2, 3], "y": [1, 0, 1]}), target="y"))
-
-
 def test_single_feature():
     import datasets
     from sklearn.ensemble import RandomForestClassifier

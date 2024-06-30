@@ -7,8 +7,6 @@ import importlib
 import json
 import logging
 import platform
-import posixpath
-import tempfile
 import uuid
 from abc import ABC, abstractmethod
 from dataclasses import asdict
@@ -22,15 +20,13 @@ import yaml
 from giskard.client.dtos import ModelMetaInfo
 from giskard.core.errors import GiskardInstallationError
 
-from ...client.giskard_client import GiskardClient
 from ...core.core import ModelMeta, ModelType, SupportedModelTypes
 from ...core.validation import configured_validate_arguments
 from ...datasets.base import Dataset
-from ...exceptions.giskard_exception import GiskardException, python_env_exception_helper
+from ...exceptions.giskard_exception import python_env_exception_helper
 from ...models.cache import ModelCache
 from ...path_utils import get_size
 from ...registry.utils import dump_by_value
-from ...settings import settings
 from ...utils.logging_utils import Timer
 from ..cache import get_cache_enabled
 from ..utils import np_types_to_native
@@ -437,90 +433,6 @@ class BaseModel(ABC):
 
         # TODO: check if there is a better solution
         return np.array(np.array(cached_predictions).tolist())
-
-    def upload(self, client: GiskardClient, project_key, validate_ds=None, *_args, **_kwargs) -> str:
-        """
-        Uploads the model to a Giskard project using the provided Giskard client. Also validates the model
-        using the given validation dataset, if any.
-
-        Args:
-            client (GiskardClient): A Giskard client instance to use for uploading the model.
-            project_key (str): The project key to use for the upload.
-            validate_ds (Optional[Dataset]): A validation dataset to use for validating the model. Defaults to None.
-
-        Notes:
-            This method saves the model to a temporary directory before uploading it. The temporary directory
-            is deleted after the upload is completed.
-        """
-        from giskard.core.model_validation import validate_model, validate_model_loading_and_saving
-
-        validate_model(model=self, validate_ds=validate_ds)
-        reloaded_model = validate_model_loading_and_saving(self)
-        try:
-            validate_model(model=reloaded_model, validate_ds=validate_ds, print_validation_message=False)
-        except Exception as e_reloaded:
-            raise GiskardException(
-                "An error occured while validating a deserialized version your model, please report this issue to Giskard"
-            ) from e_reloaded
-
-        with tempfile.TemporaryDirectory(prefix="giskard-model-") as f:
-            self.save(f)
-
-            if client is not None:
-                client.log_artifacts(f, posixpath.join("models", str(self.id)))
-                client.save_model_meta(project_key, self.id, self.meta, platform.python_version(), get_size(f))
-        return str(self.id)
-
-    @classmethod
-    def download(cls, client: GiskardClient, project_key, model_id, *_args, **_kwargs):
-        """
-        Downloads the specified model from the Giskard hub and loads it into memory.
-
-        Args:
-            client (GiskardClient): The client instance that will connect to the Giskard hub.
-            project_key (str): The key for the project that the model belongs to.
-            model_id (str): The ID of the model to download.
-
-        Returns:
-            An instance of the class calling the method, with the specified model loaded into memory.
-
-        Raises:
-            AssertionError: If the local directory where the model should be saved does not exist.
-        """
-        local_dir = settings.home_dir / settings.cache_dir / "models" / model_id
-        client.load_artifact(local_dir, posixpath.join("models", model_id))
-        meta_response: ModelMetaInfo = client.load_model_meta(project_key, model_id)
-        # internal worker case, no token based http client
-        if not local_dir.exists():
-            raise RuntimeError(f"Cannot find existing model {project_key}.{model_id} in {local_dir}")
-        with (Path(local_dir) / META_FILENAME).open(encoding="utf-8") as f:
-            file_meta = yaml.load(f, Loader=yaml.Loader)
-            classification_labels = cls.cast_labels(meta_response)
-            meta = ModelMeta(
-                name=meta_response.name,
-                description=meta_response.description,
-                model_type=SupportedModelTypes[meta_response.modelType],
-                feature_names=meta_response.featureNames,
-                classification_labels=classification_labels,
-                classification_threshold=meta_response.threshold,
-                loader_module=file_meta["loader_module"],
-                loader_class=file_meta["loader_class"],
-            )
-
-        model_py_ver = (
-            tuple(meta_response.languageVersion.split(".")) if "PYTHON" == meta_response.language.upper() else None
-        )
-
-        clazz = cls.determine_model_class(meta, local_dir, model_py_ver=model_py_ver)
-
-        constructor_params = meta.__dict__
-        constructor_params["id"] = str(model_id)
-
-        del constructor_params["loader_module"]
-        del constructor_params["loader_class"]
-
-        model = clazz.load(local_dir, model_py_ver=model_py_ver, **constructor_params)
-        return model
 
     @classmethod
     def read_meta_from_local_dir(cls, local_dir, *_args, **_kwargs) -> Tuple[ModelMetaInfo, ModelMeta]:

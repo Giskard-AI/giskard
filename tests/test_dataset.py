@@ -1,19 +1,12 @@
-import uuid
 import warnings
 
 import numpy as np
 import pandas as pd
 import pytest
-import requests_mock
-from pydantic import ValidationError
 
-from giskard.client.dtos import DatasetMetaInfo
 from giskard.core.dataset_validation import validate_optional_target
 from giskard.datasets.base import Dataset
-from tests import utils
-from tests.communications.test_dto_serialization import get_fields, get_name, is_required
 
-# FIXME: conflict on `name` between Giskard Hub (@NotBlank) and Python client (optional in DatasetMeta and DatasetMetaInfo)
 MANDATORY_FIELDS = [
     "id",
     "originalSizeBytes",
@@ -189,89 +182,3 @@ def test_infer_column_types():
     assert Dataset(pd.DataFrame({"f": ["a", "b"]})).column_types["f"] == "text"
     assert Dataset(pd.DataFrame({"f": [1]})).column_types["f"] == "numeric"
     assert Dataset(pd.DataFrame({"f": ["a"]})).column_types["f"] == "text"
-
-
-def test_dataset_download_with_cache(request):
-    dataset: Dataset = request.getfixturevalue("enron_data")
-    project_key = str(uuid.uuid4())
-
-    with utils.MockedProjectCacheDir():
-        # Save the dataset to cache dir
-        utils.local_save_dataset_under_giskard_home_cache(dataset)
-
-        with utils.MockedClient(mock_all=False) as (client, mr):
-            # The dataset can be then loaded from the cache, without further requests
-            requested_urls = []
-            requested_urls.extend(utils.register_uri_for_dataset_meta_info(mr, dataset, project_key))
-
-            downloaded_dataset = Dataset.download(client=client, project_key=project_key, dataset_id=str(dataset.id))
-
-            for requested_url in requested_urls:
-                assert utils.is_url_requested(mr.request_history, requested_url)
-
-            assert downloaded_dataset.id == dataset.id
-            assert downloaded_dataset.meta == dataset.meta
-
-
-def test_dataset_download(request):
-    dataset: Dataset = request.getfixturevalue("enron_data")
-    project_key = str(uuid.uuid4())
-
-    with utils.MockedProjectCacheDir():
-        with utils.MockedClient(mock_all=False) as (client, mr):
-            # The dataset needs to request files
-            requested_urls = []
-            requested_urls.extend(utils.register_uri_for_dataset_meta_info(mr, dataset, project_key))
-            requested_urls.extend(
-                utils.register_uri_for_dataset_artifact_info(mr, dataset, project_key, register_file_contents=True)
-            )
-
-            downloaded_dataset = Dataset.download(client=client, project_key=project_key, dataset_id=str(dataset.id))
-
-            for requested_url in requested_urls:
-                assert utils.is_url_requested(mr.request_history, requested_url)
-
-            assert downloaded_dataset.id == dataset.id
-            assert downloaded_dataset.meta == dataset.meta
-
-
-def test_dataset_meta_info():
-    klass = DatasetMetaInfo
-    mandatory_field_names = []
-    optional_field_names = []
-    for name, field in get_fields(klass).items():
-        (
-            mandatory_field_names.append(get_name(name, field))
-            if is_required(field)
-            else optional_field_names.append(get_name(name, field))
-        )
-    assert set(mandatory_field_names) == set(MANDATORY_FIELDS)
-    assert set(optional_field_names) == set(OPTIONAL_FIELDS)
-
-
-def test_fetch_dataset_meta(request):
-    dataset: Dataset = request.getfixturevalue("enron_data")
-    project_key = str(uuid.uuid4())
-
-    for op in OPTIONAL_FIELDS:
-        with utils.MockedClient(mock_all=False) as (client, mr):
-            meta_info = utils.mock_dataset_meta_info(dataset, project_key)
-            meta_info.pop(op)
-            mr.register_uri(
-                method=requests_mock.GET, url=utils.get_url_for_dataset(dataset, project_key), json=meta_info
-            )
-
-            # Should not raise
-            client.load_dataset_meta(project_key, uuid=str(dataset.id))
-
-    for op in MANDATORY_FIELDS:
-        with utils.MockedClient(mock_all=False) as (client, mr):
-            meta_info = utils.mock_dataset_meta_info(dataset, project_key)
-            meta_info.pop(op)
-            mr.register_uri(
-                method=requests_mock.GET, url=utils.get_url_for_dataset(dataset, project_key), json=meta_info
-            )
-
-            # Should raise due to missing of values
-            with pytest.raises(ValidationError):
-                client.load_dataset_meta(project_key, uuid=str(dataset.id))

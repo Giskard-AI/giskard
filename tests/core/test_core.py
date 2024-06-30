@@ -4,8 +4,8 @@ from pydantic import BaseModel
 
 from giskard.core.core import CallableMeta
 from giskard.datasets.base import Dataset
-from giskard.push.push_test_catalog.catalog import test_diff_rmse_push
 from giskard.registry.slicing_function import SlicingFunction
+from giskard.testing.tests.performance import test_diff_rmse
 from giskard.testing.utils.utils import Direction
 
 
@@ -46,9 +46,21 @@ def func_test_func_doc_google(
 
 
 def test_extract_doc(caplog):
-    doc = CallableMeta.extract_doc(test_diff_rmse_push)
-    assert "Test for difference in RMSE between a slice and full dataset" in doc.description
-    assert {"model", "dataset", "slicing_function", "threshold", "direction"} == set(doc.parameters.keys())
+    doc = CallableMeta.extract_doc(test_diff_rmse)
+    assert (
+        "Test if the absolute percentage change of model RMSE between two samples is lower than a threshold"
+        in doc.description
+    )
+    assert {
+        "model",
+        "actual_dataset",
+        "reference_dataset",
+        "slicing_function",
+        "threshold",
+        "direction",
+        "debug_percent_rows",
+        "debug",
+    } == set(doc.parameters.keys())
 
     assert caplog.text == ""
 

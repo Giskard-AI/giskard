@@ -3,12 +3,6 @@ import pandas as pd
 from catboost import CatBoostClassifier
 
 from giskard.models.catboost import CatboostModel
-from tests.utils import verify_model_upload
-
-
-def test_catboost_model_save_and_upload(german_credit_catboost, german_credit_data):
-    assert isinstance(german_credit_catboost, CatboostModel)
-    verify_model_upload(german_credit_catboost, german_credit_data)
 
 
 def test_catboost_model_detects_feature_names():
