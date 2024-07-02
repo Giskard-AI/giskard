@@ -134,6 +134,11 @@ jobs:
         run: |
           df -h
 
+      - name: Install SWIG on MacOS
+        if: ${{ matrix.os == 'macos-12' }}
+        run: |
+          brew install swig
+
       - name: Install dependencies
         run: |
           pdm install -G :all
