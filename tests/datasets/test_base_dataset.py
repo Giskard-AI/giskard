@@ -35,5 +35,5 @@ def test_repr_named_dataset(df: pd.DataFrame):
 
 
 def test_empty_df(df: pd.DataFrame):
-    dataset = Dataset(name="bar", df=pd.DataFrame(), feature_names=["test"])
+    dataset = Dataset(name="bar", df=pd.DataFrame(), columns=["test"])
     assert len(dataset.df) == 0
