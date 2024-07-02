@@ -32,3 +32,8 @@ def test_repr_named_dataset(df: pd.DataFrame):
     dataset = Dataset(name="bar", df=df)
     assert hex(id(dataset)).lower()[2:] in repr(dataset).lower()
     assert "<giskard.datasets.base.Dataset object at" in repr(dataset)
+
+
+def test_empty_df(df: pd.DataFrame):
+    dataset = Dataset(name="bar", df=pd.DataFrame([], columns=["test"]))
+    assert len(dataset.df) == 0
