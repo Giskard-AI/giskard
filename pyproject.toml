@@ -31,7 +31,7 @@ base-test.cmd = "pytest -c pyproject.toml --cov=giskard --cov-report=xml --cov-a
 test-fast.cmd = "pdm base-test -n auto -m 'not slow and not concurrency' --use-subprocess tests"
 test-slow.cmd = "pdm base-test -m 'slow and not concurrency' --use-subprocess"
 test-worker.cmd = "pdm base-test -m 'concurrency' tests/"
-lint = "ruff giskard tests"
+lint = "ruff check giskard tests"
 doc = "sphinx-build docs docs/_build/html"
 #  -W --keep-going -n => temporary disable
 check-doc = "python ./docs/scrapper.py"
