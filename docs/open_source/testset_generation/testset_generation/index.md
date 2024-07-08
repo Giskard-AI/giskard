@@ -163,6 +163,22 @@ set_default_embedding(embed_client)
 ```
 
 ::::::
+::::::{tab-item} Gemini
+
+```python
+import os
+import giskard
+
+import google.generativeai as genai
+
+from giskard.llm.client.gemini import GeminiClient
+
+genai.configure(api_key=os.environ["GEMINI_API_KEY"])
+
+giskard.llm.set_default_client(GeminiClient())
+```
+
+::::::
 ::::::{tab-item} Custom Client
 ```python
 import giskard
