@@ -64,9 +64,8 @@ class GeminiClient(LLMClient):
         seed: Optional[int] = None,
         format=None,
     ) -> ChatMessage:
-        extra_params = dict()
         if seed is not None:
-            extra_params["seed"] = seed
+            warning("Unsupported seed, ignoring.")
 
         if format:
             warning(f"Unsupported format '{format}', ignoring.")
@@ -74,11 +73,7 @@ class GeminiClient(LLMClient):
         try:
             completion = self._client.generate_content(
                 contents=_format(messages),
-                generation_config=genai.types.GenerationConfig(
-                    temperature=temperature,
-                    max_output_tokens=max_tokens,
-                    **extra_params,
-                ),
+                generation_config=genai.types.GenerationConfig(temperature=temperature, max_output_tokens=max_tokens),
             )
         except RuntimeError as err:
             raise LLMConfigurationError(AUTH_ERROR_MESSAGE) from err
