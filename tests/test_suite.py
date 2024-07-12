@@ -143,7 +143,7 @@ def test_suite_save_and_load(german_credit_data, german_credit_model):
 
     result = loaded_suite.run(model=german_credit_model, dataset=german_credit_data)
 
-    assert result.passed, str(result.results[0])
+    assert result.passed
     assert len(result.results) == 1
     _, test_result, _ = result.results[0]
     assert not test_result.is_error
