@@ -147,7 +147,8 @@ class RegistryArtifact(Artifact[SMT], ABC):
         if meta is not None:
             return meta
 
-        return super()._load_meta_locally(local_dir, uuid)
+        with open(local_dir / "meta.yaml", "r") as f:
+            return yaml.load(f, Loader=yaml.Loader)
 
     @classmethod
     def load(cls, local_dir: Path, uuid: str, meta: SMT):

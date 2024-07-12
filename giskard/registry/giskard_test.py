@@ -7,6 +7,8 @@ import sys
 from abc import ABC, abstractmethod
 from pathlib import Path
 
+import yaml
+
 from giskard.core.core import SMT, TestFunctionMeta
 from giskard.core.savable import Artifact
 from giskard.core.test_result import TestResult
@@ -71,7 +73,8 @@ class GiskardTest(Artifact[TestFunctionMeta], ABC):
         if meta is not None:
             return meta
 
-        return super()._load_meta_locally(local_dir, uuid)
+        with open(local_dir / "meta.yaml", "r") as f:
+            return yaml.load(f, Loader=yaml.Loader)
 
     @classmethod
     def load(cls, local_dir: Path, uuid: str, meta: TestFunctionMeta):

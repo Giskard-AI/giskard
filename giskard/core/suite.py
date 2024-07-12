@@ -60,6 +60,45 @@ suite_input_types: List[type] = [
 ]
 
 
+def _parse_function_arguments(folder: Path, function_inputs: List[Dict[str, Any]]):
+    arguments = dict()
+
+    for value in function_inputs:
+        if value.get("isAlias", False) or value.get("isDefaultValue", False):
+            continue
+        if value["type"] == "Dataset":
+            arguments[value["name"]] = Dataset.load(folder / value["value"])
+        elif value["type"] == "BaseModel":
+            arguments[value["name"]] = BaseModel.load(folder / value["value"])
+        elif value["type"] == "SlicingFunction":
+            sf_uuid = value["value"]
+            sf_folder = folder / sf_uuid
+            arguments[value["name"]] = SlicingFunction.load(
+                sf_folder, sf_uuid, SlicingFunction._load_meta_locally(sf_folder, sf_uuid)
+            )(**_parse_function_arguments(folder, value["params"]))
+        elif value["type"] == "TransformationFunction":
+            tf_uuid = value["value"]
+            tf_folder = folder / tf_uuid
+            arguments[value["name"]] = TransformationFunction.load(
+                tf_folder, tf_uuid, TransformationFunction._load_meta_locally(tf_folder, tf_uuid)
+            )(**_parse_function_arguments(folder, value["params"]))
+        elif value["type"] == "float":
+            arguments[value["name"]] = float(value["value"])
+        elif value["type"] == "int":
+            arguments[value["name"]] = int(value["value"])
+        elif value["type"] == "str":
+            arguments[value["name"]] = str(value["value"])
+        elif value["type"] == "bool":
+            arguments[value["name"]] = bool(value["value"])
+        elif value["type"] == "Kwargs":
+            kwargs = dict()
+            exec(value["value"], {"kwargs": kwargs})
+            arguments.update(kwargs)
+        else:
+            raise IllegalArgumentError(f"Unknown argument type: {value['type']}")
+    return arguments
+
+
 def parse_function_arguments(client, project_key, function_inputs):
     arguments = dict()
 
@@ -1056,6 +1095,26 @@ class Suite:
             test = GiskardTest.download(test_json.testUuid, client, project_key)
             test_arguments = parse_function_arguments(client, project_key, test_json.functionInputs.values())
             suite.add_test(test(**test_arguments), suite_test_id=test_json.id)
+
+        return suite
+
+    @classmethod
+    def load(cls, folder: str) -> "Suite":
+        folder_path = Path(folder)
+
+        with open(folder_path / "suite.json", "r") as f:
+            suite_json = json.load(f)
+
+        suite = Suite(name=suite_json.get("name", "Unnamed test suite"))
+
+        for test_json in suite_json.get("tests", []):
+            test_uuid = test_json.get("testUuid")
+            test_folder = folder_path / test_uuid
+
+            test = GiskardTest.load(test_folder, test_uuid, GiskardTest._load_meta_locally(test_folder, test_uuid))
+
+            test_arguments = _parse_function_arguments(folder_path, test_json.get("functionInputs").values())
+            suite.add_test(test(**test_arguments), suite_test_id=test_json.get("id"))
 
         return suite
 
