@@ -1,3 +1,4 @@
+import tempfile
 import uuid
 from datetime import datetime
 
@@ -128,3 +129,23 @@ def test_suite_result_to_dto():
 
         assert dto.results[0].inputs["dataset"] == str(dataset.id)
         assert dto.results[0].inputs["threshold"] == str(0.5)
+
+
+def test_suite_save_and_load(german_credit_data, german_credit_model):
+    my_test = test_accuracy(threshold=0.7)
+
+    # This will miss dataset
+    suite = Suite(default_params=dict(model=german_credit_model, dataset=german_credit_data))
+    suite.add_test(my_test)
+
+    with tempfile.TemporaryDirectory() as tmp_dirname:
+        suite.save(tmp_dirname)
+        loaded_suite = Suite.load(tmp_dirname)
+
+    result = loaded_suite.run()
+
+    assert result.passed
+    assert len(result.results) == 1
+    _, test_result, _ = result.results[0]
+    assert not test_result.is_error
+    assert test_result.passed
