@@ -1,5 +1,6 @@
 from typing import Callable, List, Optional, Set, Type, Union
 
+import copy
 import functools
 import inspect
 
@@ -49,13 +50,15 @@ class TransformationFunction(RegistryArtifact[DatasetProcessFunctionMeta]):
         super().__init__(meta)
 
     def __call__(self, *args, **kwargs) -> "TransformationFunction":
-        self.is_initialized = True
-        self.params = kwargs
+        instance = copy.deepcopy(self)
+
+        instance.is_initialized = True
+        instance.params = kwargs
 
         for idx, arg in enumerate(args):
-            self.params[next(iter([arg.name for arg in self.meta.args.values() if arg.argOrder == idx]))] = arg
+            instance.params[next(iter([arg.name for arg in instance.meta.args.values() if arg.argOrder == idx]))] = arg
 
-        return self
+        return instance
 
     @property
     def dependencies(self) -> Set[Artifact]:
