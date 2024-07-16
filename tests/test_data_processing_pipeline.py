@@ -193,3 +193,39 @@ def test_transformation_without_type():
     transformed_dataset = dataset.transform(add_positive_sentence)
 
     assert transformed_dataset.df.iloc[0].text == "testing. I love this!"
+
+
+def test_slicing_function_multiple_instances():
+    @slicing_function(name="slice cell level", cell_level=True)
+    def filter_cell_level_by(amount: int, min_value: int) -> bool:
+        return amount >= min_value
+
+    df = pd.DataFrame({"quantity": [1, 2, 3, 5, 7, 11, 13]})
+    dataset = Dataset(df, cat_columns=[])
+
+    min_five = filter_cell_level_by(min_value=5)
+    min_six = filter_cell_level_by(min_value=6)
+
+    dataset_greater_equals_five = dataset.slice(min_five, column_name="quantity")
+    dataset_greater_equals_six = dataset.slice(min_six, column_name="quantity")
+
+    assert list(dataset_greater_equals_five.df["quantity"]) == [5, 7, 11, 13]
+    assert list(dataset_greater_equals_six.df["quantity"]) == [7, 11, 13]
+
+
+def test_transformation_multiple_instances():
+    @transformation_function(cell_level=True)
+    def column_level_divide(nb: float, amount: int) -> float:
+        return nb / amount
+
+    df = pd.DataFrame({"quantity": [100, 200, 300]})
+    dataset = Dataset(df, cat_columns=[])
+
+    divide_by_ten = column_level_divide(amount=10)
+    divide_by_a_hundred = column_level_divide(amount=100)
+
+    dataset_by_ten = dataset.transform(divide_by_ten, column_name="quantity")
+    dataset_by_a_hundred = dataset.transform(divide_by_a_hundred, column_name="quantity")
+
+    assert list(dataset_by_ten.df["quantity"]) == [10, 20, 30]
+    assert list(dataset_by_a_hundred.df["quantity"]) == [1, 2, 3]
