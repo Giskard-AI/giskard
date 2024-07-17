@@ -2,9 +2,11 @@ from typing import Dict, Optional
 
 import os
 import re
+import warnings
 from abc import ABC
 
 import sentry_sdk
+from requests.exceptions import ConnectionError
 from sentry_sdk.integrations.excepthook import ExcepthookIntegration
 from sentry_sdk.scrubber import DEFAULT_DENYLIST
 
@@ -90,13 +92,16 @@ def scrub_event(event, _hint) -> Optional[Dict[str, ABC]]:
 
 
 def configure_sentry():
-    if os.getenv(DISABLE_SENTRY_ENV_VARIABLE_NAME, "False").lower() in ("true", "1", "yes", "t", "y"):
+    if os.getenv(DISABLE_SENTRY_ENV_VARIABLE_NAME, "True").lower() in ("true", "1", "yes", "t", "y"):
         return None
 
-    sentry_sdk.init(
-        # DSN is safe to be publicly available: https://docs.sentry.io/product/sentry-basics/concepts/dsn-explainer/
-        dsn="https://a5d33bfa91bc3da9af2e7d32e19ff89d@o4505952637943808.ingest.sentry.io/4506789759025152",
-        enable_tracing=True,
-        integrations=[ExcepthookIntegration(always_run=True)],
-        before_send=scrub_event,
-    )
+    try:
+        sentry_sdk.init(
+            # DSN is safe to be publicly available: https://docs.sentry.io/product/sentry-basics/concepts/dsn-explainer/
+            dsn="https://a5d33bfa91bc3da9af2e7d32e19ff89d@o4505952637943808.ingest.sentry.io/4506789759025152",
+            enable_tracing=True,
+            integrations=[ExcepthookIntegration(always_run=True)],
+            before_send=scrub_event,
+        )
+    except ConnectionError:
+        warnings.warn("Failed to configure sentry due to a connection error")
