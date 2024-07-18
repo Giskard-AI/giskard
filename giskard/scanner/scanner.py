@@ -71,7 +71,7 @@ class Scanner:
         features: Optional[Sequence[str]] = None,
         verbose=True,
         raise_exceptions=False,
-        max_issues_per_detector=15
+        max_issues_per_detector=15,
     ) -> ScanReport:
         """Runs the analysis of a model and dataset, detecting issues.
 
