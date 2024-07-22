@@ -89,18 +89,18 @@ ml_runtime = [
     "tensorflow-io-gcs-filesystem<0.32;  sys_platform != 'win32' and platform_system !='Windows' and platform_machine != 'arm64'", # Tensorflow io does not work for windows from 0.32, but does not work for arm64 before...                                                                              # Tensorflow io does not work for windows from 0.32, but does not work for arm64 before...
 ]
 test = [
-    "pytest-cov>=4.0.0",
-    "pytest>=7.1.2",
-    "pytest-xdist>=3.3.1",
-    "polyfactory",
-    "pytest-env>=1.1.0",
+    "google.generativeai",
+    "nemoguardrails>=0.9.0",
     "openai>=1",
+    "polyfactory",
+    "pytest>=7.1.2",
+    "pytest-cov>=4.0.0",
+    "pytest-env>=1.1.0",
     "pytest-memray; sys_platform == 'linux' or sys_platform == 'darwin'",
     "pytest-reportlog>=0.4.0",
-    "shap<0.45",                                                          # Fixing this to avoid changed on insights
+    "pytest-xdist>=3.3.1",
     "ragas>=0.1.5",
-    "nemoguardrails>=0.9.0",
-    "google-generativeai",
+    "shap<0.45",                                                          # Fixing this to avoid changed on insights
 ]
 doc = [
     "furo>=2023.5.20",
