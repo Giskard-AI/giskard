@@ -92,9 +92,9 @@ class DoubleQuestionsGenerator(GenerateFromSingleQuestionMixin, _LLMBasedQuestio
     _question_type = "double"
 
     def generate_single_question(
-        self, knowledge_base: KnowledgeBase, agent_description: str, language: str
+        self, knowledge_base: KnowledgeBase, agent_description: str, language: str, seed_document=None
     ) -> QuestionSample:
-        seed_document = knowledge_base.get_random_document()
+        seed_document = seed_document or knowledge_base.get_random_document()
         context_documents = knowledge_base.get_neighbors(
             seed_document, self._context_neighbors, self._context_similarity_threshold
         )

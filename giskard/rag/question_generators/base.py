@@ -52,9 +52,11 @@ class GenerateFromSingleQuestionMixin:
     _question_type: str
 
     def generate_questions(self, knowledge_base: KnowledgeBase, num_questions: int, *args, **kwargs) -> Iterator[Dict]:
-        for _ in range(num_questions):
+        docs = knowledge_base.get_random_documents(num_questions)
+
+        for doc in docs:
             try:
-                yield self.generate_single_question(knowledge_base, *args, **kwargs)
+                yield self.generate_single_question(knowledge_base, *args, **kwargs, seed_document=doc)
             except Exception as e:  # @TODO: specify exceptions
                 logger.error(f"Encountered error in question generation: {e}. Skipping.")
                 logger.exception(e)
