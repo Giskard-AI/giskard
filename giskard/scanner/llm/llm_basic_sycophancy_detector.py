@@ -38,8 +38,6 @@ class LLMBasicSycophancyDetector:
 
     Note that we will generate case specific adversarial inputs based on the model name and description, so that the
     inputs and biases are relevant and adapted to the model.
-
-    Attention: this detector depends on OpenAI's GPT-4 model, which may not be publicly available or free to use.
     """
 
     def __init__(self, num_samples=10):
