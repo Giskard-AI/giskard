@@ -84,7 +84,7 @@ ml_runtime = [
     "tensorflow==2.14.0; sys_platform != 'win32' and platform_system !='Windows'",
     # tensorflow-text is only available on linux or mac, but not for arm64 nor windows
     "tensorflow-text==2.14.0; python_version < '3.11' and (sys_platform == 'linux' or sys_platform == 'darwin') and platform_machine == 'x86_64'",
-    "mlflow>2,<2.12", # version 2.12 throws error with imbalance-learn
+    "mlflow>=2.13.1", # version 2.12 throws error with imbalance-learn
     "wandb",
     "tensorflow-io-gcs-filesystem<0.32;  sys_platform != 'win32' and platform_system !='Windows' and platform_machine != 'arm64'", # Tensorflow io does not work for windows from 0.32, but does not work for arm64 before...                                                                              # Tensorflow io does not work for windows from 0.32, but does not work for arm64 before...
 ]
@@ -186,6 +186,8 @@ dependencies = [
     "num2words>=0.5.13",
     "griffe>=0.36.9",
     "sentry-sdk>=1.40.5",
+    "mlflow>=2.13.1",
+    "torchdata==0.6.0",
 ]
 
 [project.optional-dependencies]
