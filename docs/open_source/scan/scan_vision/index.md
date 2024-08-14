@@ -17,54 +17,318 @@ pip install giskard giskard-vision
 
 ## Step 1: Wrap your dataset
 
+To scan your model, start by **wrapping your dataset**, as shown below
+
+:::::::{tab-set}
+::::::{tab-item} Image classification
+
 To scan your model, start by **wrapping your dataset** with `DataLoaderBase`. Your class should override:
 
-- `load_image_from_file` that loads an image as a `np.ndarray`
-- `load_marks_from_file` that returns landmark coordinates from a file.
+- `idx_sampler` (property) that returns the array of indices to iterate over
+- `get_image` that loads the image corresponding to the right index as a `np.ndarray`
+- `get_labels` that returns the label of the image with corresponding index
+- (Optional) `get_meta` that returns a `MetaData` object containing the metadata of the image with the corresponding index. This object should contain the metadata in the form of a `dict`, for instance `{'meta1': 'value1'}`, the list of categorical metadata, and the type of Issue related to the metadata in the form of a `dict`, for instance `{'meta1': PerformanceIssueMeta}`. Issue types can be found in `giskard_vision.core.issues`.
 
 > ### ⚠️ Warning
 >
 > It's highly recommended that you wrap your data **before preprocessing** so that you can easily interpret
 > the scan results.
+>
+> For now, the image classification scan only supports one label per image
+>
 
 ```python
-from giskard_vision.landmark_detection.dataloaders.base
+from giskard_vision.core.dataloaders.base import DataIteratorBase
+from giskard_vision.core.dataloaders.meta import MetaData
+from giskard_vision.core.issues import EthicalIssueMeta, PerformanceIssueMeta
 
 
-class DataLoaderLandmarkDetection(DataLoaderBase):
+class DataLoaderClassification(DataIteratorBase):
+
+    @property
+    def idx_sampler(self) -> np.ndarray:
+        """Accesses the array of element indices to iterate over
+
+        Returns:
+            np.ndarray: The array of indices
+        """
+        ...
 
     @classmethod
-    def load_image_from_file(cls, image_file: Path) -> np.ndarray:
-        # use image_file to read the image into a numpy array
-        return cv2.imread(str(image_file))
+    def get_image(self, idx: int) -> np.ndarray:
+        """
+        Returns a single image from an index as numpy array
+
+        Args:
+            idx (int): Index of the image
+
+        Returns:
+            np.ndarray: The image as numpy array (h, w, c)
+        """
+        return cv2.imread(images_paths[idx])
 
     @classmethod
-    def load_marks_from_file(cls, mark_file: Path):
-        # use mark_file path to populate the numpy array
+    def get_labels(self, idx: int) -> Optional[np.ndarray]:
+        """
+        Gets the label (for a single image) for a specific index.
+
+        Args:
+            idx (int): Index of the image.
+
+        Returns:
+            Optional[np.ndarray]: Labels for the given index.
+        """
         return np.array(..., dtype=float)
+    
+    @classmethod
+    def get_meta(self, idx: int) -> Optional[MetaData]:
+        """
+        Gets meta information (for a single image) for a specific index.
+
+        Args:
+            idx (int): Index of the image.
+
+        Returns:
+            Optional[MetaData]: Meta information for the given index.
+        """
+        super().get_meta() # To load default metadata
+        return MetaData(
+            data={
+                'meta1': 'value1',
+                'meta2': 'value2',
+                'categorical_meta1': 'cat_value1',
+                'categorical_meta2': 'cat_value2'
+            },
+            categories=['categorical_meta1', 'categorical_meta2'],
+            issue_groups={
+                'meta1': PerformanceIssueMeta,
+                'meta2': EthicalIssueMeta,
+                'categorical_meta1': PerformanceIssueMeta,
+                'categorical_meta2': EthicalIssueMeta,
+            }
+        )
 
 
-giskard_dataset = DataLoaderLandmarkDetection(images_dir_path=..., landmarks_dir_path=...)
+giskard_dataset = DataLoaderClassification()
 ```
+::::::
+::::::{tab-item} Object detection
+
+To scan your model, start by **wrapping your dataset** with `DataLoaderBase`. Your class should override:
+
+- `idx_sampler` (property) that returns the array of indices to iterate over
+- `get_image` that loads the image corresponding to the right index as a `np.ndarray`
+- `get_labels` that returns the box coordinates of the image with corresponding index
+- (Optional) `get_meta` that returns a `MetaData` object containing the metadata of the image with the corresponding index. This object should contain the metadata in the form of a `dict`, for instance `{'meta1': 'value1'}`, the list of categorical metadata, and the type of Issue related to the metadata in the form of a `dict`, for instance `{'meta1': PerformanceIssueMeta}`. Issue types can be found in `giskard_vision.core.issues`.
+
+> ### ⚠️ Warning
+>
+> It's highly recommended that you wrap your data **before preprocessing** so that you can easily interpret
+> the scan results.
+>
+> For now, the object detection scan only supports one box and label per image
+>
+
+```python
+from giskard_vision.core.dataloaders.base import DataIteratorBase
+from giskard_vision.core.dataloaders.meta import MetaData
+from giskard_vision.core.issues import EthicalIssueMeta, PerformanceIssueMeta
+
+
+class DataLoaderObjectDetection(DataIteratorBase):
+
+    @property
+    def idx_sampler(self) -> np.ndarray:
+        """Accesses the array of element indices to iterate over
+
+        Returns:
+            np.ndarray: The array of indices
+        """
+        ...
+
+    @classmethod
+    def get_image(self, idx: int) -> np.ndarray:
+        """
+        Returns a single image from an index as numpy array
+
+        Args:
+            idx (int): Index of the image
+
+        Returns:
+            np.ndarray: The image as numpy array (h, w, c)
+        """
+        return cv2.imread(images_paths[idx])
+
+    @classmethod
+    def get_labels(self, idx: int) -> Optional[np.ndarray]:
+        """
+        Gets the box coordinates (for a single image) for a specific index.
+        Format:
+        np.array({"boxes": [x1_min, y1_min, x1_max, y1_max]})
+
+        Args:
+            idx (int): Index of the image.
+
+        Returns:
+            Optional[np.ndarray]: Box coordinates for the given index.
+        """
+        return np.array(..., dtype=object)
+    
+    @classmethod
+    def get_meta(self, idx: int) -> Optional[MetaData]:
+        """
+        Gets meta information (for a single image) for a specific index.
+
+        Args:
+            idx (int): Index of the image.
+
+        Returns:
+            Optional[MetaData]: Meta information for the given index.
+        """
+        super().get_meta() # To load default metadata
+        return MetaData(
+            data={
+                'meta1': 'value1',
+                'meta2': 'value2',
+                'categorical_meta1': 'cat_value1',
+                'categorical_meta2': 'cat_value2'
+            },
+            categories=['categorical_meta1', 'categorical_meta2'],
+            issue_groups={
+                'meta1': PerformanceIssueMeta,
+                'meta2': EthicalIssueMeta,
+                'categorical_meta1': PerformanceIssueMeta,
+                'categorical_meta2': EthicalIssueMeta,
+            }
+        )
+
+
+giskard_dataset = DataLoaderObjectDetection()
+```
+
+::::::
+::::::{tab-item} Landmark detection
+
+To scan your model, start by **wrapping your dataset** with `DataLoaderBase`. Your class should override:
+
+- `idx_sampler` (property) that returns the array of indices to iterate over
+- `get_image` that loads the image corresponding to the right index as a `np.ndarray`
+- `get_labels` that returns the landmarks of the image with corresponding index
+- (Optional) `get_meta` that returns a `MetaData` object containing the metadata of the image with the corresponding index. This object should contain the metadata in the form of a `dict`, for instance `{'meta1': 'value1'}`, the list of categorical metadata, and the type of Issue related to the metadata in the form of a `dict`, for instance `{'meta1': PerformanceIssueMeta}`. Issue types can be found in `giskard_vision.core.issues`.
+
+> ### ⚠️ Warning
+>
+> It's highly recommended that you wrap your data **before preprocessing** so that you can easily interpret
+> the scan results.
+>
+> For now, the face landmark detection scan only supports one landmark per image
+>
+
+```python
+from giskard_vision.core.dataloaders.base import DataIteratorBase
+from giskard_vision.core.dataloaders.meta import MetaData
+from giskard_vision.core.issues import EthicalIssueMeta, PerformanceIssueMeta
+
+
+class DataLoaderFaceLandmarkDetection(DataIteratorBase):
+
+    @property
+    def idx_sampler(self) -> np.ndarray:
+        """Accesses the array of element indices to iterate over
+
+        Returns:
+            np.ndarray: The array of indices
+        """
+        ...
+
+    @classmethod
+    def get_image(self, idx: int) -> np.ndarray:
+        """
+        Returns a single image from an index as numpy array
+
+        Args:
+            idx (int): Index of the image
+
+        Returns:
+            np.ndarray: The image as numpy array (h, w, c)
+        """
+        return cv2.imread(images_paths[idx])
+
+    @classmethod
+    def get_labels(self, idx: int) -> Optional[np.ndarray]:
+        """
+        Gets the landmarks (for a single image) for a specific index.
+        Format:
+            np.array (num_marks, 2)
+
+        Args:
+            idx (int): Index of the image.
+
+        Returns:
+            Optional[np.ndarray]: Landmarks 2D coordinates for the given index.
+        """
+        return np.array(..., dtype=float)
+    
+    @classmethod
+    def get_meta(self, idx: int) -> Optional[MetaData]:
+        """
+        Gets meta information (for a single image) for a specific index.
+
+        Args:
+            idx (int): Index of the image.
+
+        Returns:
+            Optional[MetaData]: Meta information for the given index.
+        """
+        super().get_meta() # To load default metadata
+        return MetaData(
+            data={
+                'meta1': 'value1',
+                'meta2': 'value2',
+                'categorical_meta1': 'cat_value1',
+                'categorical_meta2': 'cat_value2'
+            },
+            categories=['categorical_meta1', 'categorical_meta2'],
+            issue_groups={
+                'meta1': PerformanceIssueMeta,
+                'meta2': EthicalIssueMeta,
+                'categorical_meta1': PerformanceIssueMeta,
+                'categorical_meta2': EthicalIssueMeta,
+            }
+        )
+
+
+giskard_dataset = DataLoaderFaceLandmarkDetection()
+```
+
+::::::
+:::::::
 
 ## Step 2: Wrap your model
 
-Next, **wrap your model** with `FaceLandmarksModelBase`. It should contain a method `predict_image` that returns landmarks as `np.ndarray`, as shown here:
+Next, **wrap your model** by using `ModelBase`. Your class should override:
+
+- `predict_rgb_image` which returns the predicted label corresponding to a single image in rgb format given as argument. The prediction format should correspond to the one returned by the `get_labels` methods from the Dataset.
+- (Optional) `predict_gray_image` if the model supports prediction from images in grayscale. The prediction format should correspond to the one returned by the `get_labels` methods from the Dataset.
+    
 
 ```python
-from giskard_vision.landmark_detection.models.base import FaceLandmarksModelBase
+from giskard_vision.core.models.base import ModelBase
 
 
-class ModelLandmarkDetection(FaceLandmarksModelBase):
+class ModelMyTask(ModelBase):
     def __init__(self, model):
-        super().__init__(n_landmarks=68, n_dimensions=2, name="MyModel")
+        super().__init__()
         self.model = model
 
-    def predict_image(self, image: np.ndarray) -> np.ndarray:
-        return self.model.predict_image(image)
+    def predict_rgb_image(self, image: np.ndarray) -> np.ndarray:
+        return self.model.predict_rgb_image(image)
+    
+    def predict_gray_image(self, image: np.ndarray) -> np.ndarray:
+        return self.model.predict_gray_image(image)
 
 mymodel = ...
-giskard_model = ModelLandmarkDetection(model = mymodel)
+giskard_model = ModelMyTask(model=mymodel)
 ```
 
 ## Step 3: Scan your model
@@ -72,13 +336,14 @@ giskard_model = ModelLandmarkDetection(model = mymodel)
 You can now scan your model. For this guide, we'll use a demo dataloader and an OpenCV model. After completing steps 1 and 2, you can replace them with your own dataloader and model wrapper.
 
 ```python
-from giskard_vision.landmark_detection.models.wrappers import OpenCVWrapper
-from giskard_vision.landmark_detection.demo import get_300W
+from giskard_vision.image_classification.models.wrappers import SkinCancerHuggingFaceModel
+from giskard_vision.image_classification.dataloaders.loaders import DataLoaderSkinCancerHuggingFaceDataset
+from giskard_vision.core.scanner import scan
 
-giskard_model = OpenCVWrapper()
-giskard_dataset = get_300W()
+dataset = DataLoaderSkinCancerHuggingFaceDataset()
+model = SkinCancerHuggingFaceModel()
 
-scan_results = giskard_vision.scan(giskard_model, giskard_dataset)
+scan_results = scan(model, dataset, num_images=5)
 display(scan_results)  # in your notebook
 ```
 
@@ -89,3 +354,4 @@ If you are not working in a notebook or want to save the results for later, you 
 ```python
 scan_results.to_html("model_scan_results.html")
 ```
+
