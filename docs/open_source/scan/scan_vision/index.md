@@ -76,7 +76,7 @@ class DataLoaderClassification(DataIteratorBase):
             idx (int): Index of the image.
 
         Returns:
-            Optional[np.ndarray]: Labels for the given index.
+            Optional[np.ndarray]: Label for the given index.
         """
         return np.array(..., dtype=float)
     
