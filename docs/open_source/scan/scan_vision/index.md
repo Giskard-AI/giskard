@@ -1,7 +1,5 @@
 # 📸 Vision model scan
 
-**The giskard-vision library is under development. For now, only landmark detection models are available.**
-
 The Giskard python library provides an automatic scan functionality designed to automatically
 detect [potential vulnerabilities](https://docs.giskard.ai/en/stable/knowledge/key_vulnerabilities/index.html) affecting
 your ML model. It enables you to proactively identify and address key issues to ensure the reliability, fairness, and
@@ -22,11 +20,11 @@ To scan your model, start by **wrapping your dataset**, as shown below
 :::::::{tab-set}
 ::::::{tab-item} Image classification
 
-To scan your model, start by **wrapping your dataset** with `DataLoaderBase`. Your class should override:
+To scan your model, start by **wrapping your dataset** with `DataIteratorBase`. Your class should override:
 
 - `idx_sampler` (property) that returns the array of indices to iterate over
 - `get_image` that loads the image corresponding to the right index as a `np.ndarray`
-- `get_labels` that returns the label of the image with corresponding index
+- `get_label` that returns the label of the image with corresponding index
 - (Optional) `get_meta` that returns a `MetaData` object containing the metadata of the image with the corresponding index. This object should contain the metadata in the form of a `dict`, for instance `{'meta1': 'value1'}`, the list of categorical metadata, and the type of Issue related to the metadata in the form of a `dict`, for instance `{'meta1': PerformanceIssueMeta}`. Issue types can be found in `giskard_vision.core.issues`.
 
 > ### ⚠️ Warning
@@ -52,7 +50,7 @@ class DataLoaderClassification(DataIteratorBase):
         Returns:
             np.ndarray: The array of indices
         """
-        ...
+        return list(range(len(self.image_paths)))
 
     @classmethod
     def get_image(self, idx: int) -> np.ndarray:
@@ -65,10 +63,10 @@ class DataLoaderClassification(DataIteratorBase):
         Returns:
             np.ndarray: The image as numpy array (h, w, c)
         """
-        return cv2.imread(images_paths[idx])
+        return self.images_paths[idx]
 
     @classmethod
-    def get_labels(self, idx: int) -> Optional[np.ndarray]:
+    def get_label(self, idx: int) -> Optional[np.ndarray]:
         """
         Gets the label (for a single image) for a specific index.
 
@@ -76,9 +74,9 @@ class DataLoaderClassification(DataIteratorBase):
             idx (int): Index of the image.
 
         Returns:
-            Optional[np.ndarray]: Label for the given index.
+            Optional[str]: Label for the given index.
         """
-        return np.array(..., dtype=float)
+        return 'label'
     
     @classmethod
     def get_meta(self, idx: int) -> Optional[MetaData]:
@@ -91,16 +89,18 @@ class DataLoaderClassification(DataIteratorBase):
         Returns:
             Optional[MetaData]: Meta information for the given index.
         """
-        super().get_meta() # To load default metadata
+        default_meta = super().get_meta() # To load default metadata
         return MetaData(
             data={
+                **default_meta.data,
                 'meta1': 'value1',
                 'meta2': 'value2',
                 'categorical_meta1': 'cat_value1',
                 'categorical_meta2': 'cat_value2'
             },
-            categories=['categorical_meta1', 'categorical_meta2'],
+            categories=default_meta.categories+['categorical_meta1', 'categorical_meta2'],
             issue_groups={
+                **default_meta.issue_groups,
                 'meta1': PerformanceIssueMeta,
                 'meta2': EthicalIssueMeta,
                 'categorical_meta1': PerformanceIssueMeta,
@@ -114,11 +114,11 @@ giskard_dataset = DataLoaderClassification()
 ::::::
 ::::::{tab-item} Object detection
 
-To scan your model, start by **wrapping your dataset** with `DataLoaderBase`. Your class should override:
+To scan your model, start by **wrapping your dataset** with `DataIteratorBase`. Your class should override:
 
 - `idx_sampler` (property) that returns the array of indices to iterate over
 - `get_image` that loads the image corresponding to the right index as a `np.ndarray`
-- `get_labels` that returns the box coordinates of the image with corresponding index
+- `get_label` that returns the box coordinates of the image with corresponding index
 - (Optional) `get_meta` that returns a `MetaData` object containing the metadata of the image with the corresponding index. This object should contain the metadata in the form of a `dict`, for instance `{'meta1': 'value1'}`, the list of categorical metadata, and the type of Issue related to the metadata in the form of a `dict`, for instance `{'meta1': PerformanceIssueMeta}`. Issue types can be found in `giskard_vision.core.issues`.
 
 > ### ⚠️ Warning
@@ -144,7 +144,7 @@ class DataLoaderObjectDetection(DataIteratorBase):
         Returns:
             np.ndarray: The array of indices
         """
-        ...
+        return list(range(len(self.image_paths)))
 
     @classmethod
     def get_image(self, idx: int) -> np.ndarray:
@@ -157,10 +157,10 @@ class DataLoaderObjectDetection(DataIteratorBase):
         Returns:
             np.ndarray: The image as numpy array (h, w, c)
         """
-        return cv2.imread(images_paths[idx])
+        return self.images_paths[idx]
 
     @classmethod
-    def get_labels(self, idx: int) -> Optional[np.ndarray]:
+    def get_label(self, idx: int) -> Optional[np.ndarray]:
         """
         Gets the box coordinates (for a single image) for a specific index.
         Format:
@@ -185,16 +185,18 @@ class DataLoaderObjectDetection(DataIteratorBase):
         Returns:
             Optional[MetaData]: Meta information for the given index.
         """
-        super().get_meta() # To load default metadata
+        default_meta = super().get_meta() # To load default metadata
         return MetaData(
             data={
+                **default_meta.data,
                 'meta1': 'value1',
                 'meta2': 'value2',
                 'categorical_meta1': 'cat_value1',
                 'categorical_meta2': 'cat_value2'
             },
-            categories=['categorical_meta1', 'categorical_meta2'],
+            categories=default_meta.categories+['categorical_meta1', 'categorical_meta2'],
             issue_groups={
+                **default_meta.issue_groups,
                 'meta1': PerformanceIssueMeta,
                 'meta2': EthicalIssueMeta,
                 'categorical_meta1': PerformanceIssueMeta,
@@ -209,11 +211,11 @@ giskard_dataset = DataLoaderObjectDetection()
 ::::::
 ::::::{tab-item} Landmark detection
 
-To scan your model, start by **wrapping your dataset** with `DataLoaderBase`. Your class should override:
+To scan your model, start by **wrapping your dataset** with `DataIteratorBase`. Your class should override:
 
 - `idx_sampler` (property) that returns the array of indices to iterate over
 - `get_image` that loads the image corresponding to the right index as a `np.ndarray`
-- `get_labels` that returns the landmarks of the image with corresponding index
+- `get_label` that returns the landmarks of the image with corresponding index
 - (Optional) `get_meta` that returns a `MetaData` object containing the metadata of the image with the corresponding index. This object should contain the metadata in the form of a `dict`, for instance `{'meta1': 'value1'}`, the list of categorical metadata, and the type of Issue related to the metadata in the form of a `dict`, for instance `{'meta1': PerformanceIssueMeta}`. Issue types can be found in `giskard_vision.core.issues`.
 
 > ### ⚠️ Warning
@@ -239,7 +241,7 @@ class DataLoaderFaceLandmarkDetection(DataIteratorBase):
         Returns:
             np.ndarray: The array of indices
         """
-        ...
+        return list(range(len(self.image_paths)))
 
     @classmethod
     def get_image(self, idx: int) -> np.ndarray:
@@ -252,10 +254,10 @@ class DataLoaderFaceLandmarkDetection(DataIteratorBase):
         Returns:
             np.ndarray: The image as numpy array (h, w, c)
         """
-        return cv2.imread(images_paths[idx])
+        return self.images_paths[idx]
 
     @classmethod
-    def get_labels(self, idx: int) -> Optional[np.ndarray]:
+    def get_label(self, idx: int) -> Optional[np.ndarray]:
         """
         Gets the landmarks (for a single image) for a specific index.
         Format:
@@ -280,16 +282,18 @@ class DataLoaderFaceLandmarkDetection(DataIteratorBase):
         Returns:
             Optional[MetaData]: Meta information for the given index.
         """
-        super().get_meta() # To load default metadata
+        default_meta = super().get_meta() # To load default metadata
         return MetaData(
             data={
+                **default_meta.data,
                 'meta1': 'value1',
                 'meta2': 'value2',
                 'categorical_meta1': 'cat_value1',
                 'categorical_meta2': 'cat_value2'
             },
-            categories=['categorical_meta1', 'categorical_meta2'],
+            categories=default_meta.categories+['categorical_meta1', 'categorical_meta2'],
             issue_groups={
+                **default_meta.issue_groups,
                 'meta1': PerformanceIssueMeta,
                 'meta2': EthicalIssueMeta,
                 'categorical_meta1': PerformanceIssueMeta,
@@ -308,8 +312,8 @@ giskard_dataset = DataLoaderFaceLandmarkDetection()
 
 Next, **wrap your model** by using `ModelBase`. Your class should override:
 
-- `predict_rgb_image` which returns the predicted label corresponding to a single image in rgb format given as argument. The prediction format should correspond to the one returned by the `get_labels` methods from the Dataset.
-- (Optional) `predict_gray_image` if the model supports prediction from images in grayscale. The prediction format should correspond to the one returned by the `get_labels` methods from the Dataset.
+- `predict_rgb_image` which returns the predicted label corresponding to a single image in rgb format given as argument. The prediction format should correspond to the one returned by the `get_label` methods from the Dataset.
+- (Optional) `predict_gray_image` if the model supports prediction from images in grayscale. The prediction format should correspond to the one returned by the `get_label` methods from the Dataset.
     
 
 ```python
@@ -336,12 +340,12 @@ giskard_model = ModelMyTask(model=mymodel)
 You can now scan your model. For this guide, we'll use a demo dataloader and an OpenCV model. After completing steps 1 and 2, you can replace them with your own dataloader and model wrapper.
 
 ```python
-from giskard_vision.image_classification.models.wrappers import SkinCancerHuggingFaceModel
-from giskard_vision.image_classification.dataloaders.loaders import DataLoaderSkinCancerHuggingFaceDataset
+from giskard_vision.image_classification.models.wrappers import SkinCancerHFModel
+from giskard_vision.image_classification.dataloaders.loaders import DataLoaderSkinCancer
 from giskard_vision.core.scanner import scan
 
-dataset = DataLoaderSkinCancerHuggingFaceDataset()
-model = SkinCancerHuggingFaceModel()
+dataset = DataLoaderSkinCancer()
+model = SkinCancerHFModel()
 
 scan_results = scan(model, dataset, num_images=5)
 display(scan_results)  # in your notebook

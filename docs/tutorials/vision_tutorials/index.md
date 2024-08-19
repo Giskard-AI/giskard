@@ -4,14 +4,20 @@
 :maxdepth: 1
 :hidden:
 
-../../getting_started/quickstart/quickstart_vision.ipynb
-
+../../reference/notebooks/vision_landmark_detection.ipynb
+../../reference/notebooks/vision_object_detection.ipynb
 ```
+
 :::::{grid} 1 1 2 2
-::::{grid-item-card} <h3> Face landmark detection on FFHQ </h3> Landmark detection (Open CV)
+
+::::{grid-item-card} <h3> Face landmark detection on the FFHQ dataset </h3> Landmark detection (Open CV)
 :text-align: center
-:link: ../../getting_started/quickstart/quickstart_vision.ipynb
+:link: ../../reference/notebooks/vision_landmark_detection.ipynb
 ::::
 
+::::{grid-item-card} <h3> Detection of pieces of furniture </h3> Object detection (Hugging Face)
+:text-align: center
+:link: ../../reference/notebooks/vision_object_detection.ipynb
+::::
 
 :::::
