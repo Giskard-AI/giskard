@@ -45,22 +45,18 @@ class DataLoaderClassification(DataIteratorBase):
 
     @property
     def idx_sampler(self) -> np.ndarray:
-
         return list(range(len(self.image_paths)))
 
     @classmethod
     def get_image(self, idx: int) -> np.ndarray:
-
         return cv2.imread(str(self.image_paths[idx]))
 
     @classmethod
     def get_label(self, idx: int) -> Optional[np.ndarray]:
-
         return 'label'
     
     @classmethod
     def get_meta(self, idx: int) -> Optional[MetaData]:
-
         default_meta = super().get_meta() # To load default metadata
         return MetaData(
             data={
@@ -111,22 +107,18 @@ class DataLoaderObjectDetection(DataIteratorBase):
 
     @property
     def idx_sampler(self) -> np.ndarray:
-
         return list(range(len(self.image_paths)))
 
     @classmethod
     def get_image(self, idx: int) -> np.ndarray:
-
         return cv2.imread(str(self.image_paths[idx]))
 
     @classmethod
     def get_label(self, idx: int) -> Optional[np.ndarray]:
-
         return {...}
     
     @classmethod
     def get_meta(self, idx: int) -> Optional[MetaData]:
-
         default_meta = super().get_meta() # To load default metadata
         return MetaData(
             data={
@@ -178,22 +170,18 @@ class DataLoaderFaceLandmarkDetection(DataIteratorBase):
 
     @property
     def idx_sampler(self) -> np.ndarray:
-
         return list(range(len(self.image_paths)))
 
     @classmethod
     def get_image(self, idx: int) -> np.ndarray:
-
         return cv2.imread(str(self.image_paths[idx]))
 
     @classmethod
     def get_label(self, idx: int) -> Optional[np.ndarray]:
-
         return np.array(..., dtype=float)
     
     @classmethod
     def get_meta(self, idx: int) -> Optional[MetaData]:
-
         default_meta = super().get_meta() # To load default metadata
         return MetaData(
             data={
