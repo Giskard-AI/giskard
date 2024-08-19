@@ -50,7 +50,7 @@ class DataLoaderClassification(DataIteratorBase):
         Returns:
             np.ndarray: The array of indices
         """
-        return list(range(len(self.image_paths)))
+        return list(range(len(self.images_paths)))
 
     @classmethod
     def get_image(self, idx: int) -> np.ndarray:
@@ -63,7 +63,7 @@ class DataLoaderClassification(DataIteratorBase):
         Returns:
             np.ndarray: The image as numpy array (h, w, c)
         """
-        return self.images_paths[idx]
+        return cv2.imread(str(self.images_paths[idx]))
 
     @classmethod
     def get_label(self, idx: int) -> Optional[np.ndarray]:
@@ -118,7 +118,7 @@ To scan your model, start by **wrapping your dataset** with `DataIteratorBase`. 
 
 - `idx_sampler` (property) that returns the array of indices to iterate over
 - `get_image` that loads the image corresponding to the right index as a `np.ndarray`
-- `get_label` that returns the box coordinates of the image with corresponding index
+- `get_label` that returns a dict containing boxes (np.array) and labels (string) as keys
 - (Optional) `get_meta` that returns a `MetaData` object containing the metadata of the image with the corresponding index. This object should contain the metadata in the form of a `dict`, for instance `{'meta1': 'value1'}`, the list of categorical metadata, and the type of Issue related to the metadata in the form of a `dict`, for instance `{'meta1': PerformanceIssueMeta}`. Issue types can be found in `giskard_vision.core.issues`.
 
 > ### ⚠️ Warning
@@ -144,7 +144,7 @@ class DataLoaderObjectDetection(DataIteratorBase):
         Returns:
             np.ndarray: The array of indices
         """
-        return list(range(len(self.image_paths)))
+        return list(range(len(self.images_paths)))
 
     @classmethod
     def get_image(self, idx: int) -> np.ndarray:
@@ -157,22 +157,22 @@ class DataLoaderObjectDetection(DataIteratorBase):
         Returns:
             np.ndarray: The image as numpy array (h, w, c)
         """
-        return self.images_paths[idx]
+        return cv2.imread(str(self.images_paths[idx]))
 
     @classmethod
     def get_label(self, idx: int) -> Optional[np.ndarray]:
         """
-        Gets the box coordinates (for a single image) for a specific index.
+        Gets a dict containing boxes (np.array) and labels (string) as keys for a specific index
         Format:
-        np.array({"boxes": [x1_min, y1_min, x1_max, y1_max]})
+        {"boxes": [x1_min, y1_min, x1_max, y1_max], "labels": "value"}
 
         Args:
             idx (int): Index of the image.
 
         Returns:
-            Optional[np.ndarray]: Box coordinates for the given index.
+            Optional[dict]: Dict containing the information for the given index.
         """
-        return np.array(..., dtype=object)
+        return {...}
     
     @classmethod
     def get_meta(self, idx: int) -> Optional[MetaData]:
@@ -241,7 +241,7 @@ class DataLoaderFaceLandmarkDetection(DataIteratorBase):
         Returns:
             np.ndarray: The array of indices
         """
-        return list(range(len(self.image_paths)))
+        return list(range(len(self.images_paths)))
 
     @classmethod
     def get_image(self, idx: int) -> np.ndarray:
@@ -254,7 +254,7 @@ class DataLoaderFaceLandmarkDetection(DataIteratorBase):
         Returns:
             np.ndarray: The image as numpy array (h, w, c)
         """
-        return self.images_paths[idx]
+        return cv2.imread(str(self.images_paths[idx]))
 
     @classmethod
     def get_label(self, idx: int) -> Optional[np.ndarray]:
