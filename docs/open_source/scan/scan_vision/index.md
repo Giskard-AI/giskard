@@ -46,12 +46,12 @@ class DataLoaderClassification(DataIteratorBase):
     @property
     def idx_sampler(self) -> np.ndarray:
 
-        return list(range(len(self.images_paths)))
+        return list(range(len(self.image_paths)))
 
     @classmethod
     def get_image(self, idx: int) -> np.ndarray:
 
-        return cv2.imread(str(self.images_paths[idx]))
+        return cv2.imread(str(self.image_paths[idx]))
 
     @classmethod
     def get_label(self, idx: int) -> Optional[np.ndarray]:
@@ -112,12 +112,12 @@ class DataLoaderObjectDetection(DataIteratorBase):
     @property
     def idx_sampler(self) -> np.ndarray:
 
-        return list(range(len(self.images_paths)))
+        return list(range(len(self.image_paths)))
 
     @classmethod
     def get_image(self, idx: int) -> np.ndarray:
 
-        return cv2.imread(str(self.images_paths[idx]))
+        return cv2.imread(str(self.image_paths[idx]))
 
     @classmethod
     def get_label(self, idx: int) -> Optional[np.ndarray]:
@@ -179,12 +179,12 @@ class DataLoaderFaceLandmarkDetection(DataIteratorBase):
     @property
     def idx_sampler(self) -> np.ndarray:
 
-        return list(range(len(self.images_paths)))
+        return list(range(len(self.image_paths)))
 
     @classmethod
     def get_image(self, idx: int) -> np.ndarray:
 
-        return cv2.imread(str(self.images_paths[idx]))
+        return cv2.imread(str(self.image_paths[idx]))
 
     @classmethod
     def get_label(self, idx: int) -> Optional[np.ndarray]:
