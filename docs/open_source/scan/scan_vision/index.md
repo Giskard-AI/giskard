@@ -115,7 +115,7 @@ class DataLoaderObjectDetection(DataIteratorBase):
 
     @classmethod
     def get_label(self, idx: int) -> Optional[np.ndarray]:
-        return {...}
+        return {"boxes": np.array(...), "labels": "label1"}
     
     @classmethod
     def get_meta(self, idx: int) -> Optional[MetaData]:
