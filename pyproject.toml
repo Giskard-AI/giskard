@@ -74,7 +74,7 @@ ml_runtime = [
     "catboost>=1.1.1",
     "requests-mock>=1.10.0",
     "tensorflow-hub>=0.12.0; sys_platform != 'win32' and platform_system !='Windows'",
-    "transformers>=4.34.1",
+    "transformers>=4.34.1, <4.43.0",
     "sentencepiece",                                                                      # needed for some transformers stuff with tokenizer
     "torch>=2.0.0, < 2.3.0",
     "torchdata>=0.6.0, <0.8.0",
