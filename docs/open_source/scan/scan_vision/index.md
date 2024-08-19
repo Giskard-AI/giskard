@@ -23,8 +23,8 @@ To scan your model, start by **wrapping your dataset**, as shown below
 To scan your model, start by **wrapping your dataset** with `DataIteratorBase`. Your class should override:
 
 - `idx_sampler` (property) that returns the array of indices to iterate over
-- `get_image` that loads the image corresponding to the right index as a `np.ndarray`
-- `get_label` that returns the label of the image with corresponding index
+- `get_image` that loads the image corresponding to the right index as a `np.ndarray` (h, w, c)
+- `get_label` that returns the label of the image with corresponding index, as a string
 - (Optional) `get_meta` that returns a `MetaData` object containing the metadata of the image with the corresponding index. This object should contain the metadata in the form of a `dict`, for instance `{'meta1': 'value1'}`, the list of categorical metadata, and the type of Issue related to the metadata in the form of a `dict`, for instance `{'meta1': PerformanceIssueMeta}`. Issue types can be found in `giskard_vision.core.issues`.
 
 > ### ⚠️ Warning
@@ -45,50 +45,22 @@ class DataLoaderClassification(DataIteratorBase):
 
     @property
     def idx_sampler(self) -> np.ndarray:
-        """Accesses the array of element indices to iterate over
 
-        Returns:
-            np.ndarray: The array of indices
-        """
         return list(range(len(self.images_paths)))
 
     @classmethod
     def get_image(self, idx: int) -> np.ndarray:
-        """
-        Returns a single image from an index as numpy array
 
-        Args:
-            idx (int): Index of the image
-
-        Returns:
-            np.ndarray: The image as numpy array (h, w, c)
-        """
         return cv2.imread(str(self.images_paths[idx]))
 
     @classmethod
     def get_label(self, idx: int) -> Optional[np.ndarray]:
-        """
-        Gets the label (for a single image) for a specific index.
 
-        Args:
-            idx (int): Index of the image.
-
-        Returns:
-            Optional[str]: Label for the given index.
-        """
         return 'label'
     
     @classmethod
     def get_meta(self, idx: int) -> Optional[MetaData]:
-        """
-        Gets meta information (for a single image) for a specific index.
 
-        Args:
-            idx (int): Index of the image.
-
-        Returns:
-            Optional[MetaData]: Meta information for the given index.
-        """
         default_meta = super().get_meta() # To load default metadata
         return MetaData(
             data={
@@ -117,8 +89,8 @@ giskard_dataset = DataLoaderClassification()
 To scan your model, start by **wrapping your dataset** with `DataIteratorBase`. Your class should override:
 
 - `idx_sampler` (property) that returns the array of indices to iterate over
-- `get_image` that loads the image corresponding to the right index as a `np.ndarray`
-- `get_label` that returns a dict containing boxes (np.array) and labels (string) as keys
+- `get_image` that loads the image corresponding to the right index as a `np.ndarray` (h, w, c)
+- `get_label` that returns a dict containing boxes (np.array) and labels (string) as keys, with format {"boxes": [x1_min, y1_min, x1_max, y1_max], "labels": "value"}
 - (Optional) `get_meta` that returns a `MetaData` object containing the metadata of the image with the corresponding index. This object should contain the metadata in the form of a `dict`, for instance `{'meta1': 'value1'}`, the list of categorical metadata, and the type of Issue related to the metadata in the form of a `dict`, for instance `{'meta1': PerformanceIssueMeta}`. Issue types can be found in `giskard_vision.core.issues`.
 
 > ### ⚠️ Warning
@@ -139,52 +111,22 @@ class DataLoaderObjectDetection(DataIteratorBase):
 
     @property
     def idx_sampler(self) -> np.ndarray:
-        """Accesses the array of element indices to iterate over
 
-        Returns:
-            np.ndarray: The array of indices
-        """
         return list(range(len(self.images_paths)))
 
     @classmethod
     def get_image(self, idx: int) -> np.ndarray:
-        """
-        Returns a single image from an index as numpy array
 
-        Args:
-            idx (int): Index of the image
-
-        Returns:
-            np.ndarray: The image as numpy array (h, w, c)
-        """
         return cv2.imread(str(self.images_paths[idx]))
 
     @classmethod
     def get_label(self, idx: int) -> Optional[np.ndarray]:
-        """
-        Gets a dict containing boxes (np.array) and labels (string) as keys for a specific index
-        Format:
-        {"boxes": [x1_min, y1_min, x1_max, y1_max], "labels": "value"}
 
-        Args:
-            idx (int): Index of the image.
-
-        Returns:
-            Optional[dict]: Dict containing the information for the given index.
-        """
         return {...}
     
     @classmethod
     def get_meta(self, idx: int) -> Optional[MetaData]:
-        """
-        Gets meta information (for a single image) for a specific index.
 
-        Args:
-            idx (int): Index of the image.
-
-        Returns:
-            Optional[MetaData]: Meta information for the given index.
-        """
         default_meta = super().get_meta() # To load default metadata
         return MetaData(
             data={
@@ -214,8 +156,8 @@ giskard_dataset = DataLoaderObjectDetection()
 To scan your model, start by **wrapping your dataset** with `DataIteratorBase`. Your class should override:
 
 - `idx_sampler` (property) that returns the array of indices to iterate over
-- `get_image` that loads the image corresponding to the right index as a `np.ndarray`
-- `get_label` that returns the landmarks of the image with corresponding index
+- `get_image` that loads the image corresponding to the right index as a `np.ndarray` (h, w, c)
+- `get_label` that returns the landmarks of the image with corresponding index, as a `np.ndarray` (num. marks, 2)
 - (Optional) `get_meta` that returns a `MetaData` object containing the metadata of the image with the corresponding index. This object should contain the metadata in the form of a `dict`, for instance `{'meta1': 'value1'}`, the list of categorical metadata, and the type of Issue related to the metadata in the form of a `dict`, for instance `{'meta1': PerformanceIssueMeta}`. Issue types can be found in `giskard_vision.core.issues`.
 
 > ### ⚠️ Warning
@@ -236,52 +178,22 @@ class DataLoaderFaceLandmarkDetection(DataIteratorBase):
 
     @property
     def idx_sampler(self) -> np.ndarray:
-        """Accesses the array of element indices to iterate over
 
-        Returns:
-            np.ndarray: The array of indices
-        """
         return list(range(len(self.images_paths)))
 
     @classmethod
     def get_image(self, idx: int) -> np.ndarray:
-        """
-        Returns a single image from an index as numpy array
 
-        Args:
-            idx (int): Index of the image
-
-        Returns:
-            np.ndarray: The image as numpy array (h, w, c)
-        """
         return cv2.imread(str(self.images_paths[idx]))
 
     @classmethod
     def get_label(self, idx: int) -> Optional[np.ndarray]:
-        """
-        Gets the landmarks (for a single image) for a specific index.
-        Format:
-            np.array (num_marks, 2)
 
-        Args:
-            idx (int): Index of the image.
-
-        Returns:
-            Optional[np.ndarray]: Landmarks 2D coordinates for the given index.
-        """
         return np.array(..., dtype=float)
     
     @classmethod
     def get_meta(self, idx: int) -> Optional[MetaData]:
-        """
-        Gets meta information (for a single image) for a specific index.
 
-        Args:
-            idx (int): Index of the image.
-
-        Returns:
-            Optional[MetaData]: Meta information for the given index.
-        """
         default_meta = super().get_meta() # To load default metadata
         return MetaData(
             data={
