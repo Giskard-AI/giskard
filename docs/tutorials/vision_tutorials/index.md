@@ -15,7 +15,7 @@
 :link: ../../reference/notebooks/vision_landmark_detection.ipynb
 ::::
 
-::::{grid-item-card} <h3> Detection of pieces of furniture </h3> Object detection (Hugging Face)
+::::{grid-item-card} <h3> Detection of faces on the 300W dataset </h3> Object detection (Hugging Face)
 :text-align: center
 :link: ../../reference/notebooks/vision_object_detection.ipynb
 ::::
