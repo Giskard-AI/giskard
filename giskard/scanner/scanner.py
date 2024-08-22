@@ -29,8 +29,6 @@ from .logger import logger
 from .registry import DetectorRegistry
 from .report import ScanReport
 
-MAX_ISSUES_PER_DETECTOR = 15
-
 COST_ESTIMATE_TEMPLATE = """Estimated calls to your model: ~{num_model_calls}
 Estimated LLM calls for evaluation: {num_llm_calls}
 """
@@ -73,6 +71,7 @@ class Scanner:
         features: Optional[Sequence[str]] = None,
         verbose=True,
         raise_exceptions=False,
+        max_issues_per_detector=15,
     ) -> ScanReport:
         """Runs the analysis of a model and dataset, detecting issues.
 
@@ -89,6 +88,8 @@ class Scanner:
         raise_exceptions : bool
             Whether to raise an exception if detection errors are encountered. By default, errors are logged and
             handled gracefully, without interrupting the scan.
+        max_issues_per_detector : int
+            Maximal number of issues per detector in the report
 
         Returns
         -------
@@ -123,7 +124,13 @@ class Scanner:
             with warnings.catch_warnings():
                 warnings.simplefilter("ignore")
                 issues, errors = self._run_detectors(
-                    detectors, model, dataset, features, verbose=verbose, raise_exceptions=raise_exceptions
+                    detectors,
+                    model,
+                    dataset,
+                    features,
+                    verbose=verbose,
+                    raise_exceptions=raise_exceptions,
+                    max_issues_per_detector=max_issues_per_detector,
                 )
 
             issues = self._postprocess(issues)
@@ -138,7 +145,9 @@ class Scanner:
 
         return ScanReport(issues, model=model, dataset=dataset, detectors_names=detectors_names)
 
-    def _run_detectors(self, detectors, model, dataset, features, verbose=True, raise_exceptions=False):
+    def _run_detectors(
+        self, detectors, model, dataset, features, verbose=True, raise_exceptions=False, max_issues_per_detector=None
+    ):
         if not detectors:
             raise RuntimeError("No issue detectors available. Scan will not be performed.")
 
@@ -167,7 +176,7 @@ class Scanner:
                     raise err
 
                 detected_issues = []
-            detected_issues = sorted(detected_issues, key=lambda i: -i.importance)[:MAX_ISSUES_PER_DETECTOR]
+            detected_issues = sorted(detected_issues, key=lambda i: -i.importance)[:max_issues_per_detector]
             detector_elapsed = perf_counter() - detector_start
             maybe_print(
                 f"{detector.__class__.__name__}: {len(detected_issues)} issue{'s' if len(detected_issues) > 1 else ''} detected. (Took {datetime.timedelta(seconds=detector_elapsed)})",
