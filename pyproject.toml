@@ -18,6 +18,7 @@ giskard = [
     "**/*prompts.csv",
     "**/*.txt",
     "**/injection_data/*.csv",
+    "**/local/*.csv",
 ]
 
 
