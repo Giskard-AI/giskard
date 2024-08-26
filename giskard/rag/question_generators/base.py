@@ -41,7 +41,7 @@ class _LLMBasedQuestionGenerator(QuestionGenerator):
     def _llm_complete(self, messages: Sequence[ChatMessage]) -> dict:
         out = self._llm_client.complete(
             messages=messages,
-            temperature=0.5,
+            temperature=self._llm_temperature,
             caller_id=self.__class__.__name__,
         )
 
