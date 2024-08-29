@@ -79,8 +79,8 @@ class GeminiClient(LLMClient):
             raise LLMConfigurationError(AUTH_ERROR_MESSAGE) from err
 
         self.logger.log_call(
-            prompt_tokens=self._client.count_tokens([m.content for m in messages]),
-            sampled_tokens=self._client.count_tokens(completion.text),
+            prompt_tokens=self._client.count_tokens([m.content for m in messages]).total_tokens,
+            sampled_tokens=self._client.count_tokens(completion.text).total_tokens,
             model=self.model,
             client_class=self.__class__.__name__,
             caller_id=caller_id,
