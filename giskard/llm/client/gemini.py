@@ -45,7 +45,7 @@ def _format(messages: Sequence[ChatMessage]) -> Sequence[ContentDict]:
             last_message["parts"].append(message.content)
             continue
 
-        content.append(ContentDict(role=message.role, parts=[message.content]))
+        content.append(ContentDict(role=role, parts=[message.content]))
 
     return content
 
