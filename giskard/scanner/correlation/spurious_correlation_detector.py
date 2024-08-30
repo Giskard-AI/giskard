@@ -96,6 +96,7 @@ class SpuriousCorrelationDetector(Detector):
                         importance=metric_value,
                         tests=_generate_spurious_corr_tests,
                         taxonomy=["avid-effect:performance:P0103"],
+                        detector_name=self.__class__.__name__,
                     )
 
                     extractor = ExampleExtractor(issue)

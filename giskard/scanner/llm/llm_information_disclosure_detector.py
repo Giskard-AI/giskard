@@ -22,8 +22,6 @@ class LLMInformationDisclosureDetector(RequirementBasedDetector):
     undesired availability of private information to the model (for example, confidential data acquired during fine
     tuning), or the tendency to hallucinate information such as phone numbers or personal emails even if those details
     were not provided to the model.
-
-    Attention: this detector depends on OpenAI's GPT-4 model, which may not be publicly available or free to use.
     """
 
     _issue_group = SensitiveInformationDisclosure

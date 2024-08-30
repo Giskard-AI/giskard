@@ -1,6 +1,7 @@
 from typing import Optional
 
 import ast
+from pathlib import Path, PurePath
 
 import pandas as pd
 
@@ -9,6 +10,9 @@ from ..evaluators.string_matcher import StringMatcherConfig
 
 INJECTION_DATA_URL = "https://raw.githubusercontent.com/Giskard-AI/prompt-injections/v0.0.2/prompt_injections.csv"
 GISKARD_META_URL = "https://raw.githubusercontent.com/Giskard-AI/prompt-injections/v0.0.2/giskard_meta_data.csv"
+
+LOCAL_INJECTION_DATA_PATH = Path(__file__).parent.joinpath("local", "prompt_injections.csv")
+LOCAL_GISKARD_META_PATH = Path(__file__).parent.joinpath("local", "giskard_meta_data.csv")
 
 
 def from_records_to_configs(records):
@@ -19,13 +23,24 @@ def from_records_to_configs(records):
     return configs
 
 
+def _try_download(url: str, local_path: PurePath):
+    try:
+        return pd.read_csv(url, index_col=["index"])
+    except:  # noqa NOSONAR
+        return pd.read_csv(local_path, index_col=["index"])
+
+
 class PromptInjectionDataLoader:
     def __init__(
         self,
         num_samples: Optional[int] = None,
+        injection_data_url: str = INJECTION_DATA_URL,
+        giskard_meta_url: str = GISKARD_META_URL,
     ):
         self.num_samples = num_samples
         self._df = None
+        self.injection_data_url = injection_data_url
+        self.giskard_meta_url = giskard_meta_url
 
     def load_dataset_from_group(self, features, group) -> Dataset:
         prompts = self.prompts_from_group(group)
@@ -41,8 +56,8 @@ class PromptInjectionDataLoader:
     @property
     def df(self):
         if self._df is None:
-            prompt_injections_df = pd.read_csv(INJECTION_DATA_URL, index_col=["index"])
-            meta_df = pd.read_csv(GISKARD_META_URL, index_col=["index"])
+            prompt_injections_df = _try_download(self.injection_data_url, LOCAL_INJECTION_DATA_PATH)
+            meta_df = _try_download(self.giskard_meta_url, LOCAL_GISKARD_META_PATH)
             meta_df.expected_strings = meta_df.expected_strings.apply(ast.literal_eval)
             self._df = prompt_injections_df.join(meta_df)
 
