@@ -16,8 +16,10 @@ from xml.etree.ElementTree import Element, SubElement, tostring
 
 from giskard.core.core import TestFunctionMeta
 from giskard.core.errors import GiskardImportError
+from giskard.core.savable import Artifact
 from giskard.core.test_result import TestMessage, TestMessageLevel, TestResult
 from giskard.datasets.base import Dataset
+from giskard.exceptions.IllegalArgumentError import IllegalArgumentError
 from giskard.models.base import BaseModel
 from giskard.registry.giskard_test import GiskardTest, GiskardTestMethod, Test
 from giskard.registry.registry import tests_registry
@@ -26,6 +28,8 @@ from giskard.registry.transformation_function import TransformationFunction
 
 from ..client.python_utils import warning
 from ..utils.analytics_collector import analytics
+from ..utils.artifacts import serialize_parameter
+from .kwargs_utils import get_imports_code
 
 if TYPE_CHECKING:
     from mlflow import MlflowClient
@@ -389,8 +393,6 @@ def single_binary_result(test_results: List):
     return all(res.passed for res in test_results)
 
 
-
-
 def _build_test_input_json(folder, p, pname, ptype, uploaded_uuid_status: Dict[str, bool]):
     if issubclass(type(p), Dataset) or issubclass(type(p), BaseModel):
         if _try_save_artifact(p, folder, uploaded_uuid_status):
@@ -633,7 +635,6 @@ class Suite:
 
         return self
 
-
     def _to_json(self, folder: Path, saved_uuid_status: Dict[str, bool] = None):
         return {
             "name": self.name,
@@ -868,6 +869,7 @@ def format_test_result(result: Union[bool, TestResult]) -> str:
         return f"{{{'passed' if result.passed else 'failed'}, metric={result.metric}}}"
     else:
         return "passed" if result else "failed"
+
 
 def _try_save_artifact(artifact, path: Path, saved_uuid_status: Dict[str, bool]) -> bool:
     artifact_id = serialize_parameter(artifact)

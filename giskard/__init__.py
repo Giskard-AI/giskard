@@ -38,7 +38,6 @@ def get_version() -> str:
 
 __version__: str = get_version()
 
-check_latest_giskard_version()
 analytics.track("Initialized giskard library")
 
 __all__ = [

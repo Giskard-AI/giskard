@@ -1,5 +1,5 @@
-
 import tempfile
+
 import numpy as np
 import pytest
 
@@ -95,6 +95,7 @@ def test_suite_result_backward_compatibility():
     assert test_name == "name"
     assert result == TestResult()
     assert params == {}
+
 
 def test_suite_save_and_load(german_credit_data, german_credit_model):
     my_test = test_accuracy(threshold=0.7)
