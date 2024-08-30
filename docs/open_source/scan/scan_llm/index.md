@@ -40,7 +40,7 @@ processed.
 
 In the following example, we illustrate the procedure using **OpenAI** and **Azure OpenAI**; however, please note that
 our platform supports a variety of language models. For details on configuring different models, visit
-our [🤖 Setting up the LLM Client page](../../open_source/setting_up/index.md)
+our [🤖 Setting up the LLM Client page](../../setting_up/index.md)
 
 Before starting, make sure you have installed the LLM flavor of Giskard:
 
@@ -128,6 +128,22 @@ claude_client = ClaudeBedrockClient(bedrock_runtime, model="anthropic.claude-3-h
 embed_client = BedrockEmbedding(bedrock_runtime, model="amazon.titan-embed-text-v1")
 giskard.llm.set_default_client(claude_client)
 set_default_embedding(embed_client)
+```
+
+::::::
+::::::{tab-item} Gemini
+
+```python
+import os
+import giskard
+
+import google.generativeai as genai
+
+from giskard.llm.client.gemini import GeminiClient
+
+genai.configure(api_key=os.environ["GEMINI_API_KEY"])
+
+giskard.llm.set_default_client(GeminiClient())
 ```
 
 ::::::

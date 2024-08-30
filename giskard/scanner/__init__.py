@@ -31,6 +31,7 @@ def scan(
     only=None,
     verbose=True,
     raise_exceptions=False,
+    max_issues_per_detector=15,
 ):
     """Automatically detects model vulnerabilities.
 
@@ -54,6 +55,8 @@ def scan(
     raise_exceptions : bool
         Whether to raise an exception if detection errors are encountered. By default, errors are logged and
         handled gracefully, without interrupting the scan.
+    max_issues_per_detector : int
+        Maximal number of issues per detector
 
     Returns
     -------
@@ -62,7 +65,12 @@ def scan(
     """
     scanner = Scanner(params, only=only)
     return scanner.analyze(
-        model, dataset=dataset, features=features, verbose=verbose, raise_exceptions=raise_exceptions
+        model,
+        dataset=dataset,
+        features=features,
+        verbose=verbose,
+        raise_exceptions=raise_exceptions,
+        max_issues_per_detector=max_issues_per_detector,
     )
 
 
