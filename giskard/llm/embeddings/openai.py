@@ -6,6 +6,25 @@ from ...utils.iterables import batched
 from ..client import get_default_llm_api
 from .base import BaseEmbedding
 
+_default_embedding_model = "text-embedding-ada-002"
+
+
+def get_embedding_model() -> str:
+    return _default_embedding_model
+
+
+def set_embedding_model(model: str):
+    """
+    Set the default embedding model to be used with OpenAI/AzureOpenAI client.
+
+    Parameters
+    ----------
+    model : str
+        Model name (e.g. 'text-embedding-ada-002' or 'text-embedding-3-large').
+    """
+    global _default_embedding_model
+    _default_embedding_model = model
+
 
 class OpenAIEmbedding(BaseEmbedding):
     def __init__(self, client, model: str, batch_size=40):
@@ -48,6 +67,6 @@ def try_get_openai_embeddings() -> Optional[OpenAIEmbedding]:
         else:
             client = OpenAI()
 
-        return OpenAIEmbedding(client=client, model="text-embedding-ada-002")
+        return OpenAIEmbedding(client=client, model=get_embedding_model())
     except ImportError:
         return None
