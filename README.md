@@ -16,7 +16,7 @@
 
 </div>
 <h3 align="center">
-   <a href="https://docs.giskard.ai/en/latest/getting_started/index.html"><b>Docs</b></a> &bull;
+   <a href="https://docs.giskard.ai/en/stable/getting_started/index.html"><b>Docs</b></a> &bull;
    <a href="https://www.giskard.ai/knowledge-categories/news/?utm_source=github&utm_medium=github&utm_campaign=github_readme&utm_id=readmeblog"><b>Blog</b></a> &bull;
   <a href="https://www.giskard.ai/?utm_source=github&utm_medium=github&utm_campaign=github_readme&utm_id=readmeblog"><b>Website</b></a> &bull;
   <a href="https://gisk.ar/discord"><b>Discord</b></a>
@@ -76,6 +76,8 @@ Giskard works with any model, in any environment and integrates seamlessly with 
   <img width='600' src="https://raw.githubusercontent.com/giskard-ai/giskard/main/readme/tools_updated.png">
 </p>
 <br/>
+
+Looking for solutions to evaluate computer vision models? Check out [giskard-vision](https://github.com/Giskard-AI/giskard-vision), a library dedicated for computer vision tasks. 
 
 # Contents
 

@@ -123,6 +123,7 @@ class Issue:
         taxonomy: List[str] = None,
         scan_examples: Optional[ScanExamples] = None,
         display_footer_info: bool = True,
+        detector_name: str = None,
     ):
         """Issue represents a single model vulnerability detected by Giskard.
 
@@ -179,6 +180,7 @@ class Issue:
         self.scan_examples = DataFrameScanExamples() if scan_examples is None else scan_examples
         if examples is not None:
             self.scan_examples.extend(examples)
+        self._detector_name = detector_name
 
     def __repr__(self):
         return f"<{self.__class__.__name__} group='{self.group.name}' level='{self.level}'>"
@@ -218,6 +220,13 @@ class Issue:
             **self.meta,
         )
 
+    @property
+    def detector_name(self):
+        return self._detector_name
+
+    def set_detector_name(self, detector_name):
+        self._detector_name = detector_name
+
     def examples(self, n=3) -> Any:
         return self.scan_examples.head(n)
 
@@ -245,7 +254,7 @@ changing word order, or turning text into uppercase or lowercase. This happens w
 - Overreliance on spurious correlations like the presence of specific word
 - Use of complex models with large number of parameters that tend to overfit the training data
 
-To learn more about causes and solutions, check our [guide on robustness issues](https://docs.giskard.ai/en/latest/knowledge/key_vulnerabilities/robustness/index.html).
+To learn more about causes and solutions, check our [guide on robustness issues](https://docs.giskard.ai/en/stable/knowledge/key_vulnerabilities/robustness/index.html).
 """,
 )
 
@@ -259,7 +268,7 @@ happen for different reasons:
 - Wrong labels in the training set in the low-performing data slice
 - Drift between your training set and test set
 
-To learn more about causes and solutions, check our [guide on performance bias.](https://docs.giskard.ai/en/latest/knowledge/key_vulnerabilities/performance_bias/index.html)
+To learn more about causes and solutions, check our [guide on performance bias.](https://docs.giskard.ai/en/stable/knowledge/key_vulnerabilities/performance_bias/index.html)
 """,
 )
 
@@ -272,7 +281,7 @@ We found some data slices in your dataset containing significant number of overc
 - Wrongly labeled examples in the training set in the overconfident data slice
 - For imbalanced datasets, the model may assign high probabilities to predictions of the majority class
 
-To learn more about causes and solutions, check our [guide on overconfidence issues.](https://docs.giskard.ai/en/latest/knowledge/key_vulnerabilities/overconfidence/index.html)
+To learn more about causes and solutions, check our [guide on overconfidence issues.](https://docs.giskard.ai/en/stable/knowledge/key_vulnerabilities/overconfidence/index.html)
 """,
 )
 
@@ -285,7 +294,7 @@ We found some data slices in your dataset containing significant number of under
 - The model is too simple and struggles to capture the complexity of the underlying data
 - The underconfident data slice contains inherent noise or overlapping feature distributions
 
-To learn more about causes and solutions, check our [guide on underconfidence issues.](https://docs.giskard.ai/en/latest/knowledge/key_vulnerabilities/underconfidence/index.html)
+To learn more about causes and solutions, check our [guide on underconfidence issues.](https://docs.giskard.ai/en/stable/knowledge/key_vulnerabilities/underconfidence/index.html)
 """,
 )
 
@@ -298,7 +307,7 @@ Your model seems to be sensitive to gender, ethnic, or religion based perturbati
 - Data is reflecting some structural biases and societal prejudices
 - Use of complex models with large number of parameters that tend to overfit the training data
 
-To learn more about causes and solutions, check our [guide on unethical behaviour.](https://docs.giskard.ai/en/latest/knowledge/key_vulnerabilities/ethics/index.html)""",
+To learn more about causes and solutions, check our [guide on unethical behaviour.](https://docs.giskard.ai/en/stable/knowledge/key_vulnerabilities/ethics/index.html)""",
 )
 
 DataLeakage = IssueGroup(
@@ -309,7 +318,7 @@ Your model seems to present some data leakage. The model provides different resu
 - Preprocessing steps, such as scaling, missing value imputation, or outlier handling, are fitted inside the prediction pipeline
 - Train-test splitting is done after preprocessing or feature selection
 
-To learn more about causes and solutions, check our [guide on data leakage.](https://docs.giskard.ai/en/latest/knowledge/key_vulnerabilities/data_leakage/index.html)""",
+To learn more about causes and solutions, check our [guide on data leakage.](https://docs.giskard.ai/en/stable/knowledge/key_vulnerabilities/data_leakage/index.html)""",
 )
 
 Stochasticity = IssueGroup(
@@ -317,7 +326,7 @@ Stochasticity = IssueGroup(
     description="""
 Your model seems to present some stochastic behaviour. The model provides different results at each execution. This may happen when some stochastic training process is included in the prediction pipeline.
 
-To learn more about causes and solutions, check our [guide on stochasticity issues.](https://docs.giskard.ai/en/latest/knowledge/key_vulnerabilities/stochasticity/index.html)""",
+To learn more about causes and solutions, check our [guide on stochasticity issues.](https://docs.giskard.ai/en/stable/knowledge/key_vulnerabilities/stochasticity/index.html)""",
 )
 
 SpuriousCorrelation = IssueGroup(
@@ -329,7 +338,7 @@ We found some potential spurious correlations between your data and the model pr
 - Overfitting: the model learns specific noisy patterns of the training data, including coincidental correlations that are not causal
 - Data noise: the training set contains anomalies that are unrelated to the underlying problem (data collection, measurement biases, data preprocessing issues, etc.)
 
-To learn more about causes and solutions, check our [guide on spurious correlation.](https://docs.giskard.ai/en/latest/knowledge/key_vulnerabilities/spurious/index.html)""",
+To learn more about causes and solutions, check our [guide on spurious correlation.](https://docs.giskard.ai/en/stable/knowledge/key_vulnerabilities/spurious/index.html)""",
 )
 
 Harmfulness = IssueGroup(

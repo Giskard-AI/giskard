@@ -1,6 +1,7 @@
-from typing import Optional, Sequence
+from typing import Any, Dict, Optional, Sequence
 
 import json
+from dataclasses import dataclass
 
 import pandas as pd
 
@@ -9,14 +10,48 @@ from ..datasets.base import Dataset
 from ..testing.tests.llm import test_llm_correctness
 
 
+@dataclass
+class QuestionSample:
+    id: str
+    question: str
+    reference_answer: str
+    reference_context: str
+    conversation_history: Sequence[Dict[str, str]]
+    metadata: Dict[str, Any]
+    agent_answer: Optional[str] = None
+    correctness: Optional[bool] = None
+
+    def to_dict(self):
+        sample_dict = {
+            "id": self.id,
+            "question": self.question,
+            "reference_answer": self.reference_answer,
+            "reference_context": self.reference_context,
+            "conversation_history": self.conversation_history,
+            "metadata": self.metadata,
+        }
+        if self.agent_answer is not None:
+            sample_dict["agent_answer"] = self.agent_answer
+        if self.correctness is not None:
+            sample_dict["correctness"] = self.correctness
+        return sample_dict
+
+
 class QATestset:
     """A class to represent a testset for QA models."""
 
-    def __init__(self, dataframe: pd.DataFrame):
-        self._dataframe = dataframe
+    def __init__(self, question: Sequence[QuestionSample]):
+        self._questions = question
+        self._dataframe = pd.DataFrame.from_records([question.to_dict() for question in self._questions]).set_index(
+            "id"
+        )
 
     def __len__(self):
         return len(self._dataframe)
+
+    @classmethod
+    def from_pandas(cls, dataframe: pd.DataFrame):
+        return cls([QuestionSample(**record) for record in dataframe.to_dict(orient="records")])
 
     def to_pandas(self, filters: Optional[dict] = None):
         """Return the testset as a pandas DataFrame.
@@ -72,9 +107,8 @@ class QATestset:
         path : str
             The path to the input JSONL file.
         """
-        dataframe = pd.read_json(path, orient="records", lines=True).set_index("id")
-        dataframe.index = dataframe.index.astype(str)
-        return cls(dataframe)
+        dataframe = pd.read_json(path, orient="records", lines=True)
+        return cls.from_pandas(dataframe)
 
     def to_test_suite(self, name=None, slicing_metadata: Optional[Sequence[str]] = None):
         """
@@ -115,4 +149,4 @@ class QATestset:
 
     @property
     def samples(self):
-        return self._dataframe.loc[:, ("question", "conversation_history")].to_dict(orient="records")
+        return self._questions

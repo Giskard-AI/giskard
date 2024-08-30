@@ -10,5 +10,3 @@ Dataset
    .. automethod:: slice
    .. automethod:: transform
    .. automethod:: process
-   .. automethod:: upload
-   .. automethod:: download

@@ -5,8 +5,10 @@
 :hidden:
 
 llm_tutorials/index
+rag_tutorials/index
 tabular_tutorials/index
 nlp_tutorials/index
+vision_tutorials/index
 ```
 
 ::::::{grid} 1 1 2 2
@@ -17,6 +19,11 @@ nlp_tutorials/index
 :link: llm_tutorials/index.html
 ::::
 
+::::{grid-item-card} <br/><h3>🗄️  RAG tutorials</h3>
+:text-align: center
+:link: rag_tutorials/index.html
+::::
+
 ::::{grid-item-card} <br/><h3>📊  Tabular tutorials</h3>
 :text-align: center
 :link: tabular_tutorials/index.html
@@ -25,4 +32,9 @@ nlp_tutorials/index
 ::::{grid-item-card} <br/><h3>🗣️ NLP tutorials</h3>
 :text-align: center
 :link: nlp_tutorials/index.html
+::::
+
+::::{grid-item-card} <br/><h3>📸 Vision tutorials</h3>
+:text-align: center
+:link: vision_tutorials/index.html
 ::::

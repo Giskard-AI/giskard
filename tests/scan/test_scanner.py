@@ -10,6 +10,8 @@ from giskard import Dataset, GiskardClient, Model
 from giskard.core.core import ModelMeta, SupportedModelTypes
 from giskard.core.suite import Suite
 from giskard.scanner import Scanner
+from giskard.scanner.correlation.spurious_correlation_detector import SpuriousCorrelationDetector
+from giskard.scanner.performance import PerformanceBiasDetector
 from giskard.scanner.report import ScanReport
 
 
@@ -267,3 +269,47 @@ def test_can_limit_features_to_subset():
 
     with pytest.raises(ValueError, match=r"No features to scan"):
         scanner.analyze(model, dataset, features=[])
+
+
+@mock.patch("giskard.scanner.scanner.get_default_client")
+def test_scanner_does_not_break_if_llm_client_not_set(get_default_client):
+    """For scans that do not require the LLM client, the scanner must not break if the client is not set."""
+    get_default_client.side_effect = ValueError("No client set")
+
+    scanner = Scanner()
+
+    def fake_model(*args, **kwargs):
+        return None
+
+    model = Model(
+        model=fake_model,
+        model_type=SupportedModelTypes.TEXT_GENERATION,
+        name="test",
+        description="test",
+        feature_names=["query"],
+        target="query",
+    )
+
+    dataset = Dataset(pd.DataFrame({"query": ["test"]}))
+
+    scanner.analyze(model, dataset)
+
+
+@pytest.mark.memory_expensive
+def test_min_slice_size(titanic_model, titanic_dataset):
+    # By default, it uses a 0.01 min slice size
+    detector = PerformanceBiasDetector()
+    issues = detector.run(titanic_model, titanic_dataset, features=titanic_model.feature_names)
+    assert len(issues) == 10
+
+    detector = PerformanceBiasDetector(min_slice_size=2000)
+    issues = detector.run(titanic_model, titanic_dataset, features=titanic_model.feature_names)
+    assert len(issues) == 0
+
+    detector = SpuriousCorrelationDetector()
+    issues = detector.run(titanic_model, titanic_dataset, features=titanic_model.feature_names)
+    assert len(issues) == 3
+
+    detector = SpuriousCorrelationDetector(min_slice_size=2000)
+    issues = detector.run(titanic_model, titanic_dataset, features=titanic_model.feature_names)
+    assert len(issues) == 0

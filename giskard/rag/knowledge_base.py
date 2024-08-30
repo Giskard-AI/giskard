@@ -1,17 +1,18 @@
-from typing import Optional, Sequence
+from typing import Dict, Optional, Sequence
 
 import logging
+import uuid
 
 import numpy as np
 import pandas as pd
 from sklearn.cluster import HDBSCAN
 
-from ..datasets.metadata.text_metadata_provider import _detect_lang
 from ..llm.client import ChatMessage, LLMClient, get_default_client
 from ..llm.embeddings import get_default_embedding
 from ..llm.embeddings.base import BaseEmbedding
 from ..llm.errors import LLMImportError
 from ..utils.analytics_collector import analytics
+from ..utils.language_detection import detect_lang
 from .knowledge_base_plots import get_failure_plot, get_knowledge_plot
 
 try:
@@ -23,6 +24,8 @@ except ImportError as err:
 
 logger = logging.getLogger("giskard.rag")
 
+LANGDETECT_MAX_TEXT_LENGTH = 300
+LANGDETECT_DOCUMENTS = 10
 
 TOPIC_SUMMARIZATION_PROMPT = """Your task is to define the topic which best represents a set of documents.
 
@@ -58,17 +61,21 @@ The topic is:
 class Document:
     """A class to wrap the elements of the knowledge base into a unified format."""
 
-    def __init__(self, document: dict, idx: int, features: Optional[Sequence] = None, topic_id=None):
+    def __init__(
+        self, document: Dict[str, str], doc_id: str = None, features: Optional[Sequence] = None, topic_id: int = None
+    ):
         features = features if features is not None else list(document.keys())
 
-        if len(features) == 1:
-            self.content = document[features[0]]
-        else:
-            self.content = "\n".join(f"{feat}: {document[feat]}" for feat in features)
+        self.content = (
+            "\n".join(f"{k}: {v}" for k, v in document.items() if k in features)
+            if len(features) > 1
+            else document[features[0]]
+        )
 
         self.metadata = document
-        self.id = idx
+        self.id = doc_id if doc_id is not None else str(uuid.uuid4())
         self.embeddings = None
+        self.reduced_embeddings = None
         self.topic_id = topic_id
 
 
@@ -89,8 +96,8 @@ class KnowledgeBase:
         The seed to use for random number generation.
     llm_client: LLMClient, optional:
         The LLM client to use for question generation. If not specified, a default openai client will be used.
-    embedding_model: str = "text-embedding-ada-002"
-        The name of the embedding model to use for the knowledge base. It should match the llm_client available embedding models.
+    embedding_model: BaseEmbedding, optional
+        The giskard embedding model to use for the knowledge base. By default we use giskard default model which is OpenAI "text-embedding-ada-002".
     min_topic_size: int, optional
         The minimum number of document to form a topic inside the knowledge base.
     chunk_size: int = 2048
@@ -107,29 +114,31 @@ class KnowledgeBase:
         min_topic_size: Optional[int] = None,
         chunk_size: int = 2048,
     ) -> None:
-        if len(data) > 0:
-            self._documents = [
-                Document(
-                    knowledge_chunk,
-                    features=columns,
-                    idx=idx,
-                )
-                for idx, knowledge_chunk in enumerate(data.to_dict("records"))
-            ]
-        else:
-            raise ValueError("Cannot generate a vector store from empty DataFrame.")
+        if len(data) == 0:
+            raise ValueError("Cannot generate a Knowledge Base from empty DataFrame.")
+
+        self._documents = [
+            Document(
+                knowledge_chunk,
+                features=columns,
+                doc_id=doc_id,
+            )
+            for doc_id, knowledge_chunk in data.to_dict("index").items()
+        ]
 
         self._documents = [doc for doc in self._documents if doc.content.strip() != ""]
-        for i, doc in enumerate(self._documents):
-            doc.id = i
+
+        if len(self) == 0:
+            raise ValueError("Cannot generate a Knowledge Base with empty documents.")
 
         self._knowledge_base_df = data
-        self._knowledge_base_columns = columns
+        self._columns = columns
 
         self._rng = np.random.default_rng(seed=seed)
         self._llm_client = llm_client or get_default_client()
         self._embedding_model = embedding_model or get_default_embedding()
 
+        # Estimate the minimum number of documents to form a topic
         self._min_topic_size = min_topic_size or round(2 + np.log(len(self._documents)))
         self.chunk_size = chunk_size
 
@@ -138,7 +147,11 @@ class KnowledgeBase:
         self._index_inst = None
         self._reduced_embeddings_inst = None
 
-        document_languages = [_detect_lang(doc.content[:300]) for doc in self._rng.choice(self._documents, size=10)]
+        # Detect language of the documents, use only the first characters of a few documents to speed up the process
+        document_languages = [
+            detect_lang(doc.content[:LANGDETECT_MAX_TEXT_LENGTH])
+            for doc in self._rng.choice(self._documents, size=LANGDETECT_DOCUMENTS)
+        ]
         languages, occurences = np.unique(
             ["en" if (pd.isna(lang) or lang == "unknown") else lang for lang in document_languages], return_counts=True
         )
@@ -189,8 +202,12 @@ class KnowledgeBase:
                 n_neighbors=50,
                 min_dist=0.5,
                 n_components=2,
+                random_state=1234,
+                n_jobs=1,
             )
             self._reduced_embeddings_inst = reducer.fit_transform(self._embeddings)
+            for doc, emb in zip(self._documents, self._reduced_embeddings_inst):
+                doc.reduced_embeddings = emb
         return self._reduced_embeddings_inst
 
     @property
@@ -199,7 +216,7 @@ class KnowledgeBase:
 
     def get_savable_data(self):
         return {
-            "columns": self._knowledge_base_columns,
+            "columns": self._columns,
             "min_topic_size": self._min_topic_size,
             "topics": {int(k): topic for k, topic in self.topics.items()},
             "documents_topics": [int(doc.topic_id) for doc in self._documents],
@@ -233,7 +250,6 @@ class KnowledgeBase:
         )
         clustering = hdbscan.fit(self._reduced_embeddings)
 
-        logger.debug(f"Found {clustering.labels_.max() + 1} clusters.")
         for i, doc in enumerate(self._documents):
             doc.topic_id = clustering.labels_[i]
 
@@ -257,7 +273,6 @@ class KnowledgeBase:
 
     def _get_topic_name(self, topic_documents):
         logger.debug("Create topic name from topic documents")
-
         self._rng.shuffle(topic_documents)
         topics_str = "\n\n".join(["----------" + doc.content[:500] for doc in topic_documents[:10]])
 
@@ -282,14 +297,11 @@ class KnowledgeBase:
     def get_failure_plot(self, question_evaluation: Sequence[dict] = None):
         return get_failure_plot(self, question_evaluation)
 
-    def get_document(self, doc_id: int) -> Document:
-        return self._documents_index[doc_id]
-
     def get_random_document(self):
         return self._rng.choice(self._documents)
 
     def get_neighbors(self, seed_document: Document, n_neighbors: int = 4, similarity_threshold: float = 0.2):
-        seed_embedding = self._embeddings[seed_document.id]
+        seed_embedding = seed_document.embeddings
 
         relevant_documents = [
             doc
@@ -310,3 +322,6 @@ class KnowledgeBase:
 
     def __len__(self):
         return len(self._documents)
+
+    def __getitem__(self, doc_id: str):
+        return self._documents_index[doc_id]

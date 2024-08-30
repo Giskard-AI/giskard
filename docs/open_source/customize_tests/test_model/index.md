@@ -1,9 +1,10 @@
 # 👨‍🔬 Create tests
 
 Because ML models depend on data, testing scenarios depend on domain specificities and are often infinite. Giskard provides all the necessary tools that enable you to:
-* Start writing tests by detecting the vulnerabilities of your model (see the [scan](../../scan/index.md) feature to automatically create tests)
-* Create reproducible test suites with fixtures that integrate the domain knowledge of your model
-* Load the best tests from the Giskard open-source catalog
+
+- Start writing tests by detecting the vulnerabilities of your model (see the [scan](../../scan/index.md) feature to automatically create tests)
+- Create reproducible test suites with fixtures that integrate the domain knowledge of your model
+- Load the best tests from the Giskard open-source catalog
 
 ## Create & execute a test
 
@@ -18,7 +19,6 @@ In order to execute the test provided by Giskard, you first need to wrap your da
 :::{hint}
 Don't hesitate to execute the code snippets below in your notebook. You can see all our tests in the [📖 Test Catalog](../../../knowledge/catalogs/index.md)
 :::
-
 
 #### Drift tests
 
@@ -159,10 +159,11 @@ print(f"result: {result.passed} with metric {result.metric}")
 ### Create & execute your own test
 
 If the test you want to create is not in the Giskard catalog, you can easily write it and add it to a test suite. To do so, you just need to **decorate** a Python function to turn it into a Giskard test. Make sure that the Python function you're decorating:
-* Has typed inputs: types can be Giskard `Model`, `Dataset`, `SlicingFunction` & `TransformationFunction` or any primitive
-* Returns a `TestResult` object containing all the resulting information of the test:
-    * This object must have the `passed` argument: a boolean that is `true` if the test passes, `false` otherwise
-    * Provide the `metric` argument: a `float` that reflects the test output. This is key to compare tests results
+
+- Has typed inputs: types can be Giskard `Model`, `Dataset`, `SlicingFunction` & `TransformationFunction` or any primitive
+- Returns a `TestResult` object containing all the resulting information of the test:
+  - This object must have the `passed` argument: a boolean that is `true` if the test passes, `false` otherwise
+  - Provide the `metric` argument: a `float` that reflects the test output. This is key to compare tests results
 
 ```python
 from giskard import demo, test, Dataset, TestResult, testing
@@ -199,17 +200,19 @@ uniqueness_test_function(dataset=wrapped_dataset,
 ## Create & execute a test suite
 
 Test suites are a key feature of Giskard. Executing test suites can be useful for:
-* **Comparing different models**: In this case, you should define your **model as input** of your test suite. Comparing different models is important:
-    *  During production: If you want to **automate the retraining process** to know if the model you just created is better than the one in production
-    *  During development: If you want to compare different model candidates. For example, test suites can be used to find the right hyperparameters of your model during your **cross-validation**
-* **Comparing different datasets**. In this case, you should define your **dataset as input** of your test suite. Comparing different datasets is important to:
-    * Detect **drift** between two datasets (i.e. training, testing, production, golden datasets)
-    * **monitor** your model in production using different batches of datasets
+
+- **Comparing different models**: In this case, you should define your **model as input** of your test suite. Comparing different models is important:
+  - During production: If you want to **automate the retraining process** to know if the model you just created is better than the one in production
+  - During development: If you want to compare different model candidates. For example, test suites can be used to find the right hyperparameters of your model during your **cross-validation**
+- **Comparing different datasets**. In this case, you should define your **dataset as input** of your test suite. Comparing different datasets is important to:
+  - Detect **drift** between two datasets (i.e. training, testing, production, golden datasets)
+  - **monitor** your model in production using different batches of datasets
 
 :::{hint}
-* When adding the tests to your suite, you can choose to **not specify** some of the parameters of your test function. In this case, you will need to specify these missing parameters **when you execute** the test suite.
-* You can also choose to share some input of your test. This is useful if some tests are sharing the same inputs (ex: the same slicing function). In this case you'll need
-:::
+
+- When adding the tests to your suite, you can choose to **not specify** some of the parameters of your test function. In this case, you will need to specify these missing parameters **when you execute** the test suite.
+- You can also choose to share some input of your test. This is useful if some tests are sharing the same inputs (ex: the same slicing function). In this case you'll need
+  :::
 
 ::::{tab-set}
 
@@ -324,7 +327,7 @@ batch_1 = Dataset(
 )
 
 # Run the suite by specifying our model and display the results
-suite_results = suite.run(actual_dataset=batch_1) 
+suite_results = suite.run(actual_dataset=batch_1)
 passed_1, results_1 = suite_results.passed, suite_results.results
 
 # batch_2 can be a second batch of production data
@@ -338,13 +341,15 @@ batch_2 = Dataset(
 suite_results = suite.run(actual_dataset=batch_2)
 passed_2, results_2 = suite_results.passed, suite_results.results
 ```
+
 :::
 
 :::{tab-item} Shared test input
 
 For advanced cases, you may need to define some test inputs that are shared between different tests inside your suite. In this case, you should use the `SuiteInput` whose parameter are:
-* The name of the test input (a string)
-* The type of the test input (`Model`, `Dataset`, `SlicingFunction`, `TransformationFunction` or any other primitive.
+
+- The name of the test input (a string)
+- The type of the test input (`Model`, `Dataset`, `SlicingFunction`, `TransformationFunction` or any other primitive.
 
 In the example below, the data slice `female` is shared between two performance tests:
 
@@ -379,15 +384,6 @@ suite = (
 
 suite.run(model=wrapped_model, dataset=wrapped_dataset, female_slice=slice_female)
 ```
+
 :::
 ::::
-
-## Upload the suite to the Giskard hub
-Upload your suite to the Giskard hub to:
-* Compare models to decide which one to use
-* Debug your tests to further diagnose issues
-* Create more domain-specific tests that integrate business feedback
-* Share the test results with your team
-
-To upload your test suite to the Giskard Hub, go to the [upload object](../../../giskard_hub/upload/index.md) page.
-

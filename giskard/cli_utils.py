@@ -70,8 +70,8 @@ def validate_url(_ctx, _param, value) -> AnyHttpUrl:
     return parse_obj_as(AnyHttpUrl, value)
 
 
-def get_log_path():
-    return run_dir / "ml-worker.log"
+def get_log_path(worker_name=None):
+    return run_dir / (f"ml-worker-{worker_name}.log" if worker_name else "ml-worker.log")
 
 
 def tail(filename, n=100):

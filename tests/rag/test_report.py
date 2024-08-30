@@ -1,45 +1,68 @@
-from unittest.mock import Mock
+import uuid
+from unittest.mock import Mock, patch
 
 import numpy as np
-import pandas as pd
 from bokeh.plotting import figure
 
 from giskard.rag import QATestset, RAGReport
+from giskard.rag.base import AgentAnswer
 from giskard.rag.knowledge_base import KnowledgeBase
-from tests.rag.test_qa_testset import make_testset_df
+from tests.rag.test_qa_testset import make_testset_samples
 from tests.utils import DummyEmbedding
+
+TEST_UUIDS = ["{}".format(i) for i in range(6)]
 
 
 def test_report_plots():
     knowledge_base = Mock()
 
-    testset = QATestset(make_testset_df())
+    testset = QATestset(make_testset_samples())
 
-    answers = ["Default answer"] * 6
-
-    eval_results = [
-        {"id": "1", "correctness": True, "reason": "The agent answer is correct."},
-        {"id": "2", "correctness": True, "reason": "The agent answer is correct."},
-        {"id": "3", "correctness": False, "reason": "The agent answer is incorrect."},
-        {"id": "4", "correctness": True, "reason": "The agent answer is correct."},
-        {"id": "5", "correctness": False, "reason": "The agent answer is incorrect."},
-        {"id": "6", "correctness": False, "reason": "The agent answer is incorrect."},
-    ]
+    answers = [AgentAnswer(message="Default answer")] * 6
 
     metrics_results = {
-        "correctness": pd.DataFrame(eval_results).set_index("id"),
-        "context_precision": pd.DataFrame.from_dict(
-            {"id": ["1", "2", "3", "4", "5", "6"], "context_precision": [0.1] * 6}
-        ).set_index("id"),
-        "faithfulness": pd.DataFrame.from_dict(
-            {"id": ["1", "2", "3", "4", "5", "6"], "faithfulness": [0.2] * 6}
-        ).set_index("id"),
-        "answer_relevancy": pd.DataFrame.from_dict(
-            {"id": ["1", "2", "3", "4", "5", "6"], "answer_relevancy": [0.3] * 6}
-        ).set_index("id"),
-        "context_recall": pd.DataFrame.from_dict(
-            {"id": ["1", "2", "3", "4", "5", "6"], "context_recall": [0.4] * 6}
-        ).set_index("id"),
+        "1": {
+            "correctness": True,
+            "context_precision": 0.1,
+            "faithfulness": 0.2,
+            "answer_relevancy": 0.3,
+            "context_recall": 0.4,
+        },
+        "2": {
+            "correctness": True,
+            "context_precision": 0.1,
+            "faithfulness": 0.2,
+            "answer_relevancy": 0.3,
+            "context_recall": 0.4,
+        },
+        "3": {
+            "correctness": False,
+            "context_precision": 0.1,
+            "faithfulness": 0.2,
+            "answer_relevancy": 0.3,
+            "context_recall": 0.4,
+        },
+        "4": {
+            "correctness": True,
+            "context_precision": 0.1,
+            "faithfulness": 0.2,
+            "answer_relevancy": 0.3,
+            "context_recall": 0.4,
+        },
+        "5": {
+            "correctness": False,
+            "context_precision": 0.1,
+            "faithfulness": 0.2,
+            "answer_relevancy": 0.3,
+            "context_recall": 0.4,
+        },
+        "6": {
+            "correctness": False,
+            "context_precision": 0.1,
+            "faithfulness": 0.2,
+            "answer_relevancy": 0.3,
+            "context_recall": 0.4,
+        },
     }
 
     report = RAGReport(testset, answers, metrics_results, knowledge_base)
@@ -49,8 +72,7 @@ def test_report_plots():
     plot = report.plot_metrics_hist("context_precision", filter_metadata={"question_type": ["simple"]})
     assert isinstance(plot, figure)
 
-    additional_metrics, histograms = report.get_metrics_histograms()
-    assert additional_metrics
+    histograms = report.get_metrics_histograms()
     assert "Overall" in histograms
     assert "Question" in histograms
     assert "Topics" in histograms
@@ -63,51 +85,70 @@ def test_report_plots():
 
 
 def test_report_save_load(tmp_path):
-    df = make_testset_df()
+    question_samples = make_testset_samples()
+    testset = QATestset(question_samples)
     llm_client = Mock()
 
     embeddings = Mock()
-    embeddings.embed.return_value = np.random.randn(len(df), 8)
+    embeddings.embed.return_value = np.random.randn(len(testset), 8)
 
-    knowledge_base = KnowledgeBase(df, llm_client=llm_client, embedding_model=embeddings)
+    with patch.object(uuid, "uuid4", side_effect=TEST_UUIDS):
+        knowledge_base = KnowledgeBase(testset.to_pandas(), llm_client=llm_client, embedding_model=embeddings)
     knowledge_base._topics_inst = {0: "Cheese_1", 1: "Cheese_2"}
     for doc_idx, doc in enumerate(knowledge_base._documents):
         if doc_idx < 3:
             doc.topic_id = 0
         else:
             doc.topic_id = 1
+        doc.reduced_embeddings = np.random.randn(8)
 
     knowledge_base._documents
 
-    testset = QATestset(make_testset_df())
-
-    answers = ["Default answer"] * 6
-
-    answers = ["Default answer"] * 6
-
-    eval_results = [
-        {"id": "1", "correctness": True, "reason": "The agent answer is correct."},
-        {"id": "2", "correctness": True, "reason": "The agent answer is correct."},
-        {"id": "3", "correctness": False, "reason": "The agent answer is incorrect."},
-        {"id": "4", "correctness": True, "reason": "The agent answer is correct."},
-        {"id": "5", "correctness": False, "reason": "The agent answer is incorrect."},
-        {"id": "6", "correctness": False, "reason": "The agent answer is incorrect."},
-    ]
+    answers = [AgentAnswer(message="Default answer", documents=["Doc 1: example", "Doc 2: example"])] * 6
 
     metrics_results = {
-        "correctness": pd.DataFrame(eval_results).set_index("id"),
-        "context_precision": pd.DataFrame.from_dict(
-            {"id": ["1", "2", "3", "4", "5", "6"], "context_precision": [0.1] * 6}
-        ).set_index("id"),
-        "faithfulness": pd.DataFrame.from_dict(
-            {"id": ["1", "2", "3", "4", "5", "6"], "faithfulness": [0.2] * 6}
-        ).set_index("id"),
-        "answer_relevancy": pd.DataFrame.from_dict(
-            {"id": ["1", "2", "3", "4", "5", "6"], "answer_relevancy": [0.3] * 6}
-        ).set_index("id"),
-        "context_recall": pd.DataFrame.from_dict(
-            {"id": ["1", "2", "3", "4", "5", "6"], "context_recall": [0.4] * 6}
-        ).set_index("id"),
+        "1": {
+            "correctness": True,
+            "context_precision": 0.1,
+            "faithfulness": 0.2,
+            "answer_relevancy": 0.3,
+            "context_recall": 0.4,
+        },
+        "2": {
+            "correctness": True,
+            "context_precision": 0.1,
+            "faithfulness": 0.2,
+            "answer_relevancy": 0.3,
+            "context_recall": 0.4,
+        },
+        "3": {
+            "correctness": False,
+            "context_precision": 0.1,
+            "faithfulness": 0.2,
+            "answer_relevancy": 0.3,
+            "context_recall": 0.4,
+        },
+        "4": {
+            "correctness": True,
+            "context_precision": 0.1,
+            "faithfulness": 0.2,
+            "answer_relevancy": 0.3,
+            "context_recall": 0.4,
+        },
+        "5": {
+            "correctness": False,
+            "context_precision": 0.1,
+            "faithfulness": 0.2,
+            "answer_relevancy": 0.3,
+            "context_recall": 0.4,
+        },
+        "6": {
+            "correctness": False,
+            "context_precision": 0.1,
+            "faithfulness": 0.2,
+            "answer_relevancy": 0.3,
+            "context_recall": 0.4,
+        },
     }
 
     report = RAGReport(testset, answers, metrics_results, knowledge_base)
@@ -125,9 +166,12 @@ def test_report_save_load(tmp_path):
 
     assert len(report._testset._dataframe) == len(loaded_report._testset._dataframe)
     assert len(report._metrics_results) == len(loaded_report._metrics_results)
-    assert (
-        report._metrics_results["context_precision"].loc["1", "context_precision"]
-        == loaded_report._metrics_results["context_precision"].loc["1", "context_precision"]
+    assert report._metrics_results["1"]["context_precision"] == loaded_report._metrics_results["1"]["context_precision"]
+    assert all(
+        [
+            report._metrics_results[idx]["correctness"] == loaded_report._metrics_results[idx]["correctness"]
+            for idx in report._metrics_results
+        ]
     )
-    assert all(report._metrics_results["correctness"] == loaded_report._metrics_results["correctness"])
     assert all(report._dataframe["agent_answer"] == loaded_report._dataframe["agent_answer"])
+    assert report._model_outputs == loaded_report._model_outputs

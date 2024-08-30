@@ -47,7 +47,7 @@ def make_slices_from_tree(tree: SklearnTree, feature_names: Optional[Sequence] =
 
 
 class DecisionTreeSlicer(BaseSlicer):
-    def find_slices(self, features, target=None):
+    def find_slices(self, features, target=None, min_samples=None):
         target = target or self.target
         data = self.dataset.df
 
@@ -56,7 +56,7 @@ class DecisionTreeSlicer(BaseSlicer):
 
         data = data.loc[:, features + [target]].dropna()
 
-        min_samples = max(int(0.01 * len(data)), 30)  # min 1% of the data or 30 samples
+        min_samples = min_samples or max(int(0.01 * len(data)), 30)  # min 1% of the data or 30 samples
 
         if len(data) < min_samples:
             return []

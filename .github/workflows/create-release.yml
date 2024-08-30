@@ -1,4 +1,4 @@
-name: Start a new release
+name: Release and publish a new version
 
 on:
   workflow_dispatch:
@@ -27,6 +27,13 @@ jobs:
         run: |
           echo "Job failed due to user not being a member of Giskard-AI organization and the 'safe for build' label not being set on the PR"
           exit 1
+      
+      - name: Write release version env vars (with/without v)
+        run: |
+          VERSION_NAME="v${{ inputs.version }}"
+          VERSION_NUMBER="${VERSION_NAME:1}"
+          echo "VERSION_NUMBER=${VERSION_NUMBER}" >> $GITHUB_ENV
+          echo "VERSION_NAME=${VERSION_NAME}" >> $GITHUB_ENV
 
       - name: Checkout code
         uses: actions/checkout@v4.1.0
@@ -36,7 +43,7 @@ jobs:
           token: ${{ secrets.RELEASE_PAT_TOKEN }} # Needed to trigger other actions
 
       - name: Edit pyproject.toml
-        run:  sed -i 's/^\(version *= *\).*$/\1"${{ inputs.version }}"/' pyproject.toml
+        run:  sed -i 's/^\(version *= *\).*$/\1"${{ env.VERSION_NUMBER }}"/' pyproject.toml
 
       - name: Remove dark theme logo from README
         run:  sed -i 's/.*#gh-dark-mode-only.*//' README.md
@@ -47,36 +54,74 @@ jobs:
           python-version: '3.10'
           cache: false
 
-      - name: Build release candidate wheel
-        run: pdm build
-
-      - name: Upload RC wheel artifact
-        uses: actions/upload-artifact@v4
-        with:
-          name: rc-wheel-${{ inputs.version }}
-          path: dist/*whl
-          if-no-files-found: error
-          retention-days: 1
-
       - name: "@slack Release process started"
         id: slack
-        uses: slackapi/slack-github-action@v1.25.0
+        uses: slackapi/slack-github-action@v1.26.0
         with:
           channel-id: ${{ vars.SLACK_CHANNEL_ID }}
           slack-message: |-
-            Release *v${{ inputs.version }}* is on the way :rocket:
+            Release *${{ env.VERSION_NAME }}* is on the way :rocket:
             <${{ github.server_url }}/${{ github.actor }}|@${{ github.actor }}> | <${{ github.server_url }}/${{ github.repository }}/commit/${{ github.sha }}|commit> <!channel>
         env:
           SLACK_BOT_TOKEN: ${{ secrets.SLACK_BOT_TOKEN }}
 
-      - name: Trigger release process in giskard-hub
-        uses: peter-evans/repository-dispatch@v3
+      - name: Configure git
+        run:  |
+          git config --global user.name 'BotReleaser'
+          git config --global user.email 'bot.releaser@users.noreply.github.com'
+
+      - name: Adding file
+        run:  |
+          git add pyproject.toml
+          git fetch --quiet --tags
+          git commit -m "${{ env.VERSION_NAME }}" --allow-empty
+          git tag ${{ env.VERSION_NAME }}
+
+      - name: Push to main and tags
+        run: |
+          git push origin main
+          git push origin ${{ env.VERSION_NAME }}
+
+      # build .tar.gz sdist tarball
+      - name: Build source distribution tarball
+        run: pdm build
+
+      - name: Create Github Release
+        id: github-release
+        uses: softprops/action-gh-release@v2
         with:
-          token: ${{ secrets.RELEASE_PAT_TOKEN }}
-          event-type: create-release
-          repository: ${{ github.repository_owner }}/giskard-hub
-          client-payload: |
+          tag_name: ${{ env.VERSION_NAME }}
+          fail_on_unmatched_files: true
+          generate_release_notes: true
+          files: |
+            dist/giskard-*.tar.gz
+            dist/giskard-*.whl
+
+      - name: Push to Pipy
+        run: pdm publish --no-build --username "${{ secrets.PIPY_USERNAME }}" --password "${{ secrets.PIPY_PASSWORD }}"
+
+      - name: Set job success env var
+        run: |
+          echo "JOB_SUCCESS=true" >> $GITHUB_ENV
+
+      - name: "@slack Share release process completion"
+        # cancellable always() https://docs.github.com/en/actions/learn-github-actions/expressions#status-check-functions
+        if: ${{ !cancelled() }}
+        uses: slackapi/slack-github-action@v1.26.0
+        env:
+          SLACK_BOT_TOKEN: ${{ secrets.SLACK_BOT_TOKEN }}
+          ON_SUCCESS: |-
+            *${{ env.VERSION_NAME }}* has been published to PyPI ! :python: :tada:
+            <${{ steps.github-release.outputs.url }}|Release notes> | <https://pypi.org/project/giskard/${{ env.VERSION_NUMBER }}|PyPI> <!channel>
+          ON_FAILURE: |-
+            Could not publish *${{ env.VERSION_NAME }}* to PyPI :x:
+            <${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}|logs> <!channel>
+        with:
+          channel-id: ${{ vars.SLACK_CHANNEL_ID }}
+          slack-message: ${{ env.JOB_SUCCESS == 'true' && env.ON_SUCCESS || env.ON_FAILURE }}
+          # reploy_broadcast == also send to channel
+          payload: |
             {
-              "version_name": "v${{ inputs.version }}",
-              "slack_thread_id": "${{ steps.slack.outputs.thread_ts }}"
+              "thread_ts": "${{ steps.slack.outputs.thread_ts }}",
+              "reply_broadcast": true
             }

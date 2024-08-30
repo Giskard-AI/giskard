@@ -7,6 +7,8 @@ import tests.utils
 from giskard import Dataset
 from giskard.models.huggingface import HuggingFaceModel
 
+tf = pytest.importorskip("tensorflow")
+
 
 @pytest.mark.memory_expensive
 def test_sequence_classification_distilbert_base_uncased_tensorflow():

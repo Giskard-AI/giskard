@@ -1,4 +1,5 @@
-from unittest.mock import Mock
+import uuid
+from unittest.mock import Mock, patch
 
 from giskard.llm.client import ChatMessage
 from giskard.rag.knowledge_base import Document
@@ -11,6 +12,9 @@ from giskard.rag.question_generators import (
     SimpleQuestionsGenerator,
     SituationalQuestionsGenerator,
 )
+from giskard.rag.testset import QuestionSample
+
+TEST_UUIDS = ["{}".format(i + 1) for i in range(6)]
 
 
 def test_simple_question_generation():
@@ -22,15 +26,13 @@ def test_simple_question_generation():
             content='{"question": "Where is Camembert from?", "answer": "Camembert was created in Normandy, in the northwest of France."}',
         )
     ]
-
-    documents = [
-        Document(dict(content="Camembert is a cheese from Normandy, in the northwest of France."), idx=1),
-        Document(dict(content="Cheese is made of milk."), idx=2),
-        Document(dict(content="Milk is produced by cows, goats or sheep."), idx=3),
-    ]
-    knowledge_base.get_random_document = Mock(
-        return_value=Document(dict(content="Camembert is a cheese from Normandy, in the northwest of France."), idx=1)
-    )
+    with patch.object(uuid, "uuid4", side_effect=TEST_UUIDS):
+        documents = [
+            Document(dict(content="Camembert is a cheese from Normandy, in the northwest of France.")),
+            Document(dict(content="Cheese is made of milk.")),
+            Document(dict(content="Milk is produced by cows, goats or sheep.")),
+        ]
+    knowledge_base.get_random_document = Mock(return_value=documents[0])
     knowledge_base.get_neighbors = Mock(return_value=documents)
 
     question_generator = SimpleQuestionsGenerator(llm_client=llm_client)
@@ -41,16 +43,16 @@ def test_simple_question_generation():
         )
     )[0]
 
-    assert question["question"] == "Where is Camembert from?"
-    assert isinstance(question["id"], str)
-    assert question["reference_answer"] == "Camembert was created in Normandy, in the northwest of France."
+    assert question.question == "Where is Camembert from?"
+    assert isinstance(question.id, str)
+    assert question.reference_answer == "Camembert was created in Normandy, in the northwest of France."
     assert (
-        question["reference_context"]
+        question.reference_context
         == "Document 1: Camembert is a cheese from Normandy, in the northwest of France.\n\nDocument 2: Cheese is made of milk.\n\nDocument 3: Milk is produced by cows, goats or sheep."
     )
-    assert question["conversation_history"] == []
-    assert question["metadata"]["question_type"] == "simple"
-    assert question["metadata"]["seed_document_id"] == 1
+    assert question.conversation_history == []
+    assert question.metadata["question_type"] == "simple"
+    assert question.metadata["seed_document_id"] == "1"
 
 
 def test_complex_question_generation():
@@ -67,14 +69,14 @@ def test_complex_question_generation():
     question_generator._base_generator = Mock()
     question_generator._base_generator.generate_questions = Mock(
         return_value=[
-            {
-                "question": "Where is Camembert from?",
-                "id": "1",
-                "reference_answer": "Camembert was created in Normandy, in the northwest of France.",
-                "reference_context": "Document 1: Camembert is a cheese from Normandy, in the northwest of France.\n\nDocument 2: Cheese is made of milk.\n\nDocument 3: Milk is produced by cows, goats or sheep.",
-                "conversation_history": [],
-                "metadata": {"question_type": "simple", "seed_document_id": 2},
-            }
+            QuestionSample(
+                question="Where is Camembert from?",
+                id="1",
+                reference_answer="Camembert was created in Normandy, in the northwest of France.",
+                reference_context="Document 1: Camembert is a cheese from Normandy, in the northwest of France.\n\nDocument 2: Cheese is made of milk.\n\nDocument 3: Milk is produced by cows, goats or sheep.",
+                conversation_history=[],
+                metadata={"question_type": "simple", "seed_document_id": "2"},
+            )
         ]
     )
 
@@ -84,16 +86,16 @@ def test_complex_question_generation():
         )
     )[0]
 
-    assert question["question"] == "Among all regions of France which one is the home of Camembert?"
-    assert isinstance(question["id"], str)
-    assert question["reference_answer"] == "Camembert was created in Normandy, in the northwest of France."
+    assert question.question == "Among all regions of France which one is the home of Camembert?"
+    assert isinstance(question.id, str)
+    assert question.reference_answer == "Camembert was created in Normandy, in the northwest of France."
     assert (
-        question["reference_context"]
+        question.reference_context
         == "Document 1: Camembert is a cheese from Normandy, in the northwest of France.\n\nDocument 2: Cheese is made of milk.\n\nDocument 3: Milk is produced by cows, goats or sheep."
     )
-    assert question["conversation_history"] == []
-    assert question["metadata"]["question_type"] == "complex"
-    assert question["metadata"]["seed_document_id"] == 2
+    assert question.conversation_history == []
+    assert question.metadata["question_type"] == "complex"
+    assert question.metadata["seed_document_id"] == "2"
 
 
 def test_distracting_question_generation():
@@ -106,21 +108,21 @@ def test_distracting_question_generation():
     ]
     knowledge_base = Mock()
     knowledge_base.get_random_document = Mock(
-        return_value=Document(dict(content="Scamorza is a cheese from southern Italy."), idx=4)
+        return_value=Document(dict(content="Scamorza is a cheese from southern Italy."))
     )
 
     question_generator = DistractingQuestionsGenerator(llm_client=llm_client)
     question_generator._base_generator = Mock()
     question_generator._base_generator.generate_questions = Mock(
         return_value=[
-            {
-                "question": "Where is Camembert from?",
-                "id": "1",
-                "reference_answer": "Camembert was created in Normandy, in the northwest of France.",
-                "reference_context": "Document 1: Camembert is a cheese from Normandy, in the northwest of France.\n\nDocument 2: Cheese is made of milk.\n\nDocument 3: Milk is produced by cows, goats or sheep.",
-                "conversation_history": [],
-                "metadata": {"question_type": "simple", "seed_document_id": 2},
-            }
+            QuestionSample(
+                question="Where is Camembert from?",
+                id="1",
+                reference_answer="Camembert was created in Normandy, in the northwest of France.",
+                reference_context="Document 1: Camembert is a cheese from Normandy, in the northwest of France.\n\nDocument 2: Cheese is made of milk.\n\nDocument 3: Milk is produced by cows, goats or sheep.",
+                conversation_history=[],
+                metadata={"question_type": "simple", "seed_document_id": "2"},
+            )
         ]
     )
 
@@ -130,17 +132,17 @@ def test_distracting_question_generation():
         )
     )[0]
 
-    assert question["question"] == "Scamorza is a cheese from Italy, but where is the camembert from?"
-    assert isinstance(question["id"], str)
-    assert question["reference_answer"] == "Camembert was created in Normandy, in the northwest of France."
+    assert question.question == "Scamorza is a cheese from Italy, but where is the camembert from?"
+    assert isinstance(question.id, str)
+    assert question.reference_answer == "Camembert was created in Normandy, in the northwest of France."
     assert (
-        question["reference_context"]
+        question.reference_context
         == "Document 1: Camembert is a cheese from Normandy, in the northwest of France.\n\nDocument 2: Cheese is made of milk.\n\nDocument 3: Milk is produced by cows, goats or sheep."
     )
-    assert question["conversation_history"] == []
-    assert question["metadata"]["question_type"] == "distracting element"
-    assert question["metadata"]["seed_document_id"] == 2
-    assert question["metadata"]["distracting_context"] == "Scamorza is a cheese from southern Italy."
+    assert question.conversation_history == []
+    assert question.metadata["question_type"] == "distracting element"
+    assert question.metadata["seed_document_id"] == "2"
+    assert question.metadata["distracting_context"] == "Scamorza is a cheese from southern Italy."
 
 
 def test_situational_question_generation():
@@ -161,14 +163,14 @@ def test_situational_question_generation():
     question_generator._base_generator = Mock()
     question_generator._base_generator.generate_questions = Mock(
         return_value=[
-            {
-                "question": "Where is Camembert from?",
-                "id": "1",
-                "reference_answer": "Camembert was created in Normandy, in the northwest of France.",
-                "reference_context": "Document 1: Camembert is a cheese from Normandy, in the northwest of France.\n\nDocument 2: Cheese is made of milk.\n\nDocument 3: Milk is produced by cows, goats or sheep.",
-                "conversation_history": [],
-                "metadata": {"question_type": "simple", "seed_document_id": 2},
-            }
+            QuestionSample(
+                question="Where is Camembert from?",
+                id="1",
+                reference_answer="Camembert was created in Normandy, in the northwest of France.",
+                reference_context="Document 1: Camembert is a cheese from Normandy, in the northwest of France.\n\nDocument 2: Cheese is made of milk.\n\nDocument 3: Milk is produced by cows, goats or sheep.",
+                conversation_history=[],
+                metadata={"question_type": "simple", "seed_document_id": "2"},
+            )
         ]
     )
 
@@ -178,16 +180,16 @@ def test_situational_question_generation():
         )
     )[0]
 
-    assert question["question"] == "I really love cheese, I wonder where is the camembert from?"
-    assert isinstance(question["id"], str)
-    assert question["reference_answer"] == "Camembert was created in Normandy, in the northwest of France."
+    assert question.question == "I really love cheese, I wonder where is the camembert from?"
+    assert isinstance(question.id, str)
+    assert question.reference_answer == "Camembert was created in Normandy, in the northwest of France."
     assert (
-        question["reference_context"]
+        question.reference_context
         == "Document 1: Camembert is a cheese from Normandy, in the northwest of France.\n\nDocument 2: Cheese is made of milk.\n\nDocument 3: Milk is produced by cows, goats or sheep."
     )
-    assert question["conversation_history"] == []
-    assert question["metadata"]["question_type"] == "situational"
-    assert question["metadata"]["seed_document_id"] == 2
+    assert question.conversation_history == []
+    assert question.metadata["question_type"] == "situational"
+    assert question.metadata["seed_document_id"] == "2"
 
 
 def test_double_question_generation():
@@ -203,14 +205,13 @@ def test_double_question_generation():
         ),
     ]
     knowledge_base = Mock()
-    documents = [
-        Document(dict(content="Camembert is a cheese from Normandy, in the northwest of France."), idx=1),
-        Document(dict(content="Cheese is made of milk."), idx=2),
-        Document(dict(content="Milk is produced by cows, goats or sheep."), idx=3),
-    ]
-    knowledge_base.get_random_document = Mock(
-        return_value=Document(dict(content="Camembert is a cheese from Normandy, in the northwest of France."), idx=1)
-    )
+    with patch.object(uuid, "uuid4", side_effect=TEST_UUIDS):
+        documents = [
+            Document(dict(content="Camembert is a cheese from Normandy, in the northwest of France.")),
+            Document(dict(content="Cheese is made of milk.")),
+            Document(dict(content="Milk is produced by cows, goats or sheep.")),
+        ]
+    knowledge_base.get_random_document = Mock(return_value=documents[0])
     knowledge_base.get_neighbors = Mock(return_value=documents)
 
     question_generator = DoubleQuestionsGenerator(llm_client=llm_client)
@@ -221,19 +222,19 @@ def test_double_question_generation():
         )
     )[0]
 
-    assert question["question"] == "Where are scamorza and camembert from?"
-    assert isinstance(question["id"], str)
+    assert question.question == "Where are scamorza and camembert from?"
+    assert isinstance(question.id, str)
     assert (
-        question["reference_answer"]
+        question.reference_answer
         == "Scamorza is a cheese from southern Italy, but Camembert was created in Normandy, in the northwest of France."
     )
     assert (
-        question["reference_context"]
+        question.reference_context
         == "Document 1: Camembert is a cheese from Normandy, in the northwest of France.\n\nDocument 2: Cheese is made of milk.\n\nDocument 3: Milk is produced by cows, goats or sheep."
     )
-    assert question["conversation_history"] == []
-    assert question["metadata"]["question_type"] == "double"
-    assert question["metadata"]["seed_document_id"] == 1
+    assert question.conversation_history == []
+    assert question.metadata["question_type"] == "double"
+    assert question.metadata["seed_document_id"] == "1"
 
 
 def test_conversational_question_generation():
@@ -247,17 +248,16 @@ def test_conversational_question_generation():
     knowledge_base = Mock()
 
     question_generator = ConversationalQuestionsGenerator(llm_client=llm_client)
-    question_generator._base_generator = Mock()
     question_generator._base_generator.generate_questions = Mock(
         return_value=[
-            {
-                "question": "Where is Camembert from?",
-                "id": "1",
-                "reference_answer": "Camembert was created in Normandy, in the northwest of France.",
-                "reference_context": "Document 1: Camembert is a cheese from Normandy, in the northwest of France.\n\nDocument 2: Cheese is made of milk.\n\nDocument 3: Milk is produced by cows, goats or sheep.",
-                "conversation_history": [],
-                "metadata": {"question_type": "simple", "seed_document_id": 2},
-            }
+            QuestionSample(
+                question="Where is Camembert from?",
+                id="1",
+                reference_answer="Camembert was created in Normandy, in the northwest of France.",
+                reference_context="Document 1: Camembert is a cheese from Normandy, in the northwest of France.\n\nDocument 2: Cheese is made of milk.\n\nDocument 3: Milk is produced by cows, goats or sheep.",
+                conversation_history=[],
+                metadata={"question_type": "simple", "seed_document_id": "2"},
+            )
         ]
     )
 
@@ -267,19 +267,20 @@ def test_conversational_question_generation():
         )
     )[0]
 
-    assert question["question"] == "Where is it from?"
-    assert isinstance(question["id"], str)
-    assert question["reference_answer"] == "Camembert was created in Normandy, in the northwest of France."
+    assert question.question == "Where is it from?"
+    assert isinstance(question.id, str)
+    assert question.reference_answer == "Camembert was created in Normandy, in the northwest of France."
     assert (
-        question["reference_context"]
+        question.reference_context
         == "Document 1: Camembert is a cheese from Normandy, in the northwest of France.\n\nDocument 2: Cheese is made of milk.\n\nDocument 3: Milk is produced by cows, goats or sheep."
     )
-    assert question["conversation_history"] == [
+    assert question.conversation_history == [
         {"role": "user", "content": "I would like to know some information about the Camembert."},
         {"role": "assistant", "content": "How can I help you with that?"},
     ]
-    assert question["metadata"]["question_type"] == "conversational"
-    assert question["metadata"]["seed_document_id"] == 2
+
+    assert question.metadata["question_type"] == "conversational"
+    assert question.metadata["seed_document_id"] == "2"
 
 
 def test_oos_question_generation():
@@ -294,12 +295,14 @@ def test_oos_question_generation():
     ]
 
     documents = [
-        Document(dict(content="Paul Graham liked to buy a baguette every day at the local market."), idx=1),
-        Document(dict(content="Cheese is made of milk."), idx=2),
-        Document(dict(content="Milk is produced by cows, goats or sheep."), idx=3),
+        Document(dict(content="Paul Graham liked to buy a baguette every day at the local market."), doc_id="1"),
+        Document(dict(content="Cheese is made of milk."), doc_id="2"),
+        Document(dict(content="Milk is produced by cows, goats or sheep."), doc_id="3"),
     ]
     knowledge_base.get_random_document = Mock(
-        return_value=Document(dict(content="Paul Graham liked to buy a baguette every day at the local market."), idx=1)
+        return_value=Document(
+            dict(content="Paul Graham liked to buy a baguette every day at the local market."), doc_id="1"
+        )
     )
     knowledge_base.get_neighbors = Mock(return_value=documents)
 
@@ -311,16 +314,16 @@ def test_oos_question_generation():
         )
     )[0]
 
-    assert question["question"] == "How much did Paul pay for the baguette?"
-    assert isinstance(question["id"], str)
+    assert question.question == "How much did Paul pay for the baguette?"
+    assert isinstance(question.id, str)
     assert (
-        question["reference_answer"]
+        question.reference_answer
         == "This question can not be answered by the context. No sufficient information is provided in the context to answer this question."
     )
     assert (
-        question["reference_context"]
+        question.reference_context
         == "Document 1: Paul Graham liked to buy a baguette every day at the local market.\n\nDocument 2: Cheese is made of milk.\n\nDocument 3: Milk is produced by cows, goats or sheep."
     )
-    assert question["conversation_history"] == []
-    assert question["metadata"]["question_type"] == "out of scope"
-    assert question["metadata"]["seed_document_id"] == 1
+    assert question.conversation_history == []
+    assert question.metadata["question_type"] == "out of scope"
+    assert question.metadata["seed_document_id"] == "1"

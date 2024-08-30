@@ -1,8 +1,7 @@
-from typing import Sequence
-
 from abc import ABC, abstractmethod
 
-from ..testset import QATestset
+from ...llm.client.base import LLMClient
+from ..base import AgentAnswer
 
 
 class Metric(ABC):
@@ -11,25 +10,25 @@ class Metric(ABC):
     The instances of this class can be passed to the evaluate method.
     """
 
-    def __init__(self, name: str) -> None:
+    def __init__(self, name: str, llm_client: LLMClient = None) -> None:
         self.name = name
+        self._llm_client = llm_client
 
     @abstractmethod
-    def __call__(self, testset: QATestset, answers: Sequence[str], *args, **kwargs):
+    def __call__(self, question_sample: dict, answer: AgentAnswer):
         """
-        Compute the metric on the test set and the answers.
+        Compute the metric on a single question and its associated answer.
 
         Parameters
         ----------
-        testset : QATestset
-            The test set to compare the answers with.
-        answers : Sequence[str]
-            The answers of the agent to evaluate.
+        question_sample : dict
+            A question sample from a QATestset.
+        answer : AgentAnswer
+            The agent answer on that question.
 
         Returns
         -------
         dict
-            The result of the metric. The keys should be the name of the metrics and the
-            values should be the result of the metric for each question/answer pair.
+            The result of the metric computation. The keys should be the names of the metrics computed.
         """
         pass

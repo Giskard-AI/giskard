@@ -29,8 +29,6 @@ from .logger import logger
 from .registry import DetectorRegistry
 from .report import ScanReport
 
-MAX_ISSUES_PER_DETECTOR = 15
-
 COST_ESTIMATE_TEMPLATE = """Estimated calls to your model: ~{num_model_calls}
 Estimated LLM calls for evaluation: {num_llm_calls}
 """
@@ -73,6 +71,7 @@ class Scanner:
         features: Optional[Sequence[str]] = None,
         verbose=True,
         raise_exceptions=False,
+        max_issues_per_detector=15,
     ) -> ScanReport:
         """Runs the analysis of a model and dataset, detecting issues.
 
@@ -89,6 +88,8 @@ class Scanner:
         raise_exceptions : bool
             Whether to raise an exception if detection errors are encountered. By default, errors are logged and
             handled gracefully, without interrupting the scan.
+        max_issues_per_detector : int
+            Maximal number of issues per detector in the report
 
         Returns
         -------
@@ -104,7 +105,8 @@ class Scanner:
 
             # Initialize LLM logger if needed
             if model.is_text_generation:
-                get_default_client().logger.reset()
+                llm_logger = _maybe_get_llm_logger()
+                llm_logger is not None and llm_logger.reset()
 
             # Good, we can start
             maybe_print("🔎 Running scan…", verbose=verbose)
@@ -112,6 +114,7 @@ class Scanner:
 
             # Collect the detectors
             detectors = self.get_detectors(tags=[model.meta.model_type.value])
+            detectors_names = [detector.__class__.__name__ for detector in detectors]
 
             # Print cost estimate
             if verbose:
@@ -121,7 +124,13 @@ class Scanner:
             with warnings.catch_warnings():
                 warnings.simplefilter("ignore")
                 issues, errors = self._run_detectors(
-                    detectors, model, dataset, features, verbose=verbose, raise_exceptions=raise_exceptions
+                    detectors,
+                    model,
+                    dataset,
+                    features,
+                    verbose=verbose,
+                    raise_exceptions=raise_exceptions,
+                    max_issues_per_detector=max_issues_per_detector,
                 )
 
             issues = self._postprocess(issues)
@@ -134,9 +143,11 @@ class Scanner:
 
             self._collect_analytics(model, dataset, issues, elapsed, model_validation_time, detectors)
 
-        return ScanReport(issues, model=model, dataset=dataset)
+        return ScanReport(issues, model=model, dataset=dataset, detectors_names=detectors_names)
 
-    def _run_detectors(self, detectors, model, dataset, features, verbose=True, raise_exceptions=False):
+    def _run_detectors(
+        self, detectors, model, dataset, features, verbose=True, raise_exceptions=False, max_issues_per_detector=None
+    ):
         if not detectors:
             raise RuntimeError("No issue detectors available. Scan will not be performed.")
 
@@ -165,7 +176,7 @@ class Scanner:
                     raise err
 
                 detected_issues = []
-            detected_issues = sorted(detected_issues, key=lambda i: -i.importance)[:MAX_ISSUES_PER_DETECTOR]
+            detected_issues = sorted(detected_issues, key=lambda i: -i.importance)[:max_issues_per_detector]
             detector_elapsed = perf_counter() - detector_start
             maybe_print(
                 f"{detector.__class__.__name__}: {len(detected_issues)} issue{'s' if len(detected_issues) > 1 else ''} detected. (Took {datetime.timedelta(seconds=detector_elapsed)})",
@@ -197,13 +208,13 @@ class Scanner:
         if not isinstance(model, BaseModel):
             raise ValueError(
                 "The model object you provided is not valid. Please wrap it with the `giskard.Model` class. "
-                "See the instructions here: https://docs.giskard.ai/en/latest/guides/wrap_model/index.html"
+                "See the instructions here: https://docs.giskard.ai/en/stable/guides/wrap_model/index.html"
             )
 
         if dataset is not None and not isinstance(dataset, Dataset):
             raise ValueError(
                 "The dataset object you provided is not valid. Please wrap your dataframe with `giskard.Dataset`. "
-                "You can follow the docs here: https://docs.giskard.ai/en/latest/guides/wrap_dataset/index.html"
+                "You can follow the docs here: https://docs.giskard.ai/en/stable/guides/wrap_dataset/index.html"
             )
 
         model, dataset = self._prepare_model_dataset(model, dataset)
@@ -256,7 +267,7 @@ class Scanner:
                 "are you sure this is correct? The giskard.Dataset should be created from raw data *before* "
                 "pre-processing (categorical encoding, vectorization, etc.). "
                 "You can also limit the number of features to scan by setting the `features` argument. "
-                "Check https://docs.giskard.ai/en/latest/guides/wrap_dataset/index.html for more details."
+                "Check https://docs.giskard.ai/en/stable/guides/wrap_dataset/index.html for more details."
             )
 
         return list(features)
@@ -334,7 +345,10 @@ class Scanner:
         }
 
     def _get_cost_measure(self):
-        llm_logger = get_default_client().logger
+        llm_logger = _maybe_get_llm_logger()
+        if llm_logger is None:
+            return None
+
         num_calls = llm_logger.get_num_calls()
         num_prompt_tokens = llm_logger.get_num_prompt_tokens()
         num_sampled_tokens = llm_logger.get_num_sampled_tokens()
@@ -357,7 +371,8 @@ class Scanner:
         )
         if model.is_text_generation:
             measured = self._get_cost_measure()
-            print(COST_SUMMARY_TEMPLATE.format(**measured))
+            if measured is not None:
+                print(COST_SUMMARY_TEMPLATE.format(**measured))
         if errors:
             warning(
                 f"{len(errors)} errors were encountered while running detectors. Please check the log to understand what went wrong. "
@@ -368,3 +383,11 @@ class Scanner:
 def maybe_print(*args, **kwargs):
     if kwargs.pop("verbose", True):
         print(*args, **kwargs)
+
+
+def _maybe_get_llm_logger():
+    """Get the LLM client logger if available."""
+    try:
+        return get_default_client().logger
+    except Exception:
+        return None

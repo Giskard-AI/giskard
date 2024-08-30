@@ -1,12 +1,11 @@
 from typing import Dict, Iterator, Optional, Sequence
 
-import json
 import logging
-import re
 from abc import ABC, abstractmethod
 
 from ...llm.client import ChatMessage, LLMClient, get_default_client
 from ..knowledge_base import KnowledgeBase
+from .utils import parse_json_output
 
 logger = logging.getLogger("giskard.rag")
 
@@ -46,36 +45,7 @@ class _LLMBasedQuestionGenerator(QuestionGenerator):
             caller_id=self.__class__.__name__,
         )
 
-        return self._parse_json_output(out.content)
-
-    def _parse_json_output(self, raw_json: str):
-        try:
-            return json.loads(raw_json, strict=False)
-        except json.JSONDecodeError:
-            logger.debug("JSON decoding error, trying to fix the JSON string.")
-
-        logger.debug("Raw output: %s", raw_json)
-        # Let's see if it's just a matter of markdown format (```json ... ```)
-        match = re.search(r"```json\s{0,5}(.*?)\s{0,5}```", raw_json, re.DOTALL)
-        if match:
-            try:
-                return json.loads(match.group(1), strict=False)
-            except json.JSONDecodeError:
-                pass
-
-        # Final attempt, let's try to fix the JSON with the LLM itself
-        out = self._llm_client.complete(
-            messages=[
-                ChatMessage(
-                    role="system",
-                    content="Fix the following text so it contains a single valid JSON object. Make sure to start and end with curly brackets.",
-                ),
-                ChatMessage(role="user", content=raw_json),
-            ],
-            temperature=0,
-            caller_id=self.__class__.__name__,
-        )
-        return json.loads(out.content, strict=False)
+        return parse_json_output(out.content, self._llm_client, caller_id=self.__class__.__name__)
 
 
 class GenerateFromSingleQuestionMixin:
