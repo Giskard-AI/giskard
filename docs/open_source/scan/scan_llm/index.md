@@ -40,7 +40,7 @@ processed.
 
 In the following example, we illustrate the procedure using **OpenAI** and **Azure OpenAI**; however, please note that
 our platform supports a variety of language models. For details on configuring different models, visit
-our [🤖 Setting up the LLM Client page](../../open_source/setting_up/index.md)
+our [🤖 Setting up the LLM Client page](../../setting_up/index.md)
 
 Before starting, make sure you have installed the LLM flavor of Giskard:
 
