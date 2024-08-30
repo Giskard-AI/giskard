@@ -29,6 +29,7 @@ tutorials/llm_tutorials/index
 tutorials/rag_tutorials/index
 tutorials/tabular_tutorials/index
 tutorials/nlp_tutorials/index
+tutorials/vision_tutorials/index
 ```
 
 ```{toctree}

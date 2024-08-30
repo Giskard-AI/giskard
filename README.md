@@ -77,6 +77,8 @@ Giskard works with any model, in any environment and integrates seamlessly with 
 </p>
 <br/>
 
+Looking for solutions to evaluate computer vision models? Check out [giskard-vision](https://github.com/Giskard-AI/giskard-vision), a library dedicated for computer vision tasks. 
+
 # Contents
 
 - 🤸‍♀️ **[Quickstart](#quickstart)**
