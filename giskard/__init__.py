@@ -18,10 +18,7 @@ from .registry.transformation_function import TransformationFunction, transforma
 from .scanner import scan
 from .utils.analytics_collector import analytics
 from .utils.logging_utils import configure_logging
-from .utils.sentry import configure_sentry
-from .utils.versions import check_latest_giskard_version
 
-configure_sentry()
 configure_logging()
 
 

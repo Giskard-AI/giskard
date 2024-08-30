@@ -136,7 +136,9 @@ def test_gemini_client():
         return_value=Mock(text="This is a test!", candidates=[Mock(content=Mock(role="assistant"))])
     )
     gemini_api_client.count_tokens = MagicMock(
-        side_effect=lambda text: sum(len(t.split()) for t in text) if isinstance(text, list) else len(text.split())
+        side_effect=lambda text: Mock(
+            total_tokens=sum(len(t.split()) for t in text) if isinstance(text, list) else len(text.split())
+        )
     )
 
     # Initialize the GeminiClient with the mocked gemini_api_client

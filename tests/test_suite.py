@@ -1,3 +1,5 @@
+
+import tempfile
 import numpy as np
 import pytest
 
@@ -93,3 +95,21 @@ def test_suite_result_backward_compatibility():
     assert test_name == "name"
     assert result == TestResult()
     assert params == {}
+
+def test_suite_save_and_load(german_credit_data, german_credit_model):
+    my_test = test_accuracy(threshold=0.7)
+
+    suite = Suite()
+    suite.add_test(my_test)
+
+    with tempfile.TemporaryDirectory() as tmp_dirname:
+        suite.save(tmp_dirname)
+        loaded_suite = Suite.load(tmp_dirname)
+
+    result = loaded_suite.run(model=german_credit_model, dataset=german_credit_data)
+
+    assert result.passed
+    assert len(result.results) == 1
+    _, test_result, _ = result.results[0]
+    assert not test_result.is_error
+    assert test_result.passed

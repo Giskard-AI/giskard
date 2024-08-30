@@ -11,6 +11,7 @@ def configure_logging():
     stdout_handler = logging.StreamHandler(stream=sys.stdout)
     logging.getLogger("pyngrok").setLevel(logging.ERROR)
     logging.getLogger("giskard").setLevel(logging.INFO)
+    logging.getLogger("urllib3").setLevel(logging.ERROR)
     configure_basic_logging(stdout_handler)
 
 
