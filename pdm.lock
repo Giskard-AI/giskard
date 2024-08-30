@@ -5,7 +5,7 @@
 groups = ["default", "dev", "doc", "hub", "llm", "ml_runtime", "talk", "tensorflow", "test"]
 strategy = ["cross_platform", "inherit_metadata"]
 lock_version = "4.5.0"
-content_hash = "sha256:091f7c0829523e6fd299b408778f298f23d9a07336d1924436ae8b20d46b8c98"
+content_hash = "sha256:c0aca51186d940abf0476f5d4f5a4434a29215d4ed041cd7253087f2eadf4cd5"
 
 [[metadata.targets]]
 requires_python = ">=3.9,<3.13"
@@ -2721,7 +2721,7 @@ files = [
 
 [[package]]
 name = "jupyter"
-version = "1.1.0"
+version = "1.1.1"
 summary = "Jupyter metapackage. Install all the Jupyter components in one go."
 groups = ["dev"]
 dependencies = [
@@ -2733,8 +2733,8 @@ dependencies = [
     "notebook",
 ]
 files = [
-    {file = "jupyter-1.1.0-py2.py3-none-any.whl", hash = "sha256:6e0f0d2848158df10e25697db109f07832ff38bcfb569062ae02dc4b5885a18d"},
-    {file = "jupyter-1.1.0.tar.gz", hash = "sha256:f5f32929a72a1eb91b39898b94911cb49ec8a68b9aab37e184af3f918bf56440"},
+    {file = "jupyter-1.1.1-py2.py3-none-any.whl", hash = "sha256:7a59533c22af65439b24bbe60373a4e95af8f16ac65a6c00820ad378e3f7cc83"},
+    {file = "jupyter-1.1.1.tar.gz", hash = "sha256:d55467bceabdea49d7e3624af7e33d59c37fff53ed3a350e1ac957bed731de7a"},
 ]
 
 [[package]]
