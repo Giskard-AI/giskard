@@ -134,7 +134,14 @@ jobs:
         run: |
           df -h
 
+      - name: Install dependencies (Windows)
+        if: ${{ matrix.os == 'windows-2022' }}
+        run: |
+          pdm install -G :all --without tensorflow
+          pdm list
+
       - name: Install dependencies
+        if: ${{ matrix.os != 'windows-2022' }}
         run: |
           pdm install -G :all
           pdm list
