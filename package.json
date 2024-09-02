@@ -13,7 +13,7 @@
     "gulp-concat": "^2.6.1",
     "gulp-minify": "^3.1.0",
     "gulp-postcss": "^9.0.1",
-    "postcss": "^8.4.23",
+    "postcss": "^8.4.43",
     "postcss-import": "^16.1.0",
     "tailwindcss": "^3.4.10",
     "uglify": "^0.1.5"
