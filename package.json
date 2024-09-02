@@ -5,7 +5,7 @@
   },
   "devDependencies": {
     "@babel/core": "^7.25.2",
-    "@babel/preset-env": "^7.21.5",
+    "@babel/preset-env": "^7.25.4",
     "autoprefixer": "^10.4.19",
     "cssnano": "^6.0.1",
     "gulp": "^5.0.0",
