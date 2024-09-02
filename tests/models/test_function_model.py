@@ -78,7 +78,7 @@ COMPAT_TABLE = {
     "3.12": ["3.11", "3.12"],
 }
 PYTHON_MAJOR_VERSION = ".".join(platform.python_version_tuple()[:2])
-BACKWARD_COMPATIBILITY_MODEL_VERSIONS = {"3.9": "3.10", "3.10": "3.10", "3.11": "3.11", "3.12": "3.11"}
+BACKWARD_COMPATIBILITY_MODEL_VERSIONS = {"3.9": "3.10", "3.10": "3.10", "3.11": "3.11"}
 
 
 # TODO: add 3.12 model fixture
