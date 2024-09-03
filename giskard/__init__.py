@@ -6,12 +6,9 @@
 from importlib import metadata as importlib_metadata
 
 from . import demo
-from .client.giskard_client import GiskardClient
-from .client.project import Project
 from .core.suite import Suite, SuiteInput
 from .core.test_result import TestResult
 from .datasets.base import Dataset
-from .ml_worker.utils.network import check_latest_giskard_version
 from .models.automodel import Model
 from .models.model_explanation import explain_with_shap
 from .registry.decorators import test
@@ -41,13 +38,10 @@ def get_version() -> str:
 
 __version__: str = get_version()
 
-check_latest_giskard_version()
 analytics.track("Initialized giskard library")
 
 __all__ = [
-    "Project",
     "Dataset",
-    "GiskardClient",
     "test",
     "Model",
     "Suite",

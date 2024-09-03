@@ -5,7 +5,6 @@ from langchain.chains import LLMChain
 from langchain.llms.fake import FakeListLLM
 from langchain.prompts import PromptTemplate
 
-import tests.utils
 from giskard import Dataset, Model
 from giskard.models.langchain import LangchainModel
 
@@ -26,8 +25,6 @@ def test_llm_chain():
     df = pd.DataFrame(["colorful socks", "electric car"], columns=["product"])
 
     wrapped_dataset = Dataset(df, cat_columns=[])
-
-    tests.utils.verify_model_upload(wrapped_model, wrapped_dataset)
 
     results = wrapped_model.predict(wrapped_dataset)
 
