@@ -18,23 +18,23 @@ ds = _make_dataset()
 
 def test_metadata_are_passed_to_dataset_copy():
     dataset = _make_dataset()
-    with patch("giskard.datasets.metadata.indexing.MetadataIndexer") as indexer:
+    with patch("giskard.datasets.metadata.indexing.MetadataIndexer"):
         dataset.copy()
-        indexer.load_meta.called_once_with(dataset.column_meta)
+        dataset.column_meta.load_meta.assert_called_once_with(dataset.column_meta)
 
 
 def test_metadata_are_passed_to_dataset_slice():
     dataset = _make_dataset()
-    with patch("giskard.datasets.metadata.indexing.MetadataIndexer") as indexer:
+    with patch("giskard.datasets.metadata.indexing.MetadataIndexer"):
         dataset.slice(lambda df: df.head(10), row_level=False)
-        indexer.load_meta.called_once_with(dataset.column_meta)
+        dataset.column_meta.load_meta.assert_called_once_with(dataset.column_meta)
 
 
 def test_metadata_are_regenerated_after_dataset_transform():
     dataset = _make_dataset()
     with patch("giskard.datasets.metadata.indexing.MetadataIndexer") as indexer:
         dataset.transform(lambda df: df, row_level=False)
-        indexer.load_meta.not_called()
+        indexer.load_meta.assert_not_called()
 
 
 def test_metadata_returned_on_dataset_copy():

@@ -21,7 +21,7 @@ _ml_libraries = {
     ("giskard.models.langchain", "LangchainModel"): [("langchain.chains.base", "Chain")],
     ("giskard.models.catboost", "CatboostModel"): [("catboost", "CatBoost")],
     ("giskard.models.pytorch", "PyTorchModel"): [("torch.nn", "Module")],
-    ("giskard.models.tensorflow", "TensorFlowModel"): [("tensorflow", "Module")],
+    ("giskard.models.tensorflow", "TensorFlowModel"): [("tensorflow", "Module"), ("keras", "Model")],
 }
 
 

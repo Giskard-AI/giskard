@@ -1,4 +1,5 @@
 import re
+import sys
 import warnings
 from unittest import mock
 
@@ -19,7 +20,11 @@ from giskard.scanner.report import ScanReport
     "dataset_name,model_name",
     [
         ("german_credit_data", "german_credit_model"),
-        ("breast_cancer_data", "breast_cancer_model"),
+        pytest.param(
+            "breast_cancer_data",
+            "breast_cancer_model",
+            marks=pytest.mark.skipif(sys.platform == "darwin", reason="xboost issue on macos"),
+        ),
         ("drug_classification_data", "drug_classification_model"),
         ("diabetes_dataset_with_target", "linear_regression_diabetes"),
         ("hotel_text_data", "hotel_text_model"),
