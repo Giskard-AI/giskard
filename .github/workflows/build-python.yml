@@ -155,6 +155,7 @@ jobs:
         run: |
           pdm run pip uninstall lightgbm -y
           pdm run pip install --no-binary lightgbm lightgbm --config-settings=cmake.define.USE_OPENMP=OFF
+          brew install libomp
 
       - name: Install pydantic v1
         if: ${{ matrix.pydantic_v1 }}
