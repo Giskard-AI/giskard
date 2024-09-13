@@ -100,7 +100,7 @@ The results of your metrics will be displayed in the report object as histograms
 To include RAGAS metrics in evaluation, make sure to have installed the `ragas>=0.1.5` library. Some of the RAGAS metrics need access to the contexts retrieved by the RAG agent for each question. These can be returned by the `get_answer_fn` function along with the answer to the question:
 
 ```python
-from giskard.rag import AgentAnwer
+from giskard.rag import AgentAnswer
 
 def get_answer_fn(question: str, history=None) -> str:
     """A function representing your RAG agent."""
