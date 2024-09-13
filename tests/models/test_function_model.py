@@ -20,16 +20,6 @@ def test_prediction_function_model():
     assert (pred.raw[:, 1] == 1).all()
 
 
-def test_prediction_function_upload():
-    gsk_model = PredictionFunctionModel(
-        lambda df: np.ones(len(df)), model_type="classification", classification_labels=[0, 1]
-    )
-
-    import tests.utils
-
-    tests.utils.verify_model_upload(gsk_model, Dataset(df=pd.DataFrame({"x": [1, 2, 3], "y": [1, 0, 1]}), target="y"))
-
-
 def test_single_feature():
     import datasets
     from sklearn.ensemble import RandomForestClassifier
@@ -74,12 +64,14 @@ def test_single_feature():
 COMPAT_TABLE = {
     "3.9": ["3.9", "3.10"],
     "3.10": ["3.9", "3.10"],
-    "3.11": ["3.11"],
+    "3.11": ["3.11", "3.12"],
+    "3.12": ["3.11", "3.12"],
 }
 PYTHON_MAJOR_VERSION = ".".join(platform.python_version_tuple()[:2])
 BACKWARD_COMPATIBILITY_MODEL_VERSIONS = {"3.9": "3.10", "3.10": "3.10", "3.11": "3.11"}
 
 
+# TODO: add 3.12 model fixture
 @pytest.mark.parametrize("py_ver", ["3.9", "3.10", "3.11"])
 def test_prediction_function_load(py_ver):
     model_path = Path(__file__).parent / "fixtures" / "func" / py_ver

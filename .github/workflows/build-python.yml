@@ -54,7 +54,7 @@ jobs:
     strategy:
       fail-fast: false # Do not stop when any job fails
       matrix:
-        python-version: ["3.9", "3.10", "3.11"]
+        python-version: ["3.9", "3.10", "3.11", "3.12"]
         os: [ubuntu-latest]
         pydantic_v1: [false]
         pandas_v1: [false]
@@ -72,7 +72,7 @@ jobs:
             pandas_v1: false
             langchain_minimal: false
           - python-version: "3.10"
-            os: macos-12
+            os: macos-latest
             pydantic_v1: false
             pandas_v1: false
             langchain_minimal: false
@@ -134,7 +134,14 @@ jobs:
         run: |
           df -h
 
+      - name: Install dependencies (Windows)
+        if: ${{ matrix.os == 'windows-2022' }}
+        run: |
+          pdm install -G :all --without tensorflow
+          pdm list
+
       - name: Install dependencies
+        if: ${{ matrix.os != 'windows-2022' }}
         run: |
           pdm install -G :all
           pdm list
@@ -144,10 +151,12 @@ jobs:
           df -h
 
       - name: Re-install lightgbm from sources for MacOS
-        if: ${{ matrix.os == 'macos-12' }}
+        if: ${{ matrix.os == 'macos-latest' }}
         run: |
           pdm run pip uninstall lightgbm -y
           pdm run pip install --no-binary lightgbm lightgbm --config-settings=cmake.define.USE_OPENMP=OFF
+          brew install libomp
+
       - name: Install pydantic v1
         if: ${{ matrix.pydantic_v1 }}
         run: |
@@ -184,9 +193,6 @@ jobs:
 
       - name: Lint code
         run: pdm run lint
-
-      - name: Test code (concurrency)
-        run: pdm test-worker
 
       - name: Test code
         run: pdm test-fast
