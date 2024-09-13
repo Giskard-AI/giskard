@@ -344,18 +344,20 @@ class CallableMeta(SavableMeta, ABC):
             "code": self.code,
             "tags": self.tags,
             "type": self.type,
-            "args": [
-                {
-                    "name": arg.name,
-                    "type": arg.type,
-                    "default": arg.default,
-                    "optional": arg.optional,
-                    "argOrder": arg.argOrder,
-                }
-                for arg in self.args.values()
-            ]
-            if self.args
-            else None,
+            "args": (
+                [
+                    {
+                        "name": arg.name,
+                        "type": arg.type,
+                        "default": arg.default,
+                        "optional": arg.optional,
+                        "argOrder": arg.argOrder,
+                    }
+                    for arg in self.args.values()
+                ]
+                if self.args
+                else None
+            ),
         }
 
     def init_from_json(self, json: Dict[str, Any]):
@@ -538,14 +540,6 @@ class ComparisonType(str, Enum):
     ENDS_WITH = "ENDS_WITH"
     IS_EMPTY = "IS_EMPTY"
     IS_NOT_EMPTY = "IS_NOT_EMPTY"
-
-
-@dataclass
-class ComparisonClauseDTO:
-    columnName: str
-    comparisonType: ComparisonType
-    columnDtype: str
-    value: Optional[str]
 
 
 class TestResultStatusEnum(str, Enum):

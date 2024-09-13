@@ -17,4 +17,4 @@ def test_other_package_log_level_unset():
 
 
 def test_root_log_level_default_warning():
-    assert logging.root.level == logging.WARNING, 'Root package log level should be set to default "WARNING"'
+    assert logging.getLogger().level == logging.WARNING, "Root package log level should be set to WARNING by default"
