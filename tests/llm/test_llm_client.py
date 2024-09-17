@@ -4,9 +4,7 @@ from unittest.mock import MagicMock, Mock
 import pydantic
 import pytest
 from google.generativeai.types import ContentDict
-from mistralai.models.chat_completion import ChatCompletionResponse, ChatCompletionResponseChoice
-from mistralai.models.chat_completion import ChatMessage as MistralChatMessage
-from mistralai.models.chat_completion import FinishReason, UsageInfo
+from mistralai.models import ChatCompletionChoice, ChatCompletionResponse, UsageInfo
 from openai.types import CompletionUsage
 from openai.types.chat import ChatCompletion, ChatCompletionMessage
 from openai.types.chat.chat_completion import Choice
@@ -41,10 +39,10 @@ DEMO_MISTRAL_RESPONSE = ChatCompletionResponse(
     created=1630000000,
     model="mistral-large",
     choices=[
-        ChatCompletionResponseChoice(
+        ChatCompletionChoice(
             index=0,
-            message=MistralChatMessage(role="assistant", content="This is a test!", name=None, tool_calls=None),
-            finish_reason=FinishReason.stop,
+            message={"role": "assistant", "content": "This is a test!"},
+            finish_reason="stop",
         )
     ],
     usage=UsageInfo(prompt_tokens=9, total_tokens=89, completion_tokens=80),
@@ -70,7 +68,7 @@ def test_llm_complete_message():
 @pytest.mark.skipif(not PYDANTIC_V2, reason="Mistral raise an error with pydantic < 2")
 def test_mistral_client():
     client = Mock()
-    client.chat.return_value = DEMO_MISTRAL_RESPONSE
+    client.chat.complete.return_value = DEMO_MISTRAL_RESPONSE
 
     from giskard.llm.client.mistral import MistralClient
 
@@ -78,10 +76,10 @@ def test_mistral_client():
         [ChatMessage(role="user", content="Hello")], temperature=0.11, max_tokens=12
     )
 
-    client.chat.assert_called_once()
-    assert client.chat.call_args[1]["messages"] == [MistralChatMessage(role="user", content="Hello")]
-    assert client.chat.call_args[1]["temperature"] == 0.11
-    assert client.chat.call_args[1]["max_tokens"] == 12
+    client.chat.complete.assert_called_once()
+    assert client.chat.complete.call_args[1]["messages"] == [{"role": "user", "content": "Hello"}]
+    assert client.chat.complete.call_args[1]["temperature"] == 0.11
+    assert client.chat.complete.call_args[1]["max_tokens"] == 12
 
     assert isinstance(res, ChatMessage)
     assert res.content == "This is a test!"
