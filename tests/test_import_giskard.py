@@ -9,9 +9,11 @@ def test_import_giskard():
     start = time()
 
     # Start subprocess to ensure that giskard is not already imported
-    subprocess.run(["python", "-c", "import giskard"])
+    # Average of 10 imports to avoid random issues
+    for _ in range(10):
+        subprocess.run(["python", "-c", "import giskard"])
 
     end = time()
     assert (
-        end - start < IMPORT_TIME_THRESHOLD_SECOND
-    ), f"Import of Giskard took {end - start} seconds (maximum threshold is set to {IMPORT_TIME_THRESHOLD_SECOND} second)"
+        end - start
+    ) / 10 < IMPORT_TIME_THRESHOLD_SECOND, f"Import of Giskard took {(end - start) / 10} seconds on average (maximum threshold is set to {IMPORT_TIME_THRESHOLD_SECOND} second)"
