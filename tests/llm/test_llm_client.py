@@ -4,7 +4,6 @@ from unittest.mock import MagicMock, Mock
 import pydantic
 import pytest
 from google.generativeai.types import ContentDict
-from mistralai.models import ChatCompletionChoice, ChatCompletionResponse, UsageInfo
 from openai.types import CompletionUsage
 from openai.types.chat import ChatCompletion, ChatCompletionMessage
 from openai.types.chat.chat_completion import Choice
@@ -33,22 +32,6 @@ DEMO_OPENAI_RESPONSE = ChatCompletion(
 )
 
 
-DEMO_MISTRAL_RESPONSE = ChatCompletionResponse(
-    id="2d62260a7a354e02922a4f6ad36930d3",
-    object="chat.completion",
-    created=1630000000,
-    model="mistral-large",
-    choices=[
-        ChatCompletionChoice(
-            index=0,
-            message={"role": "assistant", "content": "This is a test!"},
-            finish_reason="stop",
-        )
-    ],
-    usage=UsageInfo(prompt_tokens=9, total_tokens=89, completion_tokens=80),
-)
-
-
 def test_llm_complete_message():
     client = Mock()
     client.chat.completions.create.return_value = DEMO_OPENAI_RESPONSE
@@ -67,8 +50,25 @@ def test_llm_complete_message():
 
 @pytest.mark.skipif(not PYDANTIC_V2, reason="Mistral raise an error with pydantic < 2")
 def test_mistral_client():
+    from mistralai.models import ChatCompletionChoice, ChatCompletionResponse, UsageInfo
+
+    demo_response = ChatCompletionResponse(
+        id="2d62260a7a354e02922a4f6ad36930d3",
+        object="chat.completion",
+        created=1630000000,
+        model="mistral-large",
+        choices=[
+            ChatCompletionChoice(
+                index=0,
+                message={"role": "assistant", "content": "This is a test!"},
+                finish_reason="stop",
+            )
+        ],
+        usage=UsageInfo(prompt_tokens=9, total_tokens=89, completion_tokens=80),
+    )
+
     client = Mock()
-    client.chat.complete.return_value = DEMO_MISTRAL_RESPONSE
+    client.chat.complete.return_value = demo_response
 
     from giskard.llm.client.mistral import MistralClient
 
