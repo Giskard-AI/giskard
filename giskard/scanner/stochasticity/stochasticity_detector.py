@@ -15,6 +15,8 @@ from ..registry import Detector
 class StochasticityDetector(Detector):
     """Detects stochasticity in the model predictions.
 
+    You can explicitly run this detector by adding the tag "stochasticity" in the `only` parameter of the scan method.
+
     This detector ensures that the model predictions are deterministic, i.e. that the same input always produces the
     same output.
     """

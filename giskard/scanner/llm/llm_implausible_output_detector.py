@@ -23,6 +23,8 @@ from .base import _estimate_base_token_counts
 class LLMImplausibleOutputDetector(Detector):
     """Detects implausible output in LLM-based models.
 
+    You can explicitly run this detector by adding the tag "implausible_output" in the `only` parameter of the scan method.
+
     The detector will stimulate the model in producing outputs that are implausible or controversial by generating a
     set of ad hoc adversarial inputs. This can be seen as a proxy for hallucination and misinformation detection.
     """
