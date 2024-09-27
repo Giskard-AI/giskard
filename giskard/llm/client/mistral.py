@@ -1,5 +1,6 @@
 from typing import Optional, Sequence
 
+import os
 from dataclasses import asdict
 from logging import warning
 
@@ -9,8 +10,7 @@ from . import LLMClient
 from .base import ChatMessage
 
 try:
-    from mistralai.client import MistralClient as _MistralClient
-    from mistralai.models.chat_completion import ChatMessage as MistralChatMessage
+    from mistralai import Mistral
 except ImportError as err:
     raise LLMImportError(
         flavor="llm", msg="To use Mistral models, please install the `mistralai` package with `pip install mistralai`"
@@ -18,9 +18,9 @@ except ImportError as err:
 
 
 class MistralClient(LLMClient):
-    def __init__(self, model: str = "mistral-large-latest", client: _MistralClient = None):
+    def __init__(self, model: str = "mistral-large-latest", client: Mistral = None):
         self.model = model
-        self._client = client or _MistralClient()
+        self._client = client or Mistral(api_key=os.getenv("MISTRAL_API_KEY", ""))
 
     def complete(
         self,
@@ -43,9 +43,9 @@ class MistralClient(LLMClient):
             extra_params["response_format"] = {"type": "json_object"}
 
         try:
-            completion = self._client.chat(
+            completion = self._client.chat.complete(
                 model=self.model,
-                messages=[MistralChatMessage(**asdict(m)) for m in messages],
+                messages=[asdict(m) for m in messages],
                 temperature=temperature,
                 max_tokens=max_tokens,
                 **extra_params,

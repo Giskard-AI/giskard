@@ -1,4 +1,5 @@
 """Statistical tests"""
+
 from typing import Optional
 
 import numbers
@@ -498,7 +499,7 @@ def test_nominal_association(
 def test_cramer_v(
     model: BaseModel, dataset: Dataset, slicing_function: SlicingFunction, threshold: float = 0.5
 ) -> TestResult:
-    """Tests for nominal association between a dataset slice and the model predictions using Cramer's V.
+    r"""Tests for nominal association between a dataset slice and the model predictions using Cramer's V.
 
     Cramer's V is a statistical measure used to assess the strength and nature of association between two
     categorical variables. It is an extension of the chi-squared test for independence and takes into account the
@@ -513,7 +514,7 @@ def test_cramer_v(
 
     .. math::
 
-       V = \sqrt{\\frac{\chi^2}{n \cdot \min(k-1, r-1)}}
+       V = \sqrt{\frac{\chi^2}{n \cdot \min(k-1, r-1)}}
 
     where: :math:`\chi^2` is the chi-squared statistic for the two variables. n is the total number of observations.
     :math:`k` is the
@@ -550,7 +551,7 @@ def test_cramer_v(
 def test_mutual_information(
     model: BaseModel, dataset: Dataset, slicing_function: SlicingFunction, threshold: float = 0.5
 ) -> TestResult:
-    """Tests for nominal association between a dataset slice and the model predictions using Mutual Information.
+    r"""Tests for nominal association between a dataset slice and the model predictions using Mutual Information.
 
     The mutual information statistical test is a measure used to quantify the degree of association between two
     categorical variables. It assesses how much information about one variable can be gained from knowing the other
@@ -565,7 +566,7 @@ def test_mutual_information(
 
     .. math::
 
-       I(X;Y) = \sum_{x \in X} \sum_{y \in Y} p(x, y) \cdot \log ( \\frac{p(x, y)}{p(x) \cdot p(y)})
+       I(X;Y) = \sum_{x \in X} \sum_{y \in Y} p(x, y) \cdot \log ( \frac{p(x, y)}{p(x) \cdot p(y)})
 
     where: :math:`p(x,y)` is the joint probability mass function of variables :math:`X` and :math:`Y`. :math:`p(x)` and
     :math:`p(y)` are the marginal probability mass functions of variables :math:`X` and :math:`Y` respectively.
@@ -601,7 +602,7 @@ def test_mutual_information(
 def test_theil_u(
     model: BaseModel, dataset: Dataset, slicing_function: SlicingFunction, threshold: float = 0.5
 ) -> TestResult:
-    """Tests for nominal association between a dataset slice and the model predictions using Theil's U.
+    r"""Tests for nominal association between a dataset slice and the model predictions using Theil's U.
 
     Theil's U statistical test for nominal association is a measure used to assess the strength and direction
     of association between two categorical variables. It quantifies the inequality in the distribution of one variable
@@ -616,7 +617,7 @@ def test_theil_u(
 
     .. math::
 
-       U = \\frac{H(x|y) - H(y|x)}{H(x)}
+       U = \frac{H(x|y) - H(y|x)}{H(x)}
 
     where :math:`H(x|y)`, :math:`H(y|x)` are the conditional entropies of the two variables and :math:`H(x)` is the
     entropy of the first variable.

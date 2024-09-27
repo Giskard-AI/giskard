@@ -12,6 +12,8 @@ SENSITIVE_INFORMATION_DISCLOSURE_ISSUE_DESCRIPTION = (
 class LLMInformationDisclosureDetector(RequirementBasedDetector):
     """Detects sensitive information disclosure in LLM-based models.
 
+    You can explicitly run this detector by adding the tag "information_disclosure" in the `only` parameter of the scan method.
+
     This detector checks that the model does divulge or hallucinate sensitive or confidential information in its
     responses. We probe the model by generating ad hoc adversarial inputs and checking that the model outputs do not
     contain information that could be considered sensitive, such as personal identifiable information (PII) or secret

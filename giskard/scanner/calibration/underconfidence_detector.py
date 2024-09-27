@@ -15,6 +15,10 @@ from ..logger import logger
 
 @detector(name="underconfidence", tags=["underconfidence", "classification"])
 class UnderconfidenceDetector(LossBasedDetector):
+    """
+    You can explicitly run this detector by adding the tag "underconfidence" in the `only` parameter of the scan method.
+    """
+
     _needs_target = False
 
     def __init__(self, threshold=0.1, p_threshold=0.95, method="tree", **kwargs):

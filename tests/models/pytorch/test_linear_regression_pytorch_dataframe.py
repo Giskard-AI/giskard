@@ -6,8 +6,8 @@ import torch.optim as optim
 from torch.utils.data import DataLoader, TensorDataset
 from torch.utils.data.dataset import random_split
 
-import tests.utils
 from giskard import Dataset
+from giskard.core.model_validation import validate_model
 from giskard.models.pytorch import PyTorchModel
 
 
@@ -121,4 +121,4 @@ def test_linear_regression_pytorch_dataframe():
 
     my_test_dataset = Dataset(df.head(), name="test dataset", target="y")
 
-    tests.utils.verify_model_upload(my_model, my_test_dataset)
+    validate_model(my_model, validate_ds=my_test_dataset)

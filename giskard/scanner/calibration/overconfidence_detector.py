@@ -18,6 +18,10 @@ from ..logger import logger
 
 @detector(name="overconfidence", tags=["overconfidence", "classification"])
 class OverconfidenceDetector(LossBasedDetector):
+    """
+    You can explicitly run this detector by adding the tag "overconfidence" in the `only` parameter of the scan method.
+    """
+
     def __init__(self, threshold=0.10, p_threshold=None, method="tree", **kwargs):
         self.threshold = threshold
         self.p_threshold = p_threshold

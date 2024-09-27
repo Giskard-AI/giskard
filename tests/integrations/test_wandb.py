@@ -1,3 +1,5 @@
+import sys
+
 import pytest
 import wandb
 
@@ -36,7 +38,11 @@ def test_fast(dataset_name, model_name, request):
 @pytest.mark.parametrize(
     "dataset_name,model_name",
     [
-        ("breast_cancer_data", "breast_cancer_model"),
+        pytest.param(
+            "breast_cancer_data",
+            "breast_cancer_model",
+            marks=pytest.mark.skipif(sys.platform == "darwin", reason="xboost issue on macos"),
+        ),
         ("german_credit_data", "german_credit_model"),
         ("enron_data_full", "enron_model"),
         ("medical_transcript_data", "medical_transcript_model"),

@@ -25,6 +25,10 @@ FAITHFULNESS_ISSUE_DESCRIPTION = (
 
 @detector("llm_faithfulness", tags=["faithfulness", "llm", "text_generation"])
 class LLMFaithfulnessDetector(RequirementBasedDetector):
+    """
+    You can explicitly run this detector by adding the tag "faithfulness" in the `only` parameter of the scan method.
+    """
+
     _issue_group = Robustness
     _issue_level = IssueLevel.MAJOR
 

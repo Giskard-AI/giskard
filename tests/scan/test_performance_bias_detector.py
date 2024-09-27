@@ -45,7 +45,7 @@ def test_performance_bias_detector_trims_large_dataset(german_credit_model, germ
     except (ValueError, TypeError):
         pass
 
-    assert normal_dataset.slice.not_called
+    normal_dataset.slice.assert_not_called()
 
 
 def test_performance_bias_detector_with_tabular(german_credit_model, german_credit_data):

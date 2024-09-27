@@ -33,6 +33,8 @@ class PerformanceBiasDetector(LossBasedDetector):
     ):
         """Performance bias detector.
 
+        You can explicitly run this detector by adding the tag "performance_bias" in the `only` parameter of the scan method.
+
         Parameters
         ----------
         metrics : Optional[Sequence]

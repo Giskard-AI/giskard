@@ -21,7 +21,7 @@ _ml_libraries = {
     ("giskard.models.langchain", "LangchainModel"): [("langchain.chains.base", "Chain")],
     ("giskard.models.catboost", "CatboostModel"): [("catboost", "CatBoost")],
     ("giskard.models.pytorch", "PyTorchModel"): [("torch.nn", "Module")],
-    ("giskard.models.tensorflow", "TensorFlowModel"): [("tensorflow", "Module")],
+    ("giskard.models.tensorflow", "TensorFlowModel"): [("tensorflow", "Module"), ("keras", "Model")],
 }
 
 
@@ -167,9 +167,7 @@ class Model(CloudpickleSerializableModel):
                     "\n- Pass a prediction_function to the Model class "
                     '(we will try to serialize it with "cloudpickle").'
                     "\n- Extend the Model class and override "
-                    'the abstract "model_predict" method. Upon upload to the Giskard hub, we will try to serialise'
-                    'it with "cloudpickle", if that does not work, we will ask you to override the "save_model" and'
-                    '"load_model" with your own serialization methods.'
+                    'the abstract "model_predict" method.'
                     "\nWe recommend that you follow our documentation page: "
                     "https://giskard.readthedocs.io/en/latest/getting-started/scan"
                 )
