@@ -34,6 +34,8 @@ Here are some examples of requirements relative to the issue category above, but
 class LLMOutputFormattingDetector(RequirementBasedDetector):
     """Detects output formatting issues in LLM-based models.
 
+    You can explicitly run this detector by adding the tag "output_formatting" in the `only` parameter of the scan method.
+
     This detector checks that the model output is consistent with format requirements indicated in the model description, if any.
     """
 

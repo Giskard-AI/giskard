@@ -56,7 +56,7 @@ dev = [
     "pytest-asyncio>=0.21.1",
     "pydantic>=2",
     "avidtools",
-    "mistralai>=0.1.8, <1",
+    "mistralai>=1",
     "boto3>=1.34.88",
     "scikit-learn==1.4.2",
 ]
@@ -128,7 +128,7 @@ giskard = "giskard.integrations.mlflow.giskard_evaluator:GiskardEvaluator"
 name = "giskard"
 readme = "README.md"
 license = { text = "Apache Software License 2.0" }
-version = "2.15.0"
+version = "2.15.1"
 description = "The testing framework dedicated to ML models, from tabular to LLMs"
 authors = [{ name = "Giskard AI", email = "hello@giskard.ai" }]
 keywords = ["Artificial Intelligence", "Machine Learning", "Quality", "MLOps"]
