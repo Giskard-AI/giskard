@@ -230,6 +230,17 @@ jobs:
           name: memory-usage
           retention-days: 7
 
+  retry-on-failure:
+    if: failure() && fromJSON(github.run_attempt) < 2
+    needs: [ build-python ]
+    runs-on: ubuntu-latest
+    steps:
+      - env:
+          GH_REPO: ${{ github.repository }}
+          GH_TOKEN: ${{ github.token }}
+        run: gh workflow run retry-workflow.yml --ref ${{ github.ref }} -F run_id=${{ github.run_id }}
+
+
   install-poetry:
     name: "Check if wheel can be installed with using Poetry"
     runs-on: ubuntu-latest
