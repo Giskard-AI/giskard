@@ -5,7 +5,7 @@
 groups = ["default", "dev", "doc", "llm", "ml_runtime", "talk", "tensorflow", "test"]
 strategy = ["inherit_metadata"]
 lock_version = "4.5.0"
-content_hash = "sha256:e29a1e5a168c4aed4e761cf4db76ad5cb177c5d6d25d38e676169ccd18467f77"
+content_hash = "sha256:22fea39c3c4fb7d259beaf5e9868b34ccbd9201689b2f1b6d5bb57e2bea6cc69"
 
 [[metadata.targets]]
 requires_python = ">=3.9,<3.13"
@@ -2643,6 +2643,17 @@ files = [
 ]
 
 [[package]]
+name = "jsonpath-python"
+version = "1.0.6"
+requires_python = ">=3.6"
+summary = "A more powerful JSONPath implementation in modern python"
+groups = ["dev"]
+files = [
+    {file = "jsonpath-python-1.0.6.tar.gz", hash = "sha256:dd5be4a72d8a2995c3f583cf82bf3cd1a9544cfdabf2d22595b67aff07349666"},
+    {file = "jsonpath_python-1.0.6-py3-none-any.whl", hash = "sha256:1e3b78df579f5efc23565293612decee04214609208a2335884b3ee3f786b575"},
+]
+
+[[package]]
 name = "jsonpointer"
 version = "3.0.0"
 requires_python = ">=3.7"
@@ -3632,18 +3643,20 @@ files = [
 
 [[package]]
 name = "mistralai"
-version = "0.4.2"
-requires_python = "<4.0,>=3.9"
-summary = ""
+version = "1.0.3"
+requires_python = "<4.0,>=3.8"
+summary = "Python Client SDK for the Mistral AI API."
 groups = ["dev"]
 dependencies = [
-    "httpx<1,>=0.25",
-    "orjson<3.11,>=3.9.10",
-    "pydantic<3,>=2.5.2",
+    "httpx<0.28.0,>=0.27.0",
+    "jsonpath-python<2.0.0,>=1.0.6",
+    "pydantic<2.9.0,>=2.8.2",
+    "python-dateutil<3.0.0,>=2.9.0.post0",
+    "typing-inspect<0.10.0,>=0.9.0",
 ]
 files = [
-    {file = "mistralai-0.4.2-py3-none-any.whl", hash = "sha256:63c98eea139585f0a3b2c4c6c09c453738bac3958055e6f2362d3866e96b0168"},
-    {file = "mistralai-0.4.2.tar.gz", hash = "sha256:5eb656710517168ae053f9847b0bb7f617eda07f1f93f946ad6c91a4d407fd93"},
+    {file = "mistralai-1.0.3-py3-none-any.whl", hash = "sha256:64af7c9192e64dc66b2da6d1c4d54a1324a881c21665a2f93d6b35d9de9f87c8"},
+    {file = "mistralai-1.0.3.tar.gz", hash = "sha256:84f1a217666c76fec9d477ae266399b813c3ac32a4a348d2ecd5fe1c039b0667"},
 ]
 
 [[package]]
@@ -4701,7 +4714,7 @@ name = "orjson"
 version = "3.10.7"
 requires_python = ">=3.8"
 summary = "Fast, correct Python JSON library supporting dataclasses, datetimes, and numpy"
-groups = ["dev", "ml_runtime", "test"]
+groups = ["ml_runtime", "test"]
 files = [
     {file = "orjson-3.10.7-cp310-cp310-macosx_10_15_x86_64.macosx_11_0_arm64.macosx_10_15_universal2.whl", hash = "sha256:74f4544f5a6405b90da8ea724d15ac9c36da4d72a738c64685003337401f5c12"},
     {file = "orjson-3.10.7-cp310-cp310-manylinux_2_17_aarch64.manylinux2014_aarch64.whl", hash = "sha256:34a566f22c28222b08875b18b0dfbf8a947e69df21a9ed5c51a6bf91cfb944ac"},
@@ -7663,7 +7676,7 @@ files = [
 name = "typing-inspect"
 version = "0.9.0"
 summary = "Runtime inspection utilities for typing module."
-groups = ["ml_runtime", "test"]
+groups = ["dev", "ml_runtime", "test"]
 dependencies = [
     "mypy-extensions>=0.3.0",
     "typing-extensions>=3.7.4",

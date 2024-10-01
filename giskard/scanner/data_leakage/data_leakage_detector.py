@@ -15,6 +15,10 @@ from ..registry import Detector
 
 @detector(name="data_leakage", tags=["data_leakage", "classification", "regression"])
 class DataLeakageDetector(Detector):
+    """
+    You can explicitly run this detector by adding the tag "data_leakage" in the `only` parameter of the scan method.
+    """
+
     def run(self, model: BaseModel, dataset: Dataset, features: Optional[Sequence[str]] = None):
         logger.info("DataLeakageDetector: Running")
 
