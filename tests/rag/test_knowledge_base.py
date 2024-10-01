@@ -8,6 +8,31 @@ from giskard.llm.client.base import ChatMessage
 from giskard.rag.knowledge_base import KnowledgeBase
 
 
+def test_knowledge_base_get_random_documents():
+    llm_client = Mock()
+    embeddings = Mock()
+    embeddings.embed.side_effect = [np.random.rand(5, 10), np.random.rand(3, 10)]
+
+    kb = KnowledgeBase.from_pandas(
+        df=pd.DataFrame({"text": ["This is a test string"] * 5}), llm_client=llm_client, embedding_model=embeddings
+    )
+
+    # Test when k is smaller than the number of documents
+    docs = kb.get_random_documents(3)
+    assert len(docs) == 3
+    assert all([doc in kb._documents for doc in docs])
+
+    # Test when k is equal to the number of documents
+    docs = kb.get_random_documents(5)
+    assert len(docs) == 5
+    assert all([doc in kb._documents for doc in docs])
+
+    # Test when k is larger than the number of documents
+    docs = kb.get_random_documents(10)
+    assert len(docs) == 10
+    assert all([doc in kb._documents for doc in docs])
+
+
 def test_knowledge_base_creation_from_df():
     dimension = 8
     df = pd.DataFrame(["This is a test string"] * 5)

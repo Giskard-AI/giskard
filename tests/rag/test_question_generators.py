@@ -33,6 +33,7 @@ def test_simple_question_generation():
             Document(dict(content="Milk is produced by cows, goats or sheep.")),
         ]
     knowledge_base.get_random_document = Mock(return_value=documents[0])
+    knowledge_base.get_random_documents = Mock(return_value=documents)
     knowledge_base.get_neighbors = Mock(return_value=documents)
 
     question_generator = SimpleQuestionsGenerator(llm_client=llm_client)
@@ -212,6 +213,7 @@ def test_double_question_generation():
             Document(dict(content="Milk is produced by cows, goats or sheep.")),
         ]
     knowledge_base.get_random_document = Mock(return_value=documents[0])
+    knowledge_base.get_random_documents = Mock(return_value=documents)
     knowledge_base.get_neighbors = Mock(return_value=documents)
 
     question_generator = DoubleQuestionsGenerator(llm_client=llm_client)
@@ -304,6 +306,7 @@ def test_oos_question_generation():
             dict(content="Paul Graham liked to buy a baguette every day at the local market."), doc_id="1"
         )
     )
+    knowledge_base.get_random_documents = Mock(return_value=documents)
     knowledge_base.get_neighbors = Mock(return_value=documents)
 
     question_generator = OutOfScopeGenerator(llm_client=llm_client)
