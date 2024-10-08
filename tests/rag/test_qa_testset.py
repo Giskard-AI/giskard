@@ -75,7 +75,7 @@ def make_testset_samples():
             question="Where is it from?",
             reference_answer="Scarmorza is from Southern Italy.",
             reference_context="Scamorza is a Southern Italian cow's milk cheese.",
-            conversation_history=["Scamorza"],
+            conversation_history=[{"role": "user", "content": "Scamorza"}],
             metadata={
                 "question_type": "conversational",
                 "color": "blue",
@@ -173,7 +173,7 @@ def test_testset_samples_property():
         "seed_document_id": "1",
     }
     assert testset.samples[-1].question == "Where is it from?"
-    assert testset.samples[-1].conversation_history == ["Scamorza"]
+    assert testset.samples[-1].conversation_history == [{"role": "user", "content": "Scamorza"}]
     assert testset.samples[-1].id == "6"
     assert testset.samples[-1].metadata == {
         "question_type": "conversational",
