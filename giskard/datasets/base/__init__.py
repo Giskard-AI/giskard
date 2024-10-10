@@ -526,7 +526,6 @@ class Dataset(ColumnMetadataMixin):
 
     @classmethod
     def load(cls, local_path: str):
-
         # load metadata
         with open(Path(local_path) / "giskard-dataset-meta.yaml", "r") as meta_f:
             meta = yaml.safe_load(meta_f)
