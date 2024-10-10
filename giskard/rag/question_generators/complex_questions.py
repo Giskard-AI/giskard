@@ -9,7 +9,7 @@ Your task is to re-write questions that will be used to evaluate the following a
 - Model description: {agent_description}  
 
 Respect the following rules to reformulate the question:
-- The re-written question should not be longer than the original question by up to 10 to 15 words. 
+- The re-written question should not be longer than the original question by more than 10 to 15 words. 
 - The re-written question should be more elaborated than the original, use elements from the context to enrich the questions. 
 - The re-written question should be more difficult to handle for AI models but it must be understood and answerable by humans.
 - Add one or more constraints / conditions to the question.
