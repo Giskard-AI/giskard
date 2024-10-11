@@ -177,6 +177,8 @@ def test_question_generation_fail(caplog):
     knowledge_base.__getitem__ = lambda obj, idx: documents[0]
     knowledge_base.topics = ["Cheese", "Ski"]
 
+    knowledge_base.get_random_documents = Mock(return_value=documents)
+
     simple_gen = Mock()
     simple_gen.generate_questions.return_value = [q1, q2]
     failing_gen = SimpleQuestionsGenerator(llm_client=Mock())
