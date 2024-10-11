@@ -34,8 +34,6 @@ from ..metadata.indexing import ColumnMetadataMixin
 if TYPE_CHECKING:
     from mlflow import MlflowClient
 
-SAMPLE_SIZE = 1000
-
 logger = logging.getLogger(__name__)
 
 
@@ -556,18 +554,11 @@ class Dataset(ColumnMetadataMixin):
         return self._cat_columns(self.meta)
 
     def save(self, local_path: str):
-        with (
-            open(Path(local_path) / "data.csv.zst", "wb") as f,
-            open(Path(local_path) / "data.sample.csv.zst", "wb") as f_sample,
-        ):
+        with (open(Path(local_path) / "data.csv.zst", "wb") as f,):
             uncompressed_bytes = save_df(self.df)
             compressed_bytes = compress(uncompressed_bytes)
             f.write(compressed_bytes)
             original_size_bytes, compressed_size_bytes = len(uncompressed_bytes), len(compressed_bytes)
-
-            uncompressed_bytes = save_df(self.df.sample(min(SAMPLE_SIZE, len(self.df.index))))
-            compressed_bytes = compress(uncompressed_bytes)
-            f_sample.write(compressed_bytes)
 
             with open(Path(local_path) / "giskard-dataset-meta.yaml", "w") as meta_f:
                 yaml.dump(
