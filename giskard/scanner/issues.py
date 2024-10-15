@@ -123,6 +123,7 @@ class Issue:
         taxonomy: List[str] = None,
         scan_examples: Optional[ScanExamples] = None,
         display_footer_info: bool = True,
+        detector_name: str = None,
     ):
         """Issue represents a single model vulnerability detected by Giskard.
 
@@ -179,6 +180,7 @@ class Issue:
         self.scan_examples = DataFrameScanExamples() if scan_examples is None else scan_examples
         if examples is not None:
             self.scan_examples.extend(examples)
+        self._detector_name = detector_name
 
     def __repr__(self):
         return f"<{self.__class__.__name__} group='{self.group.name}' level='{self.level}'>"
@@ -217,6 +219,13 @@ class Issue:
             level=self.level.value,
             **self.meta,
         )
+
+    @property
+    def detector_name(self):
+        return self._detector_name
+
+    def set_detector_name(self, detector_name):
+        self._detector_name = detector_name
 
     def examples(self, n=3) -> Any:
         return self.scan_examples.head(n)

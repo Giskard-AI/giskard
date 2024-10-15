@@ -12,6 +12,8 @@ SENSITIVE_INFORMATION_DISCLOSURE_ISSUE_DESCRIPTION = (
 class LLMInformationDisclosureDetector(RequirementBasedDetector):
     """Detects sensitive information disclosure in LLM-based models.
 
+    You can explicitly run this detector by adding the tag "information_disclosure" in the `only` parameter of the scan method.
+
     This detector checks that the model does divulge or hallucinate sensitive or confidential information in its
     responses. We probe the model by generating ad hoc adversarial inputs and checking that the model outputs do not
     contain information that could be considered sensitive, such as personal identifiable information (PII) or secret
@@ -22,8 +24,6 @@ class LLMInformationDisclosureDetector(RequirementBasedDetector):
     undesired availability of private information to the model (for example, confidential data acquired during fine
     tuning), or the tendency to hallucinate information such as phone numbers or personal emails even if those details
     were not provided to the model.
-
-    Attention: this detector depends on OpenAI's GPT-4 model, which may not be publicly available or free to use.
     """
 
     _issue_group = SensitiveInformationDisclosure

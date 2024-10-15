@@ -51,3 +51,29 @@ def test_scan_report_exports_to_markdown():
         assert dest.exists()
         assert dest.is_file()
         assert dest.read_text() == markdown
+
+
+def test_scan_report_to_json():
+    model = Mock()
+    dataset = Mock()
+
+    report = ScanReport(
+        issues=[Issue(model, dataset, Robustness, IssueLevel.MAJOR, detector_name="RobustnessDetector")],
+        detectors_names=["RobustnessDetector"],
+    )
+
+    # JSON report
+    json_report = report.to_json()
+
+    assert json_report is not None
+    assert isinstance(json_report, str)
+    assert "RobustnessDetector" in json_report
+
+    # Save to a file
+    with tempfile.TemporaryDirectory() as tmpdir:
+        dest = Path(tmpdir).joinpath("report.json")
+        report.to_json(dest)
+
+        assert dest.exists()
+        assert dest.is_file()
+        assert dest.read_text() == json_report

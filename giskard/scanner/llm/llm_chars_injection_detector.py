@@ -18,6 +18,8 @@ from ..registry import Detector
 class LLMCharsInjectionDetector(Detector):
     """Detects control character injection vulnerabilities in LLM-based models.
 
+    You can explicitly run this detector by adding the tag "control_chars_injection" in the `only` parameter of the scan method.
+
     Some LLMs can be manipulated by injecting sequences of special characters in the prompt. These injections can cause
     the model to produce unexpected outputs, or even forget the prompt and produce unrelated outputs.
 
@@ -137,6 +139,7 @@ class LLMCharsInjectionDetector(Detector):
                 examples=examples,
                 tests=_generate_char_injection_tests,
                 taxonomy=["avid-effect:performance:P0201", "avid-effect:security:S0403"],
+                detector_name=self.__class__.__name__,
             )
 
             issues.append(issue)

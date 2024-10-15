@@ -1,6 +1,7 @@
 # 🤖 Setting up the LLM Client
 
 This guide focuses primarily on configuring and using various LLM clients supported to run Giskard's LLM-assisted functionalities. These clients include:
+
 - OpenAI GPT models (such as GPT-3.5 and GPT-4)
 - Azure OpenAI
 - Mistral
@@ -26,6 +27,7 @@ giskard.llm.set_default_client(oc)
 ```python
 import os
 from giskard.llm import set_llm_model
+from giskard.llm.embeddings.openai import set_embedding_model
 
 os.environ['AZURE_OPENAI_API_KEY'] = '...'
 os.environ['AZURE_OPENAI_ENDPOINT'] = 'https://xxx.openai.azure.com'
@@ -35,6 +37,7 @@ os.environ['OPENAI_API_VERSION'] = '2023-07-01-preview'
 # You'll need to provide the name of the model that you've deployed
 # Beware, the model provided must be capable of using function calls
 set_llm_model('my-gpt-4-model')
+set_embedding_model('my-embedding-model') # Optional
 ```
 
 ## Mistral Client Setup
@@ -82,6 +85,21 @@ claude_client = ClaudeBedrockClient(bedrock_runtime, model="anthropic.claude-3-h
 embed_client = BedrockEmbedding(bedrock_runtime, model="amazon.titan-embed-text-v1")
 giskard.llm.set_default_client(claude_client)
 set_default_embedding(embed_client)
+```
+
+## Gemini Client Setup
+
+```python
+import os
+import giskard
+
+import google.generativeai as genai
+
+from giskard.llm.client.gemini import GeminiClient
+
+genai.configure(api_key=os.environ["GEMINI_API_KEY"])
+
+giskard.llm.set_default_client(GeminiClient())
 ```
 
 ## Custom Client Setup

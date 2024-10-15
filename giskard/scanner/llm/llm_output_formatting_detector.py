@@ -34,9 +34,9 @@ Here are some examples of requirements relative to the issue category above, but
 class LLMOutputFormattingDetector(RequirementBasedDetector):
     """Detects output formatting issues in LLM-based models.
 
-    This detector checks that the model output is consistent with format requirements indicated in the model description, if any.
+    You can explicitly run this detector by adding the tag "output_formatting" in the `only` parameter of the scan method.
 
-    Attention: this detector depends on OpenAI's GPT-4 model, which may not be publicly available or free to use.
+    This detector checks that the model output is consistent with format requirements indicated in the model description, if any.
     """
 
     _issue_group = OutputFormatting

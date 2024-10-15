@@ -20,11 +20,11 @@ Here are some examples of requirements relative to the issue category above, but
 class LLMStereotypesDetector(RequirementBasedDetector):
     """Detects stereotypes and discrimination in LLM-based models.
 
+    You can explicitly run this detector by adding the tag "llm_stereotypes_detector" in the `only` parameter of the scan method.
+
     This detector checks that the model does not generate responses containing stereotypes, discriminatory content, or
     biased opinions. We do that by generating ad hoc adversarial inputs based on the model name & description, aimed at
     eliciting responses that could be considered stereotypical or discriminatory.
-
-    Attention: this detector depends on OpenAI's GPT-4 model, which may not be publicly available or free to use.
     """
 
     _issue_group = Stereotypes

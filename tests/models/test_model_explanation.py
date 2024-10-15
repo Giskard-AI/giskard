@@ -1,3 +1,5 @@
+import sys
+
 import numpy as np
 import pytest
 
@@ -81,7 +83,11 @@ def test_explain_text_regression(hotel_text_data, hotel_text_model):
     [
         ("hotel_text_data", "hotel_text_model"),
         ("german_credit_data", "german_credit_model"),
-        ("breast_cancer_data", "breast_cancer_model"),
+        pytest.param(
+            "breast_cancer_data",
+            "breast_cancer_model",
+            marks=pytest.mark.skipif(sys.platform == "darwin", reason="xboost issue on macos"),
+        ),
         ("drug_classification_data", "drug_classification_model"),
         ("diabetes_dataset_with_target", "linear_regression_diabetes"),
     ],

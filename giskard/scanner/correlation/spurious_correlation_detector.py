@@ -15,6 +15,10 @@ from ..registry import Detector
 
 @detector(name="spurious_correlation", tags=["spurious_correlation", "classification"])
 class SpuriousCorrelationDetector(Detector):
+    """
+    You can explicitly run this detector by adding the tag "spurious_correlation" in the `only` parameter of the scan method.
+    """
+
     def __init__(
         self, method: Optional[str] = "theil", threshold: Optional[float] = 0.5, min_slice_size: Optional[float] = None
     ):
@@ -96,6 +100,7 @@ class SpuriousCorrelationDetector(Detector):
                         importance=metric_value,
                         tests=_generate_spurious_corr_tests,
                         taxonomy=["avid-effect:performance:P0103"],
+                        detector_name=self.__class__.__name__,
                     )
 
                     extractor = ExampleExtractor(issue)

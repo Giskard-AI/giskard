@@ -40,7 +40,7 @@ processed.
 
 In the following example, we illustrate the procedure using **OpenAI** and **Azure OpenAI**; however, please note that
 our platform supports a variety of language models. For details on configuring different models, visit
-our [🤖 Setting up the LLM Client page](../../open_source/setting_up/index.md)
+our [🤖 Setting up the LLM Client page](../../setting_up/index.md)
 
 Before starting, make sure you have installed the LLM flavor of Giskard:
 
@@ -74,6 +74,7 @@ Require `openai>=1.0.0`
 ```python
 import os
 from giskard.llm import set_llm_model
+from giskard.llm.embeddings.openai import set_embedding_model
 
 os.environ['AZURE_OPENAI_API_KEY'] = '...'
 os.environ['AZURE_OPENAI_ENDPOINT'] = 'https://xxx.openai.azure.com'
@@ -82,6 +83,7 @@ os.environ['OPENAI_API_VERSION'] = '2023-07-01-preview'
 # You'll need to provide the name of the model that you've deployed
 # Beware, the model provided must be capable of using function calls
 set_llm_model('my-gpt-4-model')
+set_embedding_model('my-embedding-model') # Optional
 ```
 
 ::::::
@@ -128,6 +130,22 @@ claude_client = ClaudeBedrockClient(bedrock_runtime, model="anthropic.claude-3-h
 embed_client = BedrockEmbedding(bedrock_runtime, model="amazon.titan-embed-text-v1")
 giskard.llm.set_default_client(claude_client)
 set_default_embedding(embed_client)
+```
+
+::::::
+::::::{tab-item} Gemini
+
+```python
+import os
+import giskard
+
+import google.generativeai as genai
+
+from giskard.llm.client.gemini import GeminiClient
+
+genai.configure(api_key=os.environ["GEMINI_API_KEY"])
+
+giskard.llm.set_default_client(GeminiClient())
 ```
 
 ::::::

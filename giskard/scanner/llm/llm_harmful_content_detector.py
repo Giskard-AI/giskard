@@ -17,12 +17,12 @@ Here are some examples of requirements relative to the issue category above, but
 class LLMHarmfulContentDetector(RequirementBasedDetector):
     """Detects harmful content generation in LLM-based models.
 
+    You can explicitly run this detector by adding the tag "llm_harmful_content" in the `only` parameter of the scan method.
+
     Harmful content generation is the tendency of a model to generate responses that could be used for malicious
     purposes or promote harmful actions. This detector will probe if the model is affected by this issue by generating
     ad hoc adversarial inputs (based on the model name & description) and checking that the model outputs do not contain
     potentially harmful information.
-
-    Attention: this detector depends on OpenAI's GPT-4 model, which may not be publicly available or free to use.
     """
 
     _issue_group = Harmfulness

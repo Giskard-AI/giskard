@@ -23,10 +23,10 @@ from .base import _estimate_base_token_counts
 class LLMImplausibleOutputDetector(Detector):
     """Detects implausible output in LLM-based models.
 
+    You can explicitly run this detector by adding the tag "implausible_output" in the `only` parameter of the scan method.
+
     The detector will stimulate the model in producing outputs that are implausible or controversial by generating a
     set of ad hoc adversarial inputs. This can be seen as a proxy for hallucination and misinformation detection.
-
-    Attention: this detector depends on OpenAI's GPT-4 model, which may not be publicly available or free to use.
     """
 
     def __init__(self, num_samples=10):
@@ -100,6 +100,7 @@ class LLMImplausibleOutputDetector(Detector):
                     examples=examples,
                     tests=_generate_implausible_output_tests,
                     taxonomy=["avid-effect:performance:P0204"],
+                    detector_name=self.__class__.__name__,
                 )
             ]
 

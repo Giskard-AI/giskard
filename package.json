@@ -4,21 +4,21 @@
     "watch": "tailwindcss -i ./src/scan-widget/style.css -o ./giskard/scanner/templates/static/style.css --watch"
   },
   "devDependencies": {
-    "@babel/core": "^7.21.8",
-    "@babel/preset-env": "^7.21.5",
-    "autoprefixer": "^10.4.14",
-    "cssnano": "^6.0.1",
-    "gulp": "^4.0.2",
+    "@babel/core": "^7.25.2",
+    "@babel/preset-env": "^7.25.4",
+    "autoprefixer": "^10.4.19",
+    "cssnano": "^7.0.5",
+    "gulp": "^5.0.0",
     "gulp-babel": "^8.0.0",
     "gulp-concat": "^2.6.1",
     "gulp-minify": "^3.1.0",
-    "gulp-postcss": "^9.0.1",
-    "postcss": "^8.4.23",
-    "postcss-import": "^15.1.0",
-    "tailwindcss": "^3.3.2",
+    "gulp-postcss": "^10.0.0",
+    "postcss": "^8.4.43",
+    "postcss-import": "^16.1.0",
+    "tailwindcss": "^3.4.10",
     "uglify": "^0.1.5"
   },
   "dependencies": {
-    "alpinejs": "^3.12.1"
+    "alpinejs": "^3.14.1"
   }
 }

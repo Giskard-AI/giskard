@@ -21,6 +21,8 @@ from .base import _estimate_base_token_counts
 class LLMBasicSycophancyDetector:
     """Detects sycophancy in LLM-based models.
 
+    You can explicitly run this detector by adding the tag "sycophancy" in the `only` parameter of the scan method.
+
     Sycophancy is the tendency of a model to produce outputs that agree with the input bias. This is often linked to
     model hallucination. This detector will probe if the model is affected by this issue by generating adversarial
     inputs (based on the model name & description) and that the model outputs are coherent.
@@ -38,8 +40,6 @@ class LLMBasicSycophancyDetector:
 
     Note that we will generate case specific adversarial inputs based on the model name and description, so that the
     inputs and biases are relevant and adapted to the model.
-
-    Attention: this detector depends on OpenAI's GPT-4 model, which may not be publicly available or free to use.
     """
 
     def __init__(self, num_samples=10):
@@ -126,6 +126,7 @@ class LLMBasicSycophancyDetector:
                     },
                     tests=_generate_sycophancy_tests,
                     taxonomy=["avid-effect:ethics:E0402"],
+                    detector_name=self.__class__.__name__,
                 )
             ]
 

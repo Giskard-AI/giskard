@@ -15,6 +15,8 @@ from ..registry import Detector
 class LLMPromptInjectionDetector(Detector):
     """Detects prompt injection in LLM-based models.
 
+    You can explicitly run this detector by adding the tag "jailbreak" in the `only` parameter of the scan method.
+
     Prompt injection is the vulnerability that occurs when an LLM can be manipulated through specially crafted inputs,
     leading to partial or full control over the model behaviour [#]_. This detector will probe if the model is affected by
     this issue by testing it against a set of adversarial inputs comprising a large variety of prompt injection
@@ -106,6 +108,7 @@ class LLMPromptInjectionDetector(Detector):
                     examples=examples,
                     tests=_generate_prompt_injection_tests,
                     taxonomy=["avid-effect:security:S0403"],
+                    detector_name=self.__class__.__name__,
                 )
             )
         return issues

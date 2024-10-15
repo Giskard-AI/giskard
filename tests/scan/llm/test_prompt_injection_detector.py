@@ -9,16 +9,31 @@ from giskard.scanner.llm.llm_prompt_injection_detector import LLMPromptInjection
 from giskard.testing.tests.llm.injections import _test_llm_output_against_strings
 
 
-def test_prompt_injection_data_loader_properties():
-    from giskard.llm.loaders.prompt_injections import PromptInjectionDataLoader
-
-    loader = PromptInjectionDataLoader()
-
+def _verify_loader(loader):
     assert len(loader.df) == 35
     assert len(loader.df.columns) == 15
     assert len(loader.groups) == 10
     group = loader.groups[0]
     assert len(loader.configs_from_group(group)) == len(loader.df_from_group(group))
+
+
+def test_prompt_injection_data_loader_properties():
+    from giskard.llm.loaders.prompt_injections import PromptInjectionDataLoader
+
+    loader = PromptInjectionDataLoader()
+
+    _verify_loader(loader)
+
+
+def test_prompt_injection_data_loader_without_network():
+    from giskard.llm.loaders.prompt_injections import PromptInjectionDataLoader
+
+    loader = PromptInjectionDataLoader(
+        injection_data_url="http://localhost:123456/prompt_injections.csv",
+        giskard_meta_url="http://localhost:123456/giskard_meta_data.csv",
+    )
+
+    _verify_loader(loader)
 
 
 def test_prompt_injection_data_loader_sampling():

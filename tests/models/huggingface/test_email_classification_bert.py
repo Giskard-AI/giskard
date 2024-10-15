@@ -2,7 +2,6 @@ import pytest
 from scipy import special
 from transformers import BertForSequenceClassification, BertTokenizer
 
-import tests.utils
 from giskard import Dataset
 from giskard.models.huggingface import HuggingFaceModel
 
@@ -53,4 +52,5 @@ def test_email_classification_bert_custom_model(dataset_name, request):
         data_filtered.head(5), name="test dataset", target="Target", cat_columns=["Week_day", "Month"]
     )
 
-    tests.utils.verify_model_upload(my_model, my_test_dataset)
+    predictions = my_model.predict(my_test_dataset).prediction
+    assert len(my_test_dataset.df) == len(predictions)

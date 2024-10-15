@@ -3,31 +3,21 @@ from __future__ import annotations
 from typing import TYPE_CHECKING, Any, Callable, Dict, List, Optional, Union
 
 import inspect
+import json
 import logging
 import traceback
 import warnings
 from dataclasses import dataclass
 from datetime import datetime
 from functools import singledispatchmethod
+from pathlib import Path
 from xml.dom import minidom
 from xml.etree.ElementTree import Element, SubElement, tostring
 
-from giskard.client.dtos import (
-    SaveSuiteExecutionDTO,
-    SaveSuiteTestExecutionDetailsDTO,
-    SaveSuiteTestExecutionDTO,
-    SuiteInfo,
-    SuiteTestDTO,
-    TestInputDTO,
-    TestResultMessageDTO,
-    TestSuiteDTO,
-    TestSuiteExecutionResult,
-)
-from giskard.client.giskard_client import GiskardClient
 from giskard.core.core import TestFunctionMeta
 from giskard.core.errors import GiskardImportError
 from giskard.core.savable import Artifact
-from giskard.core.test_result import TestMessage, TestMessageLevel, TestResult, TestResultStatus
+from giskard.core.test_result import TestMessage, TestMessageLevel, TestResult
 from giskard.datasets.base import Dataset
 from giskard.exceptions.IllegalArgumentError import IllegalArgumentError
 from giskard.models.base import BaseModel
@@ -58,24 +48,28 @@ suite_input_types: List[type] = [
 ]
 
 
-def parse_function_arguments(client, project_key, function_inputs):
+def _parse_function_arguments(folder: Path, function_inputs: List[Dict[str, Any]]):
     arguments = dict()
 
     for value in function_inputs:
-        if value["isAlias"] or value["isDefaultValue"]:
+        if value.get("isAlias", False) or value.get("isDefaultValue", False):
             continue
         if value["type"] == "Dataset":
-            arguments[value["name"]] = Dataset.download(client, project_key, value["value"], False)
+            arguments[value["name"]] = Dataset.load(folder / value["value"])
         elif value["type"] == "BaseModel":
-            arguments[value["name"]] = BaseModel.download(client, project_key, value["value"])
+            arguments[value["name"]] = BaseModel.load(folder / value["value"])
         elif value["type"] == "SlicingFunction":
-            arguments[value["name"]] = SlicingFunction.download(value["value"], client, project_key)(
-                **parse_function_arguments(client, project_key, value["params"])
-            )
+            sf_uuid = value["value"]
+            sf_folder = folder / sf_uuid
+            arguments[value["name"]] = SlicingFunction.load(
+                sf_folder, sf_uuid, SlicingFunction._load_meta_locally(sf_folder, sf_uuid)
+            )(**_parse_function_arguments(folder, value["params"]))
         elif value["type"] == "TransformationFunction":
-            arguments[value["name"]] = TransformationFunction.download(value["value"], client, project_key)(
-                **parse_function_arguments(client, project_key, value["params"])
-            )
+            tf_uuid = value["value"]
+            tf_folder = folder / tf_uuid
+            arguments[value["name"]] = TransformationFunction.load(
+                tf_folder, tf_uuid, TransformationFunction._load_meta_locally(tf_folder, tf_uuid)
+            )(**_parse_function_arguments(folder, value["params"]))
         elif value["type"] == "float":
             arguments[value["name"]] = float(value["value"])
         elif value["type"] == "int":
@@ -124,44 +118,6 @@ class SuiteResult:
         )
         return self._tuple.__iter__()
 
-    def to_dto(self, client: GiskardClient, project_key: str, uploaded_uuid_status: Dict[str, bool]):
-        datasets = {dataset.id: dataset for dataset in self.params.values() if isinstance(dataset, Dataset)}
-        return SaveSuiteTestExecutionDTO(
-            suiteTest=self.test_partial.to_dto(client, project_key, uploaded_uuid_status),
-            testUuid=self.test_partial.giskard_test.meta.uuid,
-            displayName=self.test_name,
-            inputs={name: str(serialize_parameter(value)) for name, value in self.params.items()},
-            arguments={test_input.name: test_input for test_input in TestInputDTO.from_inputs_dict(self.params)},
-            messages=[TestResultMessageDTO(type=message.type, text=message.text) for message in self.result.messages],
-            status=(
-                TestResultStatus.PASSED
-                if self.result.passed
-                else TestResultStatus.ERROR
-                if self.result.is_error
-                else TestResultStatus.FAILED
-            ),
-            metric=self.result.metric,
-            metricName=self.result.metric_name,
-            failedIndexes={
-                str(dataset.original_id): list(datasets[dataset.original_id].df.index.get_indexer_for(dataset.df.index))
-                for dataset in self.result.output_ds
-            },
-            details=(
-                SaveSuiteTestExecutionDetailsDTO(
-                    inputs={
-                        key: [str(value) for value in values] for key, values in self.result.details.inputs.items()
-                    },
-                    outputs=[str(output) for output in self.result.details.outputs],
-                    results=self.result.details.results,
-                    metadata={
-                        key: [str(value) for value in values] for key, values in self.result.details.metadata.items()
-                    },
-                )
-                if self.result.details
-                else None
-            ),
-        )
-
 
 class TestSuiteResult:
     """Represents the result of a test suite."""
@@ -198,26 +154,18 @@ class TestSuiteResult:
         widget = TestSuiteResultWidget(self)
         return widget.render_html()
 
-    def upload(self, client: GiskardClient, project_key: Optional[str] = None, label: Optional[str] = None):
-        project_key = self.suite.project_key or project_key
-        if project_key is None:
-            raise ValueError("Please provide 'project_key' param in order to save this suite execution")
-
-        client.save_test_suite_execution_result(project_key, self._to_dto(label, client, project_key))
-
-    def _to_dto(self, label: Optional[str], client: GiskardClient, project_key: str) -> SaveSuiteExecutionDTO:
-        uploaded_uuid_status = dict()
-
-        return SaveSuiteExecutionDTO(
-            label=label or self.execution_date.isoformat().replace("T", " ").split(".")[0],
-            suiteId=self.suite.id,
-            inputs=TestInputDTO.from_inputs_dict(self.inputs),
-            result=TestSuiteExecutionResult.PASSED if self.passed else TestSuiteExecutionResult.FAILED,
-            message="",
-            results=[result.to_dto(client, project_key, uploaded_uuid_status) for result in self.results],
-            executionDate=self.execution_date.isoformat(),
-            completionDate=self.completion_date.isoformat(),
-        )
+    def to_json(self, filename=None):
+        results = {}
+        for suite_result in self.results:
+            results[suite_result.test_name] = {
+                "result": "Passed" if suite_result.result.passed else "Failed",
+                "metric_value": suite_result.result.metric,
+            }
+        if filename is not None:
+            with open(filename, "w") as json_file:
+                json.dump(results, json_file, indent=4)
+        else:
+            return json.dumps(results, indent=4)
 
     def to_mlflow(self, mlflow_client: MlflowClient = None, mlflow_run_id: str = None):
         import mlflow
@@ -405,16 +353,15 @@ class TestPartial:
     display_name: Optional[str] = None
     suite_test_id: Optional[int] = None
 
-    def to_dto(self, client: GiskardClient, project_key: str, uploaded_uuid_status: Dict[str, bool]):
+    def _to_json(self, folder: Path, saved_uuid_status: Dict[str, bool]):
         params = dict(
             {
-                pname: build_test_input_dto(
-                    client,
+                pname: _build_test_input_json(
+                    folder,
                     p,
                     pname,
                     self.giskard_test.meta.args[pname].type,
-                    project_key,
-                    uploaded_uuid_status,
+                    saved_uuid_status,
                 )
                 for pname, p in self.provided_inputs.items()
                 if pname in self.giskard_test.meta.args
@@ -427,61 +374,63 @@ class TestPartial:
             if pname not in self.giskard_test.meta.args
         ]
         if len(kwargs_params) > 0:
-            params["kwargs"] = TestInputDTO(name="kwargs", value="\n".join(kwargs_params), type="Kwargs")
+            params["kwargs"] = {"name": "kwargs", "value": "\n".join(kwargs_params), "type": "Kwargs"}
 
-        return SuiteTestDTO(
-            id=self.suite_test_id,
-            testUuid=self.giskard_test.upload(client, project_key),
-            functionInputs=params,
-            displayName=self.display_name,
-        )
+        if self.giskard_test.meta.uuid not in saved_uuid_status:
+            test_folder = folder / str(self.giskard_test.meta.uuid)
+            test_folder.mkdir(exist_ok=True)
+            self.giskard_test.save(test_folder)
+
+        return {
+            "id": self.suite_test_id,
+            "testUuid": str(self.giskard_test.meta.uuid),
+            "functionInputs": params,
+            "displayName": self.display_name,
+        }
 
 
 def single_binary_result(test_results: List):
     return all(res.passed for res in test_results)
 
 
-def build_test_input_dto(client, p, pname, ptype, project_key, uploaded_uuid_status: Dict[str, bool]):
+def _build_test_input_json(folder, p, pname, ptype, uploaded_uuid_status: Dict[str, bool]):
     if issubclass(type(p), Dataset) or issubclass(type(p), BaseModel):
-        if _try_upload_artifact(p, client, project_key, uploaded_uuid_status):
-            return TestInputDTO(name=pname, value=str(p.id), type=ptype)
+        if _try_save_artifact(p, folder, uploaded_uuid_status):
+            return {"name": pname, "value": str(p.id), "type": ptype}
         else:
-            return TestInputDTO(name=pname, value=pname, is_alias=True, type=ptype)
+            return {"name": pname, "value": pname, "is_alias": True, "type": ptype}
     elif issubclass(type(p), Artifact):
-        if not _try_upload_artifact(p, client, None if "giskard" in p.meta.tags else project_key, uploaded_uuid_status):
-            return TestInputDTO(name=pname, value=pname, is_alias=True, type=ptype)
+        if not _try_save_artifact(p, folder, uploaded_uuid_status):
+            return {"name": pname, "value": pname, "is_alias": True, "type": ptype}
 
         kwargs_params = [
             f"kwargs[{pname}] = {repr(value)}" for pname, value in p.params.items() if pname not in p.meta.args
         ]
         kwargs_param = (
-            []
-            if len(kwargs_params) == 0
-            else (TestInputDTO(name="kwargs", value="\n".join(kwargs_params), type="Kwargs"))
+            [] if len(kwargs_params) == 0 else [{"name": "kwargs", "value": "\n".join(kwargs_params), "type": "Kwargs"}]
         )
 
-        return TestInputDTO(
-            name=pname,
-            value=str(p.meta.uuid),
-            type=ptype,
-            params=[
-                build_test_input_dto(
-                    client,
+        return {
+            "name": pname,
+            "value": str(p.meta.uuid),
+            "type": ptype,
+            "params": [
+                _build_test_input_json(
+                    folder,
                     value,
                     pname,
                     p.meta.args[pname].type,
-                    project_key,
                     uploaded_uuid_status,
                 )
                 for pname, value in p.params.items()
                 if pname in p.meta.args
             ]
             + kwargs_param,
-        )
+        }
     elif isinstance(p, SuiteInput):
-        return TestInputDTO(name=pname, value=p.name, is_alias=True, type=ptype)
+        return {"name": pname, "value": p.name, "is_alias": True, "type": ptype}
     else:
-        return TestInputDTO(name=pname, value=str(p), type=ptype)
+        return {"name": pname, "value": str(p), "type": ptype}
 
 
 def generate_test_partial(
@@ -665,59 +614,33 @@ class Suite:
                 test_params[pname] = kwargs[pname]
         return test_params
 
-    def upload(self, client: GiskardClient, project_key: Optional[str] = None):
-        """Saves the test suite to the Giskard backend and sets its ID.
+    def save(self, folder: str):
+        folder_path = Path(folder)
+        if folder_path.exists() and folder_path.is_file():
+            raise ValueError(f"{folder_path} is a file, please provide a folder")
 
-        Parameters
-        ----------
-        client : GiskardClient
-            A GiskardClient instance to connect to the backend.
-        project_key : str
-            The key of the project that the test suite belongs to.
-
-        Returns
-        -------
-        Suite
-            The current instance of the test Suite to allow chained call.
-
-        """
-        if project_key is None and self.project_key is None:
-            raise ValueError("Please provide the `project_key` to upload the Suite")
+        folder_path.mkdir(parents=True, exist_ok=True)
 
         if self.name is None:
             self.name = "Unnamed test suite"
 
-        uploaded_uuid_status: Dict[str, bool] = dict()
+        saved_uuid_status: Dict[str, bool] = dict()
 
-        # Upload the default parameters if they are model or dataset
-        for arg in self.default_params.values():
-            if isinstance(arg, BaseModel) or isinstance(arg, Dataset):
-                _try_upload_artifact(arg, client, project_key, uploaded_uuid_status)
+        json_content = self._to_json(folder_path, saved_uuid_status)
 
-        if self.id:
-            saved = client.update_test_suite(self.id, self.to_dto(client, project_key, uploaded_uuid_status))
-            analytics.track("hub:test_suite:updated")
-        else:
-            saved = client.save_test_suite(self.to_dto(client, project_key, uploaded_uuid_status))
-            analytics.track("hub:test_suite:uploaded")
+        with open(folder_path / "suite.json", "w") as f:
+            json.dump(json_content, f)
 
-        self.id = saved["id"]
-        for i in range(len(saved["tests"])):
-            self.tests[i].suite_test_id = saved["tests"][i]["id"]
-
-        self.project_key = project_key
-        print(f"Test suite has been saved: {client.host_url}/main/projects/{project_key}/testing/suite/{self.id}")
+        analytics.track("lib:test_suite:saved")
 
         return self
 
-    def to_dto(self, client: GiskardClient, project_key: str, uploaded_uuid_status: Optional[Dict[str, bool]] = None):
-        # Avoid to upload the same artifacts several times
-        if uploaded_uuid_status is None:
-            uploaded_uuid_status = dict()
-
-        suite_tests = [test.to_dto(client, project_key, uploaded_uuid_status) for test in self.tests]
-
-        return TestSuiteDTO(name=self.name, project_key=project_key, tests=suite_tests, function_inputs=list())
+    def _to_json(self, folder: Path, saved_uuid_status: Dict[str, bool] = None):
+        return {
+            "name": self.name,
+            "tests": [test._to_json(folder, saved_uuid_status) for test in self.tests],
+            "function_inputs": [],
+        }
 
     def add_test(
         self,
@@ -911,33 +834,28 @@ class Suite:
         ):
             return
 
-        self.add_test(GiskardTest.download(test_func.uuid, None, None)(**suite_args))
+        self.add_test(test_func, **suite_args)
 
     def _contains_test(self, test: TestFunctionMeta):
         return any(t.giskard_test == test for t in self.tests)
 
     @classmethod
-    def download(cls, client: GiskardClient, project_key: str, suite_id: int) -> "Suite":
-        """Download the suite from the hub using project key and suite identifier.
+    def load(cls, folder: str) -> "Suite":
+        folder_path = Path(folder)
 
-        Args:
-            client (GiskardClient): A GiskardClient instance to connect to the backend.
-            project_key (str): The key of the project that the test suite belongs to.
-            suite_id (int): identifier for the suite
+        with open(folder_path / "suite.json", "r") as f:
+            suite_json = json.load(f)
 
-        Returns:
-            Suite: the downloaded suite
-        """
-        suite_dto: SuiteInfo = client.get_suite(client.get_project(project_key).project_id, suite_id)
+        suite = Suite(name=suite_json.get("name", "Unnamed test suite"))
 
-        suite = Suite(name=suite_dto.name)
-        suite.id = suite_id
-        suite.project_key = project_key
+        for test_json in suite_json.get("tests", []):
+            test_uuid = test_json.get("testUuid")
+            test_folder = folder_path / test_uuid
 
-        for test_json in suite_dto.tests:
-            test = GiskardTest.download(test_json.testUuid, client, project_key)
-            test_arguments = parse_function_arguments(client, project_key, test_json.functionInputs.values())
-            suite.add_test(test(**test_arguments), suite_test_id=test_json.id)
+            test = GiskardTest.load(test_folder, test_uuid, GiskardTest._load_meta_locally(test_folder, test_uuid))
+
+            test_arguments = _parse_function_arguments(folder_path, test_json.get("functionInputs").values())
+            suite.add_test(test(**test_arguments), suite_test_id=test_json.get("id"))
 
         return suite
 
@@ -953,17 +871,17 @@ def format_test_result(result: Union[bool, TestResult]) -> str:
         return "passed" if result else "failed"
 
 
-def _try_upload_artifact(artifact, client, project_key: str, uploaded_uuid_status: Dict[str, bool]) -> bool:
+def _try_save_artifact(artifact, path: Path, saved_uuid_status: Dict[str, bool]) -> bool:
     artifact_id = serialize_parameter(artifact)
 
-    if artifact_id not in uploaded_uuid_status:
+    if artifact_id not in saved_uuid_status:
         try:
-            artifact.upload(client, project_key)
-            uploaded_uuid_status[artifact_id] = True
+            artifact_path = path / artifact_id
+            artifact_path.mkdir(exist_ok=True)
+            artifact.save(artifact_path)
+            saved_uuid_status[artifact_id] = True
         except:  # noqa NOSONAR
-            warning(
-                f"Failed to upload {str(artifact)} used in the test suite. The test suite will be partially uploaded."
-            )
-            uploaded_uuid_status[artifact_id] = False
+            warning(f"Failed to save {str(artifact)} used in the test suite. The test suite will be partially saved.")
+            saved_uuid_status[artifact_id] = False
 
-    return uploaded_uuid_status[artifact_id]
+    return saved_uuid_status[artifact_id]

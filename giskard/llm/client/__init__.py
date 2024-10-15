@@ -9,11 +9,17 @@ from .logger import LLMLogger
 _default_client = None
 _default_llm_api: Optional[str] = None
 _default_llm_model = os.getenv("GSK_LLM_MODEL", "gpt-4")
+_default_llm_base_url = os.getenv("GSK_LLM_BASE_URL", None)
 
 
 def set_default_client(client: LLMClient):
     global _default_client
     _default_client = client
+
+
+def _unset_default_client():
+    global _default_client
+    _default_client = None
 
 
 def set_llm_api(llm_api: str):
@@ -23,16 +29,21 @@ def set_llm_api(llm_api: str):
     global _default_llm_api
     _default_llm_api = llm_api.lower()
     # If the API is set, we unset the default client
-    global _default_client
-    _default_client = None
+    _unset_default_client()
+
+
+def set_llm_base_url(llm_base_url: Optional[str]):
+    global _default_llm_base_url
+    _default_llm_base_url = llm_base_url
+    # If the model is set, we unset the default client
+    _unset_default_client()
 
 
 def set_llm_model(llm_model: str):
     global _default_llm_model
     _default_llm_model = llm_model
     # If the model is set, we unset the default client
-    global _default_client
-    _default_client = None
+    _unset_default_client()
 
 
 def get_default_llm_api() -> str:
@@ -66,7 +77,7 @@ def get_default_client() -> LLMClient:
         # For openai>=1.0.0
         from openai import AzureOpenAI, OpenAI
 
-        client = AzureOpenAI() if default_llm_api == "azure" else OpenAI()
+        client = AzureOpenAI() if default_llm_api == "azure" else OpenAI(base_url=_default_llm_base_url)
 
         _default_client = OpenAIClient(model=_default_llm_model, client=client)
     except ImportError:
@@ -83,4 +94,5 @@ __all__ = [
     "set_llm_model",
     "set_llm_api",
     "set_default_client",
+    "set_llm_base_url",
 ]

@@ -15,6 +15,8 @@ from .text_transformations import TextTransformation
 class EthicalBiasDetector(BaseTextPerturbationDetector):
     """Detects ethical bias in a model by applying text perturbations to the input data.
 
+    You can explicitly run this detector by adding the tag "ethical_bias" in the `only` parameter of the scan method.
+
     By default, we perform specific metamorphic testing aimed at detecting bias in the model predictions based on
     transformation of gender, nationality, or religious terms in the textual features.
 
