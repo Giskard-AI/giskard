@@ -129,7 +129,7 @@ genai.configure(api_key=os.environ["GEMINI_API_KEY"])
 gemini_client = GeminiClient()
 
 # Set the default client
-giskard.llm.set_default_client(GeminiClient())
+giskard.llm.set_default_client(gemini_client)
 
 # You may also want to set the default embedding model
 # Check the Custom Client Setup section for more details
