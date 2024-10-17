@@ -1,8 +1,6 @@
 from typing import Optional, Sequence
-
 import numpy as np
 import pandas as pd
-
 from ...datasets.base import Dataset
 from ...models.base import BaseModel
 from ..issues import Issue, IssueLevel, Robustness
@@ -81,10 +79,15 @@ class BaseNumericalPerturbationDetector:
         perturbed_data = perturbed_data.sample(n=num_samples, random_state=42)
         original_data = dataset.df.loc[perturbed_data.index]
 
-        # Calculate predictions before and after perturbation
-        original_pred = model.predict(Dataset(original_data, dataset.target, dataset.column_types))
-        perturbed_pred = model.predict(Dataset(perturbed_data, dataset.target, dataset.column_types))
+        # Ensure column types are passed correctly as a dictionary
+        original_pred = model.predict(
+            Dataset(df=original_data, target=dataset.target, column_types=dict(dataset.column_types))
+        )
+        perturbed_pred = model.predict(
+            Dataset(df=perturbed_data, target=dataset.target, column_types=dict(dataset.column_types))
+        )
 
+        # Check model type and calculate pass/fail rate
         if model.is_classification:
             passed = original_pred.raw_prediction == perturbed_pred.raw_prediction
         elif model.is_regression:
@@ -98,7 +101,7 @@ class BaseNumericalPerturbationDetector:
 
         logger.info("Testing `%s` perturbation\tFail rate: %.3f" % (feature, fail_rate))
 
-        issues = []  # Initialize issues list inside this method as well
+        issues = []
         if fail_rate >= threshold:
             # Severity
             issue_level = IssueLevel.MAJOR if fail_rate >= 2 * threshold else IssueLevel.MEDIUM
