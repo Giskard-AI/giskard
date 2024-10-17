@@ -31,8 +31,6 @@ giskard.llm.set_default_client(openai_client)
 ```python
 import os
 import giskard
-from giskard.llm import set_llm_model
-from giskard.llm.embeddings.openai import set_embedding_model
 
 # Set the Azure OpenAI API key and endpoint
 os.environ['AZURE_OPENAI_API_KEY'] = '...'
@@ -41,8 +39,8 @@ os.environ['OPENAI_API_VERSION'] = '2023-07-01-preview'
 
 # You'll need to provide the name of the model that you've deployed
 # Beware, the model provided must be capable of using function calls
-set_llm_model('my-gpt-4-model')
-set_embedding_model('my-embedding-model') # Optional
+giskard.llm.set_llm_model('my-gpt-4-model')
+giskard.llm.embeddings.set_embedding_model('my-embedding-model')
 ```
 
 ## Mistral Client Setup
@@ -195,7 +193,7 @@ llm_client = MyLLMClient()
 set_default_client(llm_client)
 
 # It's also possible to create a custom embedding class extending BaseEmbedding
-# Or you can use FastEmbed for a pre-built embedding class:
+# Or you can use FastEmbed for a pre-built embedding model:
 from giskard.llm.embeddings.fastembed import try_get_fastembed_embeddings
 embed_client = try_get_fastembed_embeddings()
 giskard.llm.embeddings.set_default_embedding(embed_client)
