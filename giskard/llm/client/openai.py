@@ -20,13 +20,10 @@ AUTH_ERROR_MESSAGE = (
 
 
 def _supports_json_format(model: str) -> bool:
-    if "gpt-4-turbo" in model:
-        return True
+    if "o1" in model:
+        return False
 
-    if model == "gpt-3.5-turbo" or model == "gpt-3.5-turbo-0125":
-        return True
-
-    return False
+    return True
 
 
 class OpenAIClient(LLMClient):
