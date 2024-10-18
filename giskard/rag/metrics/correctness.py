@@ -6,48 +6,57 @@ from ..base import AgentAnswer
 from ..question_generators.utils import parse_json_output
 from .base import Metric
 
-CORRECTNESS_EVALUATION_SYSTEM_PROMPT = """Your role is to test AI agents. Your task consists in assessing whether a agent output correctly answers a question. 
-You are provided with the ground truth answer to the question. Your task is then to evaluate if the agent answer is close to the ground thruth answer. 
 
-You are auditing the following agent:
-{agent_description}
+def format_conversation(conversation: list[dict]):
+    return "\n\n".join([f"<{msg['role'].lower()}>{msg['content']}</{msg['role'].lower()}>" for msg in conversation])
 
-Think step by step and consider the agent output in its entirety. Remember: you need to have a strong and sound reason to support your evaluation.
-If the agent answer is correct, return True. If the agent answer is incorrect, return False along with the reason.
-You must output a single JSON object with keys 'correctness' and 'correctness_reason'. Make sure you return a valid JSON object.
 
-The question that was asked to the agent, its output, and the expected ground truth answer will be delimited with XML tags.
+CORRECTNESS_EVALUATION_SYSTEM_PROMPT = """Your role is to test AI assistants. Your task consists in assessing whether an Agent correctly answered a question.
+
+The user will provide a description of the agent, a conversation between the Agent (<assistant>) and the user (<user>), the agent answer to the last question of the conversation and the reference (true) answer. You must tell if the Agent correctly answered the question, comparing it to the reference. 
+Be sure to take the conversation history into account. 
+
+If the Agent answer is correct, you will output a JSON object with "eval_passed" equal true, like this:
+{"correctness" : true}
+If the Agent answer is wrong, you will return "eval_passed" equal false and provide a reason:
+{"correctness": false, "correctness_reason": "The agent stated that X but should have said Y"}
 """
 
-CORRECTNESS_INPUT_TEMPLATE = """<question>
-{question}
-</question>
+CORRECTNESS_INPUT_TEMPLATE = """
+### AGENT DESCRIPTION
+{description}
 
-<agent_answer>
-{agent_answer}
-</agent_answer>
+### CONVERSATION
+{conversation}
 
-<ground_truth>
-{ground_truth}
-</ground_truth>
+### AGENT ANSWER
+{answer}
+
+### REFERENCE ANSWER
+{reference_answer}
 """
-
 
 CORRECTNESS_TRUE_EXAMPLE_INPUT = CORRECTNESS_INPUT_TEMPLATE.format(
-    question="What is the capital of France?", agent_answer="The capital of France is Paris.", ground_truth="Paris."
+    description="A chatbot for an ecommerce website, helping users to track their orders and solve issues",
+    conversation="<user>Which countries do you ship to?</user>",
+    answer="We ship our products across all United States.",
+    reference_answer="We ship our products to the United States, Canada, and Mexico.",
 )
 
-CORRECTNESS_TRUE_EXAMPLE_OUTPUT = """{"correctness": true, "correctness_reason": ""}"""
+CORRECTNESS_TRUE_EXAMPLE_OUTPUT = """{"correctness": false, "correctness_reason": "The agent stated that they ship to United States, but should have included Canada and Mexico."}"""
 
-CORRECTNESS_FALSE_EXAMPLE_INPUT = CORRECTNESS_INPUT_TEMPLATE.format(
-    question="What is the capital of Denmark?",
-    agent_answer="The capital of Denmark is Paris.",
-    ground_truth="Copenhagen.",
+CORRECTNESS_TRUE_EXAMPLE_INPUT_CONV = CORRECTNESS_INPUT_TEMPLATE.format(
+    description="An educational chatbot for physics students, helping them with homework and explaining concepts",
+    conversation="""<user>: Hello, I have some trouble understanding the Archimedes' principle.</user>
+
+<assistant>Hi, sure I can help you with that, what do you want to know?</assistant>
+
+<user>Where does it act?</user>""",
+    answer="The Archimedes' principle acts at the center of gravity of an object.",
+    reference_answer="The Archimedes' principle acts at the center of buoyancy of an object. It is the center of gravity of the displaced fluid.",
 )
 
-CORRECTNESS_FALSE_EXAMPLE_OUTPUT = (
-    """{"correctness": false, "correctness_reason": "The capital of Denmark is Copenhagen, not Paris."}"""
-)
+CORRECTNESS_TRUE_EXAMPLE_OUTPUT_CONV = """{"correctness": false, "correctness_reason": "The agent stated that the Archimedes' principle acts at the center of gravity of an object, but should have said that it acts at the center of buoyancy of the object."}"""
 
 
 class CorrectnessMetric(Metric):
@@ -78,18 +87,22 @@ class CorrectnessMetric(Metric):
                 messages=[
                     ChatMessage(
                         role="system",
-                        content=CORRECTNESS_EVALUATION_SYSTEM_PROMPT.format(agent_description=self.agent_description),
+                        content=CORRECTNESS_EVALUATION_SYSTEM_PROMPT,
                     ),
                     ChatMessage(role="user", content=CORRECTNESS_TRUE_EXAMPLE_INPUT),
                     ChatMessage(role="assistant", content=CORRECTNESS_TRUE_EXAMPLE_OUTPUT),
-                    ChatMessage(role="user", content=CORRECTNESS_FALSE_EXAMPLE_INPUT),
-                    ChatMessage(role="assistant", content=CORRECTNESS_FALSE_EXAMPLE_OUTPUT),
+                    ChatMessage(role="user", content=CORRECTNESS_TRUE_EXAMPLE_INPUT_CONV),
+                    ChatMessage(role="assistant", content=CORRECTNESS_TRUE_EXAMPLE_OUTPUT_CONV),
                     ChatMessage(
                         role="user",
                         content=CORRECTNESS_INPUT_TEMPLATE.format(
-                            question=question_sample.question,
-                            agent_answer=answer.message,
-                            ground_truth=question_sample.reference_answer,
+                            conversation=format_conversation(
+                                question_sample.conversation_history
+                                + [{"role": "user", "content": question_sample.question}]
+                            ),
+                            answer=answer.message,
+                            reference_answer=question_sample.reference_answer,
+                            description=self.agent_description,
                         ),
                     ),
                 ],
