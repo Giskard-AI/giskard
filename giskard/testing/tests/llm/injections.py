@@ -58,6 +58,10 @@ class LLMCharInjector:
             return self._scorer
 
         try:
+            # Note(Kevin): https://github.com/dmlc/xgboost/issues/1715
+            import os
+
+            os.environ["KMP_DUPLICATE_LIB_OK"] = "True"
             # Note(Bazire): This torch import is needed to avoid segfault on MacOS
             # Evaluate depends on datasets from hugging face, which import torch and segfault
             # if not imported before it seems
