@@ -10,6 +10,7 @@
   [![License](https://img.shields.io/badge/License-Apache_2.0-blue.svg)](https://github.com/Giskard-AI/giskard/blob/main/LICENSE)
   [![CI](https://github.com/Giskard-AI/giskard/actions/workflows/build-python.yml/badge.svg?branch=main)](https://github.com/Giskard-AI/giskard/actions/workflows/build-python.yml?query=branch%3Amain)
   [![Giskard on Discord](https://img.shields.io/discord/939190303397666868?label=Discord)](https://gisk.ar/discord)
+  [![](https://img.shields.io/badge/Gurubase-Ask%20Giskard%20Guru-006BFF)](https://gurubase.io/g/giskard)
 
   <a rel="me" href="https://fosstodon.org/@Giskard"></a>
 
@@ -18,7 +19,8 @@
    <a href="https://docs.giskard.ai/en/stable/getting_started/index.html"><b>Docs</b></a> &bull;
    <a href="https://www.giskard.ai/knowledge-categories/news/?utm_source=github&utm_medium=github&utm_campaign=github_readme&utm_id=readmeblog"><b>Blog</b></a> &bull;
   <a href="https://www.giskard.ai/?utm_source=github&utm_medium=github&utm_campaign=github_readme&utm_id=readmeblog"><b>Website</b></a> &bull;
-  <a href="https://gisk.ar/discord"><b>Discord</b></a>
+  <a href="https://gisk.ar/discord"><b>Discord</b></a> &bull;
+  <a href="https://gurubase.io/g/giskard"><b>Giskard Guru</b></a>
  </h3>
 <br />
 
