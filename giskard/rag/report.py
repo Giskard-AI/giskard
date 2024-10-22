@@ -158,7 +158,7 @@ class RAGReport:
         with open(path / "report_details.json", "w", encoding="utf-8") as f:
             json.dump(report_details, f)
 
-        self._knowledge_base._knowledge_base_df.to_json(path / "knowledge_base.jsonl", orient="records", lines=True)
+        self._knowledge_base._knowledge_base_df.to_json(path / "knowledge_base.jsonl", orient="records", lines=True, force_ascii=False)
         with open(path / "knowledge_base_meta.json", "w", encoding="utf-8") as f:
             json.dump(self._knowledge_base.get_savable_data(), f)
 
