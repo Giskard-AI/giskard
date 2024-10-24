@@ -166,8 +166,8 @@ class RAGReport:
 
         with open(path / "agent_answer.json", "w", encoding="utf-8") as f:
             json.dump(
-                [{"message": output.message, "documents": output.documents} for output in self._model_outputs], 
-                f, 
+                [{"message": output.message, "documents": output.documents} for output in self._model_outputs],
+                f,
                 ensure_ascii=False,
             )
 
