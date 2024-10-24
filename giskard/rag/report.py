@@ -168,7 +168,7 @@ class RAGReport:
             json.dump(
                 [{"message": output.message, "documents": output.documents} for output in self._model_outputs], 
                 f, 
-                ensure_ascii=False
+                ensure_ascii=False,
             )
 
         if self._metrics_results is not None:
