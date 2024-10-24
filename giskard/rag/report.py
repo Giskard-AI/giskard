@@ -165,7 +165,11 @@ class RAGReport:
             json.dump(self._knowledge_base.get_savable_data(), f, ensure_ascii=False)
 
         with open(path / "agent_answer.json", "w", encoding="utf-8") as f:
-            json.dump([{"message": output.message, "documents": output.documents} for output in self._model_outputs], f, ensure_ascii=False)
+            json.dump(
+                [{"message": output.message, "documents": output.documents} for output in self._model_outputs], 
+                f, 
+                ensure_ascii=False
+            )
 
         if self._metrics_results is not None:
             with open(path / "metrics_results.json", "w", encoding="utf-8") as f:
