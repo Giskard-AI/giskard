@@ -96,7 +96,7 @@ class QATestset:
         path : str
             The path to the output JSONL file.
         """
-        self._dataframe.reset_index().to_json(path, orient="records", lines=True)
+        self._dataframe.reset_index().to_json(path, orient="records", lines=True, force_ascii=False)
 
     @classmethod
     def load(cls, path):
