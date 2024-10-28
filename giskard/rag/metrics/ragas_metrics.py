@@ -12,9 +12,9 @@ logger = logging.getLogger(__name__)
 try:
     from langchain_core.outputs import LLMResult
     from langchain_core.outputs.generation import Generation
+    from langchain_core.prompt_values import PromptValue
     from ragas.embeddings import BaseRagasEmbeddings
     from ragas.llms import BaseRagasLLM
-    from ragas.llms.prompt import PromptValue
     from ragas.metrics import answer_relevancy, context_precision, context_recall, faithfulness
     from ragas.metrics.base import Metric as BaseRagasMetric
     from ragas.run_config import RunConfig
