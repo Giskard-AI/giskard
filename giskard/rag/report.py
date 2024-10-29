@@ -152,7 +152,7 @@ class RAGReport:
         path = Path(folder_path)
         path.mkdir(exist_ok=True, parents=True)
         self.to_html(path / "report.html")
-        self._testset.save(path / "testset.json")
+        self._testset.save(path / "testset.jsonl")
 
         report_details = {"recommendation": self._recommendation}
         with open(path / "report_details.json", "w", encoding="utf-8") as f:
