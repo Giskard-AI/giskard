@@ -13,7 +13,7 @@ from giskard.llm.client.bedrock import ClaudeBedrockClient
 from giskard.llm.client.gemini import GeminiClient
 from giskard.llm.client.openai import OpenAIClient
 
-PYDANTIC_V2 = pydantic.__version__.startswith("2.")
+PYDANTIC_V29 = pydantic.__version__.startswith("2.9")
 
 DEMO_OPENAI_RESPONSE = ChatCompletion(
     id="chatcmpl-abc123",
@@ -48,7 +48,7 @@ def test_llm_complete_message():
     assert res.content == "This is a test!"
 
 
-@pytest.mark.skipif(not PYDANTIC_V2, reason="Mistral raise an error with pydantic < 2")
+@pytest.mark.skipif(not PYDANTIC_V29, reason="Mistral raise an error with pydantic < 2.9")
 def test_mistral_client():
     from mistralai.models import ChatCompletionChoice, ChatCompletionResponse, UsageInfo
 

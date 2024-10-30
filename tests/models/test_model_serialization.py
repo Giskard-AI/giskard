@@ -3,15 +3,12 @@ from pathlib import Path
 from unittest import mock
 
 import pandas as pd
-import pydantic
 import pytest
 
 from giskard.datasets import Dataset
 from giskard.models.automodel import Model
 from giskard.models.base.serialization import CloudpickleSerializableModel
 from tests.registry.module_utils import PythonFile, PythonModule, TmpModule
-
-PYDANTIC_V2 = pydantic.__version__.startswith("2.")
 
 
 @mock.patch("giskard.models.base.serialization.cloudpickle.dump")
