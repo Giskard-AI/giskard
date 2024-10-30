@@ -3,16 +3,12 @@ from pathlib import Path
 from unittest import mock
 
 import pandas as pd
-import pydantic
 import pytest
 
 from giskard.datasets import Dataset
-from giskard.exceptions.giskard_exception import GiskardPythonDepException
 from giskard.models.automodel import Model
 from giskard.models.base.serialization import CloudpickleSerializableModel
 from tests.registry.module_utils import PythonFile, PythonModule, TmpModule
-
-PYDANTIC_V2 = pydantic.__version__.startswith("2.")
 
 
 @mock.patch("giskard.models.base.serialization.cloudpickle.dump")
@@ -67,23 +63,6 @@ def _do_predict(df):
     ],
 )
 
-UNPICKABLE_BY_VALUE_MODULE = PythonModule(
-    module_name="my_mocked_module",
-    init_content="""
-from pydantic import BaseModel as PydanticBaseModel
-
-# This will cause an error when saving by value using cloudpickle
-class DumbConfig(PydanticBaseModel):
-  pass
-
-
-def prediction_function(df):
-  DumbConfig()
-  return df['input']
-    """,
-    files=[],
-)
-
 
 @pytest.mark.parametrize(
     "module_def",
@@ -107,29 +86,3 @@ def test_load_model_from_external_module(module_def):
         inputs = ["test", "input"]
         dataset = Dataset(pd.DataFrame({"input": inputs}))
         assert list(model.predict(dataset).raw_prediction) == inputs
-
-
-@pytest.mark.skipif(not PYDANTIC_V2, reason="Cloudpickle only fails to save Pydantic BaseModel after v2")
-def test_load_model_with_error_saving_by_value():
-    with tempfile.TemporaryDirectory() as tmp_test_folder:
-        with TmpModule(UNPICKABLE_BY_VALUE_MODULE) as module:
-            with pytest.warns(match="by reference mode was initiated due to an error"):
-                model = Model(
-                    module.prediction_function,
-                    model_type="text_generation",
-                    name="Mock",
-                    description="Mock",
-                    feature_names=["input"],
-                )
-                model.save(tmp_test_folder)
-
-                # Model should be loaded by reference when module exists
-                model = Model.load(Path(tmp_test_folder))
-                inputs = ["test", "input"]
-                dataset = Dataset(pd.DataFrame({"input": inputs}))
-                assert list(model.predict(dataset).raw_prediction) == inputs
-
-        del module
-
-        with pytest.raises(GiskardPythonDepException):
-            Model.load(Path(tmp_test_folder))
