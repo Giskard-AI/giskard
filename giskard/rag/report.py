@@ -152,7 +152,7 @@ class RAGReport:
         path = Path(folder_path)
         path.mkdir(exist_ok=True, parents=True)
         self.to_html(path / "report.html")
-        self._testset.save(path / "testset.json")
+        self._testset.save(path / "testset.jsonl")
 
         report_details = {"recommendation": self._recommendation}
         with open(path / "report_details.json", "w", encoding="utf-8") as f:
@@ -195,7 +195,7 @@ class RAGReport:
         path = Path(folder_path)
         knowledge_base_meta = json.load(open(path / "knowledge_base_meta.json", "r"))
         knowledge_base_data = pd.read_json(path / "knowledge_base.jsonl", orient="records", lines=True)
-        testset = QATestset.load(path / "testset.json")
+        testset = QATestset.load(path / "testset.jsonl")
 
         answers = json.load(open(path / "agent_answer.json", "r"))
         model_outputs = [AgentAnswer(**answer) for answer in answers]

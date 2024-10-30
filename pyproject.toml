@@ -76,6 +76,7 @@ ml_runtime = [
     "portalocker>=2.0.0",                                                                 # Needed by torchdata for test_newspaper_classification_pytorch_dataset
     "torchtext>=0.15.1, < 1.8",
     "mlflow>2,<2.12", # version 2.12 throws error with imbalance-learn
+    "mlflow-skinny>2,<2.12",
     "wandb"
 ]
 test = [
