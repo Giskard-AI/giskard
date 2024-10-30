@@ -48,7 +48,7 @@ def test_llm_complete_message():
     assert res.content == "This is a test!"
 
 
-@pytest.mark.skipif(not PYDANTIC_V2, reason="Mistral raise an error with pydantic < 2.0")
+@pytest.mark.skipif(not PYDANTIC_V2, reason="Mistral raise an error with pydantic < 2")
 def test_mistral_client():
     from mistralai.models import ChatCompletionChoice, ChatCompletionResponse, UsageInfo
 
