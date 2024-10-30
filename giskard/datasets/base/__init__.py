@@ -34,8 +34,6 @@ from ..metadata.indexing import ColumnMetadataMixin
 if TYPE_CHECKING:
     from mlflow import MlflowClient
 
-SAMPLE_SIZE = 1000
-
 logger = logging.getLogger(__name__)
 
 
@@ -526,10 +524,22 @@ class Dataset(ColumnMetadataMixin):
 
     @classmethod
     def load(cls, local_path: str):
-        with open(local_path, "rb") as ds_stream:
-            return pd.read_csv(
-                ZstdDecompressor().stream_reader(ds_stream), keep_default_na=False, na_values=["_GSK_NA_"]
-            )
+        # load metadata
+        with open(Path(local_path) / "giskard-dataset-meta.yaml", "r") as meta_f:
+            meta = yaml.safe_load(meta_f)
+
+        # load data
+        with open(Path(local_path) / "data.csv.zst", "rb") as ds_stream:
+            df = pd.read_csv(ZstdDecompressor().stream_reader(ds_stream), keep_default_na=False, na_values=["_GSK_NA_"])
+
+        return cls(
+            df,
+            name=meta.get("name"),
+            target=meta.get("target"),
+            cat_columns=[k for k in meta["category_features"].keys()],
+            column_types=meta.get("column_types"),
+            original_id=meta.get("id"),
+        )
 
     @staticmethod
     def _cat_columns(meta):
@@ -543,21 +553,17 @@ class Dataset(ColumnMetadataMixin):
     def cat_columns(self):
         return self._cat_columns(self.meta)
 
-    def save(self, local_path: Path, dataset_id):
-        with open(local_path / "data.csv.zst", "wb") as f, open(local_path / "data.sample.csv.zst", "wb") as f_sample:
+    def save(self, local_path: str):
+        with (open(Path(local_path) / "data.csv.zst", "wb") as f,):
             uncompressed_bytes = save_df(self.df)
             compressed_bytes = compress(uncompressed_bytes)
             f.write(compressed_bytes)
             original_size_bytes, compressed_size_bytes = len(uncompressed_bytes), len(compressed_bytes)
 
-            uncompressed_bytes = save_df(self.df.sample(min(SAMPLE_SIZE, len(self.df.index))))
-            compressed_bytes = compress(uncompressed_bytes)
-            f_sample.write(compressed_bytes)
-
             with open(Path(local_path) / "giskard-dataset-meta.yaml", "w") as meta_f:
                 yaml.dump(
                     {
-                        "id": dataset_id,
+                        "id": str(self.id),
                         "name": self.meta.name,
                         "target": self.meta.target,
                         "column_types": self.meta.column_types,

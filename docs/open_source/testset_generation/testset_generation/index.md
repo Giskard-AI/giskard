@@ -89,15 +89,19 @@ like this:
 ::::::{tab-item} OpenAI
 
 ```python
-import giskard
 import os
+import giskard
 from giskard.llm.client.openai import OpenAIClient
 
+# Set the OpenAI API key
 os.environ["OPENAI_API_KEY"] = "sk-…"
 
+# Create a giskard OpenAI client
+openai_client = OpenAIClient(model="gpt-4o")
+
+# Set the default client
 giskard.llm.set_llm_api("openai")
-oc = OpenAIClient(model="gpt-4-turbo-preview")
-giskard.llm.set_default_client(oc)
+giskard.llm.set_default_client(openai_client)
 ```
 
 ::::::
@@ -107,18 +111,17 @@ Require `openai>=1.0.0`
 
 ```python
 import os
-from giskard.llm import set_llm_model
-from giskard.llm.embeddings.openai import set_embedding_model
+import giskard
 
+# Set the Azure OpenAI API key and endpoint
 os.environ['AZURE_OPENAI_API_KEY'] = '...'
 os.environ['AZURE_OPENAI_ENDPOINT'] = 'https://xxx.openai.azure.com'
 os.environ['OPENAI_API_VERSION'] = '2023-07-01-preview'
 
-
 # You'll need to provide the name of the model that you've deployed
 # Beware, the model provided must be capable of using function calls
-set_llm_model('my-gpt-4-model')
-set_embedding_model('my-embedding-model') # Optional
+giskard.llm.set_llm_model('my-gpt-4-model')
+giskard.llm.embeddings.set_embedding_model('my-embedding-model')
 ```
 
 ::::::
@@ -126,26 +129,41 @@ set_embedding_model('my-embedding-model') # Optional
 
 ```python
 import os
+import giskard
 from giskard.llm.client.mistral import MistralClient
 
-os.environ["MISTRAL_API_KEY"] = "sk-…"
+# Set the Mistral API key
+os.environ["MISTRAL_API_KEY"] = "…"
 
-mc = MistralClient()
-giskard.llm.set_default_client(mc)
+# Create a giskard Mistral client
+mistral_client = MistralClient()
+
+# Set the default client
+giskard.llm.set_default_client(mistral_client)
+
+# You may also want to set the default embedding model
+# Check the Custom Client code snippet for more details
 ```
 
 ::::::
 ::::::{tab-item} Ollama
 
 ```python
+import giskard
 from openai import OpenAI
 from giskard.llm.client.openai import OpenAIClient
-from giskard.llm.client.mistral import MistralClient
+from giskard.llm.embeddings.openai import OpenAIEmbedding
 
-# Setup the Ollama client with API key and base URL
+# Setup the OpenAI client with API key and base URL for Ollama
 _client = OpenAI(base_url="http://localhost:11434/v1/", api_key="ollama")
-oc = OpenAIClient(model="gemma:2b", client=_client)
-giskard.llm.set_default_client(oc)
+
+# Wrap the original OpenAI client with giskard OpenAI client and embedding
+llm_client = OpenAIClient(model="llama3.2", client=_client)
+embed_client = OpenAIEmbedding(model="nomic-embed-text", client=_client)
+
+# Set the default client and embedding
+giskard.llm.set_default_client(llm_client)
+giskard.llm.embeddings.set_default_embedding(embed_client)
 ```
 
 ::::::
@@ -158,13 +176,17 @@ import giskard
 
 from giskard.llm.client.bedrock import ClaudeBedrockClient
 from giskard.llm.embeddings.bedrock import BedrockEmbedding
-from giskard.llm.embeddings import set_default_embedding
 
+# Create a Bedrock client
 bedrock_runtime = boto3.client("bedrock-runtime", region_name=os.environ["AWS_DEFAULT_REGION"])
+
+# Wrap the Beddock client with giskard Bedrock client and embedding
 claude_client = ClaudeBedrockClient(bedrock_runtime, model="anthropic.claude-3-haiku-20240307-v1:0")
 embed_client = BedrockEmbedding(bedrock_runtime, model="amazon.titan-embed-text-v1")
+
+# Set the default client and embedding
 giskard.llm.set_default_client(claude_client)
-set_default_embedding(embed_client)
+giskard.llm.embeddings.set_default_embedding(embed_client)
 ```
 
 ::::::
@@ -173,14 +195,23 @@ set_default_embedding(embed_client)
 ```python
 import os
 import giskard
-
 import google.generativeai as genai
-
 from giskard.llm.client.gemini import GeminiClient
 
+# Set the Gemini API key
+os.environ["GEMINI_API_KEY"] = "…"
+
+# Configure the Gemini API
 genai.configure(api_key=os.environ["GEMINI_API_KEY"])
 
-giskard.llm.set_default_client(GeminiClient())
+# Create a giskard Gemini client
+gemini_client = GeminiClient()
+
+# Set the default client
+giskard.llm.set_default_client(gemini_client)
+
+# You may also want to set the default embedding model
+# Check the Custom Client code snippet for more details
 ```
 
 ::::::
@@ -192,8 +223,7 @@ from typing import Sequence, Optional
 from giskard.llm.client import set_default_client
 from giskard.llm.client.base import LLMClient, ChatMessage
 
-
-
+# Create a custom client by extending the LLMClient class
 class MyLLMClient(LLMClient):
     def __init__(self, my_client):
         self._client = my_client
@@ -238,8 +268,17 @@ class MyLLMClient(LLMClient):
 
         return ChatMessage(role="assistant", message=data["completion"])
 
-set_default_client(MyLLMClient())
+# Create an instance of the custom client
+llm_client = MyLLMClient()
 
+# Set the default client
+set_default_client(llm_client)
+
+# It's also possible to create a custom embedding class extending BaseEmbedding
+# Or you can use FastEmbed for a pre-built embedding model:
+from giskard.llm.embeddings.fastembed import try_get_fastembed_embeddings
+embed_client = try_get_fastembed_embeddings()
+giskard.llm.embeddings.set_default_embedding(embed_client)
 ```
 
 ::::::

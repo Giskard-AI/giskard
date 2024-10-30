@@ -156,18 +156,24 @@ class RAGReport:
 
         report_details = {"recommendation": self._recommendation}
         with open(path / "report_details.json", "w", encoding="utf-8") as f:
-            json.dump(report_details, f)
+            json.dump(report_details, f, ensure_ascii=False)
 
-        self._knowledge_base._knowledge_base_df.to_json(path / "knowledge_base.jsonl", orient="records", lines=True)
+        self._knowledge_base._knowledge_base_df.to_json(
+            path / "knowledge_base.jsonl", orient="records", lines=True, force_ascii=False
+        )
         with open(path / "knowledge_base_meta.json", "w", encoding="utf-8") as f:
-            json.dump(self._knowledge_base.get_savable_data(), f)
+            json.dump(self._knowledge_base.get_savable_data(), f, ensure_ascii=False)
 
         with open(path / "agent_answer.json", "w", encoding="utf-8") as f:
-            json.dump([{"message": output.message, "documents": output.documents} for output in self._model_outputs], f)
+            json.dump(
+                [{"message": output.message, "documents": output.documents} for output in self._model_outputs],
+                f,
+                ensure_ascii=False,
+            )
 
         if self._metrics_results is not None:
             with open(path / "metrics_results.json", "w", encoding="utf-8") as f:
-                json.dump(self._metrics_results, f)
+                json.dump(self._metrics_results, f, ensure_ascii=False)
 
     @classmethod
     def load(

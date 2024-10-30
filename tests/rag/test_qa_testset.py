@@ -75,12 +75,43 @@ def make_testset_samples():
             question="Where is it from?",
             reference_answer="Scarmorza is from Southern Italy.",
             reference_context="Scamorza is a Southern Italian cow's milk cheese.",
-            conversation_history=["Scamorza"],
+            conversation_history=[{"role": "user", "content": "Scamorza"}],
             metadata={
                 "question_type": "conversational",
                 "color": "blue",
                 "distracting_context": "This is a distracting context",
                 "topic": "Cheese_2",
+                "seed_document_id": "2",
+            },
+        ),
+    ]
+
+
+def make_swedish_testset_samples():
+    return [
+        QuestionSample(
+            id="1",
+            question="Vilken mjölk används för att göra Camembert?",
+            reference_answer="Komjölk används för att göra Camembert.",
+            reference_context="Camembert är en fuktig, mjuk, krämig, ytmognad ost av komjölk.",
+            conversation_history=[],
+            metadata={
+                "question_type": "enkel",
+                "color": "blå",
+                "topic": "Ost_1",
+                "seed_document_id": "1",
+            },
+        ),
+        QuestionSample(
+            id="2",
+            question="Varifrån kommer Scamorza?",
+            reference_answer="Scamorza kommer från södra Italien.",
+            reference_context="Scamorza är en ost av komjölk från södra Italien.",
+            conversation_history=[],
+            metadata={
+                "question_type": "enkel",
+                "color": "röd",
+                "topic": "Ost_1",
                 "seed_document_id": "2",
             },
         ),
@@ -146,6 +177,20 @@ def test_qa_testset_saving_loading(tmp_path):
     )
 
 
+def test_qa_testset_saving_loading_swedish(tmp_path):
+    testset = QATestset(make_swedish_testset_samples())
+    path = tmp_path / "testset.jsonl"
+    testset.save(path)
+    loaded_testset = QATestset.load(path)
+
+    assert all(
+        [
+            original == loaded
+            for original, loaded in zip(testset._dataframe["metadata"], loaded_testset._dataframe["metadata"])
+        ]
+    )
+
+
 def test_metadata_value_retrieval():
     testset = QATestset(make_testset_samples())
 
@@ -173,7 +218,7 @@ def test_testset_samples_property():
         "seed_document_id": "1",
     }
     assert testset.samples[-1].question == "Where is it from?"
-    assert testset.samples[-1].conversation_history == ["Scamorza"]
+    assert testset.samples[-1].conversation_history == [{"role": "user", "content": "Scamorza"}]
     assert testset.samples[-1].id == "6"
     assert testset.samples[-1].metadata == {
         "question_type": "conversational",
