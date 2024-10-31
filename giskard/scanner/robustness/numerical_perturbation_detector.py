@@ -1,9 +1,12 @@
 from typing import Sequence
+
 import numpy as np
+
 from ...datasets.base import Dataset
 from ...models.base import BaseModel
 from ..decorators import detector
 from .base_numerical_detector import BaseNumericalPerturbationDetector
+
 
 @detector(
     name="numerical_perturbation",
@@ -19,7 +22,7 @@ class NumericalPerturbationDetector(BaseNumericalPerturbationDetector):
 
     def _get_default_perturbations(self, model: BaseModel, dataset: Dataset) -> Sequence:
         return [
-            lambda x : x*1.01,
-            lambda x : x*0.99,
-            lambda x : x + np.random.normal(0, 0.01, x.shape),
+            lambda x: x * 1.01,
+            lambda x: x * 0.99,
+            lambda x: x + np.random.normal(0, 0.01, x.shape),
         ]

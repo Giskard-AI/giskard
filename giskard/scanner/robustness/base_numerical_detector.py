@@ -1,11 +1,12 @@
 from typing import Optional, Sequence
+
 import numpy as np
 import pandas as pd
+
 from ...datasets.base import Dataset
 from ...models.base import BaseModel
 from ..issues import Issue, IssueLevel, Robustness
 from ..logger import logger
-from ..registry import Detector
 
 
 class BaseNumericalPerturbationDetector:
@@ -50,7 +51,7 @@ class BaseNumericalPerturbationDetector:
                 self.threshold or -1,
                 self.perturbation_fraction,
                 self.output_sensitivity or -1,
-                self.num_samples or -1
+                self.num_samples or -1,
             )
         )
 
@@ -91,7 +92,9 @@ class BaseNumericalPerturbationDetector:
         if model.is_classification:
             passed = original_pred.raw_prediction == perturbed_pred.raw_prediction
         elif model.is_regression:
-            rel_delta = np.abs((perturbed_pred.raw_prediction - original_pred.raw_prediction) / original_pred.raw_prediction)
+            rel_delta = np.abs(
+                (perturbed_pred.raw_prediction - original_pred.raw_prediction) / original_pred.raw_prediction
+            )
             passed = rel_delta < output_sensitivity
         else:
             raise NotImplementedError("Only classification and regression models are supported.")
