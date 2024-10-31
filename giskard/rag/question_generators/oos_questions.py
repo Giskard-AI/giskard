@@ -68,7 +68,7 @@ class OutOfScopeGenerator(GenerateFromSingleQuestionMixin, _LLMBasedQuestionGene
     _question_type = "out of scope"
 
     def generate_single_question(
-        self, knowledge_base: KnowledgeBase, agent_description: str, language: str
+        self, knowledge_base: KnowledgeBase, agent_description: str, language: str, seed_document=None
     ) -> QuestionSample:
         """
         Generate a question from a list of context documents.
@@ -87,7 +87,7 @@ class OutOfScopeGenerator(GenerateFromSingleQuestionMixin, _LLMBasedQuestionGene
         Tuple[dict, dict]
             The generated question and the metadata of the question.
         """
-        seed_document = knowledge_base.get_random_document()
+        seed_document = seed_document or knowledge_base.get_random_document()
 
         context_documents = knowledge_base.get_neighbors(
             seed_document, self._context_neighbors, self._context_similarity_threshold
