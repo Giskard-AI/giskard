@@ -1,11 +1,17 @@
 import logging
 from unittest.mock import MagicMock, Mock, patch
 
+import pydantic
+import pytest
+
 from giskard.rag.base import AgentAnswer
 
 logger = logging.getLogger(__name__)
 
+PYDANTIC_V2 = pydantic.__version__.startswith("2.")
 
+
+@pytest.mark.skipif(not PYDANTIC_V2, reason="RAGAS raise an error with pydantic < 2")
 @patch("giskard.rag.metrics.ragas_metrics.RagasLLMWrapper")
 @patch("giskard.rag.metrics.ragas_metrics.RagasEmbeddingsWrapper")
 def test_ragas_metric_computation(ragas_llm_wrapper, ragas_embeddings_wrapper):
@@ -22,6 +28,7 @@ def test_ragas_metric_computation(ragas_llm_wrapper, ragas_embeddings_wrapper):
     assert result == {"test": 0.5}
 
 
+@pytest.mark.skipif(not PYDANTIC_V2, reason="RAGAS raise an error with pydantic < 2")
 @patch("giskard.rag.metrics.ragas_metrics.RagasLLMWrapper")
 @patch("giskard.rag.metrics.ragas_metrics.RagasEmbeddingsWrapper")
 def test_ragas_metric_computation_with_context(ragas_llm_wrapper, ragas_embeddings_wrapper):
@@ -38,6 +45,7 @@ def test_ragas_metric_computation_with_context(ragas_llm_wrapper, ragas_embeddin
     assert result == {"test": 0.5}
 
 
+@pytest.mark.skipif(not PYDANTIC_V2, reason="RAGAS raise an error with pydantic < 2")
 @patch("giskard.rag.metrics.ragas_metrics.RagasLLMWrapper")
 @patch("giskard.rag.metrics.ragas_metrics.RagasEmbeddingsWrapper")
 def test_ragas_metric_computation_with_missing_context(ragas_llm_wrapper, ragas_embeddings_wrapper, caplog):

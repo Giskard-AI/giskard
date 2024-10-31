@@ -300,6 +300,17 @@ class KnowledgeBase:
     def get_random_document(self):
         return self._rng.choice(self._documents)
 
+    def get_random_documents(self, n: int, with_replacement=False):
+        if with_replacement:
+            return list(self._rng.choice(self._documents, n, replace=True))
+
+        docs = list(self._rng.choice(self._documents, min(n, len(self._documents)), replace=False))
+
+        if len(docs) <= n:
+            docs.extend(self._rng.choice(self._documents, n - len(docs), replace=True))
+
+        return docs
+
     def get_neighbors(self, seed_document: Document, n_neighbors: int = 4, similarity_threshold: float = 0.2):
         seed_embedding = seed_document.embeddings
 
