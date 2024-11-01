@@ -15,7 +15,7 @@
     "gulp-postcss": "^10.0.0",
     "postcss": "^8.4.43",
     "postcss-import": "^16.1.0",
-    "tailwindcss": "^3.4.10",
+    "tailwindcss": "^3.4.14",
     "uglify": "^0.1.5"
   },
   "dependencies": {
