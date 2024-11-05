@@ -1,10 +1,27 @@
 from typing import Optional
 
+from ..client.litellm import LiteLLMClient
 from .base import BaseEmbedding
-from .fastembed import try_get_fastembed_embeddings
-from .openai import try_get_openai_embeddings
 
 _default_embedding = None
+_default_embedding_model = "text-embedding-ada-002"
+
+
+def get_embedding_model() -> str:
+    return _default_embedding_model
+
+
+def set_embedding_model(model: str):
+    """
+    Set the default embedding model to be used with litellm.
+
+    Parameters
+    ----------
+    model : str
+        Model name (e.g. 'text-embedding-ada-002' or 'text-embedding-3-large').
+    """
+    global _default_embedding_model
+    _default_embedding_model = model
 
 
 def get_default_embedding():
@@ -16,13 +33,7 @@ def get_default_embedding():
     """
     global _default_embedding
 
-    _default_embedding = _default_embedding or try_get_openai_embeddings() or try_get_fastembed_embeddings()
-
-    if _default_embedding is None:
-        raise ValueError(
-            "Please setup `openai` or `fastembed` to use text embeddings, "
-            "or set a custom embedding model using `giskard.llm.embeddings.set_default_embedding`."
-        )
+    _default_embedding = _default_embedding or LiteLLMClient(model=get_embedding_model())
 
     return _default_embedding
 
