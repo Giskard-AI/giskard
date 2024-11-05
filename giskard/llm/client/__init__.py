@@ -68,20 +68,12 @@ def get_default_client() -> LLMClient:
     if _default_client is not None:
         return _default_client
 
-    # Setup the default client
-    from .openai import OpenAIClient
-
-    default_llm_api = get_default_llm_api()
-
     try:
-        # For openai>=1.0.0
-        from openai import AzureOpenAI, OpenAI
+        from .litellm import LiteLLMClient
 
-        client = AzureOpenAI() if default_llm_api == "azure" else OpenAI(base_url=_default_llm_base_url)
-
-        _default_client = OpenAIClient(model=_default_llm_model, client=client)
+        _default_client = LiteLLMClient(_default_llm_model)
     except ImportError:
-        raise ValueError(f"LLM scan using {default_llm_api.name} require openai>=1.0.0")
+        raise ValueError(f"LLM scan using {_default_llm_model} requires litellm")
 
     return _default_client
 

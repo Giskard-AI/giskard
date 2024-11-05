@@ -5,7 +5,7 @@
 groups = ["default", "dev", "doc", "llm", "ml-runtime", "talk", "tensorflow", "test"]
 strategy = ["inherit_metadata"]
 lock_version = "4.5.0"
-content_hash = "sha256:591a48f50371042ee17a5600f36ffa9d4281c7b74dd43144d9e825f2a7ee60e5"
+content_hash = "sha256:79cb9f81acb247064d9a3d3912bb4fc22068ebdd80bf20b0b7ee5ebc304e2bf1"
 
 [[metadata.targets]]
 requires_python = ">=3.9,<3.13"
@@ -819,7 +819,7 @@ name = "click"
 version = "8.1.7"
 requires_python = ">=3.7"
 summary = "Composable command line interface toolkit"
-groups = ["default", "dev", "doc", "ml-runtime", "test"]
+groups = ["default", "dev", "doc", "llm", "ml-runtime", "test"]
 dependencies = [
     "colorama; platform_system == \"Windows\"",
     "importlib-metadata; python_version < \"3.8\"",
@@ -2311,7 +2311,7 @@ name = "importlib-metadata"
 version = "7.2.1"
 requires_python = ">=3.8"
 summary = "Read metadata from Python packages"
-groups = ["default", "dev", "doc", "ml-runtime", "tensorflow"]
+groups = ["default", "dev", "doc", "llm", "ml-runtime", "tensorflow"]
 dependencies = [
     "typing-extensions>=3.6.4; python_version < \"3.8\"",
     "zipp>=0.5",
@@ -2644,7 +2644,7 @@ name = "jsonschema"
 version = "4.23.0"
 requires_python = ">=3.8"
 summary = "An implementation of JSON Schema validation for Python"
-groups = ["dev", "doc"]
+groups = ["dev", "doc", "llm"]
 dependencies = [
     "attrs>=22.2.0",
     "importlib-resources>=1.4.0; python_version < \"3.9\"",
@@ -2663,7 +2663,7 @@ name = "jsonschema-specifications"
 version = "2024.10.1"
 requires_python = ">=3.9"
 summary = "The JSON Schema meta-schemas and vocabularies, exposed as a Registry"
-groups = ["dev", "doc"]
+groups = ["dev", "doc", "llm"]
 dependencies = [
     "referencing>=0.31.0",
 ]
@@ -3219,6 +3219,30 @@ dependencies = [
 files = [
     {file = "linkify-it-py-2.0.3.tar.gz", hash = "sha256:68cda27e162e9215c17d786649d1da0021a451bdc436ef9e0fa0ba5234b9b048"},
     {file = "linkify_it_py-2.0.3-py3-none-any.whl", hash = "sha256:6bcbc417b0ac14323382aef5c5192c0075bf8a9d6b41820a2b66371eac6b6d79"},
+]
+
+[[package]]
+name = "litellm"
+version = "1.50.4"
+requires_python = "!=2.7.*,!=3.0.*,!=3.1.*,!=3.2.*,!=3.3.*,!=3.4.*,!=3.5.*,!=3.6.*,!=3.7.*,>=3.8"
+summary = "Library to easily interface with LLM API providers"
+groups = ["llm"]
+dependencies = [
+    "aiohttp",
+    "click",
+    "importlib-metadata>=6.8.0",
+    "jinja2<4.0.0,>=3.1.2",
+    "jsonschema<5.0.0,>=4.22.0",
+    "openai>=1.52.0",
+    "pydantic<3.0.0,>=2.0.0",
+    "python-dotenv>=0.2.0",
+    "requests<3.0.0,>=2.31.0",
+    "tiktoken>=0.7.0",
+    "tokenizers",
+]
+files = [
+    {file = "litellm-1.50.4-py3-none-any.whl", hash = "sha256:cc6992275e24a0bbb4a3b377e6842d45a8510fc85d7f255930a64bb872980a36"},
+    {file = "litellm-1.50.4.tar.gz", hash = "sha256:a7e68ef614f631b58969c2c7a5154a565ba5974558d437c8cd6c8623654880ea"},
 ]
 
 [[package]]
@@ -4537,8 +4561,8 @@ files = [
 
 [[package]]
 name = "openai"
-version = "1.53.1"
-requires_python = ">=3.7.1"
+version = "1.54.0"
+requires_python = ">=3.8"
 summary = "The official Python library for the openai API"
 groups = ["llm", "talk", "test"]
 dependencies = [
@@ -4553,8 +4577,8 @@ dependencies = [
     "typing-extensions<5,>=4.11",
 ]
 files = [
-    {file = "openai-1.53.1-py3-none-any.whl", hash = "sha256:b26bc2d91eda8a9317ebecddfbd388b3698f89fa56d78672dd115a1ccc175722"},
-    {file = "openai-1.53.1.tar.gz", hash = "sha256:04b8df362e7e2af75c8a3bcd105a5abb3837ce883e2fa3cb8d922cb8ee3515ac"},
+    {file = "openai-1.54.0-py3-none-any.whl", hash = "sha256:24ed8874b56e919f0fbb80b7136c3fb022dc82ce9f5f21579b7b280ea4bba249"},
+    {file = "openai-1.54.0.tar.gz", hash = "sha256:df2a84384314165b706722a7ac8988dc33eba20dd7fc3b939d138110e608b1ce"},
 ]
 
 [[package]]
@@ -5631,6 +5655,17 @@ files = [
 ]
 
 [[package]]
+name = "python-dotenv"
+version = "1.0.1"
+requires_python = ">=3.8"
+summary = "Read key-value pairs from a .env file and set them as environment variables"
+groups = ["llm"]
+files = [
+    {file = "python-dotenv-1.0.1.tar.gz", hash = "sha256:e324ee90a023d808f1959c46bcbc04446a10ced277783dc6ee09987c37ec10ca"},
+    {file = "python_dotenv-1.0.1-py3-none-any.whl", hash = "sha256:f7b63ef50f1b690dddf550d03497b66d609393b40b564ed0d674909a68ebf16a"},
+]
+
+[[package]]
 name = "python-json-logger"
 version = "2.0.7"
 requires_python = ">=3.6"
@@ -5856,7 +5891,7 @@ name = "referencing"
 version = "0.35.1"
 requires_python = ">=3.8"
 summary = "JSON Referencing + Python"
-groups = ["dev", "doc"]
+groups = ["dev", "doc", "llm"]
 dependencies = [
     "attrs>=22.2.0",
     "rpds-py>=0.7.0",
@@ -6042,7 +6077,7 @@ name = "rpds-py"
 version = "0.20.1"
 requires_python = ">=3.8"
 summary = "Python bindings to Rust's persistent data structures (rpds)"
-groups = ["dev", "doc"]
+groups = ["dev", "doc", "llm"]
 files = [
     {file = "rpds_py-0.20.1-cp310-cp310-macosx_10_12_x86_64.whl", hash = "sha256:a649dfd735fff086e8a9d0503a9f0c7d01b7912a333c7ae77e1515c08c146dad"},
     {file = "rpds_py-0.20.1-cp310-cp310-macosx_11_0_arm64.whl", hash = "sha256:f16bc1334853e91ddaaa1217045dd7be166170beec337576818461268a3de67f"},
@@ -7312,7 +7347,7 @@ name = "tiktoken"
 version = "0.8.0"
 requires_python = ">=3.9"
 summary = "tiktoken is a fast BPE tokeniser for use with OpenAI's models"
-groups = ["test"]
+groups = ["llm", "test"]
 dependencies = [
     "regex>=2022.1.18",
     "requests>=2.26.0",
@@ -7361,8 +7396,8 @@ files = [
 
 [[package]]
 name = "tldextract"
-version = "5.1.2"
-requires_python = ">=3.8"
+version = "5.1.3"
+requires_python = ">=3.9"
 summary = "Accurately separates a URL's subdomain, domain, and public suffix, using the Public Suffix List (PSL). By default, this includes the public ICANN TLDs and their exceptions. You can optionally support the Public Suffix List's private domains as well."
 groups = ["doc"]
 dependencies = [
@@ -7372,8 +7407,8 @@ dependencies = [
     "requests>=2.1.0",
 ]
 files = [
-    {file = "tldextract-5.1.2-py3-none-any.whl", hash = "sha256:4dfc4c277b6b97fa053899fcdb892d2dc27295851ab5fac4e07797b6a21b2e46"},
-    {file = "tldextract-5.1.2.tar.gz", hash = "sha256:c9e17f756f05afb5abac04fe8f766e7e70f9fe387adb1859f0f52408ee060200"},
+    {file = "tldextract-5.1.3-py3-none-any.whl", hash = "sha256:78de310cc2ca018692de5ddf320f9d6bd7c5cf857d0fd4f2175f0cdf4440ea75"},
+    {file = "tldextract-5.1.3.tar.gz", hash = "sha256:d43c7284c23f5dc8a42fd0fee2abede2ff74cc622674e4cb07f514ab3330c338"},
 ]
 
 [[package]]
