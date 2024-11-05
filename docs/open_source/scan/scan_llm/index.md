@@ -87,7 +87,7 @@ os.environ['OPENAI_API_VERSION'] = '2023-07-01-preview'
 # You'll need to provide the name of the model that you've deployed
 # Beware, the model provided must be capable of using function calls
 giskard.llm.set_llm_model('my-gpt-4-model')
-giskard.llm.embeddings.set_embedding_model('my-embedding-model')
+giskard.llm.set_embedding_model('my-embedding-model')
 ```
 
 ::::::

@@ -20,7 +20,7 @@ os.environ["OPENAI_API_KEY"] = "your-api-key"
 
 # Optional, setup a model (default model is gpt-4)
 giskard.llm.set_llm_model("gpt-4")
-giskard.llm.embeddings.set_embedding_model("text-embedding-ada-002")
+giskard.llm.set_embedding_model("text-embedding-ada-002")
 ```
 
 ## Azure OpenAI Client Setup
@@ -36,7 +36,7 @@ os.environ["AZURE_API_KEY"] = "" # "my-azure-api-key"
 os.environ["AZURE_API_BASE"] = "" # "https://example-endpoint.openai.azure.com"
 os.environ["AZURE_API_VERSION"] = "" # "2023-05-15"
 giskard.llm.set_llm_model("azure/<your_deployment_name>")
-giskard.llm.embeddings.set_embedding_model("azure/<your_deployment_name>")
+giskard.llm.set_embedding_model("azure/<your_deployment_name>")
 
 # optional
 os.environ["AZURE_AD_TOKEN"] = ""
@@ -53,7 +53,7 @@ import giskard
 
 os.environ['MISTRAL_API_KEY'] = ""
 giskard.llm.set_llm_model("mistral/mistral-tiny")
-giskard.llm.embeddings.set_embedding_model("mistral/mistral-embed")
+giskard.llm.set_embedding_model("mistral/mistral-embed")
 
 ```
 
@@ -83,7 +83,7 @@ os.environ["AWS_ACCESS_KEY_ID"] = ""
 os.environ["AWS_SECRET_ACCESS_KEY"] = ""
 os.environ["AWS_REGION_NAME"] = ""
 giskard.llm.set_llm_model("bedrock/anthropic.claude-3-sonnet-20240229-v1:0")
-giskard.llm.embeddings.set_embedding_model("bedrock/amazon.titan-embed-text-v1")
+giskard.llm.set_embedding_model("bedrock/amazon.titan-embed-text-v1")
 ```
 
 ## Gemini Client Setup
@@ -132,7 +132,7 @@ litellm.custom_provider_map = [ # 👈 KEY STEP - REGISTER HANDLER
 ]
 
 giskard.llm.set_llm_model("my-custom-llm/my-fake-llm-model")
-giskard.llm.embeddings.set_embedding_model("my-custom-llm/my-fake-embedding-model")
+giskard.llm.set_embedding_model("my-custom-llm/my-fake-embedding-model")
 
 
 ```
