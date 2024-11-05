@@ -1,4 +1,5 @@
 from typing import Dict, List, Optional, Sequence
+from typing_extensions import deprecated
 
 import json
 from abc import ABC, abstractmethod
@@ -16,6 +17,9 @@ except ImportError as err:
     ) from err
 
 
+@deprecated(
+    "BaseBedrockClient is deprecated, check documentation to setup llm: https://docs.giskard.ai/en/latest/open_source/setting_up/index.html"
+)
 class BaseBedrockClient(LLMClient, ABC):
     def __init__(self, bedrock_runtime_client, model: str):
         self._client = bedrock_runtime_client

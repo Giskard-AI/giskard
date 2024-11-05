@@ -1,4 +1,5 @@
 from typing import Optional
+from typing_extensions import deprecated
 
 import logging
 import os
@@ -12,16 +13,25 @@ _default_llm_model = os.getenv("GSK_LLM_MODEL", "gpt-4")
 _default_llm_base_url = os.getenv("GSK_LLM_BASE_URL", None)
 
 
+@deprecated(
+    "set_default_client is deprecated, check documentation to setup llm: https://docs.giskard.ai/en/latest/open_source/setting_up/index.html"
+)
 def set_default_client(client: LLMClient):
     global _default_client
     _default_client = client
 
 
+@deprecated(
+    "_unset_default_client is deprecated, check documentation to setup llm: https://docs.giskard.ai/en/latest/open_source/setting_up/index.html"
+)
 def _unset_default_client():
     global _default_client
     _default_client = None
 
 
+@deprecated(
+    "set_llm_api is deprecated, check documentation to setup llm: https://docs.giskard.ai/en/latest/open_source/setting_up/index.html"
+)
 def set_llm_api(llm_api: str):
     if llm_api.lower() not in {"azure", "openai"}:
         raise ValueError("Giskard LLM-based evaluators is only working with `azure` and `openai`")
@@ -32,6 +42,9 @@ def set_llm_api(llm_api: str):
     _unset_default_client()
 
 
+@deprecated(
+    "set_llm_base_url is deprecated, check documentation to setup llm: https://docs.giskard.ai/en/latest/open_source/setting_up/index.html"
+)
 def set_llm_base_url(llm_base_url: Optional[str]):
     global _default_llm_base_url
     _default_llm_base_url = llm_base_url

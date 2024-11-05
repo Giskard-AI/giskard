@@ -1,4 +1,5 @@
 from typing import Optional, Sequence
+from typing_extensions import deprecated
 
 import numpy as np
 
@@ -26,6 +27,9 @@ def set_embedding_model(model: str):
     _default_embedding_model = model
 
 
+@deprecated(
+    "OpenAIEmbedding is deprecated, check documentation to setup llm: https://docs.giskard.ai/en/latest/open_source/setting_up/index.html"
+)
 class OpenAIEmbedding(BaseEmbedding):
     def __init__(self, client, model: str, batch_size=40):
         """

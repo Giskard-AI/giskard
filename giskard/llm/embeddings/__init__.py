@@ -1,4 +1,5 @@
 from typing import Optional
+from typing_extensions import deprecated
 
 from ..client.litellm import LiteLLMClient
 from .base import BaseEmbedding
@@ -38,6 +39,9 @@ def get_default_embedding():
     return _default_embedding
 
 
+@deprecated(
+    "set_default_embedding is deprecated, check documentation to setup llm: https://docs.giskard.ai/en/latest/open_source/setting_up/index.html"
+)
 def set_default_embedding(embedding: Optional[BaseEmbedding] = None):
     """Set the default text embedding model.
 

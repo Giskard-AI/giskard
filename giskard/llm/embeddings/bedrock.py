@@ -1,4 +1,5 @@
 from typing import Sequence
+from typing_extensions import deprecated
 
 import json
 
@@ -7,6 +8,9 @@ import numpy as np
 from .base import BaseEmbedding
 
 
+@deprecated(
+    "BedrockEmbedding is deprecated, check documentation to setup llm: https://docs.giskard.ai/en/latest/open_source/setting_up/index.html"
+)
 class BedrockEmbedding(BaseEmbedding):
     def __init__(self, client, model: str):
         """

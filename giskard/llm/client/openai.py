@@ -1,4 +1,5 @@
 from typing import Optional, Sequence
+from typing_extensions import deprecated
 
 from dataclasses import asdict
 from logging import warning
@@ -29,6 +30,9 @@ def _supports_json_format(model: str) -> bool:
     return False
 
 
+@deprecated(
+    "OpenAIClient is deprecated, check documentation to setup llm: https://docs.giskard.ai/en/latest/open_source/setting_up/index.html"
+)
 class OpenAIClient(LLMClient):
     def __init__(
         self, model: str = "gpt-4-turbo-preview", client: openai.Client = None, json_mode: Optional[bool] = None
