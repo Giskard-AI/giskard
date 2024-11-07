@@ -36,6 +36,6 @@ class LiteLLMEmbedding(BaseEmbedding):
         embeddings = []
         for batch in batched(texts, self.batch_size):
             response = litellm.embedding(model=self.model, input=batch, **self.embedding_params)
-            embeddings.extend([item.embedding for item in response.data])
+            embeddings.extend([item["embedding"] for item in response.data])
 
         return np.array(embeddings)
