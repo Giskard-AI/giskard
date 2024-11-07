@@ -96,7 +96,6 @@ More information on [litellm documentation](https://docs.litellm.ai/docs/provide
 import giskard
 
 giskard.llm.set_llm_model("ollama/llama2", api_base="http://localhost:11434") # See supported models here: https://docs.litellm.ai/docs/providers/ollama#ollama-models
-# TODO: embedding
 ```
 
 ## AWS Bedrock Client Setup
@@ -130,7 +129,6 @@ import giskard
 os.environ["GEMINI_API_KEY"] = "your-api-key"
 
 giskard.llm.set_llm_model("gemini/gemini-pro")
-# TODO: embedding
 ```
 
 ## Custom Client Setup
@@ -157,17 +155,6 @@ class MyCustomLLM(litellm.CustomLLM):
         
         return litellm.ModelResponse(**response.json())
 
-    def embedding(self, inputs, api_key: Optional[str] = None, **kwargs) -> litellm.EmbeddingResponse:
-        api_key = api_key or os.environ.get('MY_SECRET_KEY')
-        if api_key is None:
-            raise litellm.AuthenticationError("Api key is not provided")
-        
-        response = requests.post('https://www.my-fake-llm.ai/embeddings', json={
-            'inputs': inputs
-        }, headers={'Authorization': api_key})
-
-        return litellm.EmbeddingResponse(**response.json())
-
 
 my_custom_llm = MyCustomLLM()
 
@@ -178,9 +165,6 @@ litellm.custom_provider_map = [  # 👈 KEY STEP - REGISTER HANDLER
 api_key = os.environ['MY_SECRET_KEY']
 
 giskard.llm.set_llm_model("my-custom-llm/my-fake-llm-model", api_key=api_key)
-giskard.llm.set_embedding_model("my-custom-llm/my-fake-embedding-model", api_key=api_key)
-
-
 ```
 
 If you run into any issues configuring the LLM client, don't hesitate to [ask us on Discord](https://discord.com/invite/ABvfpbu69R) or open a new issue on [our GitHub repo](https://github.com/Giskard-AI/giskard).
