@@ -1,18 +1,20 @@
 from typing import Optional
 from typing_extensions import deprecated
 
-from ..client.litellm import LiteLLMClient
 from .base import BaseEmbedding
+from .litellm import LiteLLMEmbedding
 
 _default_embedding = None
+
 _default_embedding_model = "text-embedding-ada-002"
+_default_embedding_params = dict()
 
 
 def get_embedding_model() -> str:
     return _default_embedding_model
 
 
-def set_embedding_model(model: str):
+def set_embedding_model(model: str, **kwargs):
     """
     Set the default embedding model to be used with litellm.
 
@@ -22,7 +24,10 @@ def set_embedding_model(model: str):
         Model name (e.g. 'text-embedding-ada-002' or 'text-embedding-3-large').
     """
     global _default_embedding_model
+    global _default_embedding_params
+
     _default_embedding_model = model
+    _default_embedding_params = kwargs
 
 
 def get_default_embedding():
@@ -34,7 +39,9 @@ def get_default_embedding():
     """
     global _default_embedding
 
-    _default_embedding = _default_embedding or LiteLLMClient(model=get_embedding_model())
+    _default_embedding = _default_embedding or LiteLLMEmbedding(
+        model=get_embedding_model(), embedding_params=_default_embedding_params
+    )
 
     return _default_embedding
 

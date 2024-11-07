@@ -1,4 +1,4 @@
-from typing import Optional, Sequence
+from typing import Any, Dict, Optional, Sequence
 
 from ...client.python_utils import warning
 from ..errors import LLMImportError
@@ -23,8 +23,18 @@ def _get_response_format(format):
 
 
 class LiteLLMClient(LLMClient):
-    def __init__(self, model: str = "gpt-4o"):
+    def __init__(self, model: str = "gpt-4o", completion_params: Optional[Dict[str, Any]] = None):
+        """Initialize a LiteLLM completion client
+
+        Parameters
+        ----------
+        model : str
+            The name of the language model to use for text completion. see all supported LLMs: https://docs.litellm.ai/docs/providers/
+        completion_params : dict, optional
+            A dictionary containing params for the completion.
+        """
         self.model = model
+        self.completion_params = completion_params or dict()
 
     def _build_supported_completion_params(self, **kwargs):
         supported_params = litellm.get_supported_openai_params(model=self.model)
@@ -46,6 +56,7 @@ class LiteLLMClient(LLMClient):
             **self._build_supported_completion_params(
                 temperature=temperature, max_tokens=max_tokens, seed=seed, response_format=_get_response_format(format)
             ),
+            **self.completion_params,
         )
 
         self.logger.log_call(
