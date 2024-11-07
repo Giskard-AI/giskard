@@ -1,5 +1,4 @@
 from typing import Optional, Sequence
-from typing_extensions import deprecated
 
 from dataclasses import dataclass
 from logging import warning
@@ -43,9 +42,6 @@ def _format_message(msg: ChatMessage) -> dict:
     return fmt_msg
 
 
-@deprecated(
-    "GiskardCopilotClient is deprecated, check documentation to setup llm: https://docs.giskard.ai/en/latest/open_source/setting_up/index.html"
-)
 class GiskardCopilotClient(OpenAIClient):
     def complete(
         self,
