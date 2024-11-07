@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 from typing import TYPE_CHECKING, Optional, Sequence
-from typing_extensions import deprecated
 
 import numpy as np
 
@@ -11,9 +10,6 @@ if TYPE_CHECKING:
     from fastembed import TextEmbedding
 
 
-@deprecated(
-    "FastEmbedEmbedding is deprecated, check documentation to setup llm: https://docs.giskard.ai/en/latest/open_source/setting_up/index.html"
-)
 class FastEmbedEmbedding(BaseEmbedding):
     def __init__(self, text_embedding: TextEmbedding):
         """
