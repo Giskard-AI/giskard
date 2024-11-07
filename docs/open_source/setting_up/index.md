@@ -34,7 +34,7 @@ giskard.llm.set_embedding_model("text-embedding-ada-002", api_key="your-api-key"
 
 ## Azure OpenAI Client Setup
 
-More information on [litellm documentation](https://docs.litellm.ai/docs/providers/azure)
+More information on [LiteLLM documentation](https://docs.litellm.ai/docs/providers/azure)
 
 ### Setup using .env variables
 
@@ -71,7 +71,7 @@ giskard.llm.set_embedding_model("azure/<your_deployment_name>", api_base="", api
 
 ## Mistral Client Setup
 
-More information on [litellm documentation](https://docs.litellm.ai/docs/providers/mistral)
+More information on [LiteLLM documentation](https://docs.litellm.ai/docs/providers/mistral)
 
 ### Setup using .env variables
 
@@ -88,7 +88,7 @@ giskard.llm.set_embedding_model("mistral/mistral-embed")
 
 ## Ollama Client Setup
 
-More information on [litellm documentation](https://docs.litellm.ai/docs/providers/ollama)
+More information on [LiteLLM documentation](https://docs.litellm.ai/docs/providers/ollama)
 
 ### Setup using completion params
 
@@ -100,7 +100,7 @@ giskard.llm.set_llm_model("ollama/llama2", api_base="http://localhost:11434") # 
 
 ## AWS Bedrock Client Setup
 
-More information on [litellm documentation](https://docs.litellm.ai/docs/providers/bedrock)
+More information on [LiteLLM documentation](https://docs.litellm.ai/docs/providers/bedrock)
 
 ### Setup using .env variables
 
@@ -118,7 +118,7 @@ giskard.llm.set_embedding_model("bedrock/amazon.titan-embed-text-v1")
 
 ## Gemini Client Setup
 
-More information on [litellm documentation](https://docs.litellm.ai/docs/providers/gemini)
+More information on [LiteLLM documentation](https://docs.litellm.ai/docs/providers/gemini)
 
 ### Setup using .env variables
 
@@ -133,7 +133,7 @@ giskard.llm.set_llm_model("gemini/gemini-pro")
 
 ## Custom Client Setup
 
-More information on [litellm documentation](https://docs.litellm.ai/docs/providers/custom_llm_server    )
+More information on [LiteLLM documentation](https://docs.litellm.ai/docs/providers/custom_llm_server    )
 
 ```python
 import requests
