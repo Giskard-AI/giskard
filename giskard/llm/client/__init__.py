@@ -10,7 +10,7 @@ from .logger import LLMLogger
 _default_client = None
 _default_llm_api: Optional[str] = None
 
-_default_llm_model = os.getenv("GSK_LLM_MODEL", "gpt-4")
+_default_llm_model = os.getenv("GSK_LLM_MODEL", "gpt-4o")
 _default_completion_params = dict()
 
 _default_llm_base_url = os.getenv("GSK_LLM_BASE_URL", None)
