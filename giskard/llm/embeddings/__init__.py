@@ -40,9 +40,11 @@ def set_embedding_model(model: str, **kwargs):
     """
     global _default_embedding_model
     global _default_embedding_params
+    global _default_embedding
 
     _default_embedding_model = model
     _default_embedding_params = kwargs
+    _default_embedding = None
 
 
 def get_default_embedding():
