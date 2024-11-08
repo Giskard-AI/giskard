@@ -1,6 +1,7 @@
 from unittest.mock import Mock, patch
 
 import pydantic
+import pytest
 from openai.types import CompletionUsage
 from openai.types.chat import ChatCompletion, ChatCompletionMessage
 from openai.types.chat.chat_completion import Choice
@@ -45,6 +46,7 @@ def test_llm_complete_message():
 
 
 @patch("litellm.completion")
+@pytest.mark.skipif(not PYDANTIC_V2, reason="LiteLLM raise an error with pydantic < 2")
 def test_litellm_client(completion):
     completion.return_value = DEMO_OPENAI_RESPONSE
     client = Mock()
