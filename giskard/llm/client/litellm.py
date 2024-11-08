@@ -39,7 +39,11 @@ class LiteLLMClient(LLMClient):
     def _build_supported_completion_params(self, **kwargs):
         supported_params = litellm.get_supported_openai_params(model=self.model)
 
-        return {param_name: param_value for param_name, param_value in kwargs.items() if param_name in supported_params}
+        return {
+            param_name: param_value
+            for param_name, param_value in kwargs.items()
+            if supported_params is None or param_name in supported_params
+        }
 
     def complete(
         self,

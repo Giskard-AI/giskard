@@ -1,11 +1,13 @@
 from unittest.mock import Mock, patch
 
+import litellm
 import pydantic
 import pytest
 from openai.types import CompletionUsage
 from openai.types.chat import ChatCompletion, ChatCompletionMessage
 from openai.types.chat.chat_completion import Choice
 
+from giskard.llm import get_default_client, set_llm_model
 from giskard.llm.client import ChatMessage
 from giskard.llm.client.litellm import LiteLLMClient
 from giskard.llm.client.openai import OpenAIClient
@@ -64,3 +66,33 @@ def test_litellm_client(completion):
 
     assert isinstance(res, ChatMessage)
     assert res.content == "This is a test!"
+
+
+API_KEY = "MOCK_API_KEY"
+
+
+class MockLLM(litellm.CustomLLM):
+    def completion(self, model: str, messages: list, api_key: str, **kwargs) -> litellm.ModelResponse:
+        assert api_key == API_KEY, "Completion params are not passed properly"
+
+        return litellm.ModelResponse(
+            choices=[
+                litellm.Choices(
+                    model=model,
+                    message=litellm.Message(role="assistant", content=f"Mock response - {messages[-1].get('content')}"),
+                )
+            ]
+        )
+
+
+litellm.custom_provider_map = litellm.custom_provider_map + [{"provider": "mock", "custom_handler": MockLLM()}]
+
+
+@pytest.mark.skipif(not PYDANTIC_V2, reason="LiteLLM raise an error with pydantic < 2")
+def test_litellm_client_custom_model():
+    set_llm_model("mock/faux-bot", api_key=API_KEY)
+
+    llm_client = get_default_client()
+    message = "Mock input"
+    response = llm_client.complete([ChatMessage(role="user", content=message)])
+    assert f"Mock response - {message}" == response.content
