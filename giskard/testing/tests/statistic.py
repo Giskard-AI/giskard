@@ -145,14 +145,12 @@ def test_output_in_range(
         output = prediction_results.raw_prediction
 
     elif model.is_classification:
-        output = prediction_results.all_predictions[classification_label]
+        output = prediction_results.all_predictions[classification_label].values
 
     else:
         raise ValueError(f"Prediction task is not supported: {model.meta.model_type}")
 
-    passed_idx = dataset.df.loc[
-        ((output <= max_range) & (output >= min_range)).reindex(dataset.df.index, fill_value=False)
-    ].index.values
+    passed_idx = dataset.df.loc[(output <= max_range) & (output >= min_range)].index.values
 
     passed_ratio = len(passed_idx) / len(dataset)
     passed = bool(passed_ratio >= threshold)
