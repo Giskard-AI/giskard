@@ -120,6 +120,7 @@ jobs:
         uses: pdm-project/setup-pdm@v4
         with:
           python-version: ${{ matrix.python-version }}
+          version: head # Issue with PDM 2.20.1: https://github.com/pdm-project/pdm/issues/3271
           cache: false
 
       - name: Cache Giskard test resources
@@ -251,6 +252,7 @@ jobs:
         uses: pdm-project/setup-pdm@v4
         with:
           python-version: "3.10"
+          version: head # Issue with PDM 2.20.1: https://github.com/pdm-project/pdm/issues/3271
           cache: false
       - name: Build wheel
         run: pdm build
@@ -273,6 +275,7 @@ jobs:
         uses: pdm-project/setup-pdm@v4
         with:
           python-version: "3.10"
+          version: head # Issue with PDM 2.20.1: https://github.com/pdm-project/pdm/issues/3271
           cache: false
       - name: Build wheel
         run: pdm build
@@ -292,7 +295,7 @@ jobs:
         uses: pdm-project/setup-pdm@v4
         with:
           python-version: "3.10"
-          version: "2.10.4" # Fix to repair the CI, use latest version when fixed on pdm
+          version: head # Issue with PDM 2.20.1: https://github.com/pdm-project/pdm/issues/3271
           cache: false
       - name: Build wheel
         run: pdm build
@@ -336,6 +339,7 @@ jobs:
         uses: pdm-project/setup-pdm@v4
         with:
           python-version: "3.10"
+          version: head # Issue with PDM 2.20.1: https://github.com/pdm-project/pdm/issues/3271
           cache: false
 
       - name: Set up Pandoc (needed for doc)
