@@ -145,7 +145,7 @@ def test_output_in_range(
         output = prediction_results.raw_prediction
 
     elif model.is_classification:
-        output = prediction_results.all_predictions[classification_label]
+        output = prediction_results.all_predictions[classification_label].values
 
     else:
         raise ValueError(f"Prediction task is not supported: {model.meta.model_type}")
