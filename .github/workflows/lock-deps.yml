@@ -55,6 +55,7 @@ jobs:
         uses: pdm-project/setup-pdm@v4
         with:
           python-version: "3.10"
+          version: head # Issue with PDM 2.20.1: https://github.com/pdm-project/pdm/issues/3271
           cache: false
 
       - name: Install dependencies
