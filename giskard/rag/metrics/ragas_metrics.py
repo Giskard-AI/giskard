@@ -1,7 +1,6 @@
 from typing import Optional, Sequence
 
 import logging
-import warnings
 
 import ragas
 
@@ -107,7 +106,7 @@ class RagasMetric(Metric):
 
         self.metric.init(run_config)
         if self.requires_context and answer.documents is None:
-            logger.warn(
+            logger.warning(
                 f"No retrieved documents are passed to the evaluation function, computation of {self.name} cannot be done without it."
                 "Make sure you pass 'retrieved_documents' to the evaluate function or that the 'answer_fn' return documents alongside the answer."
             )
@@ -117,14 +116,13 @@ class RagasMetric(Metric):
 
         return {self.name: self.metric.score(ragas_sample)}
 
-    @classmethod
-    def prepare_ragas_sample(self, question_sample: dict, answer: AgentAnswer) -> dict:
+    @staticmethod
+    def prepare_ragas_sample(question_sample: dict, answer: AgentAnswer) -> dict:
         if ragas.__version__.startswith("0.1"):
-            warnings.warn(
-                "You are using an old version of RAGAS."
-                "Support for RAGAS v0.1 is deprecated and may be removed in future versions."
-                "Please consider updating to the latest version.",
-                DeprecationWarning,
+            logger.warning(
+                f"{DeprecationWarning.__name__}: You are using an older version (v0.1) of `ragas` package. "
+                "Support for v0.1 is deprecated and may be removed in future versions. "
+                "Please consider updating `ragas` to a later version."
             )
             return {
                 "question": question_sample["question"],
