@@ -1,6 +1,9 @@
 from typing import Optional, Sequence
 
 import logging
+import warnings
+
+import ragas
 
 from ...llm.client import ChatMessage, LLMClient, get_default_client
 from ...llm.embeddings import BaseEmbedding, get_default_embedding
@@ -110,13 +113,32 @@ class RagasMetric(Metric):
             )
             return {self.name: 0}
 
-        ragas_sample = {
-            "question": question_sample["question"],
-            "answer": answer.message,
-            "contexts": answer.documents,
-            "ground_truth": question_sample["reference_answer"],
-        }
+        ragas_sample = self.prepare_ragas_sample(question_sample, answer)
+
         return {self.name: self.metric.score(ragas_sample)}
+
+    @classmethod
+    def prepare_ragas_sample(self, question_sample: dict, answer: AgentAnswer) -> dict:
+        if ragas.__version__.startswith("0.1"):
+            warnings.warn(
+                "You are using an old version of RAGAS."
+                "Support for RAGAS v0.1 is deprecated and may be removed in future versions."
+                "Please consider updating to the latest version.",
+                DeprecationWarning,
+            )
+            return {
+                "question": question_sample["question"],
+                "answer": answer.message,
+                "contexts": answer.documents,
+                "ground_truth": question_sample["reference_answer"],
+            }
+        else:
+            return {
+                "user_input": question_sample["question"],
+                "response": answer.message,
+                "retrieved_contexts": answer.documents,
+                "reference": question_sample["reference_answer"],
+            }
 
 
 ragas_context_precision = RagasMetric(name="RAGAS Context Precision", metric=context_precision, requires_context=True)
