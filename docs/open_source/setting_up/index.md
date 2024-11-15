@@ -4,7 +4,7 @@ This guide focuses primarily on configuring and using various LLM clients suppor
 
 ## OpenAI Client Setup
 
-More information on [LiteLLM documentation](https://docs.litellm.ai/docs/providers/openai)
+More information on [OpenAI LiteLLM documentation](https://docs.litellm.ai/docs/providers/openai)
 
 ### Setup using .env variables
 
@@ -12,15 +12,15 @@ More information on [LiteLLM documentation](https://docs.litellm.ai/docs/provide
 import os
 import giskard
 
-os.environ["OPENAI_API_KEY"] = "your-api-key"
+os.environ["OPENAI_API_KEY"] = "" # "my-openai-api-key"
 
-# Optional, setup a model (default model is gpt-4)
-giskard.llm.set_llm_model("gpt-4")
-giskard.llm.set_embedding_model("text-embedding-ada-002")
+# Optional, setup a model (default LLM is gpt-4o, default embedding model is text-embedding-3-small)
+giskard.llm.set_llm_model("gpt-4o")
+giskard.llm.set_embedding_model("text-embedding-3-small")
 
 # Optional Keys - OpenAI Organization, OpenAI API Base
-os.environ["OPENAI_ORGANIZATION"] = "your-org-id"
-os.environ["OPENAI_API_BASE"] = "openaiai-api-base"
+os.environ["OPENAI_ORGANIZATION"] = "" # "my-openai-organization"
+os.environ["OPENAI_API_BASE"] = "" # "https://api.openai.com"
 ```
 
 ### Setup using completion params
@@ -28,13 +28,15 @@ os.environ["OPENAI_API_BASE"] = "openaiai-api-base"
 ```python
 import giskard
 
-giskard.llm.set_llm_model("gpt-4", api_key="your-api-key")
-giskard.llm.set_embedding_model("text-embedding-ada-002", api_key="your-api-key")
+api_key = "" # "my-openai-api-key"
+
+giskard.llm.set_llm_model("o1-preview", api_key=api_key)
+giskard.llm.set_embedding_model("text-embedding-3-large", api_key=api_key)
 ```
 
 ## Azure OpenAI Client Setup
 
-More information on [LiteLLM documentation](https://docs.litellm.ai/docs/providers/azure)
+More information on [Azure LiteLLM documentation](https://docs.litellm.ai/docs/providers/azure)
 
 ### Setup using .env variables
 
@@ -46,10 +48,10 @@ os.environ["AZURE_API_KEY"] = "" # "my-azure-api-key"
 os.environ["AZURE_API_BASE"] = "" # "https://example-endpoint.openai.azure.com"
 os.environ["AZURE_API_VERSION"] = "" # "2023-05-15"
 
-giskard.llm.set_llm_model("azure/<your_deployment_name>")
-giskard.llm.set_embedding_model("azure/<your_deployment_name>")
+giskard.llm.set_llm_model("azure/<your_llm_name>")
+giskard.llm.set_embedding_model("azure/<your_embed_model_name>")
 
-# optional
+# Optional Keys - Azure AD Token, Azure API Type
 os.environ["AZURE_AD_TOKEN"] = ""
 os.environ["AZURE_API_TYPE"] = ""
 ```
@@ -59,18 +61,23 @@ os.environ["AZURE_API_TYPE"] = ""
 ```python
 import giskard
 
-# Using api_key, api_base, api_version
-giskard.llm.set_llm_model("azure/<your_deployment_name>", api_base="", api_version="", api_key="")
-giskard.llm.set_embedding_model("azure/<your_deployment_name>", api_base="", api_version="", api_key="")
+api_base = "" # "https://example-endpoint.openai.azure.com"
+api_version = "" # "2023-05-15"
 
-# Using azure_ad_token, api_base, api_version
-giskard.llm.set_llm_model("azure/<your_deployment_name>", api_base="", api_version="", azure_ad_token="")
-giskard.llm.set_embedding_model("azure/<your_deployment_name>", api_base="", api_version="", azure_ad_token="")
+# Using api_key
+api_key = "" # "my-azure-api-key"
+giskard.llm.set_llm_model("azure/<your_llm_name>", api_base=api_base, api_version=api_version, api_key=api_key)
+giskard.llm.set_embedding_model("azure/<your_embed_model_name>", api_base=api_base, api_version=api_version, api_key=api_key)
+
+# Using azure_ad_token
+azure_ad_token = "" # "my-azure-ad-token"
+giskard.llm.set_llm_model("azure/<your_llm_name>", api_base=api_base, api_version=api_version, azure_ad_token=azure_ad_token)
+giskard.llm.set_embedding_model("azure/<your_embed_model_name>", api_base=api_base, api_version=api_version, azure_ad_token=azure_ad_token)
 ```
 
 ## Mistral Client Setup
 
-More information on [LiteLLM documentation](https://docs.litellm.ai/docs/providers/mistral)
+More information on [Mistral LiteLLM documentation](https://docs.litellm.ai/docs/providers/mistral)
 
 ### Setup using .env variables
 
@@ -78,25 +85,27 @@ More information on [LiteLLM documentation](https://docs.litellm.ai/docs/provide
 import os
 import giskard
 
-os.environ['MISTRAL_API_KEY'] = "" # "my-mistral-api-key"
+os.environ["MISTRAL_API_KEY"] = "" # "my-mistral-api-key"
 
-giskard.llm.set_llm_model("mistral/mistral-tiny")
+giskard.llm.set_llm_model("mistral/mistral-large-latest")
 giskard.llm.set_embedding_model("mistral/mistral-embed")
 
 ```
 
 ## Ollama Client Setup
 
-More information on [LiteLLM documentation](https://docs.litellm.ai/docs/providers/ollama)
+More information on [Ollama LiteLLM documentation](https://docs.litellm.ai/docs/providers/ollama)
 
 ### Setup using completion params
 
 ```python
 import giskard
 
+api_base = "http://localhost:11434" # default api_base for local Ollama
+
 # See supported models here: https://docs.litellm.ai/docs/providers/ollama#ollama-models
-giskard.llm.set_llm_model("ollama/llama3", api_base="http://localhost:11434")
-giskard.llm.set_embedding_model("ollama/nomic-embed-text", api_base="http://localhost:11434")
+giskard.llm.set_llm_model("ollama/llama3", api_base=api_base)
+giskard.llm.set_embedding_model("ollama/nomic-embed-text", api_base=api_base)
 ```
 
 If you encounter errors with the embedding model in a Jupyter notebook, run this code:
@@ -108,7 +117,7 @@ nest_asyncio.apply()
 
 ## AWS Bedrock Client Setup
 
-More information on [LiteLLM documentation](https://docs.litellm.ai/docs/providers/bedrock)
+More information on [Bedrock LiteLLM documentation](https://docs.litellm.ai/docs/providers/bedrock)
 
 ### Setup using .env variables
 
@@ -126,7 +135,7 @@ giskard.llm.set_embedding_model("bedrock/amazon.titan-embed-image-v1")
 
 ## Gemini Client Setup
 
-More information on [LiteLLM documentation](https://docs.litellm.ai/docs/providers/gemini)
+More information on [Gemini LiteLLM documentation](https://docs.litellm.ai/docs/providers/gemini)
 
 ### Setup using .env variables
 
@@ -142,28 +151,32 @@ giskard.llm.set_embedding_model("gemini/text-embedding-004")
 
 ## Custom Client Setup
 
-More information on [LiteLLM documentation](https://docs.litellm.ai/docs/providers/custom_llm_server)
+More information on [Custom Format LiteLLM documentation](https://docs.litellm.ai/docs/providers/custom_llm_server)
 
 ```python
-import requests
-import giskard
-import litellm
 import os
+import requests
 from typing import Optional
+
+import litellm
+import giskard
 
 
 class MyCustomLLM(litellm.CustomLLM):
     def completion(self, messages: str, api_key: Optional[str] = None, **kwargs) -> litellm.ModelResponse:
-        api_key = api_key or os.environ.get('MY_SECRET_KEY')
+        api_key = api_key or os.environ.get("MY_SECRET_KEY")
         if api_key is None:
-            raise litellm.AuthenticationError("Api key is not provided")
+            raise litellm.AuthenticationError("`api_key` was not provided")
 
-        response = requests.post('https://www.my-custom-llm.ai/chat/completion', json={
-            'messages': messages
-        }, headers={'Authorization': api_key})
+        response = requests.post(
+            "https://www.my-custom-llm.ai/chat/completion",
+            json={"messages": messages},
+            headers={"Authorization": api_key},
+        )
 
         return litellm.ModelResponse(**response.json())
 
+os.eviron["MY_SECRET_KEY"] = "" # "my-secret-key"
 
 my_custom_llm = MyCustomLLM()
 
@@ -171,7 +184,7 @@ litellm.custom_provider_map = [  # 👈 KEY STEP - REGISTER HANDLER
     {"provider": "my-custom-llm-endpoint", "custom_handler": my_custom_llm}
 ]
 
-api_key = os.environ['MY_SECRET_KEY']
+api_key = os.environ["MY_SECRET_KEY"]
 
 giskard.llm.set_llm_model("my-custom-llm-endpoint/my-custom-model", api_key=api_key)
 ```
