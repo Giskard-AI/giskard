@@ -1,6 +1,7 @@
 from typing import Optional
 from typing_extensions import deprecated
 
+import logging
 import os
 
 from .base import ChatMessage, LLMClient
@@ -26,6 +27,22 @@ def set_default_client(client: LLMClient):
 def _unset_default_client():
     global _default_client
     _default_client = None
+
+
+def get_default_llm_api() -> str:
+    global _default_llm_api
+    if _default_llm_api is None:
+        _default_llm_api = os.getenv(
+            "GSK_LLM_API", "azure" if "AZURE_OPENAI_API_KEY" in os.environ else "openai"
+        ).lower()
+
+        if _default_llm_api not in {"azure", "openai"}:
+            logging.warning(
+                f"LLM-based evaluation is only working with `azure` and `openai`. Found {_default_llm_api} in GSK_LLM_API, falling back to `openai`"
+            )
+            _default_llm_api = "openai"
+
+    return _default_llm_api
 
 
 @deprecated("set_llm_api is deprecated: https://docs.giskard.ai/en/latest/open_source/setting_up/index.html")
@@ -85,4 +102,12 @@ def get_default_client() -> LLMClient:
     return _default_client
 
 
-__all__ = ["LLMClient", "ChatMessage", "LLMLogger", "get_default_client", "set_llm_model"]
+__all__ = [
+    "LLMClient",
+    "ChatMessage",
+    "LLMLogger",
+    "get_default_client",
+    "set_llm_model",
+    "get_default_llm_api",
+    "set_llm_api",
+]
