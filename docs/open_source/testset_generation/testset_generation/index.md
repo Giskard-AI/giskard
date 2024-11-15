@@ -76,14 +76,13 @@ These are the question types currently supported by RAGET:
 
 ## Before starting
 
-Before starting, make sure you have installed the LLM flavor of Giskard:
+First of all, make sure you have installed the LLM flavor of Giskard:
 
 ```bash
 pip install "giskard[llm]"
 ```
 
-To use the RAG test set generation and evaluation tools, you'll need an API key from the LLM provider that you are using. You can set this API key in your notebook.
-like this:
+To use the RAG test set generation and evaluation tools, you need to set up a LLM client. Our platform supports a variety of language models, and you can find the details on configuring different models in our [🤖 Setting up the LLM Client page](../../setting_up/index.md) or follow the instructions below for each provider:
 
 :::::::{tab-set}
 ::::::{tab-item} OpenAI
@@ -92,18 +91,18 @@ like this:
 import os
 import giskard
 
-os.environ["OPENAI_API_KEY"] = "your-api-key"
+os.environ["OPENAI_API_KEY"] = "" # "my-openai-api-key"
 
-# Optional, setup a model (default model is gpt-4)
-giskard.llm.set_llm_model("gpt-4")
-giskard.llm.set_embedding_model("text-embedding-ada-002")
+# Optional, setup a model (default LLM is gpt-4o, default embedding model is text-embedding-3-small)
+giskard.llm.set_llm_model("gpt-4o")
+giskard.llm.set_embedding_model("text-embedding-3-small")
 
 # Optional Keys - OpenAI Organization, OpenAI API Base
-os.environ["OPENAI_ORGANIZATION"] = "your-org-id"
-os.environ["OPENAI_API_BASE"] = "openaiai-api-base"
+os.environ["OPENAI_ORGANIZATION"] = "" # "my-openai-organization"
+os.environ["OPENAI_API_BASE"] = "" # "https://api.openai.com"
 ```
 
-More information on [LiteLLM documentation](https://docs.litellm.ai/docs/providers/openai)
+More information on [OpenAI LiteLLM documentation](https://docs.litellm.ai/docs/providers/openai)
 
 ::::::
 ::::::{tab-item} Azure OpenAI
@@ -116,16 +115,15 @@ os.environ["AZURE_API_KEY"] = "" # "my-azure-api-key"
 os.environ["AZURE_API_BASE"] = "" # "https://example-endpoint.openai.azure.com"
 os.environ["AZURE_API_VERSION"] = "" # "2023-05-15"
 
-giskard.llm.set_llm_model("azure/<your_deployment_name>")
-giskard.llm.set_embedding_model("azure/<your_deployment_name>")
+giskard.llm.set_llm_model("azure/<your_llm_name>")
+giskard.llm.set_embedding_model("azure/<your_embed_model_name>")
 
-# optional
+# Optional Keys - Azure AD Token, Azure API Type
 os.environ["AZURE_AD_TOKEN"] = ""
 os.environ["AZURE_API_TYPE"] = ""
-giskard.llm.set_embedding_model('my-embedding-model')
 ```
 
-More information on [LiteLLM documentation](https://docs.litellm.ai/docs/providers/azure)
+More information on [Azure LiteLLM documentation](https://docs.litellm.ai/docs/providers/azure)
 
 ::::::
 ::::::{tab-item} Mistral
@@ -134,13 +132,13 @@ More information on [LiteLLM documentation](https://docs.litellm.ai/docs/provide
 import os
 import giskard
 
-os.environ['MISTRAL_API_KEY'] = ""
+os.environ["MISTRAL_API_KEY"] = "" # "my-mistral-api-key"
 
-giskard.llm.set_llm_model("mistral/mistral-tiny")
+giskard.llm.set_llm_model("mistral/mistral-large-latest")
 giskard.llm.set_embedding_model("mistral/mistral-embed")
 ```
 
-More information on [LiteLLM documentation](https://docs.litellm.ai/docs/providers/mistral)
+More information on [Mistral LiteLLM documentation](https://docs.litellm.ai/docs/providers/mistral)
 
 ::::::
 ::::::{tab-item} Ollama
@@ -148,78 +146,86 @@ More information on [LiteLLM documentation](https://docs.litellm.ai/docs/provide
 ```python
 import giskard
 
-giskard.llm.set_llm_model("ollama/llama2", api_base="http://localhost:11434") # See supported models here: https://docs.litellm.ai/docs/providers/ollama#ollama-models
+api_base = "http://localhost:11434" # default api_base for local Ollama
+
+# See supported models here: https://docs.litellm.ai/docs/providers/ollama#ollama-models
+giskard.llm.set_llm_model("ollama/llama3", api_base=api_base)
+giskard.llm.set_embedding_model("ollama/nomic-embed-text", api_base=api_base)
 ```
 
-More information on [LiteLLM documentation](https://docs.litellm.ai/docs/providers/ollama)
-
+More information on [Ollama LiteLLM documentation](https://docs.litellm.ai/docs/providers/ollama)
 
 ::::::
 ::::::{tab-item} AWS Bedrock
 
-More information on [LiteLLM documentation](https://docs.litellm.ai/docs/providers/bedrock)
+More information on [Bedrock LiteLLM documentation](https://docs.litellm.ai/docs/providers/bedrock)
 
 ```python
 import os
 import giskard
 
-os.environ["AWS_ACCESS_KEY_ID"] = ""
-os.environ["AWS_SECRET_ACCESS_KEY"] = ""
-os.environ["AWS_REGION_NAME"] = ""
+os.environ["AWS_ACCESS_KEY_ID"] = "" # "my-aws-access-key"
+os.environ["AWS_SECRET_ACCESS_KEY"] = "" # "my-aws-secret-access-key"
+os.environ["AWS_REGION_NAME"] = "" # "us-west-2"
 
 giskard.llm.set_llm_model("bedrock/anthropic.claude-3-sonnet-20240229-v1:0")
-giskard.llm.set_embedding_model("bedrock/amazon.titan-embed-text-v1")
+giskard.llm.set_embedding_model("bedrock/amazon.titan-embed-image-v1")
 ```
 
 ::::::
 ::::::{tab-item} Gemini
 
-More information on [LiteLLM documentation](https://docs.litellm.ai/docs/providers/gemini)
+More information on [Gemini LiteLLM documentation](https://docs.litellm.ai/docs/providers/gemini)
 
 ```python
 import os
 import giskard
 
-os.environ["GEMINI_API_KEY"] = "your-api-key"
+os.environ["GEMINI_API_KEY"] = "" # "my-gemini-api-key"
 
 giskard.llm.set_llm_model("gemini/gemini-pro")
+giskard.llm.set_embedding_model("gemini/text-embedding-004")
 ```
 
 ::::::
 ::::::{tab-item} Custom Client
 
-More information on [LiteLLM documentation](https://docs.litellm.ai/docs/providers/custom_llm_server    )
+More information on [Custom Format LiteLLM documentation](https://docs.litellm.ai/docs/providers/custom_llm_server)
 
 ```python
-import requests
-import giskard
-import litellm
 import os
+import requests
 from typing import Optional
+
+import litellm
+import giskard
 
 
 class MyCustomLLM(litellm.CustomLLM):
-  def completion(self, messages: str, api_key: Optional[str] = None, **kwargs) -> litellm.ModelResponse:
-    api_key = api_key or os.environ.get('MY_SECRET_KEY')
-    if api_key is None:
-      raise litellm.AuthenticationError("Api key is not provided")
+    def completion(self, messages: str, api_key: Optional[str] = None, **kwargs) -> litellm.ModelResponse:
+        api_key = api_key or os.environ.get("MY_SECRET_KEY")
+        if api_key is None:
+            raise litellm.AuthenticationError("`api_key` was not provided")
 
-    response = requests.post('https://www.my-fake-llm.ai/chat/completion', json={
-      'messages': messages
-    }, headers={'Authorization': api_key})
+        response = requests.post(
+            "https://www.my-custom-llm.ai/chat/completion",
+            json={"messages": messages},
+            headers={"Authorization": api_key},
+        )
 
-    return litellm.ModelResponse(**response.json())
+        return litellm.ModelResponse(**response.json())
 
+os.eviron["MY_SECRET_KEY"] = "" # "my-secret-key"
 
 my_custom_llm = MyCustomLLM()
 
 litellm.custom_provider_map = [  # 👈 KEY STEP - REGISTER HANDLER
-  {"provider": "my-custom-llm", "custom_handler": my_custom_llm}
+    {"provider": "my-custom-llm-endpoint", "custom_handler": my_custom_llm}
 ]
 
-api_key = os.environ['MY_SECRET_KEY']
+api_key = os.environ["MY_SECRET_KEY"]
 
-giskard.llm.set_llm_model("my-custom-llm/my-fake-llm-model", api_key=api_key)
+giskard.llm.set_llm_model("my-custom-llm-endpoint/my-custom-model", api_key=api_key)
 ```
 
 ::::::
