@@ -68,7 +68,6 @@ giskard.llm.set_llm_model("azure/<your_deployment_name>", api_base="", api_versi
 giskard.llm.set_embedding_model("azure/<your_deployment_name>", api_base="", api_version="", azure_ad_token="")
 ```
 
-
 ## Mistral Client Setup
 
 More information on [LiteLLM documentation](https://docs.litellm.ai/docs/providers/mistral)
@@ -79,7 +78,7 @@ More information on [LiteLLM documentation](https://docs.litellm.ai/docs/provide
 import os
 import giskard
 
-os.environ['MISTRAL_API_KEY'] = ""
+os.environ['MISTRAL_API_KEY'] = "" # "my-mistral-api-key"
 
 giskard.llm.set_llm_model("mistral/mistral-tiny")
 giskard.llm.set_embedding_model("mistral/mistral-embed")
@@ -95,7 +94,16 @@ More information on [LiteLLM documentation](https://docs.litellm.ai/docs/provide
 ```python
 import giskard
 
-giskard.llm.set_llm_model("ollama/llama2", api_base="http://localhost:11434") # See supported models here: https://docs.litellm.ai/docs/providers/ollama#ollama-models
+# See supported models here: https://docs.litellm.ai/docs/providers/ollama#ollama-models
+giskard.llm.set_llm_model("ollama/llama3", api_base="http://localhost:11434")
+giskard.llm.set_embedding_model("ollama/nomic-embed-text", api_base="http://localhost:11434")
+```
+
+If you encounter errors with the embedding model in a Jupyter notebook, run this code:
+
+```python
+import nest_asyncio
+nest_asyncio.apply()
 ```
 
 ## AWS Bedrock Client Setup
@@ -108,12 +116,12 @@ More information on [LiteLLM documentation](https://docs.litellm.ai/docs/provide
 import os
 import giskard
 
-os.environ["AWS_ACCESS_KEY_ID"] = ""
-os.environ["AWS_SECRET_ACCESS_KEY"] = ""
-os.environ["AWS_REGION_NAME"] = ""
+os.environ["AWS_ACCESS_KEY_ID"] = "" # "my-aws-access-key"
+os.environ["AWS_SECRET_ACCESS_KEY"] = "" # "my-aws-secret-access-key"
+os.environ["AWS_REGION_NAME"] = "" # "us-west-2"
 
 giskard.llm.set_llm_model("bedrock/anthropic.claude-3-sonnet-20240229-v1:0")
-giskard.llm.set_embedding_model("bedrock/amazon.titan-embed-text-v1")
+giskard.llm.set_embedding_model("bedrock/amazon.titan-embed-image-v1")
 ```
 
 ## Gemini Client Setup
@@ -126,14 +134,15 @@ More information on [LiteLLM documentation](https://docs.litellm.ai/docs/provide
 import os
 import giskard
 
-os.environ["GEMINI_API_KEY"] = "your-api-key"
+os.environ["GEMINI_API_KEY"] = "" # "my-gemini-api-key"
 
 giskard.llm.set_llm_model("gemini/gemini-pro")
+giskard.llm.set_embedding_model("gemini/text-embedding-004")
 ```
 
 ## Custom Client Setup
 
-More information on [LiteLLM documentation](https://docs.litellm.ai/docs/providers/custom_llm_server    )
+More information on [LiteLLM documentation](https://docs.litellm.ai/docs/providers/custom_llm_server)
 
 ```python
 import requests
@@ -148,23 +157,23 @@ class MyCustomLLM(litellm.CustomLLM):
         api_key = api_key or os.environ.get('MY_SECRET_KEY')
         if api_key is None:
             raise litellm.AuthenticationError("Api key is not provided")
-        
-        response = requests.post('https://www.my-fake-llm.ai/chat/completion', json={
+
+        response = requests.post('https://www.my-custom-llm.ai/chat/completion', json={
             'messages': messages
         }, headers={'Authorization': api_key})
-        
+
         return litellm.ModelResponse(**response.json())
 
 
 my_custom_llm = MyCustomLLM()
 
 litellm.custom_provider_map = [  # 👈 KEY STEP - REGISTER HANDLER
-    {"provider": "my-custom-llm", "custom_handler": my_custom_llm}
+    {"provider": "my-custom-llm-endpoint", "custom_handler": my_custom_llm}
 ]
 
 api_key = os.environ['MY_SECRET_KEY']
 
-giskard.llm.set_llm_model("my-custom-llm/my-fake-llm-model", api_key=api_key)
+giskard.llm.set_llm_model("my-custom-llm-endpoint/my-custom-model", api_key=api_key)
 ```
 
 If you run into any issues configuring the LLM client, don't hesitate to [ask us on Discord](https://discord.com/invite/ABvfpbu69R) or open a new issue on [our GitHub repo](https://github.com/Giskard-AI/giskard).
