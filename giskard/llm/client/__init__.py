@@ -1,3 +1,6 @@
+from typing import Optional
+from typing_extensions import deprecated
+
 import os
 
 from .base import ChatMessage, LLMClient
@@ -7,11 +10,39 @@ _default_client = None
 
 _default_llm_model = os.getenv("GSK_LLM_MODEL", "gpt-4o")
 _default_completion_params = dict()
+_default_llm_api = None
+
+
+if "GSK_LLM_BASE_URL" in os.environ is not None:
+    _default_completion_params["api_base"] = os.getenv("GSK_LLM_BASE_URL")
+
+
+@deprecated("set_default_client is deprecated: https://docs.giskard.ai/en/latest/open_source/setting_up/index.html")
+def set_default_client(client: LLMClient):
+    global _default_client
+    _default_client = client
 
 
 def _unset_default_client():
     global _default_client
     _default_client = None
+
+
+@deprecated("set_llm_api is deprecated: https://docs.giskard.ai/en/latest/open_source/setting_up/index.html")
+def set_llm_api(llm_api: str):
+    if llm_api.lower() not in {"azure", "openai"}:
+        raise ValueError("Giskard LLM-based evaluators is only working with `azure` and `openai`")
+
+    global _default_llm_api
+    _default_llm_api = llm_api.lower()
+    # If the API is set, we unset the default client
+    _unset_default_client()
+
+
+@deprecated("set_default_client is deprecated: https://docs.giskard.ai/en/latest/open_source/setting_up/index.html")
+def set_llm_base_url(llm_base_url: Optional[str]):
+    global _default_completion_params
+    _default_completion_params["api_base"] = os.getenv("GSK_LLM_BASE_URL")
 
 
 def set_llm_model(llm_model: str, **kwargs):
@@ -27,12 +58,25 @@ def set_llm_model(llm_model: str, **kwargs):
 
 def get_default_client() -> LLMClient:
     global _default_client
+    global _default_llm_api
+    global _default_llm_model
 
     if _default_client is not None:
         return _default_client
 
     try:
         from .litellm import LiteLLMClient
+
+        if (
+            _default_llm_api is not None
+            and "/" in _default_llm_model
+            and not _default_llm_model.startswith(f"{_default_llm_api}/")
+        ):
+            raise ValueError(
+                f"Model {_default_llm_model} is not compatible with {_default_llm_api}: https://docs.giskard.ai/en/latest/open_source/setting_up/index.html "
+            )
+        if _default_llm_api is not None and "/" not in _default_llm_model:
+            _default_llm_model = f"{_default_llm_api}/{_default_llm_model}"
 
         _default_client = LiteLLMClient(_default_llm_model, _default_completion_params)
     except ImportError:
