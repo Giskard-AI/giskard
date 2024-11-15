@@ -130,13 +130,13 @@ class RagasMetric(Metric):
                 "contexts": answer.documents,
                 "ground_truth": question_sample["reference_answer"],
             }
-        else:
-            return {
-                "user_input": question_sample["question"],
-                "response": answer.message,
-                "retrieved_contexts": answer.documents,
-                "reference": question_sample["reference_answer"],
-            }
+
+        return {
+            "user_input": question_sample["question"],
+            "response": answer.message,
+            "retrieved_contexts": answer.documents,
+            "reference": question_sample["reference_answer"],
+        }
 
 
 ragas_context_precision = RagasMetric(name="RAGAS Context Precision", metric=context_precision, requires_context=True)
