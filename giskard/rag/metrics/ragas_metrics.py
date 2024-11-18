@@ -108,7 +108,7 @@ class RagasMetric(Metric):
         if self.requires_context and answer.documents is None:
             logger.warning(
                 f"No retrieved documents are passed to the evaluation function, computation of {self.name} cannot be done without it."
-                "Make sure you pass 'retrieved_documents' to the evaluate function or that the 'answer_fn' return documents alongside the answer."
+                "Make sure that the 'answer_fn' return documents alongside the answer, wrapped by the 'AgentAnswer' class."
             )
             return {self.name: 0}
 
