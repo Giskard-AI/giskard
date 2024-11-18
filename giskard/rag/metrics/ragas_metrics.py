@@ -2,6 +2,8 @@ from typing import Optional, Sequence
 
 import logging
 
+import ragas
+
 from ...llm.client import ChatMessage, LLMClient, get_default_client
 from ...llm.embeddings import BaseEmbedding, get_default_embedding
 from ..base import AgentAnswer
@@ -104,19 +106,37 @@ class RagasMetric(Metric):
 
         self.metric.init(run_config)
         if self.requires_context and answer.documents is None:
-            logger.warn(
+            logger.warning(
                 f"No retrieved documents are passed to the evaluation function, computation of {self.name} cannot be done without it."
                 "Make sure you pass 'retrieved_documents' to the evaluate function or that the 'answer_fn' return documents alongside the answer."
             )
             return {self.name: 0}
 
-        ragas_sample = {
-            "question": question_sample["question"],
-            "answer": answer.message,
-            "contexts": answer.documents,
-            "ground_truth": question_sample["reference_answer"],
-        }
+        ragas_sample = self.prepare_ragas_sample(question_sample, answer)
+
         return {self.name: self.metric.score(ragas_sample)}
+
+    @staticmethod
+    def prepare_ragas_sample(question_sample: dict, answer: AgentAnswer) -> dict:
+        if ragas.__version__.startswith("0.1"):
+            logger.warning(
+                f"{DeprecationWarning.__name__}: You are using an older version (v0.1) of `ragas` package. "
+                "Support for v0.1 is deprecated and may be removed in future versions. "
+                "Please consider updating `ragas` to a later version."
+            )
+            return {
+                "question": question_sample["question"],
+                "answer": answer.message,
+                "contexts": answer.documents,
+                "ground_truth": question_sample["reference_answer"],
+            }
+
+        return {
+            "user_input": question_sample["question"],
+            "response": answer.message,
+            "retrieved_contexts": answer.documents,
+            "reference": question_sample["reference_answer"],
+        }
 
 
 ragas_context_precision = RagasMetric(name="RAGAS Context Precision", metric=context_precision, requires_context=True)
