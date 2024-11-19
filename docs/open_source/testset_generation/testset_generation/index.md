@@ -6,7 +6,7 @@ an in-house evaluation dataset is a painful task that requires manual curation a
 To help with this, the Giskard python library provides **RAGET: RAG Evaluation Toolkit**, a toolkit to evaluate RAG
 agents **automatically**.
 
-> ℹ️ You can find a [tutorial](../../../reference/notebooks/RAGET.ipynb) where we demonstrate the capabilities of RAGET
+> ℹ️ You can find a [tutorial](../../../reference/notebooks/RAGET_IPCC.ipynb) where we demonstrate the capabilities of RAGET
 > with a simple RAG agent build with LlamaIndex
 > on the IPCC report.
 
