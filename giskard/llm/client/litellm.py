@@ -22,6 +22,20 @@ def _get_response_format(format):
     return None
 
 
+def _json_trim(response_message: str):
+    # Dumb trim for when model response message in addition to the JSON response
+    if "{" not in response_message or "}" not in response_message:
+        raise ValueError("The model output doesn't contain any JSON")
+
+    json_start = response_message.index("{")
+    json_end = len(response_message) - response_message[::-1].index("}")
+
+    if json_start > json_end:
+        raise ValueError("The model output doesn't contain any JSON")
+
+    return response_message
+
+
 class LiteLLMClient(LLMClient):
     def __init__(self, model: str = "gpt-4o", completion_params: Optional[Dict[str, Any]] = None):
         """Initialize a LiteLLM completion client
@@ -76,5 +90,8 @@ class LiteLLMClient(LLMClient):
         )
 
         response_message = completion.choices[0].message
+
+        if format is not None:
+            response_message = _json_trim(response_message)
 
         return ChatMessage(role=response_message.role, content=response_message.content)
