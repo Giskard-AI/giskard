@@ -91,7 +91,7 @@ class LiteLLMClient(LLMClient):
 
         response_message = completion.choices[0].message
 
-        if format is not None:
-            response_message = _json_trim(response_message)
-
-        return ChatMessage(role=response_message.role, content=response_message.content)
+        return ChatMessage(
+            role=response_message.role,
+            content=response_message.content if format is None else _json_trim(response_message.content),
+        )
