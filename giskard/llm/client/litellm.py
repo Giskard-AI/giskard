@@ -39,6 +39,10 @@ class LiteLLMClient(LLMClient):
     def _build_supported_completion_params(self, **kwargs):
         supported_params = litellm.get_supported_openai_params(model=self.model)
 
+        # response_format causes issues with ollama: https://github.com/BerriAI/litellm/issues/6359
+        if self.model.startswith("ollama/"):
+            supported_params.remove("response_format")
+
         return {
             param_name: param_value
             for param_name, param_value in kwargs.items()

@@ -7,6 +7,8 @@ import os
 from .base import ChatMessage, LLMClient
 from .logger import LLMLogger
 
+logger = logging.getLogger(__name__)
+
 _default_client = None
 
 _default_llm_model = os.getenv("GSK_LLM_MODEL", "gpt-4o")
@@ -65,6 +67,11 @@ def set_llm_base_url(llm_base_url: Optional[str]):
 def set_llm_model(llm_model: str, **kwargs):
     global _default_llm_model
     global _default_completion_params
+
+    if llm_model.startswith("ollama/"):
+        logger.warning(
+            "Giskard might not work properly with ollama. Please consider switching to another model provider."
+        )
 
     _default_llm_model = llm_model
     _default_completion_params = kwargs
