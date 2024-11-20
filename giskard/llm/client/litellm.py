@@ -78,7 +78,12 @@ def _parse_json_output(
 
 
 class LiteLLMClient(LLMClient):
-    def __init__(self, model: str = "gpt-4o", completion_params: Optional[Dict[str, Any]] = None):
+    def __init__(
+        self,
+        model: str = "gpt-4o",
+        disable_structured_output: bool = False,
+        completion_params: Optional[Dict[str, Any]] = None,
+    ):
         """Initialize a LiteLLM completion client
 
         Parameters
@@ -89,14 +94,11 @@ class LiteLLMClient(LLMClient):
             A dictionary containing params for the completion.
         """
         self.model = model
+        self.disable_structured_output = disable_structured_output
         self.completion_params = completion_params or dict()
 
     def _build_supported_completion_params(self, **kwargs):
         supported_params = litellm.get_supported_openai_params(model=self.model)
-
-        # response_format causes issues with ollama: https://github.com/BerriAI/litellm/issues/6359
-        if self.model.startswith("ollama/"):
-            supported_params.remove("response_format")
 
         return {
             param_name: param_value
@@ -117,7 +119,10 @@ class LiteLLMClient(LLMClient):
             model=self.model,
             messages=[{"role": message.role, "content": message.content} for message in messages],
             **self._build_supported_completion_params(
-                temperature=temperature, max_tokens=max_tokens, seed=seed, response_format=_get_response_format(format)
+                temperature=temperature,
+                max_tokens=max_tokens,
+                seed=seed,
+                response_format=None if self.disable_structured_output else _get_response_format(format),
             ),
             **self.completion_params,
         )

@@ -12,6 +12,7 @@ logger = logging.getLogger(__name__)
 _default_client = None
 
 _default_llm_model = os.getenv("GSK_LLM_MODEL", "gpt-4o")
+_disable_structured_output = False
 _default_completion_params = dict()
 _default_llm_api = None
 
@@ -61,19 +62,22 @@ def set_llm_api(llm_api: str):
 @deprecated("set_default_client is deprecated: https://docs.giskard.ai/en/latest/open_source/setting_up/index.html")
 def set_llm_base_url(llm_base_url: Optional[str]):
     global _default_completion_params
-    _default_completion_params["api_base"] = os.getenv("GSK_LLM_BASE_URL")
+    _default_completion_params["api_base"] = llm_base_url
 
 
-def set_llm_model(llm_model: str, **kwargs):
+def set_llm_model(llm_model: str, disable_structured_output=False, **kwargs):
+    """
+
+    :param llm_model: The model to be used
+    :param disable_structured_output: Set this to True when the used model doesn't support structured output
+    :param kwargs: Additional fixed params to be passed during completion
+    """
     global _default_llm_model
+    global _disable_structured_output
     global _default_completion_params
 
-    if llm_model.startswith("ollama/"):
-        logger.warning(
-            "Giskard might not work properly with ollama. Please consider switching to another model provider."
-        )
-
     _default_llm_model = llm_model
+    _disable_structured_output = disable_structured_output
     _default_completion_params = kwargs
 
     # If the model is set, we unset the default client
@@ -84,6 +88,7 @@ def get_default_client() -> LLMClient:
     global _default_client
     global _default_llm_api
     global _default_llm_model
+    global _disable_structured_output
 
     if _default_client is not None:
         return _default_client
@@ -102,7 +107,7 @@ def get_default_client() -> LLMClient:
         if _default_llm_api is not None and "/" not in _default_llm_model:
             _default_llm_model = f"{_default_llm_api}/{_default_llm_model}"
 
-        _default_client = LiteLLMClient(_default_llm_model, _default_completion_params)
+        _default_client = LiteLLMClient(_default_llm_model, _disable_structured_output, _default_completion_params)
     except ImportError:
         raise ValueError(f"LLM scan using {_default_llm_model} requires litellm")
 
