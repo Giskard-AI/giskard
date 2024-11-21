@@ -136,8 +136,7 @@ class LiteLLMClient(LLMClient):
         )
 
         response_message = completion.choices[0].message
-
-        if format:
+        if format in ("json", "json_object"):
             # Max 3 attempts to parse the JSON output
             for i in range(3):
                 try:
