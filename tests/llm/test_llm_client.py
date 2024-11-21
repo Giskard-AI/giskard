@@ -60,7 +60,7 @@ def test_litellm_client(completion):
     completion.return_value = DEMO_OPENAI_RESPONSE
     client = Mock()
     client.chat.completions.create.return_value = DEMO_OPENAI_RESPONSE
-    res = LiteLLMClient("gpt-4o", {"api_key": "api_key"}).complete(
+    res = LiteLLMClient("gpt-4o", True, completion_params={"api_key": "api_key"}).complete(
         [ChatMessage(role="system", content="Hello")], temperature=0.11, max_tokens=1
     )
 
