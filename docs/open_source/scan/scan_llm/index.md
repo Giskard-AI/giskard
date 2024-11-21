@@ -111,7 +111,7 @@ import giskard
 api_base = "http://localhost:11434" # default api_base for local Ollama
 
 # See supported models here: https://docs.litellm.ai/docs/providers/ollama#ollama-models
-giskard.llm.set_llm_model("ollama/llama3", disable_structured_output=True, api_base=api_base)
+giskard.llm.set_llm_model("ollama/llama3.1", disable_structured_output=True, api_base=api_base)
 giskard.llm.set_embedding_model("ollama/nomic-embed-text", api_base=api_base)
 ```
 
@@ -130,7 +130,7 @@ os.environ["AWS_ACCESS_KEY_ID"] = "" # "my-aws-access-key"
 os.environ["AWS_SECRET_ACCESS_KEY"] = "" # "my-aws-secret-access-key"
 os.environ["AWS_REGION_NAME"] = "" # "us-west-2"
 
-giskard.llm.set_llm_model("bedrock/anthropic.claude-3-sonnet-20240229-v1:0")
+giskard.llm.set_llm_model("bedrock/anthropic.claude-3-sonnet-20240229-v1:0", disable_structured_output=True)
 giskard.llm.set_embedding_model("bedrock/amazon.titan-embed-image-v1")
 ```
 
