@@ -1,5 +1,6 @@
 from typing import Any, Dict, Optional, Sequence
 
+import os
 import json
 import logging
 import re
@@ -12,6 +13,7 @@ from .base import ChatMessage
 logger = logging.getLogger(__name__)
 
 try:
+    os.environ["LITELLM_LOG"] = "ERROR"
     import litellm
 except ImportError as err:
     raise LLMImportError(flavor="litellm") from err
