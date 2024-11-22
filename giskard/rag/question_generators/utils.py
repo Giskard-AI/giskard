@@ -52,7 +52,7 @@ def parse_json_output(
         ],
         temperature=0,
         caller_id=caller_id,
-        format="json",
+        format="json_object",
     )
 
     parsed_dict = json.loads(out.content, strict=False)

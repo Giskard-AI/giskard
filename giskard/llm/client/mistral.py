@@ -1,4 +1,5 @@
 from typing import Optional, Sequence
+from typing_extensions import deprecated
 
 import os
 from dataclasses import asdict
@@ -17,6 +18,7 @@ except ImportError as err:
     ) from err
 
 
+@deprecated("MistralClient is deprecated: https://docs.giskard.ai/en/latest/open_source/setting_up/index.html")
 class MistralClient(LLMClient):
     def __init__(self, model: str = "mistral-large-latest", client: Mistral = None):
         self.model = model

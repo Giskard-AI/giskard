@@ -1,202 +1,192 @@
 # 🤖 Setting up the LLM Client
 
-This guide focuses primarily on configuring and using various LLM clients supported to run Giskard's LLM-assisted functionalities. These clients include:
+This guide focuses primarily on configuring and using various LLM clients supported to run Giskard's LLM-assisted functionalities. We are using [LiteLLM](https://github.com/BerriAI/litellm) to handle the model calls, you can see the list of supported models in the [LiteLLM documentation](https://docs.litellm.ai/docs/providers).
 
-- OpenAI GPT models (such as GPT-3.5 and GPT-4)
-- Azure OpenAI
-- Mistral
-- Ollama
-- Any Custom Model
+## OpenAI Client Setup
 
-## OpenAI GPT-4 Client Setup
+More information on [OpenAI LiteLLM documentation](https://docs.litellm.ai/docs/providers/openai)
+
+### Setup using .env variables
 
 ```python
 import os
 import giskard
-from giskard.llm.client.openai import OpenAIClient
 
-# Set the OpenAI API key
-os.environ["OPENAI_API_KEY"] = "sk-…"
+os.environ["OPENAI_API_KEY"] = "" # "my-openai-api-key"
 
-# Create a giskard OpenAI client
-openai_client = OpenAIClient(model="gpt-4o")
+# Optional, setup a model (default LLM is gpt-4o, default embedding model is text-embedding-3-small)
+giskard.llm.set_llm_model("gpt-4o")
+giskard.llm.set_embedding_model("text-embedding-3-small")
 
-# Set the default client
-giskard.llm.set_llm_api("openai")
-giskard.llm.set_default_client(openai_client)
+# Optional Keys - OpenAI Organization, OpenAI API Base
+os.environ["OPENAI_ORGANIZATION"] = "" # "my-openai-organization"
+os.environ["OPENAI_API_BASE"] = "" # "https://api.openai.com"
+```
+
+### Setup using completion params
+
+```python
+import giskard
+
+api_key = "" # "my-openai-api-key"
+
+giskard.llm.set_llm_model("o1-preview", api_key=api_key)
+giskard.llm.set_embedding_model("text-embedding-3-large", api_key=api_key)
 ```
 
 ## Azure OpenAI Client Setup
 
+More information on [Azure LiteLLM documentation](https://docs.litellm.ai/docs/providers/azure)
+
+### Setup using .env variables
+
 ```python
 import os
 import giskard
 
-# Set the Azure OpenAI API key and endpoint
-os.environ['AZURE_OPENAI_API_KEY'] = '...'
-os.environ['AZURE_OPENAI_ENDPOINT'] = 'https://xxx.openai.azure.com'
-os.environ['OPENAI_API_VERSION'] = '2023-07-01-preview'
+os.environ["AZURE_API_KEY"] = "" # "my-azure-api-key"
+os.environ["AZURE_API_BASE"] = "" # "https://example-endpoint.openai.azure.com"
+os.environ["AZURE_API_VERSION"] = "" # "2023-05-15"
 
-# You'll need to provide the name of the model that you've deployed
-# Beware, the model provided must be capable of using function calls
-giskard.llm.set_llm_model('my-gpt-4-model')
-giskard.llm.embeddings.set_embedding_model('my-embedding-model')
+giskard.llm.set_llm_model("azure/<your_llm_name>")
+giskard.llm.set_embedding_model("azure/<your_embed_model_name>")
+
+# Optional Keys - Azure AD Token, Azure API Type
+os.environ["AZURE_AD_TOKEN"] = ""
+os.environ["AZURE_API_TYPE"] = ""
+```
+
+### Setup using completion params
+
+```python
+import giskard
+
+api_base = "" # "https://example-endpoint.openai.azure.com"
+api_version = "" # "2023-05-15"
+
+# Using api_key
+api_key = "" # "my-azure-api-key"
+giskard.llm.set_llm_model("azure/<your_llm_name>", api_base=api_base, api_version=api_version, api_key=api_key)
+giskard.llm.set_embedding_model("azure/<your_embed_model_name>", api_base=api_base, api_version=api_version, api_key=api_key)
+
+# Using azure_ad_token
+azure_ad_token = "" # "my-azure-ad-token"
+giskard.llm.set_llm_model("azure/<your_llm_name>", api_base=api_base, api_version=api_version, azure_ad_token=azure_ad_token)
+giskard.llm.set_embedding_model("azure/<your_embed_model_name>", api_base=api_base, api_version=api_version, azure_ad_token=azure_ad_token)
 ```
 
 ## Mistral Client Setup
 
+More information on [Mistral LiteLLM documentation](https://docs.litellm.ai/docs/providers/mistral)
+
+### Setup using .env variables
+
 ```python
 import os
 import giskard
-from giskard.llm.client.mistral import MistralClient
 
-# Set the Mistral API key
-os.environ["MISTRAL_API_KEY"] = "…"
+os.environ["MISTRAL_API_KEY"] = "" # "my-mistral-api-key"
 
-# Create a giskard Mistral client
-mistral_client = MistralClient()
+giskard.llm.set_llm_model("mistral/mistral-large-latest")
+giskard.llm.set_embedding_model("mistral/mistral-embed")
 
-# Set the default client
-giskard.llm.set_default_client(mistral_client)
-
-# You may also want to set the default embedding model
-# Check the Custom Client Setup section for more details
 ```
 
 ## Ollama Client Setup
 
-The Ollama setup involves configuring an OpenAI client customized for the Ollama API:
+More information on [Ollama LiteLLM documentation](https://docs.litellm.ai/docs/providers/ollama)
+
+### Setup using completion params
 
 ```python
 import giskard
-from openai import OpenAI
-from giskard.llm.client.openai import OpenAIClient
-from giskard.llm.embeddings.openai import OpenAIEmbedding
 
-# Setup the OpenAI client with API key and base URL for Ollama
-_client = OpenAI(base_url="http://localhost:11434/v1/", api_key="ollama")
+api_base = "http://localhost:11434" # default api_base for local Ollama
 
-# Wrap the original OpenAI client with giskard OpenAI client and embedding
-llm_client = OpenAIClient(model="llama3.2", client=_client)
-embed_client = OpenAIEmbedding(model="nomic-embed-text", client=_client)
-
-# Set the default client and embedding
-giskard.llm.set_default_client(llm_client)
-giskard.llm.embeddings.set_default_embedding(embed_client)
+# See supported models here: https://docs.litellm.ai/docs/providers/ollama#ollama-models
+giskard.llm.set_llm_model("ollama/llama3.1", disable_structured_output=True, api_base=api_base)
+giskard.llm.set_embedding_model("ollama/nomic-embed-text", api_base=api_base)
 ```
 
-## Claude 3 Client Setup
+If you encounter errors with the embedding model in a Jupyter notebook, run this code:
 
-The Claude 3 setup involves configuring a Bedrock client:
+```python
+import nest_asyncio
+nest_asyncio.apply()
+```
+
+## AWS Bedrock Client Setup
+
+More information on [Bedrock LiteLLM documentation](https://docs.litellm.ai/docs/providers/bedrock)
+
+### Setup using .env variables
 
 ```python
 import os
-import boto3
 import giskard
 
-from giskard.llm.client.bedrock import ClaudeBedrockClient
-from giskard.llm.embeddings.bedrock import BedrockEmbedding
+os.environ["AWS_ACCESS_KEY_ID"] = "" # "my-aws-access-key"
+os.environ["AWS_SECRET_ACCESS_KEY"] = "" # "my-aws-secret-access-key"
+os.environ["AWS_REGION_NAME"] = "" # "us-west-2"
 
-# Create a Bedrock client
-bedrock_runtime = boto3.client("bedrock-runtime", region_name=os.environ["AWS_DEFAULT_REGION"])
-
-# Wrap the Beddock client with giskard Bedrock client and embedding
-claude_client = ClaudeBedrockClient(bedrock_runtime, model="anthropic.claude-3-haiku-20240307-v1:0")
-embed_client = BedrockEmbedding(bedrock_runtime, model="amazon.titan-embed-text-v1")
-
-# Set the default client and embedding
-giskard.llm.set_default_client(claude_client)
-giskard.llm.embeddings.set_default_embedding(embed_client)
+giskard.llm.set_llm_model("bedrock/anthropic.claude-3-sonnet-20240229-v1:0", disable_structured_output=True)
+giskard.llm.set_embedding_model("bedrock/amazon.titan-embed-image-v1")
 ```
 
 ## Gemini Client Setup
 
+More information on [Gemini LiteLLM documentation](https://docs.litellm.ai/docs/providers/gemini)
+
+### Setup using .env variables
+
 ```python
 import os
 import giskard
-import google.generativeai as genai
-from giskard.llm.client.gemini import GeminiClient
 
-# Set the Gemini API key
-os.environ["GEMINI_API_KEY"] = "…"
+os.environ["GEMINI_API_KEY"] = "" # "my-gemini-api-key"
 
-# Configure the Gemini API
-genai.configure(api_key=os.environ["GEMINI_API_KEY"])
-
-# Create a giskard Gemini client
-gemini_client = GeminiClient()
-
-# Set the default client
-giskard.llm.set_default_client(gemini_client)
-
-# You may also want to set the default embedding model
-# Check the Custom Client Setup section for more details
+giskard.llm.set_llm_model("gemini/gemini-1.5-pro")
+giskard.llm.set_embedding_model("gemini/text-embedding-004")
 ```
 
 ## Custom Client Setup
 
+More information on [Custom Format LiteLLM documentation](https://docs.litellm.ai/docs/providers/custom_llm_server)
+
 ```python
+import os
+import requests
+from typing import Optional
+
+import litellm
 import giskard
-from typing import Sequence, Optional
-from giskard.llm.client import set_default_client
-from giskard.llm.client.base import LLMClient, ChatMessage
 
-# Create a custom client by extending the LLMClient class
-class MyLLMClient(LLMClient):
-    def __init__(self, my_client):
-        self._client = my_client
 
-    def complete(
-            self,
-            messages: Sequence[ChatMessage],
-            temperature: float = 1,
-            max_tokens: Optional[int] = None,
-            caller_id: Optional[str] = None,
-            seed: Optional[int] = None,
-            format=None,
-    ) -> ChatMessage:
-        # Create the prompt
-        prompt = ""
-        for msg in messages:
-            if msg.role.lower() == "assistant":
-                prefix = "\n\nAssistant: "
-            else:
-                prefix = "\n\nHuman: "
+class MyCustomLLM(litellm.CustomLLM):
+    def completion(self, messages: str, api_key: Optional[str] = None, **kwargs) -> litellm.ModelResponse:
+        api_key = api_key or os.environ.get("MY_SECRET_KEY")
+        if api_key is None:
+            raise litellm.AuthenticationError("`api_key` was not provided")
 
-            prompt += prefix + msg.content
-
-        prompt += "\n\nAssistant: "
-
-        # Create the body
-        params = {
-            "prompt": prompt,
-            "max_tokens_to_sample": max_tokens or 1000,
-            "temperature": temperature,
-            "top_p": 0.9,
-        }
-        body = json.dumps(params)
-
-        response = self._client.invoke_model(
-            body=body,
-            modelId=self._model_id,
-            accept="application/json",
-            contentType="application/json",
+        response = requests.post(
+            "https://www.my-custom-llm.ai/chat/completion",
+            json={"messages": messages},
+            headers={"Authorization": api_key},
         )
-        data = json.loads(response.get("body").read())
 
-        return ChatMessage(role="assistant", message=data["completion"])
+        return litellm.ModelResponse(**response.json())
 
-# Create an instance of the custom client
-llm_client = MyLLMClient()
+os.eviron["MY_SECRET_KEY"] = "" # "my-secret-key"
 
-# Set the default client
-set_default_client(llm_client)
+my_custom_llm = MyCustomLLM()
 
-# It's also possible to create a custom embedding class extending BaseEmbedding
-# Or you can use FastEmbed for a pre-built embedding model:
-from giskard.llm.embeddings.fastembed import try_get_fastembed_embeddings
-embed_client = try_get_fastembed_embeddings()
-giskard.llm.embeddings.set_default_embedding(embed_client)
+litellm.custom_provider_map = [  # 👈 KEY STEP - REGISTER HANDLER
+    {"provider": "my-custom-llm-endpoint", "custom_handler": my_custom_llm}
+]
+
+api_key = os.environ["MY_SECRET_KEY"]
+
+giskard.llm.set_llm_model("my-custom-llm-endpoint/my-custom-model", api_key=api_key)
 ```
 
 If you run into any issues configuring the LLM client, don't hesitate to [ask us on Discord](https://discord.com/invite/ABvfpbu69R) or open a new issue on [our GitHub repo](https://github.com/Giskard-AI/giskard).

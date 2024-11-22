@@ -1,4 +1,5 @@
 from typing import Dict, List, Optional, Sequence
+from typing_extensions import deprecated
 
 import json
 from abc import ABC, abstractmethod
@@ -61,6 +62,7 @@ class BaseBedrockClient(LLMClient, ABC):
         return self._parse_completion(completion, caller_id)
 
 
+@deprecated("ClaudeBedrockClient is deprecated: https://docs.giskard.ai/en/latest/open_source/setting_up/index.html")
 class ClaudeBedrockClient(BaseBedrockClient):
     def __init__(
         self,
@@ -128,6 +130,7 @@ class ClaudeBedrockClient(BaseBedrockClient):
         return ChatMessage(role="assistant", content=msg)
 
 
+@deprecated("LLamaBedrockClient is deprecated: https://docs.giskard.ai/en/latest/open_source/setting_up/index.html")
 class LLamaBedrockClient(BaseBedrockClient):
     def __init__(self, bedrock_runtime_client, model: str = "meta.llama3-8b-instruct-v1:0"):
         # only supporting llama
