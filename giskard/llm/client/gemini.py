@@ -1,4 +1,5 @@
 from typing import Optional, Sequence
+from typing_extensions import deprecated
 
 from logging import warning
 
@@ -50,6 +51,7 @@ def _format(messages: Sequence[ChatMessage]) -> Sequence[ContentDict]:
     return content
 
 
+@deprecated("GeminiClient is deprecated: https://docs.giskard.ai/en/latest/open_source/setting_up/index.html")
 class GeminiClient(LLMClient):
     def __init__(self, model: str = "gemini-pro", _client=None):
         self.model = model

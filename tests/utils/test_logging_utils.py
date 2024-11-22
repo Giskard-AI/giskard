@@ -1,7 +1,6 @@
 import logging
 
 import giskard
-from giskard.llm.client import openai
 
 
 def test_giskard_log_level():
@@ -12,7 +11,7 @@ def test_giskard_log_level():
 
 def test_other_package_log_level_unset():
     assert (
-        logging.getLogger(openai.__name__).level == logging.NOTSET
+        logging.getLogger(giskard.llm.client.__name__).level == logging.NOTSET
     ), "Non giskard package log level should't be touched by giskard (NOTSET)"
 
 

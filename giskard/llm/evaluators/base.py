@@ -88,7 +88,7 @@ class _BaseLLMEvaluator(BaseEvaluator):
         llm_client: Optional[LLMClient] = None,
         llm_temperature: float = 0.1,
         llm_seed: int = 42,
-        llm_output_format="json",
+        llm_output_format="json_object",
     ):
         self.llm_client = llm_client if llm_client is not None else get_default_client()
         self.llm_temperature = llm_temperature

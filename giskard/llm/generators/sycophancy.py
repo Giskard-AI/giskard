@@ -103,7 +103,7 @@ class SycophancyDataGenerator(_BaseLLMGenerator):
             temperature=self.llm_temperature,
             caller_id=self.__class__.__name__,
             seed=self.llm_seed,
-            format="json",
+            format="json_object",
         )
 
         input_pairs = self._parse_output(out)
