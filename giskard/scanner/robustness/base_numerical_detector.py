@@ -128,6 +128,8 @@ class BaseNumericalPerturbationDetector:
                 meta={
                     "feature": feature,
                     "perturbation_fraction": self.perturbation_fraction,
+                    "domain": f"Feature `{feature}`",
+                    "deviation": f"{failed_size}/{slice_size} tested samples ({round(fail_rate * 100, 2)}%) changed prediction after perturbation",
                     "fail_rate": fail_rate,
                     "failed_size": failed_size,
                     "slice_size": slice_size,
