@@ -133,6 +133,8 @@ class BaseNumericalPerturbationDetector:
                     "slice_size": slice_size,
                     "threshold": threshold,
                     "output_sensitivity": output_sensitivity,
+                    "metric": "Fail rate",
+                    "metric_value": fail_rate,                    
                 },
                 importance=fail_rate,
             )
