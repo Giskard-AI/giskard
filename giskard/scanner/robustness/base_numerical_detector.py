@@ -41,7 +41,7 @@ class BaseNumericalPerturbationDetector:
 
     def run(self, model: BaseModel, dataset: Dataset, features: Sequence[str]) -> Sequence[Issue]:
         """Run the numerical perturbation detector."""
-        numerical_features = [f for f in features if pd.api.types.is_numeric_dtype(dataset.df[f])]
+        numerical_features = [f for f in features if dataset.column_types[feature] == "numeric"]
 
         logger.info(
             "%s: Running numerical perturbation detector with threshold=%.3f, "
