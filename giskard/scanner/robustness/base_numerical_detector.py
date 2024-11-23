@@ -125,6 +125,7 @@ class BaseNumericalPerturbationDetector:
                 level=issue_level,
                 description=desc,
                 features=[feature],
+                transformation_fn="Numerical perturbation",  # TODO: define proper transformation functions
                 meta={
                     "feature": feature,
                     "perturbation_fraction": self.perturbation_fraction,
