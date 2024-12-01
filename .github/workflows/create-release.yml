@@ -57,7 +57,7 @@ jobs:
 
       - name: "@slack Release process started"
         id: slack
-        uses: slackapi/slack-github-action@v1.27.0
+        uses: slackapi/slack-github-action@v2.0.0
         with:
           channel-id: ${{ vars.SLACK_CHANNEL_ID }}
           slack-message: |-
@@ -108,7 +108,7 @@ jobs:
       - name: "@slack Share release process completion"
         # cancellable always() https://docs.github.com/en/actions/learn-github-actions/expressions#status-check-functions
         if: ${{ !cancelled() }}
-        uses: slackapi/slack-github-action@v1.27.0
+        uses: slackapi/slack-github-action@v2.0.0
         env:
           SLACK_BOT_TOKEN: ${{ secrets.SLACK_BOT_TOKEN }}
           ON_SUCCESS: |-
