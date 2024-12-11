@@ -147,7 +147,7 @@ def validate_model_loading_and_saving(model: BaseModel):
         with tempfile.TemporaryDirectory(prefix="giskard-model-") as f:
             model.save(f)
 
-            with open(f + "/giskard-model-meta.yaml") as yaml_f:
+            with open(f + "/giskard-model-meta.yaml", encoding="utf-8") as yaml_f:
                 saved_meta = yaml.load(yaml_f, Loader=yaml.Loader)
 
             meta = ModelMeta(

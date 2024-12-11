@@ -200,7 +200,7 @@ class PyTorchModel(MLFlowSerializableModel):
         return super()._convert_to_numpy(raw_predictions)
 
     def save_pytorch_meta(self, local_path, *_args, **_kwargs):
-        with open(Path(local_path) / "giskard-model-pytorch-meta.yaml", "w") as f:
+        with open(Path(local_path) / "giskard-model-pytorch-meta.yaml", "w", encoding="utf-8") as f:
             yaml.dump(
                 {
                     "device": self.device,
@@ -224,7 +224,7 @@ class PyTorchModel(MLFlowSerializableModel):
     def load_pytorch_meta(cls, local_dir):
         pytorch_meta_file = Path(local_dir) / "giskard-model-pytorch-meta.yaml"
         if pytorch_meta_file.exists():
-            with open(pytorch_meta_file) as f:
+            with open(pytorch_meta_file, encoding="utf-8") as f:
                 pytorch_meta = yaml.load(f, Loader=yaml.Loader)
                 pytorch_meta["device"] = pytorch_meta.get("device")
                 pytorch_meta["torch_dtype"] = pytorch_meta.get("torch_dtype")

@@ -193,11 +193,11 @@ class RAGReport:
             The embedding model to use inside the knowledge base. If not provided, the default model will be used.
         """
         path = Path(folder_path)
-        knowledge_base_meta = json.load(open(path / "knowledge_base_meta.json", "r"))
+        knowledge_base_meta = json.load(open(path / "knowledge_base_meta.json", "r", encoding="utf-8"))
         knowledge_base_data = pd.read_json(path / "knowledge_base.jsonl", orient="records", lines=True)
         testset = QATestset.load(path / "testset.jsonl")
 
-        answers = json.load(open(path / "agent_answer.json", "r"))
+        answers = json.load(open(path / "agent_answer.json", "r", encoding="utf-8"))
         model_outputs = [AgentAnswer(**answer) for answer in answers]
 
         topics = {int(k): topic for k, topic in knowledge_base_meta.pop("topics", None).items()}
@@ -219,9 +219,9 @@ class RAGReport:
 
         metrics_results = {}
         if (path / "metrics_results.json").exists():
-            metrics_results = json.load(open(path / "metrics_results.json", "r"))
+            metrics_results = json.load(open(path / "metrics_results.json", "r", encoding="utf-8"))
 
-        report_details = json.load(open(path / "report_details.json", "r"))
+        report_details = json.load(open(path / "report_details.json", "r", encoding="utf-8"))
         testset._dataframe.index = testset._dataframe.index.astype(str)
 
         report = cls(testset, model_outputs, metrics_results, knowledge_base)
