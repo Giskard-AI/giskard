@@ -91,7 +91,7 @@ class ScanReport:
                 results[issue.detector_name][issue.level].append(issue.description)
         if filename is not None:
             with open(filename, "w") as json_file:
-                json.dump(results, json_file, indent=4)
+                json.dump(results, json_file, indent=4, ensure_ascii=False)
         else:
             return json.dumps(results, indent=4)
 

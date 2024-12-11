@@ -163,7 +163,7 @@ class TestSuiteResult:
             }
         if filename is not None:
             with open(filename, "w") as json_file:
-                json.dump(results, json_file, indent=4)
+                json.dump(results, json_file, indent=4, ensure_ascii=False)
         else:
             return json.dumps(results, indent=4)
 
@@ -629,7 +629,7 @@ class Suite:
         json_content = self._to_json(folder_path, saved_uuid_status)
 
         with open(folder_path / "suite.json", "w") as f:
-            json.dump(json_content, f)
+            json.dump(json_content, f, ensure_ascii=False)
 
         analytics.track("lib:test_suite:saved")
 
