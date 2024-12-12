@@ -31,10 +31,12 @@ class BaseBedrockClient(LLMClient, ABC):
         caller_id: Optional[str] = None,
         seed: Optional[int] = None,
         format=None,
-    ) -> Dict: ...
+    ) -> Dict:
+        ...
 
     @abstractmethod
-    def _parse_completion(self, completion, caller_id: Optional[str] = None) -> ChatMessage: ...
+    def _parse_completion(self, completion, caller_id: Optional[str] = None) -> ChatMessage:
+        ...
 
     def complete(
         self,
