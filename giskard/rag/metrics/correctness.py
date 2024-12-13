@@ -109,12 +109,20 @@ class CorrectnessMetric(Metric):
                 temperature=0,
                 format="json_object",
             )
-            return parse_json_output(
+
+            json_output = parse_json_output(
                 out.content,
                 llm_client=llm_client,
                 keys=["correctness", "correctness_reason"],
                 caller_id=self.__class__.__name__,
             )
+
+            if "correctness" in json_output and isinstance(json_output["correctness"], str):
+                raise LLMGenerationError(
+                    f"Error in correctness evaluation: {json_output['correctness']}. Please make sure the agent answer is correctly formatted."
+                )
+
+            return json_output
 
         except Exception as err:
             raise LLMGenerationError("Error while evaluating the agent") from err
