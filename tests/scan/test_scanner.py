@@ -1,6 +1,8 @@
 import re
 import sys
+import tempfile
 import warnings
+from pathlib import Path
 from unittest import mock
 
 import numpy as np
@@ -279,3 +281,33 @@ def test_min_slice_size(titanic_model, titanic_dataset):
     detector = SpuriousCorrelationDetector(min_slice_size=2000)
     issues = detector.run(titanic_model, titanic_dataset, features=titanic_model.feature_names)
     assert len(issues) == 0
+
+
+@pytest.mark.parametrize(
+    "filename",
+    [(None), ("scan_report.json")],
+)
+def test_export_scan_results_to_json(filename, request):
+    DATASET_NAME = "diabetes_dataset_with_target"
+    MODEL_NAME = "linear_regression_diabetes"
+
+    dataset = request.getfixturevalue(DATASET_NAME)
+    model = request.getfixturevalue(MODEL_NAME)
+
+    scanner = Scanner()
+    report = scanner.analyze(model, dataset)
+
+    if filename:
+        with tempfile.TemporaryDirectory() as tmpdir:
+            dest = Path(tmpdir).joinpath(filename)
+            report.to_json(dest)
+            assert dest.exists()
+            assert dest.is_file()
+            json_report = dest.read_text(encoding="utf-8")
+
+    else:
+        json_report = report.to_json()
+        assert json_report is not None
+
+    assert json_report.startswith("{")
+    assert json_report.strip().endswith("}")
