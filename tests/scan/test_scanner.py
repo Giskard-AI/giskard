@@ -287,7 +287,8 @@ def test_min_slice_size(titanic_model, titanic_dataset):
     "filename",
     [(None), ("scan_report.json")],
 )
-def test_export_scan_results_to_json(filename, request):
+@pytest.mark.slow
+def test_export_scan_test_suite_results_to_json(filename, request):
     DATASET_NAME = "diabetes_dataset_with_target"
     MODEL_NAME = "linear_regression_diabetes"
 
@@ -295,19 +296,20 @@ def test_export_scan_results_to_json(filename, request):
     model = request.getfixturevalue(MODEL_NAME)
 
     scanner = Scanner()
-    report = scanner.analyze(model, dataset)
+    scan_results = scanner.analyze(model, dataset)
+    test_suite_results = scan_results.generate_test_suite().run()
 
     if filename:
         with tempfile.TemporaryDirectory() as tmpdir:
             dest = Path(tmpdir).joinpath(filename)
-            report.to_json(dest)
+            test_suite_results.to_json(dest)
             assert dest.exists()
             assert dest.is_file()
-            json_report = dest.read_text(encoding="utf-8")
+            test_results_json = dest.read_text(encoding="utf-8")
 
     else:
-        json_report = report.to_json()
-        assert json_report is not None
+        test_results_json = test_suite_results.to_json()
+        assert test_results_json is not None
 
-    assert json_report.startswith("{")
-    assert json_report.strip().endswith("}")
+    assert test_results_json.startswith("{")
+    assert test_results_json.strip().endswith("}")
