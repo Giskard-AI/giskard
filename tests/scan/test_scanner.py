@@ -285,7 +285,7 @@ def test_min_slice_size(titanic_model, titanic_dataset):
 
 @pytest.mark.parametrize(
     "filename",
-    [(None), ("scan_report.json")],
+    [(None), ("scan_test_suite_results.json")],
 )
 @pytest.mark.slow
 def test_export_scan_test_suite_results_to_json(filename, request):
