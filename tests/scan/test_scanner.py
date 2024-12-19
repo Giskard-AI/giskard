@@ -1,6 +1,8 @@
 import re
 import sys
+import tempfile
 import warnings
+from pathlib import Path
 from unittest import mock
 
 import numpy as np
@@ -279,3 +281,35 @@ def test_min_slice_size(titanic_model, titanic_dataset):
     detector = SpuriousCorrelationDetector(min_slice_size=2000)
     issues = detector.run(titanic_model, titanic_dataset, features=titanic_model.feature_names)
     assert len(issues) == 0
+
+
+@pytest.mark.parametrize(
+    "filename",
+    [(None), ("scan_test_suite_results.json")],
+)
+@pytest.mark.slow
+def test_export_scan_test_suite_results_to_json(filename, request):
+    DATASET_NAME = "diabetes_dataset_with_target"
+    MODEL_NAME = "linear_regression_diabetes"
+
+    dataset = request.getfixturevalue(DATASET_NAME)
+    model = request.getfixturevalue(MODEL_NAME)
+
+    scanner = Scanner()
+    scan_results = scanner.analyze(model, dataset)
+    test_suite_results = scan_results.generate_test_suite().run()
+
+    if filename:
+        with tempfile.TemporaryDirectory() as tmpdir:
+            dest = Path(tmpdir).joinpath(filename)
+            test_suite_results.to_json(dest)
+            assert dest.exists()
+            assert dest.is_file()
+            test_results_json = dest.read_text(encoding="utf-8")
+
+    else:
+        test_results_json = test_suite_results.to_json()
+        assert test_results_json is not None
+
+    assert test_results_json.startswith("{")
+    assert test_results_json.strip().endswith("}")

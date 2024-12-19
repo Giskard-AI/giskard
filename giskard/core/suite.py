@@ -162,8 +162,8 @@ class TestSuiteResult:
                 "metric_value": suite_result.result.metric,
             }
         if filename is not None:
-            with open(filename, "w") as json_file:
-                json.dump(results, json_file, indent=4)
+            with open(filename, "w", encoding="utf-8") as json_file:
+                json.dump(results, json_file, indent=4, ensure_ascii=False)
         else:
             return json.dumps(results, indent=4)
 
@@ -628,8 +628,8 @@ class Suite:
 
         json_content = self._to_json(folder_path, saved_uuid_status)
 
-        with open(folder_path / "suite.json", "w") as f:
-            json.dump(json_content, f)
+        with open(folder_path / "suite.json", "w", encoding="utf-8") as f:
+            json.dump(json_content, f, ensure_ascii=False)
 
         analytics.track("lib:test_suite:saved")
 
@@ -843,7 +843,7 @@ class Suite:
     def load(cls, folder: str) -> "Suite":
         folder_path = Path(folder)
 
-        with open(folder_path / "suite.json", "r") as f:
+        with open(folder_path / "suite.json", "r", encoding="utf-8") as f:
             suite_json = json.load(f)
 
         suite = Suite(name=suite_json.get("name", "Unnamed test suite"))

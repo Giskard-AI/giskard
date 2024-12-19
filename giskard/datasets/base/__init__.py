@@ -525,7 +525,7 @@ class Dataset(ColumnMetadataMixin):
     @classmethod
     def load(cls, local_path: str):
         # load metadata
-        with open(Path(local_path) / "giskard-dataset-meta.yaml", "r") as meta_f:
+        with open(Path(local_path) / "giskard-dataset-meta.yaml", "r", encoding="utf-8") as meta_f:
             meta = yaml.safe_load(meta_f)
 
         # load data
@@ -560,7 +560,7 @@ class Dataset(ColumnMetadataMixin):
             f.write(compressed_bytes)
             original_size_bytes, compressed_size_bytes = len(uncompressed_bytes), len(compressed_bytes)
 
-            with open(Path(local_path) / "giskard-dataset-meta.yaml", "w") as meta_f:
+            with open(Path(local_path) / "giskard-dataset-meta.yaml", "w", encoding="utf-8") as meta_f:
                 yaml.dump(
                     {
                         "id": str(self.id),
