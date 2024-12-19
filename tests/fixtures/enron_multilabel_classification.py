@@ -56,7 +56,7 @@ input_types = {
 
 # get_labels returns a dictionary representation of these labels.
 def get_labels(filename):
-    with open(filename + ".cats") as f:
+    with open(filename + ".cats", encoding="utf-8") as f:
         labels = defaultdict(dict)
         line = f.readline()
         while line:
@@ -99,7 +99,7 @@ def enron_raw_data_full() -> pd.DataFrame:
 
         # Features are metadata from the email object
         filename = email_file + ".txt"
-        with open(filename) as f:
+        with open(filename, encoding="utf-8") as f:
             message = email.message_from_string(f.read())
 
             values_to_add["Subject"] = str(message["Subject"])

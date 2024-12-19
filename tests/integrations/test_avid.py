@@ -76,7 +76,7 @@ def test_scan_report_can_be_exported_to_avid():
         dest_path = Path(tmpdir).joinpath("test_report.avid")
         report.to_avid(dest_path)
 
-        with dest_path.open("r") as f:
+        with dest_path.open("r", encoding="utf-8") as f:
             avid_reports_read = [json.loads(line) for line in f.readlines()]
 
     assert len(avid_reports_read) == len(avid_reports)

@@ -90,8 +90,8 @@ class ScanReport:
                     results[issue.detector_name][issue.level] = []
                 results[issue.detector_name][issue.level].append(issue.description)
         if filename is not None:
-            with open(filename, "w") as json_file:
-                json.dump(results, json_file, indent=4)
+            with open(filename, "w", encoding="utf-8") as json_file:
+                json.dump(results, json_file, indent=4, ensure_ascii=False)
         else:
             return json.dumps(results, indent=4)
 
@@ -115,7 +115,7 @@ class ScanReport:
             html = widget.render_html(embed=embed)
 
         if filename is not None:
-            with open(filename, "w") as f:
+            with open(filename, "w", encoding="utf-8") as f:
                 f.write(html)
             return
 
@@ -139,7 +139,7 @@ class ScanReport:
         markdown = widget.render_markdown(template=template)
 
         if filename is not None:
-            with open(filename, "w") as f:
+            with open(filename, "w", encoding="utf-8") as f:
                 f.write(markdown)
             return
 
@@ -349,7 +349,7 @@ class ScanReport:
         ]
 
         if filename is not None:
-            with open(filename, "w") as f, warnings.catch_warnings():
+            with open(filename, "w", encoding="utf-8") as f, warnings.catch_warnings():
                 warnings.filterwarnings("ignore", category=DeprecationWarning)  # we need to support both pydantic 1 & 2
                 f.writelines(r.json() + "\n" for r in reports)
             return
@@ -373,7 +373,7 @@ class ScanReport:
         _rails = generate_rails_from_scan_report(self, colang_version=colang_version)
 
         if filename:
-            with open(filename, "a") as f:
+            with open(filename, "a", encoding="utf-8") as f:
                 f.write(_rails)
             return
 

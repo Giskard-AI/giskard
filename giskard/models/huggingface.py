@@ -92,6 +92,7 @@ from this behavior, you can provide a custom postprocessing function using
 the `model_postprocessing_function` argument. This function should take the
 raw output of your model and return a numpy array of probabilities.
 """
+
 from typing import Any, Callable, Iterable, Optional, Tuple, Union
 
 import logging
@@ -199,7 +200,7 @@ class HuggingFaceModel(WrapperModel):
     def load_model(cls, local_path, model_py_ver: Optional[Tuple[str, str, str]] = None, *args, **kwargs):
         huggingface_meta_file = Path(local_path) / "giskard-model-huggingface-meta.yaml"
         if huggingface_meta_file.exists():
-            with open(huggingface_meta_file) as f:
+            with open(huggingface_meta_file, encoding="utf-8") as f:
                 huggingface_meta = yaml.load(f, Loader=yaml.Loader)
 
         if huggingface_meta["pipeline_task"]:
@@ -208,7 +209,7 @@ class HuggingFaceModel(WrapperModel):
         return huggingface_meta["huggingface_module"].from_pretrained(local_path)
 
     def save_huggingface_meta(self, local_path, *args, **kwargs):
-        with open(Path(local_path) / "giskard-model-huggingface-meta.yaml", "w") as f:
+        with open(Path(local_path) / "giskard-model-huggingface-meta.yaml", "w", encoding="utf-8") as f:
             yaml.dump(
                 {
                     "huggingface_module": self.huggingface_module,

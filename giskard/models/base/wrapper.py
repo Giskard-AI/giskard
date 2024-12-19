@@ -230,7 +230,7 @@ class WrapperModel(BaseModel, ABC):
             cloudpickle.dump(self.model_postprocessing_function, f, protocol=pickle.DEFAULT_PROTOCOL)
 
     def save_wrapper_meta(self, local_path, *_args, **_kwargs):
-        with open(Path(local_path) / "giskard-model-wrapper-meta.yaml", "w") as f:
+        with open(Path(local_path) / "giskard-model-wrapper-meta.yaml", "w", encoding="utf-8") as f:
             yaml.dump(
                 {
                     "batch_size": self.batch_size,
@@ -313,7 +313,7 @@ class WrapperModel(BaseModel, ABC):
     def load_wrapper_meta(cls, local_dir, *args, **kwargs):
         wrapper_meta_file = Path(local_dir) / "giskard-model-wrapper-meta.yaml"
         if wrapper_meta_file.exists():
-            with open(wrapper_meta_file) as f:
+            with open(wrapper_meta_file, encoding="utf-8") as f:
                 wrapper_meta = yaml.load(f, Loader=yaml.Loader)
                 wrapper_meta["batch_size"] = int(wrapper_meta["batch_size"]) if wrapper_meta["batch_size"] else None
                 return wrapper_meta

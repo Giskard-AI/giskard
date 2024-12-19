@@ -23,7 +23,7 @@ class PythonModule:
 
 def _write_file(dir: Path, file: Union[str, Path], content: str):
     os.makedirs(os.path.dirname(dir / file), exist_ok=True)
-    with open(dir / file, "w") as f:
+    with open(dir / file, "w", encoding="utf-8") as f:
         f.write(content)
 
 

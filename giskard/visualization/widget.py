@@ -98,9 +98,11 @@ class ScanReportWidget(BaseWidget):
             escaped = escape(html)
             uid = id(self)
 
-            with Path(__file__).parent.joinpath("templates", "scan_report", "html", "static", "external.js").open(
-                "r"
-            ) as f:
+            with (
+                Path(__file__)
+                .parent.joinpath("templates", "scan_report", "html", "static", "external.js")
+                .open("r", encoding="utf-8") as f
+            ):
                 js_lib = f.read()
 
             html = f"""<iframe id="scan-{uid}" srcdoc="{escaped}" style="width: 100%; border: none;" class="gsk-scan"></iframe>
