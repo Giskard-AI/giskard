@@ -117,7 +117,7 @@ class CorrectnessMetric(Metric):
                 caller_id=self.__class__.__name__,
             )
 
-            if "correctness" in json_output and isinstance(json_output["correctness"], str):
+            if "correctness" in json_output and not isinstance(json_output["correctness"], bool):
                 raise LLMGenerationError(
                     f"Error in correctness evaluation: {json_output['correctness']}. Please make sure the agent answer is correctly formatted."
                 )
