@@ -1,13 +1,21 @@
-# giskard/scanner/robustness/numerical_perturbation_detector.py
 from typing import Sequence
 
-import pandas as pd
-
-from ...datasets.base import Dataset
-from ...models.base import BaseModel
 from ..decorators import detector
 from .base_detector import BaseNumericalPerturbationDetector
-from .numerical_transformations import AddGaussianNoise, MultiplyByFactor, NumericalTransformation
+from .numerical_transformations import NumericalTransformation
+
+
+class BoundClassWrapper:
+    def __init__(self, cls, **bound_kwargs):
+        self.cls = cls
+        self.bound_kwargs = bound_kwargs
+
+    def __call__(self, *args, **kwargs):
+        return self.cls(*args, **self.bound_kwargs, **kwargs)
+
+    def __getattr__(self, attr):
+        # Forward attribute access to the wrapped class
+        return getattr(self.cls, attr)
 
 
 @detector(
@@ -22,11 +30,11 @@ from .numerical_transformations import AddGaussianNoise, MultiplyByFactor, Numer
 class NumericalPerturbationDetector(BaseNumericalPerturbationDetector):
     """Detects robustness problems in a model by applying numerical perturbations to the numerical features."""
 
-    def _get_default_transformations(self, model: BaseModel, dataset: Dataset) -> Sequence[NumericalTransformation]:
-        numerical_columns = [col for col in dataset.df.columns if pd.api.types.is_numeric_dtype(dataset.df[col])]
-        transformations = []
-        for column in numerical_columns:
-            transformations.append(MultiplyByFactor(column=column, factor=1.01))
-            transformations.append(MultiplyByFactor(column=column, factor=0.99))
-            transformations.append(AddGaussianNoise(column=column, mean=0, std=0.01))
-        return transformations
+    def _get_default_transformations(self) -> Sequence[NumericalTransformation]:
+        from .numerical_transformations import AddGaussianNoise, MultiplyByFactor
+
+        return [
+            BoundClassWrapper(MultiplyByFactor, factor=1.01),
+            BoundClassWrapper(MultiplyByFactor, factor=0.99),
+            BoundClassWrapper(AddGaussianNoise, mean=0, std=0.01),
+        ]
