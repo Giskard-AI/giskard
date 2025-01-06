@@ -1,9 +1,10 @@
 import numpy as np
 import pandas as pd
+
 from ...core.core import DatasetProcessFunctionMeta
-from ...datasets import Dataset
 from ...registry.registry import get_object_uuid
 from ...registry.transformation_function import TransformationFunction
+
 
 class NumericalTransformation(TransformationFunction):
     name: str
@@ -30,6 +31,7 @@ class NumericalTransformation(TransformationFunction):
     def make_perturbation(self, values: pd.Series) -> pd.Series:
         raise NotImplementedError()
 
+
 class MultiplyByFactor(NumericalTransformation):
     name = "Multiply by factor"
 
@@ -41,6 +43,7 @@ class MultiplyByFactor(NumericalTransformation):
         if np.issubdtype(values.dtype, np.integer):
             return np.round(values * self.factor).astype(values.dtype)
         return values * self.factor
+
 
 class AddGaussianNoise(NumericalTransformation):
     name = "Add Gaussian noise"

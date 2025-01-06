@@ -1,7 +1,6 @@
 from typing import Optional, Sequence
 
 import numpy as np
-import pandas as pd
 
 from ...datasets.base import Dataset
 from ...models.base import BaseModel
@@ -60,7 +59,7 @@ class BaseNumericalPerturbationDetector:
 
     def _get_default_transformations(self, model: BaseModel, dataset: Dataset) -> Sequence[NumericalTransformation]:
         ...
-    
+
     def _detect_issues(
         self,
         model: BaseModel,
@@ -118,7 +117,9 @@ class BaseNumericalPerturbationDetector:
             pass_rate = passed.mean()
             fail_rate = 1 - pass_rate
 
-            logger.info(f"{self.__class__.__name__}: Testing `{feature}` for perturbation `{transformation.name}`\tFail rate: {fail_rate:.3f}")
+            logger.info(
+                f"{self.__class__.__name__}: Testing `{feature}` for perturbation `{transformation.name}`\tFail rate: {fail_rate:.3f}"
+            )
 
             issues = []
             if fail_rate >= threshold:
@@ -127,10 +128,10 @@ class BaseNumericalPerturbationDetector:
 
                 # Issue description
                 desc = (
-                        "When feature “{feature}” is perturbed with the transformation “{transformation_fn}”, "
-                        "the model changes its prediction in {fail_rate_percent}% of the cases. "
-                        "We expected the predictions not to be affected by this transformation."
-                    )
+                    "When feature “{feature}” is perturbed with the transformation “{transformation_fn}”, "
+                    "the model changes its prediction in {fail_rate_percent}% of the cases. "
+                    "We expected the predictions not to be affected by this transformation."
+                )
 
                 failed_size = (~passed).sum()
                 slice_size = len(passed)
@@ -154,7 +155,7 @@ class BaseNumericalPerturbationDetector:
                         "threshold": threshold,
                         "output_sensitivity": output_sensitivity,
                         "metric": "Fail rate",
-                        "metric_value": fail_rate,                    
+                        "metric_value": fail_rate,
                     },
                     importance=fail_rate,
                 )

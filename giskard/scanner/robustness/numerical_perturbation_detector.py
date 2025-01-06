@@ -1,12 +1,14 @@
 # giskard/scanner/robustness/numerical_perturbation_detector.py
 from typing import Sequence
+
 import pandas as pd
+
 from ...datasets.base import Dataset
 from ...models.base import BaseModel
 from ..decorators import detector
 from .base_numerical_detector import BaseNumericalPerturbationDetector
-from .numerical_transformations import MultiplyByFactor, AddGaussianNoise, NumericalTransformation
-from .numerical_transformations import NumericalTransformation
+from .numerical_transformations import AddGaussianNoise, MultiplyByFactor, NumericalTransformation
+
 
 @detector(
     name="numerical_perturbation",
@@ -19,6 +21,7 @@ from .numerical_transformations import NumericalTransformation
 )
 class NumericalPerturbationDetector(BaseNumericalPerturbationDetector):
     """Detects robustness problems in a model by applying numerical perturbations to the numerical features."""
+
     def _get_default_transformations(self, model: BaseModel, dataset: Dataset) -> Sequence[NumericalTransformation]:
         numerical_columns = [col for col in dataset.df.columns if pd.api.types.is_numeric_dtype(dataset.df[col])]
         transformations = []
