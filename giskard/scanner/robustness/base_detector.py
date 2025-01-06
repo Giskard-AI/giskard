@@ -9,10 +9,10 @@ from ...datasets.base import Dataset
 from ...llm import LLMImportError
 from ...models.base import BaseModel
 from ...models.base.model_prediction import ModelPredictionResults
-from ...registry.registry import Detector
 from ...registry.transformation_function import TransformationFunction
 from ..issues import Issue, IssueLevel, Robustness
 from ..logger import logger
+from ..registry import Detector
 from .numerical_transformations import NumericalTransformation
 from .text_transformations import TextTransformation
 
