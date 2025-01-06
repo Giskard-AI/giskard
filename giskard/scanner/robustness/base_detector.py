@@ -105,7 +105,7 @@ class BasePerturbationDetector(Detector, ABC):
         raise NotImplementedError
 
     @abstractmethod
-    def _get_default_transformations(self, model: BaseModel, dataset: Dataset) -> Sequence[TransformationFunction]:
+    def _get_default_transformations(self) -> Sequence[TransformationFunction]:
         raise NotImplementedError
 
     @abstractmethod
@@ -314,7 +314,7 @@ class BasePerturbationDetector(Detector, ABC):
         Sequence[Issue]
             A list of issues found during the testing.
         """
-        transformations = self.transformations or self._get_default_transformations(model, dataset)
+        transformations = self.transformations or self._get_default_transformations()
         selected_features = self._select_features(dataset, features)
 
         logger.info(
@@ -343,7 +343,7 @@ class BaseTextPerturbationDetector(BasePerturbationDetector):
         ]
 
     @abstractmethod
-    def _get_default_transformations(self, model: BaseModel, dataset: Dataset) -> Sequence[TextTransformation]:
+    def _get_default_transformations(self) -> Sequence[TextTransformation]:
         raise NotImplementedError
 
     def _supports_text_generation(self) -> bool:
@@ -360,7 +360,7 @@ class BaseNumericalPerturbationDetector(BasePerturbationDetector):
         return [f for f in features if dataset.column_types[f] == "numeric"]
 
     @abstractmethod
-    def _get_default_transformations(self, model: BaseModel, dataset: Dataset) -> Sequence[NumericalTransformation]:
+    def _get_default_transformations(self) -> Sequence[NumericalTransformation]:
         raise NotImplementedError
 
     def _supports_text_generation(self) -> bool:
