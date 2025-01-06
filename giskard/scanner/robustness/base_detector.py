@@ -1,6 +1,6 @@
 from typing import Optional, Sequence
 
-from abc import abstractmethod
+from abc import ABC, abstractmethod
 
 import numpy as np
 import pandas as pd
@@ -8,32 +8,79 @@ import pandas as pd
 from ...datasets.base import Dataset
 from ...llm import LLMImportError
 from ...models.base import BaseModel
+from ...models.base.model_prediction import ModelPredictionResults
+from ...registry.registry import Detector
+from ...registry.transformation_function import TransformationFunction
 from ..issues import Issue, IssueLevel, Robustness
 from ..logger import logger
-from ..registry import Detector
 from .numerical_transformations import NumericalTransformation
 from .text_transformations import TextTransformation
 
 
-class BaseTextPerturbationDetector(Detector):
-    """Base class for metamorphic detectors based on text transformations."""
+def _relative_delta(actual: np.ndarray, reference: np.ndarray) -> np.ndarray:
+    """
+    Computes elementwise relative delta. If reference[i] == 0, we replace it with epsilon
+    to avoid division by zero.
+    """
+    epsilon = 1e-9
+    safe_ref = np.where(reference == 0, epsilon, reference)
+    return (actual - reference) / safe_ref
+
+
+def _get_default_num_samples(model) -> int:
+    if model.is_text_generation:
+        return 10
+    return 1_000
+
+
+def _get_default_output_sensitivity(model) -> float:
+    if model.is_text_generation:
+        return 0.15
+    return 0.05
+
+
+def _get_default_threshold(model) -> float:
+    if model.is_text_generation:
+        return 0.10
+    return 0.05
+
+
+def _generate_robustness_tests(issue: Issue):
+    from ...testing.tests.metamorphic import test_metamorphic_invariance
+
+    # Only generates a single metamorphic test
+    return {
+        f"Invariance to “{issue.transformation_fn}”": test_metamorphic_invariance(
+            transformation_function=issue.transformation_fn,
+            slicing_function=None,
+            threshold=1 - issue.meta["threshold"],
+            output_sensitivity=issue.meta.get("output_sentitivity", None),
+        )
+    }
+
+
+class BasePerturbationDetector(Detector, ABC):
+    """
+    Common parent class for metamorphic perturbation detectors (both text and numerical).
+    """
 
     _issue_group = Robustness
     _taxonomy = ["avid-effect:performance:P0201"]
 
     def __init__(
         self,
-        transformations: Optional[Sequence[TextTransformation]] = None,
+        transformations: Optional[Sequence[TransformationFunction]] = None,
         threshold: Optional[float] = None,
-        output_sensitivity=None,
+        output_sensitivity: Optional[float] = None,
         num_samples: Optional[int] = None,
     ):
-        """Creates a new instance of the detector.
+        """
+        Creates a new instance of the detector.
 
         Parameters
         ----------
-        transformations: Optional[Sequence[TextTransformation]]
-            The text transformations used in the metamorphic testing. See :ref:`transformation_functions` for details
+        transformations: Optional[Sequence[TransformationFunction]]
+            The transformations used in the metamorphic testing. See :ref:`transformation_functions` for details
             about the available transformations. If not provided, a default set of transformations will be used.
         threshold: Optional[float]
             The threshold for the fail rate, which is defined as the proportion of samples for which the model
@@ -53,53 +100,103 @@ class BaseTextPerturbationDetector(Detector):
         self.num_samples = num_samples
         self.output_sensitivity = output_sensitivity
 
-    def run(self, model: BaseModel, dataset: Dataset, features: Sequence[str]) -> Sequence[Issue]:
-        transformations = self.transformations or self._get_default_transformations(model, dataset)
-
-        # Only analyze text features
-        text_features = [
-            f
-            for f in features
-            if dataset.column_types[f] == "text" and pd.api.types.is_string_dtype(dataset.df[f].dtype)
-        ]
-
-        logger.info(
-            f"{self.__class__.__name__}: Running with transformations={[t.name for t in transformations]} "
-            f"threshold={self.threshold} output_sensitivity={self.output_sensitivity} num_samples={self.num_samples}"
-        )
-
-        issues = []
-        for transformation in transformations:
-            issues.extend(self._detect_issues(model, dataset, transformation, text_features))
-
-        return [i for i in issues if i is not None]
+    @abstractmethod
+    def _select_features(self, dataset: Dataset, features: Sequence[str]) -> Sequence[str]:
+        raise NotImplementedError
 
     @abstractmethod
-    def _get_default_transformations(self, model: BaseModel, dataset: Dataset) -> Sequence[TextTransformation]:
-        ...
+    def _get_default_transformations(self, model: BaseModel, dataset: Dataset) -> Sequence[TransformationFunction]:
+        raise NotImplementedError
+
+    @abstractmethod
+    def _supports_text_generation(self) -> bool:
+        raise NotImplementedError
+
+    def _compute_passed(
+        self,
+        model: BaseModel,
+        original_pred: ModelPredictionResults,
+        perturbed_pred: ModelPredictionResults,
+        output_sensitivity: float,
+    ) -> np.ndarray:
+        if model.is_classification:
+            return original_pred.raw_prediction == perturbed_pred.raw_prediction
+
+        elif model.is_regression:
+            rel_delta = _relative_delta(perturbed_pred.raw_prediction, original_pred.raw_prediction)
+            return np.abs(rel_delta) < output_sensitivity
+
+        elif model.is_text_generation:
+            if not self._supports_text_generation():
+                raise NotImplementedError("Text generation is not supported by this detector.")
+            try:
+                import evaluate
+            except ImportError as err:
+                raise LLMImportError() from err
+
+            scorer = evaluate.load("bertscore")
+            score = scorer.compute(
+                predictions=perturbed_pred.prediction,
+                references=original_pred.prediction,
+                model_type="distilbert-base-multilingual-cased",
+                idf=True,
+            )
+            return np.array(score["f1"]) > 1 - output_sensitivity
+
+        else:
+            raise NotImplementedError("Only classification, regression, or text generation models are supported.")
+
+    def _create_examples(
+        self,
+        original_data: Dataset,
+        original_pred: ModelPredictionResults,
+        perturbed_data: Dataset,
+        perturbed_pred: ModelPredictionResults,
+        feature: str,
+        passed: np.ndarray,
+        model: BaseModel,
+        transformation_fn,
+    ) -> pd.DataFrame:
+        examples = original_data.df.loc[~passed, [feature]].copy()
+        examples[f"{transformation_fn.name}({feature})"] = perturbed_data.df.loc[~passed, feature]
+
+        examples["Original prediction"] = original_pred.prediction[~passed]
+        examples["Prediction after perturbation"] = perturbed_pred.prediction[~passed]
+
+        if model.is_classification:
+            examples["Original prediction"] = examples["Original prediction"].astype(str)
+            examples["Prediction after perturbation"] = examples["Prediction after perturbation"].astype(str)
+
+            ps_before = pd.Series(original_pred.probabilities[~passed], index=examples.index)
+            ps_after = pd.Series(perturbed_pred.probabilities[~passed], index=examples.index)
+
+            examples["Original prediction"] += ps_before.apply(lambda p: f" (p={p:.2f})")
+            examples["Prediction after perturbation"] += ps_after.apply(lambda p: f" (p={p:.2f})")
+
+        return examples
 
     def _detect_issues(
         self,
         model: BaseModel,
         dataset: Dataset,
-        transformation: TextTransformation,
+        transformation,
         features: Sequence[str],
     ) -> Sequence[Issue]:
+        # Fall back to defaults if not explicitly set
         num_samples = self.num_samples if self.num_samples is not None else _get_default_num_samples(model)
+        threshold = self.threshold if self.threshold is not None else _get_default_threshold(model)
         output_sensitivity = (
             self.output_sensitivity if self.output_sensitivity is not None else _get_default_output_sensitivity(model)
         )
-        threshold = self.threshold if self.threshold is not None else _get_default_threshold(model)
 
         issues = []
-        # @TODO: integrate this with Giskard metamorphic tests already present
         for feature in features:
+            # Build transformation function for this feature
             transformation_fn = transformation(column=feature)
             transformed = dataset.transform(transformation_fn)
 
             # Select only the records which were changed
             changed_idx = dataset.df.index[transformed.df[feature] != dataset.df[feature]]
-
             if changed_idx.empty:
                 continue
 
@@ -108,6 +205,7 @@ class BaseTextPerturbationDetector(Detector):
                 rng = np.random.default_rng(747)
                 changed_idx = changed_idx[rng.choice(len(changed_idx), num_samples, replace=False)]
 
+            # Build original vs. perturbed datasets
             original_data = Dataset(
                 dataset.df.loc[changed_idx],
                 target=dataset.target,
@@ -125,27 +223,12 @@ class BaseTextPerturbationDetector(Detector):
             original_pred = model.predict(original_data)
             perturbed_pred = model.predict(perturbed_data)
 
-            if model.is_classification:
-                passed = original_pred.raw_prediction == perturbed_pred.raw_prediction
-            elif model.is_regression:
-                rel_delta = _relative_delta(perturbed_pred.raw_prediction, original_pred.raw_prediction)
-                passed = np.abs(rel_delta) < output_sensitivity
-            elif model.is_text_generation:
-                try:
-                    import evaluate
-                except ImportError as err:
-                    raise LLMImportError() from err
-
-                scorer = evaluate.load("bertscore")
-                score = scorer.compute(
-                    predictions=perturbed_pred.prediction,
-                    references=original_pred.prediction,
-                    model_type="distilbert-base-multilingual-cased",
-                    idf=True,
-                )
-                passed = np.array(score["f1"]) > 1 - output_sensitivity
-            else:
-                raise NotImplementedError("Only classification, regression, or text generation models are supported.")
+            passed = self._compute_passed(
+                model=model,
+                original_pred=original_pred,
+                perturbed_pred=perturbed_pred,
+                output_sensitivity=output_sensitivity,
+            )
 
             pass_rate = passed.mean()
             fail_rate = 1 - pass_rate
@@ -197,63 +280,42 @@ class BaseTextPerturbationDetector(Detector):
                 )
 
                 # Add examples
-                examples = original_data.df.loc[~passed, (feature,)].copy()
-                examples[f"{transformation_fn.name}({feature})"] = perturbed_data.df.loc[~passed, feature]
-
-                examples["Original prediction"] = original_pred.prediction[~passed]
-                examples["Prediction after perturbation"] = perturbed_pred.prediction[~passed]
-
-                if model.is_classification:
-                    examples["Original prediction"] = examples["Original prediction"].astype(str)
-                    examples["Prediction after perturbation"] = examples["Prediction after perturbation"].astype(str)
-                    ps_before = pd.Series(original_pred.probabilities[~passed], index=examples.index)
-                    ps_after = pd.Series(perturbed_pred.probabilities[~passed], index=examples.index)
-                    examples["Original prediction"] += ps_before.apply(lambda p: f" (p = {p:.2f})")
-                    examples["Prediction after perturbation"] += ps_after.apply(lambda p: f" (p = {p:.2f})")
-
+                examples = self._create_examples(
+                    original_data,
+                    original_pred,
+                    perturbed_data,
+                    perturbed_pred,
+                    feature,
+                    passed,
+                    model,
+                    transformation_fn,
+                )
                 issue.add_examples(examples)
 
                 issues.append(issue)
 
         return issues
 
-
-class BaseNumericalPerturbationDetector:
-    """Base class for metamorphic detectors based on numerical feature perturbations."""
-
-    _issue_group = Robustness
-
-    def __init__(
-        self,
-        transformations: Optional[Sequence[NumericalTransformation]] = None,
-        threshold: Optional[float] = None,
-        num_samples: Optional[int] = None,
-        output_sensitivity: Optional[float] = None,
-    ):
+    def run(self, model: BaseModel, dataset: Dataset, features: Sequence[str]) -> Sequence[Issue]:
         """
+        Runs the perturbation detector on the given model and dataset.
+
         Parameters
         ----------
-        transformations: Optional[Sequence[NumericalTransformation]]
-            The numerical transformations used in the metamorphic testing. If not provided, a default set of transformations will be used.
-        threshold: Optional[float]
-            The threshold for the fail rate, defined as the proportion of samples for which the model
-            prediction has changed. If the fail rate is greater than the threshold, an issue is created.
-        num_samples: Optional[int]
-            The maximum number of samples to use for testing. If not provided, a default number is used.
-        output_sensitivity: Optional[float]
-            For regression models, the maximum relative change in prediction considered acceptable.
-        """
-        self.transformations = transformations
-        self.threshold = threshold
-        self.num_samples = num_samples
-        self.output_sensitivity = output_sensitivity
+        model: BaseModel
+            The model to test.
+        dataset: Dataset
+            The dataset to use for testing.
+        features: Sequence[str]
+            The features (columns) to test.
 
-    def run(self, model: BaseModel, dataset: Dataset, features: Sequence[str]) -> Sequence[Issue]:
+        Returns
+        -------
+        Sequence[Issue]
+            A list of issues found during the testing.
+        """
         transformations = self.transformations or self._get_default_transformations(model, dataset)
-        if transformations is None:
-            raise ValueError("Transformations should not be None")
-        # Only analyze numerical features
-        numerical_features = [f for f in features if dataset.column_types[f] == "numeric"]
+        selected_features = self._select_features(dataset, features)
 
         logger.info(
             f"{self.__class__.__name__}: Running with transformations={[t.name for t in transformations]} "
@@ -262,152 +324,44 @@ class BaseNumericalPerturbationDetector:
 
         issues = []
         for transformation in transformations:
-            issues.extend(self._detect_issues(model, dataset, transformation, numerical_features))
+            issues.extend(self._detect_issues(model, dataset, transformation, selected_features))
 
         return [i for i in issues if i is not None]
 
+
+class BaseTextPerturbationDetector(BasePerturbationDetector):
+    """
+    Base class for metamorphic detectors based on text transformations.
+    """
+
+    def _select_features(self, dataset: Dataset, features: Sequence[str]) -> Sequence[str]:
+        # Only analyze text features
+        return [
+            f
+            for f in features
+            if dataset.column_types[f] == "text" and pd.api.types.is_string_dtype(dataset.df[f].dtype)
+        ]
+
+    @abstractmethod
+    def _get_default_transformations(self, model: BaseModel, dataset: Dataset) -> Sequence[TextTransformation]:
+        raise NotImplementedError
+
+    def _supports_text_generation(self) -> bool:
+        return True
+
+
+class BaseNumericalPerturbationDetector(BasePerturbationDetector):
+    """
+    Base class for metamorphic detectors based on numerical feature perturbations.
+    """
+
+    def _select_features(self, dataset: Dataset, features: Sequence[str]) -> Sequence[str]:
+        # Only analyze numeric features
+        return [f for f in features if dataset.column_types[f] == "numeric"]
+
+    @abstractmethod
     def _get_default_transformations(self, model: BaseModel, dataset: Dataset) -> Sequence[NumericalTransformation]:
-        ...
+        raise NotImplementedError
 
-    def _detect_issues(
-        self,
-        model: BaseModel,
-        dataset: Dataset,
-        transformation: NumericalTransformation,
-        features: Sequence[str],
-    ) -> Sequence[Issue]:
-        num_samples = self.num_samples or min(1000, len(dataset.df))
-        output_sensitivity = self.output_sensitivity or 0.05
-        threshold = self.threshold or 0.05
-
-        issues = []
-        for feature in features:
-            transformation_fn = transformation(column=feature)
-            transformed = dataset.transform(transformation_fn)
-
-            # Select only the records which were changed
-            changed_idx = dataset.df.index[transformed.df[feature] != dataset.df[feature]]
-
-            if changed_idx.empty:
-                continue
-
-            # Select a random subset of the changed records
-            if len(changed_idx) > num_samples:
-                rng = np.random.default_rng(747)
-                changed_idx = changed_idx[rng.choice(len(changed_idx), num_samples, replace=False)]
-
-            original_data = Dataset(
-                dataset.df.loc[changed_idx],
-                target=dataset.target,
-                column_types=dataset.column_types,
-                validation=False,
-            )
-            perturbed_data = Dataset(
-                transformed.df.loc[changed_idx],
-                target=dataset.target,
-                column_types=dataset.column_types,
-                validation=False,
-            )
-            # Ensure column types are passed correctly as a dictionary
-            original_pred = model.predict(original_data)
-            perturbed_pred = model.predict(perturbed_data)
-
-            # Check model type and calculate pass/fail rate
-            if model.is_classification:
-                passed = original_pred.raw_prediction == perturbed_pred.raw_prediction
-            elif model.is_regression:
-                rel_delta = np.abs(
-                    (perturbed_pred.raw_prediction - original_pred.raw_prediction) / original_pred.raw_prediction
-                )
-                passed = rel_delta < output_sensitivity
-            else:
-                raise NotImplementedError("Only classification and regression models are supported.")
-
-            pass_rate = passed.mean()
-            fail_rate = 1 - pass_rate
-
-            logger.info(
-                f"{self.__class__.__name__}: Testing `{feature}` for perturbation `{transformation.name}`\tFail rate: {fail_rate:.3f}"
-            )
-
-            issues = []
-            if fail_rate >= threshold:
-                # Severity
-                issue_level = IssueLevel.MAJOR if fail_rate >= 2 * threshold else IssueLevel.MEDIUM
-
-                # Issue description
-                desc = (
-                    "When feature “{feature}” is perturbed with the transformation “{transformation_fn}”, "
-                    "the model changes its prediction in {fail_rate_percent}% of the cases. "
-                    "We expected the predictions not to be affected by this transformation."
-                )
-
-                failed_size = (~passed).sum()
-                slice_size = len(passed)
-                # Determine the transformation function name
-                transformation_fn_name = transformation_fn.name
-                issue = Issue(
-                    model,
-                    dataset,
-                    group=self._issue_group,
-                    level=issue_level,
-                    description=desc,
-                    features=[feature],
-                    transformation_fn=transformation_fn_name,
-                    meta={
-                        "feature": feature,
-                        "domain": f"Feature `{feature}`",
-                        "deviation": f"{failed_size}/{slice_size} tested samples ({round(fail_rate * 100, 2)}%) changed prediction after perturbation",
-                        "fail_rate": fail_rate,
-                        "failed_size": failed_size,
-                        "slice_size": slice_size,
-                        "threshold": threshold,
-                        "output_sensitivity": output_sensitivity,
-                        "metric": "Fail rate",
-                        "metric_value": fail_rate,
-                    },
-                    importance=fail_rate,
-                )
-
-                issues.append(issue)
-
-        return issues
-
-
-def _generate_robustness_tests(issue: Issue):
-    from ...testing.tests.metamorphic import test_metamorphic_invariance
-
-    # Only generates a single metamorphic test
-    return {
-        f"Invariance to “{issue.transformation_fn}”": test_metamorphic_invariance(
-            transformation_function=issue.transformation_fn,
-            slicing_function=None,
-            threshold=1 - issue.meta["threshold"],
-            output_sensitivity=issue.meta["output_sentitivity"],
-        )
-    }
-
-
-def _relative_delta(actual, reference):
-    return (actual - reference) / reference
-
-
-def _get_default_num_samples(model) -> int:
-    if model.is_text_generation:
-        return 10
-
-    return 1_000
-
-
-def _get_default_output_sensitivity(model) -> float:
-    if model.is_text_generation:
-        return 0.15
-
-    return 0.05
-
-
-def _get_default_threshold(model) -> float:
-    if model.is_text_generation:
-        return 0.10
-
-    return 0.05
+    def _supports_text_generation(self) -> bool:
+        return False
