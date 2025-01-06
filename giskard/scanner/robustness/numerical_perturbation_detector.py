@@ -6,7 +6,7 @@ import pandas as pd
 from ...datasets.base import Dataset
 from ...models.base import BaseModel
 from ..decorators import detector
-from .base_numerical_detector import BaseNumericalPerturbationDetector
+from .base_detector import BaseNumericalPerturbationDetector
 from .numerical_transformations import AddGaussianNoise, MultiplyByFactor, NumericalTransformation
 
 
