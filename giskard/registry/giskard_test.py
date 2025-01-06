@@ -73,7 +73,7 @@ class GiskardTest(Artifact[TestFunctionMeta], ABC):
         if meta is not None:
             return meta
 
-        with open(local_dir / "meta.yaml", "r") as f:
+        with open(local_dir / "meta.yaml", "r", encoding="utf-8") as f:
             return yaml.load(f, Loader=yaml.Loader)
 
     @classmethod

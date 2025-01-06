@@ -341,7 +341,7 @@ class TextNationalityTransformation(TextLanguageBasedTransformation):
     name = "Switch countries from high- to low-income and vice versa"
 
     def _load_dictionaries(self):
-        with Path(__file__).parent.joinpath("nationalities.json").open("r") as f:
+        with Path(__file__).parent.joinpath("nationalities.json").open("r", encoding="utf-8") as f:
             nationalities_dict = json.load(f)
         self._lang_dictionary = {"en": nationalities_dict["en"], "fr": nationalities_dict["fr"]}
 

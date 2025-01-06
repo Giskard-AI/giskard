@@ -50,7 +50,7 @@ def test_scan_report_exports_to_markdown():
 
         assert dest.exists()
         assert dest.is_file()
-        assert dest.read_text() == markdown
+        assert dest.read_text(encoding="utf-8") == markdown
 
 
 def test_scan_report_to_json():
