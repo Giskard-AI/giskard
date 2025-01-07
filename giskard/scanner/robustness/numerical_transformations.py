@@ -31,13 +31,14 @@ class MultiplyByFactor(NumericalTransformation):
 class AddGaussianNoise(NumericalTransformation):
     name = "Add Gaussian noise"
 
-    def __init__(self, column: str, mean: float = 0, std: float = 0.01) -> None:
+    def __init__(self, column: str, mean: float = 0, std: float = 0.01, rng_seed: int = 1729) -> None:
         super().__init__(column)
         self.mean = mean
         self.std = std
+        self.rng = np.random.default_rng(seed=rng_seed)
 
     def make_perturbation(self, values: pd.Series) -> pd.Series:
-        noise = np.random.normal(self.mean, self.std, values.shape)
+        noise = self.rng.normal(self.mean, self.std, values.shape)
         if np.issubdtype(values.dtype, np.integer):
             return np.round(values + noise).astype(values.dtype)
         return values + noise
