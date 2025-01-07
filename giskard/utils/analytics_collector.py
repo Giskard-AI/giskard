@@ -1,5 +1,5 @@
 from types import TracebackType
-from typing import Dict, Optional, Type
+from typing import Optional, Type
 
 import getpass
 import hashlib
