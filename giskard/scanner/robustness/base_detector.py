@@ -9,10 +9,10 @@ from ...datasets.base import Dataset
 from ...llm import LLMImportError
 from ...models.base import BaseModel
 from ...models.base.model_prediction import ModelPredictionResults
-from ...registry.transformation_function import TransformationFunction
 from ..issues import Issue, IssueLevel, Robustness
 from ..logger import logger
 from ..registry import Detector
+from .base_perturbation_function import PerturbationFunction
 from .numerical_transformations import NumericalTransformation
 from .text_transformations import TextTransformation
 
@@ -69,7 +69,7 @@ class BasePerturbationDetector(Detector, ABC):
 
     def __init__(
         self,
-        transformations: Optional[Sequence[TransformationFunction]] = None,
+        transformations: Optional[Sequence[PerturbationFunction]] = None,
         threshold: Optional[float] = None,
         output_sensitivity: Optional[float] = None,
         num_samples: Optional[int] = None,
@@ -79,7 +79,7 @@ class BasePerturbationDetector(Detector, ABC):
 
         Parameters
         ----------
-        transformations: Optional[Sequence[TransformationFunction]]
+        transformations: Optional[Sequence[PerturbationFunction]]
             The transformations used in the metamorphic testing. See :ref:`transformation_functions` for details
             about the available transformations. If not provided, a default set of transformations will be used.
         threshold: Optional[float]
@@ -105,7 +105,7 @@ class BasePerturbationDetector(Detector, ABC):
         raise NotImplementedError
 
     @abstractmethod
-    def _get_default_transformations(self) -> Sequence[TransformationFunction]:
+    def _get_default_transformations(self) -> Sequence[PerturbationFunction]:
         raise NotImplementedError
 
     @abstractmethod
