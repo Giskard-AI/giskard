@@ -15,7 +15,6 @@ from traceback import TracebackException
 import requests
 from mixpanel import Mixpanel
 
-from giskard.client.dtos import ServerInfo
 from giskard.settings import settings
 from giskard.utils import fullname, threaded
 from giskard.utils.environment_detector import EnvironmentDetector
@@ -110,7 +109,6 @@ class GiskardAnalyticsCollector:
     ip: Optional[str]
     dev_mp_project_key = "4cca5fabca54f6df41ea500e33076c99"
     prod_mp_project_key = "2c3efacc6c26ffb991a782b476b8c620"
-    server_info: Optional[Dict] = None
     mp: Mixpanel
     giskard_version: Optional[str]
     environment: str
@@ -146,15 +144,6 @@ class GiskardAnalyticsCollector:
         )
 
     @analytics_method
-    def init_server_info(self, server_info: ServerInfo):
-        self.server_info = {
-            "Server instance": server_info.instanceId,
-            "Server version": server_info.serverVersion,
-            "Server license": server_info.instanceLicenseId,
-            "Giskard User": server_info.user,
-        }
-
-    @analytics_method
     def track(self, event_name, properties=None, meta=None, force=False):
         return self._track(event_name, properties=properties, meta=meta, force=force)
 
@@ -173,8 +162,6 @@ class GiskardAnalyticsCollector:
             }
             if properties is not None:
                 merged_props = {**merged_props, **properties}
-            if self.server_info is not None:
-                merged_props = {**merged_props, **self.server_info}
 
             self.mp.track(
                 distinct_id=self.distinct_user_id,

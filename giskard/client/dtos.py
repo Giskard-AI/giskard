@@ -3,13 +3,6 @@ from typing import Dict, List, Optional
 from giskard.core.validation import ConfiguredBaseModel
 
 
-class ServerInfo(ConfiguredBaseModel):
-    instanceId: Optional[str] = None
-    serverVersion: Optional[str] = None
-    instanceLicenseId: Optional[str] = None
-    user: Optional[str] = None
-
-
 class ModelMetaInfo(ConfiguredBaseModel):
     id: str
     name: str
