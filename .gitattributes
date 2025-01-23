@@ -1,3 +1,5 @@
 # Set the default behavior, in case people don't have core.autocrlf set.
 * text=auto
 docs/** linguist-documentation
+*.csv.tar.gz filter=lfs diff=lfs merge=lfs -text
+*.json.tar.gz filter=lfs diff=lfs merge=lfs -text

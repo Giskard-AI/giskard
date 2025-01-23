@@ -1,5 +1,4 @@
 import string
-from pathlib import Path
 
 import numpy as np
 import pandas as pd
@@ -12,7 +11,7 @@ from sklearn.preprocessing import FunctionTransformer
 
 from giskard import Dataset
 from giskard.models.sklearn import SKLearnModel
-from tests.url_utils import fetch_from_ftp
+from tests import path
 
 # Constants.
 RANDOM_SEED = 0
@@ -24,14 +23,7 @@ TARGET_COLUMN_NAME = "isHelpful"
 FEATURE_COLUMN_NAME = "reviewText"
 
 # Data.
-DATA_URL = "ftp://sys.giskard.ai/pub/unit_test_resources/amazon_review_dataset/reviews.json"
-DATA_PATH = Path.home() / ".giskard" / "amazon_review_dataset" / "reviews.json"
-
-
-def download_data(**kwargs) -> pd.DataFrame:
-    fetch_from_ftp(DATA_URL, DATA_PATH)
-    _df = pd.read_json(DATA_PATH, lines=True, **kwargs)
-    return _df
+DATA_PATH = path("test_data/amazon_reviews.json.tar.gz")
 
 
 def preprocess_data(df: pd.DataFrame) -> pd.DataFrame:
@@ -58,7 +50,7 @@ def preprocess_data(df: pd.DataFrame) -> pd.DataFrame:
 
 @pytest.fixture(scope="session")
 def amazon_review_raw_data() -> pd.DataFrame:
-    return preprocess_data(download_data(nrows=5000))
+    return preprocess_data(pd.read_json(DATA_PATH, lines=True, nrows=5000))
 
 
 @pytest.fixture()

@@ -1,7 +1,5 @@
 from typing import List, Tuple
 
-from pathlib import Path
-
 import pandas as pd
 import pytest
 from imblearn.over_sampling import SMOTE
@@ -11,11 +9,10 @@ from sklearn.svm import SVC
 
 from giskard import Dataset
 from giskard.models.sklearn import SKLearnModel
-from tests.url_utils import fetch_from_ftp
+from tests import path
 
 # Data.
-DATA_URL = "ftp://sys.giskard.ai/pub/unit_test_resources/drug_classification_dataset/drug200.csv"
-DATA_PATH = Path.home() / ".giskard" / "drug_classification_dataset" / "drug200.csv"
+DATA_PATH = path("test_data/drug_classification.csv.tar.gz")
 
 # Constants.
 TARGET_NAME = "Drug"
@@ -49,12 +46,7 @@ def bin_numerical(df: pd.DataFrame) -> pd.DataFrame:
 
 @pytest.fixture(scope="session")
 def drug_classification_raw_data() -> pd.DataFrame:
-    # Download data.
-    fetch_from_ftp(DATA_URL, DATA_PATH)
-
-    # Load and wrap data.
-    raw_data = bin_numerical(pd.read_csv(DATA_PATH))
-    return raw_data
+    return bin_numerical(pd.read_csv(DATA_PATH))
 
 
 @pytest.fixture()

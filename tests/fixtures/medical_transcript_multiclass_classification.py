@@ -1,7 +1,6 @@
 from typing import Iterable
 
 import string
-from pathlib import Path
 
 import pandas as pd
 import pytest
@@ -12,7 +11,7 @@ from sklearn.preprocessing import FunctionTransformer
 
 from giskard import Dataset
 from giskard.models.sklearn import SKLearnModel
-from tests.url_utils import fetch_from_ftp
+from tests import path
 
 # Constants.
 LABELS_LIST = [
@@ -29,13 +28,11 @@ TARGET_COLUMN_NAME = "medical_specialty"
 LANGUAGE = "english"
 
 # Paths.
-DATA_URL = "ftp://sys.giskard.ai/pub/unit_test_resources/medical_transcript_classification_dataset/mtsamples.csv"
-DATA_PATH = Path.home() / ".giskard" / "medical_transcript_classification_dataset" / "mtsamples.csv"
+DATA_PATH = path("test_data/medical_transcript_classification_dataset_mtsamples.csv.tar.gz")
 
 
 def load_data() -> pd.DataFrame:
     # Download dataset.
-    fetch_from_ftp(DATA_URL, DATA_PATH)
     df = pd.read_csv(DATA_PATH)
 
     # Drop useless columns.

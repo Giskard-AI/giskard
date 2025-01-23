@@ -3,7 +3,6 @@ from typing import List, Union
 import re
 import string
 from dataclasses import dataclass
-from pathlib import Path
 
 import numpy as np
 import pandas as pd
@@ -13,12 +12,10 @@ from torch.utils.data import DataLoader, TensorDataset
 from transformers import DistilBertForSequenceClassification, DistilBertTokenizer
 
 from giskard import Dataset, Model, models
-from tests.url_utils import fetch_from_ftp
+from tests import path
 
 # Data
-DATA_URL = "ftp://sys.giskard.ai/pub/unit_test_resources/tripadvisor_reviews_dataset/{}"
-DATA_PATH = Path.home() / ".giskard" / "tripadvisor_reviews_dataset"
-DATA_FILE_NAME = "tripadvisor_hotel_reviews.csv"
+DATA_PATH = path("test_data/tripadvisor_hotel_reviews.csv.tar.gz")
 
 # Constants
 PRETRAINED_WEIGHTS_NAME = "distilbert-base-uncased"
@@ -115,8 +112,7 @@ def text_preprocessor(df: pd.DataFrame) -> pd.DataFrame:
 
 def load_dataset() -> pd.DataFrame:
     # Download dataset
-    fetch_from_ftp(DATA_URL.format(DATA_FILE_NAME), DATA_PATH / DATA_FILE_NAME)
-    df = pd.read_csv(DATA_PATH / DATA_FILE_NAME, nrows=MAX_NUM_ROWS)
+    df = pd.read_csv(DATA_PATH, nrows=MAX_NUM_ROWS)
     # Obtain labels for our task.
     df[TARGET_COLUMN_NAME] = df.Rating.apply(lambda x: create_label(x))
     df.drop(columns="Rating", inplace=True)
