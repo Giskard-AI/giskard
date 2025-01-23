@@ -3,3 +3,4 @@
 docs/** linguist-documentation
 *.csv.tar.gz filter=lfs diff=lfs merge=lfs -text
 *.json.tar.gz filter=lfs diff=lfs merge=lfs -text
+*.txt.tar.gz filter=lfs diff=lfs merge=lfs -text
