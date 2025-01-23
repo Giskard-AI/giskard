@@ -321,3 +321,7 @@ env = ["WANDB_MODE=disabled"]
 [tool.deptry]
 extend_exclude = [".history"]
 ignore_notebooks = true
+
+
+[tool.poetry.dependencies]
+python = "^3.9,<3.13"
