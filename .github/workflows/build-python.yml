@@ -319,9 +319,20 @@ jobs:
           sudo swapoff -a
           sudo rm -f /swapfile
           sudo rm -rf /usr/local/lib/android
-          docker rmi $(docker image ls -aq)
+
+          # Only remove Docker images if any exist
+          IMAGES=$(docker image ls -aq)
+          if [ -n "$IMAGES" ]; then
+            docker rmi $IMAGES
+          fi
+
           sudo apt update && sudo apt remove -y \
-          google-cloud-cli microsoft-edge-stable dotnet-sdk-* llvm-* google-chrome-stable temurin-*
+            google-cloud-cli \ 
+            microsoft-edge-stable \
+            dotnet-sdk-* \
+            llvm-* \
+            google-chrome-stable \
+            temurin-*
           sudo apt autoremove -y
           sudo apt autoclean -y
 
