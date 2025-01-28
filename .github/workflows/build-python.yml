@@ -327,7 +327,7 @@ jobs:
           fi
 
           sudo apt update && sudo apt remove -y \
-            google-cloud-cli \ 
+            google-cloud-cli \
             microsoft-edge-stable \
             dotnet-sdk-* \
             llvm-* \
