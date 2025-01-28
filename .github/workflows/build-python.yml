@@ -261,7 +261,7 @@ jobs:
         run: |
           poetry new ./install-run
           cd ./install-run
-          sed -i 's/^\(python *= *\).*$/\1">=3.10,<3.13"/' pyproject.toml
+          sed -i -E 's|(python\s*=\s*)".*"|\1">=3.10,<3.13"|' pyproject.toml
           rm -f poetry.lock
           poetry add "$(ls ../dist/*.whl)"
           poetry run python -c "import giskard"
