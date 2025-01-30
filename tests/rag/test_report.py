@@ -175,3 +175,77 @@ def test_report_save_load(tmp_path):
     )
     assert all(report._dataframe["agent_answer"] == loaded_report._dataframe["agent_answer"])
     assert report._model_outputs == loaded_report._model_outputs
+
+
+def test_report_save_load_without_knowledge_base(tmp_path):
+    question_samples = make_testset_samples()
+    testset = QATestset(question_samples)
+    llm_client = Mock()
+
+    embeddings = Mock()
+    embeddings.embed.return_value = np.random.randn(len(testset), 8)
+
+    answers = [AgentAnswer(message="Default answer", documents=["Doc 1: example", "Doc 2: example"])] * 6
+
+    metrics_results = {
+        "1": {
+            "correctness": True,
+            "context_precision": 0.1,
+            "faithfulness": 0.2,
+            "answer_relevancy": 0.3,
+            "context_recall": 0.4,
+        },
+        "2": {
+            "correctness": True,
+            "context_precision": 0.1,
+            "faithfulness": 0.2,
+            "answer_relevancy": 0.3,
+            "context_recall": 0.4,
+        },
+        "3": {
+            "correctness": False,
+            "context_precision": 0.1,
+            "faithfulness": 0.2,
+            "answer_relevancy": 0.3,
+            "context_recall": 0.4,
+        },
+        "4": {
+            "correctness": True,
+            "context_precision": 0.1,
+            "faithfulness": 0.2,
+            "answer_relevancy": 0.3,
+            "context_recall": 0.4,
+        },
+        "5": {
+            "correctness": False,
+            "context_precision": 0.1,
+            "faithfulness": 0.2,
+            "answer_relevancy": 0.3,
+            "context_recall": 0.4,
+        },
+        "6": {
+            "correctness": False,
+            "context_precision": 0.1,
+            "faithfulness": 0.2,
+            "answer_relevancy": 0.3,
+            "context_recall": 0.4,
+        },
+    }
+
+    report = RAGReport(testset, answers, metrics_results)
+
+    report.save(tmp_path)
+    loaded_report = RAGReport.load(tmp_path, llm_client=llm_client, embedding_model=DummyEmbedding())
+
+    assert report._knowledge_base is None
+    assert len(report._testset._dataframe) == len(loaded_report._testset._dataframe)
+    assert len(report._metrics_results) == len(loaded_report._metrics_results)
+    assert report._metrics_results["1"]["context_precision"] == loaded_report._metrics_results["1"]["context_precision"]
+    assert all(
+        [
+            report._metrics_results[idx]["correctness"] == loaded_report._metrics_results[idx]["correctness"]
+            for idx in report._metrics_results
+        ]
+    )
+    assert all(report._dataframe["agent_answer"] == loaded_report._dataframe["agent_answer"])
+    assert report._model_outputs == loaded_report._model_outputs
