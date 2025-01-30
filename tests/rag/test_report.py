@@ -13,13 +13,15 @@ from tests.utils import DummyEmbedding
 TEST_UUIDS = ["{}".format(i) for i in range(6)]
 
 
-def test_report_plots():
-    knowledge_base = Mock()
-
+def _create_test_data(with_documents=False):
+    """Helper to create a default testset, answers and metrics_results used across tests."""
     testset = QATestset(make_testset_samples())
-
-    answers = [AgentAnswer(message="Default answer")] * 6
-
+    answers = [
+        AgentAnswer(
+            message="Default answer",
+            documents=["Doc 1: example", "Doc 2: example"] if with_documents else None,
+        )
+    ] * 6
     metrics_results = {
         "1": {
             "correctness": True,
@@ -64,6 +66,18 @@ def test_report_plots():
             "context_recall": 0.4,
         },
     }
+    return testset, answers, metrics_results
+
+
+def _create_knowledge_base(testset, llm_client=None, embeddings=None):
+    """Helper to create a KnowledgeBase from a given testset."""
+    return KnowledgeBase(testset.to_pandas(), llm_client=llm_client, embedding_model=embeddings)
+
+
+def test_report_plots():
+    testset, answers, metrics_results = _create_test_data()
+
+    knowledge_base = Mock()
 
     report = RAGReport(testset, answers, metrics_results, knowledge_base)
     plot = report.plot_correctness_by_metadata(metadata_name="question_type")
@@ -85,71 +99,19 @@ def test_report_plots():
 
 
 def test_report_save_load(tmp_path):
-    question_samples = make_testset_samples()
-    testset = QATestset(question_samples)
+    testset, answers, metrics_results = _create_test_data(with_documents=True)
     llm_client = Mock()
 
     embeddings = Mock()
     embeddings.embed.return_value = np.random.randn(len(testset), 8)
 
     with patch.object(uuid, "uuid4", side_effect=TEST_UUIDS):
-        knowledge_base = KnowledgeBase(testset.to_pandas(), llm_client=llm_client, embedding_model=embeddings)
+        knowledge_base = _create_knowledge_base(testset, llm_client, embeddings)
     knowledge_base._topics_inst = {0: "Cheese_1", 1: "Cheese_2"}
+
     for doc_idx, doc in enumerate(knowledge_base._documents):
-        if doc_idx < 3:
-            doc.topic_id = 0
-        else:
-            doc.topic_id = 1
+        doc.topic_id = 0 if doc_idx < 3 else 1
         doc.reduced_embeddings = np.random.randn(8)
-
-    knowledge_base._documents
-
-    answers = [AgentAnswer(message="Default answer", documents=["Doc 1: example", "Doc 2: example"])] * 6
-
-    metrics_results = {
-        "1": {
-            "correctness": True,
-            "context_precision": 0.1,
-            "faithfulness": 0.2,
-            "answer_relevancy": 0.3,
-            "context_recall": 0.4,
-        },
-        "2": {
-            "correctness": True,
-            "context_precision": 0.1,
-            "faithfulness": 0.2,
-            "answer_relevancy": 0.3,
-            "context_recall": 0.4,
-        },
-        "3": {
-            "correctness": False,
-            "context_precision": 0.1,
-            "faithfulness": 0.2,
-            "answer_relevancy": 0.3,
-            "context_recall": 0.4,
-        },
-        "4": {
-            "correctness": True,
-            "context_precision": 0.1,
-            "faithfulness": 0.2,
-            "answer_relevancy": 0.3,
-            "context_recall": 0.4,
-        },
-        "5": {
-            "correctness": False,
-            "context_precision": 0.1,
-            "faithfulness": 0.2,
-            "answer_relevancy": 0.3,
-            "context_recall": 0.4,
-        },
-        "6": {
-            "correctness": False,
-            "context_precision": 0.1,
-            "faithfulness": 0.2,
-            "answer_relevancy": 0.3,
-            "context_recall": 0.4,
-        },
-    }
 
     report = RAGReport(testset, answers, metrics_results, knowledge_base)
 
@@ -178,59 +140,11 @@ def test_report_save_load(tmp_path):
 
 
 def test_report_save_load_without_knowledge_base(tmp_path):
-    question_samples = make_testset_samples()
-    testset = QATestset(question_samples)
+    testset, answers, metrics_results = _create_test_data(with_documents=True)
     llm_client = Mock()
 
     embeddings = Mock()
     embeddings.embed.return_value = np.random.randn(len(testset), 8)
-
-    answers = [AgentAnswer(message="Default answer", documents=["Doc 1: example", "Doc 2: example"])] * 6
-
-    metrics_results = {
-        "1": {
-            "correctness": True,
-            "context_precision": 0.1,
-            "faithfulness": 0.2,
-            "answer_relevancy": 0.3,
-            "context_recall": 0.4,
-        },
-        "2": {
-            "correctness": True,
-            "context_precision": 0.1,
-            "faithfulness": 0.2,
-            "answer_relevancy": 0.3,
-            "context_recall": 0.4,
-        },
-        "3": {
-            "correctness": False,
-            "context_precision": 0.1,
-            "faithfulness": 0.2,
-            "answer_relevancy": 0.3,
-            "context_recall": 0.4,
-        },
-        "4": {
-            "correctness": True,
-            "context_precision": 0.1,
-            "faithfulness": 0.2,
-            "answer_relevancy": 0.3,
-            "context_recall": 0.4,
-        },
-        "5": {
-            "correctness": False,
-            "context_precision": 0.1,
-            "faithfulness": 0.2,
-            "answer_relevancy": 0.3,
-            "context_recall": 0.4,
-        },
-        "6": {
-            "correctness": False,
-            "context_precision": 0.1,
-            "faithfulness": 0.2,
-            "answer_relevancy": 0.3,
-            "context_recall": 0.4,
-        },
-    }
 
     report = RAGReport(testset, answers, metrics_results)
 
