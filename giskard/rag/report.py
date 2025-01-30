@@ -158,18 +158,19 @@ class RAGReport:
         with open(path / "report_details.json", "w", encoding="utf-8") as f:
             json.dump(report_details, f, ensure_ascii=False)
 
-        self._knowledge_base._knowledge_base_df.to_json(
-            path / "knowledge_base.jsonl", orient="records", lines=True, force_ascii=False
-        )
-        with open(path / "knowledge_base_meta.json", "w", encoding="utf-8") as f:
-            json.dump(self._knowledge_base.get_savable_data(), f, ensure_ascii=False)
-
         with open(path / "agent_answer.json", "w", encoding="utf-8") as f:
             json.dump(
                 [{"message": output.message, "documents": output.documents} for output in self._model_outputs],
                 f,
                 ensure_ascii=False,
             )
+
+        if self._knowledge_base is not None:
+            self._knowledge_base._knowledge_base_df.to_json(
+                path / "knowledge_base.jsonl", orient="records", lines=True, force_ascii=False
+            )
+            with open(path / "knowledge_base_meta.json", "w", encoding="utf-8") as f:
+                json.dump(self._knowledge_base.get_savable_data(), f, ensure_ascii=False)
 
         if self._metrics_results is not None:
             with open(path / "metrics_results.json", "w", encoding="utf-8") as f:
@@ -193,36 +194,41 @@ class RAGReport:
             The embedding model to use inside the knowledge base. If not provided, the default model will be used.
         """
         path = Path(folder_path)
-        knowledge_base_meta = json.load(open(path / "knowledge_base_meta.json", "r", encoding="utf-8"))
-        knowledge_base_data = pd.read_json(path / "knowledge_base.jsonl", orient="records", lines=True)
+
         testset = QATestset.load(path / "testset.jsonl")
 
         answers = json.load(open(path / "agent_answer.json", "r", encoding="utf-8"))
         model_outputs = [AgentAnswer(**answer) for answer in answers]
 
-        topics = {int(k): topic for k, topic in knowledge_base_meta.pop("topics", None).items()}
-        documents_topics = [int(topic_id) for topic_id in knowledge_base_meta.pop("documents_topics", None)]
+        report_details = json.load(open(path / "report_details.json", "r", encoding="utf-8"))
+        testset._dataframe.index = testset._dataframe.index.astype(str)
 
-        knowledge_base = KnowledgeBase(
-            knowledge_base_data,
-            llm_client=llm_client,
-            embedding_model=embedding_model,
-            columns=knowledge_base_meta.pop("columns", None),
-            min_topic_size=knowledge_base_meta.pop("min_topic_size", None),
-            chunk_size=knowledge_base_meta.pop("chunk_size", None),
-            seed=knowledge_base_meta.pop("seed", None),
-        )
-        knowledge_base._topics_inst = topics
+        knowledge_base = None
+        if (path / "knowledge_base.jsonl").exists():
+            knowledge_base_meta = json.load(open(path / "knowledge_base_meta.json", "r", encoding="utf-8"))
+            knowledge_base_data = pd.read_json(path / "knowledge_base.jsonl", orient="records", lines=True)
 
-        for doc_idx, doc in enumerate(knowledge_base._documents):
-            doc.topic_id = documents_topics[doc_idx]
+            topics = {int(k): topic for k, topic in knowledge_base_meta.pop("topics", None).items()}
+            documents_topics = [int(topic_id) for topic_id in knowledge_base_meta.pop("documents_topics", None)]
+
+            knowledge_base = KnowledgeBase(
+                knowledge_base_data,
+                llm_client=llm_client,
+                embedding_model=embedding_model,
+                columns=knowledge_base_meta.pop("columns", None),
+                min_topic_size=knowledge_base_meta.pop("min_topic_size", None),
+                chunk_size=knowledge_base_meta.pop("chunk_size", None),
+                seed=knowledge_base_meta.pop("seed", None),
+            )
+
+            knowledge_base._topics_inst = topics
+
+            for doc_idx, doc in enumerate(knowledge_base._documents):
+                doc.topic_id = documents_topics[doc_idx]
 
         metrics_results = {}
         if (path / "metrics_results.json").exists():
             metrics_results = json.load(open(path / "metrics_results.json", "r", encoding="utf-8"))
-
-        report_details = json.load(open(path / "report_details.json", "r", encoding="utf-8"))
-        testset._dataframe.index = testset._dataframe.index.astype(str)
 
         report = cls(testset, model_outputs, metrics_results, knowledge_base)
         report._recommendation = report_details["recommendation"]
