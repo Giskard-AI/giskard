@@ -1,7 +1,5 @@
 from typing import Sequence
 
-from ...datasets.base import Dataset
-from ...models.base import BaseModel
 from ..decorators import detector
 from .base_detector import BaseTextPerturbationDetector
 from .text_transformations import TextTransformation
@@ -25,7 +23,7 @@ class TextPerturbationDetector(BaseTextPerturbationDetector):
     e.g. transforming to uppercase, lowercase, or title case, or by introducing typos.
     """
 
-    def _get_default_transformations(self, model: BaseModel, dataset: Dataset) -> Sequence[TextTransformation]:
+    def _get_default_transformations(self) -> Sequence[TextTransformation]:
         from .text_transformations import (
             TextAccentRemovalTransformation,
             TextLowercase,

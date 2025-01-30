@@ -1,3 +1,5 @@
+from typing import Any, Optional
+
 import itertools
 import json
 import re
@@ -8,37 +10,19 @@ import numpy as np
 import pandas as pd
 from num2words import num2words
 
-from ...core.core import DatasetProcessFunctionMeta
 from ...datasets import Dataset
 from ...functions.transformation import gruber
-from ...registry.registry import get_object_uuid
-from ...registry.transformation_function import TransformationFunction
+from .base_perturbation_function import PerturbationFunction
 
 
-class TextTransformation(TransformationFunction):
-    name: str
-
-    def __init__(self, column, needs_dataset=False):
-        super().__init__(None, row_level=False, cell_level=False, needs_dataset=needs_dataset)
-        self.column = column
-        self.meta = DatasetProcessFunctionMeta(type="TRANSFORMATION")
-        self.meta.uuid = get_object_uuid(self)
-        self.meta.code = self.name
-        self.meta.name = self.name
-        self.meta.display_name = self.name
-        self.meta.tags = ["pickle", "scan"]
-        self.meta.doc = self.meta.default_doc("Automatically generated transformation function")
-
-    def __str__(self):
-        return self.name
+class TextTransformation(PerturbationFunction):
+    def __init__(self, column: str, needs_dataset: bool = False) -> None:
+        super().__init__(column, needs_dataset=needs_dataset)
 
     def execute(self, data: pd.DataFrame) -> pd.DataFrame:
         feature_data = data[self.column].dropna().astype(str)
         data.loc[feature_data.index, self.column] = feature_data.apply(self.make_perturbation)
         return data
-
-    def make_perturbation(self, text: str) -> str:
-        raise NotImplementedError()
 
 
 class TextUppercase(TextTransformation):
@@ -71,7 +55,7 @@ class TextTitleCase(TextTransformation):
 class TextTypoTransformation(TextTransformation):
     name = "Add typos"
 
-    def __init__(self, column, rate=0.05, min_length=10, rng_seed=1729):
+    def __init__(self, column: str, rate: float = 0.05, min_length: int = 10, rng_seed: int = 1729):
         super().__init__(column)
         from .entity_swap import typos
 
@@ -80,7 +64,7 @@ class TextTypoTransformation(TextTransformation):
         self._key_typos = typos
         self.rng = np.random.default_rng(seed=rng_seed)
 
-    def make_perturbation(self, x):
+    def make_perturbation(self, x: str) -> str:
         # Skip if the text is too short
         if len(x) < self.min_length:
             return x
@@ -118,7 +102,7 @@ class TextTypoTransformation(TextTransformation):
                     x = x[:i] + x[i + 1] + x[i] + x[i + 2 :]
         return x
 
-    def _random_key_typo(self, char):
+    def _random_key_typo(self, char: str):
         if char.lower() in self._key_typos:
             typo = self.rng.choice(self._key_typos[char.lower()])
             return typo if char.islower() else typo.upper()
@@ -128,7 +112,7 @@ class TextTypoTransformation(TextTransformation):
 class TextFromOCRTypoTransformation(TextTransformation):
     name = "Add typos from OCR"
 
-    def __init__(self, column, rate=0.05, min_length=10, rng_seed=1729):
+    def __init__(self, column: str, rate: float = 0.05, min_length: int = 10, rng_seed: int = 1729):
         super().__init__(column)
         from .entity_swap import ocr_typos
 
@@ -137,7 +121,7 @@ class TextFromOCRTypoTransformation(TextTransformation):
         self._ocr_typos = ocr_typos
         self.rng = np.random.default_rng(seed=rng_seed)
 
-    def make_perturbation(self, x):
+    def make_perturbation(self, x: str) -> str:
         # Check if the input is None
         if x is None:
             return None
@@ -165,7 +149,7 @@ class TextFromOCRTypoTransformation(TextTransformation):
                     x = x[:i] + x[i + 1 :]
         return x
 
-    def _random_ocr_typo(self, char):
+    def _random_ocr_typo(self, char: str) -> str:
         if char.lower() in self._ocr_typos:
             typo = self.rng.choice(self._ocr_typos[char.lower()])
             return typo if char.islower() else typo.upper()
@@ -182,7 +166,7 @@ class TextPunctuationRemovalTransformation(TextTransformation):
         self._trans_table = str.maketrans("", "", self._punctuation)
         self._regex = re.compile(rf"\b[{re.escape(self._punctuation)}]+\b")
 
-    def make_perturbation(self, text):
+    def make_perturbation(self, text: str) -> str:
         # Split URLs so that they are not affected by the transformation
         pieces = gruber.split(text)
 
@@ -198,12 +182,12 @@ class TextPunctuationRemovalTransformation(TextTransformation):
 class TextAccentRemovalTransformation(TextTransformation):
     name = "Accent Removal"
 
-    def __init__(self, column, rate=1.0, rng_seed=1729):
+    def __init__(self, column: str, rate: float = 1.0, rng_seed: int = 1729):
         super().__init__(column)
         self.rate = rate
         self.rng = np.random.default_rng(seed=rng_seed)
 
-    def make_perturbation(self, text):
+    def make_perturbation(self, text: str) -> str:
         return "".join(
             char
             for char in unicodedata.normalize("NFD", text)
@@ -212,7 +196,7 @@ class TextAccentRemovalTransformation(TextTransformation):
 
 
 class TextLanguageBasedTransformation(TextTransformation):
-    def __init__(self, column, rng_seed=1729):
+    def __init__(self, column: str, rng_seed: int = 1729):
         super().__init__(column, needs_dataset=True)
         self._lang_dictionary = dict()
         self._load_dictionaries()
@@ -228,13 +212,13 @@ class TextLanguageBasedTransformation(TextTransformation):
         dataset.df.loc[feature_data.index, self.column] = feature_data.apply(self.make_perturbation, axis=1)
         return dataset.df
 
-    def make_perturbation(self, row):
+    def make_perturbation(self, row: pd.Series) -> Any:
         raise NotImplementedError()
 
-    def _switch(self, word, language):
+    def _switch(self, word: str, language: str) -> Optional[tuple[str, str]]:
         raise NotImplementedError()
 
-    def _select_dict(self, language):
+    def _select_dict(self, language: str) -> Optional[Any]:
         try:
             return self._lang_dictionary[language]
         except KeyError:
@@ -249,7 +233,7 @@ class TextGenderTransformation(TextLanguageBasedTransformation):
 
         self._lang_dictionary = {"en": gender_switch_en, "fr": gender_switch_fr}
 
-    def make_perturbation(self, row):
+    def make_perturbation(self, row: pd.Series) -> str:
         text = row[self.column]
         language = row["language__gsk__meta"]
 
@@ -265,7 +249,7 @@ class TextGenderTransformation(TextLanguageBasedTransformation):
 
         return new_text
 
-    def _switch(self, word, language):
+    def _switch(self, word: str, language: str) -> Optional[tuple[str, str]]:
         try:
             return (word, self._lang_dictionary[language][word.lower()])
         except KeyError:
@@ -279,7 +263,7 @@ class TextNumberToWordTransformation(TextLanguageBasedTransformation):
         # Regex to match numbers in text
         self._regex = re.compile(r"(?<!\d/)(?<!\d\.)\b\d+(?:\.\d+)?\b(?!(?:\.\d+)?@|\d?/?\d)")
 
-    def make_perturbation(self, row):
+    def make_perturbation(self, row: pd.Series) -> str:
         # Replace numbers with words
         value = row[self.column]
         if pd.isna(value):
@@ -307,7 +291,7 @@ class TextReligionTransformation(TextLanguageBasedTransformation):
 
         self._lang_dictionary = {"en": religion_dict_en, "fr": religion_dict_fr}
 
-    def make_perturbation(self, row):
+    def make_perturbation(self, row: pd.Series) -> str:
         # Get text
         text = row[self.column]
 
@@ -345,7 +329,7 @@ class TextNationalityTransformation(TextLanguageBasedTransformation):
             nationalities_dict = json.load(f)
         self._lang_dictionary = {"en": nationalities_dict["en"], "fr": nationalities_dict["fr"]}
 
-    def make_perturbation(self, row):
+    def make_perturbation(self, row: pd.Series) -> str:
         text = row[self.column]
         language = row["language__gsk__meta"]
         nationalities_word_dict = self._select_dict(language)
@@ -381,7 +365,7 @@ class TextNationalityTransformation(TextLanguageBasedTransformation):
 class TextFromSpeechTypoTransformation(TextLanguageBasedTransformation):
     name = "Add text from speech typos"
 
-    def __init__(self, column, rng_seed=1729, min_length=10):
+    def __init__(self, column: str, rng_seed: int = 1729, min_length: int = 10):
         super().__init__(column, rng_seed=rng_seed)
 
         self.min_length = min_length
@@ -391,7 +375,7 @@ class TextFromSpeechTypoTransformation(TextLanguageBasedTransformation):
 
         self._word_typos = speech_typos
 
-    def make_perturbation(self, row):
+    def make_perturbation(self, row: pd.Series) -> str:
         text = row[self.column]
         language = row["language__gsk__meta"]
 
