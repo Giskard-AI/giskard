@@ -3,11 +3,10 @@ name: Release and publish a new version
 on:
   workflow_dispatch:
     inputs:
-        version:
-          description: 'Tag to be created, in the form X.Y.Z'
-          required: true
-          type: string
-
+      version:
+        description: "Tag to be created, in the form X.Y.Z"
+        required: true
+        type: string
 
 jobs:
   build:
@@ -27,7 +26,7 @@ jobs:
         run: |
           echo "Job failed due to user not being a member of Giskard-AI organization and the 'safe for build' label not being set on the PR"
           exit 1
-      
+
       - name: Write release version env vars (with/without v)
         run: |
           VERSION_NAME="v${{ inputs.version }}"
@@ -43,36 +42,36 @@ jobs:
           token: ${{ secrets.RELEASE_PAT_TOKEN }} # Needed to trigger other actions
 
       - name: Edit pyproject.toml
-        run:  sed -i 's/^\(version *= *\).*$/\1"${{ env.VERSION_NUMBER }}"/' pyproject.toml
+        run: sed -i 's/^\(version *= *\).*$/\1"${{ env.VERSION_NUMBER }}"/' pyproject.toml
 
       - name: Remove dark theme logo from README
-        run:  sed -i 's/.*#gh-dark-mode-only.*//' README.md
+        run: sed -i 's/.*#gh-dark-mode-only.*//' README.md
 
       - name: Setup PDM
         uses: pdm-project/setup-pdm@v4
         with:
-          python-version: '3.10'
+          python-version: "3.10"
           version: head # Issue with PDM 2.20.1: https://github.com/pdm-project/pdm/issues/3271
           cache: false
 
       - name: "@slack Release process started"
         id: slack
-        uses: slackapi/slack-github-action@v1.27.0
+        uses: slackapi/slack-github-action@v2.0.0
         with:
-          channel-id: ${{ vars.SLACK_CHANNEL_ID }}
-          slack-message: |-
-            Release *${{ env.VERSION_NAME }}* is on the way :rocket:
-            <${{ github.server_url }}/${{ github.actor }}|@${{ github.actor }}> | <${{ github.server_url }}/${{ github.repository }}/commit/${{ github.sha }}|commit> <!channel>
-        env:
-          SLACK_BOT_TOKEN: ${{ secrets.SLACK_BOT_TOKEN }}
+          method: chat.postMessage
+          token: ${{ secrets.SLACK_BOT_TOKEN }}
+          payload: |
+            "channel": "${{ vars.SLACK_CHANNEL_ID }}",
+            "text": "Release *${{ env.VERSION_NAME }}* is on the way :rocket:
+            <${{ github.server_url }}/${{ github.actor }}|@${{ github.actor }}> | <${{ github.server_url }}/${{ github.repository }}/commit/${{ github.sha }}|commit> <!channel>"
 
       - name: Configure git
-        run:  |
+        run: |
           git config --global user.name 'BotReleaser'
           git config --global user.email 'bot.releaser@users.noreply.github.com'
 
       - name: Adding file
-        run:  |
+        run: |
           git add pyproject.toml
           git fetch --quiet --tags
           git commit -m "${{ env.VERSION_NAME }}" --allow-empty
@@ -108,9 +107,8 @@ jobs:
       - name: "@slack Share release process completion"
         # cancellable always() https://docs.github.com/en/actions/learn-github-actions/expressions#status-check-functions
         if: ${{ !cancelled() }}
-        uses: slackapi/slack-github-action@v1.27.0
+        uses: slackapi/slack-github-action@v2.0.0
         env:
-          SLACK_BOT_TOKEN: ${{ secrets.SLACK_BOT_TOKEN }}
           ON_SUCCESS: |-
             *${{ env.VERSION_NAME }}* has been published to PyPI ! :python: :tada:
             <${{ steps.github-release.outputs.url }}|Release notes> | <https://pypi.org/project/giskard/${{ env.VERSION_NUMBER }}|PyPI> <!channel>
@@ -118,11 +116,10 @@ jobs:
             Could not publish *${{ env.VERSION_NAME }}* to PyPI :x:
             <${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}|logs> <!channel>
         with:
-          channel-id: ${{ vars.SLACK_CHANNEL_ID }}
-          slack-message: ${{ env.JOB_SUCCESS == 'true' && env.ON_SUCCESS || env.ON_FAILURE }}
-          # reploy_broadcast == also send to channel
+          method: chat.postMessage
+          token: ${{ secrets.SLACK_BOT_TOKEN }}
           payload: |
-            {
-              "thread_ts": "${{ steps.slack.outputs.thread_ts }}",
-              "reply_broadcast": true
-            }
+            "channel": "${{ vars.SLACK_CHANNEL_ID }}",
+            "text": "${{ env.JOB_SUCCESS == 'true' && env.ON_SUCCESS || env.ON_FAILURE }}",
+            "thread_ts": "${{ steps.slack.outputs.ts }}",
+            "reply_broadcast": true
