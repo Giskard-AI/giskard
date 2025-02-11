@@ -4,8 +4,8 @@
     "watch": "tailwindcss -i ./src/scan-widget/style.css -o ./giskard/scanner/templates/static/style.css --watch"
   },
   "devDependencies": {
-    "@babel/core": "^7.26.0",
-    "@babel/preset-env": "^7.25.4",
+    "@babel/core": "^7.26.7",
+    "@babel/preset-env": "^7.26.7",
     "autoprefixer": "^10.4.19",
     "cssnano": "^7.0.6",
     "gulp": "^5.0.0",
@@ -13,9 +13,9 @@
     "gulp-concat": "^2.6.1",
     "gulp-minify": "^3.1.0",
     "gulp-postcss": "^10.0.0",
-    "postcss": "^8.4.47",
+    "postcss": "^8.5.2",
     "postcss-import": "^16.1.0",
-    "tailwindcss": "^3.4.14",
+    "tailwindcss": "^4.0.3",
     "uglify": "^0.1.5"
   },
   "dependencies": {
