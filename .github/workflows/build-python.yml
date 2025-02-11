@@ -112,7 +112,7 @@ jobs:
           df -h
 
       - name: Checkout code
-        uses: actions/checkout@v4.1.0
+        uses: actions/checkout@v4.2.0
         with:
           fetch-depth: 0
 
@@ -124,7 +124,7 @@ jobs:
           cache: false
 
       - name: Cache Giskard test resources
-        uses: actions/cache@v4
+        uses: actions/cache@v4.2.0
         if: ${{ github.event_name == 'pull_request' || inputs.use-cache }}
         with:
           path: ~/.giskard
@@ -246,7 +246,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
-        uses: actions/checkout@v4.1.0
+        uses: actions/checkout@v4.2.0
       - name: Setup PDM
         uses: pdm-project/setup-pdm@v4
         with:
@@ -270,7 +270,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
-        uses: actions/checkout@v4.1.0
+        uses: actions/checkout@v4.2.0
       - name: Setup PDM
         uses: pdm-project/setup-pdm@v4
         with:
@@ -290,7 +290,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
-        uses: actions/checkout@v4.1.0
+        uses: actions/checkout@v4.2.0
       - name: Setup PDM
         uses: pdm-project/setup-pdm@v4
         with:
@@ -342,7 +342,7 @@ jobs:
           df -h
 
       - name: Checkout code
-        uses: actions/checkout@v4.1.0
+        uses: actions/checkout@v4.2.0
         with:
           fetch-depth: 0
 
