@@ -61,9 +61,10 @@ jobs:
           method: chat.postMessage
           token: ${{ secrets.SLACK_BOT_TOKEN }}
           payload: |
-            "channel": "${{ vars.SLACK_CHANNEL_ID }}",
-            "text": "Release *${{ env.VERSION_NAME }}* is on the way :rocket:
-            <${{ github.server_url }}/${{ github.actor }}|@${{ github.actor }}> | <${{ github.server_url }}/${{ github.repository }}/commit/${{ github.sha }}|commit> <!channel>"
+            {
+              "channel": "${{ vars.SLACK_CHANNEL_ID }}",
+              "text": "Release *${{ env.VERSION_NAME }}* is on the way :rocket: <${{ github.server_url }}/${{ github.actor }}|@${{ github.actor }}> | <${{ github.server_url }}/${{ github.repository }}/commit/${{ github.sha }}|commit> <!channel>"
+            }
 
       - name: Configure git
         run: |
@@ -105,7 +106,6 @@ jobs:
           echo "JOB_SUCCESS=true" >> $GITHUB_ENV
 
       - name: "@slack Share release process completion"
-        # cancellable always() https://docs.github.com/en/actions/learn-github-actions/expressions#status-check-functions
         if: ${{ !cancelled() }}
         uses: slackapi/slack-github-action@v2.0.0
         env:
@@ -119,7 +119,9 @@ jobs:
           method: chat.postMessage
           token: ${{ secrets.SLACK_BOT_TOKEN }}
           payload: |
-            "channel": "${{ vars.SLACK_CHANNEL_ID }}",
-            "text": "${{ env.JOB_SUCCESS == 'true' && env.ON_SUCCESS || env.ON_FAILURE }}",
-            "thread_ts": "${{ steps.slack.outputs.ts }}",
-            "reply_broadcast": true
+            {
+              "channel": "${{ vars.SLACK_CHANNEL_ID }}",
+              "text": "${{ env.JOB_SUCCESS == 'true' && env.ON_SUCCESS || env.ON_FAILURE }}",
+              "thread_ts": "${{ steps.slack.outputs.ts }}",
+              "reply_broadcast": true
+            }
