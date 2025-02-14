@@ -15,7 +15,7 @@ Giskard provides a platform for testing all AI models, from tabular ML to LLMs. 
 
 ## Giskard Library (open-source)
 
-An **open-source** library to detect hallucinations (RAGET) and security issues (scan) to turn them into test suites that you can automatically execute.
+An **open-source** library to detect hallucinations and security issues to turn them into test suites that you can automatically execute.
 
 Testing Machine Learning applications can be tedious. Since AI models depend on data, quality testing scenarios depend on
 **domain specificities** and are often **infinite**. Besides, detecting security vulnerabilities on LLM applications requires specialized knowledge that most AI teams don't possess.
@@ -38,13 +38,15 @@ such as performance bias, hallucination, prompt injection, data leakage, spuriou
 
 Get started **now** with our [quickstart notebooks](../getting_started/quickstart/index.md)! ⚡️
 
-## The Giskard Enterprise LLM Hub
 
-The LLM Hub is an enterprise solution offering a broader range of features such as a:
-- **Continuous testing**: Detect new hallucinations and security issues during production
-- **Annotation studio**: Easily write the right requirements for your LLM as a judge setup
-- **Alerting**: Get alerted with regular vulnerability reports by emails during production
-- **Red-teaming playground**: Collaboratively craft new test cases with high domain specificity
+Want to take Giskard's features to the next level? Discover the LLM Hub below!
+## LLM Evaluation Hub (for entreprises)
+
+The [LLM Hub](https://www.giskard.ai/products/llm-evaluation-hub) is an enterprise solution offering a broader range of features such as a:
+- **Continuous testing**: Detect new hallucinations and security issues during production.
+- **Annotation studio**: Easily write the right requirements for your LLM as a judge setup.
+- **Alerting**: Get alerted with regular vulnerability reports by emails during production.
+- **Red-teaming playground**: Collaboratively craft new test cases with high domain specificity.
 
   
-For a complete overview of LLM Hub’s features, check the documentation of the LLM Hub.
+For a complete overview of LLM Hub’s features, check the documentation of the LLM Hub or directly [contact us](https://www.giskard.ai/contact).
