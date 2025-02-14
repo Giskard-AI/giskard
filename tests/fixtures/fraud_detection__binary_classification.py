@@ -9,10 +9,10 @@ from pandas.api.types import union_categoricals
 from sklearn.model_selection import train_test_split
 
 from giskard import Dataset, Model
-from tests.url_utils import fetch_from_ftp
+from tests.url_utils import fetch_test_data
 
 # Data.
-DATA_URL = "ftp://sys.giskard.ai/pub/unit_test_resources/fraud_detection_classification_dataset/{}"
+DATA_URL = "https://giskard-library-test-datasets.s3.eu-north-1.amazonaws.com/fraud_detection_classification_dataset-{}"
 DATA_PATH = Path.home() / ".giskard" / "fraud_detection_classification_dataset"
 
 # Constants.
@@ -86,9 +86,14 @@ CATEGORICALS = [
 
 
 def fetch_dataset():
-    files_to_fetch = ["train_transaction.csv", "train_identity.csv", "test_transaction.csv", "test_identity.csv"]
+    files_to_fetch = [
+        "train_transaction.csv.tar.gz",
+        "train_identity.csv.tar.gz",
+        "test_transaction.csv.tar.gz",
+        "test_identity.csv.tar.gz",
+    ]
     for file_name in files_to_fetch:
-        fetch_from_ftp(DATA_URL.format(file_name), DATA_PATH / file_name)
+        fetch_test_data(DATA_URL.format(file_name), DATA_PATH / file_name)
 
 
 def read_set(_type, nrows=150):
@@ -96,9 +101,9 @@ def read_set(_type, nrows=150):
     fetch_dataset()
 
     _df = pd.read_csv(
-        DATA_PATH / f"{_type}_transaction.csv", index_col=IDX_LABEL, dtype=DATA_TYPES_TRANSACTION, nrows=nrows
+        DATA_PATH / f"{_type}_transaction.csv.tar.gz", index_col=IDX_LABEL, dtype=DATA_TYPES_TRANSACTION, nrows=nrows
     )
-    _df = _df.join(pd.read_csv(DATA_PATH / f"{_type}_identity.csv", index_col=IDX_LABEL, dtype=DATA_TYPES_ID))
+    _df = _df.join(pd.read_csv(DATA_PATH / f"{_type}_identity.csv.tar.gz", index_col=IDX_LABEL, dtype=DATA_TYPES_ID))
 
     return _df
 

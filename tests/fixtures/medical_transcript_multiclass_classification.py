@@ -12,7 +12,7 @@ from sklearn.preprocessing import FunctionTransformer
 
 from giskard import Dataset
 from giskard.models.sklearn import SKLearnModel
-from tests.url_utils import fetch_from_ftp
+from tests.url_utils import fetch_test_data
 
 # Constants.
 LABELS_LIST = [
@@ -29,13 +29,13 @@ TARGET_COLUMN_NAME = "medical_specialty"
 LANGUAGE = "english"
 
 # Paths.
-DATA_URL = "ftp://sys.giskard.ai/pub/unit_test_resources/medical_transcript_classification_dataset/mtsamples.csv"
-DATA_PATH = Path.home() / ".giskard" / "medical_transcript_classification_dataset" / "mtsamples.csv"
+DATA_URL = "https://giskard-library-test-datasets.s3.eu-north-1.amazonaws.com/medical_transcript_classification_dataset-mtsamples.csv.tar.gz"
+DATA_PATH = Path.home() / ".giskard" / "medical_transcript_classification_dataset" / "mtsamples.csv.tar.gz"
 
 
 def load_data() -> pd.DataFrame:
     # Download dataset.
-    fetch_from_ftp(DATA_URL, DATA_PATH)
+    fetch_test_data(DATA_URL, DATA_PATH)
     df = pd.read_csv(DATA_PATH)
 
     # Drop useless columns.
