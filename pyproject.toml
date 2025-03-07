@@ -91,7 +91,7 @@ test = [
     "pytest-memray; sys_platform == 'linux' or sys_platform == 'darwin'",
     "pytest-reportlog>=0.4.0",
     "pytest-xdist>=3.3.1",
-    "ragas>=0.1.5",
+    "ragas>=0.1.5, <=0.2.7",
     "shap<0.45",                                                          # Fixing this to avoid changed on insights
 ]
 doc = [
