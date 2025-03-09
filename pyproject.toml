@@ -61,7 +61,7 @@ dev = [
     "scikit-learn==1.4.2",
 ]
 ml_runtime = [
-    "langchain>=0.0.275",
+    "langchain>=0.0.275, <0.3",
     "langchain-community",
     "nltk>=3.8.1",
     "xgboost>=1.7.5",
