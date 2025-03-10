@@ -111,7 +111,7 @@ import giskard
 api_base = "http://localhost:11434" # default api_base for local Ollama
 
 # See supported models here: https://docs.litellm.ai/docs/providers/ollama#ollama-models
-giskard.llm.set_llm_model("ollama/llama3.1", disable_structured_output=True, api_base=api_base)
+giskard.llm.set_llm_model("ollama/qwen2.5", disable_structured_output=True, api_base=api_base)
 giskard.llm.set_embedding_model("ollama/nomic-embed-text", api_base=api_base)
 ```
 
