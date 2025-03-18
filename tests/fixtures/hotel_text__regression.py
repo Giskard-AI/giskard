@@ -11,11 +11,11 @@ from sklearn.preprocessing import FunctionTransformer
 
 from giskard import Dataset
 from giskard.models.sklearn import SKLearnModel
-from tests.url_utils import fetch_from_ftp
+from tests.url_utils import fetch_test_data
 
 # Data.
-DATA_URL = "ftp://sys.giskard.ai/pub/unit_test_resources/hotel_text_regression_dataset/Hotel_Reviews.csv"
-DATA_PATH = Path.home() / ".giskard" / "hotel_text_regression_dataset" / "Hotel_Reviews.csv"
+DATA_URL = "https://giskard-library-test-datasets.s3.eu-north-1.amazonaws.com/hotel_text_regression_dataset-Hotel_Reviews.csv.tar.gz"
+DATA_PATH = Path.home() / ".giskard" / "hotel_text_regression_dataset" / "Hotel_Reviews.csv.tar.gz"
 
 # Constants.
 FEATURE_COLUMN_NAME = "Full_Review"
@@ -33,7 +33,7 @@ def load_data(**kwargs) -> pd.DataFrame:
 
 @pytest.fixture(scope="session")
 def hotel_text_raw_data():
-    fetch_from_ftp(DATA_URL, DATA_PATH)
+    fetch_test_data(DATA_URL, DATA_PATH)
 
     raw_data = load_data(nrows=105)[[FEATURE_COLUMN_NAME, TARGET_COLUMN_NAME]]
     return raw_data
