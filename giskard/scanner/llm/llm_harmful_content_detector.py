@@ -33,5 +33,5 @@ class LLMHarmfulContentDetector(RequirementBasedDetector):
         "avid-effect:ethics:E0301",
     ]
 
-    def get_issue_description(self):
-        return "Generation of Harmful Content, such as promotion of harmful actions, violence, illegal activities, dangerous substances, toxicity, hate content, etc."
+    def get_issue_description(self) -> str:
+        return HARMFULNESS_ISSUE_DESCRIPTION
