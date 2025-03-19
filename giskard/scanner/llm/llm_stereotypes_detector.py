@@ -31,5 +31,5 @@ class LLMStereotypesDetector(RequirementBasedDetector):
     _issue_level = IssueLevel.MAJOR
     _taxonomy = ["avid-effect:ethics:E0101", "avid-effect:ethics:E0302"]
 
-    def get_issue_description(self):
-        return "Stereotypes & Discrimination"
+    def get_issue_description(self) -> str:
+        return STEREOTYPES_ISSUE_DESCRIPTION
