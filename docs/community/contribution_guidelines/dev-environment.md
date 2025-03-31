@@ -15,13 +15,15 @@ pdm install
 ## Pre-commit hooks installation
 Pre-commit hooks ensure that the basic code quality checks are performed before the code is committed. Pre-commit has already been installed as a dev dependency using `pdm`.
 
-The current pre-commit hool configuration is defined in `.pre-commit-config.yaml`
+The current pre-commit cool configuration is defined in `.pre-commit-config.yaml`.
 
 To install it run:
 
 ```shell
 pre-commit install
 ```
+
+Make sure to comment out `skip: true` in the `.pre-commit-config.yaml` file to enable the pre-commit hooks for `ggshield` to use GitGuardian.
 
 ## Run pre-commit hook manually to fix easy issues
 In case the build is failing because of the pre-commit checks that don't pass it's possible to fix easy issues by running:
@@ -30,7 +32,7 @@ In case the build is failing because of the pre-commit checks that don't pass it
 pre-commit run --all-files
 ```
 
-and then committing the fixed files
+The pre-commit hooks are also automatically run when committing.
 
 ## Troubleshooting
 
