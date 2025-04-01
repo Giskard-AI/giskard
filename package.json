@@ -19,6 +19,6 @@
     "uglify": "^0.1.5"
   },
   "dependencies": {
-    "alpinejs": "^3.14.8"
+    "alpinejs": "^3.14.9"
   }
 }
