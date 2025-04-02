@@ -5,7 +5,7 @@
 groups = ["default", "dev", "doc", "llm", "ml-runtime", "talk", "tensorflow", "test"]
 strategy = ["inherit_metadata"]
 lock_version = "4.5.0"
-content_hash = "sha256:b18e8c1e2f6126eb9dc6080421c8b84050718fd491ae42fef552648ac88ab0ab"
+content_hash = "sha256:f30ac8bc2e3b8be322b4fc637eaa90014d34bf379ac1ee0a44a21e92f20f7947"
 
 [[metadata.targets]]
 requires_python = ">=3.9,<3.13"
@@ -3233,7 +3233,7 @@ files = [
 
 [[package]]
 name = "litellm"
-version = "1.64.1"
+version = "1.65.1"
 requires_python = "!=2.7.*,!=3.0.*,!=3.1.*,!=3.2.*,!=3.3.*,!=3.4.*,!=3.5.*,!=3.6.*,!=3.7.*,>=3.8"
 summary = "Library to easily interface with LLM API providers"
 groups = ["llm"]
@@ -3244,15 +3244,15 @@ dependencies = [
     "importlib-metadata>=6.8.0",
     "jinja2<4.0.0,>=3.1.2",
     "jsonschema<5.0.0,>=4.22.0",
-    "openai>=1.66.1",
+    "openai>=1.68.2",
     "pydantic<3.0.0,>=2.0.0",
     "python-dotenv>=0.2.0",
     "tiktoken>=0.7.0",
     "tokenizers",
 ]
 files = [
-    {file = "litellm-1.64.1-py3-none-any.whl", hash = "sha256:bd7cb4977dee121551f0322d48b4e51e9a508fc2ac2273e7c5405ca69354e352"},
-    {file = "litellm-1.64.1.tar.gz", hash = "sha256:73bac891b1fbd77ada4d691e967657c53f48c207d9c3ba414ad0ffe3e7ec8f89"},
+    {file = "litellm-1.65.1-py3-none-any.whl", hash = "sha256:56478866373c4af13d86e71ab44fd337305dee39a82d742bc496bc56a2d732a1"},
+    {file = "litellm-1.65.1.tar.gz", hash = "sha256:cbc8d7dfa5f7f47e6842796ca0c39682eb874718faab17fa991ab6c2f55e844c"},
 ]
 
 [[package]]
@@ -6487,7 +6487,7 @@ files = [
 
 [[package]]
 name = "sentry-sdk"
-version = "2.25.0"
+version = "2.25.1"
 requires_python = ">=3.6"
 summary = "Python client for Sentry (https://sentry.io)"
 groups = ["ml-runtime"]
@@ -6496,8 +6496,8 @@ dependencies = [
     "urllib3>=1.26.11",
 ]
 files = [
-    {file = "sentry_sdk-2.25.0-py2.py3-none-any.whl", hash = "sha256:aa0f558209c1819391421d65e25b1c4000f49580e6ecf5c05ff0c6e74f74470b"},
-    {file = "sentry_sdk-2.25.0.tar.gz", hash = "sha256:a6e623691ff03d1758f940fe421e5b65f313f4ac37638079ab94d1b6f052eb15"},
+    {file = "sentry_sdk-2.25.1-py2.py3-none-any.whl", hash = "sha256:60b016d0772789454dc55a284a6a44212044d4a16d9f8448725effee97aaf7f6"},
+    {file = "sentry_sdk-2.25.1.tar.gz", hash = "sha256:f9041b7054a7cf12d41eadabe6458ce7c6d6eea7a97cfe1b760b6692e9562cf0"},
 ]
 
 [[package]]
@@ -7316,13 +7316,13 @@ files = [
 
 [[package]]
 name = "termcolor"
-version = "3.0.0"
+version = "3.0.1"
 requires_python = ">=3.9"
 summary = "ANSI color formatting for output in terminal"
 groups = ["tensorflow"]
 files = [
-    {file = "termcolor-3.0.0-py3-none-any.whl", hash = "sha256:fdfdc9f2bdb71c69fbbbaeb7ceae3afef0461076dd2ee265bf7b7c49ddb05ebb"},
-    {file = "termcolor-3.0.0.tar.gz", hash = "sha256:0cd855c8716383f152ad02bbb39841d6e4694538ff5d424088e56c8b81fde525"},
+    {file = "termcolor-3.0.1-py3-none-any.whl", hash = "sha256:da1ed4ec8a5dc5b2e17476d859febdb3cccb612be1c36e64511a6f2485c10c69"},
+    {file = "termcolor-3.0.1.tar.gz", hash = "sha256:a6abd5c6e1284cea2934443ba806e70e5ec8fd2449021be55c280f8a3731b611"},
 ]
 
 [[package]]
