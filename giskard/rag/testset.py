@@ -169,7 +169,7 @@ class QATestset:
                 "model": "gpt-4o"
             }
         }
-        content = template.format(repo_id=repo_id, num_items=len(self.items), config=json.dumps(config, indent=4))
+        content = template.format(repo_id=repo_id, num_items=len(self._dataframe), config=json.dumps(config, indent=4))
         return DatasetCard(content=content).push_to_hub(repo_id=repo_id, token=token, repo_type="dataset")
 
     @classmethod
