@@ -141,6 +141,239 @@ Built-in metrics include `ragas_context_precision`, `ragas_faithfulness`, `ragas
 
 Alternatively, you can directly pass a list of answers instead of `get_answer_fn` to the `evaluate` function, you can then pass the retrieved documents as an optional argument `retrieved_documents` to compute the RAGAS metrics.
 
+### Custom Metrics
+
+**You can also implement your own metrics** using the base `Metric` class from Giskard.
+
+Here is an example of how you can implement a custom LLM-as-judge metric, as described in the [RAG cookbook](https://huggingface.co/learn/cookbook/en/rag_evaluation#evaluating-rag-performance) by Huggingface.
+
+#### Step 1 - Subclass the Metric class
+
+Implement the new metric in the `__call__` method: 
+
+```python
+
+from giskard.rag.metrics.base import Metric
+
+from giskard.llm.client import get_default_client
+from giskard.rag.question_generators.utils import parse_json_output
+from giskard.llm.errors import LLMGenerationError
+from giskard.rag.metrics.correctness import format_conversation
+
+
+class CorrectnessScoreMetric(Metric):
+
+    def __call__(self, question_sample: dict, answer: AgentAnswer) -> dict:
+        """ your docstring here
+        """
+
+        # Implement your LLM call with litellm
+        llm_client = self._llm_client or get_default_client()
+        try:
+            out = llm_client.complete(
+                messages=[
+                    ChatMessage(
+                        role="system",
+                        content=SYSTEM_PROMPT,
+                    ),
+                    ChatMessage(
+                        role="user",
+                        content=INPUT_TEMPLATE.format(
+                            conversation=format_conversation(
+                                question_sample.conversation_history
+                                + [{"role": "user", "content": question_sample.question}]
+                            ),
+                            answer=answer.message,
+                            reference_answer=question_sample.reference_answer,
+                        ),
+                    ),
+                ],
+                temperature=0,
+                format="json_object",
+            )
+            
+            # I will ask the LLM to output a JSON object
+            # Let us give the code to parse the LLM's output
+            json_output = parse_json_output(
+                out.content,
+                llm_client=llm_client,
+                keys=["correctness_score"],
+                caller_id=self.__class__.__name__,
+            )
+
+            return json_output
+
+        except Exception as err:
+            raise LLMGenerationError("Error while evaluating the agent") from err
+```
+
+#### Step 2 - Add your prompts
+
+```python
+SYSTEM_PROMPT = """Your task is to evaluate a Q/A system. 
+The user will give you a question, an expected answer and the system's response.
+You will evaluate the system's response and provide a score.
+We are asking ourselves if the response is correct, accurate and factual, based on the reference answer.
+
+Guidelines:
+1. Write a score that is an integer between 1 and 5. You should refer to the scores description.
+2. Follow the JSON format provided below for your output.
+
+Scores description:
+    Score 1: The response is completely incorrect, inaccurate, and/or not factual.
+    Score 2: The response is mostly incorrect, inaccurate, and/or not factual.
+    Score 3: The response is somewhat correct, accurate, and/or factual.
+    Score 4: The response is mostly correct, accurate, and factual.
+    Score 5: The response is completely correct, accurate, and factual.
+
+Output Format (JSON only):
+{{
+    "correctness_score": (your rating, as a number between 1 and 5)
+}}
+
+Do not include any additional text—only the JSON object. Any extra content will result in a grade of 0.
+"""
+
+INPUT_TEMPLATE = """
+### CONVERSATION
+{conversation}
+
+### AGENT ANSWER
+{answer}
+
+### REFERENCE ANSWER
+{reference_answer}
+"""
+```
+
+#### Step 3 - Use your new metric in the evaluation function
+
+Now using your custom metric is as easy as instanciating it and passing it to the `evaluate` function.
+
+```python
+correctness_score = CorrectnessScoreMetric(name="correctness_score")
+
+report = evaluate(answer_fn,
+    testset=testset,
+    knowledge_base=knowledge_base,
+    metrics=[correctness_score])
+``` 
+
+#### Full code
+
+Putting everything together, the final implementation would look like this:
+
+```python
+
+from giskard.rag.metrics.base import Metric
+
+from giskard.llm.client import get_default_client
+from giskard.rag.question_generators.utils import parse_json_output
+from giskard.llm.errors import LLMGenerationError
+from giskard.rag.metrics.correctness import format_conversation
+
+
+SYSTEM_PROMPT = """Your task is to evaluate a Q/A system. 
+The user will give you a question, an expected answer and the system's response.
+You will evaluate the system's response and provide a score.
+We are asking ourselves if the response is correct, accurate and factual, based on the reference answer.
+
+Guidelines:
+1. Write a score that is an integer between 1 and 5. You should refer to the scores description.
+2. Follow the JSON format provided below for your output.
+
+Scores description:
+    Score 1: The response is completely incorrect, inaccurate, and/or not factual.
+    Score 2: The response is mostly incorrect, inaccurate, and/or not factual.
+    Score 3: The response is somewhat correct, accurate, and/or factual.
+    Score 4: The response is mostly correct, accurate, and factual.
+    Score 5: The response is completely correct, accurate, and factual.
+
+Output Format (JSON only):
+{{
+    "correctness_score": (your rating, as a number between 1 and 5)
+}}
+
+Do not include any additional text—only the JSON object. Any extra content will result in a grade of 0.
+"""
+
+INPUT_TEMPLATE = """
+### CONVERSATION
+{conversation}
+
+### AGENT ANSWER
+{answer}
+
+### REFERENCE ANSWER
+{reference_answer}
+"""
+
+
+class CorrectnessScoreMetric(Metric):
+
+    def __call__(self, question_sample: dict, answer: AgentAnswer) -> dict:
+        """
+        Compute the correctness *as a number from 1 to 5* between the agent answer and the reference answer from QATestset.
+
+        Parameters
+        ----------
+        question_sample : dict
+            A question sample from a QATestset.
+        answer : ModelOutput
+            The answer of the agent on the question.
+
+        Returns
+        -------
+        dict
+            The result of the correctness scoring. It contains the key 'correctness_score'.
+        """
+
+        # Implement your evaluation logic with the litellm client
+        llm_client = self._llm_client or get_default_client()
+        try:
+            out = llm_client.complete(
+                messages=[
+                    ChatMessage(
+                        role="system",
+                        content=SYSTEM_PROMPT,
+                    ),
+                    ChatMessage(
+                        role="user",
+                        content=INPUT_TEMPLATE.format(
+                            conversation=format_conversation(
+                                question_sample.conversation_history
+                                + [{"role": "user", "content": question_sample.question}]
+                            ),
+                            answer=answer.message,
+                            reference_answer=question_sample.reference_answer,
+                        ),
+                    ),
+                ],
+                temperature=0,
+                format="json_object",
+            )
+
+            json_output = parse_json_output(
+                out.content,
+                llm_client=llm_client,
+                keys=["correctness_score"],
+                caller_id=self.__class__.__name__,
+            )
+
+            return json_output
+
+        except Exception as err:
+            raise LLMGenerationError("Error while evaluating the agent") from err
+
+
+correctness_score = CorrectnessScoreMetric(name="correctness_score")
+
+report = evaluate(answer_fn,
+    testset=testset,
+    knowledge_base=knowledge_base,
+    metrics=[correctness_score])
+```
+
 ## Troubleshooting
 
 If you encounter any issues, join our [Discord community](https://discord.gg/fkv7CAr3FE) and ask questions in our #support channel.
