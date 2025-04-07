@@ -163,10 +163,10 @@ class QATestset:
         template = template_path.read_text()
 
         # Make and push the dataset card
-        global _default_llm_model
+        # global _default_llm_model
         config = {
             "metadata": {
-                "model": _default_llm_model
+                "model": "gpt-4o"
             }
         }
         content = template.format(repo_id=repo_id, num_items=len(self.items), config=json.dumps(config, indent=4))
