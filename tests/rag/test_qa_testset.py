@@ -186,7 +186,7 @@ def test_qa_testset_push_to_hub(mocker):
     testset.push_to_hub(repo_id="test-repo", token="fake-token", private=True, some_arg="value")
 
     mock_push_to_hub.assert_called_once_with(
-        repo_id="test-repo",
+        "test-repo",
         token="fake-token",
         private=True,
         some_arg="value",
@@ -198,7 +198,7 @@ def test_qa_testset_push_to_hub(mocker):
     )
 
 def test_qa_testset_load_from_hub(mocker):
-    mock_load_dataset = mocker.patch("datasets.load_dataset")
+    mock_load_dataset = mocker.patch("giskard.rag.testset.load_dataset")
     mock_load_dataset.return_value = {
         "train": [
             {
