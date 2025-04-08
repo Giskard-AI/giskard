@@ -1,9 +1,11 @@
 from pathlib import Path
-import tempfile
 from typing import Any, Dict, Optional, Sequence
 
 import json
 from dataclasses import dataclass
+from datasets import load_dataset
+from datasets import Dataset as HFDataset
+from huggingface_hub import DatasetCard
 
 import pandas as pd
 
@@ -15,11 +17,6 @@ if TYPE_CHECKING:
 from ..core.suite import Suite
 from ..datasets.base import Dataset
 from ..testing.tests.llm import test_llm_correctness
-
-
-_HUB_IMPORT_ERROR = ImportError(
-    "`datasets` and `huggingface_hub` are required to push to the Hugging Face Hub. Please install them with `pip install datasets huggingface_hub`"
-)
 
 
 @dataclass
@@ -148,12 +145,6 @@ class QATestset:
             The commit information.
         """
         
-        try:
-            from datasets import Dataset as HFDataset
-            from huggingface_hub import DatasetCard
-        except ImportError:
-            raise _HUB_IMPORT_ERROR
-        
         # Conversion to Dataset from the datasets library
         dataset = HFDataset.from_pandas(self._dataframe)
         dataset.push_to_hub(repo_id, token=token, private=private, **kwargs)
@@ -196,12 +187,6 @@ class QATestset:
         ImportError
             If required dependencies are not installed.
         """
-        try:
-            from datasets import load_dataset
-        except ImportError:
-            raise _HUB_IMPORT_ERROR
-
-        # Load dataset and extract items
         dataset = load_dataset(repo_id, token=token, split="train", **kwargs)
         dataframe = pd.DataFrame(dataset)
         return cls.from_pandas(dataframe)

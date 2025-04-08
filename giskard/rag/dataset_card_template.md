@@ -1,9 +1,11 @@
 ---
 tags:
 - giskard
-- QATestset
-- qa-dataset
-- dataset
+- synthetic
+
+task_categories:
+- text-generation
+- text2text-generation
 ---
 
 # Dataset Card for {repo_id}
