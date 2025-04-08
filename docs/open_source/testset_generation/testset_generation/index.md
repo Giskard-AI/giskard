@@ -279,6 +279,8 @@ from giskard.rag import QATestset
 loaded_testset = QATestset.load("my_testset.jsonl")
 ```
 
+You can push your generated test set to the Hugging Face Hub or load an existing dataset from it using our integration. This allows you to share and reuse datasets easily. For detailed instructions, refer to the [Hugging Face Integration Documentation](https://docs.giskard.ai/en/latest/integrations/huggingface/QATestset.html).
+
 You can also convert it to a pandas DataFrame, for quick inspection or further processing:
 
 ```py
