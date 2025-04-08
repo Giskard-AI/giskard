@@ -158,12 +158,7 @@ class QATestset:
         template = template_path.read_text()
 
         # Make and push the dataset card
-        llm_client = get_default_client()
-        if not hasattr(llm_client, "get_config") or not callable(getattr(llm_client, "get_config")):
-            logging.warning(f"The 'get_config' abstract method has not been implemented for {type(llm_client)}. Configuration is empty.")
-            config = {}
-        else:
-            config = {"metadata": llm_client.get_config()}
+        config = {"metadata": get_default_client().get_config()}
         content = template.format(repo_id=repo_id, num_items=len(self._dataframe), config=json.dumps(config, indent=4))
         return DatasetCard(content=content).push_to_hub(repo_id=repo_id, token=token, repo_type="dataset")
 

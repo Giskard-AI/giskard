@@ -61,6 +61,12 @@ class BaseBedrockClient(LLMClient, ABC):
 
         return self._parse_completion(completion, caller_id)
 
+    def get_config(self) -> dict:
+        """Return the configuration of the LLM client."""
+        return {
+            "client_type": self.__class__.__name__,
+            "model": self.model
+        }
 
 @deprecated("ClaudeBedrockClient is deprecated: https://docs.giskard.ai/en/latest/open_source/setting_up/index.html")
 class ClaudeBedrockClient(BaseBedrockClient):

@@ -24,6 +24,13 @@ class MistralClient(LLMClient):
         self.model = model
         self._client = client or Mistral(api_key=os.getenv("MISTRAL_API_KEY", ""))
 
+    def get_config(self) -> dict:
+        """Return the configuration of the LLM client."""
+        return {
+            "client_type": self.__class__.__name__,
+            "model": self.model
+        }
+
     def complete(
         self,
         messages: Sequence[ChatMessage],

@@ -155,6 +155,7 @@ class LiteLLMClient(LLMClient):
     def get_config(self) -> dict:
         """Return the configuration of the LLM client."""
         return {
+            "client_type": self.__class__.__name__,
             "model": self.model,
             "disable_structured_output": self.disable_structured_output,
             "completion_params": self.completion_params,
