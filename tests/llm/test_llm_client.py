@@ -152,7 +152,7 @@ def test_mistral_client():
     from giskard.llm.client.mistral import MistralClient
 
     llm_client = MistralClient(model="mistral-large", client=client)
-    cfg = client.get_config()
+    cfg = llm_client.get_config()
     assert cfg == {
         "client_type": "MistralClient",
         "model": "mistral-large"
