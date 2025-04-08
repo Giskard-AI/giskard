@@ -31,3 +31,8 @@ class LLMClient(ABC):
         format=None,
     ) -> ChatMessage:
         ...
+
+    @abstractmethod
+    def get_config(self) -> dict:
+        """Return the configuration of the LLM client."""
+        ...

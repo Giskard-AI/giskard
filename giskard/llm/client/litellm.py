@@ -151,3 +151,11 @@ class LiteLLMClient(LLMClient):
                     continue
 
         return ChatMessage(role=response_message.role, content=response_message.content)
+
+    def get_config(self) -> dict:
+        """Return the configuration of the LLM client."""
+        return {
+            "model": self.model,
+            "disable_structured_output": self.disable_structured_output,
+            "completion_params": self.completion_params,
+        }
