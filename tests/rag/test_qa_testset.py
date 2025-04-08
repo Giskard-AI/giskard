@@ -199,36 +199,34 @@ def test_qa_testset_push_to_hub(mocker):
 
 def test_qa_testset_load_from_hub(mocker):
     mock_load_dataset = mocker.patch("giskard.rag.testset.load_dataset")
-    mock_load_dataset.return_value = {
-        "train": [
-            {
-                "id": "1",
-                "question": "Which milk is used to make Camembert?",
-                "reference_answer": "Cow's milk is used to make Camembert.",
-                "reference_context": "Camembert is a moist, soft, creamy, surface-ripened cow's milk cheese.",
-                "conversation_history": [],
-                "metadata": {
-                    "question_type": "simple",
-                    "color": "blue",
-                    "topic": "Cheese_1",
-                    "seed_document_id": "1",
-                },
+    mock_load_dataset.return_value = [
+        {
+            "id": "1",
+            "question": "Which milk is used to make Camembert?",
+            "reference_answer": "Cow's milk is used to make Camembert.",
+            "reference_context": "Camembert is a moist, soft, creamy, surface-ripened cow's milk cheese.",
+            "conversation_history": [],
+            "metadata": {
+                "question_type": "simple",
+                "color": "blue",
+                "topic": "Cheese_1",
+                "seed_document_id": "1",
             },
-            {
-                "id": "2",
-                "question": "Where is Scarmorza from?",
-                "reference_answer": "Scarmorza is from Southern Italy.",
-                "reference_context": "Scamorza is a Southern Italian cow's milk cheese.",
-                "conversation_history": [],
-                "metadata": {
-                    "question_type": "simple",
-                    "color": "red",
-                    "topic": "Cheese_1",
-                    "seed_document_id": "2",
-                },
+        },
+        {
+            "id": "2",
+            "question": "Where is Scarmorza from?",
+            "reference_answer": "Scarmorza is from Southern Italy.",
+            "reference_context": "Scamorza is a Southern Italian cow's milk cheese.",
+            "conversation_history": [],
+            "metadata": {
+                "question_type": "simple",
+                "color": "red",
+                "topic": "Cheese_1",
+                "seed_document_id": "2",
             },
-        ]
-    }
+        },
+    ]
 
     testset = QATestset.load_from_hub(repo_id="test-repo", token="fake-token")
 
