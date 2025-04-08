@@ -62,10 +62,12 @@ def test_litellm_client(completion):
     client.chat.completions.create.return_value = DEMO_OPENAI_RESPONSE
     llm_client = LiteLLMClient("gpt-4o", True, completion_params={"api_key": "api_key"})
     cfg = llm_client.get_config()
-    cfg['client_type'] = "LiteLLMClient"
-    cfg['model'] = "gpt-4o"
-    cfg['disable_structured_output'] = True
-    cfg['completion_params'] = {"api_key": "api_key"}
+    assert cfg == {
+        "client_type": "LiteLLMClient",
+        "model": "gpt-4o",
+        "disable_structured_output": True,
+        "completion_params": {"api_key": "api_key"},
+    }
 
     res = llm_client.complete(
         [ChatMessage(role="system", content="Hello")], temperature=0.11, max_tokens=1
