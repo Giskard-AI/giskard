@@ -114,6 +114,14 @@ def test_litellm_client_custom_model():
     set_llm_model("mock/faux-bot", api_key=API_KEY)
 
     llm_client = get_default_client()
+    cfg = llm_client.get_config()
+    assert cfg == {
+        "client_type": "LiteLLMClient",
+        "model": "mock/faux-bot",
+        "disable_structured_output": False,
+        "completion_params": {"api_key": API_KEY},
+    }
+
     message = "Mock input"
     response = llm_client.complete([ChatMessage(role="user", content=message)])
     assert f"Mock response - {message}" == response.content
@@ -143,7 +151,14 @@ def test_mistral_client():
 
     from giskard.llm.client.mistral import MistralClient
 
-    res = MistralClient(model="mistral-large", client=client).complete(
+    llm_client = MistralClient(model="mistral-large", client=client)
+    cfg = client.get_config()
+    assert cfg == {
+        "client_type": "MistralClient",
+        "model": "mistral-large"
+    }
+
+    res = llm_client.complete(
         [ChatMessage(role="user", content="Hello")], temperature=0.11, max_tokens=12
     )
 
@@ -186,6 +201,11 @@ def test_claude_bedrock_client():
     client = ClaudeBedrockClient(
         bedrock_runtime_client, model="anthropic.claude-3-sonnet-20240229-v1:0", anthropic_version="bedrock-2023-05-31"
     )
+    cfg = client.get_config()
+    assert cfg == {
+        "client_type": "ClaudeBedrockClient",
+        "model": "anthropic.claude-3-sonnet-20240229-v1:0"
+    }
 
     # Call the complete method
     res = client.complete([ChatMessage(role="user", content="Hello")], temperature=0.11, max_tokens=12)
@@ -212,6 +232,11 @@ def test_gemini_client():
 
     # Initialize the GeminiClient with the mocked gemini_api_client
     client = GeminiClient(model="gemini-pro", _client=gemini_api_client)
+    cfg = client.get_config()
+    assert cfg == {
+        "client_type": "GeminiClient",
+        "model": "gemini-pro"
+    }
 
     # Call the complete method
     res = client.complete([ChatMessage(role="user", content="Hello")], temperature=0.11, max_tokens=12)
