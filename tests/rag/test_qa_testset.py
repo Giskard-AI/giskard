@@ -245,8 +245,7 @@ def test_qa_testset_load_from_hub(mocker):
         "topic": "Cheese_1",
         "seed_document_id": "2",
     }
-
-    mock_load_dataset.assert_called_once_with("test-repo", use_auth_token="fake-token")
+    mock_load_dataset.assert_called_once_with("test-repo", token="fake-token", split="train")
 
 
 def test_qa_testset_saving_loading_swedish(tmp_path):
