@@ -202,17 +202,13 @@ INPUT_TEMPLATE = """
 
 #### Step 2: Subclassing the Metric Class
 
-We implement the custom metric by subclassing the `Metric` class provided by `Giskard`.
+We implement the custom metric by subclassing the `Metric` class provided by `giskard.rag.metrics.base`.
 
 ```python
 from giskard.rag.metrics.base import Metric
+from giskard.rag import AgentAnswer
 
 class CorrectnessScoreMetric(Metric):
-    """
-    Custom metric to evaluate the correctness of a system's response based on a reference answer.
-    The metric returns a score between 1 and 5, with 1 being completely incorrect and 5 being completely correct.
-    """
-
     def __call__(self, question_sample: dict, answer: AgentAnswer) -> dict:
         pass
 ```
@@ -222,60 +218,59 @@ Now all we need to do is to fill in this `__call__` method with our logic.
 Metrics are meant to be used with the `evaluate` function. That is where we assume the inputs are coming from. 
 
 Note the input types: 
-- The `question_sample` is a dictionary that must have the following keys: `conversation_history`, `question` and `reference_answer`
-- The `AgentAnswer` is a dataclass containing the output of the RAG system being evaluated. It is defined as follows:
-
-```python
-@dataclass
-class AgentAnswer:
-    message: str
-    documents: Optional[Sequence[str]] = None
-```
+- `question_sample` is a dictionary that must have the following keys: `conversation_history`, `question` and `reference_answer`
+- `answer` is of type `AgentAnswer`, which is a dataclass representing the output of the RAG system being evaluated. It includes two attributes: `message`, which contains the generated response, and `documents`, which holds the retrieved documents. 
 
 The core of our new metric consists in a litellm call with the prompts specified earlier. 
 
 ```python
+from giskard.rag.metrics.base import Metric
+from giskard.rag import AgentAnswer
 from giskard.rag.question_generators.utils import parse_json_output
 from giskard.rag.metrics.correctness import format_conversation
 from giskard.llm.client import get_default_client
 
-def __call__(self, question_sample: dict, answer: AgentAnswer) -> dict:
+from llama_index.core.base.llms.types import ChatMessage
 
-    # Retrieve the llm client
-    llm_client = self._llm_client or get_default_client()
+class CorrectnessScoreMetric(Metric):
+    
+    def __call__(self, question_sample: dict, answer: AgentAnswer) -> dict:
 
-    # Call the llm
-    out = llm_client.complete(
-        messages=[
-            ChatMessage(
-                role="system",
-                content=SYSTEM_PROMPT,
-            ),
-            ChatMessage(
-                role="user",
-                content=INPUT_TEMPLATE.format(
-                    conversation=format_conversation(
-                        question_sample.conversation_history
-                        + [{"role": "user", "content": question_sample.question}]
-                    ),
-                    answer=answer.message,
-                    reference_answer=question_sample.reference_answer,
+        # Retrieve the llm client
+        llm_client = self._llm_client or get_default_client()
+
+        # Call the llm
+        out = llm_client.complete(
+            messages=[
+                ChatMessage(
+                    role="system",
+                    content=SYSTEM_PROMPT,
                 ),
-            ),
-        ],
-        temperature=0,
-        format="json_object",
-    )
+                ChatMessage(
+                    role="user",
+                    content=INPUT_TEMPLATE.format(
+                        conversation=format_conversation(
+                            question_sample.conversation_history
+                            + [{"role": "user", "content": question_sample.question}]
+                        ),
+                        answer=answer.message,
+                        reference_answer=question_sample.reference_answer,
+                    ),
+                ),
+            ],
+            temperature=0,
+            format="json_object",
+        )
 
-    # Parse the output string representation of a JSON object into a dictionary
-    json_output = parse_json_output(
-        out.content,
-        llm_client=llm_client,
-        keys=["correctness_score"],
-        caller_id=self.__class__.__name__,
-    )
+        # Parse the output string representation of a JSON object into a dictionary
+        json_output = parse_json_output(
+            out.content,
+            llm_client=llm_client,
+            keys=["correctness_score"],
+            caller_id=self.__class__.__name__,
+        )
 
-    return json_output
+        return json_output
 ```
 
 Note how the `keys=["correctness_score"]` must match with the keys you asked from the llm in your `SYSTEM_PROMPT`.
@@ -289,9 +284,12 @@ As you can see, it is as simple as calling our llm and parsing its output as a d
 from giskard.llm.client import get_default_client
 from giskard.llm.errors import LLMGenerationError
 
+from giskard.rag import AgentAnswer
 from giskard.rag.metrics.base import Metric
 from giskard.rag.question_generators.utils import parse_json_output
 from giskard.rag.metrics.correctness import format_conversation
+
+from llama_index.core.base.llms.types import ChatMessage
 
 SYSTEM_PROMPT = """Your task is to evaluate a Q/A system. 
 The user will give you a question, an expected answer and the system's response.
@@ -329,11 +327,6 @@ INPUT_TEMPLATE = """
 """
 
 class CorrectnessScoreMetric(Metric):
-    """
-    Custom metric to evaluate the correctness of a system's response based on a reference answer.
-    The metric returns a score between 1 and 5, with 1 being completely incorrect and 5 being completely correct.
-    """
-
     def __call__(self, question_sample: dict, answer: AgentAnswer) -> dict:
         """
         Compute the correctness *as a number from 1 to 5* between the agent answer and the reference answer.
