@@ -69,7 +69,6 @@ reference/rag-toolset/index
 reference/tests/index
 reference/slicing-functions/index
 reference/transformation-functions/index
-reference/push/index
 reference/suite/index
 ```
 
