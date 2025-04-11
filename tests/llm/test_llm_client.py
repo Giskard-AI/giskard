@@ -69,9 +69,7 @@ def test_litellm_client(completion):
         "completion_params": {"api_key": "api_key"},
     }
 
-    res = llm_client.complete(
-        [ChatMessage(role="system", content="Hello")], temperature=0.11, max_tokens=1
-    )
+    res = llm_client.complete([ChatMessage(role="system", content="Hello")], temperature=0.11, max_tokens=1)
 
     completion.assert_called_once()
     assert completion.call_args[1]["messages"] == [{"role": "system", "content": "Hello"}]
@@ -153,14 +151,9 @@ def test_mistral_client():
 
     llm_client = MistralClient(model="mistral-large", client=client)
     cfg = llm_client.get_config()
-    assert cfg == {
-        "client_type": "MistralClient",
-        "model": "mistral-large"
-    }
+    assert cfg == {"client_type": "MistralClient", "model": "mistral-large"}
 
-    res = llm_client.complete(
-        [ChatMessage(role="user", content="Hello")], temperature=0.11, max_tokens=12
-    )
+    res = llm_client.complete([ChatMessage(role="user", content="Hello")], temperature=0.11, max_tokens=12)
 
     client.chat.complete.assert_called_once()
     assert client.chat.complete.call_args[1]["messages"] == [{"role": "user", "content": "Hello"}]
@@ -202,10 +195,7 @@ def test_claude_bedrock_client():
         bedrock_runtime_client, model="anthropic.claude-3-sonnet-20240229-v1:0", anthropic_version="bedrock-2023-05-31"
     )
     cfg = client.get_config()
-    assert cfg == {
-        "client_type": "ClaudeBedrockClient",
-        "model": "anthropic.claude-3-sonnet-20240229-v1:0"
-    }
+    assert cfg == {"client_type": "ClaudeBedrockClient", "model": "anthropic.claude-3-sonnet-20240229-v1:0"}
 
     # Call the complete method
     res = client.complete([ChatMessage(role="user", content="Hello")], temperature=0.11, max_tokens=12)
@@ -233,10 +223,7 @@ def test_gemini_client():
     # Initialize the GeminiClient with the mocked gemini_api_client
     client = GeminiClient(model="gemini-pro", _client=gemini_api_client)
     cfg = client.get_config()
-    assert cfg == {
-        "client_type": "GeminiClient",
-        "model": "gemini-pro"
-    }
+    assert cfg == {"client_type": "GeminiClient", "model": "gemini-pro"}
 
     # Call the complete method
     res = client.complete([ChatMessage(role="user", content="Hello")], temperature=0.11, max_tokens=12)

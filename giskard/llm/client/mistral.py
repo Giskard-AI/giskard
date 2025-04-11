@@ -26,10 +26,7 @@ class MistralClient(LLMClient):
 
     def get_config(self) -> dict:
         """Return the configuration of the LLM client."""
-        return {
-            "client_type": self.__class__.__name__,
-            "model": self.model
-        }
+        return {"client_type": self.__class__.__name__, "model": self.model}
 
     def complete(
         self,
