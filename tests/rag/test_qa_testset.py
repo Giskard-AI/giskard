@@ -178,10 +178,10 @@ def test_qa_testset_saving_loading(tmp_path):
 
 
 def test_qa_testset_push_to_hf_hub(mocker):
-    testset = QATestset(make_swedish_testset_samples())  # Use the swedish dataset for speed 
+    testset = QATestset(make_swedish_testset_samples())  # Use the swedish dataset for speed
 
-    mock_push_to_hf_hub = mocker.patch("datasets.Dataset.push_to_hf_hub")
-    mock_dataset_card_push = mocker.patch("huggingface_hub.DatasetCard.push_to_hf_hub")
+    mock_push_to_hf_hub = mocker.patch("datasets.Dataset.push_to_hub")
+    mock_dataset_card_push = mocker.patch("huggingface_hub.DatasetCard.push_to_hub")
 
     testset.push_to_hf_hub(repo_id="test-repo", token="fake-token", private=True, some_arg="value")
 
@@ -191,11 +191,8 @@ def test_qa_testset_push_to_hf_hub(mocker):
         private=True,
         some_arg="value",
     )
-    mock_dataset_card_push.assert_called_once_with(
-        repo_id="test-repo", 
-        token="fake-token", 
-        repo_type="dataset"
-    )
+    mock_dataset_card_push.assert_called_once_with(repo_id="test-repo", token="fake-token", repo_type="dataset")
+
 
 def test_qa_testset_load_from_hf_hub(mocker):
     mock_load_dataset = mocker.patch("giskard.rag.testset.load_dataset")
