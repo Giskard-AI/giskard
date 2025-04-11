@@ -1,5 +1,5 @@
 Text generation tests
-=================
+=====================
 
 - **Injections**
 
@@ -14,9 +14,9 @@ Text generation tests
   - :func:`~.giskard.testing.tests.llm.test_llm_output_against_requirement_per_row`
   - :func:`~.giskard.testing.tests.llm.test_llm_single_output_against_requirement`
   - :func:`~.giskard.testing.tests.llm.test_llm_output_against_requirement`
-  
+
 - **Ground Truth**
-  
+
   - :func:`~.giskard.testing.tests.llm.test_llm_ground_truth`
   - :func:`~.giskard.testing.tests.llm.test_llm_ground_truth_similarity`
   - :func:`~.giskard.testing.tests.llm.test_llm_as_a_judge_ground_truth_similarity`
