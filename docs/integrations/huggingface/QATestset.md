@@ -1,6 +1,6 @@
 # 📤 Push a QATestset to the Hugging Face Hub
 
-**Learn how to upload and manage your QATestset on the Hugging Face Hub using the `push_to_hub` feature.**
+**Learn how to upload and manage your QATestset on the Hugging Face Hub using the `push_to_hf_hub` feature.**
 
 This tutorial will guide you through the steps to push a dataset to the Hugging Face Hub and load it back for reuse.
 
@@ -18,25 +18,25 @@ Set your Hugging Face authentication token (`HF_TOKEN`) to enable access to your
 
 ## Push Your Dataset to the Hub
 
-Use the `push_to_hub` method to upload your dataset to the Hugging Face Hub. Replace `<username>` with your Hugging Face username and `<dataset_name>` with the desired name for your dataset:
+Use the `push_to_hf_hub` method to upload your dataset to the Hugging Face Hub. Replace `<username>` with your Hugging Face username and `<dataset_name>` with the desired name for your dataset:
 
 This example demonstrates how to load a `QATestset` from the file `test_set.jsonl` and push it to the Hugging Face Hub:
 
 ```python
 from giskard.rag.testset import QATestset
 test_set = QATestset.load("test_set.jsonl")
-test_set.push_to_hub("<username>/<dataset_name>")
+test_set.push_to_hf_hub("<username>/<dataset_name>")
 ```
 
 Once the dataset is successfully pushed, it will be available on your Hugging Face profile.
 
 ## Load the Dataset from the Hub
 
-To reuse the dataset, you can load it back using the `load_from_hub` method. This example demonstrates how to load the dataset and convert it to a pandas DataFrame for inspection:
+To reuse the dataset, you can load it back using the `load_from_hf_hub` method. This example demonstrates how to load the dataset and convert it to a pandas DataFrame for inspection:
 
 ```python
 from giskard.rag.testset import QATestset
-dset = QATestset.load_from_hub("<username>/<dataset_name>")
+dset = QATestset.load_from_hf_hub("<username>/<dataset_name>")
 dset.to_pandas().head()
 ```
 

@@ -123,7 +123,7 @@ class QATestset:
         dataframe = pd.read_json(path, orient="records", lines=True)
         return cls.from_pandas(dataframe)
 
-    def push_to_hub(
+    def push_to_hf_hub(
         self,
         repo_id: str,
         token: str | None = None,
@@ -163,7 +163,7 @@ class QATestset:
         return DatasetCard(content=content).push_to_hub(repo_id=repo_id, token=token, repo_type="dataset")
 
     @classmethod
-    def load_from_hub(cls, repo_id: str, token: str | None = None, **kwargs: Any) -> "QATestset":
+    def load_from_hf_hub(cls, repo_id: str, token: str | None = None, **kwargs: Any) -> "QATestset":
         """
         Load an instance of the class from the Hugging Face Hub.
 

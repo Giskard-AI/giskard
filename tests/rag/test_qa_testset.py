@@ -177,15 +177,15 @@ def test_qa_testset_saving_loading(tmp_path):
     )
 
 
-def test_qa_testset_push_to_hub(mocker):
+def test_qa_testset_push_to_hf_hub(mocker):
     testset = QATestset(make_swedish_testset_samples())  # Use the swedish dataset for speed 
 
-    mock_push_to_hub = mocker.patch("datasets.Dataset.push_to_hub")
-    mock_dataset_card_push = mocker.patch("huggingface_hub.DatasetCard.push_to_hub")
+    mock_push_to_hf_hub = mocker.patch("datasets.Dataset.push_to_hf_hub")
+    mock_dataset_card_push = mocker.patch("huggingface_hub.DatasetCard.push_to_hf_hub")
 
-    testset.push_to_hub(repo_id="test-repo", token="fake-token", private=True, some_arg="value")
+    testset.push_to_hf_hub(repo_id="test-repo", token="fake-token", private=True, some_arg="value")
 
-    mock_push_to_hub.assert_called_once_with(
+    mock_push_to_hf_hub.assert_called_once_with(
         "test-repo",
         token="fake-token",
         private=True,
@@ -197,7 +197,7 @@ def test_qa_testset_push_to_hub(mocker):
         repo_type="dataset"
     )
 
-def test_qa_testset_load_from_hub(mocker):
+def test_qa_testset_load_from_hf_hub(mocker):
     mock_load_dataset = mocker.patch("giskard.rag.testset.load_dataset")
     mock_load_dataset.return_value = [
         {
@@ -228,7 +228,7 @@ def test_qa_testset_load_from_hub(mocker):
         },
     ]
 
-    testset = QATestset.load_from_hub(repo_id="test-repo", token="fake-token")
+    testset = QATestset.load_from_hf_hub(repo_id="test-repo", token="fake-token")
 
     assert len(testset.samples) == 2
     assert testset.samples[0].question == "Which milk is used to make Camembert?"
