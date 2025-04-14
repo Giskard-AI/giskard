@@ -33,11 +33,11 @@ We officially support Python 3.9, 3.10 and 3.11.
 
 ______________________________________________________________________
 
-Giskard is an open-source Python library that **automatically detects performance, bias & security issues in AI applications**. The library covers LLM-based applications such as RAG agents, all the way to traditional ML models for tabular data. 
+Giskard is an open-source Python library that **automatically detects performance, bias & security issues in AI applications**. The library covers LLM-based applications such as RAG agents, all the way to traditional ML models for tabular data.
 
 ## Scan: Automatically assess your LLM-based agents for performance, bias & security issues ⤵️
 
-Issues detected include: 
+Issues detected include:
 - Hallucinations
 - Harmful content generation
 - Prompt injection
@@ -63,20 +63,20 @@ If you're testing a RAG application, you can get an even more in-depth assessmen
     - `Rewriter`: rewrite the user query to make it more relevant to the knowledge base or to account for chat history
     - `Router`: filter the query of the user based on his intentions
     - `Knowledge Base`: the set of documents given to the RAG to generate the answers
-  
+
 <p align="center">
   <img src="https://raw.githubusercontent.com/giskard-ai/giskard/main/readme/RAGET_updated.gif" alt="Test Suite Example" width="800">
 </p>
 
 
 Giskard works with any model, in any environment and integrates seamlessly with your favorite tools ⤵️ <br/>
- 
+
 <p align="center">
   <img width='600' src="https://raw.githubusercontent.com/giskard-ai/giskard/main/readme/tools_updated.png">
 </p>
 <br/>
 
-Looking for solutions to evaluate computer vision models? Check out [giskard-vision](https://github.com/Giskard-AI/giskard-vision), a library dedicated for computer vision tasks. 
+Looking for solutions to evaluate computer vision models? Check out [giskard-vision](https://github.com/Giskard-AI/giskard-vision), a library dedicated for computer vision tasks.
 
 # Contents
 
@@ -94,13 +94,13 @@ Let's build an agent that answers questions about climate change, based on the 2
 
 Before starting let's install the required libraries:
 ```sh
-pip install langchain tiktoken "pypdf<=3.17.0"
+pip install langchain-openai tiktoken "pypdf<=3.17.0"
 ```
 
 
 ```python
-from langchain import OpenAI, FAISS, PromptTemplate
-from langchain.embeddings import OpenAIEmbeddings
+from langchain import FAISS, PromptTemplate
+from langchain_openai import OpenAIEmbeddings, OpenAI
 from langchain.document_loaders import PyPDFLoader
 from langchain.chains import RetrievalQA
 from langchain.text_splitter import RecursiveCharacterTextSplitter
@@ -193,7 +193,7 @@ knowledge_base = KnowledgeBase.from_pandas(df, columns=["column_1", "column_2"])
 
 # Generate a testset with 10 questions & answers for each question types (this will take a while)
 testset = generate_testset(
-    knowledge_base, 
+    knowledge_base,
     num_questions=60,
     language='en',  # optional, we'll auto detect if not provided
     agent_description="A customer support chatbot for company X", # helps generating better questions
@@ -250,6 +250,6 @@ We thank the following companies which are sponsoring our project with monthly d
 **[Biolevate](https://www.biolevate.com/)**
 
 <img src="https://awsmp-logos.s3.amazonaws.com/seller-wgamx5z6umune/2d10badd2ccac49699096ea7fb986b98.png" alt="Biolevate logo" width="400"/>
- 
+
 
 
