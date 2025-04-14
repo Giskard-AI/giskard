@@ -15,7 +15,7 @@ pdm install
 ## Pre-commit hooks installation
 Pre-commit hooks ensure that the basic code quality checks are performed before the code is committed. Pre-commit has already been installed as a dev dependency using `pdm`.
 
-The current pre-commit cool configuration is defined in `.pre-commit-config.yaml`.
+The current pre-commit hook configuration is defined in `.pre-commit-config.yaml`.
 
 To install it run:
 
