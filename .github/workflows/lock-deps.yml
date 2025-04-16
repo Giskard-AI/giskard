@@ -27,7 +27,7 @@ jobs:
     steps:
       - name: Check if organization member
         id: is_organization_member
-        uses: JamesSingleton/is-organization-member@1.0.1
+        uses: JamesSingleton/is-organization-member@1.1.0
         with:
           organization: Giskard-AI
           username: ${{ github.actor }}
@@ -62,12 +62,12 @@ jobs:
         run: rm -rf pdm.lock && pdm lock -G :all
 
       - name: Configure git
-        run:  |
+        run: |
           git config --global user.name 'BotLocker'
           git config --global user.email 'bot.locker@users.noreply.github.com'
 
       - name: Adding file
-        run:  |
+        run: |
           git add pdm.lock
           git commit -m "Regenerating pdm.lock" --allow-empty
 
@@ -81,4 +81,3 @@ jobs:
       - name: Push to target branch
         run: |
           git push origin ${{ steps.extract_branch.outputs.branch }}
-
