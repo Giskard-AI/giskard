@@ -94,7 +94,7 @@ Let's build an agent that answers questions about climate change, based on the 2
 
 Before starting let's install the required libraries:
 ```sh
-pip install langchain-openai tiktoken "pypdf<=3.17.0"
+pip install langchain langchain-community langchain-openai tiktoken "pypdf<=3.17.0"
 ```
 
 
