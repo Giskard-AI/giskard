@@ -2,24 +2,37 @@
 
 After cloning the repository here are the useful commands to set up the local environment:
 
-## Pre-commit hooks installation
-Pre-commit hooks ensure that the basic code quality checks are performed before the code is committed
+## Install dependencies
 
-The current pre-commit hool configuration is defined in `.pre-commit-config.yaml`
+We work with [PDM](https://pdm-project.org/en/latest/) as our package manager. You can find the installation instructions [here](https://pdm-project.org/en/latest/#installation).
+
+After installing PDM, we can install the dependencies by running:
+
+```shell
+pdm install
+```
+
+## Pre-commit hooks installation
+Pre-commit hooks ensure that the basic code quality checks are performed before the code is committed. Pre-commit has already been installed as a dev dependency using `pdm`.
+
+The current pre-commit hook configuration is defined in `.pre-commit-config.yaml`.
 
 To install it run:
 
 ```shell
-brew install pre-commit
 pre-commit install
 ```
 
+Make sure to comment out `skip: true` in the `.pre-commit-config.yaml` file to enable the pre-commit hooks for `ggshield` to use GitGuardian.
+
 ## Run pre-commit hook manually to fix easy issues
-In case the build is failing because of the pre-commit checks that don't pass it's possible to fix easy issues by running
-```sh
+In case the build is failing because of the pre-commit checks that don't pass it's possible to fix easy issues by running:
+
+```shell
 pre-commit run --all-files
 ```
-and then committing the fixed files
+
+The pre-commit hooks are also automatically run when committing.
 
 ## Troubleshooting
 
@@ -28,7 +41,7 @@ and then committing the fixed files
 This is probably caused by a [known issue](https://github.com/microsoft/LightGBM/issues/4707) with `libomp>=12` and LightGBM on MacOS.
 You can avoid this problem by downgrading `libomp` to version 11.1.0, which is compatible with LightGBM.
 
-```sh
+```shell
 $ wget https://raw.githubusercontent.com/Homebrew/homebrew-core/fb8323f2b170bd4ae97e1bac9bf3e2983af3fdb0/Formula/libomp.rb
 $ brew install ./libomp.rb
 ```

@@ -28,12 +28,12 @@ Your answer:
 
 
 def ippc_model_and_dataset() -> Tuple[Model, Dataset]:
-    from langchain import FAISS, OpenAI, PromptTemplate
+    from langchain import FAISS, PromptTemplate
     from langchain.chains import RetrievalQA, load_chain
     from langchain.chains.base import Chain
     from langchain.document_loaders import PyPDFLoader
-    from langchain.embeddings import OpenAIEmbeddings
     from langchain.text_splitter import RecursiveCharacterTextSplitter
+    from langchain_openai import OpenAI, OpenAIEmbeddings
 
     # Define a custom Giskard model wrapper for the serialization.
     class FAISSRAGModel(Model):

@@ -170,10 +170,10 @@ def test_smoothness(
 ):
     """Test if the model is smooth with respect to given columns.
     The smoothness score is computed as follows
-    $$S(y) = \frac{1}{N} \\sum_{i=1}^N (y_{i-1} - 2y_i + y_{i+1})^2$$
+    S(y) = 1/N * sum((y_{i-1} - 2y_i + y_{i+1})^2) for i=1 to N
 
-    Then a ratio $$S(y) / S(y_{\text{ref}})$$, where $$y_{\text{ref}}$$ is given through ref_function,
-    is compared to the threshold in log value. If ref_functino is None, $$S(y_{\text{ref}}) = 1$$
+    Then a ratio S(y) / S(y_ref), where y_ref is given through ref_function,
+    is compared to the threshold in log value. If ref_function is None, S(y_ref) = 1
 
     Parameters
     ----------

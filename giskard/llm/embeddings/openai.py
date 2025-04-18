@@ -7,7 +7,7 @@ from ...utils.iterables import batched
 from ..client import get_default_llm_api
 from .base import BaseEmbedding
 
-_default_embedding_model = "text-embedding-ada-002"
+_default_embedding_model = "text-embedding-3-small"
 
 
 def get_embedding_model() -> str:
@@ -21,7 +21,7 @@ def set_embedding_model(model: str):
     Parameters
     ----------
     model : str
-        Model name (e.g. 'text-embedding-ada-002' or 'text-embedding-3-large').
+        Model name (e.g. 'text-embedding-3-small' or 'text-embedding-3-large').
     """
     global _default_embedding_model
     _default_embedding_model = model

@@ -10,3 +10,4 @@ Tests
    drift
    llm
    data
+   stability
