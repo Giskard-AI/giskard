@@ -526,7 +526,7 @@ class KnowledgeBase:
                 "min_topic_size": self._min_topic_size,
                 "language": self._language,
                 "seed": self.seed,
-                "embedding_model": getattr(self._embedding_model, "model_name", None),
+                "embedding_model": getattr(self._embedding_model, "model", None),
             }
         return self._config_inst
 
