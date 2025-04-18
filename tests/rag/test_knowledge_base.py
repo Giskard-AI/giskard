@@ -137,17 +137,25 @@ def test_knowledge_base_basic_properties():
 
 
 def test_knowledge_base_save_and_load(tmp_path):
-    dimension = 8
+    class PickeableMock(Mock):
+        model = "test-model"
+
+        def __reduce__(self):
+            return (Mock, ())
+
+    dim = 8
     df = pd.DataFrame([f"This is test string {idx + 1}" for idx in range(10)])
 
-    llm_client = Mock()
-    embeddings = Mock()
-    random_embedding = np.random.rand(10, dimension)
-    embeddings.embed.side_effect = [random_embedding]
+    llm_client = PickeableMock()
+    embeddings = PickeableMock()
+    embeddings.embed = Mock()
+    random_embedding = np.random.rand(10, dim)
+    embeddings.embed.side_effect = [random_embedding[i] for i in range(random_embedding.shape[0])]
 
     # Create and save the knowledge base
     knowledge_base = KnowledgeBase.from_pandas(df, llm_client=llm_client, embedding_model=embeddings)
     save_path = tmp_path / "knowledge_base.pkl"
+    knowledge_base._embeddings  # generate embeddings
     knowledge_base.save(save_path)
 
     # Load the knowledge base
@@ -156,7 +164,7 @@ def test_knowledge_base_save_and_load(tmp_path):
     # Verify the loaded knowledge base
     assert len(loaded_knowledge_base) == len(knowledge_base)
     assert np.allclose(loaded_knowledge_base._embeddings, knowledge_base._embeddings)
-    assert loaded_knowledge_base._documents == knowledge_base._documents
+    assert loaded_knowledge_base._knowledge_base_df.equals(knowledge_base._knowledge_base_df)
 
 
 def test_knowledge_base_push_to_hf_hub(mocker):
