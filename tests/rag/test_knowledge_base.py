@@ -134,3 +134,68 @@ def test_knowledge_base_basic_properties():
         df=pd.DataFrame({"text": ["Test 1", "Test 2", "Test 3"]}), llm_client=llm_client, embedding_model=embeddings
     )
     assert len(kb) == 3
+
+
+def test_knowledge_base_save_and_load(tmp_path):
+    dimension = 8
+    df = pd.DataFrame([f"This is test string {idx + 1}" for idx in range(10)])
+
+    llm_client = Mock()
+    embeddings = Mock()
+    random_embedding = np.random.rand(10, dimension)
+    embeddings.embed.side_effect = [random_embedding]
+
+    # Create and save the knowledge base
+    knowledge_base = KnowledgeBase.from_pandas(df, llm_client=llm_client, embedding_model=embeddings)
+    save_path = tmp_path / "knowledge_base.pkl"
+    knowledge_base.save(save_path)
+
+    # Load the knowledge base
+    loaded_knowledge_base = KnowledgeBase.load(save_path)
+
+    # Verify the loaded knowledge base
+    assert len(loaded_knowledge_base) == len(knowledge_base)
+    assert np.allclose(loaded_knowledge_base._embeddings, knowledge_base._embeddings)
+    assert loaded_knowledge_base._documents == knowledge_base._documents
+
+
+def test_knowledge_base_push_to_hf_hub(mocker):
+    df = pd.DataFrame([f"This is test string {idx + 1}" for idx in range(10)])
+    llm_client = Mock()
+    embeddings = Mock()
+    embeddings.embed.side_effect = [np.random.rand(10, 8)]
+
+    knowledge_base = KnowledgeBase.from_pandas(df, llm_client=llm_client, embedding_model=embeddings)
+
+    mock_create_repo = mocker.patch("huggingface_hub.HfApi.create_repo")
+    mock_upload_file = mocker.patch("huggingface_hub.upload_file")
+
+    knowledge_base.push_to_hf_hub(repo_id="test-repo", hf_token="fake-token", private=True)
+
+    mock_create_repo.assert_called_once_with("test-repo", repo_type="dataset", private=True, exist_ok=True)
+    mock_upload_file.assert_called()
+
+
+def test_knowledge_base_load_from_hf_hub(mocker):
+    mock_hf_hub_download = mocker.patch("huggingface_hub.hf_hub_download")
+    mock_hf_hub_download.side_effect = [
+        "/mock/path/knowledge_base.parquet",
+        "/mock/path/embeddings.npy",
+        "/mock/path/reduced_embeddings.npy",
+        "/mock/path/config.json",
+        "/mock/path/llm_client.pkl",
+        "/mock/path/embedding_model.pkl",
+    ]
+
+    mock_load_parquet = mocker.patch("pandas.read_parquet")
+    mock_load_parquet.return_value = pd.DataFrame([f"This is test string {idx + 1}" for idx in range(10)])
+
+    mock_load_pickle = mocker.patch("pickle.load")
+    mock_load_pickle.side_effect = [Mock(), Mock()]
+
+    knowledge_base = KnowledgeBase.load_from_hf_hub(repo_id="test-repo", hf_token="fake-token")
+
+    assert len(knowledge_base) == 10
+    mock_hf_hub_download.assert_any_call(repo_id="test-repo", filename="knowledge_base.parquet", token="fake-token")
+    mock_load_parquet.assert_called_once()
+    mock_load_pickle.assert_called()
