@@ -1,18 +1,17 @@
-from pathlib import Path
-import pickle
 from typing import Dict, Optional, Sequence
 
+import json
 import logging
+import os
+import pickle
+import tempfile
 import uuid
+from pathlib import Path
 
 import numpy as np
 import pandas as pd
+from huggingface_hub import DatasetCard, HfApi, HfFolder, hf_hub_download, upload_file
 from sklearn.cluster import HDBSCAN
-
-import tempfile
-import os
-import json
-from huggingface_hub import DatasetCard, HfApi, HfFolder, upload_file, hf_hub_download
 
 from ..llm.client import ChatMessage, LLMClient, get_default_client
 from ..llm.embeddings import get_default_embedding
@@ -113,12 +112,12 @@ class KnowledgeBase:
 
     # file names to save and load the knowledge base
     _saving_filenames = [
-        "knowledge_base.parquet", 
-        "embeddings.npy", 
-        "reduced_embeddings.npy", 
-        "config.json", 
-        "llm_client.pkl", 
-        "embedding_model.pkl"
+        "knowledge_base.parquet",
+        "embeddings.npy",
+        "reduced_embeddings.npy",
+        "config.json",
+        "llm_client.pkl",
+        "embedding_model.pkl",
     ]
 
     def __init__(
@@ -198,13 +197,13 @@ class KnowledgeBase:
 
         # save raw data
         self._knowledge_base_df.to_parquet(os.path.join(dirpath, "knowledge_base.parquet"))
-    
+
         # save embeddings
         if self._embeddings_inst is not None:
             np.save(os.path.join(dirpath, "embeddings.npy"), self._embeddings_inst)
         if self._reduced_embeddings_inst is not None:
             np.save(os.path.join(dirpath, "reduced_embeddings.npy"), self._reduced_embeddings_inst)
-        
+
         # save llm and embedding objects
         with open(os.path.join(dirpath, "llm_client.pkl"), "wb") as f:
             pickle.dump(self._llm_client, f)
@@ -214,12 +213,13 @@ class KnowledgeBase:
         # save config
         with open(os.path.join(dirpath, "config.json"), "w") as f:
             json.dump(self._config, f, indent=2)
-        
+
         logger.info("KnowledgeBase saved successfully.")
 
     @classmethod
-    def load(cls, dirpath: str, llm_client: Optional[LLMClient] = None,
-        embedding_model: Optional[BaseEmbedding] = None) -> "KnowledgeBase":
+    def load(
+        cls, dirpath: str, llm_client: Optional[LLMClient] = None, embedding_model: Optional[BaseEmbedding] = None
+    ) -> "KnowledgeBase":
         """
         Load a KnowledgeBase instance from a specified directory.
 
@@ -256,14 +256,14 @@ class KnowledgeBase:
 
         Missing optional files will result in warnings, and the KnowledgeBase will be created without those components.
         """
-        
+
         dirpath = Path(dirpath)
         if not dirpath.exists():
             raise ValueError(f"Cannot load the KnowledgeBase. Directory {dirpath} does not exist.")
-        
+
         filepaths = {}
         for filename in cls._saving_filenames:
-            key = filename.split('.')[0] + "_filepath"
+            key = filename.split(".")[0] + "_filepath"
             try:
                 fp = dirpath / filename
                 assert fp.exists(), f"File {filename} not found in {dirpath}."
@@ -297,7 +297,7 @@ class KnowledgeBase:
             with tempfile.TemporaryDirectory() as tmpdir:
 
                 self.save(tmpdir)
-                
+
                 # push the files to the hub
                 for filename in self._saving_filenames:
                     filepath = os.path.join(tmpdir, filename)
@@ -316,27 +316,31 @@ class KnowledgeBase:
             template = template_path.read_text()
 
             # Make and push the dataset card
-            content = template.format(repo_id=repo_id, num_items=len(self._knowledge_base_df), config=json.dumps(self._config_inst, indent=4))
+            content = template.format(
+                repo_id=repo_id, num_items=len(self._knowledge_base_df), config=json.dumps(self._config_inst, indent=4)
+            )
             return DatasetCard(content=content).push_to_hub(repo_id=repo_id, token=hf_token, repo_type="dataset")
-        
+
         except Exception as e:
             logger.error(f"Error pushing to Hugging Face Hub: {e}")
 
     @classmethod
-    def _load(cls, 
-            config_filepath: str, 
-            knowledge_base_filepath: str, 
-            llm_client_filepath: str, 
-            embedding_model_filepath: str, 
-            embeddings_filepath: str, 
-            reduced_embeddings_filepath: str, 
-            llm_client: Optional[LLMClient] = None,
-            embedding_model: Optional[BaseEmbedding] = None) -> "KnowledgeBase":
+    def _load(
+        cls,
+        config_filepath: str,
+        knowledge_base_filepath: str,
+        llm_client_filepath: str,
+        embedding_model_filepath: str,
+        embeddings_filepath: str,
+        reduced_embeddings_filepath: str,
+        llm_client: Optional[LLMClient] = None,
+        embedding_model: Optional[BaseEmbedding] = None,
+    ) -> "KnowledgeBase":
         """
         Load a KnowledgeBase instance by loading data from specified file paths.
 
-        This method initializes a KnowledgeBase object using the provided file paths for configuration, data, 
-        embeddings, and models. It handles loading and deserialization of the necessary components, such as 
+        This method initializes a KnowledgeBase object using the provided file paths for configuration, data,
+        embeddings, and models. It handles loading and deserialization of the necessary components, such as
         the knowledge base data, LLM client, embedding model, and precomputed embeddings.
 
         Parameters
@@ -365,7 +369,7 @@ class KnowledgeBase:
 
         Notes
         -----
-        - If any of the optional file paths (e.g., embeddings or reduced embeddings) are missing or fail to load, 
+        - If any of the optional file paths (e.g., embeddings or reduced embeddings) are missing or fail to load,
           warnings will be logged, and the KnowledgeBase will still be created without those components.
         - Default values will be used for missing configuration parameters or models if they cannot be loaded.
         """
@@ -378,14 +382,14 @@ class KnowledgeBase:
                 config = json.loads(open(config_filepath, "r").read())
             except Exception as e:
                 logger.warning(f"Could not load config: {e}. Using default values.")
-        
+
         llm_client = None
         if not llm_client and llm_client_filepath:
             try:
                 llm_client = pickle.load(open(llm_client_filepath, "rb"))
             except Exception as e:
                 logger.warning(f"Could not load LLM client: {e}. Using default client.")
-        
+
         embedding_model = None
         if not embedding_model and embedding_model_filepath:
             try:
@@ -400,7 +404,7 @@ class KnowledgeBase:
             llm_client=llm_client,
             embedding_model=embedding_model,
             chunk_size=config.get("chunk_size", 2048),
-            seed = config.get("seed"),
+            seed=config.get("seed"),
             min_topic_size=config.get("min_topic_size"),
         )
 
@@ -410,7 +414,7 @@ class KnowledgeBase:
                 kb._store_embeddings_inst(np.load(embeddings_filepath))
             except Exception as e:
                 logger.warning(f"Could not load embeddings: {e}.")
-        
+
         if reduced_embeddings_filepath:
             try:
                 kb._store_reduced_embeddings_inst(np.load(reduced_embeddings_filepath))
@@ -422,12 +426,13 @@ class KnowledgeBase:
 
     @classmethod
     def load_from_hf_hub(
-        cls, 
-        repo_id: str, 
-        hf_token: Optional[str] = None, 
+        cls,
+        repo_id: str,
+        hf_token: Optional[str] = None,
         llm_client: Optional[LLMClient] = None,
         embedding_model: Optional[BaseEmbedding] = None,
-        **hf_hub_kwargs) -> "KnowledgeBase":
+        **hf_hub_kwargs,
+    ) -> "KnowledgeBase":
         """
         Load a KnowledgeBase from the Hugging Face Hub.
 
@@ -471,15 +476,17 @@ class KnowledgeBase:
 
         filepaths = {}
         for filename in cls._saving_filenames:
-            key = filename.split('.')[0] + "_filepath"
+            key = filename.split(".")[0] + "_filepath"
             try:
-                filepaths[key] = hf_hub_download(repo_id, filename=filename, repo_type="dataset", token=hf_token, **hf_hub_kwargs)
+                filepaths[key] = hf_hub_download(
+                    repo_id, filename=filename, repo_type="dataset", token=hf_token, **hf_hub_kwargs
+                )
             except Exception as e:
                 logger.warning(f"Failed to download {filename}: {e}")
                 if filename == "knowledge_base.parquet":
                     raise ValueError(f"Failed to download {filename}. Cannot load the KnowledgeBase without it.")
                 filepaths[key] = None
-        
+
         return cls._load(**filepaths, llm_client=llm_client, embedding_model=embedding_model)
 
     @classmethod
@@ -519,7 +526,7 @@ class KnowledgeBase:
                 "min_topic_size": self._min_topic_size,
                 "language": self._language,
                 "seed": self.seed,
-                "embedding_model": getattr(self._embedding_model, "model_name", None)
+                "embedding_model": getattr(self._embedding_model, "model_name", None),
             }
         return self._config_inst
 
