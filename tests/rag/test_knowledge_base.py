@@ -1,4 +1,4 @@
-from unittest.mock import Mock
+from unittest.mock import Mock, call
 
 import numpy as np
 import pandas as pd
@@ -136,18 +136,27 @@ def test_knowledge_base_basic_properties():
     assert len(kb) == 3
 
 
+class PickeableMock(Mock):
+    model = "test-model"
+
+    def __reduce__(self):
+        return (Mock, ())
+
+
 def test_knowledge_base_save_and_load(tmp_path):
-    dimension = 8
+    dim = 8
     df = pd.DataFrame([f"This is test string {idx + 1}" for idx in range(10)])
 
-    llm_client = Mock()
-    embeddings = Mock()
-    random_embedding = np.random.rand(10, dimension)
-    embeddings.embed.side_effect = [random_embedding]
+    llm_client = PickeableMock()
+    embeddings = PickeableMock()
+    embeddings.embed = Mock()
+    random_embedding = np.random.rand(10, dim)
+    embeddings.embed.side_effect = [random_embedding[i] for i in range(random_embedding.shape[0])]
 
     # Create and save the knowledge base
     knowledge_base = KnowledgeBase.from_pandas(df, llm_client=llm_client, embedding_model=embeddings)
     save_path = tmp_path / "knowledge_base.pkl"
+    knowledge_base._embeddings  # generate embeddings
     knowledge_base.save(save_path)
 
     # Load the knowledge base
@@ -156,28 +165,44 @@ def test_knowledge_base_save_and_load(tmp_path):
     # Verify the loaded knowledge base
     assert len(loaded_knowledge_base) == len(knowledge_base)
     assert np.allclose(loaded_knowledge_base._embeddings, knowledge_base._embeddings)
-    assert loaded_knowledge_base._documents == knowledge_base._documents
+    assert loaded_knowledge_base._knowledge_base_df.equals(knowledge_base._knowledge_base_df)
 
 
 def test_knowledge_base_push_to_hf_hub(mocker):
     df = pd.DataFrame([f"This is test string {idx + 1}" for idx in range(10)])
-    llm_client = Mock()
-    embeddings = Mock()
+    llm_client = PickeableMock()
+    embeddings = PickeableMock()
     embeddings.embed.side_effect = [np.random.rand(10, 8)]
-
     knowledge_base = KnowledgeBase.from_pandas(df, llm_client=llm_client, embedding_model=embeddings)
 
-    mock_create_repo = mocker.patch("huggingface_hub.HfApi.create_repo")
-    mock_upload_file = mocker.patch("huggingface_hub.upload_file")
+    # Mocks
+    mock_upload_file = mocker.patch("giskard.rag.knowledge_base.upload_file", return_value=None)
+    mock_create_repo = mocker.patch("huggingface_hub.HfApi.create_repo", return_value=None)
+    mocker.patch("huggingface_hub.HfFolder.get_token", return_value="fake-token")
+    mocker.patch(
+        "requests.post", return_value=Mock(status_code=200, json=lambda: {"files": [{"uploadUrl": "mock_upload_url"}]})
+    )
+    mocker.patch("os.path.exists", return_value=True)
+    mock_save = mocker.patch.object(knowledge_base, "save", return_value=None)
 
-    knowledge_base.push_to_hf_hub(repo_id="test-repo", hf_token="fake-token", private=True)
+    # Run the method
+    knowledge_base.push_to_hf_hub(repo_id="test-repo", hf_token="fake-token", private=False)
 
-    mock_create_repo.assert_called_once_with("test-repo", repo_type="dataset", private=True, exist_ok=True)
-    mock_upload_file.assert_called()
+    # Assertions
+    mock_create_repo.assert_called_once_with("test-repo", repo_type="dataset", private=False, exist_ok=True)
+    mock_upload_file.assert_called_with(
+        path_or_fileobj=mocker.ANY,
+        path_in_repo="embedding_model.pkl",
+        repo_id="test-repo",
+        repo_type="dataset",
+        token="fake-token",
+    )
+    mock_save.assert_called_once()
 
 
 def test_knowledge_base_load_from_hf_hub(mocker):
-    mock_hf_hub_download = mocker.patch("huggingface_hub.hf_hub_download")
+    # Mocks
+    mock_hf_hub_download = mocker.patch("giskard.rag.knowledge_base.hf_hub_download")
     mock_hf_hub_download.side_effect = [
         "/mock/path/knowledge_base.parquet",
         "/mock/path/embeddings.npy",
@@ -186,16 +211,30 @@ def test_knowledge_base_load_from_hf_hub(mocker):
         "/mock/path/llm_client.pkl",
         "/mock/path/embedding_model.pkl",
     ]
-
     mock_load_parquet = mocker.patch("pandas.read_parquet")
     mock_load_parquet.return_value = pd.DataFrame([f"This is test string {idx + 1}" for idx in range(10)])
-
+    mock_open = mocker.patch("builtins.open", mocker.mock_open(read_data="mocked data"))
     mock_load_pickle = mocker.patch("pickle.load")
     mock_load_pickle.side_effect = [Mock(), Mock()]
 
+    # Run the method
     knowledge_base = KnowledgeBase.load_from_hf_hub(repo_id="test-repo", hf_token="fake-token")
 
+    # Assertions
     assert len(knowledge_base) == 10
-    mock_hf_hub_download.assert_any_call(repo_id="test-repo", filename="knowledge_base.parquet", token="fake-token")
-    mock_load_parquet.assert_called_once()
-    mock_load_pickle.assert_called()
+    mock_hf_hub_download.assert_has_calls(
+        [
+            call("test-repo", filename="knowledge_base.parquet", repo_type="dataset", token="fake-token"),
+            call("test-repo", filename="embeddings.npy", repo_type="dataset", token="fake-token"),
+            call("test-repo", filename="reduced_embeddings.npy", repo_type="dataset", token="fake-token"),
+            call("test-repo", filename="config.json", repo_type="dataset", token="fake-token"),
+            call("test-repo", filename="llm_client.pkl", repo_type="dataset", token="fake-token"),
+            call("test-repo", filename="embedding_model.pkl", repo_type="dataset", token="fake-token"),
+        ]
+    )
+    mock_load_pickle.assert_has_calls(
+        [
+            call(mock_open.return_value),  # For llm_client.pkl
+            call(mock_open.return_value),  # For embedding_model.pkl
+        ]
+    )
