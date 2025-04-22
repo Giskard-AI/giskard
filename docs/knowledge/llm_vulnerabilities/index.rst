@@ -19,6 +19,17 @@ Large Language Model (LLM) vulnerabilities are different from those in tradition
 
 By conducting a `Giskard Scan <../../open_source/scan/index.md>`_, you can proactively identify and address these vulnerabilities to ensure the reliability, fairness, and robustness of your LLMs.
 
+.. toctree::
+   :maxdepth: 1
+   :hidden:
+
+   hallucination/index
+   harmfulness/index
+   injection/index
+   robustness/index
+   formatting/index
+   disclosure/index
+   stereotypes/index
 
 How does the LLM Scan work?
 ===========================
