@@ -36,7 +36,7 @@ def set_embedding_model(model: str, **kwargs):
     Parameters
     ----------
     model : str
-        Model name (e.g. 'text-embedding-ada-002' or 'text-embedding-3-large').
+        Model name (e.g. 'text-embedding-3-small' or 'text-embedding-3-large').
     """
     global _default_embedding_model
     global _default_embedding_params

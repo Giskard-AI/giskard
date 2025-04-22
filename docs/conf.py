@@ -129,8 +129,8 @@ nbsphinx_prolog = """
 
 sys.path.insert(0, os.path.abspath("../"))
 
-pygments_style = "github-dark"
-pygments_dark_style = "material"
+pygments_style = "default"
+pygments_dark_style = "native"
 
 
 # make github links resolve

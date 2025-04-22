@@ -1,5 +1,5 @@
 API Reference
-===============
+=============
 
 .. toctree::
    :maxdepth: 1
@@ -10,6 +10,5 @@ API Reference
    tests/index
    slicing-functions/index
    transformation-functions/index
-   push/index
    suite/index
    rag-toolset/index
