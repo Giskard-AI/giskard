@@ -51,7 +51,7 @@ dev = [
     "deptry>=0.5.13",
     "ruff>=0.0.271",
     "mlflow>2",
-    "black[d]>=22.12.0",
+    "black[d]>=24.0",
     "pip>=23.1.2",
     "pytest-asyncio>=0.21.1",
     "pydantic>=2",
@@ -74,7 +74,7 @@ ml_runtime = [
     "torch>=2.0.0, < 2.7.0",
     "torchdata>=0.6.0, <0.11",
     "portalocker>=2.0.0",                                                                 # Needed by torchdata for test_newspaper_classification_pytorch_dataset
-    "torchtext>=0.15.1, < 2",
+    "torchtext>=0.15.1, < 1.8", # 1.8 throws c error
     "mlflow>2,<2.12", # version 2.12 throws error with imbalance-learn
     "mlflow-skinny>2,<2.12",
     "wandb<0.19" # version 0.19 throws error with pydantic v1
@@ -147,6 +147,7 @@ classifiers = [
     "Programming Language :: Python :: 3.10",
     "Programming Language :: Python :: 3.11",
     "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
 ]
 
 requires-python = ">=3.9, <3.14"
@@ -156,7 +157,7 @@ dependencies = [
     "mlflow-skinny>=2",
     "numpy>=1.26.0, <2",
     "scikit-learn>=1.0",
-    "scipy>=1.7.3, <1.12.0",
+    "scipy>=1.7.3, <1.16.0",
     "mixpanel>=4.4.0",
     "requests>=2.19",
     "pydantic<3,>1",
@@ -198,7 +199,7 @@ talk = [
 tensorflow = [
     "tensorflow-hub>=0.16.0; sys_platform != 'win32' and platform_system !='Windows'",
     "tensorflow-macos==2.16.2; sys_platform == 'darwin' and platform_machine == 'arm64'",
-    "tensorflow==2.16.2",
+    "tensorflow==2.16.2; python_version < '3.13'",
     "tensorflow-text==2.16.1; python_version < '3.11' and (sys_platform == 'linux' or sys_platform == 'darwin') and platform_machine == 'x86_64'",
 ]
 
@@ -208,7 +209,7 @@ ignore = ["E501"]
 
 [tool.black]
 # https://github.com/psf/black
-target-version = ['py39', 'py310', 'py311', 'py312']
+target-version = ['py39', 'py310', 'py311', 'py312', 'py313']
 line-length = 120
 color = true
 

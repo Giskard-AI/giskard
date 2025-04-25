@@ -1,5 +1,6 @@
 import typing
 from typing import List, Optional
+from typing_extensions import TYPE_CHECKING
 
 import inspect
 import numbers
@@ -10,7 +11,7 @@ from collections import Counter
 import numpy as np
 import pandas as pd
 from scipy.stats import chi2, ks_2samp
-from scipy.stats.stats import Ks_2sampResult, wasserstein_distance
+from scipy.stats.stats import wasserstein_distance
 
 from giskard.core.test_result import TestMessage, TestMessageLevel, TestResult
 from giskard.datasets.base import Dataset
@@ -20,6 +21,10 @@ from giskard.registry.slicing_function import SlicingFunction
 from giskard.testing.utils.utils import check_slice_not_empty, validate_classification_label
 
 from . import debug_description_prefix
+
+if TYPE_CHECKING:
+    from scipy.stats.stats import Ks_2sampResult
+
 
 other_modalities_pattern = "^other_modalities_[a-z0-9]{32}$"
 
@@ -31,12 +36,11 @@ def check_if_debuggable(actual_ds, reference_ds):
         raise ValueError("Your reference_dataset is empty. Debug is not defined for this case.")
     if actual_ds.id == reference_ds.id:
         raise ValueError(
-            "You passed the same dataset as actual_dataset and reference_dataset. "
-            "Debug is not defined for this case."
+            "You passed the same dataset as actual_dataset and reference_dataset. Debug is not defined for this case."
         )
     if actual_ds.df.equals(reference_ds.df):
         raise ValueError(
-            "Your actual_dataset is identical to your reference_dataset. " "Debug is not defined for this case."
+            "Your actual_dataset is identical to your reference_dataset. Debug is not defined for this case."
         )
 
 
@@ -99,7 +103,7 @@ def _calculate_drift_psi(actual_series, reference_series, max_categories):
     return total_psi, pd.DataFrame(output_data)
 
 
-def _calculate_ks(actual_series, reference_series) -> Ks_2sampResult:
+def _calculate_ks(actual_series, reference_series) -> "Ks_2sampResult":
     return ks_2samp(reference_series, actual_series)
 
 
@@ -806,7 +810,7 @@ def test_drift_prediction_ks(
         else pd.Series(model.predict(actual_dataset).prediction)
     )
 
-    result: Ks_2sampResult = _calculate_ks(prediction_reference, prediction_actual)
+    result = _calculate_ks(prediction_reference, prediction_actual)
 
     passed = True if threshold is None else bool(result.pvalue >= threshold)
 
