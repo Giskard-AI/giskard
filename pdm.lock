@@ -5,7 +5,7 @@
 groups = ["default", "dev", "doc", "llm", "ml-runtime", "talk", "tensorflow", "test"]
 strategy = ["inherit_metadata"]
 lock_version = "4.5.0"
-content_hash = "sha256:263293a524d0eed7fb1bea9de9b77355fa0b499c09d5adf8ac96f63d1538c17b"
+content_hash = "sha256:8bfbb2884a57439113720b6de1ed9c1bcaddde830acca2f39f8e41a6752c1171"
 
 [[metadata.targets]]
 requires_python = ">=3.9,<3.13"

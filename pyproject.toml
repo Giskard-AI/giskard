@@ -51,7 +51,7 @@ dev = [
     "deptry>=0.5.13",
     "ruff>=0.0.271",
     "mlflow>2",
-    "black[d]>=24.0",
+    "black[d]>=25.1.0",
     "pip>=23.1.2",
     "pytest-asyncio>=0.21.1",
     "pydantic>=2",
