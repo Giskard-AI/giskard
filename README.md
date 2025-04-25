@@ -23,11 +23,12 @@
 <br />
 
 ## Install Giskard 🐢
+
 Install the latest version of Giskard from PyPi using pip:
 ```sh
 pip install "giskard[llm]" -U
 ```
-We officially support Python 3.9, 3.10 and 3.11.
+
 ## Try in Colab 📙
 [Open Colab notebook](https://colab.research.google.com/github/giskard-ai/giskard/blob/main/docs/getting_started/quickstart/quickstart_llm.ipynb)
 

@@ -149,7 +149,7 @@ classifiers = [
     "Programming Language :: Python :: 3.12",
 ]
 
-requires-python = ">=3.9, <3.13"
+requires-python = ">=3.9, <3.14"
 dependencies = [
     "cloudpickle>=1.1.1",
     "zstandard>=0.10.0",
