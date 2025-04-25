@@ -7,7 +7,6 @@ from pathlib import Path
 import matplotlib
 import numpy as np
 import pandas as pd
-from IPython.core.display import HTML
 
 from ..llm.client.base import LLMClient
 from ..llm.embeddings.base import BaseEmbedding
@@ -135,6 +134,8 @@ class RAGReport:
             return
 
         if embed:
+            from IPython.core.display import HTML
+
             return HTML(f'<iframe srcdoc="{escape(html)}" width=100% height=800px></iframe>')
         return html
 
