@@ -61,7 +61,7 @@ dev = [
     "scikit-learn==1.4.2",
 ]
 ml_runtime = [
-    "langchain>=0.0.275, <0.3",
+    "langchain>=0.0.275, <0.3.24",
     "langchain-community",
     "nltk>=3.8.1",
     "xgboost>=1.7.5",
@@ -69,12 +69,12 @@ ml_runtime = [
     "imbalanced-learn>=0.12.0",
     "catboost>=1.1.1",
     "requests-mock>=1.10.0",
-    "transformers>=4.34.1, <4.43.0",
+    "transformers>=4.34.1, <4.52.0",
     "sentencepiece",                                                                      # needed for some transformers stuff with tokenizer
-    "torch>=2.0.0, < 2.3.0",
-    "torchdata>=0.6.0, <0.8.0",
+    "torch>=2.0.0, < 2.7.0",
+    "torchdata>=0.6.0, <0.11",
     "portalocker>=2.0.0",                                                                 # Needed by torchdata for test_newspaper_classification_pytorch_dataset
-    "torchtext>=0.15.1, < 1.8",
+    "torchtext>=0.15.1, < 2",
     "mlflow>2,<2.12", # version 2.12 throws error with imbalance-learn
     "mlflow-skinny>2,<2.12",
     "wandb<0.19" # version 0.19 throws error with pydantic v1
@@ -156,7 +156,7 @@ dependencies = [
     "mlflow-skinny>=2",
     "numpy>=1.26.0, <2",
     "scikit-learn>=1.0",
-    "scipy>=1.7.3, <1.12.0",
+    "scipy>=1.7.3, <1.16.0",
     "mixpanel>=4.4.0",
     "requests>=2.19",
     "pydantic<3,>1",
@@ -192,7 +192,7 @@ llm = [
 talk = [
     "openai",
     "tenacity>=4.11.0",
-    "shap<0.44.1,>=0.41.0",
+    "shap<0.48.0,>=0.41.0",
     "tabulate==0.9.0",
 ]
 tensorflow = [
