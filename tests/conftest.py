@@ -1,6 +1,7 @@
 from typing import List, Tuple
 
 import os
+import sys
 from glob import glob
 from io import TextIOWrapper
 from pathlib import Path
@@ -95,3 +96,6 @@ def pytest_terminal_summary(terminalreporter: TerminalReporter, exitstatus: Exit
         writer.write("\n### Failures\n\n")
         for failure in failures:
             _write_report(writer, failure)
+
+
+is_python_above_312 = sys.version_info >= (3, 12)

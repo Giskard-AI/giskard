@@ -54,7 +54,7 @@ jobs:
     strategy:
       fail-fast: false # Do not stop when any job fails
       matrix:
-        python-version: ["3.9", "3.10", "3.11", "3.12"]
+        python-version: ["3.9", "3.10", "3.11", "3.12", "3.13"]
         os: [ubuntu-latest]
         pydantic_v1: [false]
         pandas_v1: [false]

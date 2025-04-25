@@ -1,3 +1,5 @@
+import sys
+
 import pytest
 
 from giskard.models.automodel import _infer_giskard_cls
@@ -19,6 +21,7 @@ def pytorch_model():
     return XLMR_BASE_ENCODER.get_model(head=classifier_head, load_weights=False).to("cpu")
 
 
+@pytest.mark.skipif(sys.version_info >= (3, 13), reason="TensorFlow is not supported on Python 3.13+")
 def tensorflow_model():
     import tensorflow as tf
     from tensorflow import keras
@@ -32,6 +35,7 @@ def tensorflow_model():
     )
 
 
+@pytest.mark.skipif(sys.version_info >= (3, 13), reason="TensorFlow is not supported on Python 3.13+")
 def pyfunc_model():
     import tensorflow as tf
     from tensorflow import keras
@@ -56,6 +60,7 @@ def huggingface_model():
     return AutoModelForSequenceClassification.from_pretrained("camembert-base").to("cpu")
 
 
+@pytest.mark.skipif(sys.version_info >= (3, 13), reason="TensorFlow is not supported on Python 3.13+")
 @pytest.mark.memory_expensive
 def test_infer_giskard_cls(german_credit_raw_model, german_credit_catboost_raw_model):
     giskard_cls = _infer_giskard_cls(lambda x: x**2)
