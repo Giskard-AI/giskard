@@ -57,6 +57,10 @@ class GeminiClient(LLMClient):
         self.model = model
         self._client = _client or genai.GenerativeModel(self.model)
 
+    def get_config(self) -> dict:
+        """Return the configuration of the LLM client."""
+        return {"client_type": self.__class__.__name__, "model": self.model}
+
     def complete(
         self,
         messages: Sequence[ChatMessage],
