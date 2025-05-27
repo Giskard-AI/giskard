@@ -242,7 +242,7 @@ def test_groq_client():
     # Call the complete method
     res = client.complete(
         [ChatMessage(role="user", content="Hello")],
-        temperature=0.7,
+        temperature=0.0,
         max_tokens=100
     )
 

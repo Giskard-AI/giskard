@@ -20,14 +20,22 @@ AUTH_ERROR_MESSAGE = (
     "setting GROQ_API_KEY in the environment."
 )
 
-def _supports_json_format(model: str) -> bool:
-    if "llama-3.3-70b-versatile" in model:
-        return True
+JSON_MODE_GUIDANCE = (
+    "To use JSON mode, make sure:\n"
+    "1. Pass format='json' or format='json_object' to the `complete()` method.\n"
+    "2. You describe the expected JSON structure clearly in the system prompt.\n"
+    "3. The selected model supports JSON output.\n"
+    "See: https://console.groq.com/docs/text-chat#json-mode"
+)
 
-    if model == "llama-3.1-8b-instant" or model == "gemma2-9b-it":
-        return True
+# def _supports_json_format(model: str) -> bool:
+#     if "llama-3.3-70b-versatile" in model:
+#         return True
 
-    return False
+#     if model == "llama-3.1-8b-instant" or model == "gemma2-9b-it":
+#         return True
+
+#     return False
 
 logger = logging.getLogger(__name__)
 
@@ -36,12 +44,11 @@ class GroqClient(LLMClient):
         self, 
         model: str = "llama-3.3-70b-versatile",  # Default model for Groq
         client: Groq = None,
-        json_mode: Optional[bool] = None
+        #json_mode: Optional[bool] = None
     ):
         logger.info(f"Initializing GroqClient with model: {model}")
         self.model = model
         self._client = client or Groq()
-        self.json_mode = json_mode if json_mode is not None else _supports_json_format(model)
         logger.info("GroqClient initialized successfully")
 
     def complete(
@@ -51,7 +58,7 @@ class GroqClient(LLMClient):
         max_tokens: Optional[int] = None,
         caller_id: Optional[str] = None,
         seed: Optional[int] = None,
-        format=None,
+        format: Optional[str] = None,
     ) -> ChatMessage:
         logger.info(f"GroqClient.complete called with model: {self.model}")
         logger.info(f"Messages: {messages}")
@@ -60,14 +67,10 @@ class GroqClient(LLMClient):
 
         if seed is not None:
             extra_params["seed"] = seed
+        extra_params["seed"] = seed 
 
-        if self.json_mode:
-            if format not in (None, "json", "json_object"):
-                warning(f"Unsupported format '{format}', ignoring.")
-                format = None
-
-            if format == "json" or format == "json_object":
-                extra_params["response_format"] = {"type": "json_object"}
+        if format in {"json", "json_object"}:   
+            extra_params["response_format"] = {"type": "json_object"}
 
         try:
             completion = self._client.chat.completions.create(
@@ -77,8 +80,16 @@ class GroqClient(LLMClient):
                 max_tokens=max_tokens,
                 **extra_params,
             )
+        
         except groq.AuthenticationError as err: 
             raise LLMConfigurationError(AUTH_ERROR_MESSAGE) from err
+        
+        except groq.BadRequestError as err:
+            if format in {"json", "json_object"}:
+                raise LLMConfigurationError(
+                    f"Model '{self.model}' does not support JSON output or the request format is incorrect.\n\n{JSON_MODE_GUIDANCE}"
+                ) from err
+            raise  
 
         self.logger.log_call(
             prompt_tokens=completion.usage.prompt_tokens,
