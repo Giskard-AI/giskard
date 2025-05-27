@@ -6,6 +6,10 @@ import os
 
 from .base import ChatMessage, LLMClient
 from .logger import LLMLogger
+from .groq_client import GroqClient
+from ..config import LLMConfigurationError
+
+
 
 logger = logging.getLogger(__name__)
 
@@ -36,12 +40,15 @@ def get_default_llm_api() -> str:
     global _default_llm_api
     if _default_llm_api is None:
         _default_llm_api = os.getenv(
-            "GSK_LLM_API", "azure" if "AZURE_OPENAI_API_KEY" in os.environ else "openai"
+            "GSK_LLM_API", 
+            "azure" if "AZURE_OPENAI_API_KEY" in os.environ 
+            else "groq" if "GROQ_API_KEY" in os.environ
+            else "openai"
         ).lower()
 
-        if _default_llm_api not in {"azure", "openai"}:
+        if _default_llm_api not in {"azure", "openai", "groq"}:
             logging.warning(
-                f"LLM-based evaluation is only working with `azure` and `openai`. Found {_default_llm_api} in GSK_LLM_API, falling back to `openai`"
+                f"LLM-based evaluation is only working with `azure`, `openai`, 'groq'. Found {_default_llm_api} in GSK_LLM_API, falling back to `openai`"
             )
             _default_llm_api = "openai"
 
@@ -89,27 +96,34 @@ def get_default_client() -> LLMClient:
     global _default_llm_api
     global _default_llm_model
     global _disable_structured_output
+ 
 
     if _default_client is not None:
         return _default_client
 
     try:
-        from .litellm import LiteLLMClient
+        if _default_llm_api == "groq":
+            groq_api_key = os.getenv("GROQ_API_KEY")
+            if not groq_api_key:
+                raise LLMConfigurationError("GROQ_API_KEY environment variable is not set")
+            _default_client = GroqClient(_default_llm_model)
+        else:
+            from .litellm import LiteLLMClient
 
-        if (
-            _default_llm_api is not None
-            and "/" in _default_llm_model
-            and not _default_llm_model.startswith(f"{_default_llm_api}/")
-        ):
-            raise ValueError(
-                f"Model {_default_llm_model} is not compatible with {_default_llm_api}: https://docs.giskard.ai/en/latest/open_source/setting_up/index.html "
-            )
-        if _default_llm_api is not None and "/" not in _default_llm_model:
-            _default_llm_model = f"{_default_llm_api}/{_default_llm_model}"
+            if (
+                _default_llm_api is not None
+                and "/" in _default_llm_model
+                and not _default_llm_model.startswith(f"{_default_llm_api}/")
+            ):
+                raise ValueError(
+                    f"Model {_default_llm_model} is not compatible with {_default_llm_api}: https://docs.giskard.ai/en/latest/open_source/setting_up/index.html "
+                )
+            if _default_llm_api is not None and "/" not in _default_llm_model:
+                _default_llm_model = f"{_default_llm_api}/{_default_llm_model}"
 
-        _default_client = LiteLLMClient(_default_llm_model, _disable_structured_output, _default_completion_params)
-    except ImportError:
-        raise ValueError(f"LLM scan using {_default_llm_model} requires litellm")
+            _default_client = LiteLLMClient(_default_llm_model, _disable_structured_output, _default_completion_params)
+    except ImportError as e:
+        raise ValueError(f"LLM scan using {_default_llm_model} requires appropriate client library") from e
 
     return _default_client
 
@@ -122,4 +136,5 @@ __all__ = [
     "set_llm_model",
     "get_default_llm_api",
     "set_llm_api",
+    "GroqClient",
 ]
