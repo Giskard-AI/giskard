@@ -380,7 +380,7 @@ class KnowledgeBase:
             try:
                 config = json.loads(open(config_filepath, "r").read())
             except Exception as e:
-                logger.warning(f"Could not load config: {e}. Using default values.")
+                logger.warning(f"Could not load config: {e}. Using default configuration.")
 
         llm_client = None
         if not llm_client and llm_client_filepath:
