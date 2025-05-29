@@ -1,4 +1,4 @@
-from typing import Dict, Optional, Sequence
+from typing import Dict, Optional, Sequence, TYPE_CHECKING
 
 import json
 import logging
@@ -13,9 +13,12 @@ import pandas as pd
 from huggingface_hub import DatasetCard, HfApi, HfFolder, hf_hub_download, upload_file
 from sklearn.cluster import HDBSCAN
 
-from ..llm.client import ChatMessage, LLMClient, get_default_client
+if TYPE_CHECKING:
+    from ..llm.client import LLMClient
+    from ..llm.embeddings.base import BaseEmbedding
+
+from ..llm.client import ChatMessage, get_default_client
 from ..llm.embeddings import get_default_embedding
-from ..llm.embeddings.base import BaseEmbedding
 from ..llm.errors import LLMImportError
 from ..utils.analytics_collector import analytics
 from ..utils.language_detection import detect_lang
@@ -110,23 +113,13 @@ class KnowledgeBase:
         The number of document to embed in a single batch.
     """
 
-    # file names to save and load the knowledge base
-    _saving_filenames = [
-        "knowledge_base.parquet",
-        "embeddings.npy",
-        "reduced_embeddings.npy",
-        "config.json",
-        "llm_client.pkl",
-        "embedding_model.pkl",
-    ]
-
     def __init__(
         self,
         data: pd.DataFrame,
         columns: Optional[Sequence[str]] = None,
         seed: int = None,
-        llm_client: Optional[LLMClient] = None,
-        embedding_model: Optional[BaseEmbedding] = None,
+        llm_client: Optional["LLMClient"] = None,
+        embedding_model: Optional["BaseEmbedding"] = None,
         min_topic_size: Optional[int] = None,
         chunk_size: int = 2048,
     ) -> None:
@@ -186,7 +179,7 @@ class KnowledgeBase:
         )
 
     def save(self, dirpath: str):
-        """Save the KnowledgeBase to a directory.
+        """Save the KnowledgeBase as a parquet file, to a target directory.
 
         Parameters
         ----------
@@ -195,86 +188,21 @@ class KnowledgeBase:
         """
         os.makedirs(dirpath, exist_ok=True)
 
-        # save raw data
-        self._knowledge_base_df.to_parquet(os.path.join(dirpath, "knowledge_base.parquet"))
-
-        # save embeddings
-        if self._embeddings_inst is not None:
-            np.save(os.path.join(dirpath, "embeddings.npy"), self._embeddings_inst)
-        if self._reduced_embeddings_inst is not None:
-            np.save(os.path.join(dirpath, "reduced_embeddings.npy"), self._reduced_embeddings_inst)
-
-        # save llm and embedding objects
-        with open(os.path.join(dirpath, "llm_client.pkl"), "wb") as f:
-            pickle.dump(self._llm_client, f)
-        with open(os.path.join(dirpath, "embedding_model.pkl"), "wb") as f:
-            pickle.dump(self._embedding_model, f)
+        # save the knowledge base
+        knowledge_base_df = self._knowledge_base_df.copy()
+        knowledge_base_df["embeddings"] = (
+            self._embeddings_inst.tolist() if self._embeddings_inst is not None else [None] * len(self._documents)
+        )
+        knowledge_base_df["reduced_embeddings"] = (
+            self._reduced_embeddings_inst.tolist() if self._reduced_embeddings_inst is not None else [None] * len(self._documents)
+        )
+        knowledge_base_df.to_parquet(os.path.join(dirpath, "knowledge_base.parquet"))
 
         # save config
         with open(os.path.join(dirpath, "config.json"), "w") as f:
             json.dump(self._config, f, indent=2)
 
         logger.info("KnowledgeBase saved successfully.")
-
-    @classmethod
-    def load(
-        cls, dirpath: str, llm_client: Optional[LLMClient] = None, embedding_model: Optional[BaseEmbedding] = None
-    ) -> "KnowledgeBase":
-        """
-        Load a KnowledgeBase instance from a specified directory.
-
-        Parameters
-        ----------
-        dirpath : str
-            The path to the directory containing the saved KnowledgeBase data.
-        llm_client : LLMClient, optional
-            An optional LLMClient instance. If not provided, it will be loaded from the directory.
-        embedding_model : BaseEmbedding, optional
-            An optional embedding model instance. If not provided, it will be loaded from the directory.
-
-        Returns
-        -------
-        KnowledgeBase
-            An instance of the KnowledgeBase class loaded with the data, configuration, and models from the specified directory.
-
-        Raises
-        ------
-        ValueError
-            If the specified directory does not exist or the required "knowledge_base.parquet" file is missing.
-
-        Notes
-        -----
-        The directory must contain the following files:
-        - "knowledge_base.parquet": The raw data for the KnowledgeBase.
-
-        Optional files:
-        - "llm_client.pkl": A serialized LLMClient object (if llm_client is not provided).
-        - "embedding_model.pkl": A serialized embedding model object (if embedding_model is not provided).
-        - "config.json": A JSON file containing configuration parameters.
-        - "embeddings.npy": A NumPy file containing precomputed embeddings.
-        - "reduced_embeddings.npy": A NumPy file containing reduced embeddings.
-
-        Missing optional files will result in warnings, and the KnowledgeBase will be created without those components.
-        """
-
-        dirpath = Path(dirpath)
-        if not dirpath.exists():
-            raise ValueError(f"Cannot load the KnowledgeBase. Directory {dirpath} does not exist.")
-
-        filepaths = {}
-        for filename in cls._saving_filenames:
-            key = filename.split(".")[0] + "_filepath"
-            try:
-                fp = dirpath / filename
-                assert fp.exists(), f"File {filename} not found in {dirpath}."
-                filepaths[key] = str(fp)
-            except Exception as e:
-                logger.warning(str(e))
-                if filename == "knowledge_base.parquet":
-                    raise ValueError("Cannot load the KnowledgeBase. Could not find knowledge_base.parquet file.")
-                filepaths[key] = None
-
-        return cls._load(**filepaths, llm_client=llm_client, embedding_model=embedding_model)
 
     def push_to_hf_hub(self, repo_id: str, hf_token: Optional[str] = None, private: bool = False):
         """
@@ -289,52 +217,41 @@ class KnowledgeBase:
         private : bool
             Whether to make the repo private or public.
         """
-
         api = HfApi(token=hf_token or HfFolder.get_token())
         api.create_repo(repo_id, repo_type="dataset", private=private, exist_ok=True)
 
-        try:
-            with tempfile.TemporaryDirectory() as tmpdir:
+        with tempfile.TemporaryDirectory() as tmpdir:
+            self.save(tmpdir)
 
-                self.save(tmpdir)
+            # push the files to the hub
+            for filename in ["knowledge_base.parquet", "config.json"]:
+                filepath = os.path.join(tmpdir, filename)
+                if os.path.exists(filepath):
+                    upload_file(
+                        path_or_fileobj=filepath,
+                        path_in_repo=filename,
+                        repo_id=repo_id,
+                        repo_type="dataset",
+                        token=hf_token,
+                    )
+        logger.info(f"KnowledgeBase pushed to https://huggingface.co/datasets/{repo_id}")
 
-                # push the files to the hub
-                for filename in self._saving_filenames:
-                    filepath = os.path.join(tmpdir, filename)
-                    if os.path.exists(filepath):
-                        upload_file(
-                            path_or_fileobj=filepath,
-                            path_in_repo=filename,
-                            repo_id=repo_id,
-                            repo_type="dataset",
-                            token=hf_token,
-                        )
-            logger.info(f"KnowledgeBase pushed to https://huggingface.co/datasets/{repo_id}")
+        # Load the dataset card template
+        template_path = Path(__file__).parent / "knowledge_base_card_template.md"
+        template = template_path.read_text()
 
-            # Load the dataset card template
-            template_path = Path(__file__).parent / "knowledge_base_card_template.md"
-            template = template_path.read_text()
-
-            # Make and push the dataset card
-            content = template.format(
-                repo_id=repo_id, num_items=len(self._knowledge_base_df), config=json.dumps(self._config_inst, indent=4)
-            )
-            return DatasetCard(content=content).push_to_hub(repo_id=repo_id, token=hf_token, repo_type="dataset")
-
-        except Exception as e:
-            logger.error(f"Error pushing to Hugging Face Hub: {e}")
+        # Make and push the dataset card
+        content = template.format(
+            repo_id=repo_id, num_items=len(self._knowledge_base_df), config=json.dumps(self._config_inst, indent=4)
+        )
+        return DatasetCard(content=content).push_to_hub(repo_id=repo_id, token=hf_token, repo_type="dataset")
 
     @classmethod
-    def _load(
+    def load(
         cls,
-        config_filepath: str,
-        knowledge_base_filepath: str,
-        llm_client_filepath: str,
-        embedding_model_filepath: str,
-        embeddings_filepath: str,
-        reduced_embeddings_filepath: str,
-        llm_client: Optional[LLMClient] = None,
-        embedding_model: Optional[BaseEmbedding] = None,
+        dirpath: str,
+        llm_client: Optional["LLMClient"] = None,
+        embedding_model: Optional["BaseEmbedding"] = None,
     ) -> "KnowledgeBase":
         """
         Load a KnowledgeBase instance by loading data from specified file paths.
@@ -345,81 +262,53 @@ class KnowledgeBase:
 
         Parameters
         ----------
-        config_filepath : str
-            Path to the JSON file containing the KnowledgeBase configuration.
-        knowledge_base_filepath : str
-            Path to the Parquet file containing the knowledge base data.
-        llm_filepath : str
-            Path to the pickle file containing the serialized LLM client.
-        embedding_model_filepath : str
-            Path to the pickle file containing the serialized embedding model.
-        embeddings_filepath : str
-            Path to the NumPy file containing precomputed embeddings.
-        reduced_embeddings_filepath : str
-            Path to the NumPy file containing reduced embeddings.
-        llm_client : LLMClient, optional
-            An optional LLMClient instance. If not provided, it will be loaded from the specified file path.
-        embedding_model : BaseEmbedding, optional
-            An optional embedding model instance. If not provided, it will be loaded from the specified file path.
-
+        dirpath : str
+            The directory path where the KnowledgeBase files are stored.
+        llm_client: LLMClient, optional:
+            The LLM client to use for question generation. If not specified, a default openai client will be used.
+        embedding_model: BaseEmbedding, optional
+            The giskard embedding model to use for the knowledge base. By default we use giskard default model which is OpenAI "text-embedding-ada-002".
+        
         Returns
         -------
         KnowledgeBase
-            An instance of the KnowledgeBase class loaded with the data, configuration, and models.
-
-        Notes
-        -----
-        - If any of the optional file paths (e.g., embeddings or reduced embeddings) are missing or fail to load,
-          warnings will be logged, and the KnowledgeBase will still be created without those components.
-        - Default values will be used for missing configuration parameters or models if they cannot be loaded.
+            An instance of the KnowledgeBase class loaded with the documents, embeddings and configuration.
         """
+        # Check if the directory exists
+        assert os.path.exists(dirpath), f"Directory {dirpath} does not exist."
+        knowledge_base_filepath = os.path.join(dirpath, "knowledge_base.parquet")
+        config_filepath = os.path.join(dirpath, "config.json")
 
+        # Load data from files
         data = pd.read_parquet(knowledge_base_filepath)
+        try:
+            config = json.loads(open(config_filepath, "r").read())
+        except Exception as e:
+            logger.warning(f"Could not load config: {e}. Using default configuration.")
+            config = {}
 
-        config = {}
-        if config_filepath:
-            try:
-                config = json.loads(open(config_filepath, "r").read())
-            except Exception as e:
-                logger.warning(f"Could not load config: {e}. Using default values.")
-
-        llm_client = None
-        if not llm_client and llm_client_filepath:
-            try:
-                llm_client = pickle.load(open(llm_client_filepath, "rb"))
-            except Exception as e:
-                logger.warning(f"Could not load LLM client: {e}. Using default client.")
-
-        embedding_model = None
-        if not embedding_model and embedding_model_filepath:
-            try:
-                embedding_model = pickle.load(open(embedding_model_filepath, "rb"))
-            except Exception as e:
-                logger.warning(f"Could not load embedding model: {e}. Using default embedding model.")
-
+        # Build the KnowledgeBase instance
         logger.info("Building the KnowledgeBase instance...")
         kb = cls(
             data=data,
             columns=config.get("columns"),
-            llm_client=llm_client,
-            embedding_model=embedding_model,
+            llm_client=llm_client or get_default_client(),
+            embedding_model=embedding_model or get_default_embedding(),
             chunk_size=config.get("chunk_size", 2048),
             seed=config.get("seed"),
             min_topic_size=config.get("min_topic_size"),
         )
 
-        # Load embeddings if available
-        if embeddings_filepath:
-            try:
-                kb._store_embeddings_inst(np.load(embeddings_filepath))
-            except Exception as e:
-                logger.warning(f"Could not load embeddings: {e}.")
+        # Load the embeddings if available
+        try:
+            kb.store_embeddings_inst(np.load(data["embeddings"].values.tolist()))
+        except Exception as e:
+            logger.warning(f"Could not load embeddings: {e}.")
 
-        if reduced_embeddings_filepath:
-            try:
-                kb._store_reduced_embeddings_inst(np.load(reduced_embeddings_filepath))
-            except Exception as e:
-                logger.warning(f"Could not load reduced embeddings: {e}.")
+        try:
+            kb.store_reduced_embeddings_inst(np.load(data["reduced_embeddings"].values.tolist()))
+        except Exception as e:
+            logger.warning(f"Could not load reduced embeddings: {e}.")
 
         logger.info("KnowledgeBase loaded successfully.")
         return kb
@@ -429,8 +318,8 @@ class KnowledgeBase:
         cls,
         repo_id: str,
         hf_token: Optional[str] = None,
-        llm_client: Optional[LLMClient] = None,
-        embedding_model: Optional[BaseEmbedding] = None,
+        llm_client: Optional["LLMClient"] = None,
+        embedding_model: Optional["BaseEmbedding"] = None,
         **hf_hub_kwargs,
     ) -> "KnowledgeBase":
         """
@@ -455,7 +344,7 @@ class KnowledgeBase:
         Returns
         -------
         KnowledgeBase
-            An instance of the KnowledgeBase class loaded with the data, configuration, and models from the specified repository.
+            An instance of the KnowledgeBase class loaded with the data, embeddings and configuration from the specified repository.
 
         Raises
         ------
@@ -464,33 +353,26 @@ class KnowledgeBase:
 
         Notes
         -----
-        - The repository must contain the following files:
+        - The repository must contain the following file:
           - "knowledge_base.parquet": The raw data for the KnowledgeBase.
-        - Optional files:
+        - Optional file:
           - "config.json": A JSON file containing configuration parameters.
-          - "embeddings.npy": A NumPy file containing precomputed embeddings.
-          - "reduced_embeddings.npy": A NumPy file containing reduced embeddings.
-          - "llm_client.pkl": A serialized LLMClient object (if llm_client is not provided).
-          - "embedding_model.pkl": A serialized embedding model object (if embedding_model is not provided).
         """
+        with tempfile.TemporaryDirectory() as tmpdir:
+            for filename in ["knowledge_base.parquet", "config.json" ]:
+                try:
+                    hf_hub_download(
+                        repo_id, filename=filename, repo_type="dataset", token=hf_token, local_dir=tmpdir, **hf_hub_kwargs
+                    )
+                except Exception as e:
+                    logger.warning(f"Failed to download {filename}: {e}")
+                    if filename == "knowledge_base.parquet":
+                        raise ValueError(f"Failed to download {filename}. Cannot load the KnowledgeBase without it.")
 
-        filepaths = {}
-        for filename in cls._saving_filenames:
-            key = filename.split(".")[0] + "_filepath"
-            try:
-                filepaths[key] = hf_hub_download(
-                    repo_id, filename=filename, repo_type="dataset", token=hf_token, **hf_hub_kwargs
-                )
-            except Exception as e:
-                logger.warning(f"Failed to download {filename}: {e}")
-                if filename == "knowledge_base.parquet":
-                    raise ValueError(f"Failed to download {filename}. Cannot load the KnowledgeBase without it.")
-                filepaths[key] = None
-
-        return cls._load(**filepaths, llm_client=llm_client, embedding_model=embedding_model)
+            return cls.load(tmpdir, llm_client=llm_client, embedding_model=embedding_model)
 
     @classmethod
-    def from_pandas(cls, df: pd.DataFrame, columns: Optional[Sequence[str]] = None, **kwargs) -> "KnowledgeBase":
+    def from_pandas(cls, df: pd.DataFrame, columns: Optional[Sequence[str]] = None, embeddings_inst: np.ndarray = None, reduced_embeddings_inst: np.ndarray = None, **kwargs) -> "KnowledgeBase":
         """Create a KnowledgeBase from a pandas DataFrame.
 
         Parameters
@@ -502,17 +384,29 @@ class KnowledgeBase:
             dataframe will be concatenated to produce a single document.
             Example: if your knowledge base consists in FAQ data with columns "Q" and "A", we will format each row into a
             single document "Q: [question]\\nA: [answer]" to generate questions.
+        embeddings_inst: np.ndarray
+            The precomputed embeddings for the knowledge base documents.
+        reduced_embeddings_inst: np.ndarray
+            The precomputed reduced embeddings for the knowledge base documents.
         kwargs:
             Additional settings for knowledge base (see __init__).
         """
-        return cls(data=df, columns=columns, **kwargs)
+        kb = cls(data=df, columns=columns, **kwargs)
+        if embeddings_inst is not None:
+            logging.info("Storing embeddings in KnowledgeBase.")
+            kb.store_embeddings_inst(embeddings_inst)
+        if reduced_embeddings_inst is not None:
+            logging.info("Storing reduced embeddings in KnowledgeBase.")
+            kb.store_reduced_embeddings_inst(reduced_embeddings_inst)
+        logger.info("KnowledgeBase created from pandas DataFrame.")
+        return kb
 
-    def _store_embeddings_inst(self, embeddings_inst: np.ndarray):
+    def store_embeddings_inst(self, embeddings_inst: np.ndarray):
         self._embeddings_inst = embeddings_inst
         for doc, emb in zip(self._documents, self._embeddings_inst):
             doc.embeddings = emb
 
-    def _store_reduced_embeddings_inst(self, reduced_embeddings_inst: np.ndarray):
+    def store_reduced_embeddings_inst(self, reduced_embeddings_inst: np.ndarray):
         self._reduced_embeddings_inst = reduced_embeddings_inst
         for doc, emb in zip(self._documents, self._reduced_embeddings_inst):
             doc.reduced_embeddings = emb
@@ -526,6 +420,7 @@ class KnowledgeBase:
                 "min_topic_size": self._min_topic_size,
                 "language": self._language,
                 "seed": self.seed,
+                "embedding_model_class": getattr(self._embedding_model, "__class__", None),
                 "embedding_model": getattr(self._embedding_model, "model", None),
             }
         return self._config_inst
@@ -535,7 +430,7 @@ class KnowledgeBase:
         if self._embeddings_inst is None:
             logger.debug("Computing Knowledge Base embeddings.")
             embeddings_inst = np.array(self._embedding_model.embed([doc.content for doc in self._documents]))
-            self._store_embeddings_inst(embeddings_inst)
+            self.store_embeddings_inst(embeddings_inst)
         return self._embeddings_inst
 
     @property
@@ -549,7 +444,7 @@ class KnowledgeBase:
                 random_state=1234,
                 n_jobs=1,
             )
-            self._store_reduced_embeddings_inst(reducer.fit_transform(self._embeddings))
+            self.store_reduced_embeddings_inst(reducer.fit_transform(self._embeddings))
         return self._reduced_embeddings_inst
 
     @property
