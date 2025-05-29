@@ -373,7 +373,6 @@ class KnowledgeBase:
           warnings will be logged, and the KnowledgeBase will still be created without those components.
         - Default values will be used for missing configuration parameters or models if they cannot be loaded.
         """
-
         data = pd.read_parquet(knowledge_base_filepath)
 
         config = {}
