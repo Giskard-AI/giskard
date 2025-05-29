@@ -3,7 +3,6 @@ from typing import Dict, Optional, Sequence, TYPE_CHECKING
 import json
 import logging
 import os
-import pickle
 import tempfile
 import uuid
 from pathlib import Path
@@ -194,7 +193,9 @@ class KnowledgeBase:
             self._embeddings_inst.tolist() if self._embeddings_inst is not None else [None] * len(self._documents)
         )
         knowledge_base_df["reduced_embeddings"] = (
-            self._reduced_embeddings_inst.tolist() if self._reduced_embeddings_inst is not None else [None] * len(self._documents)
+            self._reduced_embeddings_inst.tolist()
+            if self._reduced_embeddings_inst is not None
+            else [None] * len(self._documents)
         )
         knowledge_base_df.to_parquet(os.path.join(dirpath, "knowledge_base.parquet"))
 
@@ -268,7 +269,7 @@ class KnowledgeBase:
             The LLM client to use for question generation. If not specified, a default openai client will be used.
         embedding_model: BaseEmbedding, optional
             The giskard embedding model to use for the knowledge base. By default we use giskard default model which is OpenAI "text-embedding-ada-002".
-        
+
         Returns
         -------
         KnowledgeBase
@@ -359,10 +360,15 @@ class KnowledgeBase:
           - "config.json": A JSON file containing configuration parameters.
         """
         with tempfile.TemporaryDirectory() as tmpdir:
-            for filename in ["knowledge_base.parquet", "config.json" ]:
+            for filename in ["knowledge_base.parquet", "config.json"]:
                 try:
                     hf_hub_download(
-                        repo_id, filename=filename, repo_type="dataset", token=hf_token, local_dir=tmpdir, **hf_hub_kwargs
+                        repo_id,
+                        filename=filename,
+                        repo_type="dataset",
+                        token=hf_token,
+                        local_dir=tmpdir,
+                        **hf_hub_kwargs,
                     )
                 except Exception as e:
                     logger.warning(f"Failed to download {filename}: {e}")
@@ -372,7 +378,14 @@ class KnowledgeBase:
             return cls.load(tmpdir, llm_client=llm_client, embedding_model=embedding_model)
 
     @classmethod
-    def from_pandas(cls, df: pd.DataFrame, columns: Optional[Sequence[str]] = None, embeddings_inst: np.ndarray = None, reduced_embeddings_inst: np.ndarray = None, **kwargs) -> "KnowledgeBase":
+    def from_pandas(
+        cls,
+        df: pd.DataFrame,
+        columns: Optional[Sequence[str]] = None,
+        embeddings_inst: np.ndarray = None,
+        reduced_embeddings_inst: np.ndarray = None,
+        **kwargs,
+    ) -> "KnowledgeBase":
         """Create a KnowledgeBase from a pandas DataFrame.
 
         Parameters
