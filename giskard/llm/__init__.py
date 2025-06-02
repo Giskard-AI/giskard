@@ -10,5 +10,4 @@ __all__ = [
     "set_llm_api",
     "set_default_embedding",
     "set_embedding_model",
-    "GroqClient"
 ]

@@ -65,8 +65,6 @@ class GroqClient(LLMClient):
         
         extra_params = dict()
 
-        if seed is not None:
-            extra_params["seed"] = seed
         extra_params["seed"] = seed 
 
         if format in {"json", "json_object"}:   

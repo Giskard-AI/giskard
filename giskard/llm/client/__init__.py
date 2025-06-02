@@ -6,10 +6,6 @@ import os
 
 from .base import ChatMessage, LLMClient
 from .logger import LLMLogger
-from .groq_client import GroqClient
-from ..config import LLMConfigurationError
-
-
 
 logger = logging.getLogger(__name__)
 
@@ -98,32 +94,23 @@ def get_default_client() -> LLMClient:
     global _disable_structured_output
  
 
-    if _default_client is not None:
-        return _default_client
-
     try:
-        if _default_llm_api == "groq":
-            groq_api_key = os.getenv("GROQ_API_KEY")
-            if not groq_api_key:
-                raise LLMConfigurationError("GROQ_API_KEY environment variable is not set")
-            _default_client = GroqClient(_default_llm_model)
-        else:
-            from .litellm import LiteLLMClient
+        from .litellm import LiteLLMClient
 
-            if (
-                _default_llm_api is not None
-                and "/" in _default_llm_model
-                and not _default_llm_model.startswith(f"{_default_llm_api}/")
-            ):
-                raise ValueError(
-                    f"Model {_default_llm_model} is not compatible with {_default_llm_api}: https://docs.giskard.ai/en/latest/open_source/setting_up/index.html "
-                )
-            if _default_llm_api is not None and "/" not in _default_llm_model:
-                _default_llm_model = f"{_default_llm_api}/{_default_llm_model}"
+        if (
+            _default_llm_api is not None
+            and "/" in _default_llm_model
+            and not _default_llm_model.startswith(f"{_default_llm_api}/")
+        ):
+            raise ValueError(
+                f"Model {_default_llm_model} is not compatible with {_default_llm_api}: https://docs.giskard.ai/en/latest/open_source/setting_up/index.html "
+            )
+        if _default_llm_api is not None and "/" not in _default_llm_model:
+            _default_llm_model = f"{_default_llm_api}/{_default_llm_model}"
 
-            _default_client = LiteLLMClient(_default_llm_model, _disable_structured_output, _default_completion_params)
-    except ImportError as e:
-        raise ValueError(f"LLM scan using {_default_llm_model} requires appropriate client library") from e
+        _default_client = LiteLLMClient(_default_llm_model, _disable_structured_output, _default_completion_params)
+    except ImportError:
+        raise ValueError(f"LLM scan using {_default_llm_model} requires litellm")
 
     return _default_client
 
@@ -136,5 +123,4 @@ __all__ = [
     "set_llm_model",
     "get_default_llm_api",
     "set_llm_api",
-    "GroqClient",
 ]
