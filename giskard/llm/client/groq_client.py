@@ -1,7 +1,6 @@
 from typing import Optional, Sequence
 
 from dataclasses import asdict
-from logging import warning
 import logging
 
 from ..config import LLMConfigurationError
@@ -27,15 +26,6 @@ JSON_MODE_GUIDANCE = (
     "3. The selected model supports JSON output.\n"
     "See: https://console.groq.com/docs/text-chat#json-mode"
 )
-
-# def _supports_json_format(model: str) -> bool:
-#     if "llama-3.3-70b-versatile" in model:
-#         return True
-
-#     if model == "llama-3.1-8b-instant" or model == "gemma2-9b-it":
-#         return True
-
-#     return False
 
 logger = logging.getLogger(__name__)
 
