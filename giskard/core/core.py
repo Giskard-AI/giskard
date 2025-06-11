@@ -8,13 +8,13 @@ from dataclasses import dataclass
 from enum import Enum
 from pathlib import Path
 
-from griffe import Docstring
-from griffe.docstrings.dataclasses import (
+from griffe import (
+    Docstring,
     DocstringSection,
+    DocstringSectionKind,
     DocstringSectionParameters,
     DocstringSectionReturns,
 )
-from griffe.enumerations import DocstringSectionKind
 
 from ..utils.artifacts import serialize_parameter
 
@@ -26,7 +26,7 @@ except ImportError:
 from typing import Any, Callable, Dict, List, Literal, Optional, Type, TypeVar, Union
 
 logger = logging.getLogger(__name__)
-DEMILITER = f"\n{'='*20}\n"
+DEMILITER = f"\n{'=' * 20}\n"
 
 
 class Kwargs:
