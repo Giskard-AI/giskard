@@ -14,7 +14,7 @@ pip install datasets huggingface_hub
 
 ## Authenticate with Hugging Face
 
-Set your Hugging Face authentication token (`HF_TOKEN`) to enable access to your account. You can generate your token from your [Hugging Face account settings](https://huggingface.co/settings/tokens).
+To enable access to your account, set your Hugging Face authentication token (`HF_TOKEN`). You can generate your token from your [Hugging Face account settings](https://huggingface.co/settings/tokens).
 
 ## Push Your Dataset to the Hub
 
