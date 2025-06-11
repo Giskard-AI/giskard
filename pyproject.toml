@@ -81,7 +81,7 @@ ml_runtime = [
 ]
 test = [
     "google.generativeai",
-    "nemoguardrails>=0.9.0",
+    "nemoguardrails>=0.9.0, <0.11.0", # 0.11.0 ensure align with langchain<0.3.0
     "onnxruntime<1.20.0",
     "openai>=1",
     "polyfactory",
@@ -173,7 +173,7 @@ dependencies = [
     "markdown",                 # needed for display of scan results in notebook
     "colorama",                 # needed for the scan
     "num2words>=0.5.13",
-    "griffe>=0.36.9, <0.49.0",
+    "griffe>=1.0.0,<2.0.0",
     "ipython",
 ]
 
