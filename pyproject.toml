@@ -91,6 +91,7 @@ test = [
     "pytest-memray; sys_platform == 'linux' or sys_platform == 'darwin'",
     "pytest-reportlog>=0.4.0",
     "pytest-xdist>=3.3.1",
+    "pytest-mock",
     "ragas>=0.1.5, <=0.2.7", # ragas 0.2.8 introduces abstract classes
     "shap<0.45", # fixing this to avoid changed on insights
 ]
