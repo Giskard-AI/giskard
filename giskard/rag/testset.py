@@ -160,7 +160,7 @@ class QATestset:
             
             config = {"metadata": get_default_client().get_config()}
         except Exception:
-            config = None
+            config = {}
         content = template.format(repo_id=repo_id, num_items=len(self._dataframe), config=json.dumps(config, indent=4))
         return DatasetCard(content=content).push_to_hub(repo_id=repo_id, token=token, repo_type="dataset")
 
