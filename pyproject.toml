@@ -23,6 +23,8 @@ giskard = [
 
 
 
+
+
 [tool.pdm.scripts]
 _.env = { GSK_DISABLE_ANALYTICS = "True", GISKARD_DEV_MODE = "True" }
 # add "-n auto" to the pytest command to parallelize the execution
@@ -59,7 +61,13 @@ dev = [
     "mistralai>=1",
     "boto3>=1.34.88",
     "scikit-learn==1.4.2",
+    "bert-score>=0.3.13",
+    "evaluate>=0.4.3",
+    "transformers>=4.42.4",
+    "fastembed>=0.4.0",
+    "sentence-transformers>=4.1.0",
 ]
+
 ml_runtime = [
     "langchain>=0.0.275, <0.3",
     "langchain-community",
@@ -174,6 +182,7 @@ dependencies = [
     "colorama",                 # needed for the scan
     "num2words>=0.5.13",
     "griffe>=0.36.9, <0.49.0",
+    "imbalanced-learn>=0.12.4",
 ]
 
 [project.optional-dependencies]
@@ -187,6 +196,7 @@ llm = [
     "umap-learn>=0.5.5",
     "scikit-learn>=1.3.2",
     "litellm<1.66.0",
+    "groq>=0.10.0",
 ]
 
 talk = [

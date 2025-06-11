@@ -12,7 +12,8 @@ from giskard.llm.client import ChatMessage
 from giskard.llm.client.bedrock import ClaudeBedrockClient
 from giskard.llm.client.gemini import GeminiClient
 from giskard.llm.client.openai import OpenAIClient
-from giskard.llm.client.groq_client import GroqClient #GroqClient 
+from giskard.llm.client.groq_client import GroqClient
+from importlib.util import find_spec
 
 PYDANTIC_V2 = pydantic.__version__.startswith("2.")
 
@@ -219,7 +220,11 @@ def test_gemini_client():
     assert isinstance(res, ChatMessage)
     assert res.content == "This is a test!"
 
-@pytest.mark.skipif(not PYDANTIC_V2, reason="Groq client test requires Pydantic v2")
+# Check if groq is installed
+has_groq = find_spec("groq") is not None
+
+@pytest.mark.skipif(not PYDANTIC_V2 or not has_groq, 
+                   reason="Groq client test requires Pydantic v2 and groq package")
 def test_groq_client():
     # Mock the Groq response
     demo_response = Mock()
@@ -237,14 +242,18 @@ def test_groq_client():
     mock_client = Mock()
     mock_client.chat.completions.create.return_value = demo_response
  
-    client = GroqClient(model="llama3-8b-8192", client=mock_client)
+    client = GroqClient(model="llama-3.3-70b-versatile", client=mock_client)
 
     # Call the complete method
     res = client.complete(
         [ChatMessage(role="user", content="Hello")],
-        temperature=0.0,
+        temperature=0.7,
+        format="json",
         max_tokens=100
     )
+
+    # Assert json_object format was passed
+    assert mock_client.chat.completions.create.call_args[1]["response_format"] == {"type": "json_object"}
 
     # Assert that create was called with correct arguments
     mock_client.chat.completions.create.assert_called_once()
@@ -253,7 +262,7 @@ def test_groq_client():
     ]
     assert mock_client.chat.completions.create.call_args[1]["temperature"] == 0.7
     assert mock_client.chat.completions.create.call_args[1]["max_tokens"] == 100
-    assert mock_client.chat.completions.create.call_args[1]["model"] == "llama3-8b-8192"
+    assert mock_client.chat.completions.create.call_args[1]["model"] == "llama-3.3-70b-versatile"
 
     # Assert the response is correct
     assert isinstance(res, ChatMessage)

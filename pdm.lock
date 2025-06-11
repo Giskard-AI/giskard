@@ -5,7 +5,7 @@
 groups = ["default", "dev", "doc", "llm", "ml-runtime", "talk", "tensorflow", "test"]
 strategy = ["inherit_metadata"]
 lock_version = "4.5.0"
-content_hash = "sha256:c96121692ed155f876fa8dc17b5bed628cb445134417a1d11946801e3ed05404"
+content_hash = "sha256:2db8ee3a23bb8fe3b1646f9ecfdafdb73c1f9493c934543a2c31f1964e31907f"
 
 [[metadata.targets]]
 requires_python = ">=3.9,<3.13"
@@ -439,7 +439,7 @@ name = "bert-score"
 version = "0.3.13"
 requires_python = ">=3.6"
 summary = "PyTorch implementation of BERT score"
-groups = ["llm"]
+groups = ["dev", "llm"]
 dependencies = [
     "matplotlib",
     "numpy",
@@ -862,7 +862,7 @@ name = "coloredlogs"
 version = "15.0.1"
 requires_python = ">=2.7, !=3.0.*, !=3.1.*, !=3.2.*, !=3.3.*, !=3.4.*"
 summary = "Colored terminal output for Python's logging module"
-groups = ["test"]
+groups = ["dev", "test"]
 dependencies = [
     "humanfriendly>=9.1",
 ]
@@ -1145,7 +1145,7 @@ name = "datasets"
 version = "3.5.0"
 requires_python = ">=3.9.0"
 summary = "HuggingFace community-driven open-source library of datasets"
-groups = ["llm", "test"]
+groups = ["dev", "llm", "test"]
 dependencies = [
     "aiohttp",
     "dill<0.3.9,>=0.3.0",
@@ -1268,7 +1268,7 @@ name = "dill"
 version = "0.3.8"
 requires_python = ">=3.8"
 summary = "serialize all of Python"
-groups = ["llm", "test"]
+groups = ["dev", "llm", "test"]
 files = [
     {file = "dill-0.3.8-py3-none-any.whl", hash = "sha256:c36ca9ffb54365bdd2f8eb3eff7d2a21237f8452b57ace88b1ac615b7e815bd7"},
     {file = "dill-0.3.8.tar.gz", hash = "sha256:3ebe3c479ad625c4553aca177444d89b486b1d84982eeacded644afc0cf797ca"},
@@ -1371,7 +1371,7 @@ name = "evaluate"
 version = "0.4.3"
 requires_python = ">=3.8.0"
 summary = "HuggingFace community-driven open-source library of evaluation"
-groups = ["llm"]
+groups = ["dev", "llm"]
 dependencies = [
     "datasets>=2.0.0",
     "dill",
@@ -1494,7 +1494,7 @@ name = "fastembed"
 version = "0.4.0"
 requires_python = "<3.13,>=3.8.0"
 summary = "Fast, light, accurate library built for retrieval embedding generation"
-groups = ["test"]
+groups = ["dev", "test"]
 dependencies = [
     "PyStemmer<3.0.0,>=2.2.0",
     "huggingface-hub<1.0,>=0.20",
@@ -1559,7 +1559,7 @@ files = [
 name = "flatbuffers"
 version = "25.2.10"
 summary = "The FlatBuffers serialization format for Python"
-groups = ["tensorflow", "test"]
+groups = ["dev", "tensorflow", "test"]
 files = [
     {file = "flatbuffers-25.2.10-py2.py3-none-any.whl", hash = "sha256:ebba5f4d5ea615af3f7fd70fc310636fbb2bbd1f566ac0a23d98dd412de50051"},
     {file = "flatbuffers-25.2.10.tar.gz", hash = "sha256:97e451377a41262f8d9bd4295cc836133415cc03d8cb966410a4af92eb00d26e"},
@@ -1698,7 +1698,7 @@ name = "fsspec"
 version = "2024.12.0"
 requires_python = ">=3.8"
 summary = "File-system specification"
-groups = ["llm", "ml-runtime", "test"]
+groups = ["dev", "llm", "ml-runtime", "test"]
 files = [
     {file = "fsspec-2024.12.0-py3-none-any.whl", hash = "sha256:b520aed47ad9804237ff878b504267a3b0b441e97508bd6d2d8774e3db85cee2"},
     {file = "fsspec-2024.12.0.tar.gz", hash = "sha256:670700c977ed2fb51e0d9f9253177ed20cbde4a3e5c0283cc5385b5870c8533f"},
@@ -1710,7 +1710,7 @@ version = "2024.12.0"
 extras = ["http"]
 requires_python = ">=3.8"
 summary = "File-system specification"
-groups = ["llm", "test"]
+groups = ["dev", "llm", "test"]
 dependencies = [
     "aiohttp!=4.0.0a0,!=4.0.0a1",
     "fsspec==2024.12.0",
@@ -2049,6 +2049,25 @@ files = [
 ]
 
 [[package]]
+name = "groq"
+version = "0.26.0"
+requires_python = ">=3.8"
+summary = "The official Python library for the groq API"
+groups = ["llm"]
+dependencies = [
+    "anyio<5,>=3.5.0",
+    "distro<2,>=1.7.0",
+    "httpx<1,>=0.23.0",
+    "pydantic<3,>=1.9.0",
+    "sniffio",
+    "typing-extensions<5,>=4.10",
+]
+files = [
+    {file = "groq-0.26.0-py3-none-any.whl", hash = "sha256:4dc0900d506876ea39a9aa1985f12a51859bacf486fe939664248eff1f451af3"},
+    {file = "groq-0.26.0.tar.gz", hash = "sha256:1f1e50d26c6134f6fb580ea7002e8f9ff5c7c1685c9e0f50d71adecd039ae5d4"},
+]
+
+[[package]]
 name = "grpcio"
 version = "1.71.0"
 requires_python = ">=3.9"
@@ -2229,7 +2248,7 @@ name = "huggingface-hub"
 version = "0.30.2"
 requires_python = ">=3.8.0"
 summary = "Client library to download and publish models, datasets and other repos on the huggingface.co hub"
-groups = ["llm", "ml-runtime", "test"]
+groups = ["dev", "llm", "ml-runtime", "test"]
 dependencies = [
     "filelock",
     "fsspec>=2023.5.0",
@@ -2249,7 +2268,7 @@ name = "humanfriendly"
 version = "10.0"
 requires_python = ">=2.7, !=3.0.*, !=3.1.*, !=3.2.*, !=3.3.*, !=3.4.*"
 summary = "Human friendly output for text interfaces using Python"
-groups = ["test"]
+groups = ["dev", "test"]
 dependencies = [
     "monotonic; python_version == \"2.7\"",
     "pyreadline3; sys_platform == \"win32\" and python_version >= \"3.8\"",
@@ -2312,7 +2331,7 @@ files = [
 name = "imbalanced-learn"
 version = "0.12.4"
 summary = "Toolbox for imbalanced dataset in machine learning."
-groups = ["ml-runtime"]
+groups = ["default", "ml-runtime"]
 dependencies = [
     "joblib>=1.1.1",
     "numpy>=1.17.3",
@@ -3292,7 +3311,7 @@ name = "loguru"
 version = "0.7.3"
 requires_python = "<4.0,>=3.5"
 summary = "Python logging made (stupidly) simple"
-groups = ["test"]
+groups = ["dev", "test"]
 dependencies = [
     "aiocontextvars>=0.2.0; python_version < \"3.7\"",
     "colorama>=0.3.4; sys_platform == \"win32\"",
@@ -3798,7 +3817,7 @@ files = [
 name = "mmh3"
 version = "4.1.0"
 summary = "Python extension for MurmurHash (MurmurHash3), a set of fast and robust hash functions."
-groups = ["test"]
+groups = ["dev", "test"]
 files = [
     {file = "mmh3-4.1.0-cp310-cp310-macosx_10_9_universal2.whl", hash = "sha256:be5ac76a8b0cd8095784e51e4c1c9c318c19edcd1709a06eb14979c8d850c31a"},
     {file = "mmh3-4.1.0-cp310-cp310-macosx_10_9_x86_64.whl", hash = "sha256:98a49121afdfab67cd80e912b36404139d7deceb6773a83620137aaa0da5714c"},
@@ -3871,7 +3890,7 @@ files = [
 name = "mpmath"
 version = "1.3.0"
 summary = "Python library for arbitrary-precision floating-point arithmetic"
-groups = ["llm", "ml-runtime", "test"]
+groups = ["dev", "llm", "ml-runtime", "test"]
 files = [
     {file = "mpmath-1.3.0-py3-none-any.whl", hash = "sha256:a0b2b9fe80bbcd81a6647ff13108738cfb482d481d826cc0e02f5b35e5c88d2c"},
     {file = "mpmath-1.3.0.tar.gz", hash = "sha256:7a28eb2a9774d00c7bc92411c19a89209d5da7c4c9a9e227be8330a23a25b91f"},
@@ -3964,7 +3983,7 @@ name = "multiprocess"
 version = "0.70.16"
 requires_python = ">=3.8"
 summary = "better multiprocessing and multithreading in Python"
-groups = ["llm", "test"]
+groups = ["dev", "llm", "test"]
 dependencies = [
     "dill>=0.3.8",
 ]
@@ -4203,7 +4222,7 @@ name = "networkx"
 version = "3.2.1"
 requires_python = ">=3.9"
 summary = "Python package for creating and manipulating graphs and networks"
-groups = ["llm", "ml-runtime"]
+groups = ["dev", "llm", "ml-runtime"]
 files = [
     {file = "networkx-3.2.1-py3-none-any.whl", hash = "sha256:f18c69adc97877c42332c170849c96cefa91881c99a7cb3e95b7c659ebdc1ec2"},
     {file = "networkx-3.2.1.tar.gz", hash = "sha256:9f1bb5cf3409bf324e0a722c20bdb4c20ee39bf1c30ce8ae499c8502b0b5e0c6"},
@@ -4379,7 +4398,7 @@ name = "nvidia-cublas-cu12"
 version = "12.1.3.1"
 requires_python = ">=3"
 summary = "CUBLAS native runtime libraries"
-groups = ["llm", "ml-runtime"]
+groups = ["dev", "llm", "ml-runtime"]
 marker = "platform_system == \"Linux\" and platform_machine == \"x86_64\""
 files = [
     {file = "nvidia_cublas_cu12-12.1.3.1-py3-none-manylinux1_x86_64.whl", hash = "sha256:ee53ccca76a6fc08fb9701aa95b6ceb242cdaab118c3bb152af4e579af792728"},
@@ -4391,7 +4410,7 @@ name = "nvidia-cuda-cupti-cu12"
 version = "12.1.105"
 requires_python = ">=3"
 summary = "CUDA profiling tools runtime libs."
-groups = ["llm", "ml-runtime"]
+groups = ["dev", "llm", "ml-runtime"]
 marker = "platform_system == \"Linux\" and platform_machine == \"x86_64\""
 files = [
     {file = "nvidia_cuda_cupti_cu12-12.1.105-py3-none-manylinux1_x86_64.whl", hash = "sha256:e54fde3983165c624cb79254ae9818a456eb6e87a7fd4d56a2352c24ee542d7e"},
@@ -4403,7 +4422,7 @@ name = "nvidia-cuda-nvrtc-cu12"
 version = "12.1.105"
 requires_python = ">=3"
 summary = "NVRTC native runtime libraries"
-groups = ["llm", "ml-runtime"]
+groups = ["dev", "llm", "ml-runtime"]
 marker = "platform_system == \"Linux\" and platform_machine == \"x86_64\""
 files = [
     {file = "nvidia_cuda_nvrtc_cu12-12.1.105-py3-none-manylinux1_x86_64.whl", hash = "sha256:339b385f50c309763ca65456ec75e17bbefcbbf2893f462cb8b90584cd27a1c2"},
@@ -4415,7 +4434,7 @@ name = "nvidia-cuda-runtime-cu12"
 version = "12.1.105"
 requires_python = ">=3"
 summary = "CUDA Runtime native Libraries"
-groups = ["llm", "ml-runtime"]
+groups = ["dev", "llm", "ml-runtime"]
 marker = "platform_system == \"Linux\" and platform_machine == \"x86_64\""
 files = [
     {file = "nvidia_cuda_runtime_cu12-12.1.105-py3-none-manylinux1_x86_64.whl", hash = "sha256:6e258468ddf5796e25f1dc591a31029fa317d97a0a94ed93468fc86301d61e40"},
@@ -4427,7 +4446,7 @@ name = "nvidia-cudnn-cu12"
 version = "8.9.2.26"
 requires_python = ">=3"
 summary = "cuDNN runtime libraries"
-groups = ["llm", "ml-runtime"]
+groups = ["dev", "llm", "ml-runtime"]
 marker = "platform_system == \"Linux\" and platform_machine == \"x86_64\""
 dependencies = [
     "nvidia-cublas-cu12",
@@ -4441,7 +4460,7 @@ name = "nvidia-cufft-cu12"
 version = "11.0.2.54"
 requires_python = ">=3"
 summary = "CUFFT native runtime libraries"
-groups = ["llm", "ml-runtime"]
+groups = ["dev", "llm", "ml-runtime"]
 marker = "platform_system == \"Linux\" and platform_machine == \"x86_64\""
 files = [
     {file = "nvidia_cufft_cu12-11.0.2.54-py3-none-manylinux1_x86_64.whl", hash = "sha256:794e3948a1aa71fd817c3775866943936774d1c14e7628c74f6f7417224cdf56"},
@@ -4453,7 +4472,7 @@ name = "nvidia-curand-cu12"
 version = "10.3.2.106"
 requires_python = ">=3"
 summary = "CURAND native runtime libraries"
-groups = ["llm", "ml-runtime"]
+groups = ["dev", "llm", "ml-runtime"]
 marker = "platform_system == \"Linux\" and platform_machine == \"x86_64\""
 files = [
     {file = "nvidia_curand_cu12-10.3.2.106-py3-none-manylinux1_x86_64.whl", hash = "sha256:9d264c5036dde4e64f1de8c50ae753237c12e0b1348738169cd0f8a536c0e1e0"},
@@ -4465,7 +4484,7 @@ name = "nvidia-cusolver-cu12"
 version = "11.4.5.107"
 requires_python = ">=3"
 summary = "CUDA solver native runtime libraries"
-groups = ["llm", "ml-runtime"]
+groups = ["dev", "llm", "ml-runtime"]
 marker = "platform_system == \"Linux\" and platform_machine == \"x86_64\""
 dependencies = [
     "nvidia-cublas-cu12",
@@ -4482,7 +4501,7 @@ name = "nvidia-cusparse-cu12"
 version = "12.1.0.106"
 requires_python = ">=3"
 summary = "CUSPARSE native runtime libraries"
-groups = ["llm", "ml-runtime"]
+groups = ["dev", "llm", "ml-runtime"]
 marker = "platform_system == \"Linux\" and platform_machine == \"x86_64\""
 dependencies = [
     "nvidia-nvjitlink-cu12",
@@ -4497,7 +4516,7 @@ name = "nvidia-nccl-cu12"
 version = "2.19.3"
 requires_python = ">=3"
 summary = "NVIDIA Collective Communication Library (NCCL) Runtime"
-groups = ["llm", "ml-runtime"]
+groups = ["dev", "llm", "ml-runtime"]
 marker = "platform_system == \"Linux\" and platform_machine != \"aarch64\""
 files = [
     {file = "nvidia_nccl_cu12-2.19.3-py3-none-manylinux1_x86_64.whl", hash = "sha256:a9734707a2c96443331c1e48c717024aa6678a0e2a4cb66b2c364d18cee6b48d"},
@@ -4508,7 +4527,7 @@ name = "nvidia-nvjitlink-cu12"
 version = "12.8.93"
 requires_python = ">=3"
 summary = "Nvidia JIT LTO Library"
-groups = ["llm", "ml-runtime"]
+groups = ["dev", "llm", "ml-runtime"]
 marker = "platform_system == \"Linux\" and platform_machine == \"x86_64\""
 files = [
     {file = "nvidia_nvjitlink_cu12-12.8.93-py3-none-manylinux2010_x86_64.manylinux_2_12_x86_64.whl", hash = "sha256:81ff63371a7ebd6e6451970684f916be2eab07321b73c9d244dc2b4da7f73b88"},
@@ -4521,7 +4540,7 @@ name = "nvidia-nvtx-cu12"
 version = "12.1.105"
 requires_python = ">=3"
 summary = "NVIDIA Tools Extension"
-groups = ["llm", "ml-runtime"]
+groups = ["dev", "llm", "ml-runtime"]
 marker = "platform_system == \"Linux\" and platform_machine == \"x86_64\""
 files = [
     {file = "nvidia_nvtx_cu12-12.1.105-py3-none-manylinux1_x86_64.whl", hash = "sha256:dc21cf308ca5691e7c04d962e213f8a4aa9bbfa23d95412f452254c2caeb09e5"},
@@ -4533,7 +4552,7 @@ name = "onnx"
 version = "1.17.0"
 requires_python = ">=3.8"
 summary = "Open Neural Network Exchange"
-groups = ["test"]
+groups = ["dev", "test"]
 dependencies = [
     "numpy>=1.20",
     "protobuf>=3.20.2",
@@ -4566,7 +4585,7 @@ files = [
 name = "onnxruntime"
 version = "1.19.2"
 summary = "ONNX Runtime is a runtime accelerator for Machine Learning models"
-groups = ["test"]
+groups = ["dev", "test"]
 dependencies = [
     "coloredlogs",
     "flatbuffers",
@@ -5534,7 +5553,7 @@ name = "pyreadline3"
 version = "3.5.4"
 requires_python = ">=3.8"
 summary = "A python implementation of GNU readline."
-groups = ["test"]
+groups = ["dev", "test"]
 marker = "sys_platform == \"win32\" and python_version >= \"3.8\""
 files = [
     {file = "pyreadline3-3.5.4-py3-none-any.whl", hash = "sha256:eaf8e6cc3c49bcccf145fc6067ba8643d1df34d604a1ec0eccbf7a18e6d3fae6"},
@@ -5555,7 +5574,7 @@ files = [
 name = "pystemmer"
 version = "2.2.0.3"
 summary = "Snowball stemming algorithms, for information retrieval"
-groups = ["test"]
+groups = ["dev", "test"]
 files = [
     {file = "PyStemmer-2.2.0.3-cp310-cp310-macosx_10_9_x86_64.whl", hash = "sha256:2935aa78a89b04899de4a8b8b6339806e0d5cd93811de52e98829b5762cf913c"},
     {file = "PyStemmer-2.2.0.3-cp310-cp310-macosx_11_0_arm64.whl", hash = "sha256:31c9d3c808647d4c569737b32b40ed23c67133d2b89033ebc8b5756cadf6f1c1"},
@@ -5982,7 +6001,7 @@ name = "regex"
 version = "2024.11.6"
 requires_python = ">=3.8"
 summary = "Alternative regular expression module, to replace re."
-groups = ["llm", "ml-runtime", "test"]
+groups = ["dev", "llm", "ml-runtime", "test"]
 files = [
     {file = "regex-2024.11.6-cp310-cp310-macosx_10_9_universal2.whl", hash = "sha256:ff590880083d60acc0433f9c3f713c51f7ac6ebb9adf889c79a261ecf541aa91"},
     {file = "regex-2024.11.6-cp310-cp310-macosx_10_9_x86_64.whl", hash = "sha256:658f90550f38270639e83ce492f27d2c8d2cd63805c65a13a14d36ca126753f0"},
@@ -6320,7 +6339,7 @@ name = "safetensors"
 version = "0.5.3"
 requires_python = ">=3.7"
 summary = ""
-groups = ["llm", "ml-runtime"]
+groups = ["dev", "llm", "ml-runtime"]
 files = [
     {file = "safetensors-0.5.3-cp38-abi3-macosx_10_12_x86_64.whl", hash = "sha256:bd20eb133db8ed15b40110b7c00c6df51655a2998132193de2f75f72d99c7073"},
     {file = "safetensors-0.5.3-cp38-abi3-macosx_11_0_arm64.whl", hash = "sha256:21d01c14ff6c415c485616b8b0bf961c46b3b343ca59110d38d744e577f9cce7"},
@@ -6452,6 +6471,27 @@ groups = ["dev"]
 files = [
     {file = "Send2Trash-1.8.3-py3-none-any.whl", hash = "sha256:0c31227e0bd08961c7665474a3d1ef7193929fedda4233843689baa056be46c9"},
     {file = "Send2Trash-1.8.3.tar.gz", hash = "sha256:b18e7a3966d99871aefeb00cfbcfdced55ce4871194810fc71f4aa484b953abf"},
+]
+
+[[package]]
+name = "sentence-transformers"
+version = "4.1.0"
+requires_python = ">=3.9"
+summary = "Embeddings, Retrieval, and Reranking"
+groups = ["dev"]
+dependencies = [
+    "Pillow",
+    "huggingface-hub>=0.20.0",
+    "scikit-learn",
+    "scipy",
+    "torch>=1.11.0",
+    "tqdm",
+    "transformers<5.0.0,>=4.41.0",
+    "typing-extensions>=4.5.0",
+]
+files = [
+    {file = "sentence_transformers-4.1.0-py3-none-any.whl", hash = "sha256:382a7f6be1244a100ce40495fb7523dbe8d71b3c10b299f81e6b735092b3b8ca"},
+    {file = "sentence_transformers-4.1.0.tar.gz", hash = "sha256:f125ffd1c727533e0eca5d4567de72f84728de8f7482834de442fd90c2c3d50b"},
 ]
 
 [[package]]
@@ -6713,7 +6753,7 @@ files = [
 name = "snowballstemmer"
 version = "2.2.0"
 summary = "This package provides 29 stemmers for 28 languages generated from Snowball algorithms."
-groups = ["doc", "test"]
+groups = ["dev", "doc", "test"]
 files = [
     {file = "snowballstemmer-2.2.0-py2.py3-none-any.whl", hash = "sha256:c8e1716e83cc398ae16824e5572ae04e0d9fc2c6b985fb0f900f5f0c96ecba1a"},
     {file = "snowballstemmer-2.2.0.tar.gz", hash = "sha256:09b16deb8547d3412ad7b590689584cd0fe25ec8db3be37788be3810cbf19cb1"},
@@ -7089,7 +7129,7 @@ name = "sympy"
 version = "1.13.3"
 requires_python = ">=3.8"
 summary = "Computer algebra system (CAS) in Python"
-groups = ["llm", "ml-runtime", "test"]
+groups = ["dev", "llm", "ml-runtime", "test"]
 dependencies = [
     "mpmath<1.4,>=1.1.0",
 ]
@@ -7469,7 +7509,7 @@ name = "tokenizers"
 version = "0.19.1"
 requires_python = ">=3.7"
 summary = ""
-groups = ["llm", "ml-runtime", "test"]
+groups = ["dev", "llm", "ml-runtime", "test"]
 dependencies = [
     "huggingface-hub<1.0,>=0.16.4",
 ]
@@ -7576,7 +7616,7 @@ name = "torch"
 version = "2.2.2"
 requires_python = ">=3.8.0"
 summary = "Tensors and Dynamic neural networks in Python with strong GPU acceleration"
-groups = ["llm", "ml-runtime"]
+groups = ["dev", "llm", "ml-runtime"]
 dependencies = [
     "filelock",
     "fsspec",
@@ -7703,7 +7743,7 @@ name = "tqdm"
 version = "4.67.1"
 requires_python = ">=3.7"
 summary = "Fast, Extensible Progress Meter"
-groups = ["llm", "ml-runtime", "talk", "test"]
+groups = ["dev", "llm", "ml-runtime", "talk", "test"]
 dependencies = [
     "colorama; platform_system == \"Windows\"",
 ]
@@ -7728,7 +7768,7 @@ name = "transformers"
 version = "4.42.4"
 requires_python = ">=3.8.0"
 summary = "State-of-the-art Machine Learning for JAX, PyTorch and TensorFlow"
-groups = ["llm", "ml-runtime"]
+groups = ["dev", "llm", "ml-runtime"]
 dependencies = [
     "filelock",
     "huggingface-hub<1.0,>=0.23.2",
@@ -7750,7 +7790,7 @@ files = [
 name = "triton"
 version = "2.2.0"
 summary = "A language and compiler for custom Deep Learning operations"
-groups = ["llm", "ml-runtime"]
+groups = ["dev", "llm", "ml-runtime"]
 marker = "platform_system == \"Linux\" and platform_machine == \"x86_64\" and python_version < \"3.12\""
 dependencies = [
     "filelock",
@@ -8290,7 +8330,7 @@ name = "win32-setctime"
 version = "1.2.0"
 requires_python = ">=3.5"
 summary = "A small Python utility to set file creation time on Windows"
-groups = ["test"]
+groups = ["dev", "test"]
 marker = "sys_platform == \"win32\""
 files = [
     {file = "win32_setctime-1.2.0-py3-none-any.whl", hash = "sha256:95d644c4e708aba81dc3704a116d8cbc974d70b3bdb8be1d150e36be6e9d1390"},
@@ -8379,7 +8419,7 @@ name = "xxhash"
 version = "3.5.0"
 requires_python = ">=3.7"
 summary = "Python binding for xxHash"
-groups = ["default", "llm", "test"]
+groups = ["default", "dev", "llm", "test"]
 files = [
     {file = "xxhash-3.5.0-cp310-cp310-macosx_10_9_x86_64.whl", hash = "sha256:ece616532c499ee9afbb83078b1b952beffef121d989841f7f4b3dc5ac0fd212"},
     {file = "xxhash-3.5.0-cp310-cp310-macosx_11_0_arm64.whl", hash = "sha256:3171f693dbc2cef6477054a665dc255d996646b4023fe56cb4db80e26f4cc520"},
