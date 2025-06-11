@@ -163,8 +163,6 @@ jobs:
         run: |
           pdm run pip uninstall pydantic pydantic_core -y
           pdm run pip install "pydantic>=1,<2"
-          pdm remove litellm
-          pdm add "litellm<=1.11.4"
 
       - name: Check Pydantic installed version
         run: |
