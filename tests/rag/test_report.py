@@ -98,6 +98,36 @@ def test_report_plots():
     assert len(histograms["Question"]["simple"]) == 4
 
 
+def test_report_to_html_with_embed():
+    """Test that to_html works correctly with embed=True parameter."""
+    testset, answers, metrics_results = _create_test_data()
+    knowledge_base = Mock()
+
+    report = RAGReport(testset, answers, metrics_results, knowledge_base)
+
+    # Test to_html with embed=False (default behavior)
+    html_output = report.to_html(embed=False)
+    assert html_output is not None
+    assert isinstance(html_output, str)
+    assert html_output.startswith("<!DOCTYPE html>")
+
+    # Test to_html with embed=True
+    embedded_output = report.to_html(embed=True)
+    assert embedded_output is not None
+
+    # When embed=True, it should return an IPython HTML display object
+    from IPython.core.display import HTML
+
+    assert isinstance(embedded_output, HTML)
+
+    # The embedded output should contain an iframe with the escaped HTML content
+    iframe_html = embedded_output.data
+    assert "<iframe" in iframe_html
+    assert "srcdoc=" in iframe_html
+    assert "width=100%" in iframe_html
+    assert "height=800px" in iframe_html
+
+
 def test_report_save_load(tmp_path):
     testset, answers, metrics_results = _create_test_data(with_documents=True)
     llm_client = Mock()
