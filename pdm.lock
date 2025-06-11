@@ -5,7 +5,7 @@
 groups = ["default", "dev", "doc", "llm", "ml-runtime", "talk", "tensorflow", "test"]
 strategy = ["inherit_metadata"]
 lock_version = "4.5.0"
-content_hash = "sha256:474403951f9b02375f1d90772c71b1b628d9ce0ad28b4c98654f39d62afdc459"
+content_hash = "sha256:6460b2f7a3ac0d77a4b4cb391f84da15b04005f98662f84dbdaab77d6fad03a4"
 
 [[metadata.targets]]
 requires_python = ">=3.9,<3.13"
@@ -1489,11 +1489,10 @@ files = [
 
 [[package]]
 name = "fastembed"
-version = "0.6.0"
+version = "0.7.0"
 requires_python = ">=3.9.0"
 summary = "Fast, light, accurate library built for retrieval embedding generation"
 groups = ["test"]
-marker = "python_version >= \"3.9\" and python_version < \"3.14\""
 dependencies = [
     "huggingface-hub<1.0,>=0.20",
     "loguru<0.8.0,>=0.7.2",
@@ -1512,8 +1511,8 @@ dependencies = [
     "tqdm<5.0,>=4.66",
 ]
 files = [
-    {file = "fastembed-0.6.0-py3-none-any.whl", hash = "sha256:a08385e9388adea0529a586004f2d588c9787880a510e4e5d167127a11e75328"},
-    {file = "fastembed-0.6.0.tar.gz", hash = "sha256:5c9ead25f23449535b07243bbe1f370b820dcc77ec2931e61674e3fe7ff24733"},
+    {file = "fastembed-0.7.0-py3-none-any.whl", hash = "sha256:7809c2e64dbbe626d9f4899b3932b2c9ed18288c1db1c1f8c94e2e3046926fa8"},
+    {file = "fastembed-0.7.0.tar.gz", hash = "sha256:5a7bf5cba71a00b4c5af85bc678c9969edcf0916c807c56cc30f1d6c67cd2ada"},
 ]
 
 [[package]]
@@ -3195,13 +3194,13 @@ files = [
 
 [[package]]
 name = "lark"
-version = "1.2.2"
-requires_python = ">=3.8"
+version = "1.1.9"
+requires_python = ">=3.6"
 summary = "a modern parsing library"
 groups = ["test"]
 files = [
-    {file = "lark-1.2.2-py3-none-any.whl", hash = "sha256:c2276486b02f0f1b90be155f2c8ba4a8e194d42775786db622faccd652d8e80c"},
-    {file = "lark-1.2.2.tar.gz", hash = "sha256:ca807d0162cd16cef15a8feecb862d7319e7a09bdb13aef927968e45040fed80"},
+    {file = "lark-1.1.9-py3-none-any.whl", hash = "sha256:a0dd3a87289f8ccbb325901e4222e723e7d745dbfc1803eaf5f3d2ace19cf2db"},
+    {file = "lark-1.1.9.tar.gz", hash = "sha256:15fa5236490824c2c4aba0e22d2d6d823575dcaf4cdd1848e34b6ad836240fba"},
 ]
 
 [[package]]
@@ -3316,7 +3315,6 @@ version = "0.7.3"
 requires_python = "<4.0,>=3.5"
 summary = "Python logging made (stupidly) simple"
 groups = ["test"]
-marker = "python_version >= \"3.9\" and python_version < \"3.14\""
 dependencies = [
     "aiocontextvars>=0.2.0; python_version < \"3.7\"",
     "colorama>=0.3.4; sys_platform == \"win32\"",
@@ -3818,7 +3816,6 @@ version = "5.1.0"
 requires_python = ">=3.9"
 summary = "Python extension for MurmurHash (MurmurHash3), a set of fast and robust hash functions."
 groups = ["test"]
-marker = "python_version >= \"3.9\" and python_version < \"3.14\""
 files = [
     {file = "mmh3-5.1.0-cp310-cp310-macosx_10_9_universal2.whl", hash = "sha256:eaf4ac5c6ee18ca9232238364d7f2a213278ae5ca97897cafaa123fcc7bb8bec"},
     {file = "mmh3-5.1.0-cp310-cp310-macosx_10_9_x86_64.whl", hash = "sha256:48f9aa8ccb9ad1d577a16104834ac44ff640d8de8c0caed09a2300df7ce8460a"},
@@ -4175,35 +4172,34 @@ files = [
 
 [[package]]
 name = "nemoguardrails"
-version = "0.14.0"
-requires_python = "!=2.7.*,!=3.0.*,!=3.1.*,!=3.2.*,!=3.3.*,!=3.4.*,!=3.5.*,!=3.6.*,!=3.7.*,!=3.8.*,>=3.9"
+version = "0.10.1"
+requires_python = ">=3.8"
 summary = "NeMo Guardrails is an open-source toolkit for easily adding programmable guardrails to LLM-based conversational systems."
 groups = ["test"]
 dependencies = [
-    "aiohttp>=3.10.11",
+    "aiohttp>=3.9.2",
     "annoy>=1.17.3",
     "fastapi>=0.103.0",
-    "fastembed<=0.6.0,>=0.2.2; python_version >= \"3.9\" and python_version < \"3.14\"",
+    "fastembed>=0.2.2",
     "httpx>=0.24.1",
-    "jinja2>=3.1.6",
-    "langchain-community<0.4.0,>=0.2.5",
-    "langchain-core<0.4.0,>=0.2.14",
-    "langchain<0.4.0,>=0.2.14",
-    "lark>=1.1.7",
+    "jinja2>=3.1.4",
+    "langchain!=0.1.9,<0.3.0,>=0.2.14",
+    "langchain-community<0.3.0,>=0.0.16",
+    "langchain-core!=0.1.26,<0.3.0,>=0.2.14",
+    "lark~=1.1.7",
     "nest-asyncio>=1.5.6",
-    "pandas<3,>=1.4.0",
     "prompt-toolkit>=3.0",
     "pydantic>=1.10",
     "pyyaml>=6.0",
     "rich>=13.5.2",
     "simpleeval>=0.9.13",
     "starlette>=0.27.0",
-    "typer>=0.8",
+    "typer>=0.7.0",
     "uvicorn>=0.23",
     "watchdog>=3.0.0",
 ]
 files = [
-    {file = "nemoguardrails-0.14.0-py3-none-any.whl", hash = "sha256:2aee907374c1fc575fd255ef7555e876df85104e5bab6af18aceb7f1353c19e0"},
+    {file = "nemoguardrails-0.10.1-py3-none-any.whl", hash = "sha256:11b7db76337365adea33567d6a35299b34903174253083ac984d1a16953e2fc2"},
 ]
 
 [[package]]
@@ -5258,7 +5254,6 @@ name = "py-rust-stemmers"
 version = "0.1.5"
 summary = "Fast and parallel snowball stemmer"
 groups = ["test"]
-marker = "python_version >= \"3.9\" and python_version < \"3.14\""
 files = [
     {file = "py_rust_stemmers-0.1.5-cp310-cp310-macosx_10_12_x86_64.whl", hash = "sha256:bfbd9034ae00419ff2154e33b8f5b4c4d99d1f9271f31ed059e5c7e9fa005844"},
     {file = "py_rust_stemmers-0.1.5-cp310-cp310-macosx_11_0_arm64.whl", hash = "sha256:c7162ae66df2bb0fc39b350c24a049f5f5151c03c046092ba095c2141ec223a2"},
@@ -8272,7 +8267,7 @@ version = "1.2.0"
 requires_python = ">=3.5"
 summary = "A small Python utility to set file creation time on Windows"
 groups = ["test"]
-marker = "python_version >= \"3.9\" and python_version < \"3.14\" and sys_platform == \"win32\""
+marker = "sys_platform == \"win32\""
 files = [
     {file = "win32_setctime-1.2.0-py3-none-any.whl", hash = "sha256:95d644c4e708aba81dc3704a116d8cbc974d70b3bdb8be1d150e36be6e9d1390"},
     {file = "win32_setctime-1.2.0.tar.gz", hash = "sha256:ae1fdf948f5640aae05c511ade119313fb6a30d7eabe25fef9764dca5873c4c0"},
