@@ -5,7 +5,7 @@
 groups = ["default", "dev", "doc", "llm", "ml-runtime", "talk", "tensorflow", "test"]
 strategy = ["inherit_metadata"]
 lock_version = "4.5.0"
-content_hash = "sha256:6460b2f7a3ac0d77a4b4cb391f84da15b04005f98662f84dbdaab77d6fad03a4"
+content_hash = "sha256:ef9cf680c4ef622a45aaf1e9ece2f196174abdb67bd24b8dab2e75ba45c5629b"
 
 [[metadata.targets]]
 requires_python = ">=3.9,<3.13"
@@ -218,7 +218,7 @@ name = "appnope"
 version = "0.1.4"
 requires_python = ">=3.6"
 summary = "Disable App Nap on macOS >= 10.9"
-groups = ["dev", "doc"]
+groups = ["default", "dev", "doc"]
 marker = "sys_platform == \"darwin\" or platform_system == \"Darwin\""
 files = [
     {file = "appnope-0.1.4-py2.py3-none-any.whl", hash = "sha256:502575ee11cd7a28c0205f379b525beefebab9d161b7c964670864014ed7213c"},
@@ -296,7 +296,7 @@ name = "asttokens"
 version = "3.0.0"
 requires_python = ">=3.8"
 summary = "Annotate AST trees with source code positions"
-groups = ["dev", "doc"]
+groups = ["default", "dev", "doc"]
 files = [
     {file = "asttokens-3.0.0-py3-none-any.whl", hash = "sha256:e3078351a059199dd5138cb1c706e6430c05eff2ff136af5eb4790f9d28932e2"},
     {file = "asttokens-3.0.0.tar.gz", hash = "sha256:0dcd8baa8d62b0c1d118b399b2ddba3c4aff271d0d7a9e0d4c1681c79035bbc7"},
@@ -405,7 +405,7 @@ files = [
 name = "backcall"
 version = "0.2.0"
 summary = "Specifications for callback functions passed in to an API"
-groups = ["dev", "doc"]
+groups = ["default", "dev", "doc"]
 files = [
     {file = "backcall-0.2.0-py2.py3-none-any.whl", hash = "sha256:fbbce6a29f263178a1f7915c1940bde0ec2b2a967566fe1c65c1dfb7422bd255"},
     {file = "backcall-0.2.0.tar.gz", hash = "sha256:5cbdbf27be5e7cfadb448baf0aa95508f91f2bbc6c6437cd9cd06e2a4c215e1e"},
@@ -1209,7 +1209,7 @@ name = "decorator"
 version = "5.2.1"
 requires_python = ">=3.8"
 summary = "Decorators for Humans"
-groups = ["dev", "doc"]
+groups = ["default", "dev", "doc"]
 files = [
     {file = "decorator-5.2.1-py3-none-any.whl", hash = "sha256:d316bb415a2d9e2d2b3abcc4084c6502fc09240e292cd76a76afc106a1c8e04a"},
     {file = "decorator-5.2.1.tar.gz", hash = "sha256:65f266143752f734b0a7cc83c46f4618af75b8c5911b00ccb61d0ac9b6da0360"},
@@ -1417,7 +1417,7 @@ name = "executing"
 version = "2.2.0"
 requires_python = ">=3.8"
 summary = "Get the currently executing AST node of a frame, and other information"
-groups = ["dev", "doc"]
+groups = ["default", "dev", "doc"]
 files = [
     {file = "executing-2.2.0-py2.py3-none-any.whl", hash = "sha256:11387150cad388d62750327a53d3339fad4888b39a6fe233c3afbb54ecffd3aa"},
     {file = "executing-2.2.0.tar.gz", hash = "sha256:5d108c028108fe2551d1a7b2e8b713341e2cb4fc0aa7dcf966fa4327a5226755"},
@@ -2248,7 +2248,7 @@ files = [
 
 [[package]]
 name = "huggingface-hub"
-version = "0.32.5"
+version = "0.32.6"
 requires_python = ">=3.8.0"
 summary = "Client library to download and publish models, datasets and other repos on the huggingface.co hub"
 groups = ["llm", "ml-runtime", "test"]
@@ -2263,8 +2263,8 @@ dependencies = [
     "typing-extensions>=3.7.4.3",
 ]
 files = [
-    {file = "huggingface_hub-0.32.5-py3-none-any.whl", hash = "sha256:6df8d5f42034a1b61daac60eed04acf348d337a4bd83aa448d4235cfb003e379"},
-    {file = "huggingface_hub-0.32.5.tar.gz", hash = "sha256:8328f848218e3212647cec77eab9fdfc2590e8117d979b925439bc01042a20de"},
+    {file = "huggingface_hub-0.32.6-py3-none-any.whl", hash = "sha256:32cde9558c965477556edca72352621def7fbc42e167aaf33f4cdb9af65bb28b"},
+    {file = "huggingface_hub-0.32.6.tar.gz", hash = "sha256:8e960f23dc57519c6c2a0bbc7e9bc030eaa14e7f2d61f8e68fd3d025dabed2fa"},
 ]
 
 [[package]]
@@ -2435,7 +2435,7 @@ name = "ipython"
 version = "8.12.0"
 requires_python = ">=3.8"
 summary = "IPython: Productive Interactive Computing"
-groups = ["dev", "doc"]
+groups = ["default", "dev", "doc"]
 dependencies = [
     "appnope; sys_platform == \"darwin\"",
     "backcall",
@@ -2531,7 +2531,7 @@ name = "jedi"
 version = "0.19.2"
 requires_python = ">=3.6"
 summary = "An autocompletion tool for Python that can be used for text editors."
-groups = ["dev", "doc"]
+groups = ["default", "dev", "doc"]
 dependencies = [
     "parso<0.9.0,>=0.8.4",
 ]
@@ -3588,7 +3588,7 @@ name = "matplotlib-inline"
 version = "0.1.7"
 requires_python = ">=3.8"
 summary = "Inline Matplotlib backend for Jupyter"
-groups = ["dev", "doc"]
+groups = ["default", "dev", "doc"]
 dependencies = [
     "traitlets",
 ]
@@ -4848,7 +4848,7 @@ name = "parso"
 version = "0.8.4"
 requires_python = ">=3.6"
 summary = "A Python Parser"
-groups = ["dev", "doc"]
+groups = ["default", "dev", "doc"]
 files = [
     {file = "parso-0.8.4-py2.py3-none-any.whl", hash = "sha256:a418670a20291dacd2dddc80c377c5c3791378ee1e8d12bffc35420643d43f18"},
     {file = "parso-0.8.4.tar.gz", hash = "sha256:eb3a7b58240fb99099a345571deecc0f9540ea5f4dd2fe14c2a99d6b281ab92d"},
@@ -4869,7 +4869,7 @@ files = [
 name = "pexpect"
 version = "4.9.0"
 summary = "Pexpect allows easy control of interactive console applications."
-groups = ["dev", "doc"]
+groups = ["default", "dev", "doc"]
 marker = "sys_platform != \"win32\""
 dependencies = [
     "ptyprocess>=0.5",
@@ -4883,7 +4883,7 @@ files = [
 name = "pickleshare"
 version = "0.7.5"
 summary = "Tiny 'shelve'-like database with concurrency support"
-groups = ["dev", "doc"]
+groups = ["default", "dev", "doc"]
 dependencies = [
     "pathlib2; python_version in \"2.6 2.7 3.2 3.3\"",
 ]
@@ -5084,7 +5084,7 @@ name = "prompt-toolkit"
 version = "3.0.51"
 requires_python = ">=3.8"
 summary = "Library for building powerful interactive command lines in Python"
-groups = ["dev", "doc", "test"]
+groups = ["default", "dev", "doc", "test"]
 dependencies = [
     "wcwidth",
 ]
@@ -5232,7 +5232,7 @@ files = [
 name = "ptyprocess"
 version = "0.7.0"
 summary = "Run a subprocess in a pseudo terminal"
-groups = ["dev", "doc"]
+groups = ["default", "dev", "doc"]
 marker = "os_name != \"nt\" or sys_platform != \"win32\""
 files = [
     {file = "ptyprocess-0.7.0-py2.py3-none-any.whl", hash = "sha256:4b41f3967fce3af57cc7e94b888626c18bf37a083e3651ca8feeb66d492fef35"},
@@ -5243,7 +5243,7 @@ files = [
 name = "pure-eval"
 version = "0.2.3"
 summary = "Safely evaluate AST nodes without side effects"
-groups = ["dev", "doc"]
+groups = ["default", "dev", "doc"]
 files = [
     {file = "pure_eval-0.2.3-py3-none-any.whl", hash = "sha256:1db8e35b67b3d218d818ae653e27f06c3aa420901fa7b081ca98cbedc874e0d0"},
     {file = "pure_eval-0.2.3.tar.gz", hash = "sha256:5f4e983f40564c576c7c8635ae88db5956bb2229d7e9237d03b3c0b0190eaf42"},
@@ -5506,7 +5506,7 @@ name = "pygments"
 version = "2.19.1"
 requires_python = ">=3.8"
 summary = "Pygments is a syntax highlighting package written in Python."
-groups = ["dev", "doc", "tensorflow", "test"]
+groups = ["default", "dev", "doc", "tensorflow", "test"]
 files = [
     {file = "pygments-2.19.1-py3-none-any.whl", hash = "sha256:9ea1544ad55cecf4b8242fab6dd35a93bbce657034b0611ee383099054ab6d8c"},
     {file = "pygments-2.19.1.tar.gz", hash = "sha256:61c16d2a8576dc0649d9f39e089b5f02bcd27fba10d8fb4dcc28173f7a45151f"},
@@ -7035,7 +7035,7 @@ files = [
 name = "stack-data"
 version = "0.6.3"
 summary = "Extract data from python stack frames and tracebacks for informative displays"
-groups = ["dev", "doc"]
+groups = ["default", "dev", "doc"]
 dependencies = [
     "asttokens>=2.1.0",
     "executing>=1.2.0",
@@ -7707,7 +7707,7 @@ name = "traitlets"
 version = "5.14.3"
 requires_python = ">=3.8"
 summary = "Traitlets Python configuration system"
-groups = ["dev", "doc"]
+groups = ["default", "dev", "doc"]
 files = [
     {file = "traitlets-5.14.3-py3-none-any.whl", hash = "sha256:b74e89e397b1ed28cc831db7aea759ba6640cb3de13090ca145426688ff1ac4f"},
     {file = "traitlets-5.14.3.tar.gz", hash = "sha256:9ed0579d3502c94b4b3732ac120375cda96f923114522847de4b3bb98b96b6b7"},
@@ -8117,7 +8117,7 @@ files = [
 name = "wcwidth"
 version = "0.2.13"
 summary = "Measures the displayed width of unicode strings in a terminal"
-groups = ["dev", "doc", "test"]
+groups = ["default", "dev", "doc", "test"]
 dependencies = [
     "backports-functools-lru-cache>=1.2.1; python_version < \"3.2\"",
 ]
