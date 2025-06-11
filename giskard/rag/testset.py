@@ -15,7 +15,6 @@ if TYPE_CHECKING:
 
 from ..core.suite import Suite
 from ..datasets.base import Dataset
-from ..llm.client import get_default_client
 from ..testing.tests.llm import test_llm_correctness
 
 logger = logging.getLogger(__name__)
@@ -156,7 +155,12 @@ class QATestset:
         template = template_path.read_text()
 
         # Make and push the dataset card
-        config = {"metadata": get_default_client().get_config()}
+        try:
+            from ..llm.client import get_default_client
+            
+            config = {"metadata": get_default_client().get_config()}
+        except Exception:
+            config = None
         content = template.format(repo_id=repo_id, num_items=len(self._dataframe), config=json.dumps(config, indent=4))
         return DatasetCard(content=content).push_to_hub(repo_id=repo_id, token=token, repo_type="dataset")
 
