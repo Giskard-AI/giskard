@@ -89,7 +89,7 @@ ml_runtime = [
 ]
 test = [
     "google.generativeai",
-    "nemoguardrails>=0.9.0",
+    "nemoguardrails>=0.9.0, <0.11.0", # 0.11.0 ensure align with langchain<0.3.0
     "onnxruntime<1.20.0",
     "openai>=1",
     "polyfactory",
@@ -99,6 +99,7 @@ test = [
     "pytest-memray; sys_platform == 'linux' or sys_platform == 'darwin'",
     "pytest-reportlog>=0.4.0",
     "pytest-xdist>=3.3.1",
+    "pytest-mock",
     "ragas>=0.1.5, <=0.2.7", # ragas 0.2.8 introduces abstract classes
     "shap<0.45", # fixing this to avoid changed on insights
 ]
@@ -138,7 +139,7 @@ giskard = "giskard.integrations.mlflow.giskard_evaluator:GiskardEvaluator"
 name = "giskard"
 readme = "README.md"
 license = { text = "Apache Software License 2.0" }
-version = "2.16.2"
+version = "2.17.0"
 description = "The testing framework dedicated to ML models, from tabular to LLMs"
 authors = [{ name = "Giskard AI", email = "hello@giskard.ai" }]
 keywords = ["Artificial Intelligence", "Machine Learning", "Quality", "MLOps"]
@@ -181,8 +182,9 @@ dependencies = [
     "markdown",                 # needed for display of scan results in notebook
     "colorama",                 # needed for the scan
     "num2words>=0.5.13",
-    "griffe>=0.36.9, <0.49.0",
     "imbalanced-learn>=0.12.4",
+    "griffe>=1.0.0,<2.0.0",
+    "ipython",
 ]
 
 [project.optional-dependencies]

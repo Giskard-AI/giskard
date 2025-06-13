@@ -8,6 +8,7 @@
 :hidden:
 
 ./evaluator.md
+./QATestset.md
 
 ```
 
@@ -16,4 +17,9 @@
 ::::{grid-item-card} <br/><h3>🔍 Giskard Evaluator</h3>
 :text-align: center
 :link: ./evaluator.md
+::::
+
+::::{grid-item-card} <br/><h3>📤 Push a QATestset to the Hugging Face Hub</h3>
+:text-align: center
+:link: ./QATestset.md
 ::::

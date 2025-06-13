@@ -1,13 +1,23 @@
-from typing import Any, Dict, Optional, Sequence
+from typing import TYPE_CHECKING, Any, Dict, Optional, Sequence
 
 import json
+import logging
 from dataclasses import dataclass
+from pathlib import Path
 
 import pandas as pd
+from datasets import Dataset as HFDataset
+from datasets import load_dataset
+from huggingface_hub import DatasetCard
+
+if TYPE_CHECKING:
+    from huggingface_hub import CommitInfo
 
 from ..core.suite import Suite
 from ..datasets.base import Dataset
 from ..testing.tests.llm import test_llm_correctness
+
+logger = logging.getLogger(__name__)
 
 
 @dataclass
@@ -108,6 +118,78 @@ class QATestset:
             The path to the input JSONL file.
         """
         dataframe = pd.read_json(path, orient="records", lines=True)
+        return cls.from_pandas(dataframe)
+
+    def push_to_hf_hub(
+        self,
+        repo_id: str,
+        token: str = None,
+        private: bool = False,
+        **kwargs: Any,
+    ) -> "CommitInfo":
+        """Push the QATestset to the Hugging Face Hub.
+
+        Parameters
+        ----------
+        repo_id : str
+            The repository ID on the Hugging Face Hub.
+        token : str, optional
+            Authentication token for private repositories. Defaults to None.
+        private : bool
+            Whether to create a private repository. Defaults to False.
+        **kwargs : Any
+            Additional arguments passed to Dataset.push_to_hub().
+
+        Returns
+        -------
+        CommitInfo
+            The commit information.
+        """
+
+        # Conversion to Dataset from the datasets library
+        dataset = HFDataset.from_pandas(self._dataframe)
+        dataset.push_to_hub(repo_id, token=token, private=private, **kwargs)
+
+        # Load the dataset card template
+        template_path = Path(__file__).parent / "dataset_card_template.md"
+        template = template_path.read_text()
+
+        # Make and push the dataset card
+        try:
+            from ..llm.client import get_default_client
+
+            config = {"metadata": get_default_client().get_config()}
+        except Exception:
+            config = {}
+        content = template.format(repo_id=repo_id, num_items=len(self._dataframe), config=json.dumps(config, indent=4))
+        return DatasetCard(content=content).push_to_hub(repo_id=repo_id, token=token, repo_type="dataset")
+
+    @classmethod
+    def load_from_hf_hub(cls, repo_id: str, token: str = None, **kwargs: Any) -> "QATestset":
+        """
+        Load an instance of the class from the Hugging Face Hub.
+
+        Parameters
+        ----------
+        repo_id : str
+            The repository ID on the Hugging Face Hub.
+        token : str, optional
+            Authentication token for private repositories. Defaults to None.
+        **kwargs : Any
+            Additional arguments passed to `load_dataset`.
+
+        Returns
+        -------
+        QATestset
+            An instance of the class itself loaded from the Hub.
+
+        Raises
+        ------
+        ImportError
+            If required dependencies are not installed.
+        """
+        dataset = load_dataset(repo_id, token=token, split="train", **kwargs)
+        dataframe = pd.DataFrame(dataset)
         return cls.from_pandas(dataframe)
 
     def to_test_suite(self, name=None, slicing_metadata: Optional[Sequence[str]] = None):

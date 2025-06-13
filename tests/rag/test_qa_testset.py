@@ -177,6 +177,74 @@ def test_qa_testset_saving_loading(tmp_path):
     )
 
 
+def test_qa_testset_push_to_hf_hub(mocker):
+    testset = QATestset(make_swedish_testset_samples())  # Use the swedish dataset for speed
+
+    mock_push_to_hf_hub = mocker.patch("datasets.Dataset.push_to_hub")
+    mock_dataset_card_push = mocker.patch("huggingface_hub.DatasetCard.push_to_hub")
+
+    testset.push_to_hf_hub(repo_id="test-repo", token="fake-token", private=True, some_arg="value")
+
+    mock_push_to_hf_hub.assert_called_once_with(
+        "test-repo",
+        token="fake-token",
+        private=True,
+        some_arg="value",
+    )
+    mock_dataset_card_push.assert_called_once_with(repo_id="test-repo", token="fake-token", repo_type="dataset")
+
+
+def test_qa_testset_load_from_hf_hub(mocker):
+    mock_load_dataset = mocker.patch("giskard.rag.testset.load_dataset")
+    mock_load_dataset.return_value = [
+        {
+            "id": "1",
+            "question": "Which milk is used to make Camembert?",
+            "reference_answer": "Cow's milk is used to make Camembert.",
+            "reference_context": "Camembert is a moist, soft, creamy, surface-ripened cow's milk cheese.",
+            "conversation_history": [],
+            "metadata": {
+                "question_type": "simple",
+                "color": "blue",
+                "topic": "Cheese_1",
+                "seed_document_id": "1",
+            },
+        },
+        {
+            "id": "2",
+            "question": "Where is Scarmorza from?",
+            "reference_answer": "Scarmorza is from Southern Italy.",
+            "reference_context": "Scamorza is a Southern Italian cow's milk cheese.",
+            "conversation_history": [],
+            "metadata": {
+                "question_type": "simple",
+                "color": "red",
+                "topic": "Cheese_1",
+                "seed_document_id": "2",
+            },
+        },
+    ]
+
+    testset = QATestset.load_from_hf_hub(repo_id="test-repo", token="fake-token")
+
+    assert len(testset.samples) == 2
+    assert testset.samples[0].question == "Which milk is used to make Camembert?"
+    assert testset.samples[0].metadata == {
+        "question_type": "simple",
+        "color": "blue",
+        "topic": "Cheese_1",
+        "seed_document_id": "1",
+    }
+    assert testset.samples[1].question == "Where is Scarmorza from?"
+    assert testset.samples[1].metadata == {
+        "question_type": "simple",
+        "color": "red",
+        "topic": "Cheese_1",
+        "seed_document_id": "2",
+    }
+    mock_load_dataset.assert_called_once_with("test-repo", token="fake-token", split="train")
+
+
 def test_qa_testset_saving_loading_swedish(tmp_path):
     testset = QATestset(make_swedish_testset_samples())
     path = tmp_path / "testset.jsonl"

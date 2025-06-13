@@ -2,6 +2,7 @@ import uuid
 from unittest.mock import Mock, patch
 
 import numpy as np
+import pytest
 from bokeh.plotting import figure
 
 from giskard.rag import QATestset, RAGReport
@@ -96,6 +97,15 @@ def test_report_plots():
     assert len(histograms["Topics"]) == 2
     assert len(histograms["Topics"]["Cheese_1"]) == 4
     assert len(histograms["Question"]["simple"]) == 4
+
+
+@pytest.mark.parametrize("embed", [False, True])
+def test_report_to_html(embed):
+    """Test that to_html works correctly with different embed parameter values."""
+    testset, answers, metrics_results = _create_test_data()
+
+    report = RAGReport(testset, answers, metrics_results)
+    report.to_html(embed=embed)
 
 
 def test_report_save_load(tmp_path):
