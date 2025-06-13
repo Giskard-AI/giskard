@@ -75,6 +75,7 @@ class RagasEmbeddingsWrapper(BaseRagasEmbeddings):
     async def aembed_documents(self, texts: Sequence[str]) -> Sequence[Sequence[float]]:
         return await self.embedding_model.aembed(texts)
 
+
 class RagasMetric(Metric):
     def __init__(
         self,
