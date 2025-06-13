@@ -39,7 +39,14 @@ class GroqClient(LLMClient):
         logger.info(f"Initializing GroqClient with model: {model}")
         self.model = model
         self._client = client or Groq()
-        logger.info("GroqClient initialized successfully")
+        logger.info("GroqClient initialized successfully")    
+    
+    def get_config(self) -> dict:
+        """Return the configuration of the LLM client."""
+        return {
+            "client_type": self.__class__.__name__,
+            "model": self.model
+        }
 
     def complete(
         self,
