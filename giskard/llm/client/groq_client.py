@@ -1,7 +1,7 @@
 from typing import Optional, Sequence
 
-from dataclasses import asdict
 import logging
+from dataclasses import asdict
 
 from ..config import LLMConfigurationError
 from ..errors import LLMImportError
@@ -9,8 +9,8 @@ from . import LLMClient
 from .base import ChatMessage
 
 try:
-    from groq import Groq
     import groq
+    from groq import Groq
 except ImportError as err:
     raise LLMImportError(flavor="llm") from err
 
@@ -29,24 +29,22 @@ JSON_MODE_GUIDANCE = (
 
 logger = logging.getLogger(__name__)
 
+
 class GroqClient(LLMClient):
     def __init__(
-        self, 
+        self,
         model: str = "llama-3.3-70b-versatile",  # Default model for Groq
         client: Groq = None,
-        #json_mode: Optional[bool] = None
+        # json_mode: Optional[bool] = None
     ):
         logger.info(f"Initializing GroqClient with model: {model}")
         self.model = model
         self._client = client or Groq()
-        logger.info("GroqClient initialized successfully")    
-    
+        logger.info("GroqClient initialized successfully")
+
     def get_config(self) -> dict:
         """Return the configuration of the LLM client."""
-        return {
-            "client_type": self.__class__.__name__,
-            "model": self.model
-        }
+        return {"client_type": self.__class__.__name__, "model": self.model}
 
     def complete(
         self,
@@ -59,12 +57,12 @@ class GroqClient(LLMClient):
     ) -> ChatMessage:
         logger.info(f"GroqClient.complete called with model: {self.model}")
         logger.info(f"Messages: {messages}")
-        
+
         extra_params = dict()
 
-        extra_params["seed"] = seed 
+        extra_params["seed"] = seed
 
-        if format in {"json", "json_object"}:   
+        if format in {"json", "json_object"}:
             extra_params["response_format"] = {"type": "json_object"}
 
         try:
@@ -75,16 +73,16 @@ class GroqClient(LLMClient):
                 max_tokens=max_tokens,
                 **extra_params,
             )
-        
-        except groq.AuthenticationError as err: 
+
+        except groq.AuthenticationError as err:
             raise LLMConfigurationError(AUTH_ERROR_MESSAGE) from err
-        
+
         except groq.BadRequestError as err:
             if format in {"json", "json_object"}:
                 raise LLMConfigurationError(
                     f"Model '{self.model}' does not support JSON output or the request format is incorrect.\n\n{JSON_MODE_GUIDANCE}"
                 ) from err
-            raise  
+            raise
 
         self.logger.log_call(
             prompt_tokens=completion.usage.prompt_tokens,
