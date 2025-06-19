@@ -185,6 +185,7 @@ dependencies = [
     "imbalanced-learn>=0.12.4",
     "griffe>=1.0.0,<2.0.0",
     "ipython",
+    "sentence-transformers>=4.1.0",
 ]
 
 [project.optional-dependencies]
