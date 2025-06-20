@@ -61,11 +61,6 @@ dev = [
     "mistralai>=1",
     "boto3>=1.34.88",
     "scikit-learn==1.4.2",
-    "bert-score>=0.3.13",
-    "evaluate>=0.4.3",
-    "transformers>=4.42.4",
-    "fastembed>=0.4.0",
-    "sentence-transformers>=4.1.0",
 ]
 
 ml_runtime = [
@@ -182,11 +177,9 @@ dependencies = [
     "markdown",                 # needed for display of scan results in notebook
     "colorama",                 # needed for the scan
     "num2words>=0.5.13",
-    "imbalanced-learn>=0.12.4",
     "griffe>=1.0.0,<2.0.0",
     "ipython",
-    "sentence-transformers>=4.1.0",
-]
+    ]
 
 [project.optional-dependencies]
 llm = [
