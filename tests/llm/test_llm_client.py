@@ -1,4 +1,5 @@
 import json
+from importlib.util import find_spec
 from unittest.mock import MagicMock, Mock, patch
 
 import pydantic
@@ -11,6 +12,7 @@ from openai.types.chat.chat_completion import Choice
 from giskard.llm.client import ChatMessage
 from giskard.llm.client.bedrock import ClaudeBedrockClient
 from giskard.llm.client.gemini import GeminiClient
+from giskard.llm.client.groq_client import GroqClient
 from giskard.llm.client.openai import OpenAIClient
 
 PYDANTIC_V2 = pydantic.__version__.startswith("2.")
@@ -236,5 +238,40 @@ def test_gemini_client():
     assert gemini_api_client.generate_content.call_args[1]["generation_config"].max_output_tokens == 12
 
     # Assert that the response is a ChatMessage and has the correct content
+    assert isinstance(res, ChatMessage)
+    assert res.content == "This is a test!"
+
+
+# Check if groq is installed
+has_groq = find_spec("groq") is not None
+
+
+@pytest.mark.skipif(not PYDANTIC_V2 or not has_groq, reason="Groq client test requires Pydantic v2 and groq package")
+def test_groq_client():
+    # Mock the Groq response
+    demo_response = Mock()
+    demo_response.usage = Mock(prompt_tokens=13, completion_tokens=7)
+    demo_response.choices = [Mock(message=Mock(role="assistant", content="This is a test!"))]
+
+    # Mock the Groq client
+    mock_client = Mock()
+    mock_client.chat.completions.create.return_value = demo_response
+
+    client = GroqClient(model="llama-3.3-70b-versatile", client=mock_client)
+
+    # Call the complete method
+    res = client.complete([ChatMessage(role="user", content="Hello")], temperature=0.7, format="json", max_tokens=100)
+
+    # Assert json_object format was passed
+    assert mock_client.chat.completions.create.call_args[1]["response_format"] == {"type": "json_object"}
+
+    # Assert that create was called with correct arguments
+    mock_client.chat.completions.create.assert_called_once()
+    assert mock_client.chat.completions.create.call_args[1]["messages"] == [{"role": "user", "content": "Hello"}]
+    assert mock_client.chat.completions.create.call_args[1]["temperature"] == 0.7
+    assert mock_client.chat.completions.create.call_args[1]["max_tokens"] == 100
+    assert mock_client.chat.completions.create.call_args[1]["model"] == "llama-3.3-70b-versatile"
+
+    # Assert the response is correct
     assert isinstance(res, ChatMessage)
     assert res.content == "This is a test!"
