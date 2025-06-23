@@ -23,8 +23,6 @@ giskard = [
 
 
 
-
-
 [tool.pdm.scripts]
 _.env = { GSK_DISABLE_ANALYTICS = "True", GISKARD_DEV_MODE = "True" }
 # add "-n auto" to the pytest command to parallelize the execution
@@ -62,7 +60,6 @@ dev = [
     "boto3>=1.34.88",
     "scikit-learn==1.4.2",
 ]
-
 ml_runtime = [
     "langchain>=0.0.275, <0.3",
     "langchain-community",
@@ -179,7 +176,7 @@ dependencies = [
     "num2words>=0.5.13",
     "griffe>=1.0.0,<2.0.0",
     "ipython",
-    ]
+]
 
 [project.optional-dependencies]
 llm = [
