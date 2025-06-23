@@ -189,6 +189,7 @@ llm = [
     "umap-learn>=0.5.5",
     "scikit-learn>=1.3.2",
     "litellm<1.66.0",
+    "groq>=0.10.0",
 ]
 
 talk = [
