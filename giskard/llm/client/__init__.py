@@ -37,7 +37,7 @@ def get_default_llm_api() -> str:
     if _default_llm_api is None:
         _default_llm_api = os.getenv(
             "GSK_LLM_API",
-            "azure" if "AZURE_OPENAI_API_KEY" in os.environ else "groq" if "GROQ_API_KEY" in os.environ else "openai",
+            "azure" if "AZURE_OPENAI_API_KEY" in os.environ else "openai",
         ).lower()
 
         if _default_llm_api not in {"azure", "openai", "groq"}:
