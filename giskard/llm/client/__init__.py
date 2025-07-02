@@ -36,13 +36,12 @@ def get_default_llm_api() -> str:
     global _default_llm_api
     if _default_llm_api is None:
         _default_llm_api = os.getenv(
-            "GSK_LLM_API",
-            "azure" if "AZURE_OPENAI_API_KEY" in os.environ else "openai",
+            "GSK_LLM_API", "azure" if "AZURE_OPENAI_API_KEY" in os.environ else "openai"
         ).lower()
 
-        if _default_llm_api not in {"azure", "openai", "groq"}:
+        if _default_llm_api not in {"azure", "openai"}:
             logging.warning(
-                f"LLM-based evaluation is only working with `azure`, `openai`, 'groq'. Found {_default_llm_api} in GSK_LLM_API, falling back to `openai`"
+                f"LLM-based evaluation is only working with `azure` and `openai`. Found {_default_llm_api} in GSK_LLM_API, falling back to `openai`"
             )
             _default_llm_api = "openai"
 
@@ -90,6 +89,9 @@ def get_default_client() -> LLMClient:
     global _default_llm_api
     global _default_llm_model
     global _disable_structured_output
+
+    if _default_client is not None:
+        return _default_client
 
     try:
         from .litellm import LiteLLMClient
