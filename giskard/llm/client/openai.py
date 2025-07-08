@@ -37,6 +37,14 @@ class OpenAIClient(LLMClient):
         self._client = client or openai.OpenAI()
         self.json_mode = json_mode if json_mode is not None else _supports_json_format(model)
 
+    def get_config(self) -> dict:
+        """Return the configuration of the LLM client."""
+        return {
+            "client_type": self.__class__.__name__,
+            "model": self.model,
+            "json_mode": self.json_mode,
+        }
+
     def complete(
         self,
         messages: Sequence[ChatMessage],

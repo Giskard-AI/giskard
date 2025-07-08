@@ -149,6 +149,34 @@ giskard.llm.set_llm_model("gemini/gemini-1.5-pro")
 giskard.llm.set_embedding_model("gemini/text-embedding-004")
 ```
 
+## Groq Client Setup
+
+More information on [Groq LiteLLM documentation](https://docs.litellm.ai/docs/providers/groq)
+
+**Note: Groq does not currently support embedding models.**  
+For a complete list of supported embedding providers, see: [LiteLLM Embedding Documentation](https://docs.litellm.ai/docs/embedding/supported_embedding)
+
+### Setup using .env variables
+
+```python
+import os
+import giskard
+
+os.environ["GROQ_API_KEY"] = "" # "my-groq-api-key"
+
+# Optional, setup a model (default LLM is llama-3.3-70b-versatile)
+giskard.llm.set_llm_model("groq/llama-3.3-70b-versatile")
+```
+
+### Setup using completion params
+
+```python
+import giskard
+
+api_key = "" # "my-groq-api-key"
+giskard.llm.set_llm_model("groq/llama-3.3-70b-versatile", api_key=api_key)
+```
+
 ## Custom Client Setup
 
 More information on [Custom Format LiteLLM documentation](https://docs.litellm.ai/docs/providers/custom_llm_server)
