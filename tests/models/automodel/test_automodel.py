@@ -20,8 +20,7 @@ class MySklearnModel(Model):
 
 
 def test_autoserializablemodel_abstract():
-    class UnsupportedModel:
-        ...
+    class UnsupportedModel: ...
 
     unsupported_model = UnsupportedModel()
     with pytest.raises(NotImplementedError) as e:

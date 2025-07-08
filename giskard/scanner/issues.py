@@ -43,16 +43,13 @@ class ScanExamples(ABC):
     """
 
     @abstractmethod
-    def extend(self, examples: Any):
-        ...
+    def extend(self, examples: Any): ...
 
     @abstractmethod
-    def head(self, n: int):
-        ...
+    def head(self, n: int): ...
 
     @abstractmethod
-    def to_html(self):
-        ...
+    def to_html(self): ...
 
 
 class DataFrameScanExamples(ScanExamples):

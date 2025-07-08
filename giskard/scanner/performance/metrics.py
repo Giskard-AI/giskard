@@ -32,8 +32,7 @@ class PerformanceMetric(ABC):
     has_binary_counts = False
 
     @abstractmethod
-    def __call__(self, model: BaseModel, dataset: Dataset) -> MetricResult:
-        ...
+    def __call__(self, model: BaseModel, dataset: Dataset) -> MetricResult: ...
 
 
 class ClassificationPerformanceMetric(PerformanceMetric, metaclass=ABCMeta):
@@ -51,8 +50,7 @@ class ClassificationPerformanceMetric(PerformanceMetric, metaclass=ABCMeta):
         return MetricResult(self, value, num_affected, binary_counts=binary_counts)
 
     @abstractmethod
-    def _calculate_metric(self, y_true: np.ndarray, y_pred: np.ndarray, model: BaseModel) -> MetricResult:
-        ...
+    def _calculate_metric(self, y_true: np.ndarray, y_pred: np.ndarray, model: BaseModel) -> MetricResult: ...
 
     def _calculate_affected_samples(self, y_true: np.ndarray, y_pred: np.ndarray, model: BaseModel) -> int:
         return len(y_true)
@@ -171,8 +169,7 @@ class RegressionPerformanceMetric(PerformanceMetric):
         return MetricResult(self, value, len(y_true))
 
     @abstractmethod
-    def _calculate_metric(self, y_true: np.ndarray, y_pred: np.ndarray, model: BaseModel) -> float:
-        ...
+    def _calculate_metric(self, y_true: np.ndarray, y_pred: np.ndarray, model: BaseModel) -> float: ...
 
 
 class SklearnRegressionScoreMixin:

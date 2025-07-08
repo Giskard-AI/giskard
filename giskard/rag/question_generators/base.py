@@ -12,8 +12,9 @@ logger = logging.getLogger("giskard.rag")
 
 class QuestionGenerator(ABC):
     @abstractmethod
-    def generate_questions(self, knowledge_base: KnowledgeBase, num_questions: int, *args, **kwargs) -> Iterator[int]:
-        ...
+    def generate_questions(
+        self, knowledge_base: KnowledgeBase, num_questions: int, *args, **kwargs
+    ) -> Iterator[int]: ...
 
 
 class _LLMBasedQuestionGenerator(QuestionGenerator):
@@ -67,8 +68,7 @@ class _BaseModifierGenerator(_LLMBasedQuestionGenerator):
     _question_type: str
 
     @abstractmethod
-    def _modify_question(initial_question: dict, knowledge_base: KnowledgeBase, *args, **kwargs) -> Dict:
-        ...
+    def _modify_question(initial_question: dict, knowledge_base: KnowledgeBase, *args, **kwargs) -> Dict: ...
 
     def generate_questions(self, knowledge_base: KnowledgeBase, num_questions: int, *args, **kwargs) -> Iterator[Dict]:
         # Generate the base questions

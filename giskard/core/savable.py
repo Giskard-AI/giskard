@@ -33,13 +33,11 @@ class Artifact(Generic[SMT], ABC):
         return set()
 
     @abstractmethod
-    def _save_locally(self, local_dit: Path):
-        ...
+    def _save_locally(self, local_dit: Path): ...
 
     @classmethod
     @abstractmethod
-    def load(cls, local_dir: Path, uuid: str, meta: SMT) -> "Artifact":
-        ...
+    def load(cls, local_dir: Path, uuid: str, meta: SMT) -> "Artifact": ...
 
     @classmethod
     def _get_meta_class(cls) -> type(SMT):

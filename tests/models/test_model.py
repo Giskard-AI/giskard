@@ -43,9 +43,10 @@ def test_prediction_cache_loaded_model(linear_regression_diabetes, linear_regres
         nb_of_prediction_calls[0] += 1
         return np.ones(df.shape[0])
 
-    with tempfile.TemporaryDirectory(prefix="cache_dir-") as cache_dir, tempfile.TemporaryDirectory(
-        prefix="model_dir-"
-    ) as model_dir:
+    with (
+        tempfile.TemporaryDirectory(prefix="cache_dir-") as cache_dir,
+        tempfile.TemporaryDirectory(prefix="model_dir-") as model_dir,
+    ):
         model = Model(
             prediction_fn,
             model_type=SupportedModelTypes.REGRESSION,

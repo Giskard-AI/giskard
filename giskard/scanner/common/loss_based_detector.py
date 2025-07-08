@@ -109,8 +109,7 @@ class LossBasedDetector(Detector):
         return slices
 
     @abstractmethod
-    def _calculate_loss(self, model: BaseModel, dataset: Dataset) -> pd.DataFrame:
-        ...
+    def _calculate_loss(self, model: BaseModel, dataset: Dataset) -> pd.DataFrame: ...
 
     @abstractmethod
     def _find_issues(
@@ -119,5 +118,4 @@ class LossBasedDetector(Detector):
         model: BaseModel,
         dataset: Dataset,
         meta: pd.DataFrame,
-    ) -> Sequence[Issue]:
-        ...
+    ) -> Sequence[Issue]: ...

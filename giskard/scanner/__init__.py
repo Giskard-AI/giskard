@@ -1,6 +1,7 @@
 """The scanner module provides a way to automatically detect issues in tabular, NLP, and LLM models. It works by running a
 set of automatic detectors depending on the model type. The detectors analyze the model and report any issues they find.
 """
+
 from typing import Optional, Sequence
 
 from ..datasets.base import Dataset

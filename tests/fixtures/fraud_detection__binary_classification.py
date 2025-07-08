@@ -173,7 +173,7 @@ def fraud_detection_train_data(fraud_detection_raw_data: Tuple[pd.DataFrame, pd.
 
 @pytest.fixture(scope="session")
 def fraud_detection_raw_model(
-    fraud_detection_raw_data: Tuple[pd.DataFrame, pd.DataFrame]
+    fraud_detection_raw_data: Tuple[pd.DataFrame, pd.DataFrame],
 ) -> Tuple[LGBMClassifier, List[str]]:
     train_df, _ = fraud_detection_raw_data
 

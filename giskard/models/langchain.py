@@ -34,9 +34,9 @@ class LangchainModel(WrapperModel):
             model=model,
             model_type=model_type,
             name=name,
-            description=str(model.prompt.dict())
-            if description is None and isinstance(model, LLMChain)
-            else description,
+            description=(
+                str(model.prompt.dict()) if description is None and isinstance(model, LLMChain) else description
+            ),
             data_preprocessing_function=data_preprocessing_function,
             model_postprocessing_function=model_postprocessing_function,
             feature_names=feature_names,
@@ -54,8 +54,7 @@ class LangchainModel(WrapperModel):
         path = Path(local_path)
         self.model.save(path / "chain.json")
 
-    def save_artifacts(self, artifact_dir, *args, **kwargs) -> None:
-        ...
+    def save_artifacts(self, artifact_dir, *args, **kwargs) -> None: ...
 
     @classmethod
     def load(cls, local_dir, model_py_ver: Optional[Tuple[str, str, str]] = None, *args, **kwargs):
@@ -74,8 +73,7 @@ class LangchainModel(WrapperModel):
         return load_chain(path / "chain.json", **kwargs)
 
     @classmethod
-    def load_artifacts(cls, local_path: Union[str, Path]) -> Optional[Dict[str, Any]]:
-        ...
+    def load_artifacts(cls, local_path: Union[str, Path]) -> Optional[Dict[str, Any]]: ...
 
     def model_predict(self, df):
         generations = [self.model(data) for data in df.to_dict("records")]
