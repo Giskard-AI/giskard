@@ -25,7 +25,7 @@ def test(
     R = TypeVar("R")
 
     def inner(
-        original: Union[Callable[P, R], Type[GiskardTest]]
+        original: Union[Callable[P, R], Type[GiskardTest]],
     ) -> Union[Callable[P, GiskardTest], GiskardTest, GiskardTestMethod]:
         """
         Declare output as both Callable and GiskardTest so that there's autocompletion

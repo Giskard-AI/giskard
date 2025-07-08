@@ -26,15 +26,13 @@ def _decode(series: pd.Series) -> pd.Series:
 
 class Clause(ABC):
     @abstractmethod
-    def mask(self, df: pd.DataFrame) -> pd.Series:
-        ...
+    def mask(self, df: pd.DataFrame) -> pd.Series: ...
 
     def __repr__(self) -> str:
         return f"<Clause {str(self)}>"
 
     @abstractmethod
-    def to_clause(self):
-        ...
+    def to_clause(self): ...
 
 
 class ComparisonClause(Clause, ABC):

@@ -22,5 +22,4 @@ class BaseSlicer(ABC):
         self.abs_deviation = abs_deviation
 
     @abstractmethod
-    def find_slices(self, features, target=None) -> List[QueryBasedSliceFunction]:
-        ...
+    def find_slices(self, features, target=None) -> List[QueryBasedSliceFunction]: ...

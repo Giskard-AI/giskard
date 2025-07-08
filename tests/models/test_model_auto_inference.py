@@ -1,3 +1,7 @@
+import sys
+
+import pytest
+
 from giskard.models.automodel import Model
 
 
@@ -48,6 +52,7 @@ def test_pytorch():
     assert isinstance(my_automodel, PyTorchModel)
 
 
+@pytest.mark.skipif(sys.version_info >= (3, 13), reason="TensorFlow is not supported on Python 3.13+")
 def test_tensorflow():
     try:
         import tensorflow as tf

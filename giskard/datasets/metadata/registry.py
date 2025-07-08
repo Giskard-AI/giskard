@@ -14,12 +14,10 @@ class MetadataProvider(ABC):
         self.name = name
 
     @abstractmethod
-    def generate_metadata(self, values: pd.Series) -> pd.DataFrame:
-        ...
+    def generate_metadata(self, values: pd.Series) -> pd.DataFrame: ...
 
     @abstractmethod
-    def supported_types(self) -> Sequence[ColumnType]:
-        ...
+    def supported_types(self) -> Sequence[ColumnType]: ...
 
 
 class MetadataProviderRegistry:

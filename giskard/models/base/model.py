@@ -457,9 +457,11 @@ class BaseModel(ABC):
                 featureNames=meta.feature_names if meta.feature_names is not None else [],
                 threshold=meta.classification_threshold,
                 description=meta.description,
-                classificationLabels=meta.classification_labels
-                if meta.classification_labels is None
-                else list(map(str, meta.classification_labels)),
+                classificationLabels=(
+                    meta.classification_labels
+                    if meta.classification_labels is None
+                    else list(map(str, meta.classification_labels))
+                ),
                 languageVersion=file_meta["language_version"],
                 language=file_meta["language"],
                 size=file_meta["size"],

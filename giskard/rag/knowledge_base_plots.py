@@ -48,9 +48,11 @@ def get_failure_plot(knowledge_base, question_evaluation: Sequence = None):
             "reference_answer": reference_answer,
             "id": document_ids,
             "content": [
-                knowledge_base[doc_id].content
-                if len(knowledge_base[doc_id].content) < 500
-                else knowledge_base[doc_id].content[:500] + "..."
+                (
+                    knowledge_base[doc_id].content
+                    if len(knowledge_base[doc_id].content) < 500
+                    else knowledge_base[doc_id].content[:500] + "..."
+                )
                 for doc_id in document_ids
             ],
             "color": colors,

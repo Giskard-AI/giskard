@@ -17,8 +17,7 @@ logger = logging.getLogger("giskard.llm")
 
 class BaseGenerator(ABC):
     @abstractmethod
-    def generate_dataset(self, model, num_samples=10, column_types=None) -> Dataset:
-        ...
+    def generate_dataset(self, model, num_samples=10, column_types=None) -> Dataset: ...
 
 
 class _BaseLLMGenerator(BaseGenerator, ABC):
@@ -94,8 +93,7 @@ class _BaseLLMGenerator(BaseGenerator, ABC):
         return f"Synthetic Test Dataset for {model.name}"
 
     @abstractmethod
-    def _format_messages(self, model: BaseModel, num_samples: int):
-        ...
+    def _format_messages(self, model: BaseModel, num_samples: int): ...
 
 
 class LLMBasedDataGenerator(_BaseLLMGenerator):

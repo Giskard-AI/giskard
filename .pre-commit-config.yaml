@@ -9,7 +9,7 @@ repos:
           - "pyproject.toml"
 
   - repo: https://github.com/ambv/black
-    rev: 23.12.1
+    rev: 25.1.0
     hooks:
       - id: black
         files: '^.*\.py$'

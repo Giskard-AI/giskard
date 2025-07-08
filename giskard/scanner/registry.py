@@ -10,8 +10,7 @@ from .issues import Issue
 
 class Detector(ABC):
     @abstractmethod
-    def run(self, model: BaseModel, dataset: Dataset, features: Sequence[str]) -> Sequence[Issue]:
-        ...
+    def run(self, model: BaseModel, dataset: Dataset, features: Sequence[str]) -> Sequence[Issue]: ...
 
 
 class DetectorRegistry:

@@ -1,6 +1,7 @@
 """
 Module for data quality tests.
 """
+
 from typing import Iterable, List, Optional
 
 from collections import Counter, defaultdict

@@ -29,8 +29,7 @@ class LLMClient(ABC):
         caller_id: Optional[str] = None,
         seed: Optional[int] = None,
         format=None,
-    ) -> ChatMessage:
-        ...
+    ) -> ChatMessage: ...
 
     @abstractmethod
     def get_config(self) -> dict:

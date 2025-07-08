@@ -78,8 +78,7 @@ class BaseEvaluator(ABC):
     """Base interface for evaluators."""
 
     @abstractmethod
-    def evaluate(self, model: BaseModel, dataset: Dataset):
-        ...
+    def evaluate(self, model: BaseModel, dataset: Dataset): ...
 
 
 class _BaseLLMEvaluator(BaseEvaluator):
@@ -98,8 +97,7 @@ class _BaseLLMEvaluator(BaseEvaluator):
     @abstractmethod
     def _format_messages(
         self, model: BaseModel, conversation: Sequence[Dict], meta: Optional[Dict] = None
-    ) -> Sequence[ChatMessage]:
-        ...
+    ) -> Sequence[ChatMessage]: ...
 
     def evaluate(self, model: BaseModel, dataset: Dataset):
         model_outputs = model.predict(dataset).prediction
