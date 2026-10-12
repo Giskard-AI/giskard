@@ -72,6 +72,8 @@ Run `make help` for other targets (for example scoped tests with `PACKAGE=giskar
 
 Public APIs (exported modules, classes, functions, and methods) use **NumPy-style** docstrings: a one-line summary, a `Parameters` section with types and descriptions, `Returns` when applicable, and an `Examples` section for non-obvious usage.
 
+The format is enforced by `make lint` (ruff pydocstyle, `convention = "numpy"`); run `make lint` or `uv run ruff check .` to validate. Documented types should match the annotations (write `X | None` for parameters that accept `None`). Tests are excluded, and missing docstrings are not flagged yet.
+
 ```python
 async def vulnerability_scan(
     target: Target,
@@ -87,9 +89,9 @@ async def vulnerability_scan(
         System under test (sync or async callable).
     description : str
         Natural-language description of the agent under test.
-    languages : list of str
+    languages : list[str]
         BCP-47 language codes the agent is expected to handle.
-    max_scenarios : int, optional
+    max_scenarios : int | None, optional
         Upper bound on scenarios across generators. ``None`` uses the
         active preset / per-generator defaults.
 
