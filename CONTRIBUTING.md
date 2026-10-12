@@ -70,47 +70,11 @@ Run `make help` for other targets (for example scoped tests with `PACKAGE=giskar
 
 ### Docstrings
 
-Public APIs (exported modules, classes, functions, and methods) use **NumPy-style** docstrings: a one-line summary, a `Parameters` section with types and descriptions, `Returns` when applicable, and an `Examples` section for non-obvious usage.
+Public APIs use [NumPy-style](https://numpydoc.readthedocs.io/en/latest/format.html) docstrings, enforced by `make lint` (ruff pydocstyle). House conventions the linter doesn't check:
 
-The format is enforced by `make lint` (ruff pydocstyle, `convention = "numpy"`); run `make lint` or `uv run ruff check .` to validate. Documented types should match the annotations (write `X | None` for parameters that accept `None`). Tests are excluded, and missing docstrings are not flagged yet.
-
-```python
-async def vulnerability_scan(
-    target: Target,
-    description: str,
-    languages: list[str],
-    max_scenarios: int | None = None,
-) -> SuiteResult:
-    """Generate and run the standard vulnerability scan suite.
-
-    Parameters
-    ----------
-    target : Target
-        System under test (sync or async callable).
-    description : str
-        Natural-language description of the agent under test.
-    languages : list[str]
-        BCP-47 language codes the agent is expected to handle.
-    max_scenarios : int | None, optional
-        Upper bound on scenarios across generators. ``None`` uses the
-        active preset / per-generator defaults.
-
-    Returns
-    -------
-    SuiteResult
-        Completed suite result (the grouped report is also printed).
-
-    Examples
-    --------
-    >>> async def echo(inputs: str) -> str:
-    ...     return inputs
-    >>> result = await vulnerability_scan(
-    ...     echo, "A demo agent", ["en"], max_scenarios=5
-    ... )
-    >>> isinstance(result.pass_rate, float)
-    True
-    """
-```
+- Document parameter types (`name : type`), matching the annotations; write `X | None` (plus `, optional` if defaulted) when `None` is accepted.
+- Add an `Examples` section for non-obvious usage.
+- Missing docstrings aren't flagged yet, but new public APIs should have one.
 
 See also [`.cursor/rules/documentation.mdc`](.cursor/rules/documentation.mdc) for module-level and inline comment guidance.
 
