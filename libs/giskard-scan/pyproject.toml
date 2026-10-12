@@ -18,7 +18,7 @@ dependencies = [
     # Imported directly in scan.generators.huggingface (AsyncClient); shipped
     # transitively by huggingface-hub/giskard-agents, declared explicitly so the
     # direct import is not a hidden transitive coupling.
-    "httpx>=0.28.1",
+    "httpx>=0.28.1,<1",  # 0.x: <1; matches all consumers (huggingface-hub/giskard-llm pin httpx<1)
 ]
 
 [project.optional-dependencies]
@@ -26,11 +26,11 @@ garak = ["garak>=0.15,<1"]
 deepteam = [
     "deepteam>=1.0.7,<2",
     # deepteam imports stdlib nntplib, removed in 3.13+ (PEP 594)
-    "standard-nntplib>=3.13; python_version >= '3.13'",
+    "standard-nntplib>=3.13,<4; python_version >= '3.13'",  # stdlib shim; version tracks Python, <4 for next major
     # Imported directly in the deepteam integration (_judge_generator); shipped
     # transitively by deepteam, declared explicitly in this extra so the direct
     # import is not a hidden transitive coupling.
-    "deepeval>=4.0.7",
+    "deepeval>=4.0.7,<5",
 ]
 
 

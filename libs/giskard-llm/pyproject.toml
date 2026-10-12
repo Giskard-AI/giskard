@@ -13,7 +13,7 @@ dependencies = [
     # provider SDKs (openai/anthropic/google), declared explicitly so the direct
     # imports (e.g. ``from httpx import AsyncClient``) are not hidden transitive
     # couplings.
-    "httpx>=0.28.1",
+    "httpx>=0.28.1,<1",  # 0.x: <1; matches all consumers (openai/google-genai/huggingface-hub pin httpx<1)
 ]
 
 [project.optional-dependencies]
@@ -24,7 +24,7 @@ anthropic = [
     # anthropic SDK v1 mandates httpx2; giskard-llm's anthropic provider/translator
     # import httpx2 directly (not merely via anthropic), so declare it explicitly
     # in this extra rather than relying on the transitive pull.
-    "httpx2>=2.12.0",
+    "httpx2>=2.12.0,<3",
 ]
 azure = ["giskard-llm[openai]"]  # alias: azure/ and azure_ai/ use the openai SDK
 all = ["giskard-llm[openai,google,anthropic]"]
