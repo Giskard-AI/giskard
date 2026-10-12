@@ -8,7 +8,13 @@ requires-python = ">=3.12"
 dependencies = [
     "posthog>=7.10.3",
     "pydantic>=2.11.0,<3",
+    # Imported directly in giskard.core.discriminated; shipped transitively by pydantic,
+    # declared explicitly so the direct import is not a hidden transitive coupling.
+    "pydantic-core>=2.46.4",
 ]
+
+[tool.deptry]
+known_first_party = ["giskard"]  # giskard.* is a PEP 420 namespace shared by all workspace libs
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]

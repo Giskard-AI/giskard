@@ -853,6 +853,28 @@ wheels = [
 ]
 
 [[package]]
+name = "deptry"
+version = "0.24.0"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "click" },
+    { name = "colorama", marker = "sys_platform == 'win32'" },
+    { name = "packaging" },
+    { name = "requirements-parser" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/58/aa/5cae0f25a2ac5334d5bd2782a6bcd80eecf184f433ff74b2fb0387cfbbb6/deptry-0.24.0.tar.gz", hash = "sha256:852e88af2087e03cdf9ece6916f3f58b74191ab51cc8074897951bd496ee7dbb", size = 440158, upload-time = "2025-11-09T00:31:44.637Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/21/5a/c1552996499911b6eabe874a994d9eede58ac3936d7fe7f865857b97c03f/deptry-0.24.0-cp39-abi3-macosx_10_12_x86_64.whl", hash = "sha256:a575880146bab671a62babb9825b85b4f1bda8aeaade4fcb59f9262caf91d6c7", size = 1774138, upload-time = "2025-11-09T00:31:41.896Z" },
+    { url = "https://files.pythonhosted.org/packages/32/b6/1dcc011fc3e6eec71601569c9de3215530563412b3714fba80dcd1a88ec8/deptry-0.24.0-cp39-abi3-macosx_11_0_arm64.whl", hash = "sha256:00ec34b968a13c03a5268ce0211f891ace31851d916415e0a748fae9596c00d5", size = 1677340, upload-time = "2025-11-09T00:31:39.676Z" },
+    { url = "https://files.pythonhosted.org/packages/4a/e2/af81dfd46b457be9e8ded9472872141777fbda8af661f5d509157b165359/deptry-0.24.0-cp39-abi3-manylinux_2_17_aarch64.manylinux2014_aarch64.whl", hash = "sha256:6ddfedafafe5cbfce31a50d4ea99d7b9074edcd08b9b94350dc739e2fb6ed7f9", size = 1782740, upload-time = "2025-11-09T00:31:28.302Z" },
+    { url = "https://files.pythonhosted.org/packages/ab/28/960c311aae084deef57ece41aac13cb359b06ce31b7771139e79c394a1b7/deptry-0.24.0-cp39-abi3-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:dd22fa2dbbdf4b38061ca9504f2a6ce41ec14fa5c9fe9b0b763ccc1275efebd5", size = 1845477, upload-time = "2025-11-09T00:31:33.452Z" },
+    { url = "https://files.pythonhosted.org/packages/f5/6c/4b972b011a06611e0cf8f4bb6bc04a3d0f9c651950ad9abe320fcbac6983/deptry-0.24.0-cp39-abi3-musllinux_1_1_aarch64.whl", hash = "sha256:0fbe50a2122d79cec53fdfd73a7092c05f316555a1139bcbacf3432572675977", size = 1960410, upload-time = "2025-11-09T00:31:31.174Z" },
+    { url = "https://files.pythonhosted.org/packages/1b/08/0eac3c72a9fd79a043cc492f3ba350c47a7be2160288353218b2c8c1bf3a/deptry-0.24.0-cp39-abi3-musllinux_1_1_x86_64.whl", hash = "sha256:92bd8d331a5a6f8e6247436bc6fe384bcf86a8d69fe33442d195996fb9b20547", size = 2023832, upload-time = "2025-11-09T00:31:36.381Z" },
+    { url = "https://files.pythonhosted.org/packages/35/e4/23dcbc505f6f35c70ba68015774cf891ceda080331d7fd6d75e84ada9f73/deptry-0.24.0-cp39-abi3-win_amd64.whl", hash = "sha256:94b354848130d45e16d3a3039ae8177bce33828f62028c4ff8f2e1b04f7182ba", size = 1631631, upload-time = "2025-11-09T00:31:47.108Z" },
+    { url = "https://files.pythonhosted.org/packages/39/69/6ec1e18e27dd6f80e4fb6c5fc05a6527242ff83b81c0711d0ba470e9a144/deptry-0.24.0-cp39-abi3-win_arm64.whl", hash = "sha256:ea58709e5f3aa77c0737d8fb76166b7703201cf368fbbb14072ccda968b6703a", size = 1550504, upload-time = "2025-11-09T00:31:45.988Z" },
+]
+
+[[package]]
 name = "dill"
 version = "0.3.8"
 source = { registry = "https://pypi.org/simple" }
@@ -1215,6 +1237,7 @@ deepteam-test = [
     { name = "pytest-timeout" },
 ]
 dev = [
+    { name = "deptry" },
     { name = "giskard", extra = ["full"] },
     { name = "pip-audit" },
     { name = "pytest" },
@@ -1263,6 +1286,7 @@ deepteam-test = [
     { name = "pytest-timeout", specifier = "==2.4.0" },
 ]
 dev = [
+    { name = "deptry", specifier = "==0.24.0" },
     { name = "giskard", extras = ["full"] },
     { name = "pip-audit", specifier = "==2.10.1" },
     { name = "pytest", specifier = "==9.1.1" },
@@ -1347,7 +1371,9 @@ dependencies = [
     { name = "jsonschema" },
     { name = "numpy" },
     { name = "pydantic" },
+    { name = "pydantic-core" },
     { name = "pydantic-settings" },
+    { name = "referencing" },
     { name = "regex" },
     { name = "rich" },
 ]
@@ -1374,7 +1400,9 @@ requires-dist = [
     { name = "jsonschema", specifier = ">=4.23.0,<5" },
     { name = "numpy", specifier = ">=2.4.1,<3" },
     { name = "pydantic", specifier = ">=2.12,<3" },
+    { name = "pydantic-core", specifier = ">=2.46.4" },
     { name = "pydantic-settings", specifier = ">=2.7,<3" },
+    { name = "referencing", specifier = ">=0.37.0" },
     { name = "regex", specifier = ">=2026.1.15" },
     { name = "rich", specifier = ">=14.2.0,<16" },
     { name = "textstat", marker = "extra == 'readability'", specifier = ">=0.7.0" },
@@ -1388,12 +1416,14 @@ source = { editable = "libs/giskard-core" }
 dependencies = [
     { name = "posthog" },
     { name = "pydantic" },
+    { name = "pydantic-core" },
 ]
 
 [package.metadata]
 requires-dist = [
     { name = "posthog", specifier = ">=7.10.3" },
     { name = "pydantic", specifier = ">=2.11.0,<3" },
+    { name = "pydantic-core", specifier = ">=2.46.4" },
 ]
 
 [[package]]
@@ -1402,6 +1432,7 @@ version = "1.0.2"
 source = { editable = "libs/giskard-llm" }
 dependencies = [
     { name = "giskard-core" },
+    { name = "httpx" },
     { name = "pydantic" },
 ]
 
@@ -1409,10 +1440,12 @@ dependencies = [
 all = [
     { name = "anthropic" },
     { name = "google-genai" },
+    { name = "httpx2" },
     { name = "openai" },
 ]
 anthropic = [
     { name = "anthropic" },
+    { name = "httpx2" },
 ]
 azure = [
     { name = "openai" },
@@ -1431,6 +1464,8 @@ requires-dist = [
     { name = "giskard-llm", extras = ["openai"], marker = "extra == 'azure'", editable = "libs/giskard-llm" },
     { name = "giskard-llm", extras = ["openai", "google", "anthropic"], marker = "extra == 'all'", editable = "libs/giskard-llm" },
     { name = "google-genai", marker = "extra == 'google'", specifier = ">=2.0,<3" },
+    { name = "httpx", specifier = ">=0.28.1" },
+    { name = "httpx2", marker = "extra == 'anthropic'", specifier = ">=2.12.0" },
     { name = "openai", marker = "extra == 'openai'", specifier = ">=1.30,<4" },
     { name = "pydantic", specifier = ">=2.11.0,<3" },
 ]
@@ -1443,12 +1478,15 @@ source = { editable = "libs/giskard-scan" }
 dependencies = [
     { name = "giskard-agents" },
     { name = "giskard-checks" },
+    { name = "httpx" },
     { name = "huggingface-hub" },
     { name = "numpy" },
+    { name = "pydantic" },
 ]
 
 [package.optional-dependencies]
 deepteam = [
+    { name = "deepeval" },
     { name = "deepteam" },
     { name = "standard-nntplib", marker = "python_full_version >= '3.13'" },
 ]
@@ -1458,12 +1496,15 @@ garak = [
 
 [package.metadata]
 requires-dist = [
+    { name = "deepeval", marker = "extra == 'deepteam'", specifier = ">=4.0.7" },
     { name = "deepteam", marker = "extra == 'deepteam'", specifier = ">=1.0.7,<2" },
     { name = "garak", marker = "extra == 'garak'", specifier = ">=0.15,<1" },
     { name = "giskard-agents", editable = "libs/giskard-agents" },
     { name = "giskard-checks", editable = "libs/giskard-checks" },
+    { name = "httpx", specifier = ">=0.28.1" },
     { name = "huggingface-hub", specifier = ">=1.11.0,<2" },
     { name = "numpy", specifier = ">=2.4.1,<3" },
+    { name = "pydantic", specifier = ">=2.13.4,<3" },
     { name = "standard-nntplib", marker = "python_full_version >= '3.13' and extra == 'deepteam'", specifier = ">=3.13" },
 ]
 provides-extras = ["garak", "deepteam"]
@@ -4092,6 +4133,18 @@ dependencies = [
 sdist = { url = "https://files.pythonhosted.org/packages/f3/61/d7545dafb7ac2230c70d38d31cbfe4cc64f7144dc41f6e4e4b78ecd9f5bb/requests-toolbelt-1.0.0.tar.gz", hash = "sha256:7681a0a3d047012b5bdc0ee37d7f8f07ebe76ab08caeccfc3921ce23c88d5bc6", size = 206888, upload-time = "2023-05-01T04:11:33.229Z" }
 wheels = [
     { url = "https://files.pythonhosted.org/packages/3f/51/d4db610ef29373b879047326cbf6fa98b6c1969d6f6dc423279de2b1be2c/requests_toolbelt-1.0.0-py2.py3-none-any.whl", hash = "sha256:cccfdd665f0a24fcf4726e690f65639d272bb0637b9b92dfd91a5568ccf6bd06", size = 54481, upload-time = "2023-05-01T04:11:28.427Z" },
+]
+
+[[package]]
+name = "requirements-parser"
+version = "0.13.1"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "packaging" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/89/1a/5f3c22d38bf1d87d1f4a961489d9eba35c4370a21395562d94410cdd0e73/requirements_parser-0.13.1.tar.gz", hash = "sha256:78811383b2089b6c5197a1431bc2c12ff950245edca39a23eea3460782038dd3", size = 22783, upload-time = "2026-06-18T07:52:25.291Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/bb/f9/15b44d5e4401b0013bbcefe3c09d7bfddcce28cc3d41b1d3077bcedf5b1f/requirements_parser-0.13.1-py3-none-any.whl", hash = "sha256:6e385663eb32589d16e5b22bb6e5251a57908e73803ffff438b53cd6ea2056e0", size = 14926, upload-time = "2026-06-18T07:52:24.171Z" },
 ]
 
 [[package]]

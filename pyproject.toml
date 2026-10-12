@@ -107,6 +107,7 @@ dev = [
     { include-group = "test" },
     "giskard[full]",
     "pip-audit==2.10.1",
+    "deptry==0.24.0",
 ]
 garak-test = [
     { include-group = "test" },
