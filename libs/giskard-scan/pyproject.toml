@@ -14,7 +14,7 @@ dependencies = [
     # Imported directly across scan generators (BaseModel, Field, ...); shipped
     # transitively by giskard-checks/giskard-agents, declared explicitly so the
     # direct import is not a hidden transitive coupling.
-    "pydantic>=2.13.4,<3",
+    "pydantic>=2.12,<3",
     # Imported directly in scan.generators.huggingface (AsyncClient); shipped
     # transitively by huggingface-hub/giskard-agents, declared explicitly so the
     # direct import is not a hidden transitive coupling.
