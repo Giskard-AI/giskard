@@ -106,7 +106,7 @@ test = [
 dev = [
     { include-group = "test" },
     "giskard[full]",
-    "ipykernel==7.3.0",
+    "ipykernel==7.4.0",
     "pip-audit==2.10.1",
     "pylint-pydantic==0.4.1",
 ]
