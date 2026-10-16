@@ -72,6 +72,7 @@ Find a list of packages below
 |✔|nltk|
 |✔|numpy|
 |✔|openai|
+|✔|opentelemetry-api|
 |✔|packaging|
 |✔|posthog|
 |✔|propcache|
@@ -512,6 +513,13 @@ Find a list of packages below
 - HomePage:
 - Author: OpenAI
 - License: Apache Software License
+- Compatible: True
+
+### opentelemetry-api-1.43.0
+
+- HomePage:
+- Author: OpenTelemetry Authors
+- License: Apache-2.0
 - Compatible: True
 
 ### packaging-26.2
