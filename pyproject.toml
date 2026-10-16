@@ -59,9 +59,9 @@ full = ["giskard[all-llms,all-checks,scan,litellm]"]
 "Twitter" = "https://twitter.com/giskard_ai"
 
 [tool.uv]
-# garak (<=0.17.0) caps datasets<4, which blocks the datasets path-traversal fix (5.0.1)
-# and, via datasets 3.6.0, the fsspec CVE-2026-104851 fix (2026.6.0).
-override-dependencies = ["datasets>=5.0.1", "fsspec>=2026.6.0"]
+# garak <=0.17.0 caps datasets<4, blocking the path-traversal fix (5.0.1). garak main already
+# requires datasets>=5.0.1 (NVIDIA/garak#2297); drop this once a release ships it.
+override-dependencies = ["datasets>=5.0.1"]
 
 [tool.uv.workspace]
 members = [
@@ -107,9 +107,8 @@ test = [
 dev = [
     { include-group = "test" },
     "giskard[full]",
-    "ipykernel==7.3.0",
     "pip-audit==2.10.1",
-    "pylint-pydantic==0.4.1",
+    "deptry==0.24.0",
 ]
 garak-test = [
     { include-group = "test" },
