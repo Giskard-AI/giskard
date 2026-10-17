@@ -10,7 +10,6 @@ dependencies = [
     "giskard-llm>=1.0.2,<2",
     "pydantic>=2.11.0,<3",
     "griffe>=1.7.0,<3",
-    "typing-extensions>=4.14.0,<5",
     "jinja2>=3.1.6,<4",
     "logfire-api>=3.22.0,<5",
     "tenacity>=9.1.0,<10",
@@ -61,3 +60,12 @@ packages = ["src/giskard"]
 # I: [isort](https://docs.astral.sh/ruff/rules/#isort-i)
 # F401: [unused-import](https://docs.astral.sh/ruff/rules/unused-import/)
 select = ["I", "F401"]
+
+[tool.deptry]
+known_first_party = ["giskard"]  # giskard.* is a PEP 420 namespace shared by all workspace libs
+
+[tool.deptry.per_rule_ignores]
+"DEP002" = [
+    "giskard-core",  # workspace sibling; imported as giskard.core (first-party), not as the dist name
+    "giskard-llm",  # workspace sibling; imported as giskard.llm (first-party), not as the dist name
+]
