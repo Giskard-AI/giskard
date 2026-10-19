@@ -1686,6 +1686,23 @@ class TestScenarioSetupTeardown:
         assert result.errored
         assert calls == ["setup", "teardown"]
 
+    async def test_teardown_runs_on_check_failure_break(self):
+        """teardown runs on the stop-on-first-failure path (a check FAILs, no error)."""
+        calls: list[str] = []
+
+        scenario = (
+            Scenario("fail_break")
+            .with_setup(lambda: calls.append("setup"))
+            .interact("hi", lambda inputs: inputs)
+            .check(MockCheck(result=CheckResult.failure(message="no match")))
+            .with_teardown(lambda: calls.append("teardown"))
+        )
+        result = await scenario.run()
+
+        assert result.failed
+        assert not result.passed
+        assert calls == ["setup", "teardown"]
+
     async def test_setup_runs_once_per_attempt_with_multiple_runs(self):
         """setup (and teardown) run for each fresh-trace attempt."""
         calls: list[str] = []
