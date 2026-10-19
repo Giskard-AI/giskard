@@ -30,12 +30,21 @@ class Check[InputType, OutputType, TraceType: Trace](  # pyright: ignore[reportM
 
     name: str | None = Field(default=None, description="Check name")
     description: str | None = Field(default=None, description="Check description")
+    advisory: bool = Field(
+        default=False,
+        description=(
+            "If True, a FAIL or ERROR verdict from this check is recorded for "
+            "reporting but does not stop scenario execution and does not fail "
+            "the enclosing test case or scenario. Useful for soft, non-blocking "
+            "assertions in multi-turn flows."
+        ),
+    )
 
     def to_spec(self) -> dict[str, Any]:
         """Return the check configuration in the Giskard Hub wire format."""
         return self.model_dump(
             mode="json",
-            exclude={"name", "description"},
+            exclude={"name", "description", "advisory"},
             exclude_none=True,
             fallback=str,
         )
