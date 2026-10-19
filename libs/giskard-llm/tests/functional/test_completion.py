@@ -13,7 +13,7 @@ from giskard.llm.errors import BadRequestError
 from giskard.llm.types import ToolDefParam
 from pydantic import BaseModel, Field, field_validator
 
-from .helpers import azure_foundry_v1_base_url
+from .helpers import azure_foundry_anthropic_base_url, azure_foundry_v1_base_url
 
 pytestmark = pytest.mark.functional
 
@@ -31,6 +31,9 @@ _MODELS = {
     "azure_ai": os.getenv("TEST_AZURE_AI_MODEL", "azure_ai/gpt-4.1-nano"),
     "azure_foundry_v1": os.getenv(
         "TEST_AZURE_FOUNDRY_V1_MODEL", "azure_foundry_v1/gpt-4.1-nano"
+    ),
+    "azure_anthropic": os.getenv(
+        "TEST_AZURE_ANTHROPIC_MODEL", "azure_anthropic/claude-haiku-5-5"
     ),
 }
 
@@ -57,6 +60,11 @@ _CONFIGURE_PARAMS = {  # pragma: allowlist secret
         "api_key": "os.environ/AZURE_AI_API_KEY",  # pragma: allowlist secret
         "base_url": azure_foundry_v1_base_url(),
     },
+    "azure_anthropic": {
+        "provider": "anthropic",
+        "api_key": "os.environ/AZURE_AI_API_KEY",  # pragma: allowlist secret
+        "base_url": azure_foundry_anthropic_base_url(),
+    },
 }
 
 _PROVIDER_MARKS = {
@@ -68,6 +76,7 @@ _PROVIDER_MARKS = {
     "azure": pytest.mark.azure,
     "azure_ai": pytest.mark.azure_ai,
     "azure_foundry_v1": pytest.mark.azure_foundry_v1,
+    "azure_anthropic": pytest.mark.azure_anthropic,
 }
 
 _PROVIDER_PARAMS = [
@@ -380,10 +389,20 @@ async def test_response_format(provider: str):
     assert isinstance(validated.hex, str)
 
 
-@pytest.mark.anthropic
-async def test_anthropic_nested_response_format():
+@pytest.mark.parametrize(
+    "provider",
+    [
+        pytest.param("anthropic", marks=pytest.mark.anthropic, id="anthropic"),
+        pytest.param(
+            "azure_anthropic",
+            marks=pytest.mark.azure_anthropic,
+            id="azure_anthropic",
+        ),
+    ],
+)
+async def test_anthropic_nested_response_format(provider: str):
     """Anthropic accepts and returns a nested Pydantic response schema (#2859)."""
-    client, model = _make_client("anthropic")
+    client, model = _make_client(provider)
     resp = await client.acompletion(
         model,
         [{"role": "user", "content": "Return inner.value as the string ok."}],
@@ -437,10 +456,20 @@ async def test_configure_explicit(provider: str):
 # -- Provider-specific parameter scenarios ------------------------------------
 
 
-@pytest.mark.anthropic
-async def test_anthropic_temperature_accepted():
+@pytest.mark.parametrize(
+    "provider",
+    [
+        pytest.param("anthropic", marks=pytest.mark.anthropic, id="anthropic"),
+        pytest.param(
+            "azure_anthropic",
+            marks=pytest.mark.azure_anthropic,
+            id="azure_anthropic",
+        ),
+    ],
+)
+async def test_anthropic_temperature_accepted(provider: str):
     """SDK v1 forwards temperature via extra_body; the live API must accept it."""
-    client, model = _make_client("anthropic")
+    client, model = _make_client(provider)
     resp = await client.acompletion(
         model, [{"role": "user", "content": "Say hello"}], temperature=0.2
     )

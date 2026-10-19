@@ -54,6 +54,11 @@ else:
 
 _PROVIDER = "anthropic/chat"
 _PROVIDER_NAME = "anthropic"
+_THINKING_BLOCK_TYPE = "thinking"
+_REDACTED_THINKING_BLOCK_TYPE = "redacted_thinking"
+_THINKING_SKIP_BLOCK_TYPES = frozenset(
+    {_THINKING_BLOCK_TYPE, _REDACTED_THINKING_BLOCK_TYPE}
+)
 logger = logging.getLogger(__name__)
 
 KNOWN_COMPLETION_PARAMS = frozenset(
@@ -375,11 +380,31 @@ class AnthropicChatTranslator:
             raise ValueError(f"Unsupported content block type: {block.type}")
 
     @staticmethod
+    def _thinking_text(blocks: "Sequence[ContentBlock]") -> str | None:
+        parts: list[str] = []
+        for block in blocks:
+            if block.type != _THINKING_BLOCK_TYPE:
+                continue
+            thinking = getattr(block, "thinking", None)
+            if isinstance(thinking, str) and thinking:
+                parts.append(thinking)
+        return "\n".join(parts) if parts else None
+
+    @staticmethod
+    def _blocks_without_thinking(
+        blocks: "Sequence[ContentBlock]",
+    ) -> list["ContentBlock"]:
+        return [
+            block for block in blocks if block.type not in _THINKING_SKIP_BLOCK_TYPES
+        ]
+
+    @staticmethod
     def blocks_to_giskard(
         blocks: "Sequence[ContentBlock]",
     ) -> tuple[Sequence[CompletionContent], Sequence[ToolCall]]:
         content_and_tool_calls = [
-            AnthropicChatTranslator.block_content_to_giskard(block) for block in blocks
+            AnthropicChatTranslator.block_content_to_giskard(block)
+            for block in AnthropicChatTranslator._blocks_without_thinking(blocks)
         ]
         content = [
             content
@@ -399,6 +424,7 @@ class AnthropicChatTranslator:
     ) -> CompletionResponse:
         """Convert raw SDK response to CompletionResponse."""
         content, tool_calls = AnthropicChatTranslator.blocks_to_giskard(raw.content)
+        thinking = AnthropicChatTranslator._thinking_text(raw.content)
 
         finish_reason = (
             FINISH_REASON_MAP.get(raw.stop_reason, "stop") if raw.stop_reason else None
@@ -419,6 +445,7 @@ class AnthropicChatTranslator:
             content=content if content else None,
             refusal=refusal_out,
             tool_calls=tool_calls or None,
+            thinking=thinking,
         )
 
         usage = None

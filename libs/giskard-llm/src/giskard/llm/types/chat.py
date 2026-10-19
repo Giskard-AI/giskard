@@ -113,6 +113,7 @@ class AssistantMessage(_BaseModel):
     content: str | Sequence[CompletionContent] | None = None
     refusal: str | None = None
     tool_calls: Sequence[ToolCall] | None = None
+    thinking: str | None = None
 
     @property
     def is_refusal(self) -> bool:
