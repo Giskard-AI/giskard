@@ -10,6 +10,8 @@ from jinja2.loaders import FileSystemLoader, PrefixLoader
 from jinja2.sandbox import SandboxedEnvironment
 from pydantic import BaseModel
 
+from .policy import get_template_policy, is_strictly_safe_attribute
+
 
 @runtime_checkable
 class LLMFormattable(Protocol):
@@ -117,7 +119,23 @@ def fence(value: Any) -> Trusted:
     return Trusted(_escape(_render_value(value)))
 
 
-_inline_env = SandboxedEnvironment(
+class PromptSandboxedEnvironment(SandboxedEnvironment):
+    """Sandbox that also enforces the active template policy.
+
+    The policy is read at render time, so environments created before
+    :func:`~giskard.agents.templates.policy.set_template_policy` is called
+    still honour it.
+    """
+
+    def is_safe_attribute(self, obj: Any, attr: str, value: Any) -> bool:
+        if not super().is_safe_attribute(obj, attr, value):
+            return False
+        if get_template_policy() == "strict":
+            return is_strictly_safe_attribute(obj, attr, value)
+        return True
+
+
+_inline_env = PromptSandboxedEnvironment(
     trim_blocks=True,
     lstrip_blocks=True,
     keep_trailing_newline=True,
@@ -175,9 +193,11 @@ class PromptsLoader(PrefixLoader):
         return loader, name
 
 
-def create_message_environment(loader_mapping: dict[str, Path]) -> SandboxedEnvironment:
+def create_message_environment(
+    loader_mapping: dict[str, Path],
+) -> PromptSandboxedEnvironment:
     """Create a Jinja2 environment with MessageExtension."""
-    env = SandboxedEnvironment(
+    env = PromptSandboxedEnvironment(
         loader=PromptsLoader(
             {
                 namespace: FileSystemLoader(path)
