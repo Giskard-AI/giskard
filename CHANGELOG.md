@@ -54,6 +54,15 @@ in-place upgrade of the v2 API.
 - `giskard.checks.set_default_generator` accepts a model identifier string
   (e.g. `"openai/gpt-4o-mini"`) in addition to a `BaseGenerator` instance.
 
+### Removed
+
+- `giskard-agents`: the unused `giskard.agents.config` module
+  (`GiskardAgentsSettings`, `GISKARD_AGENTS_SETTINGS`). Nothing read it, so its
+  `EMBEDDINGS_MAX_BATCH_SIZE` and `EMBEDDINGS_MAX_TOTAL_CHARS` variables never
+  had any effect. Embedding batch limits are set with
+  `GISKARD_AGENTS_DEFAULT_MAX_BATCH_SIZE` and
+  `GISKARD_AGENTS_DEFAULT_MAX_TOTAL_CHARS`.
+
 ### Fixed
 
 - `Interact.generate()` now uses the live `inputs`/`outputs` fields after
