@@ -58,6 +58,12 @@ in-place upgrade of the v2 API.
   `GISKARD_TEMPLATE_POLICY=strict`, `set_template_policy("strict")`, or the
   `strict_templates()` context manager. Strict templates can read model fields
   and properties but cannot call methods. The default policy is unchanged.
+- `giskard-agents`: strict templates are also bounded in time and size.
+  Rendering raises `TemplateRenderTimeoutError` after
+  `GISKARD_TEMPLATE_RENDER_TIMEOUT` seconds (default 5) and
+  `TemplateOutputTooLargeError` when the output or a computed value exceeds
+  `GISKARD_TEMPLATE_MAX_OUTPUT_SIZE` characters (default 2,000,000). Both can
+  also be set with `set_template_limits()`; `0` disables a limit.
 
 ### Fixed
 

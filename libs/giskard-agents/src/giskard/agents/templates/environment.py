@@ -1,15 +1,32 @@
+import inspect
 import json
+from collections.abc import Awaitable, Callable
+from functools import wraps
 from pathlib import Path
-from typing import Any, Literal, Protocol, runtime_checkable
+from typing import Any, Literal, Protocol, cast, runtime_checkable
 
 from giskard.llm import chat
-from jinja2 import BaseLoader, StrictUndefined, nodes
+from jinja2 import BaseLoader, StrictUndefined, Template, nodes, pass_context
 from jinja2.exceptions import TemplateNotFound
 from jinja2.ext import Extension
 from jinja2.loaders import FileSystemLoader, PrefixLoader
+from jinja2.runtime import Context
 from jinja2.sandbox import SandboxedEnvironment
+from jinja2.utils import generate_lorem_ipsum
+from jinja2.visitor import NodeTransformer
 from pydantic import BaseModel
 
+from .limits import (
+    RenderBudget,
+    check_binop,
+    check_brace_format,
+    check_lipsum,
+    check_percent_format,
+    check_str_operation,
+    current_budget,
+    limit_iteration,
+    render_budget,
+)
 from .policy import get_template_policy, is_strictly_safe_attribute
 
 
@@ -73,9 +90,10 @@ def _finalize_value(value: Any) -> str:
     str
         The rendered text, escaped unless the value is :class:`Trusted`.
     """
-    if isinstance(value, Trusted):
-        return str(value)
-    return _escape(_render_value(value))
+    text = str(value) if isinstance(value, Trusted) else _escape(_render_value(value))
+    if (budget := current_budget()) is not None:
+        budget.add_output(text)
+    return text
 
 
 def trusted(value: Any) -> Trusted:
@@ -119,19 +137,200 @@ def fence(value: Any) -> Trusted:
     return Trusted(_escape(_render_value(value)))
 
 
+# Internal filters inserted by _LimitTransformer.
+_LOOP_FILTER = "_giskard_limit_loop"
+_VALUE_FILTER = "_giskard_limit_value"
+
+# Filters operating on a string whose output size depends on their arguments.
+_STR_FILTERS = frozenset({"center", "indent", "replace"})
+
+
+class LimitedTemplate(Template):
+    """Template whose renders are bounded under the strict policy.
+
+    See :mod:`~giskard.agents.templates.limits` for the limits applied.
+    """
+
+    def render(self, *args: Any, **kwargs: Any) -> str:
+        if get_template_policy() != "strict":
+            return super().render(*args, **kwargs)
+        with render_budget() as budget:
+            output = super().render(*args, **kwargs)
+            budget.check_size(len(output), "an output")
+            return output
+
+    async def render_async(self, *args: Any, **kwargs: Any) -> str:
+        if get_template_policy() != "strict":
+            return await super().render_async(*args, **kwargs)
+        with render_budget() as budget:
+            output = await super().render_async(*args, **kwargs)
+            budget.check_size(len(output), "an output")
+            return output
+
+
+async def _check_awaited(budget: RenderBudget, result: Awaitable[Any]) -> Any:
+    return budget.check_value(await result)
+
+
+def _limit_filter(name: str, func: Callable[..., Any]) -> Callable[..., Any]:
+    """Wrap a filter so that it is bounded by the render budget.
+
+    Jinja calls filters directly rather than through the sandbox, so each one
+    is wrapped. The wrapper keeps the filter's ``pass_*`` and async-variant
+    markers.
+    """
+    lead = 1 if hasattr(func, "jinja_pass_arg") else 0
+
+    @wraps(func)
+    def wrapper(*args: Any, **kwargs: Any) -> Any:
+        budget = current_budget()
+        if budget is None or len(args) <= lead:
+            return func(*args, **kwargs)
+        value, rest = args[lead], args[lead + 1 :]
+        if name == "format":
+            check_percent_format(budget, str(value), rest or tuple(kwargs.values()))
+        elif name == "join":
+            separator = rest[0] if rest else kwargs.get("d", "")
+            (value,) = check_str_operation(budget, name, str(separator), (value,), {})
+        elif name in _STR_FILTERS and isinstance(value, str):
+            rest = check_str_operation(budget, name, value, rest, kwargs)
+        else:
+            budget.check_time()
+            budget.check_int_args(*rest, *kwargs.values())
+        result = func(*args[:lead], value, *rest, **kwargs)
+        if inspect.isawaitable(result):
+            return _check_awaited(budget, result)
+        return budget.check_value(result)
+
+    return wrapper
+
+
+@pass_context
+def _limit_loop(context: Context, iterable: Any) -> Any:
+    return limit_iteration(current_budget(), iterable)
+
+
+@pass_context
+def _limit_value(context: Context, value: Any) -> Any:
+    if (budget := current_budget()) is not None:
+        budget.check_value(value)
+    return value
+
+
+class _LimitTransformer(NodeTransformer):
+    """Route loops and concatenations through the render budget.
+
+    A loop with an empty body and a ``~`` concatenation call no sandbox hook,
+    so they are wrapped in internal filters that do.
+    """
+
+    def visit_For(self, node: nodes.For) -> nodes.Node:
+        node = cast(nodes.For, self.generic_visit(node))
+        node.iter = nodes.Filter(
+            node.iter, _LOOP_FILTER, [], [], None, None, lineno=node.lineno
+        )
+        return node
+
+    def visit_Concat(self, node: nodes.Concat) -> nodes.Node:
+        node = cast(nodes.Concat, self.generic_visit(node))
+        return nodes.Filter(node, _VALUE_FILTER, [], [], None, None, lineno=node.lineno)
+
+
 class PromptSandboxedEnvironment(SandboxedEnvironment):
     """Sandbox that also enforces the active template policy.
 
     The policy is read at render time, so environments created before
     :func:`~giskard.agents.templates.policy.set_template_policy` is called
-    still honour it.
+    still honour it. Under the strict policy, compiling and rendering are also
+    bounded in time and size (see :mod:`~giskard.agents.templates.limits`).
     """
+
+    template_class = LimitedTemplate
+    intercepted_binops = frozenset({"*", "**", "+", "%"})
+
+    def __init__(self, *args: Any, **kwargs: Any) -> None:
+        super().__init__(*args, **kwargs)
+        self.filters = {
+            name: _limit_filter(name, func) for name, func in self.filters.items()
+        }
+        self.filters[_LOOP_FILTER] = _limit_loop
+        self.filters[_VALUE_FILTER] = _limit_value
+
+    def _parse(
+        self, source: str, name: str | None, filename: str | None
+    ) -> nodes.Template:
+        tree = super()._parse(source, name, filename)
+        return cast(nodes.Template, _LimitTransformer().visit(tree))
+
+    def _generate(
+        self,
+        source: nodes.Template,
+        name: str | None,
+        filename: str | None,
+        defer_init: bool = False,
+    ) -> str:
+        # Code generation folds constant expressions, calling filters and
+        # finalize on literals: bound it like a render.
+        if get_template_policy() != "strict":
+            return super()._generate(source, name, filename, defer_init)
+        with render_budget():
+            return super()._generate(source, name, filename, defer_init)
 
     def is_safe_attribute(self, obj: Any, attr: str, value: Any) -> bool:
         return super().is_safe_attribute(obj, attr, value) and (
             get_template_policy() != "strict"
             or is_strictly_safe_attribute(obj, attr, value)
         )
+
+    def getattr(self, obj: Any, attribute: str) -> Any:
+        if (budget := current_budget()) is not None:
+            budget.check_time()
+        return super().getattr(obj, attribute)
+
+    def getitem(self, obj: Any, argument: Any) -> Any:
+        if (budget := current_budget()) is not None:
+            budget.check_time()
+        return super().getitem(obj, argument)
+
+    def call_binop(self, context: Context, operator: str, left: Any, right: Any) -> Any:
+        if (budget := current_budget()) is None:
+            return super().call_binop(context, operator, left, right)
+        check_binop(budget, operator, left, right)
+        return budget.check_value(super().call_binop(context, operator, left, right))
+
+    def wrap_str_format(self, value: Any) -> Callable[..., str] | None:
+        formatter = super().wrap_str_format(value)
+        if formatter is None:
+            return None
+        fmt: str = value.__self__
+        is_format_map = value.__name__ == "format_map"
+
+        @wraps(formatter)
+        def wrapper(*args: Any, **kwargs: Any) -> str:
+            if (budget := current_budget()) is not None:
+                fields = args[0] if is_format_map and args else kwargs
+                positional = () if is_format_map else args
+                check_brace_format(budget, fmt, positional, fields)
+            return formatter(*args, **kwargs)
+
+        return wrapper
+
+    def call(
+        __self,  # noqa: N805  # mirrors SandboxedEnvironment.call
+        __context: Context,
+        __obj: Any,
+        *args: Any,
+        **kwargs: Any,
+    ) -> Any:
+        if (budget := current_budget()) is None:
+            return super().call(__context, __obj, *args, **kwargs)
+        budget.check_time()
+        owner = getattr(__obj, "__self__", None)
+        if isinstance(owner, str):
+            args = check_str_operation(budget, __obj.__name__, owner, args, kwargs)
+        elif __obj is generate_lorem_ipsum:
+            check_lipsum(budget, args, kwargs)
+        return budget.check_value(super().call(__context, __obj, *args, **kwargs))
 
 
 _inline_env = PromptSandboxedEnvironment(
