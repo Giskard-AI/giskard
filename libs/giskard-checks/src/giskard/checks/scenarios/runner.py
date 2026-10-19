@@ -57,10 +57,11 @@ def _annotate_advisory[InputType, OutputType, TraceType: Trace[Any, Any]](
     """Stamp each check's ``advisory`` flag onto its ``CheckResult.details``.
 
     ``TestCaseRunner`` runs every check in a step without short-circuiting, so
-    ``step_result.results`` align positionally with ``step.checks``. The
-    ``advisory`` flag lets the result rollups (TestCaseResult/ScenarioResult
-    status) treat an advisory-only failure as non-blocking while preserving the
-    real FAIL/ERROR verdict in each ``CheckResult`` for reporting.
+    ``step_result.results`` align positionally with ``step.checks`` (enforced
+    via ``zip(..., strict=True)``). The ``advisory`` flag lets the result
+    rollups (TestCaseResult/ScenarioResult status) treat an advisory-only
+    failure as non-blocking while preserving the real FAIL/ERROR verdict in
+    each ``CheckResult`` for reporting.
     """
     if not any(check.advisory for check in step.checks):
         return step_result
@@ -68,7 +69,7 @@ def _annotate_advisory[InputType, OutputType, TraceType: Trace[Any, Any]](
         result.model_copy(
             update={"details": {**(result.details or {}), "advisory": check.advisory}}
         )
-        for check, result in zip(step.checks, step_result.results)
+        for check, result in zip(step.checks, step_result.results, strict=True)
     ]
     return step_result.model_copy(update={"results": annotated})
 

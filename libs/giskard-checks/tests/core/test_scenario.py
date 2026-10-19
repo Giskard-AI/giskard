@@ -1041,6 +1041,30 @@ class TestScenarioMinPassRate:
         assert result.pass_rate == 1.0
         assert result.passed
 
+    async def test_min_pass_rate_counts_advisory_only_failure_run_as_pass(self):
+        """An advisory-only failure run is a passing run under min_pass_rate.
+
+        Advisory failures do not fail the scenario, so a run whose only failure
+        is advisory reports ``passed`` and counts toward ``passed_runs`` in
+        statistical mode. This pins the interaction between the two features.
+        """
+        advisory_fail = MockCheck(
+            result=CheckResult.failure(message="soft failure"), advisory=True
+        )
+
+        result = await (
+            Scenario("advisory_under_min_pass_rate")
+            .check(advisory_fail)
+            .run(multiple_runs=3, min_pass_rate=1.0)
+        )
+
+        assert result.runs_executed == 3  # all attempts ran
+        assert result.pass_rate == 1.0  # every run passed (advisory-only)
+        assert result.passed  # 1.0 >= 1.0
+        # The advisory verdict is still recorded per run, not hidden.
+        assert result.steps[0].results[0].failed
+        assert result.steps[0].results[0].details.get("advisory") is True
+
 
 class TestScenarioErrorHandling:
     """Test error handling in scenarios."""
