@@ -30,7 +30,6 @@ scale should also run them in a memory-limited process.
 
 import os
 import re
-import string
 import time
 from collections.abc import Iterator
 from contextlib import contextmanager
@@ -39,6 +38,8 @@ from dataclasses import dataclass
 from typing import Any
 
 from jinja2.exceptions import SecurityError
+
+from .policy import get_template_policy
 
 _TIMEOUT_ENV_VAR = "GISKARD_TEMPLATE_RENDER_TIMEOUT"
 _MAX_SIZE_ENV_VAR = "GISKARD_TEMPLATE_MAX_OUTPUT_SIZE"
@@ -54,6 +55,19 @@ _ALLOCATION_RATIO = 10
 # Width and precision of a printf-style conversion: "%-10.3f", "%(name)*s"...
 _PERCENT_SPEC = re.compile(r"%(?:\([^)]*\))?[#0\- +]*(\d+|\*)?(?:\.(\d+|\*))?")
 _DIGITS = re.compile(r"\d+")
+
+# String methods and filters whose output size grows with their integer
+# arguments. Other integers (offsets, counts, compared values) are left alone.
+_PADDING_OPERATIONS = frozenset({"center", "ljust", "rjust", "zfill"})
+
+# String methods and filters checked by check_str_operation.
+STR_OPERATIONS = _PADDING_OPERATIONS | {
+    "expandtabs",
+    "indent",
+    "join",
+    "replace",
+    "wordwrap",
+}
 
 
 class TemplateResourceLimitError(SecurityError):
@@ -141,6 +155,8 @@ def value_weight(value: Any) -> int:
     int
         Approximately the length of ``str(value)``.
     """
+    if isinstance(value, (str, bytes)):
+        return len(value)
     memo: dict[int, int] = {}
 
     def weigh(item: Any) -> int:
@@ -230,15 +246,22 @@ def current_budget() -> RenderBudget | None:
     return _budget.get()
 
 
+def check_time() -> None:
+    """Raise if the render in progress, if limited, has passed its deadline."""
+    if (budget := _budget.get()) is not None:
+        budget.check_time()
+
+
 @contextmanager
-def render_budget() -> Iterator[RenderBudget]:
+def render_budget() -> Iterator[RenderBudget | None]:
     """Bound the compilations and renders made within this scope.
 
-    Nested scopes (includes, imports, renders from within a render) share the
-    outermost budget, so the limits apply to the whole render.
+    Yields ``None``, leaving the scope unbounded, unless the strict policy is
+    active. Nested scopes (includes, imports, renders from within a render)
+    share the outermost budget, so the limits apply to the whole render.
     """
     existing = _budget.get()
-    if existing is not None:
+    if existing is not None or get_template_policy() != "strict":
         yield existing
         return
     budget = RenderBudget(
@@ -267,12 +290,21 @@ def check_binop(budget: RenderBudget, operator: str, left: Any, right: Any) -> N
     budget.check_time()
     sequences = (str, bytes, list, tuple)
     if operator == "*":
+        if isinstance(left, int) and isinstance(right, int):
+            # Repeated squaring would grow integers without bound.
+            budget.check_size((left.bit_length() + right.bit_length()) // 8)
         for seq, count in ((left, right), (right, left)):
             if isinstance(seq, sequences) and isinstance(count, int):
                 budget.check_size(value_weight(seq) * count)
     elif operator == "**":
-        # Floats overflow on their own; integers would grow without bound.
-        if isinstance(left, int) and isinstance(right, int) and right > 0:
+        # Floats overflow on their own; integers would grow without bound,
+        # except for bases whose powers stay within -1..1.
+        if (
+            isinstance(left, int)
+            and isinstance(right, int)
+            and right > 0
+            and abs(left) > 1
+        ):
             budget.check_size(left.bit_length() * right // 8)
     elif operator == "+":
         if isinstance(left, sequences) and isinstance(right, sequences):
@@ -298,25 +330,12 @@ def check_percent_format(budget: RenderBudget, fmt: str, args: Any) -> None:
         budget.check_int_args(args)
 
 
-def check_brace_format(
-    budget: RenderBudget, fmt: str, args: tuple[Any, ...], fields: Any
-) -> None:
-    """Raise if a ``str.format`` call could pad beyond the size limit.
+def check_format_spec(budget: RenderBudget, spec: str) -> None:
+    """Raise if a resolved ``str.format`` field spec could pad beyond the limit.
 
-    Widths and precisions come from the format string or, with nested
-    fields such as ``{:>{width}}``, from the arguments.
+    Nested fields such as ``{:>{width}}`` are already substituted in ``spec``.
     """
-    try:
-        parsed = list(string.Formatter().parse(fmt))
-    except ValueError:
-        return  # Malformed: str.format raises on its own.
-    for _, _, spec, _ in parsed:
-        if not spec:
-            continue
-        budget.check_int_args(*(int(n) for n in _DIGITS.findall(spec)))
-        if "{" in spec:
-            values = fields.values() if hasattr(fields, "values") else ()
-            budget.check_int_args(*args, *values)
+    budget.check_int_args(*(int(n) for n in _DIGITS.findall(spec)))
 
 
 def _arg(args: tuple[Any, ...], kwargs: dict[str, Any], index: int, name: str) -> Any:
@@ -355,7 +374,7 @@ def check_str_operation(
         as a list.
     """
     budget.check_time()
-    if name != "join":
+    if name in _PADDING_OPERATIONS:
         budget.check_int_args(*args, *kwargs.values())
     if name == "replace":
         old, new = _arg(args, kwargs, 0, "old"), _arg(args, kwargs, 1, "new")
@@ -369,6 +388,14 @@ def check_str_operation(
         tabsize = _arg(args, kwargs, 0, "tabsize")
         tabsize = tabsize if isinstance(tabsize, int) else 8
         budget.check_size(len(text) + text.count("\t") * tabsize)
+    elif name == "wordwrap":
+        width = _arg(args, kwargs, 0, "width")
+        width = width if isinstance(width, int) and width > 0 else 79
+        wrapstring = _arg(args, kwargs, 2, "wrapstring")
+        wrapstring = wrapstring if isinstance(wrapstring, str) else "\n"
+        # Two consecutive wrapped lines hold more than ``width`` characters.
+        lines = 2 * len(text) // width + text.count("\n") + 1
+        budget.check_size(len(text) + lines * len(wrapstring))
     elif name == "indent":
         width = _arg(args, kwargs, 0, "width")
         width = len(width) if isinstance(width, str) else width
