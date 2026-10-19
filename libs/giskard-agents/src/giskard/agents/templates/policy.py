@@ -10,8 +10,11 @@ the default (``"permissive"``) policy. Services that render templates authored
 by untrusted users should enable the ``"strict"`` policy, under which templates
 can only *read data*:
 
-- pydantic models expose their fields, computed fields and properties defined
-  on the model class; methods and the inherited ``BaseModel`` API are blocked;
+- pydantic models expose their fields (including extra fields), computed fields
+  and properties defined on the model's own classes; methods and the inherited
+  ``BaseModel`` API are blocked;
+- methods of other objects are blocked, except the built-in methods of plain
+  data types (``str``, ``list``, ``dict``, ...) and Jinja's loop helpers;
 - classes and classmethods are never reachable;
 - known mutable builtins (lists, dicts, sets) cannot be modified.
 
@@ -20,14 +23,17 @@ The policy is enabled process-wide with :func:`set_template_policy` (or the
 :func:`strict_templates`.
 """
 
-import inspect
 import os
 from collections.abc import Iterator
 from contextlib import contextmanager
 from contextvars import ContextVar
+from functools import cached_property, lru_cache
+from types import BuiltinMethodType
 from typing import Any, Literal, cast, get_args
 
+from jinja2.runtime import LoopContext
 from jinja2.sandbox import modifies_known_mutable
+from jinja2.utils import Cycler
 from pydantic import BaseModel
 
 TemplatePolicy = Literal["permissive", "strict"]
@@ -47,7 +53,7 @@ def _validate_policy(policy: str) -> TemplatePolicy:
 # is not inherited by threads started afterwards, which would silently fall
 # back to the permissive policy.
 _default_policy: TemplatePolicy = _validate_policy(
-    os.environ.get(_POLICY_ENV_VAR, "permissive")
+    os.environ.get(_POLICY_ENV_VAR, "permissive").strip().lower()
 )
 _policy_override: ContextVar[TemplatePolicy | None] = ContextVar(
     "giskard_template_policy", default=None
@@ -82,15 +88,22 @@ def strict_templates() -> Iterator[None]:
         _policy_override.reset(token)
 
 
+# Built-in data types whose built-in methods (``str.split``, ``dict.items``, ...)
+# templates may call; mutating ones are rejected by ``modifies_known_mutable``.
+_DATA_TYPES = (str, bytes, int, float, bool, list, tuple, dict, set, frozenset)
+# Jinja runtime helpers whose public methods are part of the template language.
+_JINJA_HELPERS = (LoopContext, Cycler)
+
+
+@lru_cache(maxsize=4096)
 def _is_model_data(model_cls: type[BaseModel], attr: str) -> bool:
     if attr in model_cls.model_fields or attr in model_cls.model_computed_fields:
         return True
     # Properties declared on the model's own classes (not pydantic's).
     for klass in model_cls.__mro__:
-        if klass is BaseModel:
-            return False
-        if attr in vars(klass):
-            return isinstance(vars(klass)[attr], property)
+        if klass in BaseModel.__mro__ or attr not in vars(klass):
+            continue
+        return isinstance(vars(klass)[attr], (property, cached_property))
     return False
 
 
@@ -111,10 +124,16 @@ def is_strictly_safe_attribute(obj: Any, attr: str, value: Any) -> bool:
     bool
         ``True`` when the access is a plain data read.
     """
-    if isinstance(value, type) or (
-        inspect.ismethod(value) and isinstance(value.__self__, type)
-    ):
+    if isinstance(value, type) or isinstance(getattr(value, "__self__", None), type):
         return False
     if isinstance(obj, BaseModel):
-        return not callable(value) and _is_model_data(type(obj), attr)
-    return not modifies_known_mutable(obj, attr)
+        return not callable(value) and (
+            _is_model_data(type(obj), attr) or attr in (obj.model_extra or {})
+        )
+    if modifies_known_mutable(obj, attr):
+        return False
+    if not callable(value):
+        return True
+    if isinstance(obj, _JINJA_HELPERS):
+        return True
+    return isinstance(value, BuiltinMethodType) and isinstance(obj, _DATA_TYPES)

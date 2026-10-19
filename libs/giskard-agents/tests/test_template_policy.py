@@ -1,4 +1,6 @@
 import tempfile
+from datetime import datetime
+from functools import cached_property
 from pathlib import Path
 
 import pytest
@@ -10,7 +12,7 @@ from giskard.agents.templates import (
     strict_templates,
 )
 from jinja2.exceptions import SecurityError
-from pydantic import BaseModel, computed_field
+from pydantic import BaseModel, ConfigDict, computed_field
 
 
 class Item(BaseModel):
@@ -144,3 +146,50 @@ def test_set_template_policy_is_process_wide(bag):
 def test_set_template_policy_rejects_unknown_value():
     with pytest.raises(ValueError, match="Unknown template policy"):
         set_template_policy("paranoid")  # pyright: ignore[reportArgumentType]
+
+
+class Rich(BaseModel):
+    model_config = ConfigDict(extra="allow")
+
+    path: Path
+    ts: datetime
+
+    @cached_property
+    def cached(self) -> int:
+        return 3
+
+
+@pytest.fixture
+def rich(secret_file) -> Rich:
+    return Rich.model_validate(
+        {"path": secret_file, "ts": datetime(2020, 1, 1), "note": "extra"}
+    )
+
+
+@pytest.mark.parametrize(
+    ("template", "expected"),
+    [
+        ("{{ rich.note }}", "extra"),
+        ("{{ rich.cached }}", "3"),
+        ("{{ rich.path.name }}", "secret.json"),
+        ("{{ rich.ts.year }}", "2020"),
+        ("{% for x in [1, 2] %}{{ loop.cycle('a', 'b') }}{% endfor %}", "ab"),
+    ],
+)
+def test_strict_policy_allows_model_data_and_builtin_reads(rich, template, expected):
+    with strict_templates():
+        assert _render(template, rich=rich) == expected
+
+
+@pytest.mark.parametrize(
+    "template",
+    [
+        "{{ rich.path.read_text() }}",
+        "{{ rich.path.write_text('x') }}",
+        "{{ rich.ts.now() }}",
+        "{{ {}.fromkeys('ab') }}",
+    ],
+)
+def test_strict_policy_blocks_methods_of_non_model_objects(rich, template):
+    with strict_templates(), pytest.raises(SecurityError):
+        _render(template, rich=rich)
