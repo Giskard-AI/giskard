@@ -128,11 +128,10 @@ class PromptSandboxedEnvironment(SandboxedEnvironment):
     """
 
     def is_safe_attribute(self, obj: Any, attr: str, value: Any) -> bool:
-        if not super().is_safe_attribute(obj, attr, value):
-            return False
-        if get_template_policy() == "strict":
-            return is_strictly_safe_attribute(obj, attr, value)
-        return True
+        return super().is_safe_attribute(obj, attr, value) and (
+            get_template_policy() != "strict"
+            or is_strictly_safe_attribute(obj, attr, value)
+        )
 
 
 _inline_env = PromptSandboxedEnvironment(

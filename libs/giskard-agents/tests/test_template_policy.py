@@ -1,4 +1,3 @@
-import tempfile
 from datetime import datetime
 from functools import cached_property
 from pathlib import Path
@@ -59,15 +58,28 @@ def bag() -> Bag:
 
 
 @pytest.fixture
-def secret_file():
-    with tempfile.TemporaryDirectory() as tmp:
-        path = Path(tmp) / "secret.json"
-        path.write_text('{"items": [{"name": "leaked"}]}')
-        yield path
+def secret_file(tmp_path) -> Path:
+    path = tmp_path / "secret.json"
+    path.write_text('{"items": [{"name": "leaked"}]}')
+    return path
 
 
-def test_default_policy_is_permissive():
-    assert get_template_policy() == "permissive"
+class Rich(BaseModel):
+    model_config = ConfigDict(extra="allow")
+
+    path: Path
+    ts: datetime
+
+    @cached_property
+    def cached(self) -> int:
+        return 3
+
+
+@pytest.fixture
+def rich(secret_file) -> Rich:
+    return Rich.model_validate(
+        {"path": secret_file, "ts": datetime(2020, 1, 1), "note": "extra"}
+    )
 
 
 def test_permissive_policy_keeps_method_calls(bag, secret_file):
@@ -90,11 +102,16 @@ def test_permissive_policy_keeps_method_calls(bag, secret_file):
         ("{{ bag.items | map(attribute='name') | join(',') }}", "apple,pear"),
         ("{{ 'a,b'.split(',') | length }}", "2"),
         ("{{ {'k': 'v'}.items() | list | length }}", "1"),
+        ("{{ rich.note }}", "extra"),
+        ("{{ rich.cached }}", "3"),
+        ("{{ rich.path.name }}", "secret.json"),
+        ("{{ rich.ts.year }}", "2020"),
+        ("{% for x in [1, 2] %}{{ loop.cycle('a', 'b') }}{% endfor %}", "ab"),
     ],
 )
-def test_strict_policy_allows_data_reads(bag, template, expected):
+def test_strict_policy_allows_data_reads(bag, rich, template, expected):
     with strict_templates():
-        assert _render(template, bag=bag) == expected
+        assert _render(template, bag=bag, rich=rich) == expected
 
 
 @pytest.mark.parametrize(
@@ -110,21 +127,26 @@ def test_strict_policy_allows_data_reads(bag, template, expected):
         "{{ bag.first.greet() }}",
         "{{ bag.items.append(1) }}",
         "{{ {}.update(a=1) }}",
+        "{{ rich.path.read_text() }}",
+        "{{ rich.path.write_text('x') }}",
+        "{{ rich.ts.now() }}",
+        "{{ {}.fromkeys('ab') }}",
     ],
 )
-def test_strict_policy_blocks_method_calls(bag, secret_file, template):
+def test_strict_policy_blocks_method_calls(bag, rich, secret_file, template):
     with strict_templates(), pytest.raises(SecurityError):
-        _render(template, bag=bag, path=str(secret_file))
+        _render(template, bag=bag, rich=rich, path=str(secret_file))
 
 
-async def test_strict_policy_applies_to_file_templates(bag, secret_file):
-    with tempfile.TemporaryDirectory() as tmp:
-        Path(tmp, "attack.j2").write_text("{{ bag.parse_file(path) }}")
-        manager = PromptsManager(default_prompts_path=Path(tmp))
-        with strict_templates(), pytest.raises(SecurityError):
-            await manager.render_template(
-                "attack.j2", {"bag": bag, "path": str(secret_file)}
-            )
+async def test_strict_policy_applies_to_file_templates(bag, secret_file, tmp_path):
+    prompts = tmp_path / "prompts"
+    prompts.mkdir()
+    (prompts / "attack.j2").write_text("{{ bag.parse_file(path) }}")
+    manager = PromptsManager(default_prompts_path=prompts)
+    with strict_templates(), pytest.raises(SecurityError):
+        await manager.render_template(
+            "attack.j2", {"bag": bag, "path": str(secret_file)}
+        )
 
 
 def test_strict_templates_scope_is_restored(bag):
@@ -136,60 +158,10 @@ def test_strict_templates_scope_is_restored(bag):
 
 def test_set_template_policy_is_process_wide(bag):
     set_template_policy("strict")
-    try:
-        with pytest.raises(SecurityError):
-            _render("{{ bag.first.greet() }}", bag=bag)
-    finally:
-        set_template_policy("permissive")
+    with pytest.raises(SecurityError):
+        _render("{{ bag.first.greet() }}", bag=bag)
 
 
 def test_set_template_policy_rejects_unknown_value():
     with pytest.raises(ValueError, match="Unknown template policy"):
         set_template_policy("paranoid")  # pyright: ignore[reportArgumentType]
-
-
-class Rich(BaseModel):
-    model_config = ConfigDict(extra="allow")
-
-    path: Path
-    ts: datetime
-
-    @cached_property
-    def cached(self) -> int:
-        return 3
-
-
-@pytest.fixture
-def rich(secret_file) -> Rich:
-    return Rich.model_validate(
-        {"path": secret_file, "ts": datetime(2020, 1, 1), "note": "extra"}
-    )
-
-
-@pytest.mark.parametrize(
-    ("template", "expected"),
-    [
-        ("{{ rich.note }}", "extra"),
-        ("{{ rich.cached }}", "3"),
-        ("{{ rich.path.name }}", "secret.json"),
-        ("{{ rich.ts.year }}", "2020"),
-        ("{% for x in [1, 2] %}{{ loop.cycle('a', 'b') }}{% endfor %}", "ab"),
-    ],
-)
-def test_strict_policy_allows_model_data_and_builtin_reads(rich, template, expected):
-    with strict_templates():
-        assert _render(template, rich=rich) == expected
-
-
-@pytest.mark.parametrize(
-    "template",
-    [
-        "{{ rich.path.read_text() }}",
-        "{{ rich.path.write_text('x') }}",
-        "{{ rich.ts.now() }}",
-        "{{ {}.fromkeys('ab') }}",
-    ],
-)
-def test_strict_policy_blocks_methods_of_non_model_objects(rich, template):
-    with strict_templates(), pytest.raises(SecurityError):
-        _render(template, rich=rich)

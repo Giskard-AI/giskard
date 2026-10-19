@@ -27,9 +27,10 @@ import os
 from collections.abc import Iterator
 from contextlib import contextmanager
 from contextvars import ContextVar
-from functools import cached_property, lru_cache
+from functools import cached_property
 from types import BuiltinMethodType
 from typing import Any, Literal, cast, get_args
+from weakref import WeakKeyDictionary
 
 from jinja2.runtime import LoopContext
 from jinja2.sandbox import modifies_known_mutable
@@ -90,21 +91,36 @@ def strict_templates() -> Iterator[None]:
 
 # Built-in data types whose built-in methods (``str.split``, ``dict.items``, ...)
 # templates may call; mutating ones are rejected by ``modifies_known_mutable``.
-_DATA_TYPES = (str, bytes, int, float, bool, list, tuple, dict, set, frozenset)
+_DATA_TYPES = (str, bytes, int, float, list, tuple, dict, set, frozenset)
 # Jinja runtime helpers whose public methods are part of the template language.
 _JINJA_HELPERS = (LoopContext, Cycler)
 
 
-@lru_cache(maxsize=4096)
-def _is_model_data(model_cls: type[BaseModel], attr: str) -> bool:
-    if attr in model_cls.model_fields or attr in model_cls.model_computed_fields:
-        return True
-    # Properties declared on the model's own classes (not pydantic's).
-    for klass in model_cls.__mro__:
-        if klass in BaseModel.__mro__ or attr not in vars(klass):
-            continue
-        return isinstance(vars(klass)[attr], (property, cached_property))
-    return False
+# Weak keys so dynamically created models (e.g. tool argument models) can be
+# garbage-collected.
+_model_data_cache: WeakKeyDictionary[type[BaseModel], frozenset[str]] = (
+    WeakKeyDictionary()
+)
+
+
+def _model_data_attrs(model_cls: type[BaseModel]) -> frozenset[str]:
+    """Names of the fields, computed fields and own properties of a model."""
+    attrs = _model_data_cache.get(model_cls)
+    if attrs is None:
+        names: set[str] = set()
+        # Walk base-first so a subclass definition overrides its bases'; skip
+        # pydantic's own classes.
+        for klass in reversed(model_cls.__mro__):
+            if klass in BaseModel.__mro__:
+                continue
+            for name, member in vars(klass).items():
+                if isinstance(member, (property, cached_property)):
+                    names.add(name)
+                else:
+                    names.discard(name)
+        names.update(model_cls.model_fields, model_cls.model_computed_fields)
+        attrs = _model_data_cache[model_cls] = frozenset(names)
+    return attrs
 
 
 def is_strictly_safe_attribute(obj: Any, attr: str, value: Any) -> bool:
@@ -128,7 +144,7 @@ def is_strictly_safe_attribute(obj: Any, attr: str, value: Any) -> bool:
         return False
     if isinstance(obj, BaseModel):
         return not callable(value) and (
-            _is_model_data(type(obj), attr) or attr in (obj.model_extra or {})
+            attr in _model_data_attrs(type(obj)) or attr in (obj.model_extra or {})
         )
     if modifies_known_mutable(obj, attr):
         return False
