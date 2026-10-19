@@ -53,11 +53,6 @@ in-place upgrade of the v2 API.
   opt out.
 - `giskard.checks.set_default_generator` accepts a model identifier string
   (e.g. `"openai/gpt-4o-mini"`) in addition to a `BaseGenerator` instance.
-- `giskard-agents`: an opt-in strict template policy for rendering prompt
-  templates written by untrusted users. Enable it with
-  `GISKARD_TEMPLATE_POLICY=strict`, `set_template_policy("strict")`, or the
-  `strict_templates()` context manager. Strict templates can read model fields
-  and properties but cannot call methods. The default policy is unchanged.
 
 ### Fixed
 
