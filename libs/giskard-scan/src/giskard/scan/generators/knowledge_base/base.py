@@ -5,7 +5,7 @@ from collections.abc import Collection
 from typing import Any, ClassVar, Unpack, override
 
 import numpy as np
-from giskard.checks import Contradiction, LLMGenerator, Scenario, Trace
+from giskard.checks import Contradiction, Interact, LLMGenerator, Scenario, Trace
 from pydantic import BaseModel, ConfigDict, Field
 
 from ...utils.knowledge_base import Document, KnowledgeBase
@@ -14,6 +14,13 @@ from ..base import DEFAULT_TARGET_MODE, ScenarioContext, ScenarioGenerator, Targ
 DEFAULT_KNOWLEDGE_BASE_SCENARIOS = 5
 DEFAULT_KNOWLEDGE_BASE_CONTEXT_DOCUMENTS = 4
 DEFAULT_KNOWLEDGE_BASE_MAX_TURNS = 3
+
+# Step metadata keys use Interact's reserved prefix so a target returning its own
+# Interaction metadata (e.g. a RAG agent's "context") cannot replace them.
+CONTEXT_METADATA_KEY = f"{Interact.RESERVED_METADATA_PREFIX}context"
+TURN_INDEX_METADATA_KEY = f"{Interact.RESERVED_METADATA_PREFIX}turn_index"
+ABSENT_TOPIC_METADATA_KEY = f"{Interact.RESERVED_METADATA_PREFIX}absent_topic"
+CONTEXT_KEY = f"trace.last.metadata.{CONTEXT_METADATA_KEY}"
 
 
 class _KnowledgeBaseGenerationParams(
@@ -187,9 +194,9 @@ class KnowledgeBaseScenarioGenerator(ScenarioGenerator):
                     prompt_path=self.prompt_path,
                     max_steps=max_turns,
                 ),
-                metadata={"context": context},
+                metadata={CONTEXT_METADATA_KEY: context},
             )
-            .check(Contradiction(context_key="trace.last.metadata.context"))
+            .check(Contradiction(context_key=CONTEXT_KEY))
             .with_annotations(
                 {
                     "description": description,

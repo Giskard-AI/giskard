@@ -11,6 +11,8 @@ from pydantic import BaseModel, Field
 from ...utils.knowledge_base import Document, KnowledgeBase
 from ..base import DEFAULT_TARGET_MODE, ScenarioContext, TargetMode
 from .base import (
+    ABSENT_TOPIC_METADATA_KEY,
+    CONTEXT_METADATA_KEY,
     KnowledgeBaseScenarioGenerator,
     _normalize_for_match,
 )
@@ -208,8 +210,8 @@ class OutOfScopeScenarioGenerator(KnowledgeBaseScenarioGenerator, WithGeneratorM
             .interact(
                 LLMGenerator(prompt_path=self.prompt_path, max_steps=max_turns),
                 metadata={
-                    "context": validation_context,
-                    "absent_topic": candidate.topic,
+                    CONTEXT_METADATA_KEY: validation_context,
+                    ABSENT_TOPIC_METADATA_KEY: candidate.topic,
                 },
             )
             .check(

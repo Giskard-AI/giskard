@@ -91,11 +91,14 @@ async def test_hallucination_generator_builds_contradiction_scenario():
         == "giskard.scan::scenarios/knowledge_base_question.j2"
     )
     assert interaction.inputs.max_steps == 4
-    assert interaction.metadata["context"] == scenario.annotations["reference_context"]
+    assert (
+        interaction.metadata["_giskard_context"]
+        == scenario.annotations["reference_context"]
+    )
 
     check = scenario.steps[0].checks[0]
     assert isinstance(check, Contradiction)
-    assert check.context_key == "trace.last.metadata.context"
+    assert check.context_key == "trace.last.metadata._giskard_context"
 
 
 async def test_hallucination_generator_budget_subsamples_reproducibly():
@@ -245,14 +248,14 @@ async def test_multi_topic_generator_checks_after_each_distinct_topic_turn():
             == "giskard.scan::scenarios/knowledge_base_multi_topic.j2"
         )
         assert interaction.inputs.max_steps == 1
-        assert interaction.metadata["turn_index"] == turn_index
+        assert interaction.metadata["_giskard_turn_index"] == turn_index
         assert (
-            interaction.metadata["context"]
+            interaction.metadata["_giskard_context"]
             == scenario.annotations["reference_contexts"][turn_index]
         )
         check = step.checks[0]
         assert isinstance(check, Contradiction)
-        assert check.context_key == "trace.last.metadata.context"
+        assert check.context_key == "trace.last.metadata._giskard_context"
 
 
 async def test_multi_topic_generator_requires_at_least_two_documents():
@@ -356,7 +359,7 @@ async def test_out_of_scope_generator_builds_conformity_scenario(
         == "giskard.scan::scenarios/knowledge_base_out_of_scope.j2"
     )
     assert interaction.inputs.max_steps == 2
-    assert interaction.metadata["absent_topic"] == "GammaCare bundle"
+    assert interaction.metadata["_giskard_absent_topic"] == "GammaCare bundle"
     check = scenario.steps[0].checks[0]
     assert isinstance(check, Conformity)
     assert "GammaCare bundle" in check.rule

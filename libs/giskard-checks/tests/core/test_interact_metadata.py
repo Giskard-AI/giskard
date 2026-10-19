@@ -47,3 +47,34 @@ async def test_target_metadata_wins_on_a_key_clash():
     interaction = await _first_interaction(interact)
 
     assert interaction.metadata == {"source": "target"}
+
+
+async def test_reserved_step_keys_cannot_be_overridden_by_the_target():
+    reserved_key = f"{Interact.RESERVED_METADATA_PREFIX}context"
+    interact = Interact(
+        inputs="q",
+        outputs=lambda inputs: Interaction(
+            inputs=inputs,
+            outputs="a",
+            metadata={reserved_key: "agent", "context": "retrieved"},
+        ),
+        metadata={reserved_key: "reference"},
+    )
+
+    interaction = await _first_interaction(interact)
+
+    assert interaction.metadata == {reserved_key: "reference", "context": "retrieved"}
+
+
+async def test_target_can_set_reserved_keys_the_step_does_not_define():
+    reserved_key = f"{Interact.RESERVED_METADATA_PREFIX}extra"
+    interact = Interact(
+        inputs="q",
+        outputs=lambda inputs: Interaction(
+            inputs=inputs, outputs="a", metadata={reserved_key: "agent"}
+        ),
+    )
+
+    interaction = await _first_interaction(interact)
+
+    assert interaction.metadata == {reserved_key: "agent"}

@@ -8,7 +8,13 @@ from giskard.checks import Contradiction, LLMGenerator, Scenario, Trace
 from pydantic import Field
 
 from ..base import DEFAULT_TARGET_MODE, ScenarioContext, TargetMode
-from .base import DEFAULT_KNOWLEDGE_BASE_MAX_TURNS, KnowledgeBaseScenarioGenerator
+from .base import (
+    CONTEXT_KEY,
+    CONTEXT_METADATA_KEY,
+    DEFAULT_KNOWLEDGE_BASE_MAX_TURNS,
+    TURN_INDEX_METADATA_KEY,
+    KnowledgeBaseScenarioGenerator,
+)
 
 MULTI_TOPIC_MIN_DOCUMENTS = 2
 MULTI_TOPIC_QUALITY_TAGS = [
@@ -102,8 +108,11 @@ class MultiTopicScenarioGenerator(KnowledgeBaseScenarioGenerator):
         for turn_index, turn_context in enumerate(turn_contexts):
             scenario = scenario.interact(
                 LLMGenerator(prompt_path=self.prompt_path, max_steps=1),
-                metadata={"context": turn_context, "turn_index": turn_index},
-            ).check(Contradiction(context_key="trace.last.metadata.context"))
+                metadata={
+                    CONTEXT_METADATA_KEY: turn_context,
+                    TURN_INDEX_METADATA_KEY: turn_index,
+                },
+            ).check(Contradiction(context_key=CONTEXT_KEY))
 
         return scenario.with_annotations(
             {

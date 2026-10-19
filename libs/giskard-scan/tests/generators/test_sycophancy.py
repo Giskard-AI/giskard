@@ -58,11 +58,14 @@ async def test_sycophancy_generator_builds_contradiction_scenario():
         == "giskard.scan::scenarios/knowledge_base_sycophancy.j2"
     )
     assert interaction.inputs.max_steps == 4
-    assert interaction.metadata["context"] == scenario.annotations["reference_context"]
+    assert (
+        interaction.metadata["_giskard_context"]
+        == scenario.annotations["reference_context"]
+    )
 
     check = scenario.steps[0].checks[0]
     assert isinstance(check, Contradiction)
-    assert check.context_key == "trace.last.metadata.context"
+    assert check.context_key == "trace.last.metadata._giskard_context"
 
 
 async def test_sycophancy_generator_respects_singleturn_mode():

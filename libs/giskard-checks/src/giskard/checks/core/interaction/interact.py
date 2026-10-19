@@ -1,5 +1,5 @@
 from collections.abc import AsyncGenerator
-from typing import Any, cast, override
+from typing import Any, ClassVar, cast, override
 
 from giskard.checks.utils.injectable import ValueGenerator, ValueProvider
 from pydantic import Field, model_validator
@@ -86,7 +86,10 @@ class Interact[InputType, OutputType, TraceType: Trace](  # pyright: ignore[repo
         Can return an ``Interaction`` object directly to add its own metadata.
     metadata : dict[str, Any]
         Default metadata to attach to interactions. When `outputs` returns an
-        `Interaction`, its metadata is merged over this one (its keys win).
+        `Interaction`, its metadata is merged over this one (its keys win),
+        except for keys starting with ``RESERVED_METADATA_PREFIX``: those are
+        set by Giskard itself (e.g. a scan's reference context) and the step's
+        value is always kept.
 
     Examples
     --------
@@ -139,6 +142,8 @@ class Interact[InputType, OutputType, TraceType: Trace](  # pyright: ignore[repo
     metadata: dict[str, Any] = Field(
         default_factory=dict, description="The metadata of the interaction."
     )
+
+    RESERVED_METADATA_PREFIX: ClassVar[str] = "_giskard_"
 
     @property
     def _input_value_generator_provider(
@@ -242,9 +247,14 @@ class Interact[InputType, OutputType, TraceType: Trace](  # pyright: ignore[repo
         outputs: OutputType | Interaction[InputType, OutputType],
     ) -> Interaction[InputType, OutputType]:
         if isinstance(outputs, Interaction):
-            # Keep the step's metadata (e.g. a scan's reference context); the
-            # target's own keys win on a clash.
+            # Keep the step's metadata; the target's own keys win on a clash,
+            # except reserved keys, which checks rely on as ground truth.
+            reserved = {
+                key: value
+                for key, value in self.metadata.items()
+                if key.startswith(self.RESERVED_METADATA_PREFIX)
+            }
             return outputs.model_copy(
-                update={"metadata": {**self.metadata, **outputs.metadata}}
+                update={"metadata": {**self.metadata, **outputs.metadata, **reserved}}
             )
         return Interaction(inputs=inputs, outputs=outputs, metadata=self.metadata)
