@@ -6,7 +6,11 @@ import pytest
 from giskard.llm import LLMClient
 from giskard.llm.errors import UnsupportedOperationError
 
-from .helpers import azure_foundry_anthropic_base_url, azure_foundry_v1_base_url
+from .helpers import (
+    ANTHROPIC_PROVIDER_PARAMS,
+    anthropic_configure_params,
+    azure_foundry_v1_base_url,
+)
 
 pytestmark = pytest.mark.functional
 
@@ -91,33 +95,11 @@ async def test_embedding_dimensions(provider: str):
     assert len(resp.data[0].embedding) == 64
 
 
-@pytest.mark.parametrize(
-    "provider",
-    [
-        pytest.param("anthropic", marks=pytest.mark.anthropic, id="anthropic"),
-        pytest.param(
-            "azure_anthropic",
-            marks=pytest.mark.azure_anthropic,
-            id="azure_anthropic",
-        ),
-    ],
-)
+@pytest.mark.parametrize("provider", ANTHROPIC_PROVIDER_PARAMS)
 async def test_embedding_unsupported_anthropic(provider: str):
     """Anthropic -> appropriate error for embeddings."""
     client = LLMClient()
     alias = f"test-{provider}"
-    if provider == "azure_anthropic":
-        client.configure(
-            alias,
-            provider="anthropic",
-            api_key="os.environ/AZURE_AI_API_KEY",  # pragma: allowlist secret
-            base_url=azure_foundry_anthropic_base_url(),
-        )
-    else:
-        client.configure(
-            alias,
-            provider="anthropic",
-            api_key="os.environ/ANTHROPIC_API_KEY",  # pragma: allowlist secret
-        )
+    client.configure(alias, **anthropic_configure_params(provider))
     with pytest.raises(UnsupportedOperationError, match="does not support"):
         await client.aembedding(f"{alias}/claude-haiku-5-5", ["hello"])

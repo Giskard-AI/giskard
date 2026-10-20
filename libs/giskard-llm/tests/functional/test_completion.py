@@ -13,7 +13,11 @@ from giskard.llm.errors import BadRequestError
 from giskard.llm.types import ToolDefParam
 from pydantic import BaseModel, Field, field_validator
 
-from .helpers import azure_foundry_anthropic_base_url, azure_foundry_v1_base_url
+from .helpers import (
+    ANTHROPIC_PROVIDER_PARAMS,
+    azure_foundry_anthropic_base_url,
+    azure_foundry_v1_base_url,
+)
 
 pytestmark = pytest.mark.functional
 
@@ -389,17 +393,7 @@ async def test_response_format(provider: str):
     assert isinstance(validated.hex, str)
 
 
-@pytest.mark.parametrize(
-    "provider",
-    [
-        pytest.param("anthropic", marks=pytest.mark.anthropic, id="anthropic"),
-        pytest.param(
-            "azure_anthropic",
-            marks=pytest.mark.azure_anthropic,
-            id="azure_anthropic",
-        ),
-    ],
-)
+@pytest.mark.parametrize("provider", ANTHROPIC_PROVIDER_PARAMS)
 async def test_anthropic_nested_response_format(provider: str):
     """Anthropic accepts and returns a nested Pydantic response schema (#2859)."""
     client, model = _make_client(provider)
@@ -456,17 +450,7 @@ async def test_configure_explicit(provider: str):
 # -- Provider-specific parameter scenarios ------------------------------------
 
 
-@pytest.mark.parametrize(
-    "provider",
-    [
-        pytest.param("anthropic", marks=pytest.mark.anthropic, id="anthropic"),
-        pytest.param(
-            "azure_anthropic",
-            marks=pytest.mark.azure_anthropic,
-            id="azure_anthropic",
-        ),
-    ],
-)
+@pytest.mark.parametrize("provider", ANTHROPIC_PROVIDER_PARAMS)
 async def test_anthropic_temperature_accepted(provider: str):
     """SDK v1 forwards temperature via extra_body; the live API must accept it."""
     client, model = _make_client(provider)

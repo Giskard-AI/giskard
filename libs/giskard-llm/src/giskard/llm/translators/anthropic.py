@@ -54,11 +54,6 @@ else:
 
 _PROVIDER = "anthropic/chat"
 _PROVIDER_NAME = "anthropic"
-_THINKING_BLOCK_TYPE = "thinking"
-_REDACTED_THINKING_BLOCK_TYPE = "redacted_thinking"
-_THINKING_SKIP_BLOCK_TYPES = frozenset(
-    {_THINKING_BLOCK_TYPE, _REDACTED_THINKING_BLOCK_TYPE}
-)
 logger = logging.getLogger(__name__)
 
 KNOWN_COMPLETION_PARAMS = frozenset(
@@ -364,7 +359,8 @@ class AnthropicChatTranslator:
     @staticmethod
     def block_content_to_giskard(
         block: "ContentBlock",
-    ) -> CompletionContent | ToolCall:
+    ) -> CompletionContent | ToolCall | None:
+        """Convert one content block; thinking blocks map to ``None`` (see ``_reasoning_text``)."""
         if block.type == "text":
             return TextContent(text=block.text)
         elif block.type == "tool_use":
@@ -376,46 +372,35 @@ class AnthropicChatTranslator:
                     arguments=deserialize_arguments(block.input),
                 ),
             )
+        elif block.type in ("thinking", "redacted_thinking"):
+            return None
         else:
             raise ValueError(f"Unsupported content block type: {block.type}")
 
     @staticmethod
     def _reasoning_text(blocks: "Sequence[ContentBlock]") -> str | None:
-        parts: list[str] = []
-        for block in blocks:
-            if block.type != _THINKING_BLOCK_TYPE:
-                continue
-            thinking = getattr(block, "thinking", None)
-            if isinstance(thinking, str) and thinking:
-                parts.append(thinking)
-        return "\n".join(parts) if parts else None
-
-    @staticmethod
-    def _blocks_without_thinking(
-        blocks: "Sequence[ContentBlock]",
-    ) -> list["ContentBlock"]:
-        return [
-            block for block in blocks if block.type not in _THINKING_SKIP_BLOCK_TYPES
-        ]
+        """Join readable thinking; ``redacted_thinking`` is opaque and skipped."""
+        return (
+            "\n".join(
+                block.thinking
+                for block in blocks
+                if block.type == "thinking" and block.thinking
+            )
+            or None
+        )
 
     @staticmethod
     def blocks_to_giskard(
         blocks: "Sequence[ContentBlock]",
     ) -> tuple[Sequence[CompletionContent], Sequence[ToolCall]]:
-        content_and_tool_calls = [
-            AnthropicChatTranslator.block_content_to_giskard(block)
-            for block in AnthropicChatTranslator._blocks_without_thinking(blocks)
-        ]
-        content = [
-            content
-            for content in content_and_tool_calls
-            if not isinstance(content, ToolCall)
-        ]
-        tool_calls = [
-            tool_call
-            for tool_call in content_and_tool_calls
-            if isinstance(tool_call, ToolCall)
-        ]
+        content: list[CompletionContent] = []
+        tool_calls: list[ToolCall] = []
+        for block in blocks:
+            converted = AnthropicChatTranslator.block_content_to_giskard(block)
+            if isinstance(converted, ToolCall):
+                tool_calls.append(converted)
+            elif converted is not None:
+                content.append(converted)
         return content, tool_calls
 
     @staticmethod
