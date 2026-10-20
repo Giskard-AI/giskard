@@ -17,6 +17,9 @@ from ..types import (
     CompletionContent,
     CompletionResponse,
     FunctionMessage,
+    ReasoningDetail,
+    ReasoningEncryptedDetail,
+    ReasoningTextDetail,
     RefusalContent,
     TextContent,
     ToolCall,
@@ -27,6 +30,7 @@ from ..types import (
 )
 from ..types._base import _BaseModel
 from ..utils import deserialize_arguments
+from ._unsupported import handle_unsupported_content
 
 if TYPE_CHECKING:
     from anthropic.types.content_block import ContentBlock
@@ -54,6 +58,8 @@ else:
 
 _PROVIDER = "anthropic/chat"
 _PROVIDER_NAME = "anthropic"
+# ``reasoning_details`` format tag for Anthropic thinking (OpenRouter convention).
+_REASONING_FORMAT = "anthropic-claude-v1"
 logger = logging.getLogger(__name__)
 
 KNOWN_COMPLETION_PARAMS = frozenset(
@@ -358,8 +364,8 @@ class AnthropicChatTranslator:
 
     @staticmethod
     def block_content_to_giskard(
-        block: "ContentBlock",
-    ) -> CompletionContent | ToolCall:
+        block: "ContentBlock", *, ignore_unsupported_content: bool = False
+    ) -> CompletionContent | ToolCall | None:
         if block.type == "text":
             return TextContent(text=block.text)
         elif block.type == "tool_use":
@@ -371,39 +377,63 @@ class AnthropicChatTranslator:
                     arguments=deserialize_arguments(block.input),
                 ),
             )
-        else:
-            raise ValueError(f"Unsupported content block type: {block.type}")
+        handle_unsupported_content(
+            _PROVIDER_NAME,
+            block.type,
+            ignore_unsupported_content=ignore_unsupported_content,
+        )
+        return None
 
     @staticmethod
     def blocks_to_giskard(
-        blocks: "Sequence[ContentBlock]",
-    ) -> tuple[Sequence[CompletionContent], Sequence[ToolCall], str | None]:
-        """Split blocks into content, tool calls and joined readable thinking.
+        blocks: "Sequence[ContentBlock]", *, ignore_unsupported_content: bool = False
+    ) -> tuple[Sequence[CompletionContent], Sequence[ToolCall], list[ReasoningDetail]]:
+        """Split blocks into content, tool calls and reasoning details.
 
-        ``redacted_thinking`` is opaque and skipped.
+        ``thinking`` blocks keep their signature and ``redacted_thinking`` its opaque
+        payload, so they can be replayed verbatim.
         """
         content: list[CompletionContent] = []
         tool_calls: list[ToolCall] = []
-        thoughts: list[str] = []
+        reasoning_details: list[ReasoningDetail] = []
         for block in blocks:
             if block.type == "thinking":
-                if block.thinking:
-                    thoughts.append(block.thinking)
-            elif block.type != "redacted_thinking":
-                converted = AnthropicChatTranslator.block_content_to_giskard(block)
+                reasoning_details.append(
+                    ReasoningTextDetail(
+                        text=block.thinking,
+                        signature=block.signature,
+                        format=_REASONING_FORMAT,
+                    )
+                )
+            elif block.type == "redacted_thinking":
+                reasoning_details.append(
+                    ReasoningEncryptedDetail(data=block.data, format=_REASONING_FORMAT)
+                )
+            else:
+                converted = AnthropicChatTranslator.block_content_to_giskard(
+                    block, ignore_unsupported_content=ignore_unsupported_content
+                )
                 if isinstance(converted, ToolCall):
                     tool_calls.append(converted)
-                else:
+                elif converted is not None:
                     content.append(converted)
-        return content, tool_calls, "\n".join(thoughts) or None
+        return content, tool_calls, reasoning_details
 
     @staticmethod
     def from_anthropic(
-        raw: "Message",
+        raw: "Message", *, ignore_unsupported_content: bool = False
     ) -> CompletionResponse:
         """Convert raw SDK response to CompletionResponse."""
-        content, tool_calls, reasoning = AnthropicChatTranslator.blocks_to_giskard(
-            raw.content
+        content, tool_calls, reasoning_details = (
+            AnthropicChatTranslator.blocks_to_giskard(
+                raw.content, ignore_unsupported_content=ignore_unsupported_content
+            )
+        )
+        # Readable thinking only; ``redacted_thinking`` is opaque.
+        reasoning = "\n".join(
+            d.text
+            for d in reasoning_details
+            if isinstance(d, ReasoningTextDetail) and d.text
         )
 
         finish_reason = (
@@ -425,7 +455,8 @@ class AnthropicChatTranslator:
             content=content if content else None,
             refusal=refusal_out,
             tool_calls=tool_calls or None,
-            reasoning=reasoning,
+            reasoning=reasoning or None,
+            reasoning_details=reasoning_details or None,
         )
 
         usage = None
