@@ -15,11 +15,18 @@ can only *read data*:
   ``BaseModel`` API are blocked;
 - methods of other objects are blocked, except the built-in methods of plain
   data types (``str``, ``list``, ``dict``, ...) and Jinja's loop helpers;
+  methods that subclasses of those types add or override (e.g. numpy scalars'
+  ``tofile``) are blocked too;
 - classes, classmethods and modules are never reachable, and their
   attributes cannot be read;
 - items looked up with ``x[key]`` (or ``x.key`` falling back to an item) are
-  checked too: modules, classes and callables stored in containers are
-  blocked;
+  checked like attributes, so containers cannot hand out modules, classes or
+  callables;
+- calls are checked as well, since a callable can be reached without any
+  lookup (by iterating a container, through filters such as ``first``, or as
+  a template variable): only the methods allowed above and Jinja's own
+  callables (macros, blocks, ``loop``, ``range``, ``cycler``, ...) can be
+  called;
 - known mutable builtins (lists, dicts, sets) cannot be modified.
 
 The policy is enabled process-wide with :func:`set_template_policy` (or the
@@ -32,14 +39,15 @@ from collections.abc import Iterator
 from contextlib import contextmanager
 from contextvars import ContextVar
 from functools import cached_property
-from types import BuiltinMethodType, ModuleType
+from types import BuiltinMethodType, MethodType, ModuleType
 from typing import Any, Literal, cast, get_args
 from weakref import WeakKeyDictionary
 
-from jinja2.runtime import LoopContext
+from jinja2.ext import Extension
+from jinja2.runtime import BlockReference, LoopContext, Macro
 from jinja2.runtime import TemplateReference as JinjaTemplateReference
-from jinja2.sandbox import modifies_known_mutable
-from jinja2.utils import Cycler
+from jinja2.sandbox import SandboxedEnvironment, modifies_known_mutable, safe_range
+from jinja2.utils import Cycler, Joiner, Namespace, generate_lorem_ipsum
 from pydantic import BaseModel
 
 TemplatePolicy = Literal["permissive", "strict"]
@@ -111,6 +119,16 @@ _DATA_TYPES = (str, bytes, int, float, list, tuple, dict, set, frozenset)
 # Jinja runtime helpers whose public methods (and, for ``self``, blocks) are
 # part of the template language.
 _JINJA_HELPERS = (LoopContext, Cycler, JinjaTemplateReference)
+# Callables a template defines or gets from Jinja: macros (and ``caller``),
+# blocks (``self.b()``, ``super()``), recursive ``loop()`` and joiners.
+_JINJA_CALLABLES = (Macro, BlockReference, LoopContext, Joiner)
+# The sandbox's default globals (with its bounded ``range``).
+_JINJA_GLOBALS = (safe_range, dict, generate_lorem_ipsum, Cycler, Joiner, Namespace)
+# The sandbox wraps ``str.format`` at lookup so that format fields are checked
+# too; every such wrapper shares this code object.
+_STR_FORMAT_WRAPPER_CODE = getattr(
+    SandboxedEnvironment().wrap_str_format("".format), "__code__"
+)
 # Values that are never handed to a strict template, nor read from: classes
 # expose constructors and class-level state, and modules expose everything
 # they import (``os.environ``, ``sys.modules``, ...).
@@ -172,58 +190,66 @@ def _is_builtin_data_method(obj: Any, attr: str, value: Any) -> bool:
     return builtin is not None and resolved is builtin
 
 
-def is_strictly_safe_attribute(obj: Any, attr: str, value: Any) -> bool:
-    """Decide whether a template may access ``obj.attr`` under the strict policy.
+def is_strictly_safe_access(obj: Any, name: Any, value: Any) -> bool:
+    """Decide whether a template may read ``obj.name`` or ``obj[name]``.
+
+    Item lookups are checked like attribute reads, so containers cannot hand
+    out what an attribute read would refuse.
 
     Parameters
     ----------
     obj : Any
-        The object the attribute is read from.
-    attr : str
-        The attribute name.
+        The object the attribute or item is read from.
+    name : Any
+        The attribute name or item key.
     value : Any
-        The attribute value, already resolved.
+        The attribute or item value, already resolved.
 
     Returns
     -------
     bool
-        ``True`` when the access is a plain data read.
+        ``True`` when the access is a plain data read under the strict policy.
     """
     if isinstance(obj, _OPAQUE_TYPES) or _is_opaque(value):
         return False
     if isinstance(obj, BaseModel):
         return not callable(value) and (
-            attr in _model_data_attrs(type(obj)) or attr in (obj.model_extra or {})
+            name in _model_data_attrs(type(obj)) or name in (obj.model_extra or {})
         )
-    if modifies_known_mutable(obj, attr):
-        return False
-    if not callable(value):
+    if not callable(value) or isinstance(obj, _JINJA_HELPERS):
         return True
-    if isinstance(obj, _JINJA_HELPERS):
-        return True
-    return _is_builtin_data_method(obj, attr, value)
+    return not modifies_known_mutable(obj, name) and _is_builtin_data_method(
+        obj, name, value
+    )
 
 
-def is_strictly_safe_item(obj: Any, key: Any, value: Any) -> bool:
-    """Decide whether a template may access ``obj[key]`` under the strict policy.
+def is_strictly_safe_callable(value: Any) -> bool:
+    """Decide whether a template may call ``value``.
 
-    Item lookups bypass attribute checks, so containers must not hand out
-    what an attribute read would refuse.
+    Lookups already refuse most callables, but iterating a container, filters
+    such as ``first`` and template variables hand out values without one, so
+    calls are checked too.
 
     Parameters
     ----------
-    obj : Any
-        The object the item is read from.
-    key : Any
-        The item key.
     value : Any
-        The item value, already resolved.
+        The object being called.
 
     Returns
     -------
     bool
-        ``True`` when the access is a plain data read.
+        ``True`` when ``value`` is one of Jinja's own callables, or a method
+        that :func:`is_strictly_safe_access` allows on its object.
     """
-    if isinstance(obj, _OPAQUE_TYPES) or _is_opaque(value):
+    if isinstance(value, _JINJA_CALLABLES) or any(value is f for f in _JINJA_GLOBALS):
+        return True
+    if getattr(value, "__code__", None) is _STR_FORMAT_WRAPPER_CODE:
+        return True
+    if not isinstance(value, (MethodType, BuiltinMethodType)):
         return False
-    return not callable(value) or isinstance(obj, _JINJA_HELPERS)
+    # Compiled templates call their extensions' methods (``{% message %}``).
+    if isinstance(value.__self__, Extension):
+        return True
+    return not value.__name__.startswith("_") and is_strictly_safe_access(
+        value.__self__, value.__name__, value
+    )

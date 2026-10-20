@@ -246,6 +246,121 @@ def test_strict_policy_blocks_numpy_scalar_file_writes(
     assert victim.read_text() == "important"
 
 
+class _Recorder:
+    """Callable test double that records its calls and does nothing else."""
+
+    def __init__(self) -> None:
+        self.calls: list[tuple[object, ...]] = []
+
+    def __call__(self, *args) -> str:
+        self.calls.append(args)
+        return "called"
+
+    def method(self, *args) -> str:
+        return self(*args)
+
+
+# Callables reached without an attribute or item lookup must still be refused.
+_CALLABLE_PAYLOADS = [
+    "{{ fn('x') }}",
+    "{{ fns[0]('x') }}",
+    "{% for f in fns %}{{ f('x') }}{% endfor %}",
+    "{{ (fns | first)('x') }}",
+    "{{ (fns | last)('x') }}",
+    "{{ (fns | random)('x') }}",
+    "{% for k, v in box.items() %}{{ v('x') }}{% endfor %}",
+    "{% for f in fns %}{% set g = f %}{{ g('x') }}{% endfor %}",
+]
+
+
+@pytest.fixture(params=["function", "instance", "method"])
+def recorded_callable(request) -> tuple[_Recorder, object]:
+    recorder = _Recorder()
+    fn = {
+        "function": lambda *args: recorder(*args),
+        "instance": recorder,
+        "method": recorder.method,
+    }[request.param]
+    return recorder, fn
+
+
+def _render_with_callable(template: str, fn: object) -> str:
+    return _render(template, fn=fn, fns=[fn], box={"k": fn})
+
+
+@pytest.mark.parametrize("template", _CALLABLE_PAYLOADS)
+def test_strict_policy_blocks_calls_to_callables_in_data(recorded_callable, template):
+    recorder, fn = recorded_callable
+    with strict_templates(), pytest.raises(SecurityError):
+        _render_with_callable(template, fn)
+    assert recorder.calls == []
+
+
+@pytest.mark.parametrize("template", _CALLABLE_PAYLOADS)
+def test_permissive_policy_keeps_calls_to_callables_in_data(
+    recorded_callable, template
+):
+    recorder, fn = recorded_callable
+    assert _render_with_callable(template, fn) == "called"
+    assert recorder.calls == [("x",)]
+
+
+@pytest.mark.parametrize(
+    "template",
+    ["{{ (fns | first)() }}", "{{ (fns | last)('{}') }}"],
+)
+def test_strict_policy_blocks_calls_to_model_methods_in_data(bag, template):
+    with strict_templates(), pytest.raises(SecurityError):
+        _render(template, fns=[bag.first.greet, bag.parse_raw])
+
+
+@pytest.mark.parametrize(
+    ("template", "expected"),
+    [
+        ("{{ 'a'.upper() }}", "A"),
+        ("{% for w in words %}{{ w.upper() }}{% endfor %}", "AB"),
+        ("{{ (words | first).upper() }}", "A"),
+        ("{{ '{a}'.format_map({'a': 1}) }}", "1"),
+        ("{{ range(3) | join }}", "012"),
+        ("{{ dict(a=1).a }}", "1"),
+        ("{% macro m(x) %}[{{ x }}]{% endmacro %}{{ m(1) }}", "[1]"),
+        (
+            "{% macro m() %}[{{ caller() }}]{% endmacro %}{% call m() %}x{% endcall %}",
+            "[x]",
+        ),
+        (
+            "{% set ns = namespace(n=0) %}{% for i in [1, 2] %}"
+            "{% set ns.n = ns.n + i %}{% endfor %}{{ ns.n }}",
+            "3",
+        ),
+        ("{% set c = cycler('a', 'b') %}{{ c.next() }}{{ c.next() }}", "ab"),
+        (
+            "{% set j = joiner(',') %}{% for x in [1, 2] %}{{ j() }}{{ x }}"
+            "{% endfor %}",
+            "1,2",
+        ),
+        ("{% for x in [1, 1] %}{{ loop.changed(x) }}{% endfor %}", "TrueFalse"),
+        ("{% for x in tree recursive %}{{ x.n }}{{ loop(x.c) }}{% endfor %}", "12"),
+    ],
+)
+def test_strict_policy_allows_jinja_and_data_method_calls(template, expected):
+    tree = [{"n": 1, "c": [{"n": 2, "c": []}]}]
+    with strict_templates():
+        assert _render(template, words=["a", "b"], tree=tree) == expected
+
+
+async def test_strict_policy_allows_message_blocks(tmp_path):
+    prompts = tmp_path / "prompts"
+    prompts.mkdir()
+    (prompts / "ok.j2").write_text(
+        "{% message user %}{{ name.upper() }}{% endmessage %}"
+    )
+    manager = PromptsManager(default_prompts_path=prompts)
+    with strict_templates():
+        messages = await manager.render_template("ok.j2", {"name": "bob"})
+    assert [m.content for m in messages] == ["BOB"]
+
+
 async def test_strict_policy_applies_to_file_templates(bag, secret_file, tmp_path):
     prompts = tmp_path / "prompts"
     prompts.mkdir()

@@ -12,8 +12,8 @@ from pydantic import BaseModel
 
 from .policy import (
     get_template_policy,
-    is_strictly_safe_attribute,
-    is_strictly_safe_item,
+    is_strictly_safe_access,
+    is_strictly_safe_callable,
 )
 
 
@@ -123,37 +123,47 @@ def fence(value: Any) -> Trusted:
     return Trusted(_escape(_render_value(value)))
 
 
+def _is_strict() -> bool:
+    return get_template_policy() == "strict"
+
+
 class PromptSandboxedEnvironment(SandboxedEnvironment):
     """Sandbox that also enforces the active template policy.
 
-    The policy is read at render time, so environments created before
+    Under the strict policy, attribute reads, item reads and calls are all
+    checked against :mod:`~giskard.agents.templates.policy`. The policy is read
+    at render time, so environments created before
     :func:`~giskard.agents.templates.policy.set_template_policy` is called
     still honour it.
     """
 
     def is_safe_attribute(self, obj: Any, attr: str, value: Any) -> bool:
         return super().is_safe_attribute(obj, attr, value) and (
-            get_template_policy() != "strict"
-            or is_strictly_safe_attribute(obj, attr, value)
+            not _is_strict() or is_strictly_safe_access(obj, attr, value)
+        )
+
+    def is_safe_callable(self, obj: Any) -> bool:
+        return super().is_safe_callable(obj) and (
+            not _is_strict() or is_strictly_safe_callable(obj)
         )
 
     # Jinja checks attribute reads with ``is_safe_attribute`` but returns item
     # lookups (``x[key]``, and ``x.key`` when ``x`` has no such attribute)
-    # unchecked; under the strict policy they go through
-    # ``is_strictly_safe_item``.
+    # unchecked; under the strict policy they get the same check, without the
+    # private-name rule (``d['_k']`` is plain data).
 
     def getitem(self, obj: Any, argument: Any) -> Any:
-        if get_template_policy() != "strict":
-            return super().getitem(obj, argument)
-        try:
-            value = obj[argument]
-        except (TypeError, LookupError):
-            # No such item: Jinja falls back to a checked attribute read.
-            return super().getitem(obj, argument)
-        return self._checked_item(obj, argument, value)
+        if _is_strict():
+            try:
+                value = obj[argument]
+            except (TypeError, LookupError):
+                pass  # No such item: Jinja falls back to a checked attribute read.
+            else:
+                return self._checked_item(obj, argument, value)
+        return super().getitem(obj, argument)
 
     def getattr(self, obj: Any, attribute: str) -> Any:
-        if get_template_policy() != "strict":
+        if not _is_strict():
             return super().getattr(obj, attribute)
         try:
             value = getattr(obj, attribute)
@@ -172,7 +182,7 @@ class PromptSandboxedEnvironment(SandboxedEnvironment):
         return self.unsafe_undefined(obj, attribute)
 
     def _checked_item(self, obj: Any, key: Any, value: Any) -> Any:
-        if isinstance(value, Undefined) or is_strictly_safe_item(obj, key, value):
+        if isinstance(value, Undefined) or is_strictly_safe_access(obj, key, value):
             return value
         return self.unsafe_undefined(obj, key)
 
