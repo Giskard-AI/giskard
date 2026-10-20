@@ -382,25 +382,34 @@ class AnthropicChatTranslator:
     @staticmethod
     def blocks_to_giskard(
         blocks: "Sequence[ContentBlock]", *, ignore_unsupported_content: bool = False
-    ) -> tuple[Sequence[CompletionContent], Sequence[ToolCall]]:
+    ) -> tuple[Sequence[CompletionContent], Sequence[ToolCall], str | None]:
+        """Split blocks into content, tool calls and joined readable thinking.
+
+        ``redacted_thinking`` is opaque and skipped.
+        """
         content: list[CompletionContent] = []
         tool_calls: list[ToolCall] = []
+        thoughts: list[str] = []
         for block in blocks:
-            converted = AnthropicChatTranslator.block_content_to_giskard(
-                block, ignore_unsupported_content=ignore_unsupported_content
-            )
-            if isinstance(converted, ToolCall):
-                tool_calls.append(converted)
-            elif converted is not None:
-                content.append(converted)
-        return content, tool_calls
+            if block.type == "thinking":
+                if block.thinking:
+                    thoughts.append(block.thinking)
+            elif block.type != "redacted_thinking":
+                converted = AnthropicChatTranslator.block_content_to_giskard(
+                    block, ignore_unsupported_content=ignore_unsupported_content
+                )
+                if isinstance(converted, ToolCall):
+                    tool_calls.append(converted)
+                elif converted is not None:
+                    content.append(converted)
+        return content, tool_calls, "\n".join(thoughts) or None
 
     @staticmethod
     def from_anthropic(
         raw: "Message", *, ignore_unsupported_content: bool = False
     ) -> CompletionResponse:
         """Convert raw SDK response to CompletionResponse."""
-        content, tool_calls = AnthropicChatTranslator.blocks_to_giskard(
+        content, tool_calls, reasoning = AnthropicChatTranslator.blocks_to_giskard(
             raw.content, ignore_unsupported_content=ignore_unsupported_content
         )
 
@@ -423,6 +432,7 @@ class AnthropicChatTranslator:
             content=content if content else None,
             refusal=refusal_out,
             tool_calls=tool_calls or None,
+            reasoning=reasoning,
         )
 
         usage = None

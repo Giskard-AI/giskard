@@ -1,5 +1,5 @@
 from collections.abc import Sequence
-from typing import Annotated, Literal, Protocol
+from typing import Annotated, ClassVar, Literal, Protocol
 
 from pydantic import AliasChoices, Field
 
@@ -152,11 +152,16 @@ class AssistantMessage(_BaseModel):
     refusal: str | None = None
     tool_calls: Sequence[ToolCall] | None = None
     # Reasoning never contributes to ``text`` / ``transcript``: those are what checks
-    # and judges evaluate, and must only contain the visible answer.
+    # and judges evaluate, and must only contain the visible answer. They are also never
+    # sent back to a provider.
     reasoning: str | None = Field(
         default=None, validation_alias=AliasChoices("reasoning", "reasoning_content")
     )
     reasoning_details: list[ReasoningDetail] | None = None
+
+    _wire_excluded: ClassVar[frozenset[str]] = frozenset(
+        {"reasoning", "reasoning_details"}
+    )
 
     @property
     def is_refusal(self) -> bool:
