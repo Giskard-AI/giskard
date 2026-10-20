@@ -449,6 +449,8 @@ async def test_configure_explicit(provider: str):
 @pytest.mark.parametrize("provider", ANTHROPIC_PROVIDER_PARAMS)
 async def test_anthropic_temperature_accepted(provider: str):
     """SDK v1 forwards temperature via extra_body; the live API must accept it."""
+    if provider == "azure_anthropic":
+        pytest.skip("claude-haiku-5-5 rejects `temperature` as deprecated")
     client, model = _make_client(provider)
     resp = await client.acompletion(
         model, [{"role": "user", "content": "Say hello"}], temperature=0.2
