@@ -380,7 +380,7 @@ class AnthropicChatTranslator:
             raise ValueError(f"Unsupported content block type: {block.type}")
 
     @staticmethod
-    def _thinking_text(blocks: "Sequence[ContentBlock]") -> str | None:
+    def _reasoning_text(blocks: "Sequence[ContentBlock]") -> str | None:
         parts: list[str] = []
         for block in blocks:
             if block.type != _THINKING_BLOCK_TYPE:
@@ -424,7 +424,7 @@ class AnthropicChatTranslator:
     ) -> CompletionResponse:
         """Convert raw SDK response to CompletionResponse."""
         content, tool_calls = AnthropicChatTranslator.blocks_to_giskard(raw.content)
-        thinking = AnthropicChatTranslator._thinking_text(raw.content)
+        reasoning = AnthropicChatTranslator._reasoning_text(raw.content)
 
         finish_reason = (
             FINISH_REASON_MAP.get(raw.stop_reason, "stop") if raw.stop_reason else None
@@ -445,7 +445,7 @@ class AnthropicChatTranslator:
             content=content if content else None,
             refusal=refusal_out,
             tool_calls=tool_calls or None,
-            thinking=thinking,
+            reasoning=reasoning,
         )
 
         usage = None

@@ -113,7 +113,9 @@ class AssistantMessage(_BaseModel):
     content: str | Sequence[CompletionContent] | None = None
     refusal: str | None = None
     tool_calls: Sequence[ToolCall] | None = None
-    thinking: str | None = None
+    # Reasoning never contributes to ``text`` / ``transcript``: those are what checks
+    # and judges evaluate, and must only contain the visible answer.
+    reasoning: str | None = None
 
     @property
     def is_refusal(self) -> bool:
