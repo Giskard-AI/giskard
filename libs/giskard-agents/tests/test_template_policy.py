@@ -221,6 +221,7 @@ def test_strict_policy_blocks_modules_classes_and_callables_in_items(template):
         _render(template, mod=os, cls=Path, box=box)
 
 
+@pytest.mark.parametrize("access", ["x", "xs[0]"])
 @pytest.mark.parametrize(
     ("scalar", "method"),
     [
@@ -230,12 +231,14 @@ def test_strict_policy_blocks_modules_classes_and_callables_in_items(template):
         (np.int64(1), "tofile"),
     ],
 )
-def test_strict_policy_blocks_numpy_scalar_file_writes(tmp_path, scalar, method):
+def test_strict_policy_blocks_numpy_scalar_file_writes(
+    tmp_path, scalar, method, access
+):
     victim = tmp_path / "victim.txt"
     victim.write_text("important")
     with strict_templates(), pytest.raises(SecurityError):
         _render(
-            f"{{{{ x.{method}(victim) }}}}{{{{ xs[0].{method}(victim) }}}}",
+            f"{{{{ {access}.{method}(victim) }}}}",
             x=scalar,
             xs=[scalar],
             victim=str(victim),

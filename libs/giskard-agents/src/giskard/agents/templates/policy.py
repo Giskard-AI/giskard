@@ -108,8 +108,9 @@ def strict_templates() -> Iterator[None]:
 # Built-in data types whose built-in methods (``str.split``, ``dict.items``, ...)
 # templates may call; mutating ones are rejected by ``modifies_known_mutable``.
 _DATA_TYPES = (str, bytes, int, float, list, tuple, dict, set, frozenset)
-# Jinja runtime helpers whose public methods are part of the template language.
-_JINJA_HELPERS = (LoopContext, Cycler)
+# Jinja runtime helpers whose public methods (and, for ``self``, blocks) are
+# part of the template language.
+_JINJA_HELPERS = (LoopContext, Cycler, JinjaTemplateReference)
 # Values that are never handed to a strict template, nor read from: classes
 # expose constructors and class-level state, and modules expose everything
 # they import (``os.environ``, ``sys.modules``, ...).
@@ -225,5 +226,4 @@ def is_strictly_safe_item(obj: Any, key: Any, value: Any) -> bool:
     """
     if isinstance(obj, _OPAQUE_TYPES) or _is_opaque(value):
         return False
-    # ``self.block()`` resolves blocks through ``TemplateReference.__getitem__``.
-    return not callable(value) or isinstance(obj, JinjaTemplateReference)
+    return not callable(value) or isinstance(obj, _JINJA_HELPERS)
