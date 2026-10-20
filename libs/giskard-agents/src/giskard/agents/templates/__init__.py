@@ -1,4 +1,11 @@
 from .environment import LLMFormattable, Trusted
+from .limits import (
+    TemplateOutputTooLargeError,
+    TemplateRenderTimeoutError,
+    TemplateResourceLimitError,
+    get_template_limits,
+    set_template_limits,
+)
 from .message import MessageTemplate
 from .policy import (
     TemplatePolicy,
@@ -27,4 +34,9 @@ __all__ = [
     "get_template_policy",
     "set_template_policy",
     "strict_templates",
+    "get_template_limits",
+    "set_template_limits",
+    "TemplateResourceLimitError",
+    "TemplateRenderTimeoutError",
+    "TemplateOutputTooLargeError",
 ]
