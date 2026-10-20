@@ -1,7 +1,11 @@
+import os
+import subprocess
 from datetime import datetime
+from enum import StrEnum
 from functools import cached_property
 from pathlib import Path
 
+import numpy as np
 import pytest
 from giskard.agents.templates import (
     MessageTemplate,
@@ -75,6 +79,10 @@ class Rich(BaseModel):
         return 3
 
 
+class Color(StrEnum):
+    RED = "red"
+
+
 @pytest.fixture
 def rich(secret_file) -> Rich:
     return Rich.model_validate(
@@ -107,11 +115,30 @@ def test_permissive_policy_keeps_method_calls(bag, secret_file):
         ("{{ rich.path.name }}", "secret.json"),
         ("{{ rich.ts.year }}", "2020"),
         ("{% for x in [1, 2] %}{{ loop.cycle('a', 'b') }}{% endfor %}", "ab"),
+        ("{{ {'k': 'v'}['k'] }}", "v"),
+        ("{{ {'k': 'v'}.k }}", "v"),
+        ("{{ [{'k': 'v'}] | map(attribute='k') | join }}", "v"),
+        ("{{ '{0}-{1[k]}'.format('a', {'k': 'v'}) }}", "a-v"),
+        ("{{ color.upper() }}", "RED"),
+        ("{{ color.value }}", "red"),
+        ("{{ np_str.upper() }}", "HI"),
+        ("{{ np_float.hex() }}", "0x1.0000000000000p-1"),
+        ("{% block b %}x{% endblock %}{{ self.b() }}", "xx"),
     ],
 )
 def test_strict_policy_allows_data_reads(bag, rich, template, expected):
     with strict_templates():
-        assert _render(template, bag=bag, rich=rich) == expected
+        assert (
+            _render(
+                template,
+                bag=bag,
+                rich=rich,
+                color=Color.RED,
+                np_str=np.str_("hi"),
+                np_float=np.float64(0.5),
+            )
+            == expected
+        )
 
 
 @pytest.mark.parametrize(
@@ -131,11 +158,89 @@ def test_strict_policy_allows_data_reads(bag, rich, template, expected):
         "{{ rich.path.write_text('x') }}",
         "{{ rich.ts.now() }}",
         "{{ {}.fromkeys('ab') }}",
+        # Classic sandbox escapes.
+        "{{ ''.__class__.__mro__[1].__subclasses__() }}",
+        "{{ cycler.__init__.__globals__ }}",
+        "{{ lipsum.__globals__ }}",
+        "{{ self.__init__.__globals__ }}",
+        "{{ bag | attr('parse_file') }}",
+        "{{ bag | attr('__class__') }}",
+        "{{ [bag] | map(attribute='parse_file') | first }}",
+        "{{ '{0.parse_file}'.format(bag) }}",
+        "{{ '{0.path.read_text}'.format(rich) }}",
     ],
 )
 def test_strict_policy_blocks_method_calls(bag, rich, secret_file, template):
     with strict_templates(), pytest.raises(SecurityError):
         _render(template, bag=bag, rich=rich, path=str(secret_file))
+
+
+@pytest.mark.skipif(
+    not hasattr(Path, "parser"), reason="PurePath.parser exists on Python 3.13+"
+)
+@pytest.mark.parametrize(
+    "template",
+    [
+        "{{ rich.path.parser }}",
+        "{{ rich.path.parser.os.environ['GISKARD_TEST_SECRET'] }}",
+        "{{ rich.path.parser.sys.modules['os'].environ['GISKARD_TEST_SECRET'] }}",
+    ],
+)
+def test_strict_policy_blocks_modules_reached_from_attributes(
+    rich, monkeypatch, template
+):
+    monkeypatch.setenv("GISKARD_TEST_SECRET", "s3cret")
+    with strict_templates(), pytest.raises(SecurityError):
+        _render(template, rich=rich)
+
+
+@pytest.mark.parametrize(
+    "template",
+    [
+        "{{ mod.environ }}",
+        "{{ cls.home }}",
+        "{{ box['os'] }}",
+        "{{ box.os.environ }}",
+        "{{ box['popen'] }}",
+        "{{ box['system']('true') }}",
+        "{{ box.getcwd() }}",
+        "{{ (box | dictsort)[0][1] }}",
+        "{{ [box] | map(attribute='os') | first }}",
+        "{{ '{0[os]}'.format(box) }}",
+        "{{ '{0.os}'.format(box) }}",
+    ],
+)
+def test_strict_policy_blocks_modules_classes_and_callables_in_items(template):
+    box = {
+        "os": os,
+        "popen": subprocess.Popen,
+        "system": os.system,
+        "getcwd": os.getcwd,
+    }
+    with strict_templates(), pytest.raises(SecurityError):
+        _render(template, mod=os, cls=Path, box=box)
+
+
+@pytest.mark.parametrize(
+    ("scalar", "method"),
+    [
+        (np.float64(1.5), "tofile"),
+        (np.float64(1.5), "dump"),
+        (np.str_("hi"), "dump"),
+        (np.int64(1), "tofile"),
+    ],
+)
+def test_strict_policy_blocks_numpy_scalar_file_writes(tmp_path, scalar, method):
+    victim = tmp_path / "victim.txt"
+    victim.write_text("important")
+    with strict_templates(), pytest.raises(SecurityError):
+        _render(
+            f"{{{{ x.{method}(victim) }}}}{{{{ xs[0].{method}(victim) }}}}",
+            x=scalar,
+            xs=[scalar],
+            victim=str(victim),
+        )
+    assert victim.read_text() == "important"
 
 
 async def test_strict_policy_applies_to_file_templates(bag, secret_file, tmp_path):
@@ -160,6 +265,11 @@ def test_set_template_policy_is_process_wide(bag):
     set_template_policy("strict")
     with pytest.raises(SecurityError):
         _render("{{ bag.first.greet() }}", bag=bag)
+
+
+def test_set_template_policy_normalizes_value():
+    set_template_policy(" STRICT ")  # pyright: ignore[reportArgumentType]
+    assert get_template_policy() == "strict"
 
 
 def test_set_template_policy_rejects_unknown_value():

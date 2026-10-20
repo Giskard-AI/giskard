@@ -3,14 +3,18 @@ from pathlib import Path
 from typing import Any, Literal, Protocol, runtime_checkable
 
 from giskard.llm import chat
-from jinja2 import BaseLoader, StrictUndefined, nodes
+from jinja2 import BaseLoader, StrictUndefined, Undefined, nodes
 from jinja2.exceptions import TemplateNotFound
 from jinja2.ext import Extension
 from jinja2.loaders import FileSystemLoader, PrefixLoader
 from jinja2.sandbox import SandboxedEnvironment
 from pydantic import BaseModel
 
-from .policy import get_template_policy, is_strictly_safe_attribute
+from .policy import (
+    get_template_policy,
+    is_strictly_safe_attribute,
+    is_strictly_safe_item,
+)
 
 
 @runtime_checkable
@@ -132,6 +136,45 @@ class PromptSandboxedEnvironment(SandboxedEnvironment):
             get_template_policy() != "strict"
             or is_strictly_safe_attribute(obj, attr, value)
         )
+
+    # Jinja checks attribute reads with ``is_safe_attribute`` but returns item
+    # lookups (``x[key]``, and ``x.key`` when ``x`` has no such attribute)
+    # unchecked; under the strict policy they go through
+    # ``is_strictly_safe_item``.
+
+    def getitem(self, obj: Any, argument: Any) -> Any:
+        if get_template_policy() != "strict":
+            return super().getitem(obj, argument)
+        try:
+            value = obj[argument]
+        except (TypeError, LookupError):
+            # No such item: Jinja falls back to a checked attribute read.
+            return super().getitem(obj, argument)
+        return self._checked_item(obj, argument, value)
+
+    def getattr(self, obj: Any, attribute: str) -> Any:
+        if get_template_policy() != "strict":
+            return super().getattr(obj, attribute)
+        try:
+            value = getattr(obj, attribute)
+        except AttributeError:
+            try:
+                value = obj[attribute]
+            except (TypeError, LookupError):
+                return self.undefined(obj=obj, name=attribute)
+            return self._checked_item(obj, attribute, value)
+        # Same as SandboxedEnvironment.getattr once the attribute is resolved.
+        fmt = self.wrap_str_format(value)
+        if fmt is not None:
+            return fmt
+        if self.is_safe_attribute(obj, attribute, value):
+            return value
+        return self.unsafe_undefined(obj, attribute)
+
+    def _checked_item(self, obj: Any, key: Any, value: Any) -> Any:
+        if isinstance(value, Undefined) or is_strictly_safe_item(obj, key, value):
+            return value
+        return self.unsafe_undefined(obj, key)
 
 
 _inline_env = PromptSandboxedEnvironment(

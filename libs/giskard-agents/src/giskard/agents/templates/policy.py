@@ -15,7 +15,11 @@ can only *read data*:
   ``BaseModel`` API are blocked;
 - methods of other objects are blocked, except the built-in methods of plain
   data types (``str``, ``list``, ``dict``, ...) and Jinja's loop helpers;
-- classes and classmethods are never reachable;
+- classes, classmethods and modules are never reachable, and their
+  attributes cannot be read;
+- items looked up with ``x[key]`` (or ``x.key`` falling back to an item) are
+  checked too: modules, classes and callables stored in containers are
+  blocked;
 - known mutable builtins (lists, dicts, sets) cannot be modified.
 
 The policy is enabled process-wide with :func:`set_template_policy` (or the
@@ -28,11 +32,12 @@ from collections.abc import Iterator
 from contextlib import contextmanager
 from contextvars import ContextVar
 from functools import cached_property
-from types import BuiltinMethodType
+from types import BuiltinMethodType, ModuleType
 from typing import Any, Literal, cast, get_args
 from weakref import WeakKeyDictionary
 
 from jinja2.runtime import LoopContext
+from jinja2.runtime import TemplateReference as JinjaTemplateReference
 from jinja2.sandbox import modifies_known_mutable
 from jinja2.utils import Cycler
 from pydantic import BaseModel
@@ -43,6 +48,8 @@ _POLICY_ENV_VAR = "GISKARD_TEMPLATE_POLICY"
 
 
 def _validate_policy(policy: str) -> TemplatePolicy:
+    if isinstance(policy, str):
+        policy = policy.strip().lower()
     if policy not in get_args(TemplatePolicy):
         raise ValueError(
             f"Unknown template policy {policy!r}; expected one of {get_args(TemplatePolicy)}"
@@ -54,7 +61,7 @@ def _validate_policy(policy: str) -> TemplatePolicy:
 # is not inherited by threads started afterwards, which would silently fall
 # back to the permissive policy.
 _default_policy: TemplatePolicy = _validate_policy(
-    os.environ.get(_POLICY_ENV_VAR, "permissive").strip().lower()
+    os.environ.get(_POLICY_ENV_VAR, "permissive")
 )
 _policy_override: ContextVar[TemplatePolicy | None] = ContextVar(
     "giskard_template_policy", default=None
@@ -73,7 +80,8 @@ def set_template_policy(policy: TemplatePolicy) -> None:
     ----------
     policy : {"permissive", "strict"}
         ``"strict"`` restricts templates to reading data; use it whenever
-        templates may come from untrusted users.
+        templates may come from untrusted users. Case and surrounding
+        whitespace are ignored, as for ``GISKARD_TEMPLATE_POLICY``.
     """
     global _default_policy
     _default_policy = _validate_policy(policy)
@@ -81,7 +89,15 @@ def set_template_policy(policy: TemplatePolicy) -> None:
 
 @contextmanager
 def strict_templates() -> Iterator[None]:
-    """Render templates with the strict policy within this scope."""
+    """Render templates with the strict policy within this scope.
+
+    The override is stored in a :class:`~contextvars.ContextVar`, so it
+    follows ``await`` and :func:`asyncio.to_thread` (which copies the current
+    context), but not a plain :class:`threading.Thread` or
+    ``loop.run_in_executor`` started inside the scope: renders there fall
+    back to the process-wide policy. Use :func:`set_template_policy` when
+    renders may happen in such threads.
+    """
     token = _policy_override.set("strict")
     try:
         yield
@@ -94,6 +110,10 @@ def strict_templates() -> Iterator[None]:
 _DATA_TYPES = (str, bytes, int, float, list, tuple, dict, set, frozenset)
 # Jinja runtime helpers whose public methods are part of the template language.
 _JINJA_HELPERS = (LoopContext, Cycler)
+# Values that are never handed to a strict template, nor read from: classes
+# expose constructors and class-level state, and modules expose everything
+# they import (``os.environ``, ``sys.modules``, ...).
+_OPAQUE_TYPES = (type, ModuleType)
 
 
 # Weak keys so dynamically created models (e.g. tool argument models) can be
@@ -123,6 +143,34 @@ def _model_data_attrs(model_cls: type[BaseModel]) -> frozenset[str]:
     return attrs
 
 
+def _is_opaque(value: Any) -> bool:
+    """Whether ``value`` is a class, a classmethod or a module."""
+    return isinstance(value, _OPAQUE_TYPES) or isinstance(
+        getattr(value, "__self__", None), type
+    )
+
+
+def _is_builtin_data_method(obj: Any, attr: str, value: Any) -> bool:
+    """Whether ``value`` is ``obj.attr`` resolving to a data type's own method.
+
+    Subclasses of the data types are accepted (e.g. ``StrEnum`` members), but
+    only for methods they inherit unchanged: numpy scalars subclass ``float``
+    and ``str`` yet add methods such as ``tofile`` and ``dump`` that write
+    files.
+    """
+    if not isinstance(value, BuiltinMethodType) or value.__self__ is not obj:
+        return False
+    base = next((t for t in _DATA_TYPES if isinstance(obj, t)), None)
+    if base is None:
+        return False
+    builtin = vars(base).get(attr)
+    resolved = next(
+        (vars(klass)[attr] for klass in type(obj).__mro__ if attr in vars(klass)),
+        None,
+    )
+    return builtin is not None and resolved is builtin
+
+
 def is_strictly_safe_attribute(obj: Any, attr: str, value: Any) -> bool:
     """Decide whether a template may access ``obj.attr`` under the strict policy.
 
@@ -140,7 +188,7 @@ def is_strictly_safe_attribute(obj: Any, attr: str, value: Any) -> bool:
     bool
         ``True`` when the access is a plain data read.
     """
-    if isinstance(value, type) or isinstance(getattr(value, "__self__", None), type):
+    if isinstance(obj, _OPAQUE_TYPES) or _is_opaque(value):
         return False
     if isinstance(obj, BaseModel):
         return not callable(value) and (
@@ -152,4 +200,30 @@ def is_strictly_safe_attribute(obj: Any, attr: str, value: Any) -> bool:
         return True
     if isinstance(obj, _JINJA_HELPERS):
         return True
-    return isinstance(value, BuiltinMethodType) and isinstance(obj, _DATA_TYPES)
+    return _is_builtin_data_method(obj, attr, value)
+
+
+def is_strictly_safe_item(obj: Any, key: Any, value: Any) -> bool:
+    """Decide whether a template may access ``obj[key]`` under the strict policy.
+
+    Item lookups bypass attribute checks, so containers must not hand out
+    what an attribute read would refuse.
+
+    Parameters
+    ----------
+    obj : Any
+        The object the item is read from.
+    key : Any
+        The item key.
+    value : Any
+        The item value, already resolved.
+
+    Returns
+    -------
+    bool
+        ``True`` when the access is a plain data read.
+    """
+    if isinstance(obj, _OPAQUE_TYPES) or _is_opaque(value):
+        return False
+    # ``self.block()`` resolves blocks through ``TemplateReference.__getitem__``.
+    return not callable(value) or isinstance(obj, JinjaTemplateReference)
