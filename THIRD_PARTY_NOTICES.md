@@ -116,7 +116,7 @@ Find a list of packages below
 - License: Python Software Foundation License
 - Compatible: True
 
-### aiohttp-3.14.3
+### aiohttp-3.14.5
 
 - HomePage:
 - Author:
@@ -753,7 +753,7 @@ Find a list of packages below
 - License: BSD License
 - Compatible: True
 
-### yarl-1.24.2
+### yarl-1.25.1
 
 - HomePage: https://github.com/aio-libs/yarl
 - Author: Andrew Svetlov
