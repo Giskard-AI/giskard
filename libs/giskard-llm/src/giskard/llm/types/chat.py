@@ -1,5 +1,5 @@
 from collections.abc import Sequence
-from typing import Literal, Protocol
+from typing import ClassVar, Literal, Protocol
 
 from pydantic import Field
 
@@ -114,8 +114,11 @@ class AssistantMessage(_BaseModel):
     refusal: str | None = None
     tool_calls: Sequence[ToolCall] | None = None
     # Reasoning never contributes to ``text`` / ``transcript``: those are what checks
-    # and judges evaluate, and must only contain the visible answer.
+    # and judges evaluate, and must only contain the visible answer. It is also never
+    # sent back to a provider.
     reasoning: str | None = None
+
+    _wire_excluded: ClassVar[frozenset[str]] = frozenset({"reasoning"})
 
     @property
     def is_refusal(self) -> bool:

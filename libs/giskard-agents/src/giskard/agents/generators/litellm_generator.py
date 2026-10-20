@@ -96,13 +96,7 @@ class LiteLLMGenerator(BaseGenerator):
         return [
             cast(
                 "ChatCompletionMessageParam",
-                cast(
-                    object,
-                    # ``reasoning`` is not an OpenAI Chat Completions message field.
-                    m.model_dump(
-                        context={"provider": "openai/chat"}, exclude={"reasoning"}
-                    ),
-                ),
+                cast(object, m.model_dump(context={"provider": "openai/chat"})),
             )
             for m in messages
         ]

@@ -98,15 +98,7 @@ class OpenAIChatTranslator:
 
         return cast(
             "CompletionCreateParamsWithTimeout",
-            cast(
-                object,
-                chat_params.model_dump(
-                    context={"provider": _PROVIDER},
-                    # The official Chat Completions API has no ``reasoning`` field on
-                    # assistant messages, so strip it on the way out.
-                    exclude={"messages": {"__all__": {"reasoning"}}},
-                ),
-            ),
+            cast(object, chat_params.model_dump(context={"provider": _PROVIDER})),
         )
 
     @staticmethod
