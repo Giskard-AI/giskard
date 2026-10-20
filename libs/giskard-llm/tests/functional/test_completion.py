@@ -15,7 +15,7 @@ from pydantic import BaseModel, Field, field_validator
 
 from .helpers import (
     ANTHROPIC_PROVIDER_PARAMS,
-    azure_foundry_anthropic_base_url,
+    anthropic_configure_params,
     azure_foundry_v1_base_url,
 )
 
@@ -47,7 +47,7 @@ _CONFIGURE_PARAMS = {  # pragma: allowlist secret
     "openai": {"provider": "openai", "api_key": "os.environ/OPENAI_API_KEY"},
     "google": {"provider": "google", "api_key": "os.environ/GOOGLE_API_KEY"},
     "gemini": {"provider": "gemini", "api_key": "os.environ/GOOGLE_API_KEY"},
-    "anthropic": {"provider": "anthropic", "api_key": "os.environ/ANTHROPIC_API_KEY"},
+    "anthropic": anthropic_configure_params("anthropic"),
     "azure": {
         "provider": "azure",
         "api_key": "os.environ/AZURE_API_KEY",
@@ -64,11 +64,7 @@ _CONFIGURE_PARAMS = {  # pragma: allowlist secret
         "api_key": "os.environ/AZURE_AI_API_KEY",  # pragma: allowlist secret
         "base_url": azure_foundry_v1_base_url(),
     },
-    "azure_anthropic": {
-        "provider": "anthropic",
-        "api_key": "os.environ/AZURE_AI_API_KEY",  # pragma: allowlist secret
-        "base_url": azure_foundry_anthropic_base_url(),
-    },
+    "azure_anthropic": anthropic_configure_params("azure_anthropic"),
 }
 
 _PROVIDER_MARKS = {
