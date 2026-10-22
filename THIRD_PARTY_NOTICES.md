@@ -186,7 +186,7 @@ Find a list of packages below
 - License: Apache Software License;; BSD License;; MIT License
 - Compatible: True
 
-### certifi-2026.6.17
+### certifi-2026.10.19
 
 - HomePage: https://github.com/certifi/python-certifi
 - Author: Kenneth Reitz
