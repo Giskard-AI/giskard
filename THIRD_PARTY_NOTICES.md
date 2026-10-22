@@ -72,6 +72,7 @@ Find a list of packages below
 |✔|nltk|
 |✔|numpy|
 |✔|openai|
+|✔|opentelemetry-api|
 |✔|packaging|
 |✔|posthog|
 |✔|propcache|
@@ -115,7 +116,7 @@ Find a list of packages below
 - License: Python Software Foundation License
 - Compatible: True
 
-### aiohttp-3.14.3
+### aiohttp-3.14.5
 
 - HomePage:
 - Author:
@@ -514,6 +515,13 @@ Find a list of packages below
 - License: Apache Software License
 - Compatible: True
 
+### opentelemetry-api-1.43.0
+
+- HomePage:
+- Author: OpenTelemetry Authors
+- License: Apache-2.0
+- Compatible: True
+
 ### packaging-26.2
 
 - HomePage:
@@ -745,7 +753,7 @@ Find a list of packages below
 - License: BSD License
 - Compatible: True
 
-### yarl-1.24.2
+### yarl-1.25.1
 
 - HomePage: https://github.com/aio-libs/yarl
 - Author: Andrew Svetlov
